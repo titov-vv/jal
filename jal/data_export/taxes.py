@@ -258,8 +258,7 @@ class TaxesRus:
             c_rate = currency.quote(trade.close_operation().timestamp(), JalSettings().getValue('BaseCurrency'))[1]
             if self.use_settlement:
                 os_rate = currency.quote(trade.open_operation().settlement(), JalSettings().getValue('BaseCurrency'))[1]
-                cs_rate = currency.quote(trade.close_operation().settlement(), JalSettings().getValue('BaseCurrency'))[
-                    1]
+                cs_rate = currency.quote(trade.close_operation().settlement(), JalSettings().getValue('BaseCurrency'))[1]
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
@@ -542,72 +541,68 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
-        corporate_actions = []
-        # get list of all deals that were opened with corp.action and closed by normal trade
-        query = executeSQL("SELECT d.open_op_id AS oid, t.asset_id, s.symbol, d.qty AS qty, "
-                           "t.number AS trade_number, t.timestamp AS t_date, qt.quote AS t_rate, "
-                           "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee, "
-                           "s.full_name AS full_name, s.isin AS isin, s.type_id AS type_id "
-                           "FROM trades_closed AS d "
-                           "JOIN trades AS t ON t.id=d.close_op_id AND t.op_type=d.close_op_type "
-                           "LEFT JOIN accounts AS a ON a.id = :account_id "
-                           "LEFT JOIN assets_ext AS s ON s.id = t.asset_id AND s.currency_id=a.currency_id "
-                           "LEFT JOIN t_last_dates AS ldt ON t.timestamp=ldt.ref_id "
-                           "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id AND qt.currency_id=:base_currency "
-                           "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
-                           "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id AND qts.currency_id=:base_currency "
-                           "WHERE t.settlement<:end AND d.account_id=:account_id AND d.open_op_type=:corp_action "
-                           "ORDER BY s.symbol, t.timestamp",
-                           [(":end", self.year_end), (":account_id", self.account.id()),
-                            (":corp_action", LedgerTransaction.CorporateAction),
-                            (":base_currency", JalSettings().getValue('BaseCurrency'))])
+        currency = JalAsset(self.account.currency())
+        corporate_actions_report = []
+        trades = self.account.closed_trades_list()
+        trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
+        trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.CorporateAction]
+        trades = [x for x in trades if x.close_operation().settlement() <= self.year_end]   # TODO Why not self.year_begin<=?
+        trades = sorted(trades, key=lambda x: (x.asset().symbol(currency.id()), x.close_operation().timestamp()))
         group = 1
-        share = 1.0   # The whole sale is being processed - this is why it starts with 100.0%
+        share = Decimal('1.0')   # This will track share of processed asset, so it starts from 100.0%
         previous_symbol = ""
-        while query.next():
-            actions = []
-            sale = readSQLrecord(query, named=True)
-            sale['qty'] = float(sale['qty'])
-            sale['t_rate'] = float(sale['t_rate'])
-            sale['s_rate'] = float(sale['s_rate'])
-            sale['price'] = float(sale['price'])
-            sale['fee'] = float(sale['fee'])
-            sale['qty'] = float(sale['qty'])
-            if previous_symbol != sale['symbol']:
+        for trade in trades:
+            lines = []
+            sale = trade.close_operation()
+            t_rate = currency.quote(sale.timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+            if self.use_settlement:
+                s_rate = currency.quote(sale.settlement(), JalSettings().getValue('BaseCurrency'))[1]
+            else:
+                s_rate = t_rate
+            if previous_symbol != sale.asset().symbol(currency.id()):
                 # Clean processed qty records if symbol have changed
                 _ = executeSQL("DELETE FROM t_last_assets")
-                if sale["s_date"] >= self.year_begin:  # Don't put sub-header of operation is out of scope
-                    corporate_actions.append(
-                        {'report_template': "symbol_header", 'report_group': 0,
-                         'description': f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}"})
-                    previous_symbol = sale['symbol']
-            sale['operation'] = "Продажа"
-            sale['basis_ratio'] = 100.0 * share
-            sale['amount'] = round(sale['price'] * sale['qty'], 2)
-            if sale['s_rate']:
-                sale['amount_rub'] = round(sale['amount'] * sale['s_rate'], 2)
+                if sale.settlement() >= self.year_begin:  # Don't put sub-header of operation is out of scope
+                    corporate_actions_report.append({
+                        'report_template': "symbol_header",
+                        'report_group': 0,
+                        'description': f"Сделки по бумаге: {sale.asset().symbol(currency.id())} - {sale.asset().name()}"
+                    })
+                    previous_symbol = sale.asset().symbol(currency.id())
+            amount = round(sale.price() * trade.qty(), 2)
+            amount_rub = round(amount * s_rate, 2)
+            fee_rub = round(sale.fee() * t_rate, 2)
+            if sale.timestamp() < self.year_begin:    # Don't show deal that is before report year (level = -1)
+                self.proceed_corporate_action(lines, trade.open_operation().id(), trade.asset().id(), trade.qty(), share, -1, group)
             else:
-                sale['amount_rub'] = 0
-            if sale['t_rate']:
-                sale['fee_rub'] = round(sale['fee'] * sale['t_rate'], 2)
-            else:
-                sale['fee_rub'] = 0
-            sale['income_rub'] = sale['amount_rub']
-            sale['spending_rub'] = sale['fee_rub']
-
-            if sale["t_date"] < self.year_begin:    # Don't show deal that is before report year (level = -1)
-                self.proceed_corporate_action(actions, sale['oid'], sale['asset_id'], sale['qty'], share, -1, group)
-            else:
-                sale['report_template'] = "trade"
-                sale['report_group'] = group
-                actions.append(sale)
-                if sale['type_id'] == PredefinedAsset.Bond:
-                    self.output_accrued_interest(actions, sale['trade_number'], 1, 0)
-                self.proceed_corporate_action(actions, sale['oid'], sale['asset_id'], sale['qty'], share, 1, group)
-            self.insert_totals(actions, ["income_rub", "spending_rub"])
-            corporate_actions += actions
+                lines.append({
+                    'report_template': "trade",
+                    'report_group': group,
+                    'operation': "Продажа",
+                    't_date': sale.timestamp(),
+                    't_rate': t_rate,
+                    's_date': sale.settlement(),
+                    's_rate': s_rate,
+                    'symbol': sale.asset().symbol(currency.id()),
+                    'isin': sale.asset().isin(),
+                    'trade_number': sale.number(),
+                    'price': sale.price(),
+                    'qty': trade.qty(),
+                    'amount': amount,
+                    'amount_rub': amount_rub,
+                    'fee': sale.fee(),
+                    'fee_rub': fee_rub,
+                    'basis_ratio': Decimal('100') * share,
+                    'income_rub': amount_rub,
+                    'spending_rub': fee_rub
+                })
+                if sale.asset().type() == PredefinedAsset.Bond:
+                    self.output_accrued_interest(lines, sale.number(), 1, 0)
+                self.proceed_corporate_action(lines, trade.open_operation().id(), trade.asset().id(), trade.qty(), share, 1, group)
+            self.insert_totals(lines, ["income_rub", "spending_rub"])
+            corporate_actions_report += lines
             group += 1
-        return corporate_actions
+        return corporate_actions_report
 
     # actions - mutable list of tax records to output into json-report
     # oid - id of corporate action to process next

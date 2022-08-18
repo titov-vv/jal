@@ -346,12 +346,9 @@
          "basis_ratio": 100.0,
          "fee": 0.35,
          "fee_rub": 25.52,
-         "full_name": "iShares 20+ Year Treasury Bond ETF",
          "income_rub": 5506.51,
          "isin": "US4642874329",
          "operation": "Продажа",
-         "oid": 2,
-         "asset_id": 5,
          "price": 3.0,
          "qty": 25.0,
          "report_group": 1,
@@ -362,8 +359,7 @@
          "symbol": "TLT",
          "t_date": 1608044400,
          "t_rate": 72.9272,
-         "trade_number": "B1",
-         "type_id": 4
+         "trade_number": "B1"
       },
       {
          "action_date": 1604448000,
@@ -413,12 +409,9 @@
          "basis_ratio": 100.0,
          "fee": 0.35,
          "fee_rub": 25.52,
-         "full_name": "iShares 20+ Year Treasury Bond ETF",
          "income_rub": 4588.76,
          "isin": "US4642874329",
          "operation": "Продажа",
-         "oid": 2,
-         "asset_id": 5,
          "price": 2.5,
          "qty": 25.0,
          "report_group": 2,
@@ -429,8 +422,7 @@
          "symbol": "TLT",
          "t_date": 1608044400,
          "t_rate": 72.9272,
-         "trade_number": "B2",
-         "type_id": 4
+         "trade_number": "B2"
       },
       {
          "action_date": 1604448000,
@@ -487,12 +479,9 @@
          "basis_ratio": 100.0,
          "fee": 0.35,
          "fee_rub": 25.52,
-         "full_name": "VIATRIS INC",
          "income_rub": 65013.5,
          "isin": "US92556V1061",
          "operation": "Продажа",
-         "oid": 1,
-         "asset_id": 12,
          "price": 17.71,
          "qty": 50.0,
          "s_date": 1608163200,
@@ -501,8 +490,7 @@
          "symbol": "VTRS",
          "t_date": 1608044400,
          "t_rate": 72.9272,
-         "trade_number": "2227095222",
-         "type_id": 2
+         "trade_number": "2227095222"
       },
       {
          "report_template": "action",
