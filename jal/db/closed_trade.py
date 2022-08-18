@@ -1,7 +1,7 @@
 from decimal import Decimal
 from jal.db.db import JalDB
 import jal.db.account
-from jal.db.asset import JalAsset
+import jal.db.asset
 import jal.db.operations
 
 
@@ -14,7 +14,7 @@ class JalClosedTrade(JalDB):
                                    "FROM trades_closed WHERE id=:id", [(":id", self._id)], named=True)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
-            self._asset = JalAsset(self._data['asset_id'])
+            self._asset = jal.db.asset.JalAsset(self._data['asset_id'])
             self._open_op = jal.db.operations.LedgerTransaction.get_operation(self._data['open_op_type'], self._data['open_op_id'])
             self._close_op = jal.db.operations.LedgerTransaction.get_operation(self._data['close_op_type'], self._data['close_op_id'])
             self._open_price = Decimal(self._data['open_price'])
@@ -27,7 +27,7 @@ class JalClosedTrade(JalDB):
     def id(self) -> int:
         return self._id
 
-    def asset(self) -> JalAsset:
+    def asset(self) -> jal.db.asset.JalAsset:
         return self._asset
 
     def open_operation(self):

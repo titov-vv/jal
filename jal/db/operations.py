@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QApplication
 from jal.constants import BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord, format_decimal
 from jal.db.db import JalDB
-from jal.db.account import JalAccount
+import jal.db.account
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 
@@ -265,7 +265,7 @@ class IncomeSpending(LedgerTransaction):
                              "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.id=:oid",
                              [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
-        self._account = JalAccount(self._data['account_id'])
+        self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
@@ -385,7 +385,7 @@ class Dividend(LedgerTransaction):
         self._label, self._label_color = labels[self._subtype]
         self._timestamp = self._data['timestamp']
         self._ex_date = self._data['ex_date'] if self._data['ex_date'] else 0
-        self._account = JalAccount(self._data['account_id'])
+        self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
@@ -558,7 +558,7 @@ class Trade(LedgerTransaction):
                              "t.fee, t.note FROM trades AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
         self._settlement = self._data['settlement']
-        self._account = JalAccount(self._data['account_id'])
+        self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
@@ -692,17 +692,17 @@ class Transfer(LedgerTransaction):
         self._data = readSQL("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, "
                              "t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, t.note "
                              "FROM transfers AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
-        self._withdrawal_account = JalAccount(self._data['withdrawal_account'])
+        self._withdrawal_account = jal.db.account.JalAccount(self._data['withdrawal_account'])
         self._withdrawal_account_name = self._withdrawal_account.name()
         self._withdrawal_timestamp = self._data['withdrawal_timestamp']
         self._withdrawal = Decimal(self._data['withdrawal'])
         self._withdrawal_currency = JalAsset(self._withdrawal_account.currency()).symbol()
-        self._deposit_account = JalAccount(self._data['deposit_account'])
+        self._deposit_account = jal.db.account.JalAccount(self._data['deposit_account'])
         self._deposit_account_name = self._deposit_account.name()
         self._deposit = Decimal(self._data['deposit'])
         self._deposit_currency = JalAsset(self._deposit_account.currency()).symbol()
         self._deposit_timestamp = self._data['deposit_timestamp']
-        self._fee_account = JalAccount(self._data['fee_account'])
+        self._fee_account = jal.db.account.JalAccount(self._data['fee_account'])
         self._fee_currency = JalAsset(self._fee_account.currency()).symbol()
         self._fee_account_name = self._fee_account.name()
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
@@ -942,7 +942,7 @@ class CorporateAction(LedgerTransaction):
             self._view_rows = 2
         self._label, self._label_color = labels[self._subtype]
         self._timestamp = self._data['timestamp']
-        self._account = JalAccount(self._data['account_id'])
+        self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
