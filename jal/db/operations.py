@@ -322,6 +322,11 @@ class IncomeSpending(LedgerTransaction):
         else:
             return super().value_total()
 
+    # Returns a list of income/spending lines in form of
+    # {"category_id", "category", "tag_id", "tag", "amount", "amount_alt", "note"}
+    def lines(self) -> list:
+        return self._details
+
     def processLedger(self, ledger):
         if len(self._details) == 0:
             self.dump()

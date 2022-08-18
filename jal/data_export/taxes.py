@@ -8,6 +8,7 @@ from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.category import JalCategory
 from jal.db.country import JalCountry
 from jal.db.settings import JalSettings
 
@@ -490,28 +491,25 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self):
-        fees = []
-        query = executeSQL("SELECT a.timestamp AS payment_date, d.amount AS amount, d.note AS note, q.quote AS rate "
-                           "FROM actions AS a "
-                           "LEFT JOIN action_details AS d ON d.pid=a.id "
-                           "LEFT JOIN accounts AS c ON c.id = :account_id "
-                           "LEFT JOIN t_last_dates AS ld ON a.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id AND q.currency_id=:base_currency "
-                           "WHERE a.timestamp>=:begin AND a.timestamp<:end "
-                           "AND a.account_id=:account_id AND d.category_id=:fee",
-                           [(":begin", self.year_begin), (":end", self.year_end),
-                            (":account_id", self.account.id()), (":fee", PredefinedCategory.Fees),
-                            (":base_currency", JalSettings().getValue('BaseCurrency'))])
-        while query.next():
-            fee = readSQLrecord(query, named=True)
-            fee['amount'] = float(fee['amount'])
-            fee['rate'] = float(fee['rate'])
-            fee['amount'] = -fee['amount']
-            fee['amount_rub'] = round(fee['amount'] * fee['rate'], 2) if fee['rate'] else 0
-            fee['report_template'] = "fee"
-            fees.append(fee)
-        self.insert_totals(fees, ["amount", "amount_rub"])
-        return fees
+        currency = JalAsset(self.account.currency())
+        fees_report = []
+        fee_operations = JalCategory(PredefinedCategory.Fees).get_operations(self.year_begin, self.year_end)
+        for operation in fee_operations:
+            rate = currency.quote(operation.timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+            fees = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Fees]
+            for fee in fees:
+                amount = -Decimal(fee['amount'])
+                line = {
+                    'report_template': "fee",
+                    'payment_date': operation.timestamp(),
+                    'rate': rate,
+                    'amount': amount,
+                    'amount_rub': round(amount * rate, 2),
+                    'note': fee['note']
+                }
+                fees_report.append(line)
+        self.insert_totals(fees_report, ["amount", "amount_rub"])
+        return fees_report
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_interest(self):
