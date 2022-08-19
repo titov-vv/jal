@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedAsset, PredefinedCategory
-from jal.db.helpers import executeSQL, readSQL
+from jal.db.helpers import readSQL
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -60,36 +60,9 @@ class TaxesRus:
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         if 'use_settlement' in kwargs:
             self.use_settlement = kwargs['use_settlement']
-        self.prepare_exchange_rate_dates()
         for report in self.reports:
             tax_report[report] = self.reports[report]()
         return tax_report
-
-    # Exchange rates are present in database not for every date (and not every possible timestamp)
-    # As any action has exact timestamp it won't match rough timestamp of exchange rate most probably
-    # Function fills 't_last_dates' table with correspondence between 'real' timestamp and nearest 'exchange' timestamp
-    def prepare_exchange_rate_dates(self):
-        _ = executeSQL("DELETE FROM t_last_dates")
-        _ = executeSQL("INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
-                       "FROM ("
-                       "SELECT d.timestamp AS ref_id FROM dividends AS d WHERE d.account_id = :account_id "
-                       "UNION "
-                       "SELECT a.timestamp AS ref_id FROM actions AS a WHERE a.account_id = :account_id "
-                       "UNION "
-                       "SELECT d.open_timestamp AS ref_id FROM trades_closed AS d WHERE d.account_id=:account_id "
-                       "UNION "
-                       "SELECT d.close_timestamp AS ref_id FROM trades_closed AS d WHERE d.account_id=:account_id "
-                       "UNION "
-                       "SELECT c.settlement AS ref_id FROM trades_closed AS d LEFT JOIN trades AS c ON "
-                       "(c.id=d.open_op_id AND c.op_type=d.open_op_type) OR (c.id=d.close_op_id AND c.op_type=d.close_op_type) "
-                       "WHERE d.account_id = :account_id) "
-                       "LEFT JOIN accounts AS a ON a.id = :account_id "
-                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp "
-                       "AND a.currency_id=q.asset_id AND q.currency_id=:base_currency "
-                       "WHERE ref_id IS NOT NULL "    
-                       "GROUP BY ref_id", [(":account_id", self.account.id()),
-                                           (":base_currency", JalSettings().getValue('BaseCurrency'))], commit=True)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Create a totals row from provided list of dictionaries
