@@ -398,16 +398,21 @@ class Dividend(LedgerTransaction):
 
     # Returns a list of Dividend objects for given asset, account and subtype
     # if asset_id is 0 - return for all assets, if subtype is 0 - return all types
+    # skip_accrued=True - don't include accrued interest in resulting list
     @staticmethod
-    def get_list(account_id: int, asset_id: int = 0, subtype: int = 0) -> list:
+    def get_list(account_id: int, asset_id: int = 0, subtype: int = 0, skip_accrued: bool = False) -> list:
         dividends = []
-        query = "SELECT id FROM dividends WHERE account_id=:account"
+        if skip_accrued:
+            query = "SELECT d.id FROM dividends d LEFT JOIN trades t ON d.account_id=t.account_id "\
+                    "AND d.number=t.number WHERE d.account_id=:account AND t.id IS NULL"
+        else:
+            query = "SELECT d.id FROM dividends d WHERE d.account_id=:account"
         params = [(":account", account_id)]
         if asset_id:
-            query += " AND asset_id=:asset"
+            query += " AND d.asset_id=:asset"
             params += [(":asset", asset_id)]
         if subtype:
-            query += " AND type=:type"
+            query += " AND d.type=:type"
             params += [(":type", subtype)]
         query = JalDB._executeSQL(query, params)
         while query.next():

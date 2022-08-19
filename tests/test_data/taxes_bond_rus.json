@@ -12,12 +12,9 @@
       "basis_ratio": 100.0,
       "fee": 0.0,
       "fee_rub": 0.0,
-      "full_name": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26",
       "income_rub": 149994.28,
       "isin": "US912CALAN84",
       "operation": "Продажа",
-      "oid": 1,
-      "asset_id": 5,
       "price": 1031.25,
       "qty": 2.0,
       "report_group": 1,
@@ -28,22 +25,18 @@
       "symbol": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26",
       "t_date": 1632515100,
       "t_rate": 72.7245,
-      "trade_number": "17849517124",
-      "type_id": 3
+      "trade_number": "17849517124"
     },
     {
       "action_date": 1630007100,
       "action_number": "17569476329",
-      "description": "Реорганизация компании, конвертация 100.00% стоимости 2.0 X 6 1/4 03/15/26 (US912909AN84) в 2.0 X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26 (US912CALAN84)",
-      "asset_id": 4,
+      "description": "Реорганизация компании, конвертация 100.00% стоимости 2 X 6 1/4 03/15/26 (US912909AN84) в 2 X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26 (US912CALAN84)",
       "isin": "US912909AN84",
-      "note": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)",
       "operation": "   Корп. действие",
       "qty": 2.0,
       "report_group": 1,
       "report_template": "action",
-      "symbol": "X 6 1/4 03/15/26",
-      "type": 1
+      "symbol": "X 6 1/4 03/15/26"
     },
     {
       "amount": 1274.18,
@@ -51,7 +44,7 @@
       "basis_ratio": 100.0,
       "fee": 2.0,
       "fee_rub": 146.95,
-      "income_rub": 0,
+      "income_rub": 0.0,
       "isin": "US912909AN84",
       "operation": "      Покупка",
       "price": 637.09,
@@ -64,9 +57,7 @@
       "symbol": "X 6 1/4 03/15/26",
       "t_date": 1622131065,
       "t_rate": 73.4737,
-      "trade_id": 1,
-      "trade_number": "2882737839",
-      "type_id": 3
+      "trade_number": "2882737839"
     },
     {
       "country_iso": "840",
@@ -86,7 +77,7 @@
     {
       "income_rub": 149994.28,
       "report_template": "totals",
-      "spending_rub": 95653.20999999999
+      "spending_rub": 95653.21
     }
   ],
   "Криптовалюты": [],

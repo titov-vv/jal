@@ -221,7 +221,6 @@ class TaxesRus:
         currency = JalAsset(self.account.currency())
         country = JalCountry(self.account.country())
         bonds_report = []
-        accrued_interests_id = []
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() == PredefinedAsset.Bond]
         trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
@@ -237,18 +236,10 @@ class TaxesRus:
                 os_rate = o_rate
                 cs_rate = c_rate
             o_accrued_interest = trade.open_operation().get_accrued_interest()
-            if o_accrued_interest:
-                accrued_interests_id.append(o_accrued_interest.id())
-                o_interest = -o_accrued_interest.amount()
-            else:
-                o_interest = Decimal('0')
+            o_interest = -o_accrued_interest.amount() if o_accrued_interest else Decimal('0')
             o_interest_rub = round(o_interest * o_rate, 2)
             c_accrued_interest = trade.close_operation().get_accrued_interest()
-            if c_accrued_interest:
-                accrued_interests_id.append(c_accrued_interest.id())
-                c_interest = c_accrued_interest.amount()
-            else:
-                c_interest = Decimal('0')
+            c_interest = c_accrued_interest.amount() if c_accrued_interest else Decimal('0')
             c_interest_rub = round(c_interest * c_rate, 2)
             o_amount = round(trade.open_operation().price() * abs(trade.qty()), 2)
             o_amount_rub = round(o_amount * os_rate, 2)
@@ -304,14 +295,13 @@ class TaxesRus:
             bonds_report.append(line)
         # Second - take all bond interest payments not linked with buy/sell transactions
         currency = JalAsset(self.account.currency())
-        interests = Dividend.get_list(self.account.id(), subtype=Dividend.BondInterest)
+        country = JalCountry(self.account.country())
+        interests = Dividend.get_list(self.account.id(), subtype=Dividend.BondInterest, skip_accrued=True)
         interests = [x for x in interests if self.year_begin <= x.timestamp() <= self.year_end]  # Only in given range
-        interests = [x for x in interests if x.id() not in accrued_interests_id]  # Skip already processed
         for interest in interests:
             amount = interest.amount()
             rate = currency.quote(interest.timestamp(), JalSettings().getValue('BaseCurrency'))[1]
             amount_rub = round(amount * rate, 2)
-            country = JalCountry(interest.asset().country())
             line = {
                 'report_template': "bond_interest",
                 'type': "Купон",
@@ -691,6 +681,7 @@ class TaxesRus:
 
     def output_accrued_interest(self, actions, operation, share, level):
         currency = JalAsset(self.account.currency())
+        country = JalCountry(self.account.country())
         accrued_interest = operation.get_accrued_interest()
         if not accrued_interest:
             return
@@ -718,5 +709,6 @@ class TaxesRus:
             'interest': interest,
             'interest_rub': interest_rub,
             'income_rub': income_rub,
-            'spending_rub': spending_rub
+            'spending_rub': spending_rub,
+            'country_iso': country.iso_code()
         })
