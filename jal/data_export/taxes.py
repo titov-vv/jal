@@ -657,7 +657,7 @@ class TaxesRus:
             new_asset = JalAsset(spinoff['asset_id'])
             old_asset_name = f"{action.asset().symbol(currency.id())} ({action.asset().isin()})"
             new_asset_name = f"{new_asset.symbol(currency.id())} ({new_asset.isin()})"
-            display_share = Decimal('100') * new_asset['value_share']
+            display_share = Decimal('100') * Decimal(spinoff['value_share'])
         else:
             old_asset_name = f"{action.asset().symbol(currency.id())} ({action.asset().isin()})"
             new_asset_name = f"{asset.symbol(currency.id())} ({asset.isin()})"

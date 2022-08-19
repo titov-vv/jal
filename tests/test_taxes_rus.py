@@ -277,6 +277,7 @@ def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
 
     with open(data_path + 'taxes_spinoff_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
+    json_decimal2float(tax_report)
     assert tax_report == report
 
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
