@@ -933,10 +933,14 @@ class CorporateAction(LedgerTransaction):
         }
         super().__init__(operation_id)
         self._otype = LedgerTransaction.CorporateAction
-        self._view_rows = int(readSQL("SELECT COUNT(id) FROM action_results WHERE action_id=:oid",
-                                      [(":oid", self._oid)]))
         self._data = readSQL("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
                              "FROM asset_actions AS a WHERE a.id=:oid", [(":oid", self._oid)], named=True)
+        results_query = executeSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
+                                   [(":oid", self._oid)])
+        self._results = []
+        while results_query.next():
+            self._results.append(readSQLrecord(results_query, named=True))
+        self._view_rows = len(self._results)
         self._subtype = self._data['type']
         if self._subtype == CorporateAction.SpinOff or self._view_rows < 2:
             self._view_rows = 2
@@ -1000,6 +1004,17 @@ class CorporateAction(LedgerTransaction):
             else:
                 balance += f"{value:,.2f}\n"
         return balance[:-1]  # Crop ending line break
+
+    def qty(self) -> Decimal:
+        return self._qty
+
+    # Returns qty and value_share for result of corporate action that corresponds to given asset
+    def get_result_for_asset(self, asset) -> (Decimal, Decimal):
+        out = [x for x in self._results if x['asset_id'] == asset.id()]
+        if len(out) == 1:
+            return Decimal(out[0]['qty']), Decimal(out[0]['value_share'])
+        else:
+            return Decimal('0'), Decimal('0')
 
     def processLedger(self, ledger):
         # Get asset amount accumulated before current operation

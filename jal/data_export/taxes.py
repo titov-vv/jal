@@ -584,7 +584,7 @@ class TaxesRus:
     # level - how deep we are in a chain of events (is used for correct indents)
     # group - use for odd/even lines grouping in the report
     def proceed_corporate_action(self, actions, trade, qty, share, level, group):
-        asset_id, qty, share = self.output_corp_action(actions, trade.open_operation().id(), trade.asset().id(), qty, share, level, group)
+        asset_id, qty, share = self.output_corp_action(actions, trade.open_operation(), trade.asset(), qty, share, level, group)
         next_level = -1 if level == -1 else (level + 1)
         self.next_corporate_action(actions, trade, qty, share, next_level, group)
 
@@ -601,7 +601,6 @@ class TaxesRus:
             else:
                 assert False, "Unexpected opening transaction"
 
-    # oid - id of buy operation
     def output_purchase(self, actions, purchase, proceed_qty, share, level, group):
         currency = JalAsset(self.account.currency())
         if proceed_qty <= Decimal('0'):
@@ -652,26 +651,15 @@ class TaxesRus:
             self.output_accrued_interest(actions, purchase, share, level)
         return proceed_qty - qty
 
-    def output_corp_action(self, actions, oid, asset_id, proceed_qty, share, level, group):
+    # asset - is a resulting asset that is being processed at current stage
+    def output_corp_action(self, actions, action, asset, proceed_qty, share, level, group):
+        currency = JalAsset(self.account.currency())
         if proceed_qty <= 0:
             return proceed_qty, share
-        action = readSQL("SELECT c.timestamp AS action_date, c.number AS action_number, c.type, "
-                         "c.asset_id, s1.symbol AS symbol, s1.isin AS isin, c.qty AS qty, "
-                         "c.note AS note, r.qty AS qty2, r.value_share, s2.symbol AS symbol2, s2.isin AS isin2 "
-                         "FROM asset_actions  c "
-                         "LEFT JOIN accounts a ON c.account_id=a.id "
-                         "LEFT JOIN action_results r ON c.id=r.action_id "
-                         "LEFT JOIN assets_ext s1 ON c.asset_id=s1.id AND s1.currency_id=a.currency_id "
-                         "LEFT JOIN assets_ext s2 ON r.asset_id=s2.id AND s2.currency_id=a.currency_id "
-                         "WHERE c.id = :oid AND r.asset_id = :new_asset", [(":oid", oid), (":new_asset", asset_id)],
-                         named=True)
-        action['qty'] = float(action['qty'])
-        action['qty2'] = float(action['qty2'])
-        action['value_share'] = float(action['value_share'])
-        action['operation'] = ' ' * level * 3 + "Корп. действие"
-        share = float(share) * action['value_share']    #######
-        qty_before = action['qty'] * float(proceed_qty) / action['qty2']    #######
-        if action['type'] == CorporateAction.SpinOff:
+        r_qty, r_share = action.get_result_for_asset(asset)
+        share = share * r_share
+        qty_before = action.qty() * proceed_qty / r_qty
+        if action.subtype() == CorporateAction.SpinOff:
             spinoff = readSQL("SELECT s1.symbol AS symbol, s1.isin AS isin, "
                               "r.value_share, s2.symbol AS symbol2, s2.isin AS isin2 "
                               "FROM asset_actions  c "
@@ -679,24 +667,30 @@ class TaxesRus:
                               "LEFT JOIN action_results r ON c.id=r.action_id AND c.asset_id!=r.asset_id "
                               "LEFT JOIN assets_ext s1 ON c.asset_id=s1.id AND s1.currency_id=a.currency_id "
                               "LEFT JOIN assets_ext s2 ON r.asset_id=s2.id AND s2.currency_id=a.currency_id "
-                              "WHERE c.id = :oid", [(":oid", oid)], named=True)
+                              "WHERE c.id = :oid", [(":oid", action.id())], named=True)
             spinoff['value_share'] = float(spinoff['value_share'])
             old_asset_name = f"{spinoff['symbol']} ({spinoff['isin']})"
             new_asset_name = f"{spinoff['symbol2']} ({spinoff['isin2']})"
-            display_share = 100.0 * spinoff['value_share']
+            display_share = Decimal('100') * spinoff['value_share']
         else:
-            old_asset_name = f"{action['symbol']} ({action['isin']})"
-            new_asset_name = f"{action['symbol2']} ({action['isin2']})"
-            display_share = 100.0 * action['value_share']
-        action['description'] = self.CorpActionText[action['type']].format(old=old_asset_name, new=new_asset_name,
-                                                                           before=qty_before, after=proceed_qty,
-                                                                           share=display_share)
+            old_asset_name = f"{action.asset().symbol(currency.id())} ({action.asset().isin()})"
+            new_asset_name = f"{asset.symbol(currency.id())} ({asset.isin()})"
+            display_share = Decimal('100') * r_share
+        note = self.CorpActionText[action.subtype()].format(old=old_asset_name, new=new_asset_name,
+                                                            before=qty_before, after=proceed_qty, share=display_share)
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
-            action['report_template'] = "action"
-            action['report_group'] = group
-            self.drop_extra_fields(action, ['oid', 'isin2', 'qty2', 'symbol2', 'value_share'])
-            actions.append(action)
-        return action['asset_id'], Decimal(str(qty_before)), Decimal(str(share))   ####
+            actions.append({
+                'report_template': "action",
+                'report_group': group,
+                'operation': ' ' * level * 3 + "Корп. действие",
+                'action_date': action.timestamp(),
+                'action_number': action.number(),
+                'symbol': action.asset().symbol(currency.id()),
+                'isin': action.asset().isin(),
+                'qty': action.qty(),
+                'description': note
+            })
+        return action.asset().id(), qty_before, share
 
     def output_accrued_interest(self, actions, operation, share, level):
         currency = JalAsset(self.account.currency())

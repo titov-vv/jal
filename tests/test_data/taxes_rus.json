@@ -365,15 +365,12 @@
          "action_date": 1604448000,
          "action_number": "",
          "description": "Сплит TLT (US4642874329) 5.0 в 25.0",
-         "asset_id": 5,
          "isin": "US4642874329",
-         "note": "Split 5:1 of TLT",
          "operation": "   Корп. действие",
          "qty": 10.0,
          "report_group": 1,
          "report_template": "action",
-         "symbol": "TLT",
-         "type": 4
+         "symbol": "TLT"
       },
       {
          "amount": 50.0,
@@ -426,15 +423,12 @@
          "action_date": 1604448000,
          "action_number": "",
          "description": "Сплит TLT (US4642874329) 5.0 в 25.0",
-         "asset_id": 5,
          "isin": "US4642874329",
-         "note": "Split 5:1 of TLT",
          "operation": "   Корп. действие",
          "qty": 10.0,
          "report_group": 2,
          "report_template": "action",
-         "symbol": "TLT",
-         "type": 4
+         "symbol": "TLT"
       },
       {
          "amount": 50.0,
@@ -494,13 +488,10 @@
          "action_date": 1605528000,
          "action_number": "",
          "description": "Смена символа 50.0 MYL (NL0011031208) -> 50.0 VTRS (US92556V1061)",
-         "asset_id": 11,
          "isin": "NL0011031208",
-         "note": "Symbol change MYL->VTRS",
          "operation": "   Корп. действие",
          "qty": 50.0,
-         "symbol": "MYL",
-         "type": 3
+         "symbol": "MYL"
       },
       {
          "report_template": "trade",
