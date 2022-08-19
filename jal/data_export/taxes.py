@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedAsset, PredefinedCategory
-from jal.db.helpers import readSQL
+from jal.db.helpers import remove_exponent
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -72,7 +72,7 @@ class TaxesRus:
             return
         totals = {"report_template": "totals"}
         for field in fields:
-            totals[field] = sum([float(x[field]) for x in list_of_values if field in x])   ######
+            totals[field] = sum([x[field] for x in list_of_values if field in x])
         list_of_values.append(totals)
 
     def prepare_dividends(self):
@@ -660,24 +660,21 @@ class TaxesRus:
         share = share * r_share
         qty_before = action.qty() * proceed_qty / r_qty
         if action.subtype() == CorporateAction.SpinOff:
-            spinoff = readSQL("SELECT s1.symbol AS symbol, s1.isin AS isin, "
-                              "r.value_share, s2.symbol AS symbol2, s2.isin AS isin2 "
-                              "FROM asset_actions  c "
-                              "LEFT JOIN accounts a ON c.account_id=a.id "
-                              "LEFT JOIN action_results r ON c.id=r.action_id AND c.asset_id!=r.asset_id "
-                              "LEFT JOIN assets_ext s1 ON c.asset_id=s1.id AND s1.currency_id=a.currency_id "
-                              "LEFT JOIN assets_ext s2 ON r.asset_id=s2.id AND s2.currency_id=a.currency_id "
-                              "WHERE c.id = :oid", [(":oid", action.id())], named=True)
-            spinoff['value_share'] = float(spinoff['value_share'])
-            old_asset_name = f"{spinoff['symbol']} ({spinoff['isin']})"
-            new_asset_name = f"{spinoff['symbol2']} ({spinoff['isin2']})"
-            display_share = Decimal('100') * spinoff['value_share']
+            action_results = action.get_results()
+            spinoff = [x for x in action_results if x['asset_id'] != action.asset().id()]
+            assert len(spinoff) == 1, "Multiple assets for spin-off"
+            spinoff = spinoff[0]
+            new_asset = JalAsset(spinoff['asset_id'])
+            old_asset_name = f"{action.asset().symbol(currency.id())} ({action.asset().isin()})"
+            new_asset_name = f"{new_asset.symbol(currency.id())} ({new_asset.isin()})"
+            display_share = Decimal('100') * new_asset['value_share']
         else:
             old_asset_name = f"{action.asset().symbol(currency.id())} ({action.asset().isin()})"
             new_asset_name = f"{asset.symbol(currency.id())} ({asset.isin()})"
             display_share = Decimal('100') * r_share
         note = self.CorpActionText[action.subtype()].format(old=old_asset_name, new=new_asset_name,
-                                                            before=qty_before, after=proceed_qty, share=display_share)
+                                                            before=remove_exponent(qty_before),
+                                                            after=remove_exponent(proceed_qty), share=display_share)
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             actions.append({
                 'report_template': "action",

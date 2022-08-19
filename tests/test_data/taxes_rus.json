@@ -199,7 +199,7 @@
          "c_int": 16.89,
          "c_int_rub": 1339.92,
          "c_number": "2881234589",
-         "c_price": 80,
+         "c_price": 80.0,
          "c_rate": 79.3323,
          "c_type": "Продажа",
          "country_iso": "840",
@@ -220,7 +220,7 @@
          "o_type": "Покупка",
          "os_date": 1590710400,
          "os_rate": 71.1012,
-         "principal": 1000,
+         "principal": 1000.0,
          "profit": 309.06,
          "profit_rub": 36335.04,
          "qty": 2.0,
@@ -364,7 +364,7 @@
       {
          "action_date": 1604448000,
          "action_number": "",
-         "description": "Сплит TLT (US4642874329) 5.0 в 25.0",
+         "description": "Сплит TLT (US4642874329) 5 в 25",
          "isin": "US4642874329",
          "operation": "   Корп. действие",
          "qty": 10.0,
@@ -374,11 +374,11 @@
       },
       {
          "amount": 50.0,
-         "amount_rub": 3524.99,
+         "amount_rub": 3525.0,
          "basis_ratio": 100.0,
          "fee": 0.175,
          "fee_rub": 12.33,
-         "income_rub": 0,
+         "income_rub": 0.0,
          "isin": "US4642874329",
          "operation": "      Покупка",
          "price": 10.0,
@@ -387,7 +387,7 @@
          "report_template": "trade",
          "s_date": 1593993600,
          "s_rate": 70.4999,
-         "spending_rub": 3537.32,
+         "spending_rub": 3537.33,
          "symbol": "TLT",
          "t_date": 1593604800,
          "t_rate": 70.4413,
@@ -396,7 +396,7 @@
       {
          "income_rub": 5506.51,
          "report_template": "totals",
-         "spending_rub": 3562.84
+         "spending_rub": 3562.85
       },
       {
          "amount": 62.5,
@@ -422,7 +422,7 @@
       {
          "action_date": 1604448000,
          "action_number": "",
-         "description": "Сплит TLT (US4642874329) 5.0 в 25.0",
+         "description": "Сплит TLT (US4642874329) 5 в 25",
          "isin": "US4642874329",
          "operation": "   Корп. действие",
          "qty": 10.0,
@@ -432,11 +432,11 @@
       },
       {
          "amount": 50.0,
-         "amount_rub": 3524.99,
+         "amount_rub": 3525.0,
          "basis_ratio": 100.0,
          "fee": 0.35,
          "fee_rub": 24.65,
-         "income_rub": 0,
+         "income_rub": 0.0,
          "isin": "US4642874329",
          "operation": "      Покупка",
          "price": 10.0,
@@ -445,7 +445,7 @@
          "report_template": "trade",
          "s_date": 1593993600,
          "s_rate": 70.4999,
-         "spending_rub": 3549.64,
+         "spending_rub": 3549.65,
          "symbol": "TLT",
          "t_date": 1593604800,
          "t_rate": 70.4413,
@@ -454,7 +454,7 @@
       {
          "income_rub": 4588.76,
          "report_template": "totals",
-         "spending_rub": 3575.16
+         "spending_rub": 3575.17
       },
       {
          "report_template": "symbol_header",
@@ -487,7 +487,7 @@
          "report_group": 3,
          "action_date": 1605528000,
          "action_number": "",
-         "description": "Смена символа 50.0 MYL (NL0011031208) -> 50.0 VTRS (US92556V1061)",
+         "description": "Смена символа 50 MYL (NL0011031208) -> 50 VTRS (US92556V1061)",
          "isin": "NL0011031208",
          "operation": "   Корп. действие",
          "qty": 50.0,
@@ -501,7 +501,7 @@
          "basis_ratio": 100.0,
          "fee": 0.35,
          "fee_rub": 24.65,
-         "income_rub": 0,
+         "income_rub": 0.0,
          "isin": "NL0011031208",
          "operation": "      Покупка",
          "price": 15.9,

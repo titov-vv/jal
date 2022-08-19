@@ -1008,6 +1008,10 @@ class CorporateAction(LedgerTransaction):
     def qty(self) -> Decimal:
         return self._qty
 
+    # Returns a list of all results of corporate action. Elements are {"asset_id, qty, value_share}
+    def get_results(self) -> list:
+        return self._results
+
     # Returns qty and value_share for result of corporate action that corresponds to given asset
     def get_result_for_asset(self, asset) -> (Decimal, Decimal):
         out = [x for x in self._results if x['asset_id'] == asset.id()]

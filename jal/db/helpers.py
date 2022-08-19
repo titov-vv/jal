@@ -3,14 +3,19 @@ import logging
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from PySide6.QtGui import QIcon
 from jal.constants import Setup
+from decimal import Decimal
 
 
 # FIXME all database calls should be via JalDB (or mate) class. Get rid of SQL calls from other code
 
 # -------------------------------------------------------------------------------------------------------------------
-# Removes exponent and trailing zeros from Decimal number
+# Return "canonical" string for decimal number
 def format_decimal(d) -> str:
     return str(d.normalize())
+
+# Removes exponent and trailing zeros from Decimal number
+def remove_exponent(d) -> str:
+    return d.quantize(Decimal(1)) if d == d.to_integral() else d.normalize()
 
 
 # -------------------------------------------------------------------------------------------------------------------
