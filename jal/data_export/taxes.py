@@ -597,7 +597,7 @@ class TaxesRus:
                     'spending_rub': fee_rub
                 })
                 if sale.asset().type() == PredefinedAsset.Bond:
-                    self.output_accrued_interest(lines, sale.number(), 1, 0)
+                    self.output_accrued_interest(lines, sale, 1, 0)
                 self.proceed_corporate_action(lines, trade, trade.qty(), share, 1, group)
             self.insert_totals(lines, ["income_rub", "spending_rub"])
             corporate_actions_report += lines
@@ -676,7 +676,7 @@ class TaxesRus:
             })
         if purchase.asset().type() == PredefinedAsset.Bond:
             share = qty / deal_qty if qty < deal_qty else 1
-            self.output_accrued_interest(actions, purchase.number(), share, level)
+            self.output_accrued_interest(actions, purchase, share, level)
         return proceed_qty - qty
 
     def output_corp_action(self, actions, oid, asset_id, proceed_qty, share, level, group):
@@ -725,34 +725,34 @@ class TaxesRus:
             actions.append(action)
         return action['asset_id'], Decimal(str(qty_before)), Decimal(str(share))   ####
 
-    def output_accrued_interest(self, actions, trade_number, share, level):
-        interest = readSQL("SELECT b.symbol AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
-                           "i.amount AS interest, r.quote AS rate, cc.iso_code AS country_iso "
-                           "FROM dividends AS i "
-                           "LEFT JOIN accounts AS a ON a.id = i.account_id "
-                           "LEFT JOIN assets_ext AS b ON b.id = i.asset_id AND b.currency_id=a.currency_id "
-                           "LEFT JOIN countries AS cc ON cc.id = a.country_id "
-                           "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id AND r.currency_id=:base_currency "
-                           "WHERE i.account_id=:account_id AND i.type=:interest AND i.number=:trade_number",
-                           [(":account_id", self.account.id()), (":interest", Dividend.BondInterest),
-                            (":trade_number", trade_number),
-                            (":base_currency", JalSettings().getValue('BaseCurrency'))], named=True)
-        if interest is None:
+    def output_accrued_interest(self, actions, operation, share, level):
+        currency = JalAsset(self.account.currency())
+        accrued_interest = operation.get_accrued_interest()
+        if not accrued_interest:
             return
-        interest['interest'] = float(interest['interest'])
-        interest['rate'] = float(interest['rate'])
-        interest['empty'] = ''
-        interest['interest'] = interest['interest'] if share == 1 else share * interest['interest']
-        interest['interest_rub'] = abs(round(interest['interest'] * interest['rate'], 2)) if interest['rate'] else 0
-        if interest['interest'] < 0:  # Accrued interest paid for purchase
-            interest['interest'] = -interest['interest']
-            interest['operation'] = ' ' * level * 3 + "НКД уплачен"
-            interest['spending_rub'] = interest['interest_rub']
-            interest['income_rub'] = 0.0
+        rate = currency.quote(operation.timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+        interest = accrued_interest.amount() if share == 1 else share * accrued_interest.amount()
+        interest_rub = abs(round(interest * rate, 2)) 
+        if interest < 0:  # Accrued interest paid for purchase
+            interest = -interest
+            op_name = ' ' * level * 3 + "НКД уплачен"
+            spending_rub = interest_rub
+            income_rub = Decimal('0')
         else:                         # Accrued interest received for sale
-            interest['operation'] = ' ' * level * 3 + "НКД получен"
-            interest['income_rub'] = interest['interest_rub']
-            interest['spending_rub'] = 0.0
-        interest['report_template'] = "bond_interest"
-        actions.append(interest)
+            op_name = ' ' * level * 3 + "НКД получен"
+            income_rub = interest_rub
+            spending_rub = Decimal('0')
+        actions.append({
+            'report_template': 'bond_interest',
+            'empty': '',
+            'operation': op_name,
+            'symbol': operation.asset().symbol(currency.id()),
+            'isin': operation.asset().isin(),
+            'number': operation.number(),
+            'o_date': operation.timestamp(),
+            'rate': rate,
+            'interest': interest,
+            'interest_rub': interest_rub,
+            'income_rub': income_rub,
+            'spending_rub': spending_rub
+        })
