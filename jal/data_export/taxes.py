@@ -442,8 +442,7 @@ class TaxesRus:
             c_rate = currency.quote(trade.close_operation().timestamp(), JalSettings().getValue('BaseCurrency'))[1]
             if self.use_settlement:
                 os_rate = currency.quote(trade.open_operation().settlement(), JalSettings().getValue('BaseCurrency'))[1]
-                cs_rate = currency.quote(trade.close_operation().settlement(), JalSettings().getValue('BaseCurrency'))[
-                    1]
+                cs_rate = currency.quote(trade.close_operation().settlement(), JalSettings().getValue('BaseCurrency'))[1]
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
@@ -623,60 +622,62 @@ class TaxesRus:
         trades = [x for x in trades if x.close_operation().id() == trade.open_operation().id()]
         for item in trades:
             if item.open_operation().type() == LedgerTransaction.Trade:
-                qty = self.output_purchase(actions, item.open_operation().id(), qty, share, level, group)
+                qty = self.output_purchase(actions, item.open_operation(), qty, share, level, group)
             elif item.open_operation().type() == LedgerTransaction.CorporateAction:
                 self.proceed_corporate_action(actions, trade, qty, share, level, group)
             else:
                 assert False, "Unexpected opening transaction"
 
     # oid - id of buy operation
-    def output_purchase(self, actions, oid, proceed_qty, share, level, group):
-        if proceed_qty <= 0:
+    def output_purchase(self, actions, purchase, proceed_qty, share, level, group):
+        currency = JalAsset(self.account.currency())
+        if proceed_qty <= Decimal('0'):
             return proceed_qty
-        purchase = readSQL("SELECT t.id AS trade_id, s.symbol, s.isin AS isin, s.type_id AS type_id, "
-                           "d.qty AS qty, t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
-                           "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
-                           "FROM trades AS t "
-                           "JOIN trades_closed AS d ON t.id=d.open_op_id AND t.op_type=d.open_op_type "
-                           "LEFT JOIN accounts AS a ON a.id = t.account_id "
-                           "LEFT JOIN assets_ext AS s ON s.id = t.asset_id AND s.currency_id=a.currency_id "
-                           "LEFT JOIN t_last_dates AS ldt ON t.timestamp=ldt.ref_id "
-                           "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id AND qt.currency_id=:base_currency "
-                           "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
-                           "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id AND qts.currency_id=:base_currency "
-                           "WHERE t.id = :oid", [(":oid", oid),
-                                                 (":base_currency", JalSettings().getValue('BaseCurrency'))],
-                           named=True)
-        if purchase['trade_id'] in self._processed_trade_qty:   # we have some qty processed already
-            purchase['qty'] = float(purchase['qty']) - self._processed_trade_qty[purchase['trade_id']]
+        if purchase.qty() <= Decimal('0'):
+            return proceed_qty
+        t_rate = currency.quote(purchase.timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+        if self.use_settlement:
+            s_rate = currency.quote(purchase.settlement(), JalSettings().getValue('BaseCurrency'))[1]
         else:
-            purchase['qty'] = float(purchase['qty'])
-        purchase['t_rate'] = float(purchase['t_rate'])
-        purchase['s_rate'] = float(purchase['s_rate'])
-        purchase['price'] = float(purchase['price'])
-        purchase['fee'] = float(purchase['fee'])
-        if purchase['qty'] <= 1e-9:   # FIXME All taxes module should be refactored to decimal usage also
-            return proceed_qty  # This trade was fully mached before
-        purchase['operation'] = ' ' * level * 3 + "Покупка"
-        purchase['basis_ratio'] = 100.0 * float(share)    ######
-        deal_qty = purchase['qty']
-        purchase['qty'] = float(proceed_qty) if proceed_qty < deal_qty else deal_qty   ######
-        purchase['amount'] = round(purchase['price'] * purchase['qty'], 2)
-        purchase['amount_rub'] = round(purchase['amount'] * purchase['s_rate'], 2) if purchase['s_rate'] else 0
-        purchase['fee'] = purchase['fee'] * purchase['qty'] / deal_qty
-        purchase['fee_rub'] = round(purchase['fee'] * purchase['t_rate'], 2) if purchase['t_rate'] else 0
-        purchase['income_rub'] = 0
-        purchase['spending_rub'] = round(float(share)*(purchase['amount_rub'] + purchase['fee_rub']), 2)   ######
-        # Update processed quantity for current purchase operation
-        self._processed_trade_qty[purchase['trade_id']] = self._processed_trade_qty.get(purchase['trade_id'], 0) + purchase['qty']
+            s_rate = t_rate
+        if purchase.id() in self._processed_trade_qty:   # we have some qty processed already
+            qty = purchase.qty() - self._processed_trade_qty[purchase.id()]
+        else:
+            qty = purchase.qty()
+        deal_qty = qty
+        qty = proceed_qty if proceed_qty < deal_qty else deal_qty
+        amount = round(purchase.price() * qty, 2)
+        amount_rub = round(amount * s_rate, 2)
+        fee = purchase.fee() * qty / deal_qty
+        fee_rub = round(fee * t_rate, 2)
+        # Update processed quantity for current _purchase_ operation
+        self._processed_trade_qty[purchase.id()] = self._processed_trade_qty.get(purchase.id(), 0) + qty
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
-            purchase['report_template'] = "trade"
-            purchase['report_group'] = group
-            actions.append(purchase)
-        if purchase['type_id'] == PredefinedAsset.Bond:
-            share = purchase['qty'] / deal_qty if purchase['qty'] < deal_qty else 1
-            self.output_accrued_interest(actions, purchase['trade_number'], share, level)
-        return float(proceed_qty) - purchase['qty']    #########
+            actions.append({
+                'report_template': "trade",
+                'report_group': group,
+                'operation': ' ' * level * 3 + "Покупка",
+                'trade_number': purchase.number(),
+                'symbol': purchase.asset().symbol(currency.id()),
+                'isin': purchase.asset().isin(),
+                't_date': purchase.timestamp(),
+                't_rate': t_rate,
+                's_date': purchase.settlement(),
+                's_rate': s_rate,
+                'basis_ratio': Decimal('100') * share,
+                'qty': qty,
+                'price': purchase.price(),
+                'amount': amount,
+                'amount_rub': amount_rub,
+                'fee': fee,
+                'fee_rub': fee_rub,
+                'income_rub': Decimal('0'),
+                'spending_rub': round(share *(amount_rub + fee_rub), 2)
+            })
+        if purchase.asset().type() == PredefinedAsset.Bond:
+            share = qty / deal_qty if qty < deal_qty else 1
+            self.output_accrued_interest(actions, purchase.number(), share, level)
+        return proceed_qty - qty
 
     def output_corp_action(self, actions, oid, asset_id, proceed_qty, share, level, group):
         if proceed_qty <= 0:

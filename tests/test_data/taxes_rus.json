@@ -394,9 +394,7 @@
          "symbol": "TLT",
          "t_date": 1593604800,
          "t_rate": 70.4413,
-         "trade_id": 12,
-         "trade_number": "A",
-         "type_id": 4
+         "trade_number": "A"
       },
       {
          "income_rub": 5506.51,
@@ -457,9 +455,7 @@
          "symbol": "TLT",
          "t_date": 1593604800,
          "t_rate": 70.4413,
-         "trade_id": 12,
-         "trade_number": "A",
-         "type_id": 4
+         "trade_number": "A"
       },
       {
          "income_rub": 4588.76,
@@ -525,9 +521,7 @@
          "symbol": "MYL",
          "t_date": 1593604800,
          "t_rate": 70.4413,
-         "trade_id": 10,
-         "trade_number": "1118233222",
-         "type_id": 2
+         "trade_number": "1118233222"
       },
       {
          "report_template": "totals",
