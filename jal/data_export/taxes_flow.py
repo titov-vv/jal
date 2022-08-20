@@ -4,7 +4,6 @@ from decimal import Decimal
 from jal.constants import BookAccount
 from jal.db.operations import LedgerTransaction
 from jal.db.helpers import readSQLrecord, executeSQL
-from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.data_export.dlsg import DLSG

@@ -228,15 +228,6 @@ CREATE TABLE settings (
 );
 
 
--- Table: t_last_assets
-DROP TABLE IF EXISTS t_last_assets;
-
-CREATE TABLE t_last_assets (
-    id          INTEGER   NOT NULL,
-    total_value REAL
-);
-
-
 -- Table: t_last_dates
 DROP TABLE IF EXISTS t_last_dates;
 
@@ -476,7 +467,6 @@ CREATE TABLE view_params (
     param_type TEXT    NOT NULL
 );
 INSERT OR REPLACE INTO view_params(id, value_i, view_name, param_name, param_type) VALUES(1, 0, "last_quotes", "timestamp", "int");
-INSERT OR REPLACE INTO view_params(id, value_i, view_name, param_name, param_type) VALUES(3, 0, "last_assets", "timestamp", "int");
 
 -- Below view uses parameter 1/timestamp/int
 DROP VIEW IF EXISTS last_quotes;
@@ -486,24 +476,6 @@ FROM quotes
 WHERE timestamp <= (SELECT value_i FROM view_params WHERE id=1)
 GROUP BY asset_id, currency_id;
 
--- Below view uses parameter 3/timestamp/int
-DROP VIEW IF EXISTS last_assets;
-CREATE VIEW last_assets AS
-SELECT currency_id, account_id, asset_id, qty, value, quote
-FROM (
-   SELECT a.currency_id, l.account_id, l.asset_id, sum(l.amount) AS qty, sum(l.value) AS value, q.quote
-   FROM ledger AS l
-   LEFT JOIN accounts AS a ON l.account_id = a.id
-   LEFT JOIN last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id
-   WHERE a.type_id = 4 AND l.book_account = 4 AND l.timestamp <= (SELECT value_i FROM view_params WHERE id=3)
-   GROUP BY l.account_id, l.asset_id
-UNION ALL
-   SELECT a.currency_id, l.account_id, l.asset_id, sum(l.amount) AS qty, 0 AS value, 1 AS quote
-   FROM ledger AS l
-   LEFT JOIN accounts AS a ON l.account_id = a.id
-   WHERE (l.book_account=3 OR l.book_account=5) AND a.type_id = 4 AND l.timestamp <= (SELECT value_i FROM view_params WHERE id=3)
-   GROUP BY l.account_id, l.asset_id
-) ORDER BY account_id, asset_id;
 --------------------------------------------------------------------------------
 -- TRIGGERS
 
