@@ -2,7 +2,7 @@ from decimal import Decimal
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
-from jal.db.operations import LedgerTransaction
+import jal.db.operations
 import jal.db.closed_trade
 from jal.constants import Setup, BookAccount, PredefindedAccountType
 
@@ -230,7 +230,7 @@ class JalAccount(JalDB):
             "SELECT SUM(value) AS value FROM ledger WHERE value > 0 AND account_id=:account_id "
             "AND book_account=:assets AND timestamp>=:begin AND timestamp<=:end AND op_type!=:corp_action",
             [(":account_id", self._id), (":assets", BookAccount.Assets), (":begin", begin), (":end", end),
-             (":corp_action", LedgerTransaction.CorporateAction)])
+             (":corp_action", jal.db.operations.LedgerTransaction.CorporateAction)])
         if value:
             return Decimal(value)
         else:
@@ -242,7 +242,7 @@ class JalAccount(JalDB):
             "SELECT SUM(-value) AS value FROM ledger WHERE value < 0 AND account_id=:account_id "
             "AND book_account=:assets AND timestamp>=:begin AND timestamp<=:end AND op_type!=:corp_action",
             [(":account_id", self._id), (":assets", BookAccount.Assets), (":begin", begin), (":end", end),
-             (":corp_action", LedgerTransaction.CorporateAction)])
+             (":corp_action", jal.db.operations.LedgerTransaction.CorporateAction)])
         if value:
             return Decimal(value)
         else:
