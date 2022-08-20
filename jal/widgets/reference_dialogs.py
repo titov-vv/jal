@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
-from PySide6.QtWidgets import QToolBar, QAbstractItemView
+from PySide6.QtWidgets import QAbstractItemView
 from jal.constants import PredefindedAccountType, PredefinedAsset
 from jal.db.helpers import readSQL
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
@@ -9,7 +9,6 @@ from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
-from jal.net.downloader import QuoteDownloader
 
 
 # ----------------------------------------------------------------------------------------------------------------------
