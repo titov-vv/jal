@@ -13,6 +13,7 @@ from jal.data_export.dlsg import DLSG
 COUNTRY_NA_ID = 0
 COUNTRY_RUSSIA_ID = 1
 
+
 class TaxesFlowRus:
     def __init__(self):
         self.year_begin = 0
@@ -54,20 +55,33 @@ class TaxesFlowRus:
             self.append_flow_values(item, "begin")
 
         # collect data for period end
-        JalDB().set_view_param("last_quotes", "timestamp", int, self.year_end)
-        JalDB().set_view_param("last_assets", "timestamp", int, self.year_end)
-        query = executeSQL(
-            "SELECT a.number AS account, c.symbol AS currency, h.currency_id=h.asset_id AS is_currency, "
-            "SUM(h.qty*h.quote) AS value "
-            "FROM last_assets h "
-            "LEFT JOIN accounts a ON h.account_id=a.id "
-            "LEFT JOIN currencies c ON h.currency_id=c.id "
-            "WHERE h.qty != 0 AND a.country_id > 1 "
-            "GROUP BY account, currency, is_currency "
-            "ORDER BY account, is_currency, currency")
-        while query.next():
-            values = readSQLrecord(query, named=True)
-            self.append_flow_values(values, "end")
+        # TODO - Optimize and combine with data collection for period start as routine is actually the same
+        values = []
+        for account in accounts:
+            if account.country() == COUNTRY_NA_ID or account.country() == COUNTRY_RUSSIA_ID:
+                continue
+            assets = account.assets_list(self.year_end)
+            assets_value = Decimal('0')
+            for asset_data in assets:
+                assets_value += asset_data['amount'] * asset_data['asset'].quote(self.year_end, account.currency())[1]
+            if assets_value != Decimal('0'):
+                values.append({
+                    'account': account.number(),
+                    'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': False,
+                    'value': assets_value
+                })
+            money = account.get_asset_amount(self.year_end, account.currency())
+            if money != Decimal('0'):
+                values.append({
+                    'account': account.number(),
+                    'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': True,
+                    'value': money
+                })
+        values = sorted(values, key=lambda x: (x['account'], x['is_currency'], x['currency']))
+        for item in values:
+            self.append_flow_values(item, "end")
 
         # collect money ins/outs
         query = executeSQL("SELECT a.number AS account, c.symbol AS currency, 1 AS is_currency, SUM(l.amount) AS value "
