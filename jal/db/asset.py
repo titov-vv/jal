@@ -95,6 +95,19 @@ class JalAsset(JalDB):
             return 0, Decimal('0')
         return int(quote[0]), Decimal(quote[1])
 
+    # Return a list of tuples (timestamp:int, quote:Decimal) of all quotes avaiable for asset
+    # for time interval begin-end
+    def quotes(self, begin: int, end: int, currency_id: int) -> list:
+        quotes = []
+        query = self._executeSQL(
+            "SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
+            "AND currency_id=:currency_id AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
+            [(":asset_id", self._id), (":currency_id", currency_id), (":begin", begin), (":end", end)])
+        while query.next():
+            timestamp, quote = self._readSQLrecord(query)
+            quotes.append((timestamp, Decimal(quote)))
+        return quotes
+
     # Returns tuple (begin_timestamp: int, end_timestamp: int) that defines timestamp range for which quotest are
     # available in database for given currency
     def quotes_range(self, currency_id: int) -> tuple:
