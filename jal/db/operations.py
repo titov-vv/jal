@@ -1031,8 +1031,8 @@ class CorporateAction(LedgerTransaction):
     def get_payments(account) -> list:
         payments = []
         query = executeSQL("SELECT a.timestamp, r.qty, a.note FROM asset_actions AS a "
-                           "LEFT JOIN action_results AS r ON r.action_id=a.id AND r.asset_id=:account_currency "
-                           "WHERE a.account_id=:account_id",
+                           "LEFT JOIN action_results AS r ON r.action_id=a.id "
+                           "WHERE a.account_id=:account_id AND r.asset_id=:account_currency",
                            [(":account_id", account.id()), (":account_currency", account.currency())])
         while query.next():
             timestamp, amount, note = readSQLrecord(query)
