@@ -466,15 +466,6 @@ CREATE TABLE view_params (
     param_name TEXT    NOT NULL,
     param_type TEXT    NOT NULL
 );
-INSERT OR REPLACE INTO view_params(id, value_i, view_name, param_name, param_type) VALUES(1, 0, "last_quotes", "timestamp", "int");
-
--- Below view uses parameter 1/timestamp/int
-DROP VIEW IF EXISTS last_quotes;
-CREATE VIEW last_quotes AS
-SELECT MAX(timestamp) AS timestamp, asset_id, currency_id, quote
-FROM quotes
-WHERE timestamp <= (SELECT value_i FROM view_params WHERE id=1)
-GROUP BY asset_id, currency_id;
 
 --------------------------------------------------------------------------------
 -- TRIGGERS

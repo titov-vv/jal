@@ -10,6 +10,9 @@ DROP VIEW IF EXISTS last_account_value;
 
 DELETE FROM view_params WHERE view_name='last_assets';
 DROP VIEW IF EXISTS last_assets;
+
+DELETE FROM view_params WHERE view_name='last_quotes';
+DROP VIEW IF EXISTS last_quotes;
 --------------------------------------------------------------------------------
 -- Drop unused table
 DROP TABLE IF EXISTS t_last_assets;
