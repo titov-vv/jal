@@ -1,11 +1,17 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from jal.constants import BookAccount
 from jal.db.operations import LedgerTransaction
 from jal.db.helpers import readSQLrecord, executeSQL
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.data_export.dlsg import DLSG
 
+
+COUNTRY_NA_ID = 0
+COUNTRY_RUSSIA_ID = 1
 
 class TaxesFlowRus:
     def __init__(self):
@@ -19,19 +25,33 @@ class TaxesFlowRus:
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
 
         # collect data for period start
-        JalDB().set_view_param("last_quotes", "timestamp", int, self.year_begin)
-        JalDB().set_view_param("last_assets", "timestamp", int, self.year_begin)
-        query = executeSQL("SELECT a.number AS account, c.symbol AS currency, h.currency_id=h.asset_id AS is_currency, "
-                           "SUM(h.qty*h.quote) AS value "
-                           "FROM last_assets h "
-                           "LEFT JOIN accounts a ON h.account_id=a.id "
-                           "LEFT JOIN currencies c ON h.currency_id=c.id "
-                           "WHERE h.qty != 0 AND a.country_id > 1 "
-                           "GROUP BY account, currency, is_currency "
-                           "ORDER BY account, is_currency, currency")
-        while query.next():
-            values = readSQLrecord(query, named=True)
-            self.append_flow_values(values, "begin")
+        accounts = JalAccount.get_all_accounts(active_only=False)
+        values = []
+        for account in accounts:
+            if account.country() == COUNTRY_NA_ID or account.country() == COUNTRY_RUSSIA_ID:
+                continue
+            assets = account.assets_list(self.year_begin)
+            assets_value = Decimal('0')
+            for asset_data in assets:
+                assets_value += asset_data['amount'] * asset_data['asset'].quote(self.year_begin, account.currency())[1]
+            if assets_value != Decimal('0'):
+                values.append({
+                    'account': account.number(),
+                    'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': False,
+                    'value': assets_value
+                })
+            money = account.get_asset_amount(self.year_begin, account.currency())
+            if money != Decimal('0'):
+                values.append({
+                    'account': account.number(),
+                    'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': True,
+                    'value': money
+                })
+        values = sorted(values, key=lambda x: (x['account'], x['is_currency'], x['currency']))
+        for item in values:
+            self.append_flow_values(item, "begin")
 
         # collect data for period end
         JalDB().set_view_param("last_quotes", "timestamp", int, self.year_end)
@@ -112,7 +132,7 @@ class TaxesFlowRus:
                     for key in ['begin', 'in', 'out', 'end']:
                         param = f"{dtype}_{key}"
                         try:
-                            row[param] = record[dtype][key] / 1000.0
+                            row[param] = float(record[dtype][key]) / 1000.0   ######
                         except KeyError:
                             row[param] = 0.0
                 report.append(row)
