@@ -94,6 +94,20 @@ class Ledger(QObject):
             current_frontier = 0
         return current_frontier
 
+    @staticmethod
+    def get_operations_sequence(begin: int, end: int, account_id: int = 0) -> list:
+        sequence = []
+        query_text = "SELECT op_type, id, timestamp, account_id, subtype " \
+                     "FROM operation_sequence WHERE timestamp>=:begin AND timestamp<=:end"
+        params = [(":begin", begin), (":end", end)]
+        if account_id:
+            query_text += " AND account_id=:account"
+            params += [(":account", account_id)]
+        query = executeSQL(query_text, params, forward_only=True)
+        while query.next():
+            sequence.append(readSQLrecord(query, named=True))
+        return sequence
+
     # Add one more transaction to 'book' of ledger.
     # If book is Assets and value is not None then amount contains Asset Quantity and Value contains amount
     #    of money in current account currency. Otherwise, Amount contains only money value.
