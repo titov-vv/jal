@@ -218,7 +218,6 @@ CREATE TABLE quotes (
 );
 CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
 
-
 -- Table: settings
 DROP TABLE IF EXISTS settings;
 CREATE TABLE settings (
@@ -226,16 +225,6 @@ CREATE TABLE settings (
     name  TEXT (32) NOT NULL UNIQUE,
     value INTEGER
 );
-
-
--- Table: t_last_dates
-DROP TABLE IF EXISTS t_last_dates;
-
-CREATE TABLE t_last_dates (
-    ref_id INTEGER NOT NULL,
-    timestamp  INTEGER NOT NULL
-);
-
 
 -- Table: tags
 DROP TABLE IF EXISTS tags;

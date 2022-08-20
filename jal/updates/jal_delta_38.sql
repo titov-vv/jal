@@ -11,6 +11,7 @@ DROP VIEW IF EXISTS last_quotes;
 DROP TABLE IF EXISTS view_params;
 --------------------------------------------------------------------------------
 -- Drop unused table
+DROP TABLE IF EXISTS t_last_dates;
 DROP TABLE IF EXISTS t_last_assets;
 --------------------------------------------------------------------------------
 -- Drop table books and modify ledger table to use TEXT instead of REAL for decimal storage
