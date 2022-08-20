@@ -76,12 +76,6 @@ class TaxesRus:
         list_of_values.append(totals)
 
     def prepare_dividends(self):
-        # TODO Include cash payments from corporate actions
-        #    SELECT a.timestamp, r.qty, a.note
-        #    FROM asset_actions AS a
-        #    LEFT JOIN action_results AS r ON r.action_id=a.id
-        #    LEFT JOIN assets AS c ON c.id=r.asset_id
-        #    WHERE a.account_id=:account_id AND c.type_id=:currency
         currency = JalAsset(self.account.currency())
         dividends_report = []
         dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
@@ -499,6 +493,21 @@ class TaxesRus:
                     'note': interest['note']
                 }
                 interests_report.append(line)
+        # Process cash payments out of corporate actions
+        payments = CorporateAction.get_payments(self.account)
+        payments = [x for x in payments if self.year_begin <= x['timestamp'] <= self.year_end]
+        for payment in payments:
+            rate = currency.quote(payment['timestamp'], JalSettings().getValue('BaseCurrency'))[1]
+            line = {
+                'report_template': "interest",
+                'payment_date': payment['timestamp'],
+                'rate': rate,
+                'amount': payment['amount'],
+                'amount_rub': round(payment['amount'] * rate, 2),
+                'tax_rub': round(Decimal('0.13') * payment['amount'] * rate, 2),
+                'note': payment['note']
+            }
+            interests_report.append(line)
         self.insert_totals(interests_report, ["amount", "amount_rub", "tax_rub"])
         return interests_report
 

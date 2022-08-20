@@ -1025,6 +1025,20 @@ class CorporateAction(LedgerTransaction):
         else:
             return Decimal('0'), Decimal('0')
 
+    # Returns a list {"timestamp", "amount", "note"} that represents payments out of corporate actions to given account
+    # in given account currency
+    @staticmethod
+    def get_payments(account) -> list:
+        payments = []
+        query = executeSQL("SELECT a.timestamp, r.qty, a.note FROM asset_actions AS a "
+                           "LEFT JOIN action_results AS r ON r.action_id=a.id AND r.asset_id=:account_currency "
+                           "WHERE a.account_id=:account_id",
+                           [(":account_id", account.id()), (":account_currency", account.currency())])
+        while query.next():
+            timestamp, amount, note = readSQLrecord(query)
+            payments.append({"timestamp": timestamp, "amount": Decimal(amount), "note": note})
+        return payments
+
     def processLedger(self, ledger):
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
