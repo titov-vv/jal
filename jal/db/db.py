@@ -168,12 +168,6 @@ class JalDB:
     def commit(self):
         db_connection().commit()
 
-    def set_view_param(self, view_name, param_name, param_type, value):
-        fields = {int: "value_i", float: "value_f", str: "value_t"}
-        field_name = fields[param_type]
-        sql = f"UPDATE view_params SET {field_name}=:value WHERE view_name=:view AND param_name=:param"
-        _ = executeSQL(sql, [(":value", value), (":view", view_name), (":param", param_name)])
-
     # This method creates a db record in 'table' name that describes relevant operation.
     # 'data' is a dict that contains operation data and dict 'fields' describes it having
     # 'mandatory'=True if this piece must be present, 'validation'=True if it is used to check if operation is
