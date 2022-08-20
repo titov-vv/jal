@@ -5,14 +5,10 @@ PRAGMA foreign_keys = 0;
 -- Extend accounts table
 ALTER TABLE accounts ADD COLUMN precision INTEGER NOT NULL DEFAULT (2);
 --------------------------------------------------------------------------------
-DELETE FROM view_params WHERE view_name='last_account_value';
 DROP VIEW IF EXISTS last_account_value;
-
-DELETE FROM view_params WHERE view_name='last_assets';
 DROP VIEW IF EXISTS last_assets;
-
-DELETE FROM view_params WHERE view_name='last_quotes';
 DROP VIEW IF EXISTS last_quotes;
+DROP TABLE IF EXISTS view_params;
 --------------------------------------------------------------------------------
 -- Drop unused table
 DROP TABLE IF EXISTS t_last_assets;

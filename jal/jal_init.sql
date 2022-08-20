@@ -454,20 +454,6 @@ CREATE VIEW assets_ext AS
     ORDER BY a.id;
 
 --------------------------------------------------------------------------------
--- PARAMETERIZED VIEWS
-CREATE TABLE view_params (
-    id         INTEGER PRIMARY KEY
-                       UNIQUE
-                       NOT NULL,
-    value_i    INTEGER DEFAULT (0),
-    value_f    REAL    DEFAULT (0),
-    value_t    TEXT    DEFAULT (''),
-    view_name  TEXT    NOT NULL,
-    param_name TEXT    NOT NULL,
-    param_type TEXT    NOT NULL
-);
-
---------------------------------------------------------------------------------
 -- TRIGGERS
 
 -- Deletion should happen on base table
