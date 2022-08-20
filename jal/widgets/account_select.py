@@ -6,7 +6,7 @@ from jal.constants import Setup
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
-from jal.db.helpers import db_connection, readSQL
+from jal.db.helpers import db_connection
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 
@@ -127,7 +127,7 @@ class CurrencyComboBox(QComboBox):
         if self.p_selected_id == new_id:
             return
         self.p_selected_id = new_id
-        name = readSQL("SELECT symbol FROM currencies WHERE id=:id", [(":id", self.p_selected_id)])
+        name = JalAsset(self.p_selected_id).symbol()
         if self.currentIndex() == self.findText(name):
             return
         self.setCurrentIndex(self.findText(name))
