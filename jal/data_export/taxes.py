@@ -200,6 +200,7 @@ class TaxesRus:
                 'c_amount_rub': c_amount_rub,
                 'c_fee': c_fee,
                 'c_fee_rub': round(c_fee * c_rate, 2),
+                'income': income,    # this field is required for DLSG
                 'income_rub': income_rub,
                 'spending_rub': spending_rub,
                 'profit': income - spending,
@@ -281,6 +282,7 @@ class TaxesRus:
                 'c_amount_rub': c_amount_rub,
                 'c_fee': c_fee,
                 'c_fee_rub': round(c_fee * c_rate, 2),
+                'income': income,  # this field is required for DLSG
                 'income_rub': income_rub,
                 'spending_rub': spending_rub,
                 'profit': income - spending,
@@ -375,6 +377,7 @@ class TaxesRus:
                 'c_amount_rub': c_amount_rub,
                 'c_fee': c_fee,
                 'c_fee_rub': round(c_fee * c_rate, 2),
+                'income': income,   # this field is required for DLSG
                 'income_rub': income_rub,
                 'spending_rub': spending_rub,
                 'profit': income - spending,
@@ -442,6 +445,7 @@ class TaxesRus:
                 'c_amount_rub': c_amount_rub,
                 'c_fee': c_fee,
                 'c_fee_rub': round(c_fee * c_rate, 2),
+                'income': income,    # this field is required for DLSG
                 'income_rub': income_rub,
                 'spending_rub': spending_rub,
                 'profit': income - spending,
