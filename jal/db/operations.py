@@ -200,6 +200,12 @@ class LedgerTransaction:
     def account(self):
         return self._account
 
+    def account_name(self):
+        if self._account is None:
+            return ''
+        else:
+            return self._account.name()
+
     def account_id(self):
         return self._account.id()
 
@@ -738,7 +744,7 @@ class Transfer(LedgerTransaction):
     def settlement(self):
         return self._deposit_timestamp
 
-    def account(self):
+    def account_name(self):
         if self._display_type == Transfer.Fee:
             return self._fee_account_name
         elif self._display_type == Transfer.Outgoing:
