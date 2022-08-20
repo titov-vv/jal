@@ -1,11 +1,9 @@
-import logging
+from datetime import datetime
 from decimal import Decimal
 
 import pandas as pd
 from PySide6.QtCore import Qt, QAbstractTableModel, QDate
 from PySide6.QtGui import QFont
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord
-from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
@@ -91,74 +89,43 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
         self.ready = True
 
     def prepare_tax(self):
-        _ = executeSQL("DELETE FROM t_last_dates")
-
-        _ = executeSQL("INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
-                       "FROM ("
-                       "SELECT t.timestamp AS ref_id FROM trades AS t "
-                       "WHERE t.account_id=:account_id AND t.asset_id=:asset_id "
-                       "UNION "
-                       "SELECT t.settlement AS ref_id FROM trades AS t "
-                       "WHERE t.account_id=:account_id AND t.asset_id=:asset_id "
-                       ") LEFT JOIN accounts AS a ON a.id = :account_id "
-                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp "
-                       "AND a.currency_id=q.asset_id AND q.currency_id=:base_currency "
-                       "WHERE ref_id IS NOT NULL "
-                       "GROUP BY ref_id ORDER BY ref_id",
-                       [(":account_id", self.account_id), (":asset_id", self.asset_id),
-                        (":base_currency", JalSettings().getValue('BaseCurrency'))])
-        JalDB().set_view_param("last_quotes", "timestamp", int, QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch())
-        account_currency = JalAccount(self.account_id).currency()
-        self.currency_name = JalAsset(account_currency).symbol()
-        self.quote = readSQL("SELECT quote FROM last_quotes WHERE asset_id=:asset_id AND currency_id=:base_currency",
-                             [(":asset_id", self.asset_id), (":base_currency", account_currency)])
-        if self.quote is None:
-            logging.error(self.tr("Can't get current quote for ") + self.asset_name)
-            return
-        self.rate = readSQL("SELECT quote FROM last_quotes WHERE asset_id=:currency AND currency_id=:base_currency",
-                             [(":currency", account_currency),
-                              (":base_currency", JalSettings().getValue('BaseCurrency'))])
-        if self.rate is None:
-            logging.error(self.tr("Can't get current rate for ") + self.currency_name)
-            return
-
-        query = executeSQL("SELECT strftime('%d/%m/%Y', datetime(t.timestamp, 'unixepoch')) AS timestamp, "
-                           "t.qty AS qty, t.price AS o_price, oq.quote AS o_rate FROM trades AS t "
-                           "LEFT JOIN accounts AS ac ON ac.id = :account_id "
-                           "LEFT JOIN t_last_dates AS od ON od.ref_id = IIF(t.settlement=0, t.timestamp, t.settlement) "
-                           "LEFT JOIN quotes AS oq ON ac.currency_id=oq.asset_id AND oq.currency_id=:base_currency "
-                           "AND oq.timestamp=od.timestamp "
-                           "WHERE t.account_id=:account_id AND t.asset_id=:asset_id AND t.qty*(:total_qty)>0 "
-                           "ORDER BY t.timestamp DESC, t.id DESC",
-                           [(":account_id", self.account_id), (":asset_id", self.asset_id),
-                            (":total_qty", self.asset_qty), (":base_currency", JalSettings().getValue('BaseCurrency'))])
+        account = JalAccount(self.account_id)
+        asset = JalAsset(self.asset_id)
+        account_currency = JalAsset(account.currency())
+        self.currency_name = account_currency.symbol()
+        self.quote = asset.quote(QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(), account.currency())[1]
+        self.rate = account_currency.quote(QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
+                                           JalSettings().getValue('BaseCurrency'))[1]
+        positions = account.open_trades_list(asset)
         table = []
-        remainder = self.asset_qty
-        profit = 0
-        value = 0
-        profit_rub = 0
-        value_rub = 0
-        while query.next():
-            record = readSQLrecord(query, named=True)
-            # FIXME Change calculation from float to Decimal
-            record['qty'] = record['qty'] if record['qty'] <= remainder else remainder
-            record['profit'] = record['qty'] * (self.quote - record['o_price'])
-            record['o_rate'] = 1 if record['o_rate'] == '' else record['o_rate']
-            record['profit_rub'] = record['qty'] * (self.quote * self.rate - record['o_price'] * record['o_rate'])
-            record['tax'] = 0.13 * record['profit_rub'] if record['profit_rub'] > 0 else 0
-            table.append(record)
-            remainder -= record['qty']
-            profit += record['profit']
-            value += record['qty'] * record['o_price']
-            profit_rub += record['profit_rub']
-            value_rub += record['qty'] * record['o_price'] * record['o_rate']
-            if remainder <= 0:
-                break
-        tax = 0.13 * profit_rub if profit_rub > 0 else 0
+        profit = Decimal('0')
+        value = Decimal('0')
+        profit_rub = Decimal('0')
+        value_rub = Decimal('0')
+        for position in positions:
+            qty = position['remaining_qty']
+            price = position['price']
+            o_rate = account_currency.quote(position['operation'].settlement(),
+                                            JalSettings().getValue('BaseCurrency'))[1]
+            position_profit = qty * (self.quote - price)
+            position_profit_rub = qty * (self.quote * self.rate - price * o_rate)
+            tax = Decimal('0.13') * position_profit_rub if position_profit_rub > Decimal('0') else Decimal('0')
+            table.append({
+                'timestamp': datetime.utcfromtimestamp(position['operation'].timestamp()).strftime('%d.%m.%Y'),
+                'qty': qty,
+                'o_rate': o_rate,
+                'o_price': price,
+                'profit': position_profit,
+                'profit_rub': position_profit_rub,
+                'tax': tax
+            })
+            profit += position_profit
+            value += qty * price
+            profit_rub += position_profit_rub
+            value_rub += qty * price * o_rate
+        tax = Decimal('0.13') * profit_rub if profit_rub > Decimal('0') else Decimal('0')
         table.append(
             {'timestamp': self.tr("TOTAL"), 'qty': self.asset_qty, 'o_price': value / self.asset_qty,
-             'o_rate': value_rub / value,
-             'profit': profit, 'profit_rub': profit_rub, 'tax': tax})
+             'o_rate': value_rub / value, 'profit': profit, 'profit_rub': profit_rub, 'tax': tax})
         data = pd.DataFrame(table)
         self.dataframe = data

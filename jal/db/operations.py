@@ -734,6 +734,10 @@ class Transfer(LedgerTransaction):
         else:
             return self._withdrawal_timestamp
 
+    # This is required for compatibility with other asset actions but it will also allow to get finish time of transfer
+    def settlement(self):
+        return self._deposit_timestamp
+
     def account(self):
         if self._display_type == Transfer.Fee:
             return self._fee_account_name

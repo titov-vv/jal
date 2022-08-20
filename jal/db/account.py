@@ -157,6 +157,23 @@ class JalAccount(JalDB):
             trades.append(jal.db.closed_trade.JalClosedTrade(self._readSQLrecord(query)))
         return trades
 
+    # Returns a list of {"operation": LedgerTransaction, "price": Decimal, "remaining_qty": Decimal}
+    # that represents all trades that were opened for given asset on this account
+    # LedgerTransaction might be Trade, CorporateAction or Transfer
+    # It doesn't take 'timestamp' as a parameter as it always return current open trades, not a retrospective position
+    def open_trades_list(self, asset) -> list:
+        trades = []
+        query = self._executeSQL("SELECT op_type, operation_id, price, remaining_qty "
+                                 "FROM trades_opened "
+                                 "WHERE remaining_qty!='0' AND account_id=:account AND asset_id=:asset",
+                                 [(":account", self._id), (":asset", asset.id())])
+        while query.next():
+            op_type, oid, price, qty = self._readSQLrecord(query)
+            operation = jal.db.operations.LedgerTransaction().get_operation(op_type, oid,
+                                                                            jal.db.operations.Transfer.Incoming)
+            trades.append({"operation": operation, "price": Decimal(price), "remaining_qty": Decimal(qty)})
+        return trades
+
     def _valid_data(self, data: dict, search: bool = False, create: bool = False) -> bool:
         if data is None:
             return False
