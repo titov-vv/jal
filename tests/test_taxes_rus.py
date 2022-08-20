@@ -331,20 +331,20 @@ def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
         report = json.load(json_file)
     assert tax_report == report
 
-    reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
-    templates = {
-        "Корп.события": "tax_rus_corporate_actions.json",
-        "ПФИ": "tax_rus_derivatives.json"
-    }
-    parameters = {
-        "period": "01.01.2021 - 31.12.2021",
-        "account": "TEST U7654321 (USD)",
-        "currency": "USD",
-        "broker_name": "IBKR",
-        "broker_iso_country": "840"
-    }
-    for section in tax_report:
-        if section not in templates:
-            continue
-        reports_xls.output_data(tax_report[section], templates[section], parameters)
-    reports_xls.save()
+    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
+    # templates = {
+    #     "Корп.события": "tax_rus_corporate_actions.json",
+    #     "ПФИ": "tax_rus_derivatives.json"
+    # }
+    # parameters = {
+    #     "period": "01.01.2021 - 31.12.2021",
+    #     "account": "TEST U7654321 (USD)",
+    #     "currency": "USD",
+    #     "broker_name": "IBKR",
+    #     "broker_iso_country": "840"
+    # }
+    # for section in tax_report:
+    #     if section not in templates:
+    #         continue
+    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
+    # reports_xls.save()
