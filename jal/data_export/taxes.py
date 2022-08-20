@@ -604,8 +604,6 @@ class TaxesRus:
         currency = JalAsset(self.account.currency())
         if proceed_qty <= Decimal('0'):
             return proceed_qty
-        if purchase.qty() <= Decimal('0'):
-            return proceed_qty
         t_rate = currency.quote(purchase.timestamp(), JalSettings().getValue('BaseCurrency'))[1]
         if self.use_settlement:
             s_rate = currency.quote(purchase.settlement(), JalSettings().getValue('BaseCurrency'))[1]
@@ -615,6 +613,8 @@ class TaxesRus:
             qty = purchase.qty() - self._processed_trade_qty[purchase.id()]
         else:
             qty = purchase.qty()
+        if qty <= Decimal('0'):
+            return proceed_qty   # This trade was fully matched during previous operations processing
         deal_qty = qty
         qty = proceed_qty if proceed_qty < deal_qty else deal_qty
         amount = round(purchase.price() * qty, 2)
