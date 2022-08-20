@@ -147,7 +147,7 @@ class TaxesRus:
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade or (
                     x.open_operation().type() == LedgerTransaction.Dividend and (
                         x.open_operation().subtype() == Dividend.StockDividend or
-                        x.open_operation().subtype() == Dividend.StockDividend))]
+                        x.open_operation().subtype() == Dividend.StockVesting))]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
             o_rate = currency.quote(trade.open_operation().timestamp(), JalSettings().getValue('BaseCurrency'))[1]
@@ -165,16 +165,16 @@ class TaxesRus:
                              trade.open_operation().settlement() <= x.ex_date() <= trade.close_operation().settlement()]
                 for dividend in dividends:
                     short_dividend += dividend.amount()
-            note = f"Удержанный дивиденд: {float(short_dividend):.2f} RUB" if short_dividend > Decimal('0') else ''
+            note = f"Удержанный дивиденд: {short_dividend} RUB" if short_dividend > Decimal('0') else ''
             o_amount = round(trade.open_operation().price() * abs(trade.qty()), 2)
             o_amount_rub = round(o_amount * os_rate, 2)
             c_amount = round(trade.close_operation().price() * abs(trade.qty()), 2)
             c_amount_rub = round(c_amount * cs_rate, 2)
             o_fee = trade.open_operation().fee() * abs(trade.qty() / trade.open_operation().qty())
             c_fee = trade.close_operation().fee() * abs(trade.qty() / trade.close_operation().qty())
-            income = c_amount if trade.qty() >=Decimal('0') else o_amount
+            income = c_amount if trade.qty() >= Decimal('0') else o_amount
             income_rub = c_amount_rub if trade.qty() >= Decimal('0') else o_amount_rub
-            spending = o_amount if trade.qty() >=Decimal('0') else c_amount
+            spending = o_amount if trade.qty() >= Decimal('0') else c_amount
             spending += o_fee + c_fee
             spending_rub = o_amount_rub if trade.qty() >= Decimal('0') else c_amount_rub
             spending_rub += round(o_fee * o_rate, 2) + round(c_fee * c_rate, 2) + short_dividend
