@@ -97,7 +97,7 @@ class StatementPSB(StatementXLS):
                 fee = self._statement[headers['fee1']][row] + self._statement[headers['fee2']][row] + \
                       self._statement[headers['fee3']][row] + self._statement[headers['fee_broker']][row]
                 amount = self._statement[headers['amount']][row]
-                if abs(abs(price * qty) - amount) >= Setup.DISP_TOLERANCE:
+                if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                     price = abs(amount / qty)
                 timestamp = int(datetime.strptime(self._statement[headers['timestamp']][row],
                                                   "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())

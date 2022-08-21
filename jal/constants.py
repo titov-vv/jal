@@ -20,7 +20,6 @@ class Setup:
     TEMPLATE_PATH = "templates"
     UPDATE_PREFIX = 'jal_delta_'
     TARGET_SCHEMA = 38
-    DISP_TOLERANCE = 1e-4
     DEFAULT_ACCOUNT_PRECISION = 2
 
 

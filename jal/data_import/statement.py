@@ -76,6 +76,8 @@ class Statement_ImportError(Exception):
 
 # -----------------------------------------------------------------------------------------------------------------------
 class Statement(QObject):   # derived from QObject to have proper string translation
+    RU_PRICE_TOLERANCE = 1e-4   # TODO Probably need to switch imports to Decimal and remove it
+
     _asset_types = {
         FOF.ASSET_MONEY: PredefinedAsset.Money,
         FOF.ASSET_STOCK: PredefinedAsset.Stock,

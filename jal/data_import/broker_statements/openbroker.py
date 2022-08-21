@@ -308,7 +308,7 @@ class StatementOpenBroker(StatementXML):
             else:
                 trade['quantity'] = -trade['quantity_sell']
             amount = trade['proceeds'] + trade['accrued_interest']
-            if abs(abs(trade['price'] * trade['quantity']) - amount) >= Setup.DISP_TOLERANCE:
+            if abs(abs(trade['price'] * trade['quantity']) - amount) >= self.RU_PRICE_TOLERANCE:
                 trade['price'] = abs(amount / trade['quantity'])
             if abs(trade['accrued_interest']) > 0:
                 new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
