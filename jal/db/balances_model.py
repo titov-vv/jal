@@ -144,7 +144,7 @@ class BalancesModel(QAbstractTableModel):
                     "currency_name": JalAsset(account.currency()).symbol(),
                     "balance": value,
                     "balance_a": value_adjusted,
-                    "unreconciled": 0,
+                    "unreconciled": (account.last_operation_date() - account.reconciled_at())/86400,
                     "active": account.is_active()
                 })
         balances = sorted(balances, key=lambda x: (x['account_type']))
