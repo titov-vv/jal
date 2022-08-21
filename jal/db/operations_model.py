@@ -1,21 +1,14 @@
 from datetime import datetime
+from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
-from jal.constants import CustomColor, Setup
-from jal.db.helpers import executeSQL, readSQLrecord
+from jal.constants import CustomColor
+from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
 
 
 class OperationsModel(QAbstractTableModel):
-    _tables = {
-        LedgerTransaction.IncomeSpending: "actions",
-        LedgerTransaction.Dividend: "dividends",
-        LedgerTransaction.Trade: "trades",
-        LedgerTransaction.Transfer: "transfers",
-        LedgerTransaction.CorporateAction: "asset_actions"
-    }
-
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._columns = [" ", self.tr("Timestamp"), self.tr("Account"), self.tr("Notes"),
@@ -87,10 +80,10 @@ class OperationsModel(QAbstractTableModel):
                 date_time += f"\n# {operation.number()}"
             return date_time
         elif column == 2:
-            if operation.asset():
-                return operation.account() + "\n" + operation.asset()
+            if operation.asset_name():
+                return operation.account_name() + "\n" + operation.asset_name()
             else:
-                return operation.account()
+                return operation.account_name()
         elif column == 3:
             return operation.description()
         elif column == 4:
@@ -157,20 +150,13 @@ class OperationsModel(QAbstractTableModel):
         if self._begin == 0 and self._end == 0:
             self._row_count = 0
         else:
-            query_text = f"SELECT * FROM operation_sequence WHERE timestamp>={self._begin} AND timestamp<={self._end}"
-            if self._account:
-                query_text += f" AND account_id={self._account}"
-            query = executeSQL(query_text, forward_only=True)
-            while query.next():
-                self._data.append(readSQLrecord(query, named=True))
+            self._data = Ledger.get_operations_sequence(self._begin, self._end, self._account)
         self.modelReset.emit()
 
     def deleteRows(self, rows):
         for row in rows:
             if (row >= 0) and (row < len(self._data)):
-                table_name = self._tables[self._data[row]['op_type']]
-                query = f"DELETE FROM {table_name} WHERE id={self._data[row]['id']}"
-                _ = executeSQL(query)
+                LedgerTransaction.get_operation(self._data[row]['op_type'], self._data[row]['id']).delete()
         self.prepareData()
 
 
@@ -204,7 +190,7 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
                     pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, f"{value:+,.2f}")
-            if abs(value - round(value, 2)) > Setup.CALC_TOLERANCE:  # Underline decimal part
+            if abs(value - round(value, 2)) > Decimal('0'):  # Underline decimal part
                 shift = painter.fontMetrics().horizontalAdvance(f"{value:+,.2f}"[-2:])
                 painter.drawLine(rect.right() - shift, rect.bottom(), rect.right(), rect.bottom())
         except TypeError:

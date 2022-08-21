@@ -13,50 +13,33 @@ CREATE TABLE accounts (
     number          TEXT (32),
     reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,
     organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL ON UPDATE CASCADE,
-    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL
+    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,
+    precision       INTEGER   NOT NULL DEFAULT (2)
 );
 
 
 -- Table: action_details
 DROP TABLE IF EXISTS action_details;
-
 CREATE TABLE action_details (
-    id          INTEGER    PRIMARY KEY
-                           NOT NULL
-                           UNIQUE,
-    pid         INTEGER    REFERENCES actions (id) ON DELETE CASCADE
-                                                   ON UPDATE CASCADE
-                           NOT NULL,
-    category_id INTEGER    REFERENCES categories (id) ON DELETE CASCADE
-                                                      ON UPDATE CASCADE
-                           NOT NULL,
-    tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL
-                                                ON UPDATE CASCADE,
-    amount      REAL       NOT NULL,
-    amount_alt  REAL       DEFAULT (0)
-                           NOT NULL,
-    note        TEXT (256) 
+    id          INTEGER    PRIMARY KEY NOT NULL UNIQUE,
+    pid         INTEGER    REFERENCES actions (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    category_id INTEGER    REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    amount      TEXT       NOT NULL,
+    amount_alt  TEXT       DEFAULT ('0') NOT NULL,
+    note        TEXT
 );
 
 
 -- Table: actions
 DROP TABLE IF EXISTS actions;
-
 CREATE TABLE actions (
-    id              INTEGER PRIMARY KEY
-                            UNIQUE
-                            NOT NULL,
-    op_type         INTEGER NOT NULL
-                            DEFAULT (1),
+    id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    op_type         INTEGER NOT NULL DEFAULT (1),
     timestamp       INTEGER NOT NULL,
-    account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE
-                                                     ON UPDATE CASCADE
-                            NOT NULL,
-    peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE
-                                                   ON UPDATE CASCADE
-                            NOT NULL,
-    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT
-                                                   ON UPDATE CASCADE
+    account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- Table: assets
@@ -96,156 +79,97 @@ CREATE UNIQUE INDEX asset_data_uniqueness ON asset_data ( asset_id, datatype);
 
 -- Table: agents
 DROP TABLE IF EXISTS agents;
-
 CREATE TABLE agents (
-    id       INTEGER    PRIMARY KEY
-                        UNIQUE
-                        NOT NULL,
-    pid      INTEGER    NOT NULL
-                        DEFAULT (0),
-    name     TEXT (64)  UNIQUE
-                        NOT NULL,
+    id       INTEGER    PRIMARY KEY UNIQUE NOT NULL,
+    pid      INTEGER    NOT NULL DEFAULT (0),
+    name     TEXT (64)  UNIQUE NOT NULL,
     location TEXT (128) 
 );
 
-
--- Table: books
-DROP TABLE IF EXISTS books;
-
-CREATE TABLE books (
-    id   INTEGER   PRIMARY KEY
-                   NOT NULL
-                   UNIQUE,
-    name TEXT (32) NOT NULL
-);
-
-
 -- Table: categories
 DROP TABLE IF EXISTS categories;
-
 CREATE TABLE categories (
-    id      INTEGER   PRIMARY KEY
-                      UNIQUE
-                      NOT NULL,
-    pid     INTEGER   NOT NULL
-                      DEFAULT (0),
-    name    TEXT (64) UNIQUE
-                      NOT NULL,
+    id      INTEGER   PRIMARY KEY UNIQUE NOT NULL,
+    pid     INTEGER   NOT NULL DEFAULT (0),
+    name    TEXT (64) UNIQUE NOT NULL,
     often   INTEGER,
     special INTEGER
 );
 
 -- Create new table with list of countries
 DROP TABLE IF EXISTS countries;
-
 CREATE TABLE countries (
-    id           INTEGER      PRIMARY KEY
-                              UNIQUE
-                              NOT NULL,
-    name         VARCHAR (64) UNIQUE
-                              NOT NULL,
-    code         CHAR (3)     UNIQUE
-                              NOT NULL,
-    iso_code     CHAR (4)     UNIQUE
-                              NOT NULL,
-    tax_treaty   INTEGER      NOT NULL
-                              DEFAULT (0)
+    id           INTEGER      PRIMARY KEY UNIQUE NOT NULL,
+    name         VARCHAR (64) UNIQUE NOT NULL,
+    code         CHAR (3)     UNIQUE NOT NULL,
+    iso_code     CHAR (4)     UNIQUE NOT NULL,
+    tax_treaty   INTEGER      NOT NULL DEFAULT (0)
 );
-
 
 -- Table: data_sources
 DROP TABLE IF EXISTS data_sources;
-
 CREATE TABLE data_sources (
-    id   INTEGER   PRIMARY KEY
-                   UNIQUE
-                   NOT NULL,
+    id   INTEGER   PRIMARY KEY UNIQUE NOT NULL,
     name TEXT (32) NOT NULL
 );
 
 
 -- Table: dividends
 DROP TABLE IF EXISTS dividends;
-
 CREATE TABLE dividends (
-    id         INTEGER     PRIMARY KEY
-                           UNIQUE
-                           NOT NULL,
-    op_type    INTEGER     NOT NULL
-                           DEFAULT (2),
+    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type    INTEGER     NOT NULL DEFAULT (2),
     timestamp  INTEGER     NOT NULL,
     ex_date    INTEGER,
-    number     TEXT (32)   DEFAULT (''),
+    number     TEXT        DEFAULT (''),
     type       INTEGER     NOT NULL,
-    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
-                                                    ON UPDATE CASCADE
-                           NOT NULL,
-    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
-                                                  ON UPDATE CASCADE
-                           NOT NULL,
-    amount     REAL        NOT NULL
-                           DEFAULT (0),
-    tax        REAL        DEFAULT (0),
-    note       TEXT (1024)
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    amount     TEXT        NOT NULL DEFAULT ('0'),
+    tax        TEXT        DEFAULT ('0'),
+    note       TEXT
 );
 
 
 -- Table: languages
 DROP TABLE IF EXISTS languages;
-
 CREATE TABLE languages (
-    id       INTEGER  PRIMARY KEY AUTOINCREMENT
-                      UNIQUE
-                      NOT NULL,
-    language CHAR (2) UNIQUE
-                      NOT NULL
+    id       INTEGER  PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
+    language CHAR (2) UNIQUE NOT NULL
 );
 
 -- Table: ledger
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
-    id           INTEGER PRIMARY KEY
-                         NOT NULL
-                         UNIQUE,
+    id           INTEGER PRIMARY KEY NOT NULL UNIQUE,
     timestamp    INTEGER NOT NULL,
     op_type      INTEGER NOT NULL,
     operation_id INTEGER NOT NULL,
-    book_account INTEGER NOT NULL
-                         REFERENCES books (id) ON DELETE NO ACTION
-                                               ON UPDATE NO ACTION,
-    asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL
-                                                ON UPDATE SET NULL,
-    account_id   INTEGER NOT NULL
-                         REFERENCES accounts (id) ON DELETE NO ACTION
-                                                  ON UPDATE NO ACTION,
-    amount       REAL,
-    value        REAL,
-    amount_acc   REAL,
-    value_acc    REAL,
-    peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION
-                                                ON UPDATE NO ACTION,
-    category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION
-                                                    ON UPDATE NO ACTION,
-    tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION
-                                              ON UPDATE NO ACTION
+    book_account INTEGER NOT NULL,
+    asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE SET NULL,
+    account_id   INTEGER NOT NULL REFERENCES accounts (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    amount       TEXT,
+    value        TEXT,
+    amount_acc   TEXT,
+    value_acc    TEXT,
+    peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 -- Table: ledger_totals to keep last accumulated amount value for each transaction
 DROP TABLE IF EXISTS ledger_totals;
 CREATE TABLE ledger_totals (
-    id           INTEGER PRIMARY KEY
-                         UNIQUE
-                         NOT NULL,
+    id           INTEGER PRIMARY KEY UNIQUE NOT NULL,
     op_type      INTEGER NOT NULL,
     operation_id INTEGER NOT NULL,
     timestamp    INTEGER NOT NULL,
     book_account INTEGER NOT NULL,
     asset_id     INTEGER NOT NULL,
     account_id   INTEGER NOT NULL,
-    amount_acc   REAL    NOT NULL,
-    value_acc    REAL    NOT NULL
+    amount_acc   TEXT    NOT NULL,
+    value_acc    TEXT    NOT NULL
 );
-
 DROP INDEX IF EXISTS ledger_totals_by_timestamp;
 CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
 DROP INDEX IF EXISTS ledger_totals_by_operation_book;
@@ -253,51 +177,33 @@ CREATE INDEX ledger_totals_by_operation_book ON ledger_totals (op_type, operatio
 
 -- Table: map_category
 DROP TABLE IF EXISTS map_category;
-
 CREATE TABLE map_category (
-    id        INTEGER        PRIMARY KEY
-                             UNIQUE
-                             NOT NULL,
+    id        INTEGER        PRIMARY KEY UNIQUE NOT NULL,
     value     VARCHAR (1024) NOT NULL,
-    mapped_to INTEGER        NOT NULL
-                             REFERENCES categories (id) ON DELETE CASCADE
-                                                        ON UPDATE CASCADE
+    mapped_to INTEGER        NOT NULL REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
 -- Table: map_peer
 DROP TABLE IF EXISTS map_peer;
-
 CREATE TABLE map_peer (
-    id        INTEGER        PRIMARY KEY
-                             UNIQUE
-                             NOT NULL,
+    id        INTEGER        PRIMARY KEY UNIQUE NOT NULL,
     value     VARCHAR (1024) NOT NULL,
-    mapped_to INTEGER        REFERENCES agents (id) ON DELETE SET DEFAULT
-                                                    ON UPDATE CASCADE
-                             NOT NULL
-                             DEFAULT (0)
+    mapped_to INTEGER        REFERENCES agents (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (0)
 );
 
 
 -- Table: open_trades
-DROP TABLE IF EXISTS open_trades;
-
-CREATE TABLE open_trades (
-    id            INTEGER PRIMARY KEY
-                          UNIQUE
-                          NOT NULL,
+DROP TABLE IF EXISTS trades_opened;
+CREATE TABLE trades_opened (
+    id            INTEGER PRIMARY KEY UNIQUE NOT NULL,
     timestamp     INTEGER NOT NULL,
     op_type       INTEGER NOT NULL,
     operation_id  INTEGER NOT NULL,
-    account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE
-                                                   ON UPDATE CASCADE
-                          NOT NULL,
-    asset_id      INTEGER NOT NULL
-                          REFERENCES assets (id) ON DELETE CASCADE
-                                                 ON UPDATE CASCADE,
-    price         REAL    NOT NULL,
-    remaining_qty REAL    NOT NULL
+    account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id      INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    price         TEXT    NOT NULL,
+    remaining_qty TEXT    NOT NULL
 );
 
 
@@ -308,10 +214,9 @@ CREATE TABLE quotes (
     timestamp   INTEGER NOT NULL,
     asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    quote       REAL    NOT NULL DEFAULT (0)
+    quote       TEXT    NOT NULL DEFAULT ('0')
 );
 CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
-
 
 -- Table: settings
 DROP TABLE IF EXISTS settings;
@@ -320,25 +225,6 @@ CREATE TABLE settings (
     name  TEXT (32) NOT NULL UNIQUE,
     value INTEGER
 );
-
-
--- Table: t_last_assets
-DROP TABLE IF EXISTS t_last_assets;
-
-CREATE TABLE t_last_assets (
-    id          INTEGER   NOT NULL,
-    total_value REAL
-);
-
-
--- Table: t_last_dates
-DROP TABLE IF EXISTS t_last_dates;
-
-CREATE TABLE t_last_dates (
-    ref_id INTEGER NOT NULL,
-    timestamp  INTEGER NOT NULL
-);
-
 
 -- Table: tags
 DROP TABLE IF EXISTS tags;
@@ -350,19 +236,18 @@ CREATE TABLE tags (
     tag TEXT (64) NOT NULL
 );
 
-
 -- Table to store about corporate actions that transform one asset into another
 DROP TABLE IF EXISTS asset_actions;
 CREATE TABLE asset_actions (
-    id           INTEGER     PRIMARY KEY UNIQUE NOT NULL,
-    op_type      INTEGER     NOT NULL DEFAULT (5),
-    timestamp    INTEGER     NOT NULL,
-    number       TEXT (32)   DEFAULT (''),
-    account_id   INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    type         INTEGER     NOT NULL,
-    asset_id     INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
-    qty          REAL        NOT NULL,
-    note         TEXT (1024)
+    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type    INTEGER     NOT NULL DEFAULT (5),
+    timestamp  INTEGER     NOT NULL,
+    number     TEXT        DEFAULT (''),
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    type       INTEGER     NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    qty        TEXT        NOT NULL,
+    note       TEXT
 );
 
 -- Table to store information about assets that appear after corporate action
@@ -371,100 +256,75 @@ CREATE TABLE action_results (
     id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
     action_id   INTEGER NOT NULL REFERENCES asset_actions (id) ON DELETE CASCADE ON UPDATE CASCADE,
     asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    qty         REAL    NOT NULL,
-    value_share REAL    NOT NULL
+    qty         TEXT    NOT NULL,
+    value_share TEXT    NOT NULL
 );
 
 -- Table: trades
 DROP TABLE IF EXISTS trades;
 CREATE TABLE trades (
-    id         INTEGER     PRIMARY KEY
-                           UNIQUE
-                           NOT NULL,
-    op_type    INTEGER     NOT NULL
-                           DEFAULT (3),
+    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type    INTEGER     NOT NULL DEFAULT (3),
     timestamp  INTEGER     NOT NULL,
     settlement INTEGER     DEFAULT (0),
-    number     TEXT (32)   DEFAULT (''),
-    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
-                                                    ON UPDATE CASCADE
-                           NOT NULL,
-    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
-                                                  ON UPDATE CASCADE
-                           NOT NULL,
-    qty        REAL        NOT NULL
-                           DEFAULT (0),
-    price      REAL        NOT NULL
-                           DEFAULT (0),
-    fee        REAL        DEFAULT (0),
-    note       TEXT (1024)
+    number     TEXT        DEFAULT (''),
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    qty        TEXT        NOT NULL DEFAULT ('0'),
+    price      TEXT        NOT NULL DEFAULT ('0'),
+    fee        TEXT        DEFAULT ('0'),
+    note       TEXT
 );
 
-
--- Table: deals
-DROP TABLE IF EXISTS deals;
-
-CREATE TABLE deals (
-    id              INTEGER PRIMARY KEY
-                            UNIQUE
-                            NOT NULL,
+-- Table for closed deals storage
+DROP TABLE IF EXISTS trades_closed;
+CREATE TABLE trades_closed (
+    id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
     account_id      INTEGER NOT NULL,
     asset_id        INTEGER NOT NULL,
     open_op_type    INTEGER NOT NULL,
     open_op_id      INTEGER NOT NULL,
     open_timestamp  INTEGER NOT NULL,
-    open_price      REAL    NOT NULL,
+    open_price      TEXT    NOT NULL,
     close_op_type   INTEGER NOT NULL,
     close_op_id     INTEGER NOT NULL,
     close_timestamp INTEGER NOT NULL,
-    close_price     REAL    NOT NULL,
-    qty             REAL    NOT NULL
+    close_price     TEXT    NOT NULL,
+    qty             TEXT    NOT NULL
 );
 
-
-CREATE TRIGGER on_deal_delete
-         AFTER DELETE
-            ON deals
+DROP TRIGGER IF EXISTS on_closed_trade_delete;
+CREATE TRIGGER on_closed_trade_delete
+    AFTER DELETE ON trades_closed
     FOR EACH ROW
     WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    UPDATE open_trades
-       SET remaining_qty = remaining_qty + OLD.qty
-     WHERE op_type=OLD.open_op_type AND operation_id=OLD.open_op_id AND account_id=OLD.account_id AND asset_id = OLD.asset_id;
+    UPDATE trades_opened
+    SET remaining_qty = remaining_qty + OLD.qty
+    WHERE op_type=OLD.open_op_type AND operation_id=OLD.open_op_id AND account_id=OLD.account_id AND asset_id = OLD.asset_id;
 END;
 
 -- Table: transfers
 DROP TABLE IF EXISTS transfers;
-
 CREATE TABLE transfers (
-    id                   INTEGER     PRIMARY KEY
-                                     UNIQUE
-                                     NOT NULL,
-    op_type              INTEGER     NOT NULL
-                                     DEFAULT (4),
+    id                   INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type              INTEGER     NOT NULL DEFAULT (4),
     withdrawal_timestamp INTEGER     NOT NULL,
-    withdrawal_account   INTEGER     NOT NULL
-                                     REFERENCES accounts (id) ON DELETE CASCADE
-                                                              ON UPDATE CASCADE,
-    withdrawal           REAL        NOT NULL,
+    withdrawal_account   INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    withdrawal           TEXT        NOT NULL,
     deposit_timestamp    INTEGER     NOT NULL,
-    deposit_account      INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
-                                                              ON UPDATE CASCADE
-                                     NOT NULL,
-    deposit              REAL        NOT NULL,
-    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
-                                                              ON UPDATE CASCADE,
-    fee                  REAL,
-    asset                INTEGER     REFERENCES assets (id) ON DELETE CASCADE
-                                                            ON UPDATE CASCADE,
-    note                 TEXT (1024)
+    deposit_account      INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    deposit              TEXT        NOT NULL,
+    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    fee                  TEXT,
+    asset                INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    note                 TEXT
 );
 
 
 -- Index: agents_by_name_idx
 DROP INDEX IF EXISTS agents_by_name_idx;
 CREATE INDEX agents_by_name_idx ON agents (name);
-
 
 
 -- View: operation_sequence
@@ -551,7 +411,7 @@ CREATE VIEW deals_ext AS
            d.qty * (close_price - open_price ) - (coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) ) AS profit,
            coalesce(100 * (d.qty * (close_price - open_price ) - (coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) ) ) / abs(d.qty * open_price ), 0) AS rel_profit,
            coalesce(oca.type, -cca.type) AS corp_action
-    FROM deals AS d
+    FROM trades_closed AS d
           -- Get more information about trade/corp.action that opened the deal
            LEFT JOIN trades AS ot ON ot.id=d.open_op_id AND ot.op_type=d.open_op_type
            LEFT JOIN asset_actions AS oca ON oca.id=d.open_op_id AND oca.op_type=d.open_op_type
@@ -582,69 +442,6 @@ CREATE VIEW assets_ext AS
     WHERE t.active = 1
     ORDER BY a.id;
 
---------------------------------------------------------------------------------
--- PARAMETERIZED VIEWS
-CREATE TABLE view_params (
-    id         INTEGER PRIMARY KEY
-                       UNIQUE
-                       NOT NULL,
-    value_i    INTEGER DEFAULT (0),
-    value_f    REAL    DEFAULT (0),
-    value_t    TEXT    DEFAULT (''),
-    view_name  TEXT    NOT NULL,
-    param_name TEXT    NOT NULL,
-    param_type TEXT    NOT NULL
-);
-INSERT OR REPLACE INTO view_params(id, value_i, view_name, param_name, param_type) VALUES(1, 0, "last_quotes", "timestamp", "int");
-INSERT OR REPLACE INTO view_params(id, value_i, view_name, param_name, param_type) VALUES(2, 0, "last_account_value", "timestamp", "int");
-INSERT OR REPLACE INTO view_params(id, value_i, view_name, param_name, param_type) VALUES(3, 0, "last_assets", "timestamp", "int");
-
--- Below view uses parameter 1/timestamp/int
-DROP VIEW IF EXISTS last_quotes;
-CREATE VIEW last_quotes AS
-SELECT MAX(timestamp) AS timestamp, asset_id, currency_id, quote
-FROM quotes
-WHERE timestamp <= (SELECT value_i FROM view_params WHERE id=1)
-GROUP BY asset_id, currency_id;
-
--- Below view uses parameter 2/timestamp/int
-DROP VIEW IF EXISTS last_account_value;
-CREATE VIEW last_account_value AS
-SELECT id AS account_id, SUM(t_value) AS total_value
-FROM (
-   SELECT a.id, SUM(l.amount) AS t_value
-   FROM ledger AS l
-   LEFT JOIN accounts AS a ON l.account_id = a.id
-   WHERE (l.book_account = 3 OR l.book_account = 5) AND  l.timestamp <= (SELECT value_i FROM view_params WHERE id = 2)
-   GROUP BY a.id
-UNION ALL
-   SELECT a.id, SUM(l.amount * q.quote) AS t_value
-    FROM ledger AS l
-    LEFT JOIN accounts AS a ON l.account_id = a.id
-    LEFT JOIN last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id
-    WHERE l.book_account = 4 AND l.timestamp <= (SELECT value_i FROM view_params WHERE id = 2)
-    GROUP BY a.id
-)
-GROUP BY account_id;
-
--- Below view uses parameter 3/timestamp/int
-DROP VIEW IF EXISTS last_assets;
-CREATE VIEW last_assets AS
-SELECT currency_id, account_id, asset_id, qty, value, quote
-FROM (
-   SELECT a.currency_id, l.account_id, l.asset_id, sum(l.amount) AS qty, sum(l.value) AS value, q.quote
-   FROM ledger AS l
-   LEFT JOIN accounts AS a ON l.account_id = a.id
-   LEFT JOIN last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id
-   WHERE a.type_id = 4 AND l.book_account = 4 AND l.timestamp <= (SELECT value_i FROM view_params WHERE id=3)
-   GROUP BY l.account_id, l.asset_id
-UNION ALL
-   SELECT a.currency_id, l.account_id, l.asset_id, sum(l.amount) AS qty, 0 AS value, 1 AS quote
-   FROM ledger AS l
-   LEFT JOIN accounts AS a ON l.account_id = a.id
-   WHERE (l.book_account=3 OR l.book_account=5) AND a.type_id = 4 AND l.timestamp <= (SELECT value_i FROM view_params WHERE id=3)
-   GROUP BY l.account_id, l.asset_id
-) ORDER BY account_id, asset_id;
 --------------------------------------------------------------------------------
 -- TRIGGERS
 
@@ -749,7 +546,6 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
--- Trigger: trades_after_delete
 DROP TRIGGER IF EXISTS trades_after_delete;
 CREATE TRIGGER trades_after_delete
          AFTER DELETE ON trades
@@ -757,7 +553,7 @@ CREATE TRIGGER trades_after_delete
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS trades_after_insert;
@@ -767,7 +563,7 @@ CREATE TRIGGER trades_after_insert
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS trades_after_update;
@@ -777,7 +573,7 @@ CREATE TRIGGER trades_after_update
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS asset_action_after_delete;
@@ -787,7 +583,7 @@ CREATE TRIGGER asset_action_after_delete
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS asset_action_after_insert;
@@ -797,7 +593,7 @@ CREATE TRIGGER asset_action_after_insert
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS asset_action_after_update;
@@ -807,7 +603,7 @@ CREATE TRIGGER asset_action_after_update
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS asset_result_after_delete;
@@ -891,7 +687,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 37);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 38);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
@@ -901,18 +697,11 @@ INSERT INTO settings(id, name, value) VALUES (6, 'RuTaxRefreshToken', '');
 INSERT INTO settings(id, name, value) VALUES (7, 'RebuildDB', 0);
 INSERT INTO settings(id, name, value) VALUES (8, 'WindowGeometry', '');
 INSERT INTO settings(id, name, value) VALUES (9, 'WindowState', '');
+INSERT INTO settings(id, name, value) VALUES (10, 'MessageOnce', '');
 
 -- Initialize available languages
 INSERT INTO languages (id, language) VALUES (1, 'en');
 INSERT INTO languages (id, language) VALUES (2, 'ru');
-
--- Initialize default values for books
-INSERT INTO books (id, name) VALUES (1, 'Costs');
-INSERT INTO books (id, name) VALUES (2, 'Incomes');
-INSERT INTO books (id, name) VALUES (3, 'Money');
-INSERT INTO books (id, name) VALUES (4, 'Assets');
-INSERT INTO books (id, name) VALUES (5, 'Liabilities');
-INSERT INTO books (id, name) VALUES (6, 'Transfers');
 
 -- Initialize sources of quotation data
 INSERT INTO data_sources (id, name) VALUES (-1, 'None');
@@ -1194,7 +983,7 @@ INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (246, 'Zambi
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (247, 'Zimbabwe', 'zw', '716', 0);
 
 -- Initialize rate for base currency
-INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote) VALUES (1, 946684800, 1, 1, 1.0);
+INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote) VALUES (1, 946684800, 1, 1, '1.0');
 
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

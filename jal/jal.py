@@ -26,7 +26,7 @@ def main():
     error = JalDB().init_db(get_app_path())
 
     app = QApplication([])
-    language = JalDB().get_language_code(JalSettings().getValue('Language', default=1))
+    language = JalSettings().getLanguage()
     translator = QTranslator(app)
     language_file = get_app_path() + Setup.LANG_PATH + os.sep + language + '.qm'
     translator.load(language_file)

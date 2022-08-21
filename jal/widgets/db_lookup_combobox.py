@@ -1,7 +1,8 @@
 from PySide6.QtCore import Qt, Property
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtWidgets import QComboBox
-from jal.db.helpers import db_connection, readSQL
+from jal.db.helpers import db_connection
+from jal.db.db import JalDB
 
 
 # Base class to display lookup table as a combobox
@@ -16,13 +17,13 @@ class DbLookupComboBox(QComboBox):
         self._selected_id = -1
 
     def getKey(self):
-        return readSQL(f"SELECT {self._key_field} FROM {self._table} WHERE {self._field}='{self.currentText()}'")
+        return JalDB.get_db_value(self._table, self._key_field, self._field, self.currentText())
 
     def setKey(self, selected_id):
         if self._selected_id == selected_id:
             return
         self._selected_id = selected_id
-        value = readSQL(f"SELECT {self._field} FROM {self._table} WHERE {self._key_field}={selected_id}")
+        value = JalDB.get_db_value(self._table, self._field, self._key_field, selected_id)
         self.setCurrentIndex(self.findText(value))
 
     key = Property(int, getKey, setKey, user=True)

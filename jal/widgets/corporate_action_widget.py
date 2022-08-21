@@ -9,7 +9,7 @@ from PySide6.QtGui import QFont
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
-from jal.db.helpers import db_connection, load_icon, executeSQL
+from jal.db.helpers import db_connection, load_icon
 from jal.db.operations import LedgerTransaction
 
 
@@ -19,7 +19,7 @@ class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
         WidgetMapperDelegateBase.__init__(self, parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'asset_id': self.symbol_delegate,
-                          'qty': self.float_delegate}
+                          'qty': self.decimal_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -202,21 +202,21 @@ class CorporateActionWidget(AbstractOperationDetails):
         new_record.setValue("account_id", account_id)
         new_record.setValue("type", 0)
         new_record.setValue("asset_id", 0)
-        new_record.setValue("qty", 0)
+        new_record.setValue("qty", '0')
         new_record.setValue("note", None)
         return new_record
 
     def copyNew(self):
-        old_id = self.model.record(self.mapper.currentIndex()).value(0)
         super().copyNew()
+        child_records = []
+        for row in range(self.results_model.rowCount()):
+            child_records.append(self.results_model.record(row))
         self.results_model.setFilter(f"action_results.action_id = 0")
-        query = executeSQL("SELECT * FROM action_results WHERE action_id = :oid ORDER BY id DESC", [(":oid", old_id)])
-        while query.next():
-            new_record = query.record()
-            new_record.setNull("id")
-            new_record.setNull("action_id")
+        for record in reversed(child_records):
+            record.setNull("id")
+            record.setNull("action_id")
             assert self.results_model.insertRows(0, 1)
-            self.results_model.setRecord(0, new_record)
+            self.results_model.setRecord(0, record)
 
     def copyToNew(self, row):
         new_record = self.model.record(row)

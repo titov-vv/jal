@@ -1,6 +1,9 @@
+import json
 import os
 import base64
 import logging
+from math import log10
+from decimal import Decimal
 from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QDir, QLocale, QMetaObject
@@ -17,7 +20,8 @@ from jal.widgets.reference_dialogs import AccountListDialog, AssetListDialog, Ta
 from jal.constants import Setup
 from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_app_path, get_dbfilename, load_icon
-from jal.db.db import JalDB
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
@@ -113,6 +117,16 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     @Slot()
     def afterShowEvent(self):
+        # Display information message once if database contains any
+        if JalSettings().getValue('MessageOnce'):
+            messages = json.loads(JalSettings().getValue('MessageOnce'))
+            try:
+                message = messages[JalSettings().getLanguage()]   # Try to load language-specific message
+            except KeyError:
+                message = messages['en']                          # Fallback to English message if failure
+            QMessageBox().information(self, self.tr("Info"), message, QMessageBox.Ok)
+            JalSettings().setValue('MessageOnce', '')   # Delete message if it was shown
+        # Ask for database rebuild if flag is set
         if JalSettings().getValue('RebuildDB', 0) == 1:
             if QMessageBox().warning(self, self.tr("Confirmation"), self.tr("Ledger isn't complete. Rebuild it now?"),
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
@@ -144,7 +158,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def onLanguageChanged(self, action):
         language_code = action.data()
         if language_code != self.currentLanguage:
-            JalSettings().setValue('Language', JalDB().get_language_id(language_code))
+            JalSettings().setLanguage(language_code)
             QMessageBox().information(self, self.tr("Restart required"),
                                       self.tr("Language was changed to ") +
                                       QLocale.languageToString(QLocale(language_code).language()) + "\n" +
@@ -237,14 +251,18 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def onStatementImport(self, timestamp, totals):
         self.ledger.rebuild()
         for account_id in totals:
+            account = JalAccount(account_id)
             for asset_id in totals[account_id]:
-                amount = JalDB().get_asset_amount(timestamp, account_id, asset_id)
+                amount = account.get_asset_amount(timestamp, asset_id)
                 if amount is not None:
-                    if abs(totals[account_id][asset_id] - amount) <= Setup.DISP_TOLERANCE:
-                        JalDB().reconcile_account(account_id, timestamp)
+                    delta = Decimal(str(totals[account_id][asset_id])) - amount
+                    if delta == Decimal('0'):
+                        account.reconcile(timestamp)
+                        self.updateWidgets()
+                    elif -log10(abs(delta)) >= account.precision():  # Can't combine condition due to log(0)
+                        account.reconcile(timestamp)
                         self.updateWidgets()
                     else:
-                        account = JalDB().get_account_name(account_id)
-                        asset = JalDB().get_asset_name(asset_id)
+                        asset = JalAsset(asset_id).symbol(account.currency())
                         logging.warning(self.tr("Statement ending balance doesn't match: ") +
-                                        f"{account} / {asset} / {amount} (act) <> {totals[account_id][asset_id]} (exp)")
+                                        f"{account.name()} / {asset} / {amount} (act) <> {totals[account_id][asset_id]} (exp)")

@@ -9,7 +9,7 @@ from PySide6.QtSql import QSqlTableModel
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
-from jal.db.helpers import db_connection, executeSQL, load_icon
+from jal.db.helpers import db_connection, load_icon
 from jal.db.operations import LedgerTransaction
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
@@ -129,8 +129,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     def addChild(self):
         new_record = self.details_model.record()
         new_record.setNull("tag_id")
-        new_record.setValue("amount", 0)
-        new_record.setValue("amount_alt", 0)
+        new_record.setValue("amount", '0')
+        new_record.setValue("amount_alt", '0')
         if not self.details_model.insertRecord(-1, new_record):
             logging.fatal(self.tr("Failed to add new record: ") + self.details_model.lastError().text())
             return
@@ -198,17 +198,18 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         return new_record
 
     def copyNew(self):
-        old_id = self.model.record(self.mapper.currentIndex()).value(0)
         super().copyNew()
+        child_records = []
+        for row in range(self.details_model.rowCount()):
+            child_records.append(self.details_model.record(row))
         self.details_model.setFilter(f"action_details.pid = 0")
-        query = executeSQL("SELECT * FROM action_details WHERE pid = :pid ORDER BY id DESC",
-                           [(":pid", old_id)])
-        while query.next():
-            new_record = query.record()
-            new_record.setNull("id")
-            new_record.setNull("pid")
+        for record in reversed(child_records):
+            record.setNull("id")
+            record.setNull("pid")
+            if not record.value("tag_id"):
+                record.setNull("tag_id")
             assert self.details_model.insertRows(0, 1)
-            self.details_model.setRecord(0, new_record)
+            self.details_model.setRecord(0, record)
 
     def copyToNew(self, row):
         new_record = self.model.record(row)

@@ -1,5 +1,6 @@
 from datetime import datetime
 from dateutil import tz
+from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QPushButton
@@ -15,10 +16,10 @@ class TransferWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         WidgetMapperDelegateBase.__init__(self, parent)
         self.delegates = {'withdrawal_timestamp': self.timestamp_delegate,
-                          'withdrawal': self.float_delegate,
+                          'withdrawal': self.decimal_delegate,
                           'deposit_timestamp': self.timestamp_delegate,
-                          'deposit': self.float_delegate,
-                          'fee': self.float_delegate}
+                          'deposit': self.decimal_delegate,
+                          'fee': self.decimal_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -143,10 +144,8 @@ class TransferWidget(AbstractOperationDetails):
     def saveChanges(self):
         record = self.model.record(0)
         # Set related fields NULL if we don't have fee. This is required for correct transfer processing
-        fee_amount = record.value(self.model.fieldIndex("fee"))
-        if not fee_amount:
-            fee_amount = 0
-        if abs(float(fee_amount)) < Setup.CALC_TOLERANCE:
+        fee_amount = Decimal(record.value(self.model.fieldIndex("fee")))
+        if fee_amount == Decimal('0'):
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee_account")), None)
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee")), None)
         if record.value(self.model.fieldIndex("asset")) == 0:   # Store None if asset isn't selected
@@ -157,12 +156,12 @@ class TransferWidget(AbstractOperationDetails):
         new_record = super().prepareNew(account_id)
         new_record.setValue("withdrawal_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         new_record.setValue("withdrawal_account", account_id)
-        new_record.setValue("withdrawal", 0)
+        new_record.setValue("withdrawal", '0')
         new_record.setValue("deposit_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         new_record.setValue("deposit_account", 0)
-        new_record.setValue("deposit", 0)
+        new_record.setValue("deposit", '0')
         new_record.setValue("fee_account", 0)
-        new_record.setValue("fee", 0)
+        new_record.setValue("fee", '0')
         new_record.setValue("asset", None)
         new_record.setValue("note", None)
         return new_record

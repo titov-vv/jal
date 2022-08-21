@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal, Slot, QObject
+from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtWidgets import QHeaderView
 from jal.ui.reports.ui_category_report import Ui_CategoryReportWidget

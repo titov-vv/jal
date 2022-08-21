@@ -7,6 +7,8 @@ from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, Dividend
 
 
@@ -17,8 +19,8 @@ class DividendWidgetDelegate(WidgetMapperDelegateBase):
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'ex_date': self.timestamp_delegate,
                           'asset_id': self.symbol_delegate,
-                          'amount': self.float_delegate,
-                          'tax': self.float_delegate}
+                          'amount': self.decimal_delegate,
+                          'tax': self.decimal_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -150,10 +152,10 @@ class DividendWidget(AbstractOperationDetails):
 
     def refreshAssetPrice(self):
         if self.type.currentIndex() == Dividend.StockDividend or self.type.currentIndex() == Dividend.StockVesting:
-            price = JalDB().get_quote(self.asset_widget.selected_id,
-                                      JalDB().get_account_currency(self.account_widget.selected_id),
-                                      self.timestamp_editor.dateTime().toSecsSinceEpoch())
-            if price is not None:
+            dividend_timestamp = self.timestamp_editor.dateTime().toSecsSinceEpoch()
+            timestamp, price = JalAsset(self.asset_widget.selected_id).quote(dividend_timestamp,
+                                                                             JalAccount(self.account_widget.selected_id).currency())
+            if timestamp == dividend_timestamp:
                 self.price_edit.setText(str(price))
                 self.price_edit.setStyleSheet('')
                 self.price_edit.setToolTip("")
@@ -171,8 +173,8 @@ class DividendWidget(AbstractOperationDetails):
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
         new_record.setValue("asset_id", 0)
-        new_record.setValue("amount", 0)
-        new_record.setValue("tax", 0)
+        new_record.setValue("amount", '0')
+        new_record.setValue("tax", '0')
         new_record.setValue("note", None)
         return new_record
 

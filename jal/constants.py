@@ -2,6 +2,7 @@ from PySide6.QtCore import Property
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication, QComboBox
 
+
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
@@ -18,9 +19,8 @@ class Setup:
     STATEMENT_PATH = "broker_statements"
     TEMPLATE_PATH = "templates"
     UPDATE_PREFIX = 'jal_delta_'
-    TARGET_SCHEMA = 37
-    CALC_TOLERANCE = 1e-10
-    DISP_TOLERANCE = 1e-4
+    TARGET_SCHEMA = 38
+    DEFAULT_ACCOUNT_PRECISION = 2
 
 
 class BookAccount:  # PREDEFINED BOOK ACCOUNTS
@@ -32,7 +32,7 @@ class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Transfers = 6
 
 
-class PredefindedAccountType:    # FIXME make a comman ancestor for constants classes
+class PredefindedAccountType:    # FIXME make a common ancestor for constants classes
     Cash = 1
     Bank = 2
     Card = 3

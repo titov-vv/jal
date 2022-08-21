@@ -1,4 +1,5 @@
 import requests
+from requests.exceptions import ConnectTimeout, ConnectionError
 import logging
 import platform
 from PySide6.QtWidgets import QApplication
@@ -42,6 +43,9 @@ def request_url(method, url, params=None, json_params=None):
                 response = session.post(url)
         else:
             raise ValueError("Unknown download method for URL")
+    except ConnectTimeout:
+        logging.error(f"URL {url}\nConnection timeout.")
+        return ''
     except ConnectionError as e:
         logging.error(f"URL {url}\nConnection error: {e}")
         return ''

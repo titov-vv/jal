@@ -1,11 +1,11 @@
 from math import log10, floor, ceil
 
-from PySide6.QtCore import Qt, QMargins, QDateTime
+from PySide6.QtCore import Qt, QMargins, QDateTime, QDate
 from PySide6.QtWidgets import QWidget, QHBoxLayout
 from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis
-from jal.db.db import JalDB
-from jal.constants import BookAccount, CustomColor
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
+from jal.constants import CustomColor
 from jal.widgets.mdi import MdiWidget
 
 
@@ -66,7 +66,7 @@ class ChartWindow(MdiWidget):
         self.account_id = account_id
         self.asset_id = asset_id
         self.currency_id = currency_id if asset_id != currency_id else 1  # Check whether we have currency or asset
-        self.asset_name = JalDB().get_asset_name(self.asset_id)
+        self.asset_name = JalAsset(self.asset_id).symbol(JalAccount(self.account_id).currency())
         self.quotes = []
         self.trades = []
         self.currency_name = ''
@@ -86,31 +86,20 @@ class ChartWindow(MdiWidget):
         self.ready = True
 
     def prepare_chart_data(self):
-        self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
-        start_time = readSQL("SELECT MAX(ts) FROM "  # Take either last "empty" timestamp
-                             "(SELECT coalesce(MAX(timestamp), 0) AS ts "
-                             "FROM ledger WHERE account_id=:account_id AND asset_id=:asset_id "
-                             "AND book_account=:assets_book AND amount_acc==0 "
-                             "UNION "  # or first timestamp where position started to appear
-                             "SELECT coalesce(MIN(timestamp), 0) AS ts "
-                             "FROM ledger WHERE account_id=:account_id AND asset_id=:asset_id "
-                             "AND book_account=:assets_book AND amount_acc!=0)",
-                             [(":account_id", self.account_id), (":asset_id", self.asset_id),
-                              (":assets_book", BookAccount.Assets)])
-        # Get asset quotes
-        query = executeSQL("SELECT timestamp, quote FROM quotes "
-                           "WHERE asset_id=:asset_id AND currency_id=:currency_id AND timestamp>:last",
-                           [(":asset_id", self.asset_id), (":currency_id", self.currency_id), (":last", start_time)])
-        while query.next():
-            quote = readSQLrecord(query, named=True)
-            self.quotes.append({'timestamp': quote['timestamp'] * 1000, 'quote': quote['quote']})  # timestamp to ms
-        # Get deals prices
-        query = executeSQL("SELECT timestamp, price, qty FROM trades "
-                           "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp>=:last",
-                           [(":account_id", self.account_id), (":asset_id", self.asset_id), (":last", start_time)])
-        while query.next():
-            trade = readSQLrecord(query, named=True)
-            self.trades.append({'timestamp': trade['timestamp'] * 1000, 'price': trade['price'], 'qty': trade['qty']})
+        account = JalAccount(self.account_id)
+        asset = JalAsset(self.asset_id)
+        self.currency_name = JalAsset(account.currency()).symbol()
+        positions = account.open_trades_list(asset)
+        start_time = min([x['operation'].timestamp() for x in positions]) - 2592000  # Shift back by 30 days
+        quotes = asset.quotes(start_time, QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(), self.currency_id)
+        for quote in quotes:
+            self.quotes.append({'timestamp': quote[0] * 1000, 'quote': quote[1]})  # timestamp to ms
+        for trade in positions:
+            self.trades.append({
+                'timestamp': trade['operation'].timestamp() * 1000,  # timestamp to ms
+                'price': trade['price'],
+                'qty': trade['remaining_qty']
+            })
         if self.quotes or self.trades:
             min_price = min([x['quote'] for x in self.quotes] + [x['price'] for x in self.trades])
             max_price = max([x['quote'] for x in self.quotes] + [x['price'] for x in self.trades])

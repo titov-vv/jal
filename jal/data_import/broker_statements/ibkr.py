@@ -2,18 +2,19 @@ import logging
 import re
 from datetime import datetime
 from itertools import groupby
+from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ManipulateDate
-from jal.db.db import JalDB
-from jal.db.helpers import executeSQL, readSQLrecord
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.operations import Dividend
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
 
 JAL_STATEMENT_CLASS = "StatementIBKR"
-
+IBKR_CALCULATION_PRECISION = 10
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKRCashOp:
@@ -103,7 +104,8 @@ class IBKR_Account:
             else:
                 new_id = max([0] + [x['id'] for x in accounts_list]) + 1
                 account_ids.append(new_id)
-                account = {"id": new_id, "number": number, "currency": currency}
+                account = {"id": new_id, "number": number,
+                           "currency": currency, "precision": IBKR_CALCULATION_PRECISION}
                 accounts_list.append(account)
         if account_ids:
             if len(account_ids) == 1:
@@ -357,6 +359,7 @@ class StatementIBKR(StatementXML):
     def load_accounts(self, balances):
         for i, balance in enumerate(sorted(balances, key=lambda x: x['currency'])):
             balance['id'] = i + 1
+            balance['precision'] = IBKR_CALCULATION_PRECISION
             self._data[FOF.ACCOUNTS].append(balance)
 
     def load_assets(self, assets):
@@ -726,7 +729,6 @@ class StatementIBKR(StatementXML):
         for i, vesting in enumerate(vestings):
             vesting['id'] = asset_payments_base + i
             vesting['type'] = FOF.PAYMENT_STOCK_VESTING
-            # self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[FOF.ASSET_PAYMENTS].append(vesting)
             cnt += 1
         logging.info(self.tr("Stock vestings loaded: ") + f"{cnt} ({len(vestings)})")
@@ -816,7 +818,7 @@ class StatementIBKR(StatementXML):
         parts = parts.groupdict()
         self.set_asset_counry(tax['asset'], parts['country'].lower())
         description = parts['description']
-        previous_tax = tax['amount'] if tax['amount'] >= 0 else 0
+        previous_tax = Decimal(tax['amount']) if Decimal(tax['amount']) >= Decimal('0') else Decimal('0')
         new_tax = -tax['amount'] if tax['amount'] < 0 else 0
 
         dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['asset'], previous_tax, new_tax, description)
@@ -844,25 +846,23 @@ class StatementIBKR(StatementXML):
                      (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
                      and x['asset'] == asset_id and x['account'] == account_id]
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
-        currency = [x for x in self._data[FOF.ASSETS] if x["id"] == account['currency']][0]
-        currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == currency['id']][0]
-        db_account = JalDB().get_account_id(account['number'], currency_symbol['symbol'])
+        db_account = JalAccount(data=account, search=True, create=False).id()
         asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
         isin = asset['isin'] if 'isin' in asset else ''
         symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
-        db_asset = JalDB().get_asset_id({'isin': isin, 'symbol': symbols[0]['symbol']})
-        if db_account is not None and db_asset is not None:
-            query = executeSQL(
-                "SELECT -id AS id, -account_id AS account, timestamp, number, "
-                "-asset_id AS asset, amount, tax, note as description FROM dividends "
-                "WHERE type=:div AND account_id=:account_id AND asset_id=:asset_id",
-                [(":div", Dividend.Dividend), (":account_id", db_account), (":asset_id", db_asset)],
-                forward_only=True)
-            while query.next():
-                db_dividend = readSQLrecord(query, named=True)
-                db_dividend['asset'] = asset_id
-                db_dividend['account'] = account_id
-                dividends.append(db_dividend)
+        db_asset = JalAsset(data={'isin': isin, 'symbol': symbols[0]['symbol']}, search=True, create=False).id()
+        if db_account and db_asset:
+            for db_dividend in Dividend.get_list(db_account, db_asset, Dividend.Dividend):
+                dividends.append({
+                    "id": -db_dividend.oid(),
+                    "account": account_id,
+                    "asset": asset_id,
+                    "timestamp": db_dividend.timestamp(),
+                    "number": db_dividend.number(),
+                    "amount": float(db_dividend.amount()),
+                    "tax": float(db_dividend.tax()),
+                    "description": db_dividend.note()
+                })
         if datetime.utcfromtimestamp(timestamp).timetuple().tm_yday < 75:
             # We may have wrong date in taxes before March, 15 due to tax correction
             range_start, _range_end = ManipulateDate.PreviousYear(day=datetime.utcfromtimestamp(timestamp))
@@ -870,7 +870,7 @@ class StatementIBKR(StatementXML):
         else:
             # For any other day - use exact time match
             dividends = [x for x in dividends if x['timestamp'] == timestamp]
-        dividends = [x for x in dividends if 'tax' not in x or (abs(x['tax'] - prev_tax) < 0.0001)]
+        dividends = [x for x in dividends if 'tax' not in x or (abs(Decimal(x['tax']) - prev_tax) < 0.0001)]
         dividends = sorted(dividends, key=lambda x: x['timestamp'])
 
         # Choose either Dividends or Payments in liue with regards to note of the matching tax

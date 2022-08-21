@@ -1,10 +1,13 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 
-from jal.constants import BookAccount
-from jal.db.operations import LedgerTransaction
-from jal.db.helpers import readSQLrecord, executeSQL
-from jal.db.db import JalDB
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.data_export.dlsg import DLSG
+
+
+COUNTRY_NA_ID = 0
+COUNTRY_RUSSIA_ID = 1
 
 
 class TaxesFlowRus:
@@ -19,85 +22,92 @@ class TaxesFlowRus:
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
 
         # collect data for period start
-        JalDB().set_view_param("last_quotes", "timestamp", int, self.year_begin)
-        JalDB().set_view_param("last_assets", "timestamp", int, self.year_begin)
-        query = executeSQL("SELECT a.number AS account, c.symbol AS currency, h.currency_id=h.asset_id AS is_currency, "
-                           "SUM(h.qty*h.quote) AS value "
-                           "FROM last_assets h "
-                           "LEFT JOIN accounts a ON h.account_id=a.id "
-                           "LEFT JOIN currencies c ON h.currency_id=c.id "
-                           "WHERE h.qty != 0 AND a.country_id > 1 "
-                           "GROUP BY account, currency, is_currency "
-                           "ORDER BY account, is_currency, currency")
-        while query.next():
-            values = readSQLrecord(query, named=True)
-            self.append_flow_values(values, "begin")
+        accounts = JalAccount.get_all_accounts(active_only=False)
+        values = []
+        for account in accounts:
+            if account.country() == COUNTRY_NA_ID or account.country() == COUNTRY_RUSSIA_ID:
+                continue
+            assets = account.assets_list(self.year_begin)
+            assets_value = Decimal('0')
+            for asset_data in assets:
+                assets_value += asset_data['amount'] * asset_data['asset'].quote(self.year_begin, account.currency())[1]
+            if assets_value != Decimal('0'):
+                values.append({
+                    'account': account.number(),
+                    'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': False,
+                    'value': assets_value
+                })
+            money = account.get_asset_amount(self.year_begin, account.currency())
+            if money != Decimal('0'):
+                values.append({
+                    'account': account.number(),
+                    'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': True,
+                    'value': money
+                })
+        values = sorted(values, key=lambda x: (x['account'], x['is_currency'], x['currency']))
+        for item in values:
+            self.append_flow_values(item, "begin")
 
         # collect data for period end
-        JalDB().set_view_param("last_quotes", "timestamp", int, self.year_end)
-        JalDB().set_view_param("last_assets", "timestamp", int, self.year_end)
-        query = executeSQL(
-            "SELECT a.number AS account, c.symbol AS currency, h.currency_id=h.asset_id AS is_currency, "
-            "SUM(h.qty*h.quote) AS value "
-            "FROM last_assets h "
-            "LEFT JOIN accounts a ON h.account_id=a.id "
-            "LEFT JOIN currencies c ON h.currency_id=c.id "
-            "WHERE h.qty != 0 AND a.country_id > 1 "
-            "GROUP BY account, currency, is_currency "
-            "ORDER BY account, is_currency, currency")
-        while query.next():
-            values = readSQLrecord(query, named=True)
-            self.append_flow_values(values, "end")
+        # TODO - Optimize and combine with data collection for period start as routine is actually the same
+        values = []
+        for account in accounts:
+            if account.country() == COUNTRY_NA_ID or account.country() == COUNTRY_RUSSIA_ID:
+                continue
+            assets = account.assets_list(self.year_end)
+            assets_value = Decimal('0')
+            for asset_data in assets:
+                assets_value += asset_data['amount'] * asset_data['asset'].quote(self.year_end, account.currency())[1]
+            if assets_value != Decimal('0'):
+                values.append({
+                    'account': account.number(),
+                    'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': False,
+                    'value': assets_value
+                })
+            money = account.get_asset_amount(self.year_end, account.currency())
+            if money != Decimal('0'):
+                values.append({
+                    'account': account.number(),
+                    'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': True,
+                    'value': money
+                })
+        values = sorted(values, key=lambda x: (x['account'], x['is_currency'], x['currency']))
+        for item in values:
+            self.append_flow_values(item, "end")
 
-        # collect money ins/outs
-        query = executeSQL("SELECT a.number AS account, c.symbol AS currency, 1 AS is_currency, SUM(l.amount) AS value "
-                           "FROM accounts a "
-                           "LEFT JOIN currencies c ON a.currency_id=c.id "
-                           "LEFT JOIN ledger l ON l.account_id=a.id AND (l.book_account=:money OR l.book_account=:debt) "
-                           "AND l.timestamp>=:begin AND l.timestamp<=:end "
-                           "WHERE a.country_id>1 AND l.amount>0 "
-                           "GROUP BY l.account_id", [(":money", BookAccount.Money), (":debt", BookAccount.Liabilities),
-                                                     (":begin", self.year_begin), (":end", self.year_end)])
-        while query.next():
-            values = readSQLrecord(query, named=True)
-            self.append_flow_values(values, "in")
-        query = executeSQL("SELECT a.number AS account, c.symbol AS currency, 1 AS is_currency, SUM(-l.amount) AS value "
-                           "FROM accounts a "
-                           "LEFT JOIN currencies c ON a.currency_id=c.id "
-                           "LEFT JOIN ledger l ON l.account_id=a.id AND (l.book_account=:money OR l.book_account=:debt) "
-                           "AND l.timestamp>=:begin AND l.timestamp<=:end "
-                           "WHERE a.country_id>1 AND l.amount<0 "
-                           "GROUP BY l.account_id", [(":money", BookAccount.Money), (":debt", BookAccount.Liabilities),
-                                                     (":begin", self.year_begin), (":end", self.year_end)])
-        while query.next():
-            values = readSQLrecord(query, named=True)
-            self.append_flow_values(values, "out")
-
-        # collect assets ins/outs
-        query = executeSQL("SELECT a.number AS account, c.symbol AS currency, 0 AS is_currency, SUM(l.value) AS value "
-                           "FROM accounts a "
-                           "LEFT JOIN currencies c ON a.currency_id=c.id "
-                           "LEFT JOIN ledger l ON l.account_id=a.id AND l.book_account=:assets AND l.op_type!=:ca "
-                           "AND l.timestamp>=:begin AND l.timestamp<=:end "
-                           "WHERE a.country_id>1 AND l.value>0 "
-                           "GROUP BY l.account_id",
-                           [(":assets", BookAccount.Assets), (":ca", LedgerTransaction.CorporateAction),
-                            (":begin", self.year_begin), (":end", self.year_end)])
-        while query.next():
-            values = readSQLrecord(query, named=True)
-            self.append_flow_values(values, "in")
-        query = executeSQL("SELECT a.number AS account, c.symbol AS currency, 0 AS is_currency, SUM(-l.value) AS value "
-                           "FROM accounts a "
-                           "LEFT JOIN currencies c ON a.currency_id=c.id "
-                           "LEFT JOIN ledger l ON l.account_id=a.id AND l.book_account=:assets AND l.op_type!=:ca "
-                           "AND l.timestamp>=:begin AND l.timestamp<=:end "
-                           "WHERE a.country_id>1 AND l.value<0 "
-                           "GROUP BY l.account_id",
-                           [(":assets", BookAccount.Assets), (":ca", LedgerTransaction.CorporateAction),
-                            (":begin", self.year_begin), (":end", self.year_end)])
-        while query.next():
-            values = readSQLrecord(query, named=True)
-            self.append_flow_values(values, "out")
+        # collect money and assets ins/outs
+        # FIXME - repetition of similar code and similar method calls - to be optimized
+        for account in accounts:
+            if account.country() == COUNTRY_NA_ID or account.country() == COUNTRY_RUSSIA_ID:
+                continue
+            money_in = account.money_flow_in(self.year_begin, self.year_end)
+            if money_in != Decimal('0'):
+                self.append_flow_values({
+                    'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': True, 'value': money_in
+                }, "in")
+            money_out = account.money_flow_out(self.year_begin, self.year_end)
+            if money_out != Decimal('0'):
+                self.append_flow_values({
+                    'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': True, 'value': money_out
+                }, "out")
+            assets_in = account.assets_flow_in(self.year_begin, self.year_end)
+            if assets_in != Decimal('0'):
+                self.append_flow_values({
+                    'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': False, 'value': assets_in
+                }, "in")
+            assets_out = account.assets_flow_out(self.year_begin, self.year_end)
+            if assets_out != Decimal('0'):
+                self.append_flow_values({
+                    'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
+                    'is_currency': False, 'value': assets_out
+                }, "out")
 
         report = []
         for account in self.flows:
@@ -112,9 +122,9 @@ class TaxesFlowRus:
                     for key in ['begin', 'in', 'out', 'end']:
                         param = f"{dtype}_{key}"
                         try:
-                            row[param] = record[dtype][key] / 1000.0
+                            row[param] = record[dtype][key] / Decimal('1000')
                         except KeyError:
-                            row[param] = 0.0
+                            row[param] = Decimal('0')
                 report.append(row)
         return report
 

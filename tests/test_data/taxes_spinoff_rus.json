@@ -11,14 +11,11 @@
     {
       "amount": 795.0,
       "amount_rub": 57765.73,
-      "asset_id": 4,
       "basis_ratio": 100.0,
       "fee": 0.3,
       "fee_rub": 21.82,
-      "full_name": "GENERAL ELECTRIC CO",
       "income_rub": 57765.73,
       "isin": "US3696041033",
-      "oid": 1,
       "operation": "Продажа",
       "price": 7.95,
       "qty": 100.0,
@@ -30,22 +27,18 @@
       "symbol": "GE",
       "t_date": 1638370239,
       "t_rate": 72.7245,
-      "trade_number": "33333",
-      "type_id": 2
+      "trade_number": "33333"
     },
     {
       "action_date": 1637353500,
       "action_number": "10302900848",
-      "asset_id": 4,
       "description": "Выделение компании WAB () из GE (US3696041033); доля выделяемого актива 10.00%",
       "isin": "US3696041033",
-      "note": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)",
       "operation": "   Корп. действие",
       "qty": 100.0,
       "report_group": 1,
       "report_template": "action",
-      "symbol": "GE",
-      "type": 2
+      "symbol": "GE"
     },
     {
       "amount": 832.5,
@@ -53,7 +46,7 @@
       "basis_ratio": 90.0,
       "fee": 0.35,
       "fee_rub": 25.53,
-      "income_rub": 0,
+      "income_rub": 0.0,
       "isin": "US3696041033",
       "operation": "      Покупка",
       "price": 8.325,
@@ -66,9 +59,7 @@
       "symbol": "GE",
       "t_date": 1635760683,
       "t_rate": 72.9538,
-      "trade_id": 1,
-      "trade_number": "11111",
-      "type_id": 2
+      "trade_number": "11111"
     },
     {
       "income_rub": 57765.73,
@@ -83,14 +74,11 @@
     {
       "amount": 0.64,
       "amount_rub": 46.54,
-      "asset_id": 5,
       "basis_ratio": 100.0,
       "fee": 0.0,
       "fee_rub": 0.0,
-      "full_name": "WABTEC CORP",
       "income_rub": 46.54,
       "isin": "",
-      "oid": 1,
       "operation": "Продажа",
       "price": 1.2,
       "qty": 0.5371,
@@ -102,22 +90,18 @@
       "symbol": "WAB",
       "t_date": 1637679039,
       "t_rate": 72.76,
-      "trade_number": "22222",
-      "type_id": 2
+      "trade_number": "22222"
     },
     {
       "action_date": 1637353500,
       "action_number": "10302900848",
-      "asset_id": 4,
       "description": "Выделение компании WAB () из GE (US3696041033); доля выделяемого актива 10.00%",
       "isin": "US3696041033",
-      "note": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)",
       "operation": "   Корп. действие",
       "qty": 100.0,
       "report_group": 2,
       "report_template": "action",
-      "symbol": "GE",
-      "type": 2
+      "symbol": "GE"
     },
     {
       "amount": 832.5,
@@ -125,7 +109,7 @@
       "basis_ratio": 10.0,
       "fee": 0.35,
       "fee_rub": 25.53,
-      "income_rub": 0,
+      "income_rub": 0.0,
       "isin": "US3696041033",
       "operation": "      Покупка",
       "price": 8.325,
@@ -138,9 +122,7 @@
       "symbol": "GE",
       "t_date": 1635760683,
       "t_rate": 72.9538,
-      "trade_id": 1,
-      "trade_number": "11111",
-      "type_id": 2
+      "trade_number": "11111"
     },
     {
       "income_rub": 46.54,

@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QMenu, QMessageBox
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
 from jal.db.helpers import load_icon
-from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 from jal.db.balances_model import BalancesModel
 from jal.db.operations_model import OperationsModel
@@ -162,7 +162,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         idx = self.operations_model.index(self.current_index.row(), 0)  # we need only row to address fields by name
         timestamp = self.operations_model.data(idx, Qt.UserRole, field="timestamp")
         account_id = self.operations_model.data(idx, Qt.UserRole, field="account_id")
-        JalDB().reconcile_account(account_id, timestamp)
+        JalAccount(account_id).reconcile(timestamp)
         self.operations_model.refresh()
 
     def refresh(self):

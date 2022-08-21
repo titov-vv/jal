@@ -1,12 +1,12 @@
 from datetime import datetime
-import decimal
+from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
 from jal.widgets.reference_selector import AssetSelector, PeerSelector, CategorySelector, TagSelector
-from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ class WidgetMapperDelegateBase(QStyledItemDelegate):
         QStyledItemDelegate.__init__(self, parent)
 
         self.timestamp_delegate = TimestampDelegate()
-        self.float_delegate = FloatDelegate(2)
+        self.decimal_delegate = FloatDelegate(2)
         self.symbol_delegate = SymbolDelegate()
         self.default = QStyledItemDelegate()
 
@@ -118,25 +118,20 @@ class FloatDelegate(QStyledItemDelegate):
         self._validator = QDoubleValidator()
         self._validator.setLocale(QLocale().system())
 
-    def formatFloatLong(self, value):
-        precision = self._tolerance
-        if self._percent:
-            value *= 100.0
-        decimal_places = -decimal.Decimal(str(value).rstrip('0')).as_tuple().exponent
-        if self._allow_tail and (decimal_places > self._tolerance):
-            precision = decimal_places
-        return QLocale().toString(value, 'f', precision)
-
     def displayText(self, value, locale):
         try:
-            amount = float(value)
+            amount = Decimal(value)
         except ValueError:
-            amount = 0.0
-        if amount > 0:
+            amount = Decimal('0')
+        if self._percent:
+            amount *= Decimal('100')
+        if amount > Decimal('0'):
             self._color = CustomColor.LightGreen
-        elif amount < 0:
+        elif amount < Decimal('0'):
             self._color = CustomColor.LightRed
-        return self.formatFloatLong(amount)
+        decimal_places = -amount.normalize().as_tuple().exponent
+        decimal_places = decimal_places if self._allow_tail and (decimal_places > self._tolerance) else self._tolerance
+        return QLocale().toString(float(amount), 'f', decimal_places)
 
     # this is required when edit operation is called from QTableView
     def createEditor(self, aParent, option, index):
@@ -146,21 +141,26 @@ class FloatDelegate(QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         try:
-            amount = float(index.model().data(index, Qt.EditRole))
-        except (ValueError, TypeError):
-            amount = 0.0
+            amount = Decimal(index.model().data(index, Qt.EditRole))
+        except (InvalidOperation):
+            amount = Decimal('0')
         if self._percent:
-            amount *= 100.0
+            amount *= Decimal('100')
+        decimal_places = -amount.normalize().as_tuple().exponent
+        decimal_places = self._tolerance if decimal_places < self._tolerance else decimal_places
         # QLocale().toString works in a bit weird way with float formatting - garbage appears after 5-6 decimal digits
         # if too long precision is specified for short number. So we need to be more precise setting precision.
-        decimal_places = -decimal.Decimal(str(amount).rstrip('0')).as_tuple().exponent
-        editor.setText(QLocale().toString(amount, 'f', decimal_places))
+        editor.setText(QLocale().toString(float(amount), 'f', decimal_places))
 
     def setModelData(self, editor, model, index):
-        value = QLocale().toDouble(editor.text())[0]
+        number_text = editor.text()
+        number_text = number_text.replace(' ', '')
+        number_text = number_text.replace(QLocale().groupSeparator(), '')
+        number_text = number_text.replace(QLocale().decimalPoint(), '.')
+        value = Decimal(number_text) if number_text else Decimal('0')
         if self._percent:
-            value /= 100.0
-        model.setData(index, value)
+            value /= Decimal('100')
+        model.setData(index, str(value))
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
@@ -185,8 +185,9 @@ class FloatDelegate(QStyledItemDelegate):
 # Delegate to apply currency filter for AssetSelector widgets based on current account
 class SymbolDelegate(QStyledItemDelegate):
     def setEditorData(self, editor, index):
-        account_currency = JalDB().get_account_currency(
-            index.model().data(index.sibling(index.row(), index.model().fieldIndex('account_id')), Qt.EditRole))
+        account_currency = JalAccount(index.model().data(index.sibling(index.row(),
+                                                                       index.model().fieldIndex('account_id')),
+                                                         Qt.EditRole)).currency()
         editor.setFilterValue(account_currency)
         QStyledItemDelegate.setEditorData(self, editor, index)
 
@@ -259,14 +260,16 @@ class LookupSelectorDelegate(QStyledItemDelegate):
 
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
+        self._type = 0
+        self._table = ''
+        self._field = ''
 
     def displayText(self, value, locale):
-        item_name = ''
-        query = executeSQL(f"SELECT {self._field} FROM {self._table} WHERE id=:id", [(":id", value)])
-        while query.next():
-            readSQLrecord(query)
-            item_name = item_name + '/' + readSQLrecord(query) if item_name else readSQLrecord(query)
-        return item_name
+        item_name = JalDB.get_db_value(self._table, self._field, "id", value)
+        if item_name is None:
+            return ''
+        else:
+            return item_name
 
     def createEditor(self, aParent, option, index):
         if self._type == self.Category:
@@ -318,4 +321,3 @@ class AssetSelectorDelegate(LookupSelectorDelegate):
         self._type = LookupSelectorDelegate.Asset
         self._table = "assets_ext"
         self._field = "symbol"
-# -----------------------------------------------------------------------------------------------------------------------

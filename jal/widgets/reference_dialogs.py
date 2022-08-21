@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
-from PySide6.QtWidgets import QToolBar, QAbstractItemView
+from PySide6.QtWidgets import QAbstractItemView
 from jal.constants import PredefindedAccountType, PredefinedAsset
 from jal.db.helpers import readSQL
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
@@ -9,7 +9,6 @@ from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
-from jal.net.downloader import QuoteDownloader
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -24,7 +23,8 @@ class AccountListModel(AbstractReferenceListModel):
                          ("number", self.tr("Account #")),
                          ("reconciled_on", self.tr("Reconciled @")),
                          ("organization_id", self.tr("Bank/Broker")),
-                         ("country_id", self.tr("CC"))]
+                         ("country_id", self.tr("CC")),
+                         ("precision", self.tr("Precision"))]
         self._sort_by = "name"
         self._group_by = "type_id"
         self._hidden = ["id", "type_id"]
@@ -175,11 +175,12 @@ class AssetListDialog(ReferenceDataDialog):
         PredefinedAsset().load2combo(self.GroupCombo)
         self.group_id = 1
 
-        self.toolbar = QToolBar(self)
-        self.search_layout.addWidget(self.toolbar)
-        action = self.toolbar.addAction(self.tr("Update data"))
-        action.setToolTip(self.tr("Update assets data from their exchanges"))
-        action.triggered.connect(self.updateExchangeData)
+        # TODO Probably we need to re-create a button to allow update of asset name/info from exchanges
+        # self.toolbar = QToolBar(self)
+        # self.search_layout.addWidget(self.toolbar)
+        # action = self.toolbar.addAction(self.tr("Update data"))
+        # action.setToolTip(self.tr("Update assets data from their exchanges"))
+        # action.triggered.connect(self.updateExchangeData)
 
     def locateItem(self, item_id):
         type_id = self.model.getAssetType(item_id)
@@ -188,9 +189,6 @@ class AssetListDialog(ReferenceDataDialog):
         self.GroupCombo.setCurrentIndex(type_id-1)
         item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
         self.DataView.setCurrentIndex(item_idx)
-
-    def updateExchangeData(self):
-        QuoteDownloader().updataData()
 
     def customEditor(self):
         return AssetDialog()

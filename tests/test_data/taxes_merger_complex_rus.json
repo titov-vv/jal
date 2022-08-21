@@ -14,12 +14,9 @@
       "basis_ratio": 100.0,
       "fee": 0.20447255,
       "fee_rub": 14.84,
-      "full_name": "GINKGO BIOWORKS HOLDINGS INC",
       "income_rub": 43588.1,
       "isin": "US37611X1000",
       "operation": "Продажа",
-      "oid": 1,
-      "asset_id": 5,
       "price": 10.05,
       "qty": 60.0,
       "report_group": 1,
@@ -30,30 +27,26 @@
       "symbol": "DNA",
       "t_date": 1633533335,
       "t_rate": 72.5686,
-      "trade_number": "4131958719",
-      "type_id": 2
+      "trade_number": "4131958719"
     },
     {
       "action_date": 1631823900,
       "action_number": "17747623336",
-      "description": "Реорганизация компании, конвертация 95.00% стоимости 60.0 SRNGU (KYG8354H1002) в 60.0 DNA (US37611X1000)",
-      "asset_id": 6,
+      "description": "Реорганизация компании, конвертация 95.00% стоимости 60 SRNGU (KYG8354H1002) в 60 DNA (US37611X1000)",
       "isin": "KYG8354H1002",
-      "note": "SRNGU(G8354H100) CASH and STOCK MERGER (Acquisition) DNA WS 1 FOR 5, US37611X1000 1 FOR 1 AND USD 1.23 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)",
       "operation": "   Корп. действие",
       "qty": 111.0,
       "report_group": 1,
       "report_template": "action",
-      "symbol": "SRNGU",
-      "type": 1
+      "symbol": "SRNGU"
     },
     {
       "amount": 623.28,
       "amount_rub": 45774.99,
       "basis_ratio": 95.0,
-      "fee": 0.3565153278688524,
+      "fee": 0.3565153278688525,
       "fee_rub": 26.01,
-      "income_rub": 0,
+      "income_rub": 0.0,
       "isin": "KYG8354H1002",
       "operation": "      Покупка",
       "price": 10.388,
@@ -66,14 +59,12 @@
       "symbol": "SRNGU",
       "t_date": 1631008683,
       "t_rate": 72.9538,
-      "trade_id": 1,
-      "trade_number": "4057396877",
-      "type_id": 2
+      "trade_number": "4057396877"
     },
     {
       "income_rub": 43588.1,
       "report_template": "totals",
-      "spending_rub": 43525.78999999999
+      "spending_rub": 43525.79
     },
     {
       "amount": 731.85,
@@ -81,12 +72,9 @@
       "basis_ratio": 100.0,
       "fee": 0.309058685,
       "fee_rub": 22.0,
-      "full_name": "GINKGO BIOWORKS HOLDINGS INC",
       "income_rub": 52001.97,
       "isin": "US37611X1000",
       "operation": "Продажа",
-      "oid": 1,
-      "asset_id": 5,
       "price": 14.35,
       "qty": 51.0,
       "report_group": 2,
@@ -97,22 +85,18 @@
       "symbol": "DNA",
       "t_date": 1634655039,
       "t_rate": 71.1714,
-      "trade_number": "4160926315",
-      "type_id": 2
+      "trade_number": "4160926315"
     },
     {
       "action_date": 1631823900,
       "action_number": "17747623336",
-      "description": "Реорганизация компании, конвертация 95.00% стоимости 51.0 SRNGU (KYG8354H1002) в 51.0 DNA (US37611X1000)",
-      "asset_id": 6,
+      "description": "Реорганизация компании, конвертация 95.00% стоимости 51 SRNGU (KYG8354H1002) в 51 DNA (US37611X1000)",
       "isin": "KYG8354H1002",
-      "note": "SRNGU(G8354H100) CASH and STOCK MERGER (Acquisition) DNA WS 1 FOR 5, US37611X1000 1 FOR 1 AND USD 1.23 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)",
       "operation": "   Корп. действие",
       "qty": 111.0,
       "report_group": 2,
       "report_template": "action",
-      "symbol": "SRNGU",
-      "type": 1
+      "symbol": "SRNGU"
     },
     {
       "amount": 10.39,
@@ -120,7 +104,7 @@
       "basis_ratio": 95.0,
       "fee": 0.36245725,
       "fee_rub": 26.44,
-      "income_rub": 0,
+      "income_rub": 0.0,
       "isin": "KYG8354H1002",
       "operation": "      Покупка",
       "price": 10.388,
@@ -133,17 +117,15 @@
       "symbol": "SRNGU",
       "t_date": 1631008683,
       "t_rate": 72.9538,
-      "trade_id": 1,
-      "trade_number": "4057396877",
-      "type_id": 2
+      "trade_number": "4057396877"
     },
     {
       "amount": 493.0,
       "amount_rub": 35849.53,
       "basis_ratio": 95.0,
-      "fee": 0.3602572499999999,
+      "fee": 0.36025725,
       "fee_rub": 26.21,
-      "income_rub": 0,
+      "income_rub": 0.0,
       "isin": "KYG8354H1002",
       "operation": "      Покупка",
       "price": 9.86,
@@ -156,14 +138,12 @@
       "symbol": "SRNGU",
       "t_date": 1631534345,
       "t_rate": 72.76,
-      "trade_id": 2,
-      "trade_number": "4072660868",
-      "type_id": 2
+      "trade_number": "4072660868"
     },
     {
       "income_rub": 52001.97,
       "report_template": "totals",
-      "spending_rub": 34853.969999999994
+      "spending_rub": 34853.97
     },
     {
       "description": "Сделки по бумаге: DNA WS - DNA 31DEC27 11.5 C",
@@ -176,12 +156,9 @@
       "basis_ratio": 100.0,
       "fee": 0.423717318,
       "fee_rub": 30.81,
-      "full_name": "DNA 31DEC27 11.5 C",
       "income_rub": 6298.28,
       "isin": "US37611X1182",
       "operation": "Продажа",
-      "oid": 1,
-      "asset_id": 4,
       "price": 3.94,
       "qty": 22.0,
       "report_group": 3,
@@ -192,22 +169,18 @@
       "symbol": "DNA WS",
       "t_date": 1632483314,
       "t_rate": 72.7245,
-      "trade_number": "4103255040",
-      "type_id": 6
+      "trade_number": "4103255040"
     },
     {
       "action_date": 1631823900,
       "action_number": "17747623336",
-      "description": "Реорганизация компании, конвертация 5.00% стоимости 111.0 SRNGU (KYG8354H1002) в 22.0 DNA WS (US37611X1182)",
-      "asset_id": 6,
+      "description": "Реорганизация компании, конвертация 5.00% стоимости 111 SRNGU (KYG8354H1002) в 22 DNA WS (US37611X1182)",
       "isin": "KYG8354H1002",
-      "note": "SRNGU(G8354H100) CASH and STOCK MERGER (Acquisition) DNA WS 1 FOR 5, US37611X1000 1 FOR 1 AND USD 1.23 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)",
       "operation": "   Корп. действие",
       "qty": 111.0,
       "report_group": 3,
       "report_template": "action",
-      "symbol": "SRNGU",
-      "type": 1
+      "symbol": "SRNGU"
     },
     {
       "amount": 633.67,
@@ -215,7 +188,7 @@
       "basis_ratio": 5.0,
       "fee": 0.36245725,
       "fee_rub": 26.44,
-      "income_rub": 0,
+      "income_rub": 0.0,
       "isin": "KYG8354H1002",
       "operation": "      Покупка",
       "price": 10.388,
@@ -228,17 +201,15 @@
       "symbol": "SRNGU",
       "t_date": 1631008683,
       "t_rate": 72.9538,
-      "trade_id": 1,
-      "trade_number": "4057396877",
-      "type_id": 2
+      "trade_number": "4057396877"
     },
     {
       "amount": 493.0,
       "amount_rub": 35849.53,
       "basis_ratio": 5.0,
-      "fee": 0.3602572499999999,
+      "fee": 0.36025725,
       "fee_rub": 26.21,
-      "income_rub": 0,
+      "income_rub": 0.0,
       "isin": "KYG8354H1002",
       "operation": "      Покупка",
       "price": 9.86,
@@ -251,9 +222,7 @@
       "symbol": "SRNGU",
       "t_date": 1631534345,
       "t_rate": 72.76,
-      "trade_id": 2,
-      "trade_number": "4072660868",
-      "type_id": 2
+      "trade_number": "4072660868"
     },
     {
       "income_rub": 6298.28,

@@ -5,15 +5,17 @@ import sys
 import os
 import logging
 from datetime import datetime, timezone
+from decimal import Decimal
 from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset, PredefindedAccountType
+from jal.db.helpers import get_app_path
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
-from jal.db.helpers import account_last_date, get_app_path
-from jal.db.db import JalDB
-from jal.db.operations import Dividend, CorporateAction
+from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.widgets.account_select import SelectAccountDialog
 from jal.net.downloader import QuoteDownloader
 
@@ -74,6 +76,8 @@ class Statement_ImportError(Exception):
 
 # -----------------------------------------------------------------------------------------------------------------------
 class Statement(QObject):   # derived from QObject to have proper string translation
+    RU_PRICE_TOLERANCE = 1e-4   # TODO Probably need to switch imports to Decimal and remove it
+
     _asset_types = {
         FOF.ASSET_MONEY: PredefinedAsset.Money,
         FOF.ASSET_STOCK: PredefinedAsset.Stock,
@@ -163,8 +167,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['type'] != FOF.ASSET_MONEY:
                 continue
             symbol = self._find_in_list(self._data[FOF.SYMBOLS], "asset", asset['id'])
-            asset_id = JalDB().get_asset_id({'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]})
-            if asset_id is not None:
+            asset_id = JalAsset(data={'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]},
+                                search=True, create=False).id()
+            if asset_id:
                 symbol['asset'] = -asset_id
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("currency", old_id, asset_id)
@@ -176,8 +181,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['id'] < 0:  # already matched
                 continue
             if 'isin' in asset:
-                asset_id = JalDB().get_asset_id({'isin': asset['isin']})
-                if asset_id is not None:
+                asset_id = JalAsset(data={'isin': asset['isin']}, search=True, create=False).id()
+                if asset_id:
                     old_id, asset['id'] = asset['id'], -asset_id
                     self._update_id("asset", old_id, asset_id)
 
@@ -187,8 +192,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['asset'] < 0:  # already matched
                 continue
             if 'reg_number' in asset:
-                asset_id = JalDB().get_asset_id({'reg_number': asset['reg_number']})
-                if asset_id is not None:
+                asset_id = JalAsset(data={'reg_number': asset['reg_number']}, search=True, create=False).id()
+                if asset_id:
                     asset = self._find_in_list(self._data[FOF.ASSETS], "id", asset['asset'])
                     old_id, asset['id'] = asset['id'], -asset_id
                     self._update_id("asset", old_id, asset_id)
@@ -203,15 +208,17 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset", symbol['asset'])
             if data is not None:
                 self._uppend_keys_from(search_data, data, ['expiry'])
-            asset_id = JalDB().get_asset_id(search_data)
-            if asset_id is not None:
+            asset_id = JalAsset(data=search_data, search=True, create=False).id()
+            if asset_id:
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("asset", old_id, asset_id)
 
     # Check and replace IDs for Accounts
     def _match_account_ids(self):
         for account in self._data[FOF.ACCOUNTS]:
-            account_id = JalDB().find_account(account['number'], -account['currency'])
+            account_data = account.copy()
+            account_data['currency'] = -account['currency']
+            account_id = JalAccount(data=account_data, search=True, create=False).id()
             if account_id:
                 old_id, account['id'] = account['id'], -account_id
                 self._update_id("account", old_id, account_id)
@@ -291,7 +298,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         accounts = self._data[FOF.ACCOUNTS]
         for account in accounts:
             if account['id'] < 0:  # Checks if report is after last transaction recorded for account.
-                if period[0] < account_last_date(-account['id']):
+                if period[0] < JalAccount(-account['id']).last_operation_date():
                     if QMessageBox().warning(None, self.tr("Confirmation"),
                                              self.tr("Statement period starts before last recorded operation for the account. Continue import?"),
                                              QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
@@ -299,18 +306,17 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     def _import_assets(self, assets):
         for asset in assets:
-            isin = asset['isin'] if 'isin' in asset else ''
-            name = asset['name'] if 'name' in asset else ''
-            country_code = asset['country'] if 'country' in asset else ''
             if asset['id'] < 0:
-                JalDB().update_asset_data(-asset['id'], {'isin': isin, 'name': name, 'country': country_code})
+                JalAsset(-asset['id']).update_data(asset)
                 continue
-            asset_id = JalDB().add_asset(self._asset_types[asset['type']], name, isin, country_code=country_code)
-            if asset_id:
-                old_id, asset['id'] = asset['id'], -asset_id
-                self._update_id("asset", old_id, asset_id)
+            asset_data = asset.copy()
+            asset_data['type'] = self._asset_types[asset_data['type']]
+            new_asset = JalAsset(data=asset_data, search=False, create=True)
+            if new_asset.id():
+                old_id, asset['id'] = asset['id'], -new_asset.id()
+                self._update_id("asset", old_id, new_asset.id())
                 if asset['type'] == FOF.ASSET_MONEY:
-                    self._update_id("currency", old_id, asset_id)
+                    self._update_id("currency", old_id, new_asset.id())
             else:
                 raise Statement_ImportError(self.tr("Can't create asset: ") + f"{asset}")
 
@@ -329,13 +335,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     source = self._sources[symbol['note']]
                 except KeyError:
                     source = MarketDataFeed.NA
-            JalDB().add_symbol(-symbol['asset'], symbol['symbol'], -symbol['currency'], note, data_source=source)
+            JalAsset(-symbol['asset']).add_symbol(symbol['symbol'], -symbol['currency'], note, data_source=source)
 
     def _import_asset_data(self, data):
         for detail in data:
             if detail['asset'] > 0:
                 raise Statement_ImportError(self.tr("Asset data aren't linked to asset: ") + f"{detail}")
-            JalDB().update_asset_data(-detail['asset'], detail)
+            JalAsset(-detail['asset']).update_data(detail)
     
     def _import_accounts(self, accounts):
         for account in accounts:
@@ -343,10 +349,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 continue
             if account['currency'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched currency for account: ") + f"{account}")
-            account_id = JalDB().add_account(account['number'], -account['currency'])
-            if account_id:
-                old_id, account['id'] = account['id'], -account_id
-                self._update_id("account", old_id, account_id)
+            account_data = account.copy()
+            account_data['type'] = PredefindedAccountType.Investment if 'type' not in account_data else account_data['type']
+            account_data['currency'] = -account_data['currency']  # all currencies are already in db
+            new_account = JalAccount(data=account_data, search=True, create=True)
+            if new_account.id():
+                old_id, account['id'] = account['id'], -new_account.id()
+                self._update_id("account", old_id, new_account.id())
             else:
                 raise Statement_ImportError(self.tr("Can't create account: ") + f"{account}")
     
@@ -354,15 +363,18 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         for action in actions:
             if action['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for income/spending: ") + f"{action}")
+            action['account_id'] = -action.pop('account')
             if action['peer'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched peer for income/spending: ") + f"{action}")
-            peer = JalDB().get_account_bank(-action['account']) if action['peer'] == 0 else -action['peer']
-            lines = []
+            action['peer_id'] = -action.pop('peer')
+            if action['peer_id'] == 0:
+                action['peer_id'] = JalAccount(action['account_id']).organization()
             for line in action['lines']:
                 if line['category'] >= 0:
                     raise Statement_ImportError(self.tr("Unmatched category for income/spending: ") + f"{action}")
-                lines.append({'amount': line['amount'], 'category': -line['category'], 'note': line['description']})
-            JalDB().add_cash_transaction(-action['account'], peer, action['timestamp'], lines)
+                line['category_id'] = -line.pop('category')
+                line['note'] = line.pop('description')
+            LedgerTransaction().create_new(LedgerTransaction.IncomeSpending, action)
     
     def _import_transfers(self, transfers):
         for transfer in transfers:
@@ -372,27 +384,26 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             for asset in transfer['asset']:
                 if asset > 0:
                     raise Statement_ImportError(self.tr("Unmatched asset for transfer: ") + f"{transfer}")
-            asset_types = [JalDB().get_asset_type(-x) for x in transfer['asset']]
+            asset_types = [JalAsset(-x).type() for x in transfer['asset']]
             if asset_types[0] != asset_types[1]:
                 raise Statement_ImportError(self.tr("Impossible to convert asset type in transfer: ") + f"{transfer}")
-            asset = -transfer['asset'][0] if asset_types[0] != PredefinedAsset.Money else None
             if transfer['account'][0] == 0 or transfer['account'][1] == 0:
                 text = ''
                 pair_account = 1
                 if transfer['account'][0] == 0:  # Deposit
                     text = self.tr("Deposit of ") + f"{transfer['deposit']:.2f} " + \
-                           f"{JalDB().get_asset_name(-transfer['asset'][1])} " + \
+                           f"{JalAsset(-transfer['asset'][1]).symbol()} " + \
                            f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
                            self.tr("Select account to withdraw from:")
                     pair_account = -transfer['account'][1]
                 if transfer['account'][1] == 0:  # Withdrawal
                     text = self.tr("Withdrawal of ") + f"{transfer['withdrawal']:.2f} " + \
-                           f"{JalDB().get_asset_name(-transfer['asset'][0])} " + \
+                           f"{JalAsset(-transfer['asset'][0]).symbol()} " + \
                            f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
                            self.tr("Select account to deposit to:")
                     pair_account = -transfer['account'][0]
                 try:
-                    chosen_account = self._previous_accounts[JalDB().get_account_currency(pair_account)]
+                    chosen_account = self._previous_accounts[JalAccount(pair_account).currency()]
                 except KeyError:
                     chosen_account = self.select_account(text, pair_account, self._last_selected_account)
                 if chosen_account == 0:
@@ -402,75 +413,99 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     transfer['account'][0] = -chosen_account
                 if transfer['account'][1] == 0:
                     transfer['account'][1] = -chosen_account
-            description = transfer['description'] if 'description' in transfer else ''
-            JalDB().add_transfer(transfer['timestamp'], -transfer['account'][0], transfer['withdrawal'],
-                                 -transfer['account'][1], transfer['deposit'],
-                                 -transfer['account'][2], transfer['fee'], description, asset)
+            if asset_types[0] != PredefinedAsset.Money:
+                transfer['asset'] = -transfer['asset'][0]
+            else:
+                transfer.pop('asset')
+            if 'description' in transfer:
+                transfer['note'] = transfer.pop('description')
+            if 'number' in transfer:
+                transfer.pop('number')   # it isn't stored in Jal
+            transfer['withdrawal_timestamp'] = transfer['deposit_timestamp'] = transfer.pop('timestamp')
+            transfer['withdrawal_account'] = -transfer['account'][0]
+            transfer['deposit_account'] = -transfer['account'][1]
+            transfer['fee_account'] = -transfer['account'][2]
+            transfer.pop('account')
+            if abs(transfer['fee']) < 1e-10:  # FIXME  Need to refactor this module for decimal usage
+                transfer.pop('fee_account')
+                transfer.pop('fee')
+            LedgerTransaction().create_new(LedgerTransaction.Transfer, transfer)
 
     def _import_trades(self, trades):
         for trade in trades:
             if trade['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for trade: ") + f"{trade}")
+            trade['account_id'] = -trade.pop('account')
             if trade['asset'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched asset for trade: ") + f"{trade}")
-            note = trade['note'] if 'note' in trade else ''
+            trade['asset_id'] = -trade.pop('asset')
+            trade['qty'] = trade.pop('quantity')
             if 'cancelled' in trade and trade['cancelled']:
-                JalDB().del_trade(-trade['account'], -trade['asset'], trade['timestamp'], trade['settlement'],
-                                  trade['number'], trade['quantity'], trade['price'], trade['fee'])
+                del trade['cancelled']          # Remove extra data
+                trade['qty'] = -trade['qty']    # Change side as cancellation is an opposite operation
+                oid = LedgerTransaction.locate_operation(LedgerTransaction.Trade, trade)
+                if oid:
+                    LedgerTransaction.get_operation(LedgerTransaction.Trade, oid).delete()
                 continue
-            JalDB().add_trade(-trade['account'], -trade['asset'], trade['timestamp'], trade['settlement'],
-                              trade['number'], trade['quantity'], trade['price'], trade['fee'], note)
+            LedgerTransaction().create_new(LedgerTransaction.Trade, trade)
 
     def _import_asset_payments(self, payments):
         for payment in payments:
             if payment['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for payment: ") + f"{payment}")
+            payment['account_id'] = -payment.pop('account')
             if payment['asset'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched asset for payment: ") + f"{payment}")
-            tax = payment['tax'] if 'tax' in payment else 0
+            payment['asset_id'] = -payment.pop('asset')
+            payment['note'] = payment.pop('description')
+            if 'price' in payment:
+                JalAsset(payment['asset_id']).set_quotes(
+                    [{'timestamp': payment['timestamp'], 'quote': Decimal(str(payment.pop('price')))}],  # FIXME Here should be no conversion to str
+                    JalAccount(payment['account_id']).currency())
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
-                    JalDB().add_dividend(Dividend.Dividend, payment['timestamp'], -payment['account'],
-                                         -payment['asset'], payment['amount'], payment['description'], tax=tax)
+                    payment['type'] = Dividend.Dividend
+                    LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
                 else:  # Dividend exists, only tax to be updated
-                    JalDB().update_dividend_tax(-payment['id'], payment['tax'])
+                    dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
+                    dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_INTEREST:
-                if 'number' not in payment:
-                    payment['number'] = ''
-                JalDB().add_dividend(Dividend.BondInterest, payment['timestamp'], -payment['account'],
-                                     -payment['asset'], payment['amount'], payment['description'], payment['number'],
-                                     tax=tax)
+                payment['type'] = Dividend.BondInterest
+                LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
             elif payment['type'] == FOF.PAYMENT_STOCK_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
-                    JalDB().add_dividend(Dividend.StockDividend, payment['timestamp'], -payment['account'],
-                                         -payment['asset'], payment['amount'], payment['description'],
-                                         payment['number'], tax=tax, price=payment['price'])
+                    payment['type'] = Dividend.StockDividend
+                    LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
                 else:  # Dividend exists, only tax to be updated
-                    JalDB().update_dividend_tax(-payment['id'], payment['tax'])
+                    dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
+                    dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_STOCK_VESTING:
-                JalDB().add_dividend(Dividend.StockVesting, payment['timestamp'], -payment['account'],
-                                     -payment['asset'], payment['amount'], payment['description'],
-                                     price=payment['price'])
+                payment['type'] = Dividend.StockVesting
+                LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 
     def _import_corporate_actions(self, actions):
         for action in actions:
-            outcome = []
             if action['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for corporate action: ") + f"{action}")
+            action['account_id'] = -action.pop('account')
             if action['asset'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched asset for corporate action: ") + f"{action}")
+            action['asset_id'] = -action.pop('asset')
+            action['qty'] = action.pop('quantity')
+            action['note'] = action.pop('description')
             for item in action['outcome']:
                 if item['asset'] > 0:
                     raise Statement_ImportError(self.tr("Unmatched asset for corporate action: ") + f"{action}")
-                outcome.append(item)
+                item['asset_id'] = -item.pop('asset')
+                item['qty'] = item.pop('quantity')
+                item['value_share'] = item.pop('share')
             try:
-                action_type = self._corp_actions[action['type']]
+                action['type'] = self._corp_actions[action.pop('type')]
             except KeyError:
                 raise Statement_ImportError(self.tr("Unsupported corporate action: ") + f"{action}")
-            JalDB().add_corporate_action(-action['account'], action_type, action['timestamp'], action['number'],
-                                         -action['asset'], action['quantity'], outcome, action['description'])
+            LedgerTransaction().create_new(LedgerTransaction.CorporateAction, action)
 
     def select_account(self, text, account_id, recent_account_id=0):
         if "pytest" in sys.modules:
@@ -480,7 +515,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             return 0
         else:
             if dialog.store_account:
-                self._previous_accounts[JalDB().get_account_currency(dialog.account_id)] = dialog.account_id
+                self._previous_accounts[JalAccount(dialog.account_id).currency()] = dialog.account_id
             return dialog.account_id
 
     # Returns asset dictionary by asset id

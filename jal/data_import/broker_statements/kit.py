@@ -73,7 +73,7 @@ class StatementKIT(StatementXLS):
                 continue
             price = self._statement[headers['price']][row]
             fee = round(abs(self._statement[headers['fee_ex']][row] + self._statement[headers['fee_broker']][row]), 8)
-            if abs(abs(price * qty) - amount) >= Setup.DISP_TOLERANCE:
+            if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                 price = abs(amount / qty)
             number = self._statement[headers['number']][row]
             # Dates are loaded as datetime objects but time is loaded as string

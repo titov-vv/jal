@@ -5,7 +5,7 @@ from pytest import approx
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
-    create_actions, create_corporate_actions, create_stock_dividends
+    create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL
@@ -110,6 +110,7 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
 
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2020, 1)
+    json_decimal2float(tax_report)
     assert tax_report == report
 
 
@@ -142,6 +143,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
 
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)
+    json_decimal2float(tax_report)
     assert tax_report == report
 
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
@@ -191,6 +193,7 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
 
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)
+    json_decimal2float(tax_report)
     assert tax_report == report
 
 
@@ -224,6 +227,7 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
 
     with open(data_path + 'taxes_merger_complex_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
+    json_decimal2float(tax_report)
     assert tax_report == report
 
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
@@ -273,6 +277,7 @@ def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
 
     with open(data_path + 'taxes_spinoff_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
+    json_decimal2float(tax_report)
     assert tax_report == report
 
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
@@ -321,24 +326,25 @@ def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)
 
+    json_decimal2float(tax_report)
     with open(data_path + 'taxes_over_years_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
     assert tax_report == report
 
-    reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
-    templates = {
-        "Корп.события": "tax_rus_corporate_actions.json",
-        "ПФИ": "tax_rus_derivatives.json"
-    }
-    parameters = {
-        "period": "01.01.2021 - 31.12.2021",
-        "account": "TEST U7654321 (USD)",
-        "currency": "USD",
-        "broker_name": "IBKR",
-        "broker_iso_country": "840"
-    }
-    for section in tax_report:
-        if section not in templates:
-            continue
-        reports_xls.output_data(tax_report[section], templates[section], parameters)
-    reports_xls.save()
+    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
+    # templates = {
+    #     "Корп.события": "tax_rus_corporate_actions.json",
+    #     "ПФИ": "tax_rus_derivatives.json"
+    # }
+    # parameters = {
+    #     "period": "01.01.2021 - 31.12.2021",
+    #     "account": "TEST U7654321 (USD)",
+    #     "currency": "USD",
+    #     "broker_name": "IBKR",
+    #     "broker_iso_country": "840"
+    # }
+    # for section in tax_report:
+    #     if section not in templates:
+    #         continue
+    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
+    # reports_xls.save()

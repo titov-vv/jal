@@ -1,11 +1,22 @@
+from decimal import Decimal
 from jal.db.helpers import executeSQL
 from jal.db.operations import Dividend
 from constants import PredefinedAsset
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Helper functions for test set creation unification
-# ----------------------------------------------------------------------------------------------------------------------
+# Helper functions to convert Decimals inside nested dictionaries into flaots in order to compare with stored json
+def json_decimal2float(json_obj):
+    if type(json_obj) == dict:
+        for x in json_obj:
+            if type(json_obj[x]) == list:
+                for item in json_obj[x]:
+                    json_decimal2float(item)
+            if type(json_obj[x]) == dict:
+                json_decimal2float(json_obj[x])
+            if type(json_obj[x]) == Decimal:
+                json_obj[x] = float(str(json_obj[x]))
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples (asset_id, symbol, full_name)

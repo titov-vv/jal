@@ -1,9 +1,11 @@
+from decimal import Decimal
+
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
-from jal.db.helpers import executeSQL, readSQLrecord
-from jal.db.db import JalDB
+from jal.constants import CustomColor, PredefindedAccountType
+from jal.db.asset import JalAsset
+from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 
 
@@ -92,7 +94,7 @@ class BalancesModel(QAbstractTableModel):
     def setCurrency(self, currency_id):
         if self._currency != currency_id:
             self._currency = currency_id
-            self._currency_name = JalDB().get_asset_name(currency_id)
+            self._currency_name = JalAsset(currency_id).symbol()
             self.calculateBalances()
 
     @Slot()
@@ -117,43 +119,41 @@ class BalancesModel(QAbstractTableModel):
 
     # Populate table balances with data calculated for given parameters of model: _currency, _date, _active_only
     def calculateBalances(self):
-        JalDB().set_view_param("last_quotes", "timestamp", int, self._date)
-
-        query = executeSQL(
-            "WITH "
-            "_last_dates AS (SELECT account_id AS ref_id, MAX(timestamp) AS timestamp "
-            "FROM ledger WHERE timestamp <= :balances_timestamp GROUP BY ref_id) "
-            "SELECT a.type_id AS account_type, l.account_id AS account, "
-            "a.name AS account_name, a.currency_id AS currency, c.symbol AS currency_name, "
-            "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*q.quote ELSE l.amount END) AS balance, "
-            "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*coalesce(q.quote*r.quote/ra.quote, 0) "
-            "ELSE l.amount*coalesce(r.quote/ra.quote, 0) END) AS balance_a, "
-            "(d.timestamp - coalesce(a.reconciled_on, 0))/86400 AS unreconciled, "
-            "a.active AS active "
-            "FROM ledger AS l "
-            "LEFT JOIN accounts AS a ON l.account_id = a.id "
-            "LEFT JOIN assets_ext AS c ON c.id = a.currency_id AND c.currency_id = :base_currency "
-            "LEFT JOIN last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id "
-            "LEFT JOIN last_quotes AS r ON a.currency_id = r.asset_id AND r.currency_id = :base_currency "
-            "LEFT JOIN last_quotes AS ra ON ra.asset_id = :currency AND ra.currency_id = :base_currency "
-            "LEFT JOIN _last_dates AS d ON l.account_id = d.ref_id "
-            "WHERE (book_account=:money_book OR book_account=:assets_book OR book_account=:liabilities_book) "
-            "AND l.timestamp <= :balances_timestamp "
-            "GROUP BY l.account_id "
-            "HAVING ABS(balance)>:tolerance "
-            "ORDER BY account_type",
-            [(":currency", self._currency), (":money_book", BookAccount.Money),
-             (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
-             (":balances_timestamp", self._date), (":tolerance", Setup.DISP_TOLERANCE),
-             (":base_currency", JalSettings().getValue('BaseCurrency'))], forward_only=True)
+        balances = []
+        accounts = JalAccount.get_all_accounts(active_only=self._active_only)
+        for account in accounts:
+            value = value_adjusted = Decimal('0')
+            assets = account.assets_list(self._date)
+            # Calculate cross-rate between account currency and display currency
+            rate = JalAsset(account.currency()).quote(self._date, JalSettings().getValue('BaseCurrency'))[1] / \
+                   JalAsset(self._currency).quote(self._date, JalSettings().getValue('BaseCurrency'))[1]
+            for asset_data in assets:
+                asset = asset_data['asset']
+                asset_value = asset_data['amount'] * asset.quote(self._date, account.currency())[1]
+                value += asset_value
+                value_adjusted += asset_value * rate
+            money = account.get_asset_amount(self._date, account.currency())
+            value += money
+            value_adjusted += money * rate
+            if value != Decimal('0'):
+                balances.append({
+                    "account_type": account.type(),
+                    "account": account.id(),
+                    "account_name": account.name(),
+                    "currency": account.currency(),
+                    "currency_name": JalAsset(account.currency()).symbol(),
+                    "balance": value,
+                    "balance_a": value_adjusted,
+                    "unreconciled": (account.last_operation_date() - account.reconciled_at())/86400,
+                    "active": account.is_active()
+                })
+        balances = sorted(balances, key=lambda x: (x['account_type']))
         self._data = []
+        field_names = ["account_type", "account", "account_name", "currency", "currency_name", "balance", "balance_a",
+                       "unreconciled", "active", "level"]   # TODO It is better to take names from 'balances' dict
         current_type = 0
-        field_names = list(map(query.record().fieldName, range(query.record().count()))) + ['level']
-        while query.next():
-            values = readSQLrecord(query, named=True)
+        for values in balances:
             values['level'] = 0
-            if self._active_only and (values['active'] == 0):
-                continue
             if values['account_type'] != current_type:
                 if current_type != 0:
                     sub_total = sum([row['balance_a'] for row in self._data if row['account_type'] == current_type])

@@ -16,9 +16,9 @@ class TradeWidgetDelegate(WidgetMapperDelegateBase):
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'settlement': self.timestamp_delegate,
                           'asset_id': self.symbol_delegate,
-                          'qty': self.float_delegate,
-                          'price': self.float_delegate,
-                          'fee': self.float_delegate}
+                          'qty': self.decimal_delegate,
+                          'price': self.decimal_delegate,
+                          'fee': self.decimal_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -124,9 +124,9 @@ class TradeWidget(AbstractOperationDetails):
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
         new_record.setValue("asset_id", 0)
-        new_record.setValue("qty", 0)
-        new_record.setValue("price", 0)
-        new_record.setValue("fee", 0)
+        new_record.setValue("qty", '0')
+        new_record.setValue("price", '0')
+        new_record.setValue("fee", '0')
         new_record.setValue("note", None)
         return new_record
 

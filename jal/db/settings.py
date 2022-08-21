@@ -1,41 +1,28 @@
-import logging
-from PySide6.QtSql import QSqlDatabase, QSqlQuery
-from jal.constants import Setup
+from jal.db.db import JalDB
 
 
-class JalSettings:
+class JalSettings(JalDB):
     def __init__(self):
-        self.db = QSqlDatabase.database(Setup.DB_CONNECTION)
-        if not self.db.isValid():
-            self.db = None
-            logging.fatal("DB connection is invalid")
-            return
-        if not self.db.isOpen():
-            self.db = None
-            logging.fatal("DB connection is not open")
-            return
+        super().__init__()
 
     def getValue(self, key, default=None):
-        get_query = QSqlQuery(self.db)
-        get_query.setForwardOnly(True)
-        get_query.prepare("SELECT value FROM settings WHERE name=:key")
-
-        value = default
-        get_query.bindValue(":key", key)
-        if not get_query.exec():
-            if not default:
-                logging.fatal(f"Failed to get settings for key='{key}'")
-            return value
-        if get_query.next():
-            value = get_query.value(0)
+        value = self._readSQL("SELECT value FROM settings WHERE name=:key", [(":key", key)])
+        if value is None:
+            value = default
         return value
 
     def setValue(self, key, value):
-        set_query = QSqlQuery(self.db)
-        set_query.prepare("INSERT OR REPLACE INTO settings(id, name, value) "
-                          "VALUES((SELECT id FROM settings WHERE name=:key), :key, :value)")
-        set_query.bindValue(":key", key)
-        set_query.bindValue(":value", value)
-        if not set_query.exec():
-            logging.fatal(f"Failed to set settings key='{key}' to value='{value}'")
-        self.db.commit()
+        self._executeSQL("INSERT OR REPLACE INTO settings(id, name, value) "
+                         "VALUES((SELECT id FROM settings WHERE name=:key), :key, :value)",
+                         [(":key", key), (":value", value)], commit=True)
+
+    # Returns 2-letter language code that corresponds to current 'Language' settings in DB
+    def getLanguage(self):
+        lang_id = self.getValue('Language', default=1)
+        return self._readSQL("SELECT language FROM languages WHERE id = :language_id", [(':language_id', lang_id)])
+
+    # Set 'Language' setting in DB that corresponds to given 2-letter language code
+    def setLanguage(self, language_code):
+        lang_id = self._readSQL("SELECT id FROM languages WHERE language = :language_code",
+                                [(':language_code', language_code)])
+        self.setValue('Language', lang_id)

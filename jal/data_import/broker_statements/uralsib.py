@@ -114,7 +114,7 @@ class StatementUKFU(StatementXLS):
             currency = self._statement[headers['currency']][row]
             fee = self._statement[headers['fee_ex']][row]
             amount = self._statement[headers['amount']][row]
-            if abs(abs(price * qty) - amount) >= Setup.DISP_TOLERANCE:
+            if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                 price = abs(amount / qty)
             ts_string = self._statement[headers['date']][row] + ' ' + self._statement[headers['time']][row]
             timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
@@ -187,7 +187,7 @@ class StatementUKFU(StatementXLS):
             currency = self._statement[headers['currency']][row]
             fee = self._statement[headers['fee_broker']][row] + self._statement[headers['fee_ex']][row]
             amount = self._statement[headers['amount']][row]
-            if abs(abs(price * qty) - amount) >= Setup.DISP_TOLERANCE:
+            if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                 price = abs(amount / qty)
             ts_string = self._statement[headers['date']][row] + ' ' + self._statement[headers['time']][row]
             timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())

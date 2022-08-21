@@ -3,9 +3,10 @@ from PySide6.QtWidgets import QApplication, QDialog, QWidget, QPushButton, QComb
     QMessageBox
 from PySide6.QtSql import QSqlQuery, QSqlTableModel
 from jal.constants import Setup
-from jal.db.db import JalDB
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
-from jal.db.helpers import db_connection, readSQL
+from jal.db.helpers import db_connection
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 
@@ -34,7 +35,7 @@ class AccountButton(QPushButton):
     def setId(self, account_id):
         self.p_account_id = account_id
         if self.p_account_id:
-            self.setText(JalDB().get_account_name(account_id))
+            self.setText(JalAccount(account_id).name())
         else:
             self.setText(self.tr("ANY"))
         self.changed.emit(self.p_account_id)
@@ -126,7 +127,7 @@ class CurrencyComboBox(QComboBox):
         if self.p_selected_id == new_id:
             return
         self.p_selected_id = new_id
-        name = readSQL("SELECT symbol FROM currencies WHERE id=:id", [(":id", self.p_selected_id)])
+        name = JalAsset(self.p_selected_id).symbol()
         if self.currentIndex() == self.findText(name):
             return
         self.setCurrentIndex(self.findText(name))
@@ -179,7 +180,7 @@ class OptionalCurrencyComboBox(QWidget):
             return
         self._id = new_value
         self.updateView()
-        name = JalDB().get_asset_name(self._id)
+        name = JalAsset(self._id).symbol()
         self.name_updated.emit('' if name is None else name)
 
     currency_id = Property(int, getId, setId, notify=changed, user=True)

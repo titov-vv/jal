@@ -1,12 +1,22 @@
 import os
 import logging
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
-from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from jal.constants import Setup
+from decimal import Decimal
 
 
 # FIXME all database calls should be via JalDB (or mate) class. Get rid of SQL calls from other code
+
+# -------------------------------------------------------------------------------------------------------------------
+# Return "canonical" string for decimal number
+def format_decimal(d) -> str:
+    return str(d.normalize())
+
+# Removes exponent and trailing zeros from Decimal number
+def remove_exponent(d) -> str:
+    return d.quantize(Decimal(1)) if d == d.to_integral() else d.normalize()
+
 
 # -------------------------------------------------------------------------------------------------------------------
 # Returns absolute path to a folder from where application was started
@@ -34,15 +44,6 @@ def db_connection():
     if not db.isOpen():
         logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
     return db
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def db_triggers_disable():
-    _ = executeSQL("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
-
-# -------------------------------------------------------------------------------------------------------------------
-def db_triggers_enable():
-    _ = executeSQL("UPDATE settings SET value=1 WHERE name='TriggersEnabled'", commit=True)
 
 # -------------------------------------------------------------------------------------------------------------------
 # prepares SQL query from given sql_text
@@ -107,39 +108,9 @@ def readSQLrecord(query, named=False):
         else:
             values.append(query.value(i))
     if values:
-        if len(values) == 1:
+        if len(values) == 1 and not named:
             return values[0]
         else:
             return values
     else:
         return None
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def get_category_name(category_id):
-    return readSQL("SELECT c.name FROM categories AS c WHERE c.id=:category_id", [(":category_id", category_id)])
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def get_account_name(account_id):
-    return readSQL("SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def get_country_by_code(country_code):
-    if not country_code:
-        return 0
-    country_id = readSQL("SELECT id FROM countries WHERE code=:code", [(":code", country_code)], check_unique=True)
-    if country_id is None:
-        country_id = 0
-        logging.warning(QApplication.translate('DB', "Unknown country code: ") + f"'{country_code}'")
-    return country_id
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def account_last_date(account_id):
-    last_timestamp = readSQL("SELECT MAX(o.timestamp) FROM operation_sequence AS o "
-                             "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.id=:account_id",
-                             [(":account_id", account_id)])
-    last_timestamp = 0 if last_timestamp == '' else last_timestamp
-    return last_timestamp

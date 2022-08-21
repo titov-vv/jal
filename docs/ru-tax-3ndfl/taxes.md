@@ -51,8 +51,7 @@
 6. В меню Data -> Peers поменяйте название "Bank for ..." на "Interactive Brokers".
    
 7. После загрузки вы можете выбрать полный интервал времени и нужный счёт, чтобы проверить корректность импорта данных:  
-![Main window](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/main_window.png?raw=true)  
-Конечный баланс счёта может иметь незначительный отклонения - у меня они составляют несколько центов. Они связаны с тем, что Interactive Brokers округляют удержанный налог в отчётах. Чтобы исправить это, вы можете проголосовать по [этой ссылке](https://interactivebrokers.com/en/general/poll/featuresPoll.php?sid=15422).
+![Main window](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/main_window.png?raw=true)
    
    Важно! Нужно импортировать XML не только за отчётный год, но и за последующий. Например, если в 2022 году делаем декларацию за 2021й, то нужно импортировать 2021, а потом 2022 по текущую дату.
    

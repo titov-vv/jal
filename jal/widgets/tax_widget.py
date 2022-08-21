@@ -7,6 +7,8 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
 from jal.widgets.mdi import MdiWidget
+from jal.db.peer import JalPeer
+from jal.db.country import JalCountry
 from jal.data_export.taxes import TaxesRus
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
@@ -96,10 +98,10 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
         parameters = {
             "period": f"{datetime.utcfromtimestamp(taxes.year_begin).strftime('%d.%m.%Y')}"
                       f" - {datetime.utcfromtimestamp(taxes.year_end - 1).strftime('%d.%m.%Y')}",
-            "account": f"{taxes.account_number} ({taxes.account_currency})",
-            "currency": taxes.account_currency,
-            "broker_name": taxes.broker_name,
-            "broker_iso_country": taxes.broker_iso_cc
+            "account": f"{taxes.account.number()} ({taxes.account.currency()})",
+            "currency": taxes.account.currency(),
+            "broker_name": JalPeer(taxes.account.organization()).name(),
+            "broker_iso_country": JalCountry(taxes.account.country()).iso_code()
         }
         for section in tax_report:
             if section not in templates:

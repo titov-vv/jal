@@ -1,4 +1,5 @@
 from pytest import approx
+from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import create_stocks, create_actions, create_trades, create_quotes, \
@@ -29,7 +30,7 @@ def test_ledger(prepare_db_ledger):
     ledger.rebuild(from_timestamp=0)
 
     # validate book amounts
-    expected_book_values = [None, 130.0, -139.0, 9.0, None, 0.0]
+    expected_book_values = [None, '1.3E+2', '-139', '9', None, '0']
     query = executeSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                        "FROM ledger GROUP BY book_account")
     while query.next():
@@ -47,8 +48,8 @@ def test_ledger(prepare_db_ledger):
     ledger.rebuild()
 
     # validate book amounts and values
-    expected_book_amounts = [None, 164.0, -150.0, -0.0, None, -14.0]
-    expected_book_values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    expected_book_amounts = [None, '164', '-1.5E+2', '0', None, '-14']
+    expected_book_values = ['0', '0', '0', '0', '0', '0']
     query = executeSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                        "FROM ledger GROUP BY book_account")
     while query.next():
@@ -66,20 +67,37 @@ def test_ledger(prepare_db_ledger):
         assert row['value_acc'] == expected_book_values[row['book_account']]
 
 
+def test_ledger_rounding(prepare_db_fifo):
+    create_stocks([(4, 'A', 'A SHARE'), (5, 'B', 'B SHARE')], currency_id=1)
+    test_trades = [
+        (1609567200, 1609653600, 4, 2.0, 100.0, 1.0),  # + 2 A @ 100.0
+        (1609891200, 1609977600, 5, -1.0, 200.0, 1.0),   # -1 B @ 200.0
+        (1610064000, 1610150400, 5, -1.0, 200.0, 1.0),   # -1 B @ 200.0
+        (1610236800, 1610323200, 5, -1.0, 200.0, 1.0)    # -1 B @ 200.0
+    ]
+    create_trades(1, test_trades)
+    test_corp_actions = [
+        (1609729200, 4, 4, 2.0, 'Split 2 A -> 3 B', [(5, 3.0, 1.0)])
+    ]
+    create_corporate_actions(1, test_corp_actions)
+
+    ledger = Ledger()
+    ledger.rebuild(from_timestamp=0)
+
+    assert Decimal(readSQL("SELECT amount_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
+    assert Decimal(readSQL("SELECT value_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
+    assert Decimal(readSQL("SELECT amount_acc FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-10400')
+    assert Decimal(readSQL("SELECT amount FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-133.34')
+
 def test_buy_sell_change(prepare_db_fifo):
     # Prepare single stock
     create_stocks([(4, 'A', 'A SHARE')], currency_id=2)
 
     test_trades = [
-        (1, 1609567200, 1609653600, 4, 10.0, 100.0, 1.0),
-        (2, 1609729200, 1609815600, 4, -7.0, 200.0, 5.0)
+        (1609567200, 1609653600, 4, 10.0, 100.0, 1.0),
+        (1609729200, 1609815600, 4, -7.0, 200.0, 5.0)
     ]
-    for trade in test_trades:
-        assert executeSQL(
-            "INSERT INTO trades (id, timestamp, settlement, account_id, asset_id, qty, price, fee) "
-            "VALUES (:id, :timestamp, :settlement, 1, :asset, :qty, :price, :fee)",
-            [(":id", trade[0]), (":timestamp", trade[1]), (":settlement", trade[2]), (":asset", trade[3]),
-             (":qty", trade[4]), (":price", trade[5]), (":fee", trade[6])]) is not None
+    create_trades(1, test_trades)
 
     # insert action between trades to shift frontier
     create_actions([(1609642800, 1, 1, [(7, 100.0)])])
@@ -90,7 +108,7 @@ def test_buy_sell_change(prepare_db_fifo):
 
     # Validate initial deal quantity
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert readSQL("SELECT qty FROM deals WHERE asset_id=4") == 7.0
+    assert readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '7'
 
     # Modify closing deal quantity
     _ = executeSQL("UPDATE trades SET qty=-5 WHERE id=2")
@@ -100,8 +118,8 @@ def test_buy_sell_change(prepare_db_fifo):
 
     # Check that deal quantity remains correct
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert readSQL("SELECT COUNT(*) FROM open_trades WHERE asset_id=4") == 1
-    assert readSQL("SELECT qty FROM deals WHERE asset_id=4") == 5.0
+    assert readSQL("SELECT COUNT(*) FROM trades_opened WHERE asset_id=4") == 1
+    assert readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '5'
 
     # Add one more trade
     assert executeSQL("INSERT INTO trades (id, timestamp, settlement, account_id, asset_id, qty, price, fee) "
@@ -113,18 +131,18 @@ def test_buy_sell_change(prepare_db_fifo):
     # Check that deal quantity remains correct
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 2
 
-    assert readSQL("SELECT COUNT(*) FROM open_trades") == 2
+    assert readSQL("SELECT COUNT(*) FROM trades_opened") == 2
 
     _ = executeSQL("DELETE FROM trades WHERE id=2", commit=True)
 
-    assert readSQL("SELECT COUNT(*) FROM open_trades") == 1
+    assert readSQL("SELECT COUNT(*) FROM trades_opened") == 1
     assert readSQL("SELECT COUNT(*) FROM ledger WHERE timestamp>=1609729200") == 0
     # Re-build ledger from last actual data
     ledger.rebuild()
 
     # Check that deal quantity remains correct
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert readSQL("SELECT qty FROM deals WHERE asset_id=4") == 8.0
+    assert readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '8'
 
 
 def test_stock_dividend_change(prepare_db_fifo):
@@ -153,7 +171,7 @@ def test_stock_dividend_change(prepare_db_fifo):
     ledger.rebuild(from_timestamp=0)
 
     # Validate initial deal quantity
-    assert readSQL("SELECT COUNT(*) FROM deals WHERE asset_id=4") == 4
+    assert readSQL("SELECT COUNT(*) FROM trades_closed WHERE asset_id=4") == 4
 
     # Modify stock dividend
     executeSQL("UPDATE dividends SET amount=3.0 WHERE asset_id=4")
@@ -162,7 +180,7 @@ def test_stock_dividend_change(prepare_db_fifo):
     ledger.rebuild()
 
     # Check that deal quantity remains correct
-    assert readSQL("SELECT COUNT(*) FROM deals WHERE asset_id=4") == 4
+    assert readSQL("SELECT COUNT(*) FROM trades_closed WHERE asset_id=4") == 4
 
     # Put quotation back and rebuild
     create_quotes(4, 2, [(1643907900, 54.0)])
@@ -329,12 +347,12 @@ def test_fifo(prepare_db_fifo):
     assert readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=18") == 200
 
     # totals
-    assert readSQL("SELECT COUNT(*) FROM deals") == 41
-    assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type=:trade AND close_op_type=:trade",
+    assert readSQL("SELECT COUNT(*) FROM trades_closed") == 41
+    assert readSQL("SELECT COUNT(*) FROM trades_closed WHERE open_op_type=:trade AND close_op_type=:trade",
                   [(":trade", LedgerTransaction.Trade)]) == 29
-    assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type!=:corp_action OR close_op_type!=:corp_action",
+    assert readSQL("SELECT COUNT(*) FROM trades_closed WHERE open_op_type!=:corp_action OR close_op_type!=:corp_action",
                   [(":corp_action", LedgerTransaction.CorporateAction)]) == 37
-    assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type=:corp_action AND close_op_type=:corp_action",
+    assert readSQL("SELECT COUNT(*) FROM trades_closed WHERE open_op_type=:corp_action AND close_op_type=:corp_action",
                   [(":corp_action", LedgerTransaction.CorporateAction)]) == 4
 
     # validate final amounts
@@ -344,10 +362,10 @@ def test_fifo(prepare_db_fifo):
     while query.next():
         row = readSQLrecord(query, named=True)
         if row['asset_id'] == 2:  # Checking money amount
-            assert row['amount_acc'] == 16700
+            assert Decimal(row['amount_acc']) == Decimal('16700')
         else:
-            assert row['amount_acc'] == 0
-        assert row['value_acc'] == 0
+            assert Decimal(row['amount_acc']) == Decimal('0')
+        assert Decimal(row['value_acc']) == Decimal('0')
 
 
 def test_asset_transfer(prepare_db):
