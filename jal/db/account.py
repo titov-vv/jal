@@ -4,7 +4,7 @@ from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 import jal.db.operations
 import jal.db.closed_trade
-from jal.constants import Setup, BookAccount, PredefindedAccountType
+from jal.constants import Setup, BookAccount, PredefindedAccountType, PredefinedAsset
 
 
 class JalAccount(JalDB):
@@ -139,15 +139,29 @@ class JalAccount(JalDB):
 
     # Return amount of asset accumulated on account at given timestamp
     def get_asset_amount(self, timestamp: int, asset_id: int) -> Decimal:
-        value = self._readSQL("SELECT amount_acc FROM ledger "
-                              "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
-                              "AND (book_account=:money OR book_account=:assets OR book_account=:liabilities) "
-                              "ORDER BY id DESC LIMIT 1",
-                              [(":account_id", self._id), (":asset_id", asset_id), (":timestamp", timestamp),
-                               (":money", BookAccount.Money), (":assets", BookAccount.Assets),
-                               (":liabilities", BookAccount.Liabilities)])
-        amount = Decimal(value) if value is not None else Decimal('0')
-        return amount
+        asset =JalAsset(asset_id)
+        if asset.type() == PredefinedAsset.Money:
+            money = self._readSQL("SELECT amount_acc FROM ledger "
+                                  "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
+                                  "AND book_account=:money ORDER BY id DESC LIMIT 1",
+                                  [(":account_id", self._id), (":asset_id", asset_id),
+                                   (":timestamp", timestamp), (":money", BookAccount.Money)])
+            money = Decimal('0') if money is None else Decimal(money)
+            debt = self._readSQL("SELECT amount_acc FROM ledger "
+                                  "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
+                                  "AND book_account=:liabilities ORDER BY id DESC LIMIT 1",
+                                  [(":account_id", self._id), (":asset_id", asset_id),
+                                   (":timestamp", timestamp), (":liabilities", BookAccount.Liabilities)])
+            debt = Decimal('0') if debt is None else Decimal(debt)
+            return money + debt
+        else:
+            value = self._readSQL("SELECT amount_acc FROM ledger "
+                                  "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
+                                  "AND book_account=:assets ORDER BY id DESC LIMIT 1",
+                                  [(":account_id", self._id), (":asset_id", asset_id),
+                                   (":timestamp", timestamp), (":assets", BookAccount.Assets)])
+            amount = Decimal(value) if value is not None else Decimal('0')
+            return amount
 
     # Returns a list of JalClosedTrade objects recorded for the account
     def closed_trades_list(self) -> list:
