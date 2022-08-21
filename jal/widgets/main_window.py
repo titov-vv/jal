@@ -2,6 +2,8 @@ import json
 import os
 import base64
 import logging
+from math import log10
+from decimal import Decimal
 from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QDir, QLocale, QMetaObject
@@ -253,7 +255,11 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             for asset_id in totals[account_id]:
                 amount = account.get_asset_amount(timestamp, asset_id)
                 if amount is not None:
-                    if abs(totals[account_id][asset_id] - amount) <= Setup.DISP_TOLERANCE:
+                    delta = Decimal(str(totals[account_id][asset_id])) - amount
+                    if delta == Decimal('0'):
+                        account.reconcile(timestamp)
+                        self.updateWidgets()
+                    elif -log10(abs(delta)) >= account.precision():  # Can't combine condition due to log(0)
                         account.reconcile(timestamp)
                         self.updateWidgets()
                     else:
