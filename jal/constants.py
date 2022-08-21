@@ -32,7 +32,7 @@ class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Transfers = 6
 
 
-class PredefindedAccountType:    # FIXME make a comman ancestor for constants classes
+class PredefindedAccountType:    # FIXME make a common ancestor for constants classes
     Cash = 1
     Bank = 2
     Card = 3
