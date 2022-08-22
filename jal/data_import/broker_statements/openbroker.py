@@ -365,7 +365,8 @@ class StatementOpenBroker(StatementXML):
     def load_cash_operations(self, cash_operations):
         cnt = 0
         operations = {
-            'Комиссия Брокера / ': None,              # These operations are included of trade's data
+            'Комиссия Брокера / ': None,              # These data are duplicated in normal trade data
+            'Комиссия Брокера за': self.cash_fee,
             'Удержан налог на доход': None,           # Tax information is included into dividend payment data
             'Удержан налог на купонный доход': None,  # Tax information is included into interest payment data
             'Поставлены на торги средства клиента': self.transfer_in,
@@ -434,6 +435,12 @@ class StatementOpenBroker(StatementXML):
         new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
         payment = {'id': new_id, 'account': account_id, 'timestamp': timestamp, 'peer': 0,
                    'lines': [{'amount': amount, 'category': -PredefinedCategory.Taxes, 'description': description}]}
+        self._data[FOF.INCOME_SPENDING].append(payment)
+
+    def cash_fee(self, timestamp, account_id, amount, description):
+        new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        payment = {'id': new_id, 'account': account_id, 'timestamp': timestamp, 'peer': 0,
+                   'lines': [{'amount': amount, 'category': -PredefinedCategory.Fees, 'description': description}]}
         self._data[FOF.INCOME_SPENDING].append(payment)
 
     def cash_tax(self, timestamp, account_id, amount, description):

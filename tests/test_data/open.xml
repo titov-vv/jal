@@ -427,6 +427,7 @@
 <item operation_date="2022-04-01T00:00:00" currency_code="RUB" amount="5.89" comment="Плата за остаток на счете на ФР МБ, остаток в рублях 17913.63 за 01.04.2022" />
 <item operation_date="2022-04-25T00:00:00" currency_code="RUB" amount="-114.00" comment="Удержан налог на доход  по дивидендам Новатэк-ао-2 с клиента 12345" />
 <item operation_date="2022-04-25T00:00:00" currency_code="RUB" amount="875.40" comment="Выплата дохода клиент 12345 дивиденды Новатэк-ао-2 налог к удержанию 114.00 рублей" />
+<item operation_date="2022-06-01T00:00:00" currency_code="RUB" amount="-50.00" comment="Комиссия Брокера за выдачу справок по заявке 12345678 от 01.06.2022" />
 </spot_non_trade_money_operations>
 <spot_non_trade_security_operations>
 <item operation_date="2021-09-01T00:00:00" security_name="МТС 1P-05 " grn_code="4B02-05-04715-A-001P" quantity="-60.00000000" comment="Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05" board_name="Фондовый Рынок Московской биржи (ФР МБ)" />

@@ -45,7 +45,8 @@
     {"id": 1, "timestamp": 1647993600, "account": 1, "peer": 0, "lines": [{"amount": 100.0, "category": -6, "description": "Возврат излишне удержанного налога с клиента  12345 за 2021 год"}]},
     {"id": 2, "timestamp": 1648771200, "account": 1, "peer": 0, "lines": [{"amount": -1.0, "category": -6, "description": "Удержан налог на прочий доход с клиента 12345"}]},
     {"id": 3, "timestamp": 1648771200, "account": 1, "peer": 0, "lines": [{"amount": 5.89, "category": -8, "description": "Плата за остаток на счете на ФР МБ, остаток в рублях 17913.63 за 01.04.2022"}]},
-    {"id": 4, "timestamp": 1646092800, "account": 1, "peer": 0, "lines": [
+    {"id": 4, "timestamp": 1654041600, "account": 1, "peer": 0, "lines": [{"amount": -50.0, "category": -5, "description": "Комиссия Брокера за выдачу справок по заявке 12345678 от 01.06.2022"}]},
+    {"id": 5, "timestamp": 1646092800, "account": 1, "peer": 0, "lines": [
       {"amount": 0.11, "category": -8, "description": "Доход по сделке займа #3330448008210: 7.0 x OZON-адр"},
       {"amount": -0.07, "category": -5, "description": "Комиссия за сделку займа #3330448008210: 7.0 x OZON-адр"}
     ]}
