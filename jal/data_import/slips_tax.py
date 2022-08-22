@@ -52,7 +52,7 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         self.web_profile = QWebEngineProfile()
         self.web_interceptor = RequestInterceptor()
         self.web_interceptor.response_intercepted.connect(self.response_esia)
-        self.web_profile.setRequestInterceptor(self.web_interceptor)
+        self.web_profile.setUrlRequestInterceptor(self.web_interceptor)
         self.ESIAWebView.setPage(QWebEnginePage(self.web_profile, self))
 
         self.LoginMethodTabs.currentChanged.connect(self.on_tab_changed)
