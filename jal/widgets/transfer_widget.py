@@ -144,8 +144,8 @@ class TransferWidget(AbstractOperationDetails):
     def saveChanges(self):
         record = self.model.record(0)
         # Set related fields NULL if we don't have fee. This is required for correct transfer processing
-        fee_amount = Decimal(record.value(self.model.fieldIndex("fee")))
-        if fee_amount == Decimal('0'):
+        fee_amount = record.value(self.model.fieldIndex("fee"))
+        if not fee_amount or Decimal(fee_amount) == Decimal('0'):
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee_account")), None)
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee")), None)
         if record.value(self.model.fieldIndex("asset")) == 0:   # Store None if asset isn't selected

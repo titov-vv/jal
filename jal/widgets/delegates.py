@@ -142,7 +142,7 @@ class FloatDelegate(QStyledItemDelegate):
     def setEditorData(self, editor, index):
         try:
             amount = Decimal(index.model().data(index, Qt.EditRole))
-        except (InvalidOperation):
+        except (InvalidOperation, TypeError):   # Set to zero if we have None in database
             amount = Decimal('0')
         if self._percent:
             amount *= Decimal('100')
