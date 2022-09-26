@@ -342,7 +342,7 @@ class QuoteDownloader(QObject):
                   'enddate': datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')}
         url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-XPAR"
         quotes = post_web_data(url, params=params)
-        quotes_text = quotes.splitlines()
+        quotes_text = quotes.replace(u'\ufeff', '').splitlines()    # Remove BOM from the beginning
         if len(quotes_text) < 4:
             logging.warning(self.tr("Euronext quotes history reply is too short: ") + quotes)
             return None
