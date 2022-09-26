@@ -88,7 +88,7 @@ class QuoteDownloader(QObject):
             try:
                 data = self.data_loaders[asset.quote_source(currency)](asset, currency, from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
-                logging.warning(self.tr("No data were downloaded for ") + f"{asset}")
+                logging.warning(self.tr("No data were downloaded for ") + f"{asset.name()}")
                 continue
             if data is not None:
                 quotations = []
