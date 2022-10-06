@@ -3,10 +3,9 @@ import logging
 from PySide6.QtCore import Qt, Signal, QBuffer, QRectF
 from PySide6.QtGui import QImage, QPen, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView
-from PySide6.QtMultimedia import QMediaDevices, QCamera, QMediaCaptureSession, QImageCapture
-from PySide6.QtMultimediaWidgets import QGraphicsVideoItem
-
 try:
+    from PySide6.QtMultimedia import QMediaDevices, QCamera, QMediaCaptureSession, QImageCapture
+    from PySide6.QtMultimediaWidgets import QGraphicsVideoItem
     from pyzbar import pyzbar
     from PIL import Image, UnidentifiedImageError
 except ImportError:
