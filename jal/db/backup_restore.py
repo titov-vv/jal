@@ -2,7 +2,6 @@ from jal.constants import Setup
 import sqlite3
 import logging
 import os
-import shutil
 from dateutil import tz
 from datetime import datetime
 from tempfile import TemporaryDirectory
@@ -77,24 +76,19 @@ class JalBackup:
                     
                     abs_directory = os.path.abspath(directory)
                     abs_target = os.path.abspath(target)
-                
                     prefix = os.path.commonprefix([abs_directory, abs_target])
-                    
                     return prefix == abs_directory
                 
                 def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
-                
                     for member in tar.getmembers():
                         member_path = os.path.join(path, member.name)
                         if not is_within_directory(path, member_path):
                             raise Exception("Attempted Path Traversal in Tar File")
-                
-                    tar.extractall(path, members, numeric_owner=numeric_owner) 
-                    
+                    tar.extractall(path, members, numeric_owner=numeric_owner)
                 
                 safe_extract(tar, tmp_path)
             try:
-                shutil.move(tmp_path + os.sep + Setup.DB_PATH, self.file)
+                os.rename(tmp_path + os.sep + Setup.DB_PATH, self.file)
             except:
                 logging.warning(self.tr("Failed to restore backup file"))
                 return False
