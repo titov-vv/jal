@@ -1557,7 +1557,7 @@
     <message>
         <location filename="../db/account.py" line="25"/>
         <source>Bank for account #</source>
-        <translation type="unfinished"></translation>
+        <translation>Банк для счета №</translation>
     </message>
 </context>
 <context>
@@ -1565,22 +1565,22 @@
     <message>
         <location filename="../db/asset.py" line="144"/>
         <source>Quotations were updated: </source>
-        <translation type="unfinished">Котировки обновлены: </translation>
+        <translation>Котировки обновлены: </translation>
     </message>
     <message>
         <location filename="../db/asset.py" line="174"/>
         <source>Unexpected attempt to update ISIN for </source>
-        <translation type="unfinished">Неожиданная попытка обновить ISIN для </translation>
+        <translation>Неожиданная попытка обновить ISIN для </translation>
     </message>
     <message>
         <location filename="../db/asset.py" line="195"/>
         <source>Country updated for </source>
-        <translation type="unfinished">Страна обновлёна для </translation>
+        <translation>Страна обновлёна для </translation>
     </message>
     <message>
         <location filename="../db/asset.py" line="205"/>
         <source>Reg.number updated for </source>
-        <translation type="unfinished">Регистрационный номер обновлён для </translation>
+        <translation>Регистрационный номер обновлён для </translation>
     </message>
 </context>
 <context>
@@ -1662,7 +1662,7 @@ Application will be terminated now</source>
     <message>
         <location filename="../db/db.py" line="178"/>
         <source>Operation already present in db: </source>
-        <translation type="unfinished"></translation>
+        <translation>Транзакция уже существует в БД: </translation>
     </message>
 </context>
 <context>
@@ -4017,7 +4017,7 @@ do you want to save it?</source>
     <message>
         <location filename="../ui/quotes_update.ui" line="76"/>
         <source>Sources</source>
-        <translation type="unfinished"></translation>
+        <translation>Источники</translation>
     </message>
     <message>
         <location filename="../ui/quotes_update.ui" line="23"/>
