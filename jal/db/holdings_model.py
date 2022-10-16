@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex, QLo
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefindedAccountType
+from jal.db.helpers import localize_decimal
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
@@ -135,7 +136,7 @@ class HoldingsModel(QAbstractItemModel):
                 else:
                     decimal_places = -data['qty'].as_tuple().exponent
                     decimal_places = max(min(decimal_places, 6), 0)
-                return QLocale().toString(float(data['qty']), 'f', decimal_places)
+                return localize_decimal(Decimal(data['qty']), decimal_places)
             else:
                 return ''
         elif column == 3:

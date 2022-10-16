@@ -4,7 +4,6 @@ from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QPushButton
-from jal.constants import Setup
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase

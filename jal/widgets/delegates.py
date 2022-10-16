@@ -6,6 +6,7 @@ from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
 from jal.widgets.reference_selector import AssetSelector, PeerSelector, CategorySelector, TagSelector
 from jal.db.db import JalDB
+from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
 
 
@@ -144,23 +145,10 @@ class FloatDelegate(QStyledItemDelegate):
             amount = Decimal(index.model().data(index, Qt.EditRole))
         except (InvalidOperation, TypeError):   # Set to zero if we have None in database
             amount = Decimal('0')
-        if self._percent:
-            amount *= Decimal('100')
-        decimal_places = -amount.normalize().as_tuple().exponent
-        decimal_places = self._tolerance if decimal_places < self._tolerance else decimal_places
-        # QLocale().toString works in a bit weird way with float formatting - garbage appears after 5-6 decimal digits
-        # if too long precision is specified for short number. So we need to be more precise setting precision.
-        editor.setText(QLocale().toString(float(amount), 'f', decimal_places))
+        editor.setText(localize_decimal(amount, self._tolerance, self._percent))
 
     def setModelData(self, editor, model, index):
-        number_text = editor.text()
-        number_text = number_text.replace(' ', '')
-        number_text = number_text.replace(QLocale().groupSeparator(), '')
-        number_text = number_text.replace(QLocale().decimalPoint(), '.')
-        value = Decimal(number_text) if number_text else Decimal('0')
-        if self._percent:
-            value /= Decimal('100')
-        model.setData(index, str(value))
+        model.setData(index, delocalize_decimal(editor.text()))
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)

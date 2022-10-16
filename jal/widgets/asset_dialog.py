@@ -1,11 +1,11 @@
 from datetime import datetime
-import decimal
+from decimal import Decimal
 from PySide6.QtCore import Qt, Property, QDateTime, QLocale
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit
 from jal.ui.ui_asset_dlg import Ui_AssetDialog
 from jal.constants import PredefinedAsset, AssetData
-from jal.db.helpers import load_icon
+from jal.db.helpers import load_icon, localize_decimal
 from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate
 from jal.db.reference_models import AbstractReferenceListModel
 
@@ -230,13 +230,10 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
                     QStyledItemDelegate.setEditorData(self, editor, index)
             elif self.types[type_idx][1] == "float":
                 try:
-                    amount = float(index.model().data(index, Qt.EditRole))
+                    amount = Decimal(index.model().data(index, Qt.EditRole))
                 except (ValueError, TypeError):
-                    amount = 0.0
-                # QLocale().toString works in a bit weird way with float formatting - garbage appears after 5-6 decimal digits
-                # if too long precision is specified for short number. So we need to be more precise setting precision.
-                decimal_places = -decimal.Decimal(str(amount).rstrip('0')).as_tuple().exponent
-                editor.setText(QLocale().toString(amount, 'f', decimal_places))
+                    amount = Decimal('0')
+                editor.setText(localize_decimal(amount))
             else:
                 assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.setEditorData()"
         else:

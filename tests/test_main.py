@@ -1,13 +1,27 @@
 import os
 from shutil import copyfile
 import sqlite3
+from decimal import Decimal
 
 from tests.fixtures import project_root
 from constants import Setup
 from jal.db.db import JalDB, JalDBError, db_connection
-from jal.db.helpers import get_dbfilename
+from jal.db.helpers import get_dbfilename, localize_decimal
 from jal.db.helpers import readSQL
 from jal.db.backup_restore import JalBackup
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_number_formatting():
+    assert localize_decimal(Decimal('123.123')) == '123,123'
+    assert localize_decimal(Decimal('123.123'), percent=True) == '12\xa0312,3'
+    assert localize_decimal(Decimal('1234567890.123456789'), precision=5) == '1\xa0234\xa0567\xa0890,12346'
+    assert localize_decimal(Decimal('1234567890.12345678900')) == '1\xa0234\xa0567\xa0890,123456789'
+    assert localize_decimal(Decimal('1.234567'), precision=3) == '1,235'
+    assert localize_decimal(Decimal('123.1234567'), precision=5) == '123,12346'
+    assert localize_decimal(Decimal('1234.123'), precision=5) == '1\xa0234,12300'
+    assert localize_decimal(Decimal('120')) == '120'
+    assert localize_decimal(Decimal('13000')) == '13\xa0000'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
