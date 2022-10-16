@@ -7,6 +7,15 @@ from jal.db.helpers import format_decimal
 from jal.db.country import JalCountry
 
 
+# Helper function to convert db timestamp string into an integer and replace it as 0 if error happens
+def db_timestamp2int(timestamp_string: str) -> int:
+    try:
+        timestamp = int(timestamp_string)
+    except ValueError:
+        timestamp = 0
+    return timestamp
+
+
 class JalAsset(JalDB):
     def __init__(self, id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
         super().__init__()
@@ -117,6 +126,8 @@ class JalAsset(JalDB):
                                        [(":asset_id", self._id), (":currency_id", currency_id)])
         except TypeError:
             begin = end = 0
+        begin = db_timestamp2int(begin)
+        end = db_timestamp2int(end)
         return begin, end
 
     # Returns a quote source id defined for given currency
