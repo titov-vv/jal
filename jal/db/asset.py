@@ -95,7 +95,7 @@ class JalAsset(JalDB):
             return 0, Decimal('0')
         return int(quote[0]), Decimal(quote[1])
 
-    # Return a list of tuples (timestamp:int, quote:Decimal) of all quotes avaiable for asset
+    # Return a list of tuples (timestamp:int, quote:Decimal) of all quotes available for asset
     # for time interval begin-end
     def quotes(self, begin: int, end: int, currency_id: int) -> list:
         quotes = []
@@ -128,6 +128,16 @@ class JalAsset(JalDB):
             return MarketDataFeed.NA
         else:
             return source_id
+
+    # Returns a dict (ID-Name) of all available data sources
+    @staticmethod
+    def get_sources_list() -> dict:
+        sources = {}
+        query = JalDB._executeSQL("SELECT id, name FROM data_sources")
+        while query.next():
+            source_id, name = JalDB._readSQLrecord(query)
+            sources[source_id] = name
+        return sources
 
     # Set quotations for given currency_id. Quotations is a list of {'timestamp':int, 'quote':Decimal} values
     def set_quotes(self, quotations: list, currency_id: int) -> None:

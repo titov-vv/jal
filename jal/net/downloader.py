@@ -7,8 +7,8 @@ from io import StringIO
 import pandas as pd
 from pandas.errors import ParserError
 import json
-from PySide6.QtCore import QObject, Signal, QDate
-from PySide6.QtWidgets import QApplication, QDialog
+from PySide6.QtCore import Qt, QObject, Signal, QDate
+from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import MarketDataFeed, PredefinedAsset
@@ -27,6 +27,13 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
         self.setupUi(self)
         self.StartDateEdit.setDate(QDate.currentDate().addMonths(-1))
         self.EndDateEdit.setDate(QDate.currentDate())
+        sources = JalAsset.get_sources_list()
+        for source in sources:
+            if source != MarketDataFeed.NA:
+                item = QListWidgetItem(sources[source], self.SourcesList)
+                item.setData(Qt.UserRole, source)
+                item.setCheckState(Qt.Checked)
+                self.SourcesList.addItem(item)
 
         # center dialog with respect to parent window
         x = parent.x() + parent.width() / 2 - self.width() / 2
@@ -38,6 +45,15 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
 
     def getEndDate(self):
         return self.EndDateEdit.dateTime().toSecsSinceEpoch()
+
+    # Returns a list that contains IDs of all checked data sources
+    def getSourceList(self):
+        checked = []
+        for item_index in range(self.SourcesList.count()):
+            item = self.SourcesList.item(item_index)
+            if item.checkState() == Qt.Checked:
+                checked.append(item.data(Qt.UserRole))
+        return checked
 
 
 # ===================================================================================================================
@@ -64,10 +80,10 @@ class QuoteDownloader(QObject):
     def showQuoteDownloadDialog(self, parent):
         dialog = QuotesUpdateDialog(parent)
         if dialog.exec():
-            self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate())
+            self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate(), dialog.getSourceList())
             self.download_completed.emit()
 
-    def UpdateQuotes(self, start_timestamp, end_timestamp):
+    def UpdateQuotes(self, start_timestamp, end_timestamp, sources_list):
         self.PrepareRussianCBReader()
         assets = JalAsset.get_currencies()
         # Append base currency id to each currency as currency rate is relative to base currency
@@ -86,7 +102,10 @@ class QuoteDownloader(QObject):
             if end_timestamp < from_timestamp:
                 continue
             try:
-                data = self.data_loaders[asset.quote_source(currency)](asset, currency, from_timestamp, end_timestamp)
+                data_source = asset.quote_source(currency)
+                if data_source not in sources_list:   # skip sources that are not requested
+                    continue
+                data = self.data_loaders[data_source](asset, currency, from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
                 logging.warning(self.tr("No data were downloaded for ") + f"{asset.name()}")
                 continue

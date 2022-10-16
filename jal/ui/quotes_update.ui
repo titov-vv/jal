@@ -10,20 +10,13 @@
     <x>0</x>
     <y>0</y>
     <width>256</width>
-    <height>107</height>
+    <height>308</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Update asset's quotes</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="StartDateLbl">
-     <property name="text">
-      <string>Start date</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="1">
     <widget class="QDateEdit" name="StartDateEdit">
      <property name="displayFormat">
@@ -37,20 +30,13 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
+   <item row="3" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="EndDateLbl">
-     <property name="text">
-      <string>End date</string>
      </property>
     </widget>
    </item>
@@ -64,6 +50,55 @@
      </property>
      <property name="timeSpec">
       <enum>Qt::UTC</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="EndDateLbl">
+     <property name="text">
+      <string>End date</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="StartDateLbl">
+     <property name="text">
+      <string>Start date</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QListWidget" name="SourcesList">
+     <property name="editTriggers">
+      <set>QAbstractItemView::EditKeyPressed</set>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+     <item>
+      <property name="text">
+       <string>New Item a</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>New Item b</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string> 123</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="SourcesLbl">
+     <property name="text">
+      <string>Sources</string>
      </property>
     </widget>
    </item>
