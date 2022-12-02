@@ -134,8 +134,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     @Slot()
     def closeEvent(self, event):
-        JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry()).decode('utf-8'))
-        JalSettings().setValue('WindowState', base64.encodebytes(self.saveState()).decode('utf-8'))
+        JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
+        JalSettings().setValue('WindowState', base64.encodebytes(self.saveState().data()).decode('utf-8'))
         self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
         logging.raiseExceptions = False         # Silencing logging module exceptions
         super().closeEvent(event)
