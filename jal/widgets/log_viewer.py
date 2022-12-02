@@ -79,10 +79,11 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.notification = None
 
     def cleanNotification(self):
-        palette = self.notification.palette()
-        palette.setColor(self.notification.foregroundRole(), self.clear_color)
-        self.notification.setPalette(palette)
-        self.notification.setText("")
+        if self.notification:
+            palette = self.notification.palette()
+            palette.setColor(self.notification.foregroundRole(), self.clear_color)
+            self.notification.setPalette(palette)
+            self.notification.setText("")
 
     @Slot()
     def showLogs(self):
