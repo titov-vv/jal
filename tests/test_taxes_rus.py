@@ -8,7 +8,7 @@ from tests.helpers import create_assets, create_quotes, create_dividends, create
     create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
-from jal.db.helpers import readSQL, executeSQL
+from jal.db.db import JalDB
 from jal.db.operations import CorporateAction, Dividend
 from jal.data_export.taxes import TaxesRus
 from jal.data_export.xlsx import XLSX
@@ -136,7 +136,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
     IBKR.import_into_db()
 
     # Adjust share of result allocation to 100% of initial bond
-    executeSQL("UPDATE action_results SET value_share=1.0 WHERE asset_id=5")
+    JalDB._executeSQL("UPDATE action_results SET value_share=1.0 WHERE asset_id=5")
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
@@ -188,8 +188,8 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
 
-    assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=4") == approx(49.71)
+    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert JalDB._readSQL("SELECT profit FROM deals_ext WHERE asset_id=4") == approx(49.71)
 
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)
@@ -216,8 +216,8 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     create_quotes(2, 1, usd_rates)
 
     # Adjust share of resulting assets: 100% SRNGU -> 95% DNA + 5% DNA WS
-    executeSQL("UPDATE action_results SET value_share=0.95 WHERE asset_id=5")
-    executeSQL("UPDATE action_results SET value_share=0.05 WHERE asset_id=4")
+    JalDB._executeSQL("UPDATE action_results SET value_share=0.95 WHERE asset_id=5")
+    JalDB._executeSQL("UPDATE action_results SET value_share=0.05 WHERE asset_id=4")
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
@@ -266,8 +266,8 @@ def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
     create_quotes(2, 1, usd_rates)
 
     # Adjust share of resulting assets: 100% GE -> 90% GE + 10% WAB
-    executeSQL("UPDATE action_results SET value_share=0.9 WHERE asset_id=4")
-    executeSQL("UPDATE action_results SET value_share=0.1 WHERE asset_id=5")
+    JalDB._executeSQL("UPDATE action_results SET value_share=0.9 WHERE asset_id=4")
+    JalDB._executeSQL("UPDATE action_results SET value_share=0.1 WHERE asset_id=5")
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)

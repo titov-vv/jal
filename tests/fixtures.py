@@ -6,7 +6,7 @@ from PySide6.QtSql import QSqlDatabase
 from constants import Setup, PredefinedCategory, PredefinedAsset, AssetData
 from jal.db.db import JalDB, JalDBError
 from jal.db.settings import JalSettings
-from jal.db.helpers import executeSQL, get_dbfilename
+from jal.db.helpers import get_dbfilename
 from tests.helpers import create_assets, create_dividends
 
 
@@ -44,16 +44,16 @@ def prepare_db(project_root, tmp_path, data_path):
 
 @pytest.fixture
 def prepare_db_ledger(prepare_db):
-    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Shop')") is not None
-    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active) "
-                      "VALUES (1, 'Wallet', 1, 1)") is not None
+    assert JalDB._executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Shop')") is not None
+    assert JalDB._executeSQL("INSERT INTO accounts (type_id, name, currency_id, active) "
+                             "VALUES (1, 'Wallet', 1, 1)") is not None
 
 
 @pytest.fixture
 def prepare_db_ibkr(prepare_db):
-    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
-    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, precision) "
-                      "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1, 10)") is not None
+    assert JalDB._executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
+    assert JalDB._executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, precision) "
+                             "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1, 10)") is not None
     test_assets = [
         (4, 'VUG', 'Growth ETF', '', 2, PredefinedAsset.ETF, 0),
         (5, 'EDV', 'VANGUARD EXTENDED DUR TREAS', '', 2, PredefinedAsset.ETF, 0),
@@ -70,14 +70,14 @@ def prepare_db_ibkr(prepare_db):
 
 @pytest.fixture
 def prepare_db_fifo(prepare_db):
-    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Test Peer')") is not None
-    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
-                      "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1)") is not None
+    assert JalDB._executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Test Peer')") is not None
+    assert JalDB._executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
+                             "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1)") is not None
     # Create starting balance
-    assert executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) VALUES (1604221200, 1, 1)") is not None
-    assert executeSQL("INSERT INTO action_details (pid, category_id, amount, note) "
-                      "VALUES (1, :category, 10000.0, 'Initial balance')",
-                      [(":category", PredefinedCategory.StartingBalance)]) is not None
+    assert JalDB._executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) VALUES (1604221200, 1, 1)") is not None
+    assert JalDB._executeSQL("INSERT INTO action_details (pid, category_id, amount, note) "
+                             "VALUES (1, :category, 10000.0, 'Initial balance')",
+                             [(":category", PredefinedCategory.StartingBalance)]) is not None
 
 
 @pytest.fixture
@@ -99,7 +99,7 @@ def prepare_db_moex(prepare_db):   # Create assets in database to be updated fro
 
 @pytest.fixture
 def prepare_db_taxes(prepare_db):
-    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
-    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, country_id, precision) "
-                      "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1, 2, 3)") is not None
+    assert JalDB._executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
+    assert JalDB._executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, country_id, precision) "
+                             "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1, 2, 3)") is not None
     yield
