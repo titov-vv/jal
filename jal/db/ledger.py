@@ -105,7 +105,7 @@ class Ledger(QObject):
             params += [(":account", account_id)]
         query = JalDB()._executeSQL(query_text, params, forward_only=True)
         while query.next():
-            sequence.append(JalDB()._readSQLrecord(query, named=True))
+            sequence.append(JalDB._readSQLrecord(query, named=True))
         return sequence
 
     # Add one more transaction to 'book' of ledger.
@@ -221,7 +221,7 @@ class Ledger(QObject):
             query = JalDB()._executeSQL("SELECT op_type, id, timestamp, account_id, subtype FROM operation_sequence "
                                "WHERE timestamp >= :frontier", [(":frontier", frontier)])
             while query.next():
-                data = JalDB()._readSQLrecord(query, named=True)
+                data = JalDB._readSQLrecord(query, named=True)
                 last_timestamp = data['timestamp']
                 operation = LedgerTransaction().get_operation(data['op_type'], data['id'], data['subtype'])
                 operation.processLedger(self)
