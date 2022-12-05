@@ -1,7 +1,8 @@
 from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from jal.ui.reports.ui_deals_report import Ui_DealsReportWidget
-from jal.db.helpers import db_connection, executeSQL
+from jal.db.helpers import db_connection
+from jal.db.db import JalDB
 from jal.db.operations import CorporateAction
 from jal.widgets.delegates import TimestampDelegate, FloatDelegate
 from jal.widgets.mdi import MdiWidget
@@ -116,7 +117,7 @@ class DealsReportModel(QSqlTableModel):
         if self._account_id == 0:
             return
         if self._group_dates == 1:
-            self._query = executeSQL(
+            self._query = JalDB._executeSQL(
                 "SELECT asset, "
                 "strftime('%s', datetime(open_timestamp, 'unixepoch', 'start of day')) as o_datetime, "
                 "strftime('%s', datetime(close_timestamp, 'unixepoch', 'start of day')) as c_datetime, "
@@ -129,7 +130,7 @@ class DealsReportModel(QSqlTableModel):
                 "ORDER BY c_datetime, o_datetime",
                 [(":account_id", self._account_id), (":begin", self._begin), (":end", self._end)], forward_only=False)
         else:
-            self._query = executeSQL(
+            self._query = JalDB._executeSQL(
                 "SELECT asset, open_timestamp AS o_datetime, close_timestamp AS c_datetime, "
                 "open_price, close_price, qty, fee, profit, rel_profit, corp_action "
                 "FROM deals_ext "

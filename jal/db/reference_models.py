@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView, QMessageBox
-from jal.db.helpers import db_connection, executeSQL
+from jal.db.helpers import db_connection
 from jal.db.db import JalDB
 from jal.widgets.helpers import decodeError
 
@@ -144,8 +144,8 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
 
     def updateItemType(self, index, new_type):
         id = self.getId(index)
-        executeSQL(f"UPDATE {self._table} SET {self._group_by}=:new_type WHERE id=:id",
-                   [(":new_type", new_type), (":id", id)])
+        JalDB._executeSQL(f"UPDATE {self._table} SET {self._group_by}=:new_type WHERE id=:id",
+                          [(":new_type", new_type), (":id", id)])
 
     def filterBy(self, field_name, value):
         self._filter_by = field_name
@@ -238,8 +238,8 @@ class SqlTreeModel(QAbstractItemModel):
         item_id = index.internalId()
         col = index.column()
         db_connection().transaction()
-        _ = executeSQL(f"UPDATE {self._table} SET {self._columns[col][0]}=:value WHERE id=:id",
-                       [(":id", item_id), (":value", value)])
+        _ = JalDB._executeSQL(f"UPDATE {self._table} SET {self._columns[col][0]}=:value WHERE id=:id",
+                              [(":id", item_id), (":value", value)])
         self.dataChanged.emit(index, index, Qt.DisplayRole | Qt.EditRole)
         return True
 
@@ -280,10 +280,10 @@ class SqlTreeModel(QAbstractItemModel):
         return JalDB._readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
     def deleteWithChilderen(self, parent_id: int) -> None:
-        query = executeSQL(f"SELECT id FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
+        query = JalDB._executeSQL(f"SELECT id FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
         while query.next():
             self.deleteWithChilderen(query.value(0))
-        _ = executeSQL(f"DELETE FROM {self._table} WHERE id=:id", [(":id", parent_id)])
+        _ = JalDB._executeSQL(f"DELETE FROM {self._table} WHERE id=:id", [(":id", parent_id)])
 
     def insertRows(self, row, count, parent=None):
         if parent is None:
@@ -295,7 +295,7 @@ class SqlTreeModel(QAbstractItemModel):
 
         self.beginInsertRows(parent, row, row + count - 1)
         db_connection().transaction()
-        _ = executeSQL(f"INSERT INTO {self._table}(pid, name) VALUES (:pid, '')", [(":pid", parent_id)])
+        _ = JalDB._executeSQL(f"INSERT INTO {self._table}(pid, name) VALUES (:pid, '')", [(":pid", parent_id)])
         self.endInsertRows()
         self.layoutChanged.emit()
         return True
@@ -310,8 +310,8 @@ class SqlTreeModel(QAbstractItemModel):
 
         self.beginRemoveRows(parent, row, row + count - 1)
         db_connection().transaction()
-        query = executeSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT :row_c OFFSET :row_n",
-                           [(":pid", parent_id), (":row_c", count), (":row_n", row)])
+        query = JalDB._executeSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT :row_c OFFSET :row_n",
+                                  [(":pid", parent_id), (":row_c", count), (":row_n", row)])
         while query.next():
             self.deleteWithChilderen(query.value(0))
         self.endRemoveRows()
@@ -331,12 +331,12 @@ class SqlTreeModel(QAbstractItemModel):
         assert self.removeRows(row, 1, index.parent())
 
     def submitAll(self):
-        _ = executeSQL("COMMIT")
+        _ = JalDB._executeSQL("COMMIT")
         self.layoutChanged.emit()
         return True
 
     def revertAll(self):
-        _ = executeSQL("ROLLBACK")
+        _ = JalDB._executeSQL("ROLLBACK")
         self.layoutChanged.emit()
 
     # expand all parent elements for tree element with given index

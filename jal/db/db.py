@@ -107,25 +107,25 @@ class JalDB:
     # Enables DB triggers if enable == True and disables it otherwise
     def enable_triggers(self, enable):
         if enable:
-            _ = executeSQL("UPDATE settings SET value=1 WHERE name='TriggersEnabled'", commit=True)
+            _ = self._executeSQL("UPDATE settings SET value=1 WHERE name='TriggersEnabled'", commit=True)
         else:
-            _ = executeSQL("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
+            _ = self._executeSQL("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Set synchronous mode ON if synchronous == True and OFF it otherwise
     def set_synchronous(self, synchronous):
         if synchronous:
-            _ = executeSQL("PRAGMA synchronous = ON")
+            _ = self._executeSQL("PRAGMA synchronous = ON")
         else:
-            _ = executeSQL("PRAGMA synchronous = OFF")
+            _ = self._executeSQL("PRAGMA synchronous = OFF")
 
     # ------------------------------------------------------------------------------------------------------------------
     # Enables DB foreign keys if enable == True and disables it otherwise
     def enable_fk(self, enable):
         if enable:
-            _ = executeSQL("PRAGMA foreign_keys = ON")
+            _ = self._executeSQL("PRAGMA foreign_keys = ON")
         else:
-            _ = executeSQL("PRAGMA foreign_keys = OFF")
+            _ = self._executeSQL("PRAGMA foreign_keys = OFF")
 
     # Method loads sql script into database
     def run_sql_script(self, script_file) -> JalDBError:
@@ -134,8 +134,8 @@ class JalDB:
                 statements = sqlparse.split(sql_script)
                 for statement in statements:
                     clean_statement = sqlparse.format(statement, strip_comments=True)
-                    if executeSQL(clean_statement, commit=False) is None:
-                        _ = executeSQL("ROLLBACK")
+                    if self._executeSQL(clean_statement, commit=False) is None:
+                        _ = self._executeSQL("ROLLBACK")
                         db_connection().close()
                         return JalDBError(JalDBError.SQLFailure, f"FAILED: {clean_statement}")
                     else:

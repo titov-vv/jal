@@ -1,7 +1,8 @@
 from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from jal.ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
-from jal.db.helpers import db_connection, executeSQL
+from jal.db.helpers import db_connection
+from jal.db.db import JalDB
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.mdi import MdiWidget
@@ -69,7 +70,7 @@ class ProfitLossReportModel(QSqlTableModel):
     def calculateProfitLossReport(self):
         if self._account_id == 0:
             return
-        self._query = executeSQL(
+        self._query = JalDB._executeSQL(
             "WITH "
             "_months AS ("
             "SELECT DISTINCT(l.asset_id) AS asset_id, m.m_start AS month, MAX(q.timestamp) AS last_timestamp "

@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt, QObject, QAbstractItemModel, QModelIndex
 from PySide6.QtGui import QBrush
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.constants import BookAccount, PredefinedAsset, CustomColor
-from jal.db.helpers import executeSQL
+from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.widgets.delegates import GridLinesDelegate
 from jal.widgets.mdi import MdiWidget
@@ -248,7 +248,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
         self.configureView()
 
     def calculateIncomeSpendings(self):
-        query = executeSQL("WITH "
+        query = JalDB._executeSQL("WITH "
                            "_months AS (SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) "
                            "AS month, asset_id, MAX(timestamp) AS last_timestamp "
                            "FROM quotes AS q "
