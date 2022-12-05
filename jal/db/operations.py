@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.constants import BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset
-from jal.db.helpers import readSQL, executeSQL, format_decimal
+from jal.db.helpers import executeSQL, format_decimal
 from jal.db.db import JalDB
 import jal.db.account
 from jal.db.asset import JalAsset
@@ -111,23 +111,23 @@ class LedgerTransaction:
         return self._view_rows
 
     def _money_total(self, account_id) -> Decimal:
-        money = readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
-                        "account_id = :account_id AND book_account=:book",
-                        [(":op_type", self._otype), (":oid", self._oid),
-                         (":account_id", account_id), (":book", BookAccount.Money)])
+        money = JalDB._readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
+                               "account_id = :account_id AND book_account=:book",
+                               [(":op_type", self._otype), (":oid", self._oid),
+                                (":account_id", account_id), (":book", BookAccount.Money)])
         money = Decimal('0') if money is None else Decimal(money)
-        debt = readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
-                       "account_id = :account_id AND book_account=:book",
-                       [(":op_type", self._otype), (":oid", self._oid),
-                        (":account_id", account_id), (":book", BookAccount.Liabilities)])
+        debt = JalDB._readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
+                              "account_id = :account_id AND book_account=:book",
+                              [(":op_type", self._otype), (":oid", self._oid),
+                               (":account_id", account_id), (":book", BookAccount.Liabilities)])
         debt = Decimal('0') if debt is None else Decimal(debt)
         return money + debt
 
     def _asset_total(self, account_id, asset_id) -> Decimal:
-        amount = readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
-                         "account_id = :account_id AND asset_id AND book_account=:book",
-                         [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
-                          (":asset_id", asset_id), (":book", BookAccount.Assets)])
+        amount = JalDB._readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
+                                "account_id = :account_id AND asset_id AND book_account=:book",
+                                [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
+                                 (":asset_id", asset_id), (":book", BookAccount.Assets)])
         amount = Decimal('0') if amount is None else Decimal(amount)
         return amount
 
@@ -266,10 +266,10 @@ class IncomeSpending(LedgerTransaction):
     def __init__(self, operation_id=None):
         super().__init__(operation_id)
         self._otype = LedgerTransaction.IncomeSpending
-        self._data = readSQL("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
-                             "a.alt_currency_id AS currency FROM actions AS a "
-                             "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.id=:oid",
-                             [(":oid", self._oid)], named=True)
+        self._data = JalDB._readSQL("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
+                                    "a.alt_currency_id AS currency FROM actions AS a "
+                                    "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.id=:oid",
+                                    [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
@@ -379,14 +379,14 @@ class Dividend(LedgerTransaction):
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Dividend
         self._view_rows = 2
-        self._data = readSQL("SELECT d.type, d.timestamp, d.ex_date, d.number, d.account_id, d.asset_id, "
-                             "d.amount, d.tax, l.amount_acc AS t_qty, d.note AS note, c.name AS country "
-                             "FROM dividends AS d "
-                             "LEFT JOIN assets AS a ON d.asset_id = a.id "
-                             "LEFT JOIN countries AS c ON a.country_id = c.id "
-                             "LEFT JOIN ledger_totals AS l ON l.op_type=d.op_type AND l.operation_id=d.id "
-                             "AND l.book_account = :book_assets WHERE d.id=:oid",
-                             [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
+        self._data = JalDB._readSQL("SELECT d.type, d.timestamp, d.ex_date, d.number, d.account_id, d.asset_id, "
+                                    "d.amount, d.tax, l.amount_acc AS t_qty, d.note AS note, c.name AS country "
+                                    "FROM dividends AS d "
+                                    "LEFT JOIN assets AS a ON d.asset_id = a.id "
+                                    "LEFT JOIN countries AS c ON a.country_id = c.id "
+                                    "LEFT JOIN ledger_totals AS l ON l.op_type=d.op_type AND l.operation_id=d.id "
+                                    "AND l.book_account = :book_assets WHERE d.id=:oid",
+                                    [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
         self._subtype = self._data['type']
         self._label, self._label_color = labels[self._subtype]
         self._timestamp = self._data['timestamp']
@@ -565,8 +565,9 @@ class Trade(LedgerTransaction):
         super().__init__(operation_data)
         self._otype = LedgerTransaction.Trade
         self._view_rows = 2
-        self._data = readSQL("SELECT t.timestamp, t.settlement, t.number, t.account_id, t.asset_id, t.qty, t.price, "
-                             "t.fee, t.note FROM trades AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
+        self._data = JalDB._readSQL("SELECT t.timestamp, t.settlement, t.number, t.account_id, t.asset_id, t.qty, "
+                                    "t.price, t.fee, t.note FROM trades AS t WHERE t.id=:oid",
+                                    [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
         self._settlement = self._data['settlement']
         self._account = jal.db.account.JalAccount(self._data['account_id'])
@@ -622,10 +623,11 @@ class Trade(LedgerTransaction):
     # Searches for dividend with type BondInterest that matches trade by timestamp, account, asset and number
     # Returns None if accrued interest not found
     def get_accrued_interest(self) -> [Dividend, None]:
-        id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp AND account_id=:account AND asset_id=:asset "
-                     "AND number=:number AND type=:interest",
-                     [(":timestamp", self._timestamp), (":account", self._account.id()), (":asset", self._asset.id()),
-                      (":number", self._number), (":interest", Dividend.BondInterest)])
+        id = JalDB._readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp AND account_id=:account "
+                            "AND asset_id=:asset AND number=:number AND type=:interest",
+                            [(":timestamp", self._timestamp), (":account", self._account.id()),
+                             (":asset", self._asset.id()), (":number", self._number),
+                             (":interest", Dividend.BondInterest)])
         if id:
             return Dividend(id)
         else:
@@ -700,9 +702,9 @@ class Transfer(LedgerTransaction):
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Transfer
         self._display_type = display_type
-        self._data = readSQL("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, "
-                             "t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, t.note "
-                             "FROM transfers AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
+        self._data = JalDB._readSQL("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
+                                    "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, "
+                                    "t.note FROM transfers AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
         self._withdrawal_account = jal.db.account.JalAccount(self._data['withdrawal_account'])
         self._withdrawal_account_name = self._withdrawal_account.name()
         self._withdrawal_timestamp = self._data['withdrawal_timestamp']
@@ -876,10 +878,10 @@ class Transfer(LedgerTransaction):
                                      asset_id=self._asset.id(), value=processed_value*currency_rate)
         elif self._display_type == Transfer.Incoming:
             # get value of withdrawn asset
-            value = readSQL("SELECT value FROM ledger WHERE "
-                            "book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
-                            [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype), (":id", self._oid)],
-                            check_unique=True)
+            value = JalDB._readSQL("SELECT value FROM ledger WHERE "
+                                   "book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
+                                   [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype),
+                                    (":id", self._oid)], check_unique=True)
             if not value:
                 raise ValueError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
             else:
@@ -948,8 +950,8 @@ class CorporateAction(LedgerTransaction):
         }
         super().__init__(operation_id)
         self._otype = LedgerTransaction.CorporateAction
-        self._data = readSQL("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
-                             "FROM asset_actions AS a WHERE a.id=:oid", [(":oid", self._oid)], named=True)
+        self._data = JalDB._readSQL("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
+                                    "FROM asset_actions AS a WHERE a.id=:oid", [(":oid", self._oid)], named=True)
         results_query = executeSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
                                    [(":oid", self._oid)])
         self._results = []

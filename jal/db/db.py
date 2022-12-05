@@ -101,7 +101,7 @@ class JalDB:
     # ------------------------------------------------------------------------------------------------------------------
     # Returns current version of sqlite library
     def get_engine_version(self):
-        return readSQL("SELECT sqlite_version()")
+        return self._readSQL("SELECT sqlite_version()")
 
     # ------------------------------------------------------------------------------------------------------------------
     # Enables DB triggers if enable == True and disables it otherwise
@@ -151,7 +151,7 @@ class JalDB:
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return JalDBError(JalDBError.OutdatedDbSchema)
         db = db_connection()
-        version = readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
+        version = self._readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
         try:
             schema_version = int(version)
         except ValueError:

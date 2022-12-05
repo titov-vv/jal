@@ -3,7 +3,8 @@ from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView, QMessageBox
-from jal.db.helpers import db_connection, executeSQL, readSQL
+from jal.db.helpers import db_connection, executeSQL
+from jal.db.db import JalDB
 from jal.widgets.helpers import decodeError
 
 
@@ -89,7 +90,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         return self.getFieldValue(self.getId(index), self._default_name)
 
     def getFieldValue(self, item_id, field_name):
-        return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        return JalDB._readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
     def addElement(self, index, in_group=0):
         row = index.row() if index.isValid() else 0
@@ -178,8 +179,8 @@ class SqlTreeModel(QAbstractItemModel):
             parent_id = self.ROOT_PID
         else:
             parent_id = parent.internalId()
-        child_id = readSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
-                           [(":pid", parent_id), (":row_n", row)])
+        child_id = JalDB._readSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
+                                  [(":pid", parent_id), (":row_n", row)])
         if child_id:
             return self.createIndex(row, column, id=child_id)
         return QModelIndex()
@@ -188,13 +189,13 @@ class SqlTreeModel(QAbstractItemModel):
         if not index.isValid():
             return QModelIndex()
         child_id = index.internalId()
-        parent_id = readSQL(f"SELECT pid FROM {self._table} WHERE id=:id", [(":id", child_id)])
+        parent_id = JalDB._readSQL(f"SELECT pid FROM {self._table} WHERE id=:id", [(":id", child_id)])
         if parent_id == self.ROOT_PID:
             return QModelIndex()
-        row = readSQL(f"SELECT row_number FROM ("
-                      f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
-                      f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
-                      f"WHERE id=:id", [(":id", parent_id)])
+        row = JalDB._readSQL(f"SELECT row_number FROM ("
+                             f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
+                             f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
+                             f"WHERE id=:id", [(":id", parent_id)])
         return self.createIndex(row-1, 0, id=parent_id)
 
     def rowCount(self, parent=None):
@@ -202,7 +203,7 @@ class SqlTreeModel(QAbstractItemModel):
             parent_id = self.ROOT_PID
         else:
             parent_id = parent.internalId()
-        count = readSQL(f"SELECT COUNT(id) FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
+        count = JalDB._readSQL(f"SELECT COUNT(id) FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
         if count:
             return int(count)
         else:
@@ -223,7 +224,8 @@ class SqlTreeModel(QAbstractItemModel):
         if role == Qt.DisplayRole:
             col = index.column()
             if (col >= 0) and (col < len(self._columns)):
-                return readSQL(f"SELECT {self._columns[col][0]} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+                return JalDB._readSQL(f"SELECT {self._columns[col][0]} FROM {self._table} WHERE id=:id",
+                                      [(":id", item_id)])
             else:
                 return None
         return None
@@ -275,7 +277,7 @@ class SqlTreeModel(QAbstractItemModel):
             self.getFieldValue(item_id, self._default_name)
 
     def getFieldValue(self, item_id, field_name):
-        return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        return JalDB._readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
     def deleteWithChilderen(self, parent_id: int) -> None:
         query = executeSQL(f"SELECT id FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
@@ -346,10 +348,10 @@ class SqlTreeModel(QAbstractItemModel):
 
     # find item by ID and make it selected in associated self._view
     def locateItem(self, item_id):
-        row = readSQL(f"SELECT row_number FROM ("
-                      f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
-                      f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
-                      f"WHERE id=:id", [(":id", item_id)])
+        row = JalDB._readSQL(f"SELECT row_number FROM ("
+                             f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
+                             f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
+                             f"WHERE id=:id", [(":id", item_id)])
         if row is None:
             return
         item_idx = self.createIndex(row-1, 0, id=item_id)

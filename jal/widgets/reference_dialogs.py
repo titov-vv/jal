@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QAbstractItemView
 from jal.constants import PredefindedAccountType, PredefinedAsset
-from jal.db.helpers import readSQL
+from jal.db.db import JalDB
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, \
     PeerSelectorDelegate, AssetSelectorDelegate
@@ -55,14 +55,14 @@ class AccountListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
 
     def getAccountType(self, item_id: int) -> int:
-        type_id = readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        type_id = JalDB._readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])
         type_id = 0 if type_id is None else type_id
         return type_id
 
     def locateItem(self, item_id, use_filter=''):
-        row = readSQL(f"SELECT row_number FROM ("
-                      f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
-                      f"FROM {self._table} WHERE {use_filter}) WHERE id=:id", [(":id", item_id)])
+        row = JalDB._readSQL(f"SELECT row_number FROM ("
+                             f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
+                             f"FROM {self._table} WHERE {use_filter}) WHERE id=:id", [(":id", item_id)])
         if row is None:
             return QModelIndex()
         return self.index(row-1, 0)
@@ -136,14 +136,14 @@ class AssetListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._lookup_delegate)
 
     def getAssetType(self, item_id: int) -> int:
-        type_id = readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        type_id = JalDB._readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])
         type_id = 0 if type_id is None else type_id
         return type_id
 
     def locateItem(self, item_id, use_filter=''):
-        row = readSQL(f"SELECT row_number FROM ("
-                      f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
-                      f"FROM {self._table} WHERE {use_filter}) WHERE id=:id", [(":id", item_id)])
+        row = JalDB._readSQL(f"SELECT row_number FROM ("
+                             f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
+                             f"FROM {self._table} WHERE {use_filter}) WHERE id=:id", [(":id", item_id)])
         if row is None:
             return QModelIndex()
         return self.index(row-1, 0)
@@ -211,8 +211,8 @@ class PeerTreeModel(SqlTreeModel):
         item_id = index.internalId()
         if role == Qt.DisplayRole:
             if index.column() == 2:
-                return readSQL("SELECT COUNT(d.id) FROM agents AS p "
-                               "LEFT JOIN actions AS d ON d.peer_id=p.id WHERE p.id=:id", [(":id", item_id)])
+                return JalDB._readSQL("SELECT COUNT(d.id) FROM agents AS p "
+                                      "LEFT JOIN actions AS d ON d.peer_id=p.id WHERE p.id=:id", [(":id", item_id)])
             else:
                 return super().data(index, role)
         return None
@@ -299,8 +299,8 @@ class TagListModel(AbstractReferenceListModel):
         self._stretch = "tag"
 
     def locateItem(self, item_id, use_filter=''):
-        row = readSQL(f"SELECT row_number FROM (SELECT ROW_NUMBER() OVER (ORDER BY tag) AS row_number, id "
-                      f"FROM {self._table}) WHERE id=:id", [(":id", item_id)])
+        row = JalDB._readSQL(f"SELECT row_number FROM (SELECT ROW_NUMBER() OVER (ORDER BY tag) AS row_number, id "
+                             f"FROM {self._table}) WHERE id=:id", [(":id", item_id)])
         if row is None:
             return QModelIndex()
         return self.index(row - 1, 0)
