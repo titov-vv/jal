@@ -24,7 +24,7 @@ class JalAccount(JalDB):
                         data['organization'] = JalPeer(
                             data={'name': self.tr("Bank for account #" + str(data['number']))},
                             search=True, create=True).id()
-                    query = self._executeSQL(
+                    query = self.execSQL(
                         "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, precision) "
                         "VALUES(:type, :name, 1, :number, :currency, :organization, :precision)",
                         [(":type", data['type']), (":name", data['name']), (":number", data['number']),
@@ -49,8 +49,8 @@ class JalAccount(JalDB):
     @staticmethod
     def get_all_accounts(account_type: int = None, active_only: bool = True) -> list:
         accounts = []
-        query = JalDB._executeSQL("SELECT id, active FROM accounts WHERE type_id=:type OR :type IS NULL",
-                                  [(":type", account_type)])
+        query = JalDB.execSQL("SELECT id, active FROM accounts WHERE type_id=:type OR :type IS NULL",
+                              [(":type", account_type)])
         while query.next():
             account_id, active = JalDB._readSQLrecord(query)
             if active_only and not active:
@@ -95,16 +95,16 @@ class JalAccount(JalDB):
     def set_organization(self, peer_id: int) -> None:
         if not peer_id:
             peer_id = None
-        _ = self._executeSQL("UPDATE accounts SET organization_id=:peer_id WHERE id=:id",
-                             [(":id", self._id), (":peer_id", peer_id)])
+        _ = self.execSQL("UPDATE accounts SET organization_id=:peer_id WHERE id=:id",
+                         [(":id", self._id), (":peer_id", peer_id)])
         self._organization_id = peer_id
 
     def reconciled_at(self) -> int:
         return self._reconciled
 
     def reconcile(self, timestamp: int):
-        _ = self._executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
-                             [(":timestamp", timestamp), (":account_id", self._id)])
+        _ = self.execSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
+                         [(":timestamp", timestamp), (":account_id", self._id)])
 
     def precision(self) -> int:
         return self._precision
@@ -120,7 +120,7 @@ class JalAccount(JalDB):
     # corresponding to assets present on account at given timestamp
     def assets_list(self, timestamp: int) -> list:
         assets = []
-        query = self._executeSQL(
+        query = self.execSQL(
             "WITH _last_ids AS ("
             "SELECT MAX(id) AS id, asset_id FROM ledger "
             "WHERE account_id=:account_id AND timestamp<=:timestamp GROUP BY asset_id"
@@ -166,7 +166,7 @@ class JalAccount(JalDB):
     # Returns a list of JalClosedTrade objects recorded for the account
     def closed_trades_list(self) -> list:
         trades = []
-        query = self._executeSQL("SELECT id FROM trades_closed WHERE account_id=:account", [(":account", self._id)])
+        query = self.execSQL("SELECT id FROM trades_closed WHERE account_id=:account", [(":account", self._id)])
         while query.next():
             trades.append(jal.db.closed_trade.JalClosedTrade(self._readSQLrecord(query)))
         return trades
@@ -177,10 +177,10 @@ class JalAccount(JalDB):
     # It doesn't take 'timestamp' as a parameter as it always return current open trades, not a retrospective position
     def open_trades_list(self, asset) -> list:
         trades = []
-        query = self._executeSQL("SELECT op_type, operation_id, price, remaining_qty "
+        query = self.execSQL("SELECT op_type, operation_id, price, remaining_qty "
                                  "FROM trades_opened "
                                  "WHERE remaining_qty!='0' AND account_id=:account AND asset_id=:asset",
-                                 [(":account", self._id), (":asset", asset.id())])
+                             [(":account", self._id), (":asset", asset.id())])
         while query.next():
             op_type, oid, price, qty = self._readSQLrecord(query)
             operation = jal.db.operations.LedgerTransaction().get_operation(op_type, oid,
@@ -224,7 +224,7 @@ class JalAccount(JalDB):
             name = similar.name()[:-len(currency.symbol())] + new_currency.symbol()
         else:
             name = similar.name() + '.' + new_currency.symbol()
-        query = self._executeSQL(
+        query = self.execSQL(
             "INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, country_id, precision) "
             "SELECT type_id, :name, :currency, active, number, organization_id, country_id, precision "
             "FROM accounts WHERE id=:id", [(":id", similar.id()), (":name", name), (":currency", new_currency.id())])

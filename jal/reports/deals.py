@@ -116,7 +116,7 @@ class DealsReportModel(QSqlTableModel):
         if self._account_id == 0:
             return
         if self._group_dates == 1:
-            self._query = JalDB._executeSQL(
+            self._query = JalDB.execSQL(
                 "SELECT asset, "
                 "strftime('%s', datetime(open_timestamp, 'unixepoch', 'start of day')) as o_datetime, "
                 "strftime('%s', datetime(close_timestamp, 'unixepoch', 'start of day')) as c_datetime, "
@@ -129,7 +129,7 @@ class DealsReportModel(QSqlTableModel):
                 "ORDER BY c_datetime, o_datetime",
                 [(":account_id", self._account_id), (":begin", self._begin), (":end", self._end)], forward_only=False)
         else:
-            self._query = JalDB._executeSQL(
+            self._query = JalDB.execSQL(
                 "SELECT asset, open_timestamp AS o_datetime, close_timestamp AS c_datetime, "
                 "open_price, close_price, qty, fee, profit, rel_profit, corp_action "
                 "FROM deals_ext "

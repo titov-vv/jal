@@ -18,15 +18,15 @@ class JalCategory(JalDB):
 
     @staticmethod
     def add_or_update_mapped_name(name: str, category_id: int) -> None:  # TODO Review, should it be not static or not
-        _ = JalDB._executeSQL("INSERT OR REPLACE INTO map_category (value, mapped_to) "
+        _ = JalDB.execSQL("INSERT OR REPLACE INTO map_category (value, mapped_to) "
                               "VALUES (:item_name, :category_id)",
-                              [(":item_name", name), (":category_id", category_id)], commit=True)
+                          [(":item_name", name), (":category_id", category_id)], commit=True)
 
     # Returns a list of all names that were mapped to some category in for of {"value", "mapped_to"}
     @staticmethod
     def get_mapped_names() -> list:
         mapped_list = []
-        query = JalDB._executeSQL("SELECT value, mapped_to FROM map_category")
+        query = JalDB.execSQL("SELECT value, mapped_to FROM map_category")
         while query.next():
             mapped_list.append(JalDB._readSQLrecord(query, named=True))
         return mapped_list
@@ -34,9 +34,9 @@ class JalCategory(JalDB):
     # Returns a list of operations that include this category
     def get_operations(self, begin: int, end: int) -> list:
         operations = []
-        query = self._executeSQL("SELECT DISTINCT a.id FROM actions a LEFT JOIN action_details d ON a.id=d.pid "
+        query = self.execSQL("SELECT DISTINCT a.id FROM actions a LEFT JOIN action_details d ON a.id=d.pid "
                                  "WHERE d.category_id=:category AND a.timestamp>=:begin AND a.timestamp<:end",
-                                 [(":category", self._id), (":begin", begin), (":end", end)])
+                             [(":category", self._id), (":begin", begin), (":end", end)])
         while query.next():
             operations.append(IncomeSpending(int(JalDB._readSQLrecord(query))))
         return operations

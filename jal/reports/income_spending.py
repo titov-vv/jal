@@ -248,7 +248,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
         self.configureView()
 
     def calculateIncomeSpendings(self):
-        query = JalDB._executeSQL("WITH "
+        query = JalDB.execSQL("WITH "
                            "_months AS (SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) "
                            "AS month, asset_id, MAX(timestamp) AS last_timestamp "
                            "FROM quotes AS q "
@@ -271,7 +271,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                            "LEFT JOIN _category_amounts AS ca ON ct.id=ca.id "
                            "LEFT JOIN categories AS c ON ct.id=c.id "
                            "ORDER BY path, month_start",
-                           [(":asset_money", PredefinedAsset.Money), (":book_costs", BookAccount.Costs),
+                              [(":asset_money", PredefinedAsset.Money), (":book_costs", BookAccount.Costs),
                             (":book_incomes", BookAccount.Incomes), (":begin", self._begin), (":end", self._end),
                             (":base_currency", JalSettings().getValue('BaseCurrency'))], forward_only=True)
         self._root = ReportTreeItem(self._begin, self._end, -1, "ROOT")  # invisible root

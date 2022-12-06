@@ -103,7 +103,7 @@ class Ledger(QObject):
         if account_id:
             query_text += " AND account_id=:account"
             params += [(":account", account_id)]
-        query = JalDB._executeSQL(query_text, params, forward_only=True)
+        query = JalDB.execSQL(query_text, params, forward_only=True)
         while query.next():
             sequence.append(JalDB._readSQLrecord(query, named=True))
         return sequence
@@ -136,11 +136,11 @@ class Ledger(QObject):
                 (self.values[(book, operation.account_id(), asset_id)] != Decimal('0')):
             rounding_error = Decimal('0') - self.values[(book, operation.account_id(), asset_id)]
             self.values[(book, operation.account_id(), asset_id)] += rounding_error
-        _ = JalDB._executeSQL("INSERT INTO ledger (timestamp, op_type, operation_id, book_account, asset_id, "
+        _ = JalDB.execSQL("INSERT INTO ledger (timestamp, op_type, operation_id, book_account, asset_id, "
                                 "account_id, amount, value, amount_acc, value_acc, peer_id, category_id, tag_id) "
                                 "VALUES(:timestamp, :op_type, :operation_id, :book, :asset_id, :account_id, "
                                 ":amount, :value, :amount_acc, :value_acc, :peer_id, :category_id, :tag_id)",
-                                [(":timestamp", operation.timestamp()), (":op_type", operation.type()),
+                          [(":timestamp", operation.timestamp()), (":op_type", operation.type()),
                                  (":operation_id", operation.oid()), (":book", book), (":asset_id", asset_id),
                                  (":account_id", operation.account_id()),
                                  (":amount", format_decimal(amount)), (":value", format_decimal(value)),
@@ -209,16 +209,16 @@ class Ledger(QObject):
         logging.info(self.tr("Re-building ledger since: ") +
                      f"{datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.now()
-        _ = JalDB._executeSQL("DELETE FROM trades_closed WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
-        _ = JalDB._executeSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = JalDB._executeSQL("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = JalDB._executeSQL("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = JalDB.execSQL("DELETE FROM trades_closed WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
+        _ = JalDB.execSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = JalDB.execSQL("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = JalDB.execSQL("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
 
         JalDB().enable_triggers(False)
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
             JalDB().set_synchronous(False)
         try:
-            query = JalDB._executeSQL("SELECT op_type, id, timestamp, account_id, subtype FROM operation_sequence "
+            query = JalDB.execSQL("SELECT op_type, id, timestamp, account_id, subtype FROM operation_sequence "
                                "WHERE timestamp >= :frontier", [(":frontier", frontier)])
             while query.next():
                 data = JalDB._readSQLrecord(query, named=True)
@@ -237,7 +237,7 @@ class Ledger(QObject):
             if self.progress_bar is not None:
                 self.main_window.showProgressBar(False)
         # Fill ledger totals values
-        _ = JalDB._executeSQL("INSERT INTO ledger_totals"
+        _ = JalDB.execSQL("INSERT INTO ledger_totals"
                        "(op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc) "
                        "SELECT op_type, operation_id, timestamp, book_account, "
                        "asset_id, account_id, amount_acc, value_acc FROM ledger "

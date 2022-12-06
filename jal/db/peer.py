@@ -9,8 +9,8 @@ class JalPeer(JalDB):
             if search:
                 self._id = self._find_peer(data)
             if create and not self._id:   # If we haven't found peer before and requested to create new record
-                query = self._executeSQL("INSERT INTO agents (pid, name) VALUES (:pid, :name)",
-                                         [(":pid", data['parent']), (":name", data['name'])])
+                query = self.execSQL("INSERT INTO agents (pid, name) VALUES (:pid, :name)",
+                                     [(":pid", data['parent']), (":name", data['name'])])
                 self._id = query.lastInsertId()
         self._data = self._readSQL("SELECT name FROM agents WHERE id=:peer_id",
                                    [(":peer_id", self._id)], named=True)
@@ -29,8 +29,8 @@ class JalPeer(JalDB):
 
     @staticmethod
     def add_or_update_mapped_name(name: str, peer_id: int) -> None:  # TODO Review, should it be not static or not
-        _ = JalDB._executeSQL("INSERT OR REPLACE INTO map_peer (value, mapped_to) VALUES (:peer_name, :peer_id)",
-                              [(":peer_name", name), (":peer_id", peer_id)])
+        _ = JalDB.execSQL("INSERT OR REPLACE INTO map_peer (value, mapped_to) VALUES (:peer_name, :peer_id)",
+                          [(":peer_name", name), (":peer_id", peer_id)])
 
     def _valid_data(self, data: dict) -> bool:
         if data is None:

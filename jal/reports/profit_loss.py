@@ -69,7 +69,7 @@ class ProfitLossReportModel(QSqlTableModel):
     def calculateProfitLossReport(self):
         if self._account_id == 0:
             return
-        self._query = JalDB._executeSQL(
+        self._query = JalDB.execSQL(
             "WITH "
             "_months AS ("
             "SELECT DISTINCT(l.asset_id) AS asset_id, m.m_start AS month, MAX(q.timestamp) AS last_timestamp "

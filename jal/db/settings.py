@@ -12,9 +12,9 @@ class JalSettings(JalDB):
         return value
 
     def setValue(self, key, value):
-        self._executeSQL("INSERT OR REPLACE INTO settings(id, name, value) "
+        self.execSQL("INSERT OR REPLACE INTO settings(id, name, value) "
                          "VALUES((SELECT id FROM settings WHERE name=:key), :key, :value)",
-                         [(":key", key), (":value", value)], commit=True)
+                     [(":key", key), (":value", value)], commit=True)
 
     # Returns 2-letter language code that corresponds to current 'Language' settings in DB
     def getLanguage(self):

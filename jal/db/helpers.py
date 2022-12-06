@@ -82,28 +82,6 @@ def _db_connection():
         logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
     return db
 
-# -------------------------------------------------------------------------------------------------------------------
-# prepares SQL query from given sql_text
-# params_list is a list of tuples (":param", value) which are used to prepare SQL query
-# Current transactin will be commited if 'commit' set to true
-# Parameter 'forward_only' may be used for optimization
-# return value - QSqlQuery object (to allow iteration through result)
-def executeSQL(sql_text, params=[], forward_only=True, commit=False):
-    db = _db_connection()
-    query = QSqlQuery(db)
-    query.setForwardOnly(forward_only)
-    if not query.prepare(sql_text):
-        logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
-        return None
-    for param in params:
-        query.bindValue(param[0], param[1])
-    if not query.exec():
-        logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
-        return None
-    if commit:
-        db.commit()
-    return query
-
 
 # -------------------------------------------------------------------------------------------------------------------
 # the same as executeSQL() but after query execution it takes first line of query result and:

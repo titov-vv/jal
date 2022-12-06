@@ -69,14 +69,14 @@ class CategoryReportModel(QSqlTableModel):
     def calculateCategoryReport(self):
         if self._category_id == 0:
             return
-        self._query = JalDB._executeSQL("SELECT a.timestamp, ac.name AS account, p.name, d.amount, d.note "
+        self._query = JalDB.execSQL("SELECT a.timestamp, ac.name AS account, p.name, d.amount, d.note "
                                         "FROM actions AS a "
                                         "LEFT JOIN action_details AS d ON d.pid=a.id "
                                         "LEFT JOIN agents AS p ON p.id=a.peer_id "
                                         "LEFT JOIN accounts AS ac ON ac.id=a.account_id "
                                         "WHERE a.timestamp>=:begin AND a.timestamp<=:end "
                                         "AND d.category_id=:category_id",
-                                        [(":category_id", self._category_id), (":begin", self._begin),
+                                    [(":category_id", self._category_id), (":begin", self._begin),
                                          (":end", self._end)], forward_only=False)
         self.setQuery(self._query)
         self.modelReset.emit()

@@ -24,7 +24,7 @@ class JalAsset(JalDB):
             if search:
                 self._id = self._find_asset(data)
             if create and not self._id:   # If we haven't found peer before and requested to create new record
-                query = self._executeSQL(
+                query = self.execSQL(
                     "INSERT INTO assets (type_id, full_name, isin, country_id) "
                     "VALUES (:type, :full_name, :isin, coalesce((SELECT id FROM countries WHERE code=:country), 0))",
                     [(":type", data['type']), (":full_name", data['name']),
@@ -56,8 +56,8 @@ class JalAsset(JalDB):
     # Returns asset symbol for given currency or all symbols if no currency is given
     def symbol(self, currency: int = None) -> str:
         if currency is None:
-            query = self._executeSQL("SELECT symbol FROM asset_tickers WHERE asset_id=:asset_id AND active=1",
-                                     [(":asset_id", self._id)])
+            query = self.execSQL("SELECT symbol FROM asset_tickers WHERE asset_id=:asset_id AND active=1",
+                                 [(":asset_id", self._id)])
             symbols = []
             while query.next():
                 symbols.append(self._readSQLrecord(query))
@@ -72,20 +72,20 @@ class JalAsset(JalDB):
                                  "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency",
                                  [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)
         if existing is None:  # Deactivate old symbols and create a new one
-            _ = self._executeSQL("UPDATE asset_tickers SET active=0 WHERE asset_id=:asset_id AND currency_id=:currency",
-                                 [(":asset_id", self._id), (":currency", currency_id)])
-            _ = self._executeSQL(
+            _ = self.execSQL("UPDATE asset_tickers SET active=0 WHERE asset_id=:asset_id AND currency_id=:currency",
+                             [(":asset_id", self._id), (":currency", currency_id)])
+            _ = self.execSQL(
                 "INSERT INTO asset_tickers (asset_id, symbol, currency_id, description, quote_source) "
                 "VALUES (:asset_id, :symbol, :currency, :note, :data_source)",
                 [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
                  (":note", note), (":data_source", data_source)])
         else:  # Update data for existing symbol
             if not existing['description']:
-                _ = self._executeSQL("UPDATE asset_tickers SET description=:note WHERE id=:id",
-                                     [(":note", note), (":id", existing['id'])])
+                _ = self.execSQL("UPDATE asset_tickers SET description=:note WHERE id=:id",
+                                 [(":note", note), (":id", existing['id'])])
             if existing['quote_source'] == MarketDataFeed.NA:
-                _ = self._executeSQL("UPDATE asset_tickers SET quote_source=:data_source WHERE id=:id",
-                                     [(":data_source", data_source), (":id", existing['id'])])
+                _ = self.execSQL("UPDATE asset_tickers SET quote_source=:data_source WHERE id=:id",
+                                 [(":data_source", data_source), (":id", existing['id'])])
 
     # Returns country_id for the asset
     def country(self) -> int:
@@ -108,7 +108,7 @@ class JalAsset(JalDB):
     # for time interval begin-end
     def quotes(self, begin: int, end: int, currency_id: int) -> list:
         quotes = []
-        query = self._executeSQL(
+        query = self.execSQL(
             "SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
             "AND currency_id=:currency_id AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
             [(":asset_id", self._id), (":currency_id", currency_id), (":begin", begin), (":end", end)])
@@ -144,7 +144,7 @@ class JalAsset(JalDB):
     @staticmethod
     def get_sources_list() -> dict:
         sources = {}
-        query = JalDB._executeSQL("SELECT id, name FROM data_sources")
+        query = JalDB.execSQL("SELECT id, name FROM data_sources")
         while query.next():
             source_id, name = JalDB._readSQLrecord(query)
             sources[source_id] = name
@@ -155,9 +155,9 @@ class JalAsset(JalDB):
         data = [x for x in quotations if x['timestamp'] is not None and x['quote'] is not None]  # Drop Nones
         if data:
             for quote in quotations:
-                _ = self._executeSQL("INSERT OR REPLACE INTO quotes (asset_id, currency_id, timestamp, quote) "
+                _ = self.execSQL("INSERT OR REPLACE INTO quotes (asset_id, currency_id, timestamp, quote) "
                                      "VALUES(:asset_id, :currency_id, :timestamp, :quote)",
-                                     [(":asset_id", self._id), (":currency_id", currency_id),
+                                 [(":asset_id", self._id), (":currency_id", currency_id),
                                       (":timestamp", quote['timestamp']), (":quote", format_decimal(quote['quote']))])
             begin = min(data, key=lambda x: x['timestamp'])['timestamp']
             end = max(data, key=lambda x: x['timestamp'])['timestamp']
@@ -194,14 +194,14 @@ class JalAsset(JalDB):
                 logging.error(self.tr("Unexpected attempt to update ISIN for ")
                               + f"{self.symbol()}: {self._isin} -> {new_isin}")
         else:
-            _ = self._executeSQL("UPDATE assets SET isin=:new_isin WHERE id=:id",
-                                 [(":new_isin", new_isin), (":id", self._id)])
+            _ = self.execSQL("UPDATE assets SET isin=:new_isin WHERE id=:id",
+                             [(":new_isin", new_isin), (":id", self._id)])
             self._isin = new_isin
 
     def _update_name(self, new_name: str) -> None:
         if not self._name:
-            _ = self._executeSQL("UPDATE assets SET full_name=:new_name WHERE id=:id",
-                                 [(":new_name", new_name), (":id", self._id)])
+            _ = self.execSQL("UPDATE assets SET full_name=:new_name WHERE id=:id",
+                             [(":new_name", new_name), (":id", self._id)])
             self._name = new_name
 
     def _update_country(self, new_code: str) -> None:
@@ -209,26 +209,26 @@ class JalAsset(JalDB):
         if new_code.lower() != country.code().lower():
             new_country = JalCountry(data={'code': new_code.lower()}, search=True)
             if new_country.id():
-                _ = self._executeSQL("UPDATE assets SET country_id=:new_country_id WHERE id=:asset_id",
-                                     [(":new_country_id", new_country.id()), (":asset_id", self._id)])
+                _ = self.execSQL("UPDATE assets SET country_id=:new_country_id WHERE id=:asset_id",
+                                 [(":new_country_id", new_country.id()), (":asset_id", self._id)])
                 self._country_id = new_country.id()
                 logging.info(self.tr("Country updated for ")
                              + f"{self.symbol()}: {country.name()} -> {new_country.name()}")
 
     def _update_reg_number(self, new_number: str) -> None:
         if new_number != self._reg_number:
-            _ = self._executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+            _ = self.execSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                                  "VALUES(:asset_id, :datatype, :reg_number)",
-                                 [(":asset_id", self._id), (":datatype", AssetData.RegistrationCode),
+                             [(":asset_id", self._id), (":datatype", AssetData.RegistrationCode),
                                   (":reg_number", new_number)])
             self._reg_number = new_number
             logging.info(self.tr("Reg.number updated for ")
                          + f"{self.symbol()}: {self._reg_number} -> {new_number}")
 
     def _update_expiration(self, new_expiration: int) -> None:
-        _ = self._executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+        _ = self.execSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                              "VALUES(:asset_id, :datatype, :expiry)",
-                             [(":asset_id", self._id), (":datatype", AssetData.ExpiryDate),
+                         [(":asset_id", self._id), (":datatype", AssetData.ExpiryDate),
                               (":expiry", str(new_expiration))])
         self._expiry = new_expiration
 
@@ -240,9 +240,9 @@ class JalAsset(JalDB):
         except InvalidOperation:
             return
         if principal > Decimal('0'):
-            _ = self._executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+            _ = self.execSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                                  "VALUES(:asset_id, :datatype, :principal)",
-                                 [(":asset_id", self._id), (":datatype", AssetData.PrincipalValue),
+                             [(":asset_id", self._id), (":datatype", AssetData.PrincipalValue),
                                   (":principal", str(principal))])
 
     def _valid_data(self, data: dict, search: bool = False, create: bool = False) -> bool:
@@ -301,12 +301,12 @@ class JalAsset(JalDB):
     @staticmethod
     def get_active_assets(begin: int, end: int) -> list:
         assets = []
-        query = JalDB._executeSQL("SELECT MAX(l.id) AS id, l.asset_id, a.currency_id "
+        query = JalDB.execSQL("SELECT MAX(l.id) AS id, l.asset_id, a.currency_id "
                                   "FROM ledger l LEFT JOIN accounts a ON a.id=l.account_id "
                                   "WHERE l.book_account=:assets "
                                   "GROUP BY l.asset_id, a.currency_id "
                                   "HAVING l.amount_acc!='0' OR (l.timestamp>=:begin AND l.timestamp<=:end)",
-                                  [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
+                              [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
         while query.next():
             try:
                 _id, asset_id, currency_id = JalDB._readSQLrecord(query)
@@ -319,7 +319,7 @@ class JalAsset(JalDB):
     @staticmethod
     def get_currencies() -> list:
         currencies = []
-        query = JalDB._executeSQL("SELECT id FROM currencies")
+        query = JalDB.execSQL("SELECT id FROM currencies")
         while query.next():
             currencies.append(JalAsset(int(JalDB._readSQLrecord(query))))
         return currencies

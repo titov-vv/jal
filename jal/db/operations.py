@@ -78,7 +78,7 @@ class LedgerTransaction:
 
     # Deletes operation from database
     def delete(self) -> None:
-        _ = JalDB._executeSQL(f"DELETE FROM {self._db_table} WHERE id={self._oid}")
+        _ = JalDB.execSQL(f"DELETE FROM {self._db_table} WHERE id={self._oid}")
         self._oid = 0
         self._otype = 0
         self._data = None
@@ -141,11 +141,11 @@ class LedgerTransaction:
         processed_qty = Decimal('0')
         processed_value = Decimal('0')
         # Get a list of all previous not matched trades or corporate actions
-        query = JalDB._executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
+        query = JalDB.execSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
                                   "FROM trades_opened "
                                   "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=:zero "
                                   "ORDER BY timestamp, op_type DESC",
-                                  [(":account_id", self._account.id()), (":asset_id", self._asset.id()),
+                              [(":account_id", self._account.id()), (":asset_id", self._asset.id()),
                                    (":zero", format_decimal(Decimal('0')))])
         while query.next():
             opening_trade = JalDB._readSQLrecord(query, named=True)
@@ -153,14 +153,14 @@ class LedgerTransaction:
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
             remaining_qty = Decimal(opening_trade['remaining_qty']) - next_deal_qty
-            _ = JalDB._executeSQL("UPDATE trades_opened SET remaining_qty=:new_remaining_qty "
+            _ = JalDB.execSQL("UPDATE trades_opened SET remaining_qty=:new_remaining_qty "
                                   "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                                  [(":new_remaining_qty", format_decimal(remaining_qty)),
+                              [(":new_remaining_qty", format_decimal(remaining_qty)),
                                    (":asset_id", self._asset.id()), (":op_type", opening_trade['op_type']),
                                    (":id", opening_trade['operation_id'])])
             open_price = Decimal(opening_trade['price'])
             close_price = Decimal(opening_trade['price']) if price is None else price
-            _ = JalDB._executeSQL(
+            _ = JalDB.execSQL(
                 "INSERT INTO trades_closed(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
                 "close_op_type, close_op_id, close_timestamp, close_price, qty) "
                 "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
@@ -279,7 +279,7 @@ class IncomeSpending(LedgerTransaction):
         self._peer_id = self._data['peer_id']
         self._peer = self._data['peer']
         self._currency = self._data['currency']
-        details_query = JalDB._executeSQL("SELECT d.category_id, c.name AS category, d.tag_id, t.tag, "
+        details_query = JalDB.execSQL("SELECT d.category_id, c.name AS category, d.tag_id, t.tag, "
                                           "d.amount, d.amount_alt, d.note FROM action_details AS d "
                                           "LEFT JOIN categories AS c ON c.id=d.category_id "
                                           "LEFT JOIN tags AS t ON t.id=d.tag_id "
@@ -421,7 +421,7 @@ class Dividend(LedgerTransaction):
         if subtype:
             query += " AND d.type=:type"
             params += [(":type", subtype)]
-        query = JalDB._executeSQL(query, params)
+        query = JalDB.execSQL(query, params)
         while query.next():
             dividends.append(Dividend(int(JalDB._readSQLrecord(query))))
         return dividends
@@ -493,8 +493,8 @@ class Dividend(LedgerTransaction):
             return super().value_total()
 
     def update_tax(self, new_tax) -> None:   # FIXME method should take Decimal value, not float
-        _ = JalDB._executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
-                              [(":dividend_id", self._oid), (":tax", new_tax)], commit=True)
+        _ = JalDB.execSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
+                          [(":dividend_id", self._oid), (":tax", new_tax)], commit=True)
 
     def processLedger(self, ledger):
         if self._broker is None:
@@ -531,7 +531,7 @@ class Dividend(LedgerTransaction):
         if asset_amount < Decimal('0'):
             raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
-        _ = JalDB._executeSQL(
+        _ = JalDB.execSQL(
             "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
             "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
             [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
@@ -662,7 +662,7 @@ class Trade(LedgerTransaction):
                                      deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
                                      category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have a reminder that opens a new position
-            _ = JalDB._executeSQL(
+            _ = JalDB.execSQL(
                 "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                 [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
@@ -893,7 +893,7 @@ class Transfer(LedgerTransaction):
                 _, currency_rate = JalAsset(self._deposit_account.currency()).quote(self._deposit_timestamp,
                                                                                     JalSettings().getValue('BaseCurrency'))
             price = value * currency_rate / self._deposit
-            _ = JalDB._executeSQL(
+            _ = JalDB.execSQL(
                 "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                 [(":timestamp", self._deposit_timestamp), (":type", self._otype), (":operation_id", self._oid),
@@ -953,8 +953,8 @@ class CorporateAction(LedgerTransaction):
         self._otype = LedgerTransaction.CorporateAction
         self._data = JalDB._readSQL("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
                                     "FROM asset_actions AS a WHERE a.id=:oid", [(":oid", self._oid)], named=True)
-        results_query = JalDB._executeSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
-                                          [(":oid", self._oid)])
+        results_query = JalDB.execSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
+                                      [(":oid", self._oid)])
         self._results = []
         while results_query.next():
             self._results.append(JalDB._readSQLrecord(results_query, named=True))
@@ -979,8 +979,8 @@ class CorporateAction(LedgerTransaction):
 
     def description(self) -> str:
         description = self.names[self._subtype]
-        query = JalDB._executeSQL("SELECT asset_id, value_share FROM action_results WHERE action_id=:oid",
-                                  [(":oid", self._oid)])
+        query = JalDB.execSQL("SELECT asset_id, value_share FROM action_results WHERE action_id=:oid",
+                              [(":oid", self._oid)])
         while query.next():
             result = JalDB._readSQLrecord(query, named=True)
             if self._subtype == CorporateAction.SpinOff and result['asset_id'] == self._asset.id():
@@ -994,7 +994,7 @@ class CorporateAction(LedgerTransaction):
         result = []
         if self._subtype != CorporateAction.SpinOff:
             result.append(Decimal(-self._qty))
-        query = JalDB._executeSQL("SELECT qty FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        query = JalDB.execSQL("SELECT qty FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
             result.append(Decimal(JalDB._readSQLrecord(query)))
         if len(result) == 1:  # Need to feel at least 2 lines
@@ -1006,7 +1006,7 @@ class CorporateAction(LedgerTransaction):
             symbol = f" {self._asset.symbol(self._account.currency())}\n"
         else:
             symbol = ""
-        query = JalDB._executeSQL("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        query = JalDB.execSQL("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
             symbol += f" {JalAsset(JalDB._readSQLrecord(query)).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
@@ -1043,10 +1043,10 @@ class CorporateAction(LedgerTransaction):
     @staticmethod
     def get_payments(account) -> list:
         payments = []
-        query = JalDB._executeSQL("SELECT a.timestamp, r.qty, a.note FROM asset_actions AS a "
+        query = JalDB.execSQL("SELECT a.timestamp, r.qty, a.note FROM asset_actions AS a "
                                   "LEFT JOIN action_results AS r ON r.action_id=a.id "
                                   "WHERE a.account_id=:account_id AND r.asset_id=:account_currency",
-                                  [(":account_id", account.id()), (":account_currency", account.currency())])
+                              [(":account_id", account.id()), (":account_currency", account.currency())])
         while query.next():
             timestamp, amount, note = JalDB._readSQLrecord(query)
             payments.append({"timestamp": timestamp, "amount": Decimal(amount), "note": note})
@@ -1065,7 +1065,7 @@ class CorporateAction(LedgerTransaction):
                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         # Calculate total asset allocation after corporate action and verify it equals 100%
         allocation = Decimal('0')
-        query = JalDB._executeSQL("SELECT value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        query = JalDB.execSQL("SELECT value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
             allocation += Decimal(JalDB._readSQLrecord(query))
         if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
@@ -1081,8 +1081,8 @@ class CorporateAction(LedgerTransaction):
                                      category=PredefinedCategory.Profit, peer=self._broker)
             return
         # Process assets after corporate action
-        query = JalDB._executeSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
-                                  [(":oid", self._oid)])
+        query = JalDB.execSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
+                              [(":oid", self._oid)])
         while query.next():
             # TODO implement type casting of result values inside readSQLrecord()
             # Like in this function as example:
@@ -1102,7 +1102,7 @@ class CorporateAction(LedgerTransaction):
             else:
                 value = share * processed_value
                 price = value / qty
-                _ = JalDB._executeSQL(
+                _ = JalDB.execSQL(
                     "INSERT INTO trades_opened(timestamp, op_type, operation_id, "
                     "account_id, asset_id, price, remaining_qty) "
                     "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",

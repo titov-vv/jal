@@ -22,14 +22,14 @@ def json_decimal2float(json_obj):
 # Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples (asset_id, symbol, full_name)
 def create_stocks(assets, currency_id):
     for asset in assets:
-        query = JalDB._executeSQL("INSERT INTO assets (id, type_id, full_name) VALUES (:id, :type, :full_name)",
-                                  [(":id", asset[0]), (":type", PredefinedAsset.Stock),
+        query = JalDB.execSQL("INSERT INTO assets (id, type_id, full_name) VALUES (:id, :type, :full_name)",
+                              [(":id", asset[0]), (":type", PredefinedAsset.Stock),
                                    (":full_name", asset[2])], commit=True)
         asset_id = query.lastInsertId()
-        assert JalDB._executeSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
+        assert JalDB.execSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
                                  "VALUES (:asset_id, :symbol, :currency_id)",
-                                 [(":asset_id", asset_id), (":symbol", asset[1]), (":currency_id", currency_id)],
-                                 commit=True) is not None
+                             [(":asset_id", asset_id), (":symbol", asset[1]), (":currency_id", currency_id)],
+                             commit=True) is not None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -37,17 +37,17 @@ def create_stocks(assets, currency_id):
 # (id, symbol, full_name, isin, currency_id, asset_type, country_id)
 def create_assets(assets, data=[]):
     for asset in assets:
-        query = JalDB._executeSQL("INSERT INTO assets (id, type_id, full_name, isin, country_id) "
+        query = JalDB.execSQL("INSERT INTO assets (id, type_id, full_name, isin, country_id) "
                                   "VALUES (:id, :type, :full_name, :isin, :country_id)",
-                                  [(":id", asset[0]), (":type", asset[5]), (":full_name", asset[2]),
+                              [(":id", asset[0]), (":type", asset[5]), (":full_name", asset[2]),
                                    (":isin", asset[3]), (":country_id", asset[6])], commit=True)
         asset_id = query.lastInsertId()
-        assert JalDB._executeSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
+        assert JalDB.execSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
                                  "VALUES (:asset_id, :symbol, :currency_id)",
-                                 [(":asset_id", asset_id), (":symbol", asset[1]), (":currency_id", asset[4])],
-                                 commit=True) is not None
+                             [(":asset_id", asset_id), (":symbol", asset[1]), (":currency_id", asset[4])],
+                             commit=True) is not None
     for item in data:
-        assert JalDB._executeSQL(
+        assert JalDB.execSQL(
             "INSERT INTO asset_data (asset_id, datatype, value) VALUES (:asset_id, :datatype, :value)",
             [(":asset_id", item[0]), (":datatype", item[1]), (":value", item[2])],
             commit=True) is not None
@@ -57,11 +57,11 @@ def create_assets(assets, data=[]):
 # Insert quotes for asset_id, currency_id into database. Quotes is a list of (timestamp, quote) tuples
 def create_quotes(asset_id, currency_id, quotes):
     for quote in quotes:
-        assert JalDB._executeSQL("INSERT OR REPLACE INTO quotes (asset_id, currency_id, timestamp, quote) "
+        assert JalDB.execSQL("INSERT OR REPLACE INTO quotes (asset_id, currency_id, timestamp, quote) "
                                  "VALUES (:asset_id, :currency_id, :timestamp, :quote)",
-                                 [(":asset_id", asset_id), (":currency_id", currency_id),
+                             [(":asset_id", asset_id), (":currency_id", currency_id),
                                   (":timestamp", quote[0]), (":quote", quote[1])],
-                                 commit=True) is not None
+                             commit=True) is not None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -69,19 +69,19 @@ def create_quotes(asset_id, currency_id, quotes):
 # (timestamp, account, peer, [(category, amount, [note]), (category, amount, [note]), ...])
 def create_actions(actions):
     for action in actions:
-        query = JalDB._executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
+        query = JalDB.execSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
                                   "VALUES (:timestamp, :account, :peer)",
-                                  [(":timestamp", action[0]), (":account", action[1]), (":peer", action[2])],
-                                  commit=True)
+                              [(":timestamp", action[0]), (":account", action[1]), (":peer", action[2])],
+                              commit=True)
         assert query is not None
         action_id = query.lastInsertId()
         for detail in action[3]:
             note = detail[2] if len(detail) > 2 else ''
-            assert JalDB._executeSQL("INSERT INTO action_details (pid, category_id, amount, note) "
+            assert JalDB.execSQL("INSERT INTO action_details (pid, category_id, amount, note) "
                                      "VALUES (:pid, :category, :amount, :note)",
-                                     [(":pid", action_id), (":category", detail[0]), (":amount", detail[1]),
+                                 [(":pid", action_id), (":category", detail[0]), (":amount", detail[1]),
                                       (":note", note)],
-                                     commit=True) is not None
+                                 commit=True) is not None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -89,9 +89,9 @@ def create_actions(actions):
 # (timestamp, account, asset_id, amount, tax, note)
 def create_dividends(dividends):
     for dividend in dividends:
-        assert JalDB._executeSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
+        assert JalDB.execSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
                                  "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note)",
-                                 [(":timestamp", dividend[0]), (":div_type", Dividend.Dividend),
+                             [(":timestamp", dividend[0]), (":div_type", Dividend.Dividend),
                                   (":account_id", dividend[1]), (":asset_id", dividend[2]), (":amount", dividend[3]),
                                   (":tax", dividend[4]), (":note", dividend[5])], commit=True) is not None
 
@@ -101,7 +101,7 @@ def create_dividends(dividends):
 # (timestamp, account, asset_id, amount, tax, note, number)
 def create_coupons(coupons):
     for coupon in coupons:
-        assert JalDB._executeSQL(
+        assert JalDB.execSQL(
             "INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note, number) "
             "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note, :number)",
             [(":timestamp", coupon[0]), (":div_type", Dividend.BondInterest),
@@ -116,9 +116,9 @@ def create_coupons(coupons):
 def create_stock_dividends(dividends):
     for dividend in dividends:
         create_quotes(dividend[3], dividend[5], [(dividend[1], dividend[6])])
-        assert JalDB._executeSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
+        assert JalDB.execSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
                                  "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note)",
-                                 [(":timestamp", dividend[1]), (":div_type", dividend[0]),
+                             [(":timestamp", dividend[1]), (":div_type", dividend[0]),
                                   (":account_id", dividend[2]), (":asset_id", dividend[3]), (":amount", dividend[4]),
                                   (":tax", dividend[7]), (":note", dividend[8])], commit=True) is not None
 
@@ -129,7 +129,7 @@ def create_stock_dividends(dividends):
 def create_trades(account_id, trades):
     for trade in trades:
         number = trade[6] if len(trade) > 6 else ''
-        assert JalDB._executeSQL(
+        assert JalDB.execSQL(
             "INSERT INTO trades (timestamp, settlement, account_id, asset_id, qty, price, fee, number) "
             "VALUES (:timestamp, :settlement, :account_id, :asset, :qty, :price, :fee, :number)",
             [(":timestamp", trade[0]), (":settlement", trade[1]), (":account_id", account_id),
@@ -142,16 +142,16 @@ def create_trades(account_id, trades):
 # (timestamp, type, asset_old, qty_old, note, [(asset_new1, qty_new1, share1), (asset_new2, qty_new2, share2), ...])
 def create_corporate_actions(account_id, actions):
     for action in actions:
-        query = JalDB._executeSQL("INSERT INTO asset_actions (timestamp, account_id, type, asset_id, qty, note) "
+        query = JalDB.execSQL("INSERT INTO asset_actions (timestamp, account_id, type, asset_id, qty, note) "
                                   "VALUES (:timestamp, :account_id, :type, :asset_id, :qty, :note)",
-                                  [(":timestamp", action[0]), (":account_id", account_id), (":type", action[1]),
+                              [(":timestamp", action[0]), (":account_id", account_id), (":type", action[1]),
                                    (":asset_id", action[2]), (":qty", action[3]), (":note", action[4])], commit=True)
         assert query is not None
         action_id = query.lastInsertId()
         for result in action[5]:
-            assert JalDB._executeSQL("INSERT INTO action_results (action_id, asset_id, qty, value_share) "
+            assert JalDB.execSQL("INSERT INTO action_results (action_id, asset_id, qty, value_share) "
                                      "VALUES (:action_id, :asset_id, :qty, :value_share)",
-                                     [(":action_id", action_id), (":asset_id", result[0]),
+                                 [(":action_id", action_id), (":asset_id", result[0]),
                                       (":qty", result[1]), (":value_share", result[2])], commit=True) is not None
 
 
@@ -160,9 +160,9 @@ def create_corporate_actions(account_id, actions):
 # (timestamp, withdrawal_account, withdrawal, deposit_account, deposit, asset_id)
 def create_transfers(transfers):
     for transfer in transfers:
-        assert JalDB._executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
+        assert JalDB.execSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
                                  "deposit_timestamp, deposit_account, deposit, asset) "
                                  "VALUES (:timestamp, :from, :withdrawal, :timestamp, :to, :deposit, :asset_id)",
-                                 [(":timestamp", transfer[0]), (":from", transfer[1]), (":withdrawal", transfer[2]),
+                             [(":timestamp", transfer[0]), (":from", transfer[1]), (":withdrawal", transfer[2]),
                                   (":to", transfer[3]), (":deposit", transfer[4]), (":asset_id", transfer[5])],
-                                 commit=True) is not None
+                             commit=True) is not None

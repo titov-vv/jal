@@ -4,10 +4,10 @@ import logging
 import sqlparse
 from pkg_resources import parse_version
 from PySide6.QtWidgets import QApplication, QMessageBox
-from PySide6.QtSql import QSql, QSqlDatabase
+from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery
 
 from jal.constants import Setup
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_dbfilename
+from jal.db.helpers import readSQL, readSQLrecord, get_dbfilename
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -47,12 +47,6 @@ class JalDB:
 
     def tr(self, text):
         return QApplication.translate("JalDB", text)
-
-    # -------------------------------------------------------------------------------------------------------------------
-    # dummy calls for future replacement
-    @staticmethod
-    def _executeSQL(sql_text, params=[], forward_only=True, commit=False):
-        return executeSQL(sql_text, params, forward_only, commit)
 
     @staticmethod
     def _readSQL(sql_text, params=None, named=False, check_unique=False):
@@ -114,29 +108,53 @@ class JalDB:
             logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
         return db
 
+    # -------------------------------------------------------------------------------------------------------------------
+    # prepares SQL query from given sql_text
+    # params_list is a list of tuples (":param", value) which are used to prepare SQL query
+    # Current transaction will be committed if 'commit' set to true
+    # Parameter 'forward_only' may be used for optimization
+    # return value - QSqlQuery object (to allow iteration through result)
+    @staticmethod
+    def execSQL(sql_text, params=[], forward_only=True, commit=False):
+        db = JalDB.connection()
+        query = QSqlQuery(db)
+        query.setForwardOnly(forward_only)
+        if not query.prepare(sql_text):
+            logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
+            return None
+        for param in params:
+            query.bindValue(param[0], param[1])
+            assert query.boundValue(param[0]) == param[1], f"SQL: failed to assign parameter {param} in '{sql_text}'"
+        if not query.exec():
+            logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
+            return None
+        if commit:
+            db.commit()
+        return query
+
     # ------------------------------------------------------------------------------------------------------------------
     # Enables DB triggers if enable == True and disables it otherwise
     def enable_triggers(self, enable):
         if enable:
-            _ = self._executeSQL("UPDATE settings SET value=1 WHERE name='TriggersEnabled'", commit=True)
+            _ = self.execSQL("UPDATE settings SET value=1 WHERE name='TriggersEnabled'", commit=True)
         else:
-            _ = self._executeSQL("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
+            _ = self.execSQL("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Set synchronous mode ON if synchronous == True and OFF it otherwise
     def set_synchronous(self, synchronous):
         if synchronous:
-            _ = self._executeSQL("PRAGMA synchronous = ON")
+            _ = self.execSQL("PRAGMA synchronous = ON")
         else:
-            _ = self._executeSQL("PRAGMA synchronous = OFF")
+            _ = self.execSQL("PRAGMA synchronous = OFF")
 
     # ------------------------------------------------------------------------------------------------------------------
     # Enables DB foreign keys if enable == True and disables it otherwise
     def enable_fk(self, enable):
         if enable:
-            _ = self._executeSQL("PRAGMA foreign_keys = ON")
+            _ = self.execSQL("PRAGMA foreign_keys = ON")
         else:
-            _ = self._executeSQL("PRAGMA foreign_keys = OFF")
+            _ = self.execSQL("PRAGMA foreign_keys = OFF")
 
     # Method loads sql script into database
     def run_sql_script(self, script_file) -> JalDBError:
@@ -145,8 +163,8 @@ class JalDB:
                 statements = sqlparse.split(sql_script)
                 for statement in statements:
                     clean_statement = sqlparse.format(statement, strip_comments=True)
-                    if self._executeSQL(clean_statement, commit=False) is None:
-                        _ = self._executeSQL("ROLLBACK")
+                    if self.execSQL(clean_statement, commit=False) is None:
+                        _ = self.execSQL("ROLLBACK")
                         self.connection().close()
                         return JalDBError(JalDBError.SQLFailure, f"FAILED: {clean_statement}")
                     else:
@@ -246,7 +264,7 @@ class JalDB:
                 values_text += f":{field}, "
                 params.append((f":{field}", data[field]))
         query_text = query_text[:-2] + ") " + values_text[:-2] + ")"
-        query = self._executeSQL(query_text, params, commit=True)
+        query = self.execSQL(query_text, params, commit=True)
         return query.lastInsertId()
 
     # Returns value of 'field_name' from 'table_name' where 'key_field' is equal to 'search_value'
