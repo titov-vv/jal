@@ -34,7 +34,7 @@ def test_ledger(prepare_db_ledger):
     query = JalDB.execSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                               "FROM ledger GROUP BY book_account")
     while query.next():
-        row = JalDB._readSQLrecord(query, named=True)
+        row = JalDB.readSQLrecord(query, named=True)
         assert row['amount_acc'] == expected_book_values[row['book_account']]
 
     actions = [
@@ -53,7 +53,7 @@ def test_ledger(prepare_db_ledger):
     query = JalDB.execSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                               "FROM ledger GROUP BY book_account")
     while query.next():
-        row = JalDB._readSQLrecord(query, named=True)
+        row = JalDB.readSQLrecord(query, named=True)
         assert row['amount_acc'] == expected_book_amounts[row['book_account']]
         assert row['value_acc'] == expected_book_values[row['book_account']]
 
@@ -62,7 +62,7 @@ def test_ledger(prepare_db_ledger):
     query = JalDB.execSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                               "FROM ledger GROUP BY book_account")
     while query.next():
-        row = JalDB._readSQLrecord(query, named=True)
+        row = JalDB.readSQLrecord(query, named=True)
         assert row['amount_acc'] == expected_book_amounts[row['book_account']]
         assert row['value_acc'] == expected_book_values[row['book_account']]
 
@@ -360,7 +360,7 @@ def test_fifo(prepare_db_fifo):
                               "WHERE book_account=:money OR book_account=:assets GROUP BY asset_id",
                           [(":money", BookAccount.Money), (":assets", BookAccount.Assets)])
     while query.next():
-        row = JalDB._readSQLrecord(query, named=True)
+        row = JalDB.readSQLrecord(query, named=True)
         if row['asset_id'] == 2:  # Checking money amount
             assert Decimal(row['amount_acc']) == Decimal('16700')
         else:

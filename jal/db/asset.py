@@ -60,7 +60,7 @@ class JalAsset(JalDB):
                                  [(":asset_id", self._id)])
             symbols = []
             while query.next():
-                symbols.append(self._readSQLrecord(query))
+                symbols.append(self.readSQLrecord(query))
             return ','.join([x for x in symbols])  # concatenate all symbols via comma
         else:
             return self.readSQL("SELECT symbol FROM asset_tickers "
@@ -113,7 +113,7 @@ class JalAsset(JalDB):
             "AND currency_id=:currency_id AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
             [(":asset_id", self._id), (":currency_id", currency_id), (":begin", begin), (":end", end)])
         while query.next():
-            timestamp, quote = self._readSQLrecord(query)
+            timestamp, quote = self.readSQLrecord(query)
             quotes.append((timestamp, Decimal(quote)))
         return quotes
 
@@ -146,7 +146,7 @@ class JalAsset(JalDB):
         sources = {}
         query = JalDB.execSQL("SELECT id, name FROM data_sources")
         while query.next():
-            source_id, name = JalDB._readSQLrecord(query)
+            source_id, name = JalDB.readSQLrecord(query)
             sources[source_id] = name
         return sources
 
@@ -309,7 +309,7 @@ class JalAsset(JalDB):
                               [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
         while query.next():
             try:
-                _id, asset_id, currency_id = JalDB._readSQLrecord(query)
+                _id, asset_id, currency_id = JalDB.readSQLrecord(query)
             except TypeError:  # Skip if None is returned (i.e. there are no assets)
                 continue
             assets.append({"asset": JalAsset(int(asset_id)), "currency": int(currency_id)})
@@ -321,5 +321,5 @@ class JalAsset(JalDB):
         currencies = []
         query = JalDB.execSQL("SELECT id FROM currencies")
         while query.next():
-            currencies.append(JalAsset(int(JalDB._readSQLrecord(query))))
+            currencies.append(JalAsset(int(JalDB.readSQLrecord(query))))
         return currencies

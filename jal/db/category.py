@@ -28,7 +28,7 @@ class JalCategory(JalDB):
         mapped_list = []
         query = JalDB.execSQL("SELECT value, mapped_to FROM map_category")
         while query.next():
-            mapped_list.append(JalDB._readSQLrecord(query, named=True))
+            mapped_list.append(JalDB.readSQLrecord(query, named=True))
         return mapped_list
 
     # Returns a list of operations that include this category
@@ -38,5 +38,5 @@ class JalCategory(JalDB):
                                  "WHERE d.category_id=:category AND a.timestamp>=:begin AND a.timestamp<:end",
                              [(":category", self._id), (":begin", begin), (":end", end)])
         while query.next():
-            operations.append(IncomeSpending(int(JalDB._readSQLrecord(query))))
+            operations.append(IncomeSpending(int(JalDB.readSQLrecord(query))))
         return operations

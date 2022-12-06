@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery
 
 from jal.constants import Setup
-from jal.db.helpers import readSQLrecord, get_dbfilename
+from jal.db.helpers import get_dbfilename
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -47,10 +47,6 @@ class JalDB:
 
     def tr(self, text):
         return QApplication.translate("JalDB", text)
-
-    @staticmethod
-    def _readSQLrecord(query, named=False):
-        return readSQLrecord(query, named)
 
     # -------------------------------------------------------------------------------------------------------------------
     # This function:
@@ -139,10 +135,30 @@ class JalDB:
     def readSQL(sql_text, params=None, named=False, check_unique=False):
         query = JalDB.execSQL(sql_text, params)
         if query.next():
-            res = readSQLrecord(query, named=named)
+            res = JalDB.readSQLrecord(query, named=named)
             if check_unique and query.next():
                 return None  # More than one record in result when only one expected
             return res
+        else:
+            return None
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Method takes current active record of given query and returns its values as:
+    # named = False: a list of field values
+    # named = True: a dictionary with field names as keys
+    @staticmethod
+    def readSQLrecord(query, named=False):
+        values = {} if named else []
+        for i in range(query.record().count()):
+            if named:
+                values[query.record().fieldName(i)] = query.value(i)
+            else:
+                values.append(query.value(i))
+        if values:
+            if len(values) == 1 and not named:
+                return values[0]
+            else:
+                return values
         else:
             return None
 

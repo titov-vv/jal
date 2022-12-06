@@ -1,7 +1,7 @@
 import os
 import logging
 from PySide6.QtCore import QLocale
-from PySide6.QtSql import QSqlDatabase, QSqlQuery
+from PySide6.QtSql import QSqlDatabase
 from PySide6.QtGui import QIcon
 from jal.constants import Setup
 from decimal import Decimal
@@ -81,22 +81,3 @@ def _db_connection():
     if not db.isOpen():
         logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
     return db
-
-
-def readSQLrecord(query, named=False):
-    if named:
-        values = {}
-    else:
-        values = []
-    for i in range(query.record().count()):
-        if named:
-            values[query.record().fieldName(i)] = query.value(i)
-        else:
-            values.append(query.value(i))
-    if values:
-        if len(values) == 1 and not named:
-            return values[0]
-        else:
-            return values
-    else:
-        return None

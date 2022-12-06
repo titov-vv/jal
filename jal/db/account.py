@@ -52,7 +52,7 @@ class JalAccount(JalDB):
         query = JalDB.execSQL("SELECT id, active FROM accounts WHERE type_id=:type OR :type IS NULL",
                               [(":type", account_type)])
         while query.next():
-            account_id, active = JalDB._readSQLrecord(query)
+            account_id, active = JalDB.readSQLrecord(query)
             if active_only and not active:
                 continue
             accounts.append(JalAccount(int(account_id)))
@@ -131,7 +131,7 @@ class JalAccount(JalDB):
             [(":account_id", self._id), (":timestamp", timestamp), (":assets", BookAccount.Assets)])
         while query.next():
             try:
-                asset_id, amount, value = self._readSQLrecord(query)
+                asset_id, amount, value = self.readSQLrecord(query)
             except TypeError:  # Skip if None is returned (i.e. there are no assets)
                 continue
             assets.append({"asset": JalAsset(int(asset_id)), "amount": Decimal(amount), "value": Decimal(value)})
@@ -168,7 +168,7 @@ class JalAccount(JalDB):
         trades = []
         query = self.execSQL("SELECT id FROM trades_closed WHERE account_id=:account", [(":account", self._id)])
         while query.next():
-            trades.append(jal.db.closed_trade.JalClosedTrade(self._readSQLrecord(query)))
+            trades.append(jal.db.closed_trade.JalClosedTrade(self.readSQLrecord(query)))
         return trades
 
     # Returns a list of {"operation": LedgerTransaction, "price": Decimal, "remaining_qty": Decimal}
@@ -182,7 +182,7 @@ class JalAccount(JalDB):
                                  "WHERE remaining_qty!='0' AND account_id=:account AND asset_id=:asset",
                              [(":account", self._id), (":asset", asset.id())])
         while query.next():
-            op_type, oid, price, qty = self._readSQLrecord(query)
+            op_type, oid, price, qty = self.readSQLrecord(query)
             operation = jal.db.operations.LedgerTransaction().get_operation(op_type, oid,
                                                                             jal.db.operations.Transfer.Incoming)
             trades.append({"operation": operation, "price": Decimal(price), "remaining_qty": Decimal(qty)})
