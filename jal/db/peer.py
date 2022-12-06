@@ -12,8 +12,8 @@ class JalPeer(JalDB):
                 query = self.execSQL("INSERT INTO agents (pid, name) VALUES (:pid, :name)",
                                      [(":pid", data['parent']), (":name", data['name'])])
                 self._id = query.lastInsertId()
-        self._data = self._readSQL("SELECT name FROM agents WHERE id=:peer_id",
-                                   [(":peer_id", self._id)], named=True)
+        self._data = self.readSQL("SELECT name FROM agents WHERE id=:peer_id",
+                                  [(":peer_id", self._id)], named=True)
         self._name = self._data['name'] if self._data is not None else None
 
     def id(self) -> int:
@@ -25,7 +25,7 @@ class JalPeer(JalDB):
     # Returns possible peer_id by a given name
     @staticmethod
     def get_id_by_mapped_name(name: str) -> int:
-        return JalDB._readSQL("SELECT mapped_to FROM map_peer WHERE value=:name", [(":name", name)])
+        return JalDB.readSQL("SELECT mapped_to FROM map_peer WHERE value=:name", [(":name", name)])
 
     @staticmethod
     def add_or_update_mapped_name(name: str, peer_id: int) -> None:  # TODO Review, should it be not static or not
@@ -42,7 +42,7 @@ class JalPeer(JalDB):
         return True
 
     def _find_peer(self, data: dict) -> int:
-        peer_id = self._readSQL("SELECT id FROM agents WHERE name=:name", [(":name", data['name'])])
+        peer_id = self.readSQL("SELECT id FROM agents WHERE name=:name", [(":name", data['name'])])
         if peer_id is None:
             return 0
         else:

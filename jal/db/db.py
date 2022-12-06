@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery
 
 from jal.constants import Setup
-from jal.db.helpers import readSQL, readSQLrecord, get_dbfilename
+from jal.db.helpers import readSQLrecord, get_dbfilename
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -49,10 +49,6 @@ class JalDB:
         return QApplication.translate("JalDB", text)
 
     @staticmethod
-    def _readSQL(sql_text, params=None, named=False, check_unique=False):
-        return readSQL(sql_text, params, named, check_unique)
-
-    @staticmethod
     def _readSQLrecord(query, named=False):
         return readSQLrecord(query, named)
 
@@ -80,7 +76,7 @@ class JalDB:
             error = self.run_sql_script(db_path + Setup.INIT_SCRIPT_PATH)
             if error.code != JalDBError.NoError:
                 return error
-        schema_version = self._readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
+        schema_version = self.readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
         if schema_version < Setup.TARGET_SCHEMA:
             db.close()
             return JalDBError(JalDBError.OutdatedDbSchema)
@@ -95,7 +91,7 @@ class JalDB:
     # ------------------------------------------------------------------------------------------------------------------
     # Returns current version of sqlite library
     def get_engine_version(self):
-        return self._readSQL("SELECT sqlite_version()")
+        return self.readSQL("SELECT sqlite_version()")
 
     # ------------------------------------------------------------------------------------------------------------------
     # This function returns SQLite connection used by JAL or fails with RuntimeError exception
@@ -110,7 +106,7 @@ class JalDB:
 
     # -------------------------------------------------------------------------------------------------------------------
     # prepares SQL query from given sql_text
-    # params_list is a list of tuples (":param", value) which are used to prepare SQL query
+    # params is a list of tuples (":param", value) which are used to prepare SQL query
     # Current transaction will be committed if 'commit' set to true
     # Parameter 'forward_only' may be used for optimization
     # return value - QSqlQuery object (to allow iteration through result)
@@ -131,6 +127,36 @@ class JalDB:
         if commit:
             db.commit()
         return query
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Similar to execSQL() method but after query execution it returns first line of query result
+    # params is a list of tuples (":param", value) which are used to prepare SQL query
+    # named = False: result is packed into a list of field values
+    # named = True: result is packet into a dictionary with field names as keys
+    # check_unique = True: checks that only 1 record was returned by query, otherwise returns None
+    # Return value: first row of query result or None if no records were fetched by the query
+    @staticmethod
+    def readSQL(sql_text, params=None, named=False, check_unique=False):
+        if params is None:
+            params = []
+        query = QSqlQuery(JalDB.connection())  # TODO reimplement via ExecuteSQL() call in order to get rid of duplicated code
+        query.setForwardOnly(True)
+        if not query.prepare(sql_text):
+            logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' | '{params}'")
+            return None
+        for param in params:
+            query.bindValue(param[0], param[1])
+            assert query.boundValue(param[0]) == param[1], f"SQL: failed to assign parameter {param} in '{sql_text}'"
+        if not query.exec():
+            logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' | '{params}'")
+            return None
+        if query.next():
+            res = readSQLrecord(query, named=named)
+            if check_unique and query.next():
+                return None  # More than one record in result when only one expected
+            return res
+        else:
+            return None
 
     # ------------------------------------------------------------------------------------------------------------------
     # Enables DB triggers if enable == True and disables it otherwise
@@ -180,7 +206,7 @@ class JalDB:
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return JalDBError(JalDBError.OutdatedDbSchema)
         db = self.connection()
-        version = self._readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
+        version = self.readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
         try:
             schema_version = int(version)
         except ValueError:
@@ -245,7 +271,7 @@ class JalDB:
                 query_text += f"{field} = :{field} AND "
                 params.append((f":{field}", data[field]))
         query_text = query_text[:-len(" AND ")]   # cut extra tail
-        oid = self._readSQL(query_text, params)
+        oid = self.readSQL(query_text, params)
         if oid:
             return int(oid)
         return 0
@@ -277,4 +303,4 @@ class JalDB:
         if type(search_value) == str:
             search_value = "'" + search_value + "'"   # Enclose string into quotes
         query_text = f"SELECT {field_name} FROM {table_name} WHERE {key_field}={search_value}"
-        return JalDB._readSQL(query_text)
+        return JalDB.readSQL(query_text)

@@ -83,35 +83,6 @@ def _db_connection():
     return db
 
 
-# -------------------------------------------------------------------------------------------------------------------
-# the same as executeSQL() but after query execution it takes first line of query result and:
-# - returns None if no records were fetched by query
-# - otherwise returns first row of the query result:
-# named = False: result is packed into a list of field values
-# named = True: result is packet into a dictionary with field names as keys
-# - check_unique = True: checks that only 1 record was returned by query, otherwise returns None
-def readSQL(sql_text, params=None, named=False, check_unique=False):
-    if params is None:
-        params = []
-    query = QSqlQuery(_db_connection())   # TODO reimplement via ExecuteSQL() call in order to get rid of duplicated code
-    query.setForwardOnly(True)
-    if not query.prepare(sql_text):
-        logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' | '{params}'")
-        return None
-    for param in params:
-        query.bindValue(param[0], param[1])
-    if not query.exec():
-        logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' | '{params}'")
-        return None
-    if query.next():
-        res = readSQLrecord(query, named=named)
-        if check_unique and query.next():
-            return None  # More than one record in result when only one expected
-        return res
-    else:
-        return None
-
-
 def readSQLrecord(query, named=False):
     if named:
         values = {}

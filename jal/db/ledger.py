@@ -62,10 +62,10 @@ class LedgerAmounts(dict):
         try:
             return super().__getitem__(key)
         except KeyError:
-            amount = JalDB._readSQL(f"SELECT {self.total_field} FROM ledger "
+            amount = JalDB.readSQL(f"SELECT {self.total_field} FROM ledger "
                                       "WHERE book_account = :book AND account_id = :account_id AND asset_id = :asset_id "
                                       "ORDER BY id DESC LIMIT 1",
-                                      [(":book", key[BOOK]), (":account_id", key[ACCOUNT]), (":asset_id", key[ASSET])])
+                                   [(":book", key[BOOK]), (":account_id", key[ACCOUNT]), (":asset_id", key[ASSET])])
             amount = Decimal(amount) if amount is not None else Decimal('0')
             super().__setitem__(key, amount)
             return amount
@@ -89,7 +89,7 @@ class Ledger(QObject):
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
-        current_frontier = JalDB._readSQL("SELECT ledger_frontier FROM frontier")
+        current_frontier = JalDB.readSQL("SELECT ledger_frontier FROM frontier")
         if current_frontier == '':
             current_frontier = 0
         return current_frontier
@@ -188,12 +188,12 @@ class Ledger(QObject):
         self.values.clear()
         if from_timestamp >= 0:
             frontier = from_timestamp
-            operations_count = JalDB._readSQL("SELECT COUNT(id) FROM operation_sequence WHERE timestamp >= :frontier",
-                                       [(":frontier", frontier)])
+            operations_count = JalDB.readSQL("SELECT COUNT(id) FROM operation_sequence WHERE timestamp >= :frontier",
+                                             [(":frontier", frontier)])
         else:
             frontier = self.getCurrentFrontier()
-            operations_count = JalDB._readSQL("SELECT COUNT(id) FROM operation_sequence WHERE timestamp >= :frontier",
-                                       [(":frontier", frontier)])
+            operations_count = JalDB.readSQL("SELECT COUNT(id) FROM operation_sequence WHERE timestamp >= :frontier",
+                                             [(":frontier", frontier)])
             if operations_count > self.SILENT_REBUILD_THRESHOLD:
                 if QMessageBox().warning(None, self.tr("Confirmation"), f"{operations_count}" +
                                          self.tr(" operations require rebuild. Do you want to do it right now?"),

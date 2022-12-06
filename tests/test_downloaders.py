@@ -135,22 +135,22 @@ def test_MOEX_downloader(prepare_db_moex):
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(4), 1, 1618272000, 1618358400)
     assert_frame_equal(stock_quotes, quotes_downloaded)
-    assert JalDB._readSQL("SELECT * FROM assets_ext WHERE id=4") == [4, PredefinedAsset.Stock, 'SBER', '', 'RU0009029540', 1, 0, -1]
-    assert JalDB._readSQL("SELECT value FROM asset_data WHERE asset_id=4 AND datatype=1") == '10301481B'
+    assert JalDB.readSQL("SELECT * FROM assets_ext WHERE id=4") == [4, PredefinedAsset.Stock, 'SBER', '', 'RU0009029540', 1, 0, -1]
+    assert JalDB.readSQL("SELECT value FROM asset_data WHERE asset_id=4 AND datatype=1") == '10301481B'
 
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(6), 1, 1626912000, 1626998400)
     assert_frame_equal(bond_quotes, quotes_downloaded)
-    assert JalDB._readSQL("SELECT * FROM assets_ext WHERE id=6") == [6, PredefinedAsset.Bond, 'SU26238RMFS4', '', 'RU000A1038V6', 1, 0, -1]
-    assert JalDB._readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=1") == '26238RMFS'
-    assert JalDB._readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=2") == '2252188800'
-    assert JalDB._readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=3") == '1000'
+    assert JalDB.readSQL("SELECT * FROM assets_ext WHERE id=6") == [6, PredefinedAsset.Bond, 'SU26238RMFS4', '', 'RU000A1038V6', 1, 0, -1]
+    assert JalDB.readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=1") == '26238RMFS'
+    assert JalDB.readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=2") == '2252188800'
+    assert JalDB.readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=3") == '1000'
 
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(7), 1, 1626912000, 1626998400)
     assert_frame_equal(corp_quotes, quotes_downloaded)
-    assert JalDB._readSQL("SELECT * FROM assets_ext WHERE id=7") == [7, PredefinedAsset.Bond, 'МКБ 1P2', '', 'RU000A1014H6', 1, 0, -1]
-    assert JalDB._readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=1") == '4B020901978B001P'
-    assert JalDB._readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=2") == '1638230400'
-    assert JalDB._readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=3") == '1000'
+    assert JalDB.readSQL("SELECT * FROM assets_ext WHERE id=7") == [7, PredefinedAsset.Bond, 'МКБ 1P2', '', 'RU000A1014H6', 1, 0, -1]
+    assert JalDB.readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=1") == '4B020901978B001P'
+    assert JalDB.readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=2") == '1638230400'
+    assert JalDB.readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=3") == '1000'
 
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(8), 1, 1639353600, 1639440000, update_symbol=False)
     assert_frame_equal(etf_quotes, quotes_downloaded)

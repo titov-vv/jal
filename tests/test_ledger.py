@@ -84,10 +84,10 @@ def test_ledger_rounding(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert Decimal(JalDB._readSQL("SELECT amount_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
-    assert Decimal(JalDB._readSQL("SELECT value_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
-    assert Decimal(JalDB._readSQL("SELECT amount_acc FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-10400')
-    assert Decimal(JalDB._readSQL("SELECT amount FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-133.34')
+    assert Decimal(JalDB.readSQL("SELECT amount_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
+    assert Decimal(JalDB.readSQL("SELECT value_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
+    assert Decimal(JalDB.readSQL("SELECT amount_acc FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-10400')
+    assert Decimal(JalDB.readSQL("SELECT amount FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-133.34')
 
 def test_buy_sell_change(prepare_db_fifo):
     # Prepare single stock
@@ -107,8 +107,8 @@ def test_buy_sell_change(prepare_db_fifo):
     ledger.rebuild(from_timestamp=0)
 
     # Validate initial deal quantity
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert JalDB._readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '7'
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert JalDB.readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '7'
 
     # Modify closing deal quantity
     _ = JalDB.execSQL("UPDATE trades SET qty=-5 WHERE id=2")
@@ -117,9 +117,9 @@ def test_buy_sell_change(prepare_db_fifo):
     ledger.rebuild()
 
     # Check that deal quantity remains correct
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert JalDB._readSQL("SELECT COUNT(*) FROM trades_opened WHERE asset_id=4") == 1
-    assert JalDB._readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '5'
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_opened WHERE asset_id=4") == 1
+    assert JalDB.readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '5'
 
     # Add one more trade
     assert JalDB.execSQL("INSERT INTO trades (id, timestamp, settlement, account_id, asset_id, qty, price, fee) "
@@ -129,20 +129,20 @@ def test_buy_sell_change(prepare_db_fifo):
     ledger.rebuild()
 
     # Check that deal quantity remains correct
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 2
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 2
 
-    assert JalDB._readSQL("SELECT COUNT(*) FROM trades_opened") == 2
+    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_opened") == 2
 
     _ = JalDB.execSQL("DELETE FROM trades WHERE id=2", commit=True)
 
-    assert JalDB._readSQL("SELECT COUNT(*) FROM trades_opened") == 1
-    assert JalDB._readSQL("SELECT COUNT(*) FROM ledger WHERE timestamp>=1609729200") == 0
+    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_opened") == 1
+    assert JalDB.readSQL("SELECT COUNT(*) FROM ledger WHERE timestamp>=1609729200") == 0
     # Re-build ledger from last actual data
     ledger.rebuild()
 
     # Check that deal quantity remains correct
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert JalDB._readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '8'
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert JalDB.readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '8'
 
 
 def test_stock_dividend_change(prepare_db_fifo):
@@ -171,7 +171,7 @@ def test_stock_dividend_change(prepare_db_fifo):
     ledger.rebuild(from_timestamp=0)
 
     # Validate initial deal quantity
-    assert JalDB._readSQL("SELECT COUNT(*) FROM trades_closed WHERE asset_id=4") == 4
+    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_closed WHERE asset_id=4") == 4
 
     # Modify stock dividend
     JalDB.execSQL("UPDATE dividends SET amount=3.0 WHERE asset_id=4")
@@ -180,7 +180,7 @@ def test_stock_dividend_change(prepare_db_fifo):
     ledger.rebuild()
 
     # Check that deal quantity remains correct
-    assert JalDB._readSQL("SELECT COUNT(*) FROM trades_closed WHERE asset_id=4") == 4
+    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_closed WHERE asset_id=4") == 4
 
     # Put quotation back and rebuild
     create_quotes(4, 2, [(1643907900, 54.0)])
@@ -189,7 +189,7 @@ def test_stock_dividend_change(prepare_db_fifo):
     ledger.rebuild()
 
     # Check that deal quantity remains correct
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 4
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 4
 
 
 def test_fifo(prepare_db_fifo):
@@ -285,75 +285,75 @@ def test_fifo(prepare_db_fifo):
     ledger.rebuild(from_timestamp=0)
 
     # Check single deal
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=4") == 994
-    assert JalDB._readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=4") == 6
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=4") == 994
+    assert JalDB.readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=4") == 6
     
     # One buy multiple sells
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=5") == 2
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=5") == -56
-    assert JalDB._readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=5") == 6
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=5") == 2
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=5") == -56
+    assert JalDB.readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=5") == 6
 
     # Multiple buy one sell
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=6") == 2
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=6") == -1306
-    assert JalDB._readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=6") == 6
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=6") == 2
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=6") == -1306
+    assert JalDB.readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=6") == 6
 
     # One sell multiple buys
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=7") == 2
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=7") == -78
-    assert JalDB._readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=7") == 3
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=7") == 2
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=7") == -78
+    assert JalDB.readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=7") == 3
 
     # Multiple sells one buy
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=8") == 2
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=8") == 317
-    assert JalDB._readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=8") == 3
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=8") == 2
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=8") == 317
+    assert JalDB.readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=8") == 3
 
     # Multiple buys and sells
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=9") == 11
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=9") == 3500
-    assert JalDB._readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=9") == 0
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=9") == 11
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=9") == 3500
+    assert JalDB.readSQL("SELECT SUM(fee) FROM deals_ext WHERE asset_id=9") == 0
 
     # Symbol change
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=10") == 1
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=11") == 1
-    assert JalDB._readSQL("SELECT profit FROM deals_ext WHERE asset_id=11") == 1200
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=10") == 1
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=11") == 1
+    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE asset_id=11") == 1200
 
     # Spin-off
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=12") == 1
-    assert JalDB._readSQL("SELECT profit FROM deals_ext WHERE asset_id=12") == approx(0)
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=12") == 1
+    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE asset_id=12") == approx(0)
 
     # Multiple corp actions
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=13 AND corp_action IS NOT NULL") == 1
-    assert JalDB._readSQL("SELECT profit FROM deals_ext WHERE asset_id=13") == 0
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=14") == 3
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=14 AND corp_action IS NOT NULL") == 2
-    assert JalDB._readSQL("SELECT profit FROM deals_ext WHERE asset_id=14 AND corp_action IS NULL") == 75
-    assert JalDB._readSQL("SELECT profit FROM deals_ext WHERE asset_id=14 AND corp_action IS NOT NULL") == 0
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=15 AND corp_action IS NOT NULL") == 1
-    assert JalDB._readSQL("SELECT profit FROM deals_ext WHERE asset_id=15") == 274
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=13 AND corp_action IS NOT NULL") == 1
+    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE asset_id=13") == 0
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=14") == 3
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=14 AND corp_action IS NOT NULL") == 2
+    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE asset_id=14 AND corp_action IS NULL") == 75
+    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE asset_id=14 AND corp_action IS NOT NULL") == 0
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=15 AND corp_action IS NOT NULL") == 1
+    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE asset_id=15") == 274
 
     # Stock dividend
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=16") == 3
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=16") == approx(450)
-    assert JalDB._readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND close_timestamp=1608454800") == approx(0)
-    assert JalDB._readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND open_timestamp=1608368400") == approx(50)
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=16") == 3
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=16") == approx(450)
+    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND close_timestamp=1608454800") == approx(0)
+    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND open_timestamp=1608368400") == approx(50)
 
     # Order of buy/sell
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=17") == 2
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=17") == 140
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=18") == 4
-    assert JalDB._readSQL("SELECT SUM(qty) FROM deals_ext WHERE asset_id=18") == -2
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=18") == 200
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=17") == 2
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=17") == 140
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=18") == 4
+    assert JalDB.readSQL("SELECT SUM(qty) FROM deals_ext WHERE asset_id=18") == -2
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=18") == 200
 
     # totals
-    assert JalDB._readSQL("SELECT COUNT(*) FROM trades_closed") == 41
-    assert JalDB._readSQL("SELECT COUNT(*) FROM trades_closed WHERE open_op_type=:trade AND close_op_type=:trade",
-                          [(":trade", LedgerTransaction.Trade)]) == 29
-    assert JalDB._readSQL("SELECT COUNT(*) FROM trades_closed WHERE open_op_type!=:corp_action OR close_op_type!=:corp_action",
-                          [(":corp_action", LedgerTransaction.CorporateAction)]) == 37
-    assert JalDB._readSQL("SELECT COUNT(*) FROM trades_closed WHERE open_op_type=:corp_action AND close_op_type=:corp_action",
-                          [(":corp_action", LedgerTransaction.CorporateAction)]) == 4
+    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_closed") == 41
+    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_closed WHERE open_op_type=:trade AND close_op_type=:trade",
+                         [(":trade", LedgerTransaction.Trade)]) == 29
+    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_closed WHERE open_op_type!=:corp_action OR close_op_type!=:corp_action",
+                         [(":corp_action", LedgerTransaction.CorporateAction)]) == 37
+    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_closed WHERE open_op_type=:corp_action AND close_op_type=:corp_action",
+                         [(":corp_action", LedgerTransaction.CorporateAction)]) == 4
 
     # validate final amounts
     query = JalDB.execSQL("SELECT MAX(id) AS mid, asset_id, amount_acc, value_acc FROM ledger "
@@ -394,9 +394,9 @@ def test_asset_transfer(prepare_db):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert JalDB._readSQL("SELECT COUNT(*) FROM ledger WHERE book_account=:transfers", [(":transfers", BookAccount.Transfers)]) == 2
-    assert JalDB._readSQL("SELECT SUM(value) FROM ledger WHERE book_account=:transfers", [(":transfers", BookAccount.Transfers)]) == 0.0
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE account_id=1 AND asset_id=4") == 1
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE account_id=2 AND asset_id=4") == 1
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE account_id=1 AND asset_id=4") == -1.0
-    assert JalDB._readSQL("SELECT SUM(profit) FROM deals_ext WHERE account_id=2 AND asset_id=4") == 2495
+    assert JalDB.readSQL("SELECT COUNT(*) FROM ledger WHERE book_account=:transfers", [(":transfers", BookAccount.Transfers)]) == 2
+    assert JalDB.readSQL("SELECT SUM(value) FROM ledger WHERE book_account=:transfers", [(":transfers", BookAccount.Transfers)]) == 0.0
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE account_id=1 AND asset_id=4") == 1
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE account_id=2 AND asset_id=4") == 1
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE account_id=1 AND asset_id=4") == -1.0
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE account_id=2 AND asset_id=4") == 2495

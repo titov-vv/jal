@@ -30,16 +30,16 @@ class JalAsset(JalDB):
                     [(":type", data['type']), (":full_name", data['name']),
                      (":isin", data['isin']), (":country", data['country'])], commit=True)
                 self._id = query.lastInsertId()
-        self._data = self._readSQL("SELECT type_id, full_name, isin, country_id FROM assets WHERE id=:id",
-                                   [(":id", self._id)], named=True)
+        self._data = self.readSQL("SELECT type_id, full_name, isin, country_id FROM assets WHERE id=:id",
+                                  [(":id", self._id)], named=True)
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['full_name'] if self._data is not None else ''
         self._isin = self._data['isin'] if self._data is not None else None
         self._country_id = self._data['country_id'] if self._data is not None else 0
-        self._reg_number = self._readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
-                                         [(":datatype", AssetData.RegistrationCode), (":id", self._id)])
-        self._expiry = self._readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
-                                         [(":datatype", AssetData.ExpiryDate), (":id", self._id)])
+        self._reg_number = self.readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
+                                        [(":datatype", AssetData.RegistrationCode), (":id", self._id)])
+        self._expiry = self.readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
+                                    [(":datatype", AssetData.ExpiryDate), (":id", self._id)])
 
     def id(self) -> int:
         return self._id
@@ -63,14 +63,14 @@ class JalAsset(JalDB):
                 symbols.append(self._readSQLrecord(query))
             return ','.join([x for x in symbols])  # concatenate all symbols via comma
         else:
-            return self._readSQL("SELECT symbol FROM asset_tickers "
+            return self.readSQL("SELECT symbol FROM asset_tickers "
                                  "WHERE asset_id=:asset_id AND active=1 AND currency_id=:currency_id",
-                                 [(":asset_id", self._id), (":currency_id", currency)])
+                                [(":asset_id", self._id), (":currency_id", currency)])
 
     def add_symbol(self, symbol: str, currency_id: int, note: str, data_source: int = MarketDataFeed.NA) -> None:
-        existing = self._readSQL("SELECT id, symbol, description, quote_source FROM asset_tickers "
+        existing = self.readSQL("SELECT id, symbol, description, quote_source FROM asset_tickers "
                                  "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency",
-                                 [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)
+                                [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)
         if existing is None:  # Deactivate old symbols and create a new one
             _ = self.execSQL("UPDATE asset_tickers SET active=0 WHERE asset_id=:asset_id AND currency_id=:currency",
                              [(":asset_id", self._id), (":currency", currency_id)])
@@ -92,14 +92,14 @@ class JalAsset(JalDB):
         return self._country_id
 
     def country_name(self) -> str:
-        return self._readSQL("SELECT name FROM countries WHERE id=:id", [(":id", self._country_id)])
+        return self.readSQL("SELECT name FROM countries WHERE id=:id", [(":id", self._country_id)])
 
     # Returns tuple in form of (timestamp:int, quote:Decimal) that contains last found quotation in given currency.
     # Returned timestamp might be less than given. Returns (0, 0) if no quotation information present in db.
     def quote(self, timestamp: int, currency_id: int) -> tuple:
-        quote = self._readSQL("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
+        quote = self.readSQL("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
                               "AND currency_id=:currency_id AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
-                              [(":asset_id", self._id), (":currency_id", currency_id), (":timestamp", timestamp)])
+                             [(":asset_id", self._id), (":currency_id", currency_id), (":timestamp", timestamp)])
         if quote is None:
             return 0, Decimal('0')
         return int(quote[0]), Decimal(quote[1])
@@ -121,9 +121,9 @@ class JalAsset(JalDB):
     # available in database for given currency
     def quotes_range(self, currency_id: int) -> tuple:
         try:
-            begin, end = self._readSQL("SELECT MIN(timestamp), MAX(timestamp) FROM quotes "
+            begin, end = self.readSQL("SELECT MIN(timestamp), MAX(timestamp) FROM quotes "
                                        "WHERE asset_id=:asset_id AND currency_id=:currency_id",
-                                       [(":asset_id", self._id), (":currency_id", currency_id)])
+                                      [(":asset_id", self._id), (":currency_id", currency_id)])
         except TypeError:
             begin = end = 0
         begin = db_timestamp2int(begin)
@@ -132,9 +132,9 @@ class JalAsset(JalDB):
 
     # Returns a quote source id defined for given currency
     def quote_source(self, currency_id: int) -> int:
-        source_id = self._readSQL("SELECT quote_source FROM asset_tickers "
+        source_id = self.readSQL("SELECT quote_source FROM asset_tickers "
                                   "WHERE asset_id=:asset AND currency_id=:currency",
-                                  [(":asset", self._id), (":currency", currency_id)])
+                                 [(":asset", self._id), (":currency", currency_id)])
         if source_id is None:
             return MarketDataFeed.NA
         else:
@@ -259,38 +259,38 @@ class JalAsset(JalDB):
         id = None
         if data['isin']:
             # Select either by ISIN if no symbol given OR by both ISIN & symbol
-            id = self._readSQL("SELECT id FROM assets_ext "
+            id = self.readSQL("SELECT id FROM assets_ext "
                                "WHERE ((isin=:isin OR isin='') AND symbol=:symbol) OR (isin=:isin AND :symbol='')",
-                               [(":isin", data['isin']), (":symbol", data['symbol'])])
+                              [(":isin", data['isin']), (":symbol", data['symbol'])])
             if id is None:
                 return 0
             else:
                 return id
         if data['reg_number']:
-            id = self._readSQL("SELECT asset_id FROM asset_data WHERE datatype=:datatype AND value=:reg_number",
-                               [(":datatype", AssetData.RegistrationCode), (":reg_number", data['reg_number'])])
+            id = self.readSQL("SELECT asset_id FROM asset_data WHERE datatype=:datatype AND value=:reg_number",
+                              [(":datatype", AssetData.RegistrationCode), (":reg_number", data['reg_number'])])
             if id is not None:
                 return id
         if data['symbol']:
             if 'type' in data:
                 if 'expiry' in data:
-                    id = self._readSQL("SELECT a.id FROM assets_ext a "
+                    id = self.readSQL("SELECT a.id FROM assets_ext a "
                                        "LEFT JOIN asset_data d ON a.id=d.asset_id AND d.datatype=:datatype "
                                        "WHERE symbol=:symbol COLLATE NOCASE AND type_id=:type AND value=:value",
-                                       [(":datatype", AssetData.ExpiryDate), (":symbol", data['symbol']),
+                                      [(":datatype", AssetData.ExpiryDate), (":symbol", data['symbol']),
                                         (":type", data['type']), (":value", data['expiry'])])
                 else:
-                    id = self._readSQL("SELECT id FROM assets_ext "
+                    id = self.readSQL("SELECT id FROM assets_ext "
                                        "WHERE symbol=:symbol COLLATE NOCASE and type_id=:type",
-                                       [(":symbol", data['symbol']), (":type", data['type'])])
+                                      [(":symbol", data['symbol']), (":type", data['type'])])
             else:
-                id = self._readSQL("SELECT id FROM assets_ext WHERE symbol=:symbol COLLATE NOCASE",
-                                   [(":symbol", data['symbol'])])
+                id = self.readSQL("SELECT id FROM assets_ext WHERE symbol=:symbol COLLATE NOCASE",
+                                  [(":symbol", data['symbol'])])
             if id is not None:
                 return id
         if data['name']:
-            id = self._readSQL("SELECT id FROM assets_ext WHERE full_name=:name COLLATE NOCASE",
-                               [(":name", data['name'])])
+            id = self.readSQL("SELECT id FROM assets_ext WHERE full_name=:name COLLATE NOCASE",
+                              [(":name", data['name'])])
         if id is None:
             return 0
         else:

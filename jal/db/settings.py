@@ -6,7 +6,7 @@ class JalSettings(JalDB):
         super().__init__()
 
     def getValue(self, key, default=None):
-        value = self._readSQL("SELECT value FROM settings WHERE name=:key", [(":key", key)])
+        value = self.readSQL("SELECT value FROM settings WHERE name=:key", [(":key", key)])
         if value is None:
             value = default
         return value
@@ -19,10 +19,10 @@ class JalSettings(JalDB):
     # Returns 2-letter language code that corresponds to current 'Language' settings in DB
     def getLanguage(self):
         lang_id = self.getValue('Language', default=1)
-        return self._readSQL("SELECT language FROM languages WHERE id = :language_id", [(':language_id', lang_id)])
+        return self.readSQL("SELECT language FROM languages WHERE id = :language_id", [(':language_id', lang_id)])
 
     # Set 'Language' setting in DB that corresponds to given 2-letter language code
     def setLanguage(self, language_code):
-        lang_id = self._readSQL("SELECT id FROM languages WHERE language = :language_code",
-                                [(':language_code', language_code)])
+        lang_id = self.readSQL("SELECT id FROM languages WHERE language = :language_code",
+                               [(':language_code', language_code)])
         self.setValue('Language', lang_id)

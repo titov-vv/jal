@@ -188,8 +188,8 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
 
-    assert JalDB._readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert JalDB._readSQL("SELECT profit FROM deals_ext WHERE asset_id=4") == approx(49.71)
+    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE asset_id=4") == approx(49.71)
 
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)
