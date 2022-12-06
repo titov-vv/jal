@@ -1,7 +1,6 @@
 from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from jal.ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
-from jal.db.helpers import db_connection
 from jal.db.db import JalDB
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
@@ -27,7 +26,7 @@ class ProfitLossReportModel(QSqlTableModel):
         self._query = None
         self._ym_delegate = None
         self._float_delegate = None
-        QSqlTableModel.__init__(self, parent=parent_view, db=db_connection())
+        QSqlTableModel.__init__(self, parent=parent_view, db=JalDB.connection())
 
     def setColumnNames(self):
         for column in self._columns:

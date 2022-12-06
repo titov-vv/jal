@@ -3,7 +3,6 @@ from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView, QMessageBox
-from jal.db.helpers import db_connection
 from jal.db.db import JalDB
 from jal.widgets.helpers import decodeError
 
@@ -27,13 +26,13 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._hidden = []
         self._stretch = None
         self._default_values = {}   # To fill in default values for fields allowed to be NULL
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
+        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=JalDB.connection())
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(self._table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.select()
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
-        self._completion_model = QSqlTableModel(parent=parent_view, db=db_connection())
+        self._completion_model = QSqlTableModel(parent=parent_view, db=JalDB.connection())
         self._completion_model.setTable(self._table)
         self._completion_model.select()
 
@@ -168,7 +167,7 @@ class SqlTreeModel(QAbstractItemModel):
         self._default_name = "name"
         self._stretch = None
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
-        self._completion_model = QSqlTableModel(parent=parent_view, db=db_connection())
+        self._completion_model = QSqlTableModel(parent=parent_view, db=JalDB.connection())
         self._completion_model.setTable(self._table)
         self._completion_model.select()
 
@@ -237,7 +236,7 @@ class SqlTreeModel(QAbstractItemModel):
             return False
         item_id = index.internalId()
         col = index.column()
-        db_connection().transaction()
+        JalDB.connection().transaction()
         _ = JalDB._executeSQL(f"UPDATE {self._table} SET {self._columns[col][0]}=:value WHERE id=:id",
                               [(":id", item_id), (":value", value)])
         self.dataChanged.emit(index, index, Qt.DisplayRole | Qt.EditRole)
@@ -294,7 +293,7 @@ class SqlTreeModel(QAbstractItemModel):
             parent_id = parent.internalId()
 
         self.beginInsertRows(parent, row, row + count - 1)
-        db_connection().transaction()
+        JalDB.connection().transaction()
         _ = JalDB._executeSQL(f"INSERT INTO {self._table}(pid, name) VALUES (:pid, '')", [(":pid", parent_id)])
         self.endInsertRows()
         self.layoutChanged.emit()
@@ -309,7 +308,7 @@ class SqlTreeModel(QAbstractItemModel):
             parent_id = parent.internalId()
 
         self.beginRemoveRows(parent, row, row + count - 1)
-        db_connection().transaction()
+        JalDB.connection().transaction()
         query = JalDB._executeSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT :row_c OFFSET :row_n",
                                   [(":pid", parent_id), (":row_c", count), (":row_n", row)])
         while query.next():

@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase
 
 from jal.constants import Setup
-from jal.db.helpers import db_connection, executeSQL, readSQL, readSQLrecord, get_dbfilename
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_dbfilename
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -104,6 +104,17 @@ class JalDB:
         return self._readSQL("SELECT sqlite_version()")
 
     # ------------------------------------------------------------------------------------------------------------------
+    # This function returns SQLite connection used by JAL or fails with RuntimeError exception
+    @staticmethod
+    def connection():
+        db = QSqlDatabase.database(Setup.DB_CONNECTION)
+        if not db.isValid():
+            raise RuntimeError(f"DB connection '{Setup.DB_CONNECTION}' is invalid")
+        if not db.isOpen():
+            logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
+        return db
+
+    # ------------------------------------------------------------------------------------------------------------------
     # Enables DB triggers if enable == True and disables it otherwise
     def enable_triggers(self, enable):
         if enable:
@@ -136,7 +147,7 @@ class JalDB:
                     clean_statement = sqlparse.format(statement, strip_comments=True)
                     if self._executeSQL(clean_statement, commit=False) is None:
                         _ = self._executeSQL("ROLLBACK")
-                        db_connection().close()
+                        self.connection().close()
                         return JalDBError(JalDBError.SQLFailure, f"FAILED: {clean_statement}")
                     else:
                         logging.debug(f"EXECUTED OK:\n{clean_statement}")
@@ -150,7 +161,7 @@ class JalDB:
                                  QApplication.translate('DB', "Do you agree to upgrade your data to newer format?"),
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return JalDBError(JalDBError.OutdatedDbSchema)
-        db = db_connection()
+        db = self.connection()
         version = self._readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
         try:
             schema_version = int(version)
@@ -166,7 +177,7 @@ class JalDB:
         return JalDBError(JalDBError.NoError)
 
     def commit(self):
-        db_connection().commit()
+        self.connection().commit()
 
     # This method creates a db record in 'table' name that describes relevant operation.
     # 'data' is a dict that contains operation data and dict 'fields' describes it having

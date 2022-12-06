@@ -2,7 +2,6 @@ from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtWidgets import QHeaderView
 from jal.ui.reports.ui_category_report import Ui_CategoryReportWidget
-from jal.db.helpers import db_connection
 from jal.db.db import JalDB
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.mdi import MdiWidget
@@ -26,7 +25,7 @@ class CategoryReportModel(QSqlTableModel):
         self._begin = 0
         self._end = 0
         self._category_id = 0
-        QSqlTableModel.__init__(self, parent=parent_view, db=db_connection())
+        QSqlTableModel.__init__(self, parent=parent_view, db=JalDB.connection())
 
     def setColumnNames(self):
         for column in self._columns:

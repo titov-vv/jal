@@ -9,7 +9,8 @@ from PySide6.QtGui import QFont
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
-from jal.db.helpers import db_connection, load_icon
+from jal.db.db import JalDB
+from jal.db.helpers import load_icon
 from jal.db.operations import LedgerTransaction
 
 
@@ -120,7 +121,7 @@ class CorporateActionWidget(AbstractOperationDetails):
 
         self.mapper.setItemDelegate(CorporateActionWidgetDelegate(self.mapper))
 
-        self.results_model = ResultsModel(self.results_table, db_connection())
+        self.results_model = ResultsModel(self.results_table, JalDB.connection())
         self.results_model.setTable("action_results")
         self.results_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.results_table.setModel(self.results_model)

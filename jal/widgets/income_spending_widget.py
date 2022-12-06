@@ -9,7 +9,8 @@ from PySide6.QtSql import QSqlTableModel
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
-from jal.db.helpers import db_connection, load_icon
+from jal.db.db import JalDB
+from jal.db.helpers import load_icon
 from jal.db.operations import LedgerTransaction
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
@@ -96,7 +97,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.model.beforeUpdate.connect(self.before_record_update)
         self.mapper.setItemDelegate(IncomeSpendingWidgetDelegate(self.mapper))
 
-        self.details_model = DetailsModel(self.details_table, db_connection())
+        self.details_model = DetailsModel(self.details_table, JalDB.connection())
         self.details_model.setTable("action_details")
         self.details_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.details_table.setModel(self.details_model)

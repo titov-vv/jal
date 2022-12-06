@@ -5,9 +5,8 @@ from decimal import Decimal
 
 from tests.fixtures import project_root
 from constants import Setup
-from jal.db.db import JalDB, JalDBError, db_connection
+from jal.db.db import JalDB, JalDBError
 from jal.db.helpers import get_dbfilename, localize_decimal
-from jal.db.db import JalDB
 from jal.db.backup_restore import JalBackup
 
 
@@ -42,7 +41,7 @@ def test_db_creation(tmp_path, project_root):
     assert JalDB._readSQL("SELECT full_name FROM assets WHERE id=1") == 'Российский Рубль'
 
     # Clean up db
-    db_connection().close()
+    JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
 
@@ -62,7 +61,7 @@ def test_invalid_backup(tmp_path, project_root):
     assert not invalid_backup.validate_backup()
 
     # Clean up db
-    db_connection().close()
+    JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
 
@@ -93,6 +92,6 @@ def test_backup_load(tmp_path, project_root):
     db.close()
 
     # Clean up db
-    db_connection().close()
+    JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file

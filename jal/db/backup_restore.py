@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 import tarfile
 
 from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
-from jal.db.helpers import db_connection
+from jal.db.db import JalDB
 
 
 # ------------------------------------------------------------------------------
@@ -119,7 +119,7 @@ class JalBackup:
         self.get_filename(False)
         if self.backup_name is None:
             return
-        db_connection().close()
+        JalDB.connection().close()
 
         if not self.validate_backup():
             logging.error(self.tr("Wrong format of backup file"))

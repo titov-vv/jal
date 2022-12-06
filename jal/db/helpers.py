@@ -74,7 +74,7 @@ def load_icon(icon_name) -> QIcon:
 
 # -------------------------------------------------------------------------------------------------------------------
 # This function returns SQLite connection used by JAL or fails with RuntimeError exception
-def db_connection():
+def _db_connection():
     db = QSqlDatabase.database(Setup.DB_CONNECTION)
     if not db.isValid():
         raise RuntimeError(f"DB connection '{Setup.DB_CONNECTION}' is invalid")
@@ -89,7 +89,7 @@ def db_connection():
 # Parameter 'forward_only' may be used for optimization
 # return value - QSqlQuery object (to allow iteration through result)
 def executeSQL(sql_text, params=[], forward_only=True, commit=False):
-    db = db_connection()
+    db = _db_connection()
     query = QSqlQuery(db)
     query.setForwardOnly(forward_only)
     if not query.prepare(sql_text):
@@ -115,7 +115,7 @@ def executeSQL(sql_text, params=[], forward_only=True, commit=False):
 def readSQL(sql_text, params=None, named=False, check_unique=False):
     if params is None:
         params = []
-    query = QSqlQuery(db_connection())   # TODO reimplement via ExecuteSQL() call in order to get rid of duplicated code
+    query = QSqlQuery(_db_connection())   # TODO reimplement via ExecuteSQL() call in order to get rid of duplicated code
     query.setForwardOnly(True)
     if not query.prepare(sql_text):
         logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' | '{params}'")

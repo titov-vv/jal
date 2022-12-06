@@ -1,7 +1,6 @@
 from PySide6.QtCore import Qt, Property
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtWidgets import QComboBox
-from jal.db.helpers import db_connection
 from jal.db.db import JalDB
 
 
@@ -32,7 +31,7 @@ class DbLookupComboBox(QComboBox):
         self._table = table
         self._field = field
         self._key_field = key_field
-        self._model = QSqlTableModel(parent=self, db=db_connection())
+        self._model = QSqlTableModel(parent=self, db=JalDB.connection())
         self._model.setTable(table)
         field_idx = self._model.fieldIndex(field)
         self._model.setSort(field_idx, Qt.AscendingOrder)
