@@ -1,13 +1,9 @@
 import os
-import logging
 from PySide6.QtCore import QLocale
-from PySide6.QtSql import QSqlDatabase
 from PySide6.QtGui import QIcon
 from jal.constants import Setup
 from decimal import Decimal
 
-
-# FIXME all database calls should be via JalDB (or mate) class. Get rid of SQL calls from other code
 
 # -------------------------------------------------------------------------------------------------------------------
 # Return "canonical" string for decimal number
@@ -70,14 +66,3 @@ def get_dbfilename(app_path):
 # returns QIcon loaded from the file with icon_name located in folder Setup.ICONS_PATH
 def load_icon(icon_name) -> QIcon:
     return QIcon(get_app_path() + Setup.ICONS_PATH + os.sep + icon_name)
-
-
-# -------------------------------------------------------------------------------------------------------------------
-# This function returns SQLite connection used by JAL or fails with RuntimeError exception
-def _db_connection():
-    db = QSqlDatabase.database(Setup.DB_CONNECTION)
-    if not db.isValid():
-        raise RuntimeError(f"DB connection '{Setup.DB_CONNECTION}' is invalid")
-    if not db.isOpen():
-        logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
-    return db

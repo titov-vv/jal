@@ -39,6 +39,7 @@ class JalDBError:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# FIXME all database calls should be via JalDB (or mate/descendant) class. Get rid of SQL calls from other code
 class JalDB:
     _tables = []
 
