@@ -26,9 +26,9 @@ class JalAsset(JalDB):
             if create and not self._id:   # If we haven't found peer before and requested to create new record
                 query = self._executeSQL(
                     "INSERT INTO assets (type_id, full_name, isin, country_id) "
-                    "VALUES (:type, :full_name, :isin, coalesce((SELECT id FROM countries WHERE code=''), 0))",
+                    "VALUES (:type, :full_name, :isin, coalesce((SELECT id FROM countries WHERE code=:country), 0))",
                     [(":type", data['type']), (":full_name", data['name']),
-                     (":isin", data['isin']), (":country_id", data['country'])], commit=True)
+                     (":isin", data['isin']), (":country", data['country'])], commit=True)
                 self._id = query.lastInsertId()
         self._data = self._readSQL("SELECT type_id, full_name, isin, country_id FROM assets WHERE id=:id",
                                    [(":id", self._id)], named=True)
