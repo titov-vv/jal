@@ -125,7 +125,7 @@ class LedgerTransaction:
 
     def _asset_total(self, account_id, asset_id) -> Decimal:
         amount = JalDB._readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
-                                "account_id = :account_id AND asset_id AND book_account=:book",
+                                "account_id=:account_id AND asset_id=:asset_id AND book_account=:book",
                                 [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
                                  (":asset_id", asset_id), (":book", BookAccount.Assets)])
         amount = Decimal('0') if amount is None else Decimal(amount)
