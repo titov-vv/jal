@@ -111,45 +111,33 @@ class JalDB:
     # Parameter 'forward_only' may be used for optimization
     # return value - QSqlQuery object (to allow iteration through result)
     @staticmethod
-    def execSQL(sql_text, params=[], forward_only=True, commit=False):
+    def execSQL(sql_text, params=None, forward_only=True, commit=False):
+        if params is None:
+            params = []
         db = JalDB.connection()
         query = QSqlQuery(db)
         query.setForwardOnly(forward_only)
         if not query.prepare(sql_text):
-            logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
+            logging.error(f"SQL query preparation failure: '{query.lastError().text()}' for query '{sql_text}'")
             return None
         for param in params:
             query.bindValue(param[0], param[1])
             assert query.boundValue(param[0]) == param[1], f"SQL: failed to assign parameter {param} in '{sql_text}'"
         if not query.exec():
-            logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
+            logging.error(f"SQL failure: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
             return None
         if commit:
             db.commit()
         return query
 
     # ------------------------------------------------------------------------------------------------------------------
-    # Similar to execSQL() method but after query execution it returns first line of query result
-    # params is a list of tuples (":param", value) which are used to prepare SQL query
+    # Calls execSQL() method with given SQL query and parameters and returns its result or None if result is empty
     # named = False: result is packed into a list of field values
     # named = True: result is packet into a dictionary with field names as keys
     # check_unique = True: checks that only 1 record was returned by query, otherwise returns None
-    # Return value: first row of query result or None if no records were fetched by the query
     @staticmethod
     def readSQL(sql_text, params=None, named=False, check_unique=False):
-        if params is None:
-            params = []
-        query = QSqlQuery(JalDB.connection())  # TODO reimplement via ExecuteSQL() call in order to get rid of duplicated code
-        query.setForwardOnly(True)
-        if not query.prepare(sql_text):
-            logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' | '{params}'")
-            return None
-        for param in params:
-            query.bindValue(param[0], param[1])
-            assert query.boundValue(param[0]) == param[1], f"SQL: failed to assign parameter {param} in '{sql_text}'"
-        if not query.exec():
-            logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' | '{params}'")
-            return None
+        query = JalDB.execSQL(sql_text, params)
         if query.next():
             res = readSQLrecord(query, named=named)
             if check_unique and query.next():
