@@ -62,7 +62,7 @@ class LedgerAmounts(dict):
         try:
             return super().__getitem__(key)
         except KeyError:
-            amount = JalDB()._readSQL(f"SELECT {self.total_field} FROM ledger "
+            amount = JalDB._readSQL(f"SELECT {self.total_field} FROM ledger "
                                       "WHERE book_account = :book AND account_id = :account_id AND asset_id = :asset_id "
                                       "ORDER BY id DESC LIMIT 1",
                                       [(":book", key[BOOK]), (":account_id", key[ACCOUNT]), (":asset_id", key[ASSET])])
@@ -89,7 +89,7 @@ class Ledger(QObject):
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
-        current_frontier = JalDB()._readSQL("SELECT ledger_frontier FROM frontier")
+        current_frontier = JalDB._readSQL("SELECT ledger_frontier FROM frontier")
         if current_frontier == '':
             current_frontier = 0
         return current_frontier
@@ -103,7 +103,7 @@ class Ledger(QObject):
         if account_id:
             query_text += " AND account_id=:account"
             params += [(":account", account_id)]
-        query = JalDB()._executeSQL(query_text, params, forward_only=True)
+        query = JalDB._executeSQL(query_text, params, forward_only=True)
         while query.next():
             sequence.append(JalDB._readSQLrecord(query, named=True))
         return sequence
@@ -136,7 +136,7 @@ class Ledger(QObject):
                 (self.values[(book, operation.account_id(), asset_id)] != Decimal('0')):
             rounding_error = Decimal('0') - self.values[(book, operation.account_id(), asset_id)]
             self.values[(book, operation.account_id(), asset_id)] += rounding_error
-        _ = JalDB()._executeSQL("INSERT INTO ledger (timestamp, op_type, operation_id, book_account, asset_id, "
+        _ = JalDB._executeSQL("INSERT INTO ledger (timestamp, op_type, operation_id, book_account, asset_id, "
                                 "account_id, amount, value, amount_acc, value_acc, peer_id, category_id, tag_id) "
                                 "VALUES(:timestamp, :op_type, :operation_id, :book, :asset_id, :account_id, "
                                 ":amount, :value, :amount_acc, :value_acc, :peer_id, :category_id, :tag_id)",
@@ -188,11 +188,11 @@ class Ledger(QObject):
         self.values.clear()
         if from_timestamp >= 0:
             frontier = from_timestamp
-            operations_count = JalDB()._readSQL("SELECT COUNT(id) FROM operation_sequence WHERE timestamp >= :frontier",
+            operations_count = JalDB._readSQL("SELECT COUNT(id) FROM operation_sequence WHERE timestamp >= :frontier",
                                        [(":frontier", frontier)])
         else:
             frontier = self.getCurrentFrontier()
-            operations_count = JalDB()._readSQL("SELECT COUNT(id) FROM operation_sequence WHERE timestamp >= :frontier",
+            operations_count = JalDB._readSQL("SELECT COUNT(id) FROM operation_sequence WHERE timestamp >= :frontier",
                                        [(":frontier", frontier)])
             if operations_count > self.SILENT_REBUILD_THRESHOLD:
                 if QMessageBox().warning(None, self.tr("Confirmation"), f"{operations_count}" +
@@ -209,16 +209,16 @@ class Ledger(QObject):
         logging.info(self.tr("Re-building ledger since: ") +
                      f"{datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.now()
-        _ = JalDB()._executeSQL("DELETE FROM trades_closed WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
-        _ = JalDB()._executeSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = JalDB()._executeSQL("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = JalDB()._executeSQL("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = JalDB._executeSQL("DELETE FROM trades_closed WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
+        _ = JalDB._executeSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = JalDB._executeSQL("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = JalDB._executeSQL("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
 
         JalDB().enable_triggers(False)
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
             JalDB().set_synchronous(False)
         try:
-            query = JalDB()._executeSQL("SELECT op_type, id, timestamp, account_id, subtype FROM operation_sequence "
+            query = JalDB._executeSQL("SELECT op_type, id, timestamp, account_id, subtype FROM operation_sequence "
                                "WHERE timestamp >= :frontier", [(":frontier", frontier)])
             while query.next():
                 data = JalDB._readSQLrecord(query, named=True)
@@ -237,7 +237,7 @@ class Ledger(QObject):
             if self.progress_bar is not None:
                 self.main_window.showProgressBar(False)
         # Fill ledger totals values
-        _ = JalDB()._executeSQL("INSERT INTO ledger_totals"
+        _ = JalDB._executeSQL("INSERT INTO ledger_totals"
                        "(op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc) "
                        "SELECT op_type, operation_id, timestamp, book_account, "
                        "asset_id, account_id, amount_acc, value_acc FROM ledger "
