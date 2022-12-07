@@ -2,7 +2,7 @@ from pytest import approx
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
-from tests.helpers import create_stocks, create_actions, create_trades, create_quotes, \
+from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_quotes, \
     create_corporate_actions, create_stock_dividends, create_transfers
 from constants import BookAccount
 from jal.db.ledger import Ledger
@@ -371,24 +371,24 @@ def test_fifo(prepare_db_fifo):
 def test_asset_transfer(prepare_db):
     assert JalDB.execSQL("INSERT INTO agents (pid, name) VALUES (0, 'Test Peer')") is not None
     assert JalDB.execSQL("INSERT INTO accounts (id, type_id, name, currency_id, active, number, organization_id) "
-                             "VALUES (1, 4, 'account.USD', 2, 1, 'U7654321', 1)") is not None
+                         "VALUES (1, 4, 'account.USD', 2, 1, 'U7654321', 1)") is not None
     assert JalDB.execSQL("INSERT INTO accounts (id, type_id, name, currency_id, active, number, organization_id) "
-                             "VALUES (2, 4, 'account.RUB', 1, 1, 'U7654321', 1)") is not None
+                         "VALUES (2, 4, 'account.RUB', 1, 1, 'U7654321', 1)") is not None
     # Create starting balance
-    create_actions([(1640995200, 1, 1, [(4, 1000.0)])])
-    usd_rates = [(1643716800, 80), (1643889600, 75)]
+    create_actions([(d2t(220101), 1, 1, [(4, 1000.0)])])
+    usd_rates = [(d2t(220201), 80), (d2t(220203), 75)]
     create_quotes(2, 1, usd_rates)
 
     # Prepare single stock
     create_stocks([(4, 'A.USD', 'A SHARE')], currency_id=2)
     assert JalDB.execSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
-                            "VALUES (:asset_id, :symbol, :currency_id)",
+                         "VALUES (:asset_id, :symbol, :currency_id)",
                          [(":asset_id", 4), (":symbol", "A.RUB"), (":currency_id", 1)], commit=True) is not None
 
-    create_trades(1, [(1643716800, 1643889600, 4, 5.0, 100.0, 1.0)])
-    create_trades(2, [(1644580800, 1644753600, 4, -5.0, 8000.0, 5.0)])
+    create_trades(1, [(d2t(220201), d2t(220203), 4, 5.0, 100.0, 1.0)])
+    create_trades(2, [(d2t(220211), d2t(220213), 4, -5.0, 8000.0, 5.0)])
 
-    create_transfers([(1644235200, 1, 5.0, 2, 5.0, 4)])   # Move A from account.USD to account.RUB
+    create_transfers([(d2t(220207), 1, 5.0, 2, 5.0, 4)])   # Move A from account.USD to account.RUB
 
     # Build ledger
     ledger = Ledger()

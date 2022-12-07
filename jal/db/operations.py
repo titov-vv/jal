@@ -142,11 +142,11 @@ class LedgerTransaction:
         processed_value = Decimal('0')
         # Get a list of all previous not matched trades or corporate actions
         query = JalDB.execSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
-                                  "FROM trades_opened "
-                                  "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=:zero "
-                                  "ORDER BY timestamp, op_type DESC",
+                              "FROM trades_opened "
+                              "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=:zero "
+                              "ORDER BY timestamp, op_type DESC",
                               [(":account_id", self._account.id()), (":asset_id", self._asset.id()),
-                                   (":zero", format_decimal(Decimal('0')))])
+                               (":zero", format_decimal(Decimal('0')))])
         while query.next():
             opening_trade = JalDB.readSQLrecord(query, named=True)
             next_deal_qty = Decimal(opening_trade['remaining_qty'])

@@ -1,7 +1,19 @@
 from decimal import Decimal
+from datetime import datetime, timezone
 from jal.db.db import JalDB
 from jal.db.operations import Dividend
 from constants import PredefinedAsset
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# converts YYMMDD integer into unix timestamp that corresponds to DD/MM/20YY 00:00:00
+def d2t(date_value: int) -> int:
+    d = date_value % 100
+    date_value = (date_value - d) // 100
+    m = date_value % 100
+    y = (date_value - m) // 100
+    ts = int(datetime.strptime(f"{d:02d}/{m:02d}/{y:02d}", "%d/%m/%y").replace(tzinfo=timezone.utc).timestamp())
+    return ts
 
 
 # ----------------------------------------------------------------------------------------------------------------------

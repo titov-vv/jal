@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timezone
 
-from jal.constants import Setup
 from jal.data_import.statement import FOF
 from jal.data_import.statement_xls import StatementXLS
 
