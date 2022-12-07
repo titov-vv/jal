@@ -1,3 +1,4 @@
+import sys
 import logging
 import traceback
 from datetime import datetime
@@ -228,6 +229,8 @@ class Ledger(QObject):
                 if self.progress_bar is not None:
                     self.progress_bar.setValue(query.at())
         except Exception as e:
+            if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
+                raise e
             exception_happened = True
             logging.error(f"{traceback.format_exc()}")
         finally:
