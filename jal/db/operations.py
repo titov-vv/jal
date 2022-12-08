@@ -169,7 +169,7 @@ class LedgerTransaction:
                  (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
                  (":open_timestamp", opening_trade['timestamp']), (":open_price", format_decimal(open_price)),
                  (":close_op_type", self._otype), (":close_op_id", self._oid),
-                 (":close_timestamp", self._timestamp), (":close_price", format_decimal(close_price)),
+                 (":close_timestamp", self.timestamp()), (":close_price", format_decimal(close_price)),
                  (":qty", format_decimal((-deal_sign) * next_deal_qty))])
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * open_price)
@@ -743,7 +743,7 @@ class Transfer(LedgerTransaction):
         else:
             return self._withdrawal_timestamp
 
-    # This is required for compatibility with other asset actions but it will also allow to get finish time of transfer
+    # This is required for compatibility with other asset actions, but it will also allow to get finish time of transfer
     def settlement(self):
         return self._deposit_timestamp
 
@@ -861,12 +861,12 @@ class Transfer(LedgerTransaction):
             asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account.id(), self._asset.id())
             if asset_amount < self._withdrawal:
                 raise ValueError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
-                                 + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                 + f"{datetime.utcfromtimestamp(self._withdrawal_timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                                  + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
             processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._withdrawal, None)
             if processed_qty < self._withdrawal:
                 raise ValueError(self.tr("Processed asset amount is less than transfer amount. Date: ")
-                                 + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                 + f"{datetime.utcfromtimestamp(self._withdrawal_timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                                  + f"Processed amount: {asset_amount}, Operation: {self.dump()}")
             if self._withdrawal_currency == JalSettings().getValue('BaseCurrency'):
                 currency_rate = Decimal('1.0')

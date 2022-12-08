@@ -400,3 +400,13 @@ def test_asset_transfer(prepare_db):
     assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE account_id=2 AND asset_id=4") == 1
     assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE account_id=1 AND asset_id=4") == -1.0
     assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE account_id=2 AND asset_id=4") == 2495
+
+    # Modify closing deal quantity
+    _ = JalDB.execSQL("UPDATE trades SET price=7700 WHERE id=2")
+
+    # Build ledger from given date
+    ledger = Ledger()
+    ledger.rebuild()
+
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE account_id=1 AND asset_id=4") == -1.0
+    assert JalDB.readSQL("SELECT SUM(profit) FROM deals_ext WHERE account_id=2 AND asset_id=4") == 995
