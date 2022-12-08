@@ -1,6 +1,7 @@
 import logging
 from copy import deepcopy
 from datetime import date, datetime
+from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 
 
@@ -130,7 +131,7 @@ class DLSG:
         try:
             self.currency = self.currencies[parameters['currency']]
         except KeyError:
-            return logging.error(self.tr("Currency is not supported for 3-NDFL ") + parameters['currency'])
+            return logging.error(self.tr("Currency is not supported for 3-NDFL: ") + parameters['currency'])
         self.broker_name = parameters['broker_name']
         self.broker_iso_country = parameters['broker_iso_country']
         for section in tax_report:
@@ -168,7 +169,7 @@ class DLSG:
     def convert_item(self, value):
         if type(value) == str:
             prepared_value = value
-        elif type(value) == int or type(value) == float:
+        elif type(value) == int or type(value) == float or type(value) == Decimal:
             prepared_value = str(value)
         elif type(value) == datetime:
             prepared_value = str((value.date() - date(1899, 12, 30)).days)
