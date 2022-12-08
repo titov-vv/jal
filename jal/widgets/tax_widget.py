@@ -1,12 +1,14 @@
 from functools import partial
 from datetime import datetime
 import logging
+import traceback
 
 from PySide6.QtCore import Property, Slot
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
 from jal.widgets.mdi import MdiWidget
+from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.country import JalCountry
 from jal.data_export.taxes import TaxesRus
@@ -99,7 +101,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             "period": f"{datetime.utcfromtimestamp(taxes.year_begin).strftime('%d.%m.%Y')}"
                       f" - {datetime.utcfromtimestamp(taxes.year_end - 1).strftime('%d.%m.%Y')}",
             "account": f"{taxes.account.number()} ({taxes.account.currency()})",
-            "currency": taxes.account.currency(),
+            "currency": JalAsset(taxes.account.currency()).symbol(),
             "broker_name": JalPeer(taxes.account.organization()).name(),
             "broker_iso_country": JalCountry(taxes.account.country()).iso_code()
         }
@@ -108,7 +110,6 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
                 continue
             reports_xls.output_data(tax_report[section], templates[section], parameters)
         reports_xls.save()
-
         logging.info(self.tr("Tax report saved to file ") + f"'{self.xls_filename}'")
 
         if self.update_dlsg:
@@ -117,8 +118,10 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             tax_forms.update_taxes(tax_report, parameters)
             try:
                 tax_forms.save(self.dlsg_filename)
+                logging.info(self.tr("Tax report saved to file ") + f"'{self.dlsg_filename}'")
             except:
-                logging.error(self.tr("Can't write tax form into file ") + f"'{self.dlsg_filename}'")
+                logging.error(self.tr("Can't write tax form into file ") + f"'{self.dlsg_filename}'" +
+                              f"\n{traceback.format_exc()}")
 
 
 class MoneyFlowWidget(MdiWidget, Ui_MoneyFlowWidget):
