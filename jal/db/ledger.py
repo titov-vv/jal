@@ -11,7 +11,7 @@ from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction
-from jal.widgets.helpers import ts2str
+from jal.widgets.helpers import ts2dt, ts2d
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -24,7 +24,7 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 
         self.LastRadioButton.toggle()   # Set default option selection
         self.frontier = frontier
-        frontier_text = datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y')
+        frontier_text = ts2d(frontier)
         self.FrontierDateLabel.setText(frontier_text)
         self.CustomDateEdit.setDate(QDate.currentDate())
 
@@ -208,7 +208,7 @@ class Ledger(QObject):
         if self.progress_bar is not None:
             self.progress_bar.setRange(0, operations_count)
             self.main_window.showProgressBar(True)
-        logging.info(self.tr("Re-building ledger since: ") + f"{ts2str(frontier)}")
+        logging.info(self.tr("Re-building ledger since: ") + f"{ts2dt(frontier)}")
         start_time = datetime.now()
         _ = JalDB.execSQL("DELETE FROM trades_closed WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
         _ = JalDB.execSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
@@ -252,7 +252,7 @@ class Ledger(QObject):
             logging.error(self.tr("Exception happened. Ledger is incomplete. Please correct errors listed in log"))
         else:
             logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
-                         self.tr(", new frontier: ") + f"{ts2str(last_timestamp)}")
+                         self.tr(", new frontier: ") + f"{ts2dt(last_timestamp)}")
 
         self.updated.emit()
 

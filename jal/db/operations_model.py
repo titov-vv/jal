@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
-from jal.widgets.helpers import ts2str
+from jal.widgets.helpers import ts2dt
 
 
 class OperationsModel(QAbstractTableModel):
@@ -75,7 +75,7 @@ class OperationsModel(QAbstractTableModel):
         if column == 0:
             return operation.label()
         elif column == 1:
-            date_time = ts2str(operation.timestamp())
+            date_time = ts2dt(operation.timestamp())
             if operation.number():
                 date_time += f"\n# {operation.number()}"
             return date_time

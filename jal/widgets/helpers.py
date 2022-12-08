@@ -28,9 +28,15 @@ def dependency_present(module_list):
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# converts given unix-timestamp into string representation
-def ts2str(timestamp: int) -> str:
+# converts given unix-timestamp into string that represents date and time
+def ts2dt(timestamp: int) -> str:
     return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# converts given unix-timestamp into string that represents date
+def ts2d(timestamp: int) -> str:
+    return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y')
 
 
 # -----------------------------------------------------------------------------------------------------------------------

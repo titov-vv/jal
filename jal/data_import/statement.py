@@ -16,6 +16,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
+from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
 from jal.net.downloader import QuoteDownloader
 
@@ -392,14 +393,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 pair_account = 1
                 if transfer['account'][0] == 0:  # Deposit
                     text = self.tr("Deposit of ") + f"{transfer['deposit']:.2f} " + \
-                           f"{JalAsset(-transfer['asset'][1]).symbol()} " + \
-                           f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
+                           f"{JalAsset(-transfer['asset'][1]).symbol()} @{ts2d(transfer['timestamp'])}\n" + \
                            self.tr("Select account to withdraw from:")
                     pair_account = -transfer['account'][1]
                 if transfer['account'][1] == 0:  # Withdrawal
                     text = self.tr("Withdrawal of ") + f"{transfer['withdrawal']:.2f} " + \
-                           f"{JalAsset(-transfer['asset'][0]).symbol()} " + \
-                           f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
+                           f"{JalAsset(-transfer['asset'][0]).symbol()} @{ts2d(transfer['timestamp'])}\n" + \
                            self.tr("Select account to deposit to:")
                     pair_account = -transfer['account'][0]
                 try:

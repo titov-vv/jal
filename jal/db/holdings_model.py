@@ -10,6 +10,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.widgets.delegates import GridLinesDelegate
+from jal.widgets.helpers import ts2d
 
 
 class TreeItem:
@@ -125,9 +126,8 @@ class HoldingsModel(QAbstractItemModel):
         elif column == 1:
             expiry_text = ""
             if data['expiry']:
-                expiry_date = datetime.utcfromtimestamp(int(data['expiry']))
                 expiry_header = self.tr("Exp:")
-                expiry_text = f" [{expiry_header} {expiry_date.strftime('%d.%m.%Y')}]"
+                expiry_text = f" [{expiry_header} {ts2d(int(data['expiry']))}]"
             return data['asset_name'] + expiry_text
         elif column == 2:
             if data['qty']:

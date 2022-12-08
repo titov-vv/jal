@@ -1,12 +1,12 @@
 import os
 import json
 import logging
-from datetime import datetime
 import xlsxwriter
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
+from jal.widgets.helpers import ts2d
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -130,7 +130,7 @@ class XLSX:
             else:
                 return value, self.formats.Text(even_odd)
         elif format_string[0] == 'D':
-            value = datetime.utcfromtimestamp(value).strftime('%d.%m.%Y')
+            value = ts2d(value)
             return value, self.formats.Text(even_odd)
         elif format_string[0] == 'N':
             return value, self.formats.Number(even_odd, tolerance=int(format_string[2:]))

@@ -16,6 +16,7 @@ from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
+from jal.widgets.helpers import ts2d
 
 
 # ===================================================================================================================
@@ -134,9 +135,9 @@ class QuoteDownloader(QObject):
         return None
 
     def CBR_DataReader(self, asset, _currency_id, start_timestamp, end_timestamp):
-        date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
+        date1 = ts2d(start_timestamp)
         # add 1 day to end_timestamp as CBR sets rate are a day ahead
-        date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')
+        date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')  #FIXME Use ts2d()
         try:
             code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == asset.symbol(), "CBR_code"].values[0]).strip()
         except IndexError:

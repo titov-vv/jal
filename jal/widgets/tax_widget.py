@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.helpers import ts2d
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.country import JalCountry
@@ -98,8 +99,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             "Проценты": "tax_rus_interests.json"
         }
         parameters = {
-            "period": f"{datetime.utcfromtimestamp(taxes.year_begin).strftime('%d.%m.%Y')}"
-                      f" - {datetime.utcfromtimestamp(taxes.year_end - 1).strftime('%d.%m.%Y')}",
+            "period": f"{ts2d(taxes.year_begin)} - {ts2d(taxes.year_end - 1)}",
             "account": f"{taxes.account.number()} ({taxes.account.currency()})",
             "currency": JalAsset(taxes.account.currency()).symbol(),
             "broker_name": JalPeer(taxes.account.organization()).name(),
@@ -159,8 +159,7 @@ class MoneyFlowWidget(MdiWidget, Ui_MoneyFlowWidget):
 
         reports_xls = XLSX(self.xls_filename)
         parameters = {
-            "period": f"{datetime.utcfromtimestamp(taxes_flow.year_begin).strftime('%d.%m.%Y')}"
-                      f" - {datetime.utcfromtimestamp(taxes_flow.year_end - 1).strftime('%d.%m.%Y')}"
+            "period": f"{ts2d(taxes_flow.year_begin)} - {(taxes_flow.year_end - 1)}"
         }
         reports_xls.output_data(flow_report, "tax_rus_flow.json", parameters)
         reports_xls.save()

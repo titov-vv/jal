@@ -1,4 +1,3 @@
-from datetime import datetime
 from decimal import Decimal
 
 import pandas as pd
@@ -9,6 +8,7 @@ from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.helpers import ts2d
 
 
 class TaxEstimatorModel(QAbstractTableModel):
@@ -111,7 +111,7 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
             position_profit_rub = qty * (self.quote * self.rate - price * o_rate)
             tax = Decimal('0.13') * position_profit_rub if position_profit_rub > Decimal('0') else Decimal('0')
             table.append({
-                'timestamp': datetime.utcfromtimestamp(position['operation'].timestamp()).strftime('%d.%m.%Y'),
+                'timestamp': ts2d(position['operation'].timestamp()),
                 'qty': qty,
                 'o_rate': o_rate,
                 'o_price': price,

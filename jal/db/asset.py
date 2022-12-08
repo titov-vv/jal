@@ -1,10 +1,10 @@
 import logging
-from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal
 from jal.db.country import JalCountry
+from jal.widgets.helpers import ts2d
 
 
 # Helper function to convert db timestamp string into an integer and replace it as 0 if error happens
@@ -162,9 +162,7 @@ class JalAsset(JalDB):
             begin = min(data, key=lambda x: x['timestamp'])['timestamp']
             end = max(data, key=lambda x: x['timestamp'])['timestamp']
             logging.info(self.tr("Quotations were updated: ") +
-                         f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) "  
-                         f"{datetime.utcfromtimestamp(begin).strftime('%d/%m/%Y')} - "
-                         f"{datetime.utcfromtimestamp(end).strftime('%d/%m/%Y')}")
+                         f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) {ts2d(begin)} - {ts2d(end)}")
 
     def expiry(self):
         return self._expiry
