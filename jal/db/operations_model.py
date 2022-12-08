@@ -1,4 +1,3 @@
-from datetime import datetime
 from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
@@ -6,6 +5,7 @@ from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
+from jal.widgets.helpers import ts2str
 
 
 class OperationsModel(QAbstractTableModel):
@@ -75,7 +75,7 @@ class OperationsModel(QAbstractTableModel):
         if column == 0:
             return operation.label()
         elif column == 1:
-            date_time = datetime.utcfromtimestamp(operation.timestamp()).strftime('%d/%m/%Y %H:%M:%S')
+            date_time = ts2str(operation.timestamp())
             if operation.number():
                 date_time += f"\n# {operation.number()}"
             return date_time

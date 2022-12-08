@@ -1,4 +1,3 @@
-from datetime import datetime
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.constants import BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset
@@ -7,6 +6,7 @@ from jal.db.db import JalDB
 import jal.db.account
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
+from jal.widgets.helpers import ts2str
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -861,12 +861,12 @@ class Transfer(LedgerTransaction):
             asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account.id(), self._asset.id())
             if asset_amount < self._withdrawal:
                 raise ValueError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
-                                 + f"{datetime.utcfromtimestamp(self._withdrawal_timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                 + f"{ts2str(self._withdrawal_timestamp)}, "
                                  + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
             processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._withdrawal, None)
             if processed_qty < self._withdrawal:
                 raise ValueError(self.tr("Processed asset amount is less than transfer amount. Date: ")
-                                 + f"{datetime.utcfromtimestamp(self._withdrawal_timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                 + f"{ts2str(self._withdrawal_timestamp)}, "
                                  + f"Processed amount: {asset_amount}, Operation: {self.dump()}")
             if self._withdrawal_currency == JalSettings().getValue('BaseCurrency'):
                 currency_rate = Decimal('1.0')
@@ -1057,11 +1057,11 @@ class CorporateAction(LedgerTransaction):
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
         if asset_amount < self._qty:
             raise ValueError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
-                             + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                             + f"{ts2str(self._timestamp)}, "
                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         if asset_amount > self._qty:
             raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
-                             + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                             + f"{ts2str(self._timestamp)}, "
                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         # Calculate total asset allocation after corporate action and verify it equals 100%
         allocation = Decimal('0')
@@ -1070,7 +1070,7 @@ class CorporateAction(LedgerTransaction):
             allocation += Decimal(JalDB.readSQLrecord(query))
         if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
             raise ValueError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
-                                     + f"Date: {datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                     + f"Date: {ts2str(self._timestamp)}, "
                                      + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._qty, None)
         # Withdraw value with old quantity of old asset

@@ -28,6 +28,12 @@ def dependency_present(module_list):
 
 
 # -----------------------------------------------------------------------------------------------------------------------
+# converts given unix-timestamp into string representation
+def ts2str(timestamp: int) -> str:
+    return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
+
+
+# -----------------------------------------------------------------------------------------------------------------------
 # Helpers to work with datetime
 class ManipulateDate:
     @staticmethod
