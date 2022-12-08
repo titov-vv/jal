@@ -78,21 +78,6 @@
      <property name="sortingEnabled">
       <bool>true</bool>
      </property>
-     <item>
-      <property name="text">
-       <string>New Item a</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>New Item b</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string> 123</string>
-      </property>
-     </item>
     </widget>
    </item>
    <item row="2" column="0">
