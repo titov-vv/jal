@@ -11,6 +11,7 @@ from jal.db.ledger import Ledger
 from jal.db.db import JalDB
 from jal.db.operations import CorporateAction, Dividend
 from jal.data_export.taxes import TaxesRus
+from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 
 
@@ -112,6 +113,16 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     tax_report = taxes.prepare_tax_report(2020, 1)
     json_decimal2float(tax_report)
     assert tax_report == report
+
+    # Flow report test - it needs transactions' data so can't be detached in a separate test
+    with open(data_path + 'taxes_flow.json', 'r', encoding='utf-8') as json_file:
+        report = json.load(json_file)
+
+    taxes_flow = TaxesFlowRus()
+    flow_reports = taxes_flow.prepare_flow_report(2020)
+    for flow_report in flow_reports:
+        json_decimal2float(flow_report)
+    assert flow_reports == report
 
 
 # ----------------------------------------------------------------------------------------------------------------------

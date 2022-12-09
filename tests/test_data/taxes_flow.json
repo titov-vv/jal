@@ -1,0 +1,17 @@
+[
+  {
+    "report_template": "account_lines",
+    "account": "U7654321",
+    "currency": "USD (840)",
+    "money": "Денежные средства",
+    "assets": "Финансовые активы",
+    "money_begin": -0.278304,
+    "money_in": 3.336480999999999767169356346,
+    "money_out": 2.532967000000000098225427791,
+    "money_end": 0.52521,
+    "assets_begin": 0.0,
+    "assets_in": 2.719063000000000101863406599,
+    "assets_out": 2.779543000000000120053300634,
+    "assets_end": 0.1068
+  }
+]
