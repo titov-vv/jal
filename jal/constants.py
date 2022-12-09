@@ -32,7 +32,23 @@ class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Transfers = 6
 
 
-class PredefindedAccountType:    # FIXME make a common ancestor for constants classes
+class PredefinedList:
+    def __init(self):
+        self._names = {}
+
+    def get_name(self, id, default=''):
+        try:
+            return self._names[id]
+        except KeyError:
+            return default
+
+    def load2combo(self, combobox):
+        combobox.clear()
+        for item in self._names:
+            combobox.addItem(self._names[item], userData=item)
+
+
+class PredefindedAccountType(PredefinedList):
     Cash = 1
     Bank = 2
     Card = 3
@@ -55,17 +71,6 @@ class PredefindedAccountType:    # FIXME make a common ancestor for constants cl
     def tr(self, text):
         return QApplication.translate("AccountType", text)
 
-    def get_name(self, id, default=''):
-        try:
-            return self._names[id]
-        except KeyError:
-            return default
-
-    def load2combo(self, combobox):
-        combobox.clear()
-        for item in self._names:
-            combobox.addItem(self._names[item], userData=item)
-
 
 class PredefinedCategory:
     Income = 1
@@ -79,7 +84,7 @@ class PredefinedCategory:
     Profit = 9
 
 
-class PredefinedAsset:
+class PredefinedAsset(PredefinedList):
     Money = 1
     Stock = 2
     Bond = 3
@@ -105,17 +110,6 @@ class PredefinedAsset:
 
     def tr(self, text):
         return QApplication.translate("AssetType", text)
-
-    def get_name(self, id, default=''):
-        try:
-            return self._names[id]
-        except KeyError:
-            return default
-
-    def load2combo(self, combobox):
-        combobox.clear()
-        for item in self._names:
-            combobox.addItem(self._names[item], userData=item)
 
 
 class AssetData:
