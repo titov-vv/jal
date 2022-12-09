@@ -231,12 +231,13 @@ class JalAccount(JalDB):
         return query.lastInsertId()
 
     # This method is used only in TaxesFlowRus.prepare_flow_report()
-    # FIXME - below are 4 methods that should be optimized as calls are very similar
-    def money_flow_in(self, begin, end):
+    # FIXME - below are 2 methods that should be optimized as calls are very similar
+    # direction: +1 for "in" and -1 for "out"
+    def money_flow(self, begin, end, direction=1):
         value = self.readSQL(
-            "SELECT SUM(amount) FROM ledger WHERE amount > 0 AND account_id=:account_id "
+            "SELECT SUM(:direction*amount) FROM ledger WHERE (:direction * amount) > 0 AND account_id=:account_id "
             "AND (book_account=:money OR book_account=:debt) AND timestamp>=:begin AND timestamp<=:end",
-            [(":account_id", self._id), (":money", BookAccount.Money), (":debt", BookAccount.Liabilities),
+            [(":direction", direction), (":account_id", self._id), (":money", BookAccount.Money), (":debt", BookAccount.Liabilities),
              (":begin", begin), (":end", end)])
         if value:
             return Decimal(value)
@@ -244,35 +245,12 @@ class JalAccount(JalDB):
             return Decimal('0')
 
     # FIXME - this method is almost identical to the previous one, to be optimized
-    def money_flow_out(self, begin, end):
+    # direction: +1 for "in" and -1 for "out"
+    def assets_flow(self, begin, end, direction=1):
         value = self.readSQL(
-            "SELECT SUM(-amount) FROM ledger WHERE amount < 0 AND account_id=:account_id "
-            "AND (book_account=:money OR book_account=:debt) AND timestamp>=:begin AND timestamp<=:end",
-            [(":account_id", self._id), (":money", BookAccount.Money), (":debt", BookAccount.Liabilities),
-             (":begin", begin), (":end", end)])
-        if value:
-            return Decimal(value)
-        else:
-            return Decimal('0')
-
-    # FIXME - this method is almost identical to the previous one, to be optimized
-    def assets_flow_in(self, begin, end):
-        value = self.readSQL(
-            "SELECT SUM(value) AS value FROM ledger WHERE value > 0 AND account_id=:account_id "
+            "SELECT SUM(:direction*value) AS value FROM ledger WHERE (:direction*value) > 0 AND account_id=:account_id "
             "AND book_account=:assets AND timestamp>=:begin AND timestamp<=:end AND op_type!=:corp_action",
-            [(":account_id", self._id), (":assets", BookAccount.Assets), (":begin", begin), (":end", end),
-             (":corp_action", jal.db.operations.LedgerTransaction.CorporateAction)])
-        if value:
-            return Decimal(value)
-        else:
-            return Decimal('0')
-
-    # FIXME - this method is almost identical to the previous one, to be optimized
-    def assets_flow_out(self, begin, end):
-        value = self.readSQL(
-            "SELECT SUM(-value) AS value FROM ledger WHERE value < 0 AND account_id=:account_id "
-            "AND book_account=:assets AND timestamp>=:begin AND timestamp<=:end AND op_type!=:corp_action",
-            [(":account_id", self._id), (":assets", BookAccount.Assets), (":begin", begin), (":end", end),
+            [(":direction", direction), (":account_id", self._id), (":assets", BookAccount.Assets), (":begin", begin), (":end", end),
              (":corp_action", jal.db.operations.LedgerTransaction.CorporateAction)])
         if value:
             return Decimal(value)

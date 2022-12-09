@@ -84,25 +84,25 @@ class TaxesFlowRus:
         for account in accounts:
             if account.country() == COUNTRY_NA_ID or account.country() == COUNTRY_RUSSIA_ID:
                 continue
-            money_in = account.money_flow_in(self.year_begin, self.year_end)
+            money_in = account.money_flow(self.year_begin, self.year_end, direction=+1)
             if money_in != Decimal('0'):
                 self.append_flow_values({
                     'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
                     'is_currency': True, 'value': money_in
                 }, "in")
-            money_out = account.money_flow_out(self.year_begin, self.year_end)
+            money_out = account.money_flow(self.year_begin, self.year_end, direction=-1)
             if money_out != Decimal('0'):
                 self.append_flow_values({
                     'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
                     'is_currency': True, 'value': money_out
                 }, "out")
-            assets_in = account.assets_flow_in(self.year_begin, self.year_end)
+            assets_in = account.assets_flow(self.year_begin, self.year_end, direction=+1)
             if assets_in != Decimal('0'):
                 self.append_flow_values({
                     'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
                     'is_currency': False, 'value': assets_in
                 }, "in")
-            assets_out = account.assets_flow_out(self.year_begin, self.year_end)
+            assets_out = account.assets_flow(self.year_begin, self.year_end, direction=-1)
             if assets_out != Decimal('0'):
                 self.append_flow_values({
                     'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
