@@ -16,67 +16,40 @@ class TaxesFlowRus:
         self.year_end = 0
         self.flows = {}
 
+    def get_account_values(self, account, date):
+        values = []
+        assets = account.assets_list(date)
+        assets_value = Decimal('0')
+        for asset_data in assets:
+            assets_value += asset_data['amount'] * asset_data['asset'].quote(date, account.currency())[1]
+        if assets_value != Decimal('0'):
+            values.append({'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
+                           'is_currency': False, 'value': assets_value})
+        money = account.get_asset_amount(date, account.currency())
+        if money != Decimal('0'):
+            values.append({'account': account.number(),'currency': JalAsset(account.currency()).symbol(),
+                           'is_currency': True, 'value': money})
+        return values
+
     def prepare_flow_report(self, year):
         self.flows = {}
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
 
-        # collect data for period start
         accounts = JalAccount.get_all_accounts(active_only=False)
-        values = []
+        # collect data for start and end of the period
+        values_begin = []
+        values_end = []
         for account in accounts:
             if account.country() == COUNTRY_NA_ID or account.country() == COUNTRY_RUSSIA_ID:
                 continue
-            assets = account.assets_list(self.year_begin)
-            assets_value = Decimal('0')
-            for asset_data in assets:
-                assets_value += asset_data['amount'] * asset_data['asset'].quote(self.year_begin, account.currency())[1]
-            if assets_value != Decimal('0'):
-                values.append({
-                    'account': account.number(),
-                    'currency': JalAsset(account.currency()).symbol(),
-                    'is_currency': False,
-                    'value': assets_value
-                })
-            money = account.get_asset_amount(self.year_begin, account.currency())
-            if money != Decimal('0'):
-                values.append({
-                    'account': account.number(),
-                    'currency': JalAsset(account.currency()).symbol(),
-                    'is_currency': True,
-                    'value': money
-                })
-        values = sorted(values, key=lambda x: (x['account'], x['is_currency'], x['currency']))
-        for item in values:
+            values_begin += self.get_account_values(account, self.year_begin)
+            values_end += self.get_account_values(account, self.year_end)
+        values_begin = sorted(values_begin, key=lambda x: (x['account'], x['is_currency'], x['currency']))
+        values_end = sorted(values_end, key=lambda x: (x['account'], x['is_currency'], x['currency']))
+        for item in values_begin:
             self.append_flow_values(item, "begin")
-
-        # collect data for period end
-        # TODO - Optimize and combine with data collection for period start as routine is actually the same
-        values = []
-        for account in accounts:
-            if account.country() == COUNTRY_NA_ID or account.country() == COUNTRY_RUSSIA_ID:
-                continue
-            assets = account.assets_list(self.year_end)
-            assets_value = Decimal('0')
-            for asset_data in assets:
-                assets_value += asset_data['amount'] * asset_data['asset'].quote(self.year_end, account.currency())[1]
-            if assets_value != Decimal('0'):
-                values.append({
-                    'account': account.number(),
-                    'currency': JalAsset(account.currency()).symbol(),
-                    'is_currency': False,
-                    'value': assets_value
-                })
-            money = account.get_asset_amount(self.year_end, account.currency())
-            if money != Decimal('0'):
-                values.append({
-                    'account': account.number(),
-                    'currency': JalAsset(account.currency()).symbol(),
-                    'is_currency': True,
-                    'value': money
-                })
-        values = sorted(values, key=lambda x: (x['account'], x['is_currency'], x['currency']))
-        for item in values:
+        for item in values_end:
             self.append_flow_values(item, "end")
 
         # collect money and assets ins/outs
