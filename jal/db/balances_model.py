@@ -150,7 +150,7 @@ class BalancesModel(QAbstractTableModel):
         balances = sorted(balances, key=lambda x: (x['account_type']))
         self._data = []
         field_names = ["account_type", "account", "account_name", "currency", "currency_name", "balance", "balance_a",
-                       "unreconciled", "active", "level"]   # TODO It is better to take names from 'balances' dict
+                       "unreconciled", "active", "level"]
         current_type = 0
         for values in balances:
             values['level'] = 0
