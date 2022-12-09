@@ -234,15 +234,17 @@ class JalAccount(JalDB):
         return query.lastInsertId()
 
     # This method is used only in TaxesFlowRus.prepare_flow_report() to get money/asset flow for russian tax report
-    # direction: +1 for "in" and -1 for "out"
+    # direction is "in" or "out"
     # flow_type: MONEY_FLOW or ASSETS_FLOW to get flow of money or assets value
     def get_flow(self, begin, end, flow_type, direction):
+        signs = {'in': +1, 'out': -1}
+        sign = signs[direction]
         sql = {
-            self.MONEY_FLOW: f"SELECT SUM(:direction*amount) FROM ledger WHERE (:direction*amount)>0 AND (book_account={BookAccount.Money} OR book_account={BookAccount.Liabilities})",
-            self.ASSETS_FLOW: f"SELECT SUM(:direction*value) FROM ledger WHERE (:direction*value)>0 AND book_account={BookAccount.Assets} AND op_type!={jal.db.operations.LedgerTransaction.CorporateAction}"
+            self.MONEY_FLOW: f"SELECT SUM(:sign*amount) FROM ledger WHERE (:sign*amount)>0 AND (book_account={BookAccount.Money} OR book_account={BookAccount.Liabilities})",
+            self.ASSETS_FLOW: f"SELECT SUM(:sign*value) FROM ledger WHERE (:sign*value)>0 AND book_account={BookAccount.Assets} AND op_type!={jal.db.operations.LedgerTransaction.CorporateAction}"
         }
         value = self.readSQL(sql[flow_type] + " AND account_id=:account_id AND timestamp>=:begin AND timestamp<=:end",
-                             [(":direction", direction), (":account_id", self._id), (":begin", begin), (":end", end)])
+                             [(":sign", sign), (":account_id", self._id), (":begin", begin), (":end", end)])
         if value:
             return Decimal(value)
         else:
