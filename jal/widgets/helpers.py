@@ -1,5 +1,15 @@
+import io
 from datetime import time, datetime, timedelta, timezone
-from PySide6.QtCore import QCoreApplication
+from PySide6.QtCore import QCoreApplication, QBuffer
+from PySide6.QtGui import QImage
+try:
+    from pyzbar import pyzbar
+except ImportError:
+    pass  # Helpers that use this imports shouldn't be called if imports are absent
+try:
+    from PIL import Image, UnidentifiedImageError
+except ImportError:
+    pass   # Helpers that use this imports shouldn't be called if imports are absent
 
 
 def decodeError(orginal_msg):
@@ -37,6 +47,29 @@ def ts2dt(timestamp: int) -> str:
 # converts given unix-timestamp into string that represents date
 def ts2d(timestamp: int) -> str:
     return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Converts QImage class input into PIL.Image output
+# (save QImage into the buffer and then read PIL.Image out from the buffer)
+# Raises ValueError if image format isn't supported
+def QImage2Image(image: QImage) -> Image:
+    buffer = QBuffer()
+    buffer.open(QBuffer.ReadWrite)
+    image.save(buffer, "BMP")
+    try:
+        pillow_image = Image.open(io.BytesIO(buffer.data()))
+    except UnidentifiedImageError:
+        raise ValueError
+    return pillow_image
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Function takes PIL image and searches for QR in it. Content of first found QR is returned. Otherwise - empty string.
+def decodeQR(qr_image: Image) -> str:
+    barcodes = pyzbar.decode(qr_image, symbols=[pyzbar.ZBarSymbol.QRCODE])
+    if barcodes:
+        return barcodes[0].data.decode('utf-8')
+    return ''
 
 
 # -----------------------------------------------------------------------------------------------------------------------

@@ -1,15 +1,13 @@
-import io
 import logging
-from PySide6.QtCore import Qt, Signal, QBuffer, QRectF
+from PySide6.QtCore import Qt, Signal, QRectF
 from PySide6.QtGui import QImage, QPen, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView
 try:
     from PySide6.QtMultimedia import QMediaDevices, QCamera, QMediaCaptureSession, QImageCapture
     from PySide6.QtMultimediaWidgets import QGraphicsVideoItem
-    from pyzbar import pyzbar
-    from PIL import Image, UnidentifiedImageError
 except ImportError:
     pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
+from jal.widgets.helpers import decodeQR, QImage2Image
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -122,15 +120,11 @@ class QRScanner(QWidget):
 
     def decodeQR(self, qr_image: QImage):
         cropped = qr_image.copy(self.calculate_center_square(qr_image).toRect())
-        # TODO: the same code is present in slips.py -> move to one place
-        buffer = QBuffer()
-        buffer.open(QBuffer.ReadWrite)
-        cropped.save(buffer, "BMP")
         try:
-            pillow_image = Image.open(io.BytesIO(buffer.data()))
-        except UnidentifiedImageError:
-            print("Image format isn't supported")
+            pillow_image = QImage2Image(cropped)
+        except ValueError:
+            logging.warning(self.tr("Image format isn't supported"))
             return
-        barcodes = pyzbar.decode(pillow_image, symbols=[pyzbar.ZBarSymbol.QRCODE])
-        if barcodes:
-            self.decodedQR.emit(barcodes[0].data.decode('utf-8'))
+        qr_text = decodeQR(pillow_image)
+        if qr_text:
+            self.decodedQR.emit(qr_text)

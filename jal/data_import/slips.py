@@ -1,4 +1,3 @@
-import io
 import time
 import json
 import logging
@@ -8,15 +7,14 @@ from PySide6.QtWidgets import QStyledItemDelegate
 from jal.widgets.reference_selector import CategorySelector, TagSelector
 from jal.constants import CustomColor
 try:
-    from pyzbar import pyzbar
-    from PIL import Image, UnidentifiedImageError
+    from PIL import Image
 except ImportError:
     pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
 
 
-from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QAbstractTableModel
+from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QAbstractTableModel
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
-from jal.widgets.helpers import dependency_present
+from jal.widgets.helpers import dependency_present, decodeQR, QImage2Image
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.operations import LedgerTransaction
@@ -181,9 +179,9 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             QFileDialog.getOpenFileName(self, self.tr("Select file with QR code"),
                                         ".", "JPEG images (*.jpg);;PNG images (*.png)")
         if qr_file:
-            barcodes = pyzbar.decode(Image.open(qr_file), symbols=[pyzbar.ZBarSymbol.QRCODE])
-            if barcodes:
-                self.qr_data_available.emit(barcodes[0].data.decode('utf-8'))
+            qr_text = decodeQR(Image.open(qr_file))
+            if qr_text:
+                self.qr_data_available.emit(qr_text)
             else:
                 logging.warning('ImportSlipDialog', "No QR codes were found in file")
 
@@ -193,17 +191,14 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     # Returns: True if QR found, False if no QR found
     # Emits: qr_data_available(str: qr_data) if QR found
     def readImageQR(self, image):
-        buffer = QBuffer()   # TODO: the same code is present in qr_scanner.py -> move to one place
-        buffer.open(QBuffer.ReadWrite)
-        image.save(buffer, "BMP")
         try:
-            pillow_image = Image.open(io.BytesIO(buffer.data()))
-        except UnidentifiedImageError:
+            pillow_image = QImage2Image(image)
+        except ValueError:
             logging.warning(self.tr("Image format isn't supported"))
             return False
-        barcodes = pyzbar.decode(pillow_image, symbols=[pyzbar.ZBarSymbol.QRCODE])
-        if barcodes:
-            self.qr_data_available.emit(barcodes[0].data.decode('utf-8'))
+        qr_text = decodeQR(pillow_image)
+        if qr_text:
+            self.qr_data_available.emit(qr_text)
             return True
         else:
             return False
