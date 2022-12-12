@@ -16,7 +16,6 @@ class OperationsModel(QAbstractTableModel):
         self._view = parent_view
         self._amount_delegate = None
         self._data = []
-        self._row_count = 0
         self._begin = 0
         self._end = 0
         self._account = 0
@@ -147,10 +146,7 @@ class OperationsModel(QAbstractTableModel):
 
     def prepareData(self):
         self._data = []
-        if self._begin == 0 and self._end == 0:
-            self._row_count = 0
-        else:
-            self._data = Ledger.get_operations_sequence(self._begin, self._end, self._account)
+        self._data = Ledger.get_operations_sequence(self._begin, self._end, self._account)
         self.modelReset.emit()
 
     def deleteRows(self, rows):
