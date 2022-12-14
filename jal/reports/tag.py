@@ -58,6 +58,12 @@ class TagReportModel(QAbstractTableModel):
         else:
             assert False, "Unexpected column number"
 
+    def get_operation(self, row):
+        if (row >= 0) and (row < self.rowCount()):
+            return self._data[row]['op_type'], self._data[row]['id']
+        else:
+            return [0, 0]
+
     def configureView(self):
         self.resetDelegates()
         font = self._view.horizontalHeader().font()
@@ -105,13 +111,25 @@ class TagReportWindow(MdiWidget, Ui_TagReportWidget):
         self.tag_model = TagReportModel(self.ReportTableView)
         self.ReportTableView.setModel(self.tag_model)
         self.tag_model.configureView()
+        self.IncomeSpendingDetails.setId(0)  # Reset details widget
 
         self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
         self.ReportRange.changed.connect(self.ReportTableView.model().setDatesRange)
         self.ReportTagEdit.changed.connect(self.onTagChange)
+        self.ReportTableView.selectionModel().selectionChanged.connect(self.onOperationSelect)
 
     @Slot()
     def onTagChange(self):
         self.ReportTableView.model().setTag(self.ReportTagEdit.selected_id)
+
+    @Slot()
+    def onOperationSelect(self, selected, _deselected):
+        idx = selected.indexes()
+        if idx:
+            selected_row = idx[0].row()
+            _operation_type, operation_id = self.ReportTableView.model().get_operation(selected_row)
+            self.IncomeSpendingDetails.setId(operation_id)
+        else:
+            self.IncomeSpendingDetails.setId(0)

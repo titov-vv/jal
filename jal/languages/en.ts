@@ -3652,7 +3652,7 @@ do you want to save it?</source>
 <context>
     <name>TagReport</name>
     <message>
-        <location filename="../reports/tag.py" line="95"/>
+        <location filename="../reports/tag.py" line="101"/>
         <source>Operations by Tag</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3693,7 +3693,7 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/tag_report.ui" line="79"/>
+        <location filename="../ui/reports/tag_report.ui" line="85"/>
         <source>Tag:</source>
         <translation type="unfinished"></translation>
     </message>

@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLay
     QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.date_range_selector import DateRangeSelector
+from jal.widgets.income_spending_widget import IncomeSpendingWidget
 from jal.widgets.reference_selector import TagSelector
 
 class Ui_TagReportWidget(object):
@@ -33,6 +34,11 @@ class Ui_TagReportWidget(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(TagReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.ReportParamsFrame.sizePolicy().hasHeightForWidth())
+        self.ReportParamsFrame.setSizePolicy(sizePolicy)
         self.ReportParamsFrame.setFrameShape(QFrame.Panel)
         self.ReportParamsFrame.setFrameShadow(QFrame.Sunken)
         self.gridLayout = QGridLayout(self.ReportParamsFrame)
@@ -64,6 +70,11 @@ class Ui_TagReportWidget(object):
 
         self.ReportTableView = QTableView(TagReportWidget)
         self.ReportTableView.setObjectName(u"ReportTableView")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(3)
+        sizePolicy1.setHeightForWidth(self.ReportTableView.sizePolicy().hasHeightForWidth())
+        self.ReportTableView.setSizePolicy(sizePolicy1)
         self.ReportTableView.setFrameShape(QFrame.Panel)
         self.ReportTableView.setFrameShadow(QFrame.Sunken)
         self.ReportTableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -75,6 +86,29 @@ class Ui_TagReportWidget(object):
         self.ReportTableView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.ReportTableView)
+
+        self.DetailsFrame = QFrame(TagReportWidget)
+        self.DetailsFrame.setObjectName(u"DetailsFrame")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(1)
+        sizePolicy2.setHeightForWidth(self.DetailsFrame.sizePolicy().hasHeightForWidth())
+        self.DetailsFrame.setSizePolicy(sizePolicy2)
+        self.DetailsFrame.setFrameShape(QFrame.Panel)
+        self.DetailsFrame.setFrameShadow(QFrame.Sunken)
+        self.verticalLayout_2 = QVBoxLayout(self.DetailsFrame)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.IncomeSpendingDetails = IncomeSpendingWidget(self.DetailsFrame)
+        self.IncomeSpendingDetails.setObjectName(u"IncomeSpendingDetails")
+        self.IncomeSpendingDetails.setEnabled(True)
+        sizePolicy.setHeightForWidth(self.IncomeSpendingDetails.sizePolicy().hasHeightForWidth())
+        self.IncomeSpendingDetails.setSizePolicy(sizePolicy)
+
+        self.verticalLayout_2.addWidget(self.IncomeSpendingDetails)
+
+
+        self.verticalLayout.addWidget(self.DetailsFrame)
 
 
         self.retranslateUi(TagReportWidget)
