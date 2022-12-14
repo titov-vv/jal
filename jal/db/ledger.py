@@ -110,6 +110,17 @@ class Ledger(QObject):
             sequence.append(JalDB.readSQLrecord(query, named=True))
         return sequence
 
+    @staticmethod
+    # Return a list of [op_type, op_id] of operation identifiers that have tag_id involved
+    def get_operations_by_tag(begin: int, end: int, tag_id: int) -> list:
+        operations = []
+        query = JalDB.execSQL("SELECT DISTINCT op_type, operation_id AS id FROM ledger "
+                              "WHERE tag_id==:tag AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
+                              [(":begin", begin), (":end", end), (":tag", tag_id)], forward_only=True)
+        while query.next():
+            operations.append(JalDB.readSQLrecord(query, named=True))
+        return operations
+
     # Add one more transaction to 'book' of ledger.
     # If book is Assets and value is not None then amount contains Asset Quantity and Value contains amount
     #    of money in current account currency. Otherwise, Amount contains only money value.

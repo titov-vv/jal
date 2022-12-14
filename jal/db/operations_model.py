@@ -44,9 +44,9 @@ class OperationsModel(QAbstractTableModel):
         row = index.row()
         if not index.isValid():
             return None
-        operation = LedgerTransaction().get_operation(self._data[index.row()]['op_type'],
-                                                      self._data[index.row()]['id'],
-                                                      self._data[index.row()]['subtype'])
+        operation = LedgerTransaction().get_operation(self._data[row]['op_type'],
+                                                      self._data[row]['id'],
+                                                      self._data[row]['subtype'])
         if role == Qt.DisplayRole:
             return self.data_text(operation, index.column())
         if role == Qt.FontRole and index.column() == 0:

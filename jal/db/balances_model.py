@@ -55,7 +55,7 @@ class BalancesModel(QAbstractTableModel):
                 return self._data[row]['account_name']
             else:
                 return PredefindedAccountType().get_name(self._data[row]['account_type'], default=self.tr("Total"))
-        elif column == 1:
+        elif column == 1:  # FIXME - should floating formatting be done by FloatDelegate? for columns 1 & 3
             return f"{self._data[row]['balance']:,.2f}" if self._data[row]['balance'] != 0 else ''
         elif column == 2:
             return self._data[row]['currency_name'] if self._data[row]['balance'] != 0 else ''

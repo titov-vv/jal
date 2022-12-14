@@ -334,6 +334,9 @@ class IncomeSpending(LedgerTransaction):
     def lines(self) -> list:
         return self._details
 
+    def amount(self) -> Decimal:
+        return self._amount
+
     def processLedger(self, ledger):
         if len(self._details) == 0:
             self.dump()

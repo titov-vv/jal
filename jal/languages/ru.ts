@@ -882,12 +882,12 @@
 <context>
     <name>Error</name>
     <message>
-        <location filename="../widgets/helpers.py" line="12"/>
+        <location filename="../widgets/helpers.py" line="22"/>
         <source>Can&apos;t delete predefined category</source>
         <translation>Невозможно удалить предопределённую категорию</translation>
     </message>
     <message>
-        <location filename="../widgets/helpers.py" line="8"/>
+        <location filename="../widgets/helpers.py" line="18"/>
         <source>Investment account should have associated broker assigned</source>
         <translation>Поле Банк/Брокер должно быть заполнено для инвестиционного счета</translation>
     </message>
@@ -908,52 +908,52 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="52"/>
+        <location filename="../db/holdings_model.py" line="53"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="53"/>
+        <location filename="../db/holdings_model.py" line="54"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="54"/>
+        <location filename="../db/holdings_model.py" line="55"/>
         <source>Last</source>
         <translation>Цена закр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="55"/>
+        <location filename="../db/holdings_model.py" line="56"/>
         <source>Share, %</source>
         <translation>Доля, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="56"/>
+        <location filename="../db/holdings_model.py" line="57"/>
         <source>P/L, %</source>
         <translation>ПиУ, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="57"/>
+        <location filename="../db/holdings_model.py" line="58"/>
         <source>P/L</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="58"/>
+        <location filename="../db/holdings_model.py" line="59"/>
         <source>Value</source>
         <translation>Оценка</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="61"/>
+        <location filename="../db/holdings_model.py" line="62"/>
         <source>Value, </source>
         <translation>Оценка, </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="50"/>
+        <location filename="../db/holdings_model.py" line="51"/>
         <source>Currency/Account/Asset</source>
         <translation>Валюта/Счёт/ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="51"/>
+        <location filename="../db/holdings_model.py" line="52"/>
         <source>Asset Name</source>
         <translation>Ценная бумага</translation>
     </message>
@@ -1023,72 +1023,72 @@
 <context>
     <name>ImportSlipDialog</name>
     <message>
-        <location filename="../data_import/slips.py" line="181"/>
+        <location filename="../data_import/slips.py" line="179"/>
         <source>Select file with QR code</source>
         <translation>Выберите файл с QR-кодом</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="282"/>
+        <location filename="../data_import/slips.py" line="277"/>
         <source>Select file with slip JSON data</source>
         <translation>Выберите файл с JSON-данными чека</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="377"/>
+        <location filename="../data_import/slips.py" line="372"/>
         <source>Not possible to import slip: no account set for import</source>
         <translation>Невозможно добавить чек: не указан счет для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="383"/>
+        <location filename="../data_import/slips.py" line="378"/>
         <source>Not possible to import slip: some categories are not set</source>
         <translation>Невозможно добавить чек: категории указаны не для всех строк</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="380"/>
+        <location filename="../data_import/slips.py" line="375"/>
         <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
         <translation>Невозможно добавить чек: не указан контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="270"/>
+        <location filename="../data_import/slips.py" line="265"/>
         <source>Max retry count exceeded.</source>
         <translation>Превышено максимальное число попыток.</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="298"/>
+        <location filename="../data_import/slips.py" line="293"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos;</source>
         <translation>JSON тэг &apos;receipt&apos; отсутствует внутри тэга &apos;document&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="301"/>
+        <location filename="../data_import/slips.py" line="296"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;document&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="311"/>
+        <location filename="../data_import/slips.py" line="306"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="343"/>
+        <location filename="../data_import/slips.py" line="338"/>
         <source>Unknown operation type </source>
         <translation>Неизвестный тип операции </translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="202"/>
+        <location filename="../data_import/slips.py" line="197"/>
         <source>Image format isn&apos;t supported</source>
         <translation>Неподдерживаемый формат изображения</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="215"/>
+        <location filename="../data_import/slips.py" line="210"/>
         <source>No QR codes found in clipboard</source>
         <translation>QR код не обнаружен в буфере обмена</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="242"/>
+        <location filename="../data_import/slips.py" line="237"/>
         <source>QR: </source>
         <translation>QR: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="256"/>
+        <location filename="../data_import/slips.py" line="251"/>
         <source>QR available but pattern isn&apos;t recognized: </source>
         <translation>Невозможно распознать прочитанный QR-код: </translation>
     </message>
@@ -1555,7 +1555,7 @@
 <context>
     <name>JalAccount</name>
     <message>
-        <location filename="../db/account.py" line="25"/>
+        <location filename="../db/account.py" line="28"/>
         <source>Bank for account #</source>
         <translation>Банк для счета №</translation>
     </message>
@@ -1568,17 +1568,17 @@
         <translation>Котировки обновлены: </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="195"/>
+        <location filename="../db/asset.py" line="193"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation>Неожиданная попытка обновить ISIN для </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="216"/>
+        <location filename="../db/asset.py" line="214"/>
         <source>Country updated for </source>
         <translation>Страна обновлёна для </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="226"/>
+        <location filename="../db/asset.py" line="224"/>
         <source>Reg.number updated for </source>
         <translation>Регистрационный номер обновлён для </translation>
     </message>
@@ -1955,7 +1955,7 @@ Application will be terminated now</source>
         <translation>Сохранить ОоДДС в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="168"/>
+        <location filename="../widgets/tax_widget.py" line="167"/>
         <source>Money flow report saved to file </source>
         <translation>ОоДДС сохранён в файле </translation>
     </message>
@@ -2120,22 +2120,22 @@ do you want to save it?</source>
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/slips.py" line="64"/>
+        <location filename="../data_import/slips.py" line="62"/>
         <source>Product name</source>
         <translation>Название продукта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="70"/>
+        <location filename="../data_import/slips.py" line="68"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="66"/>
+        <location filename="../data_import/slips.py" line="64"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="68"/>
+        <location filename="../data_import/slips.py" line="66"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
@@ -2169,37 +2169,37 @@ do you want to save it?</source>
 <context>
     <name>PredefindedAccountType</name>
     <message>
-        <location filename="../constants.py" line="46"/>
+        <location filename="../constants.py" line="62"/>
         <source>Cash</source>
         <translation>Наличные</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="47"/>
+        <location filename="../constants.py" line="63"/>
         <source>Bank accounts</source>
         <translation>Счета в банке</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="48"/>
+        <location filename="../constants.py" line="64"/>
         <source>Cards</source>
         <translation>Карты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="49"/>
+        <location filename="../constants.py" line="65"/>
         <source>Investments</source>
         <translation>Инвестиции</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="50"/>
+        <location filename="../constants.py" line="66"/>
         <source>Savings</source>
         <translation>Сбережения</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="51"/>
+        <location filename="../constants.py" line="67"/>
         <source>Debts / Loans</source>
         <translation>Кредиты / Долги</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="55"/>
+        <location filename="../constants.py" line="71"/>
         <source>e-Wallets</source>
         <translation>e-Кошельки</translation>
     </message>
@@ -2207,47 +2207,47 @@ do you want to save it?</source>
 <context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="95"/>
+        <location filename="../constants.py" line="100"/>
         <source>Money</source>
         <translation>Валюты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="96"/>
+        <location filename="../constants.py" line="101"/>
         <source>Shares</source>
         <translation>Акции</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="97"/>
+        <location filename="../constants.py" line="102"/>
         <source>Bonds</source>
         <translation>Облигации</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="98"/>
+        <location filename="../constants.py" line="103"/>
         <source>ETFs</source>
         <translation>БПИФ</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="99"/>
+        <location filename="../constants.py" line="104"/>
         <source>Commodities</source>
         <translation>Товары</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="100"/>
+        <location filename="../constants.py" line="105"/>
         <source>Derivatives</source>
         <translation>Деривативы</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="101"/>
+        <location filename="../constants.py" line="106"/>
         <source>Forex</source>
         <translation>Форекс</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="102"/>
+        <location filename="../constants.py" line="107"/>
         <source>Funds</source>
         <translation>Фонды</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="106"/>
+        <location filename="../constants.py" line="111"/>
         <source>Crypto-currency</source>
         <translation>Криптовалюты</translation>
     </message>
@@ -2314,14 +2314,19 @@ do you want to save it?</source>
 <context>
     <name>QRScanner</name>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="44"/>
+        <location filename="../widgets/qr_scanner.py" line="42"/>
         <source>There are no cameras available</source>
         <translation>Нет доступных камер</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="110"/>
+        <location filename="../widgets/qr_scanner.py" line="108"/>
         <source>Camera error: </source>
         <translation>Ошибка камеры: </translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="126"/>
+        <source>Image format isn&apos;t supported</source>
+        <translation type="unfinished">Неподдерживаемый формат изображения</translation>
     </message>
 </context>
 <context>
@@ -2657,78 +2662,78 @@ do you want to save it?</source>
 <context>
     <name>Statement</name>
     <message>
-        <location filename="../data_import/statement.py" line="147"/>
+        <location filename="../data_import/statement.py" line="148"/>
         <source>Failed to read JSON from file: </source>
         <translation>Невозможно прочитать JSON из файла: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="149"/>
-        <location filename="../data_import/statement.py" line="273"/>
+        <location filename="../data_import/statement.py" line="150"/>
+        <location filename="../data_import/statement.py" line="274"/>
         <source>Failed to read file: </source>
         <translation>Невозможно прочесть файл: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="321"/>
+        <location filename="../data_import/statement.py" line="322"/>
         <source>Can&apos;t create asset: </source>
         <translation>Невозможно создать ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="326"/>
+        <location filename="../data_import/statement.py" line="327"/>
         <source>Symbol ticker isn&apos;t linked to asset: </source>
         <translation>Символ не привязан к ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="328"/>
+        <location filename="../data_import/statement.py" line="329"/>
         <source>Symbol currency isn&apos;t linked to asset: </source>
         <translation>Символ валюты не привязан к ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="343"/>
+        <location filename="../data_import/statement.py" line="344"/>
         <source>Asset data aren&apos;t linked to asset: </source>
         <translation>Данные не привязаны к ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="351"/>
+        <location filename="../data_import/statement.py" line="352"/>
         <source>Unmatched currency for account: </source>
         <translation>Невозмоно сопоставить валюту для счёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="360"/>
+        <location filename="../data_import/statement.py" line="361"/>
         <source>Can&apos;t create account: </source>
         <translation>Невозможно создать счёт: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="365"/>
+        <location filename="../data_import/statement.py" line="366"/>
         <source>Unmatched account for income/spending: </source>
         <translation>Невозможно сопоставить счёт для операции прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="368"/>
+        <location filename="../data_import/statement.py" line="369"/>
         <source>Unmatched peer for income/spending: </source>
         <translation>Невозможно сопоставить контрагента для операции прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="374"/>
+        <location filename="../data_import/statement.py" line="375"/>
         <source>Unmatched category for income/spending: </source>
         <translation>Невозможно сопоставить категорию для прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="383"/>
+        <location filename="../data_import/statement.py" line="384"/>
         <source>Unmatched account for transfer: </source>
         <translation>Невзоможно сопоставить счёт для перевода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="386"/>
+        <location filename="../data_import/statement.py" line="387"/>
         <source>Unmatched asset for transfer: </source>
         <translation>Невозможно сопоставить ЦБ/валюту для перевода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="389"/>
+        <location filename="../data_import/statement.py" line="390"/>
         <source>Impossible to convert asset type in transfer: </source>
         <translation>Невозможно контвертировать тип актива в трансфере: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="394"/>
+        <location filename="../data_import/statement.py" line="395"/>
         <source>Deposit of </source>
         <translation>Депозит </translation>
     </message>
@@ -2743,108 +2748,108 @@ do you want to save it?</source>
         <translation>Списание </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="404"/>
+        <location filename="../data_import/statement.py" line="403"/>
         <source>Select account to deposit to:</source>
         <translation>Выберите счёт для зачисления:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="410"/>
+        <location filename="../data_import/statement.py" line="409"/>
         <source>Account not selected</source>
         <translation>Счёт не выбран</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="437"/>
+        <location filename="../data_import/statement.py" line="436"/>
         <source>Unmatched account for trade: </source>
         <translation>Невозможно сопоставить счёт для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="440"/>
+        <location filename="../data_import/statement.py" line="439"/>
         <source>Unmatched asset for trade: </source>
         <translation>Невозможно сопоставить ЦБ для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="455"/>
+        <location filename="../data_import/statement.py" line="454"/>
         <source>Unmatched account for payment: </source>
         <translation>Невозможно сопоставить счёт для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="458"/>
+        <location filename="../data_import/statement.py" line="457"/>
         <source>Unmatched asset for payment: </source>
         <translation>Невозможно сопоставить ЦБ для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="486"/>
+        <location filename="../data_import/statement.py" line="485"/>
         <source>Unsupported payment type: </source>
         <translation>Неподдерживаемый тип выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="491"/>
+        <location filename="../data_import/statement.py" line="490"/>
         <source>Unmatched account for corporate action: </source>
         <translation>Невозможно сопоставить счёт для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="494"/>
-        <location filename="../data_import/statement.py" line="500"/>
+        <location filename="../data_import/statement.py" line="493"/>
+        <location filename="../data_import/statement.py" line="499"/>
         <source>Unmatched asset for corporate action: </source>
         <translation>Невозможно сопоставить ЦБ для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="507"/>
+        <location filename="../data_import/statement.py" line="506"/>
         <source>Unsupported corporate action: </source>
         <translation>Неподдерживаемое корпоративное действие: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="525"/>
+        <location filename="../data_import/statement.py" line="524"/>
         <source>Asset id not found</source>
         <translation>ЦБ id не найден</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="537"/>
+        <location filename="../data_import/statement.py" line="536"/>
         <source>Multiple match for </source>
         <translation>Неоднозначное совпадение для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="548"/>
+        <location filename="../data_import/statement.py" line="547"/>
         <source>Multiple currency match for </source>
         <translation>Неоднозначное совпадение валюты для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="591"/>
+        <location filename="../data_import/statement.py" line="590"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation>Невозможно найте ЦБ в отчёте: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="305"/>
+        <location filename="../data_import/statement.py" line="306"/>
         <source>Statement import was cancelled</source>
         <translation>Импорт отчёта прерван</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="295"/>
+        <location filename="../data_import/statement.py" line="296"/>
         <source>Statement period is invalid</source>
         <translation>Неверный период отчёта</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="154"/>
+        <location filename="../data_import/statement.py" line="155"/>
         <source>Some sections are not supported: </source>
         <translation>Некоторые секции не поддерживаются: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="271"/>
+        <location filename="../data_import/statement.py" line="272"/>
         <source>Failed to read JSON schema from: </source>
         <translation>Не удалось прочитать схему JSON из: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="277"/>
+        <location filename="../data_import/statement.py" line="278"/>
         <source>Statement validation failed</source>
         <translation>Отчёт содержит ошибки</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="302"/>
+        <location filename="../data_import/statement.py" line="303"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="303"/>
+        <location filename="../data_import/statement.py" line="304"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation>Период отчёта начинается ранее последней операции для счёта (повторный импорт?). Продолжить импорт?</translation>
     </message>
@@ -3649,6 +3654,27 @@ do you want to save it?</source>
     </message>
 </context>
 <context>
+    <name>TagReport</name>
+    <message>
+        <location filename="../reports/tag.py" line="14"/>
+        <source>Operations by Tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TagReportWidget</name>
+    <message>
+        <location filename="../ui/reports/tag_report.ui" line="14"/>
+        <source>Report by category</source>
+        <translation type="unfinished">Отчёт по категории</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/tag_report.ui" line="79"/>
+        <source>Tag:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TagsListDialog</name>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="321"/>
@@ -3820,27 +3846,27 @@ do you want to save it?</source>
         <translation>Не использовать дату поставки для курсов валют</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="33"/>
+        <location filename="../widgets/tax_widget.py" line="34"/>
         <source>Save tax reports to:</source>
         <translation>Сохранить налоговый отчёт в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="33"/>
+        <location filename="../widgets/tax_widget.py" line="34"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="36"/>
+        <location filename="../widgets/tax_widget.py" line="37"/>
         <source>Save tax form to:</source>
         <translation>Сохранить 3-НДФЛ в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="83"/>
+        <location filename="../widgets/tax_widget.py" line="84"/>
         <source>Data are incomplete</source>
         <translation>Данные неполные</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="84"/>
+        <location filename="../widgets/tax_widget.py" line="85"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation>Вы не выбрали счёт для налогового отчёта</translation>
     </message>
