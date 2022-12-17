@@ -23,7 +23,7 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         [3, PredefinedAsset.Money, 'Евро', '', 0, ''],
         [4, PredefinedAsset.Stock, 'PACIFIC ETHANOL INC', 'US69423U3059', 0, ''],
         [5, PredefinedAsset.Derivative, 'FANG 21JAN22 40.0 C', '', 0, ''],
-        [6, PredefinedAsset.Stock, 'EXXON MOBIL CORP', 'US30231G1022', 0, ''],
+        [6, PredefinedAsset.Stock, 'EXXON MOBIL CORP', 'US30231G1022', 2, ''],
         [7, PredefinedAsset.Derivative, 'XOM 21JAN22 42.5 C', '', 0, '']
     ]
     assert JalDB.readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
@@ -66,6 +66,14 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     for i, trade in enumerate(test_trades):
         assert JalDB.readSQL("SELECT * FROM trades WHERE id=:id", [(":id", i + 1)]) == trade
 
+    # validate dividend & tax
+    test_dividends = [
+        [1, 2, 1592770800, '', '', 1, 1, 6, '16.76', '1.68', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)']
+    ]
+    assert JalDB.readSQL("SELECT COUNT(*) FROM dividends") == len(test_dividends)
+    for i, dividend in enumerate(test_dividends):
+        assert JalDB.readSQL("SELECT * FROM dividends WHERE id=:id", [(":id", i + 1)]) == dividend
+
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
@@ -85,7 +93,7 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         [3, PredefinedAsset.Money, 'Евро', '', 0, ''],
         [4, PredefinedAsset.Stock, 'PACIFIC ETHANOL INC', 'US69423U3059', 0, ''],
         [5, PredefinedAsset.Derivative, 'FANG 21JAN22 40.0 C', '', 0, ''],
-        [6, PredefinedAsset.Stock, 'EXXON MOBIL CORP', 'US30231G1022', 0, ''],
+        [6, PredefinedAsset.Stock, 'EXXON MOBIL CORP', 'US30231G1022', 2, ''],
         [7, PredefinedAsset.Derivative, 'XOM 21JAN22 42.5 C', '', 0, ''],
         [8, PredefinedAsset.Stock, 'ALTO INGREDIENTS INC', 'US0215131063', 0, '']
     ]
@@ -136,6 +144,14 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     assert JalDB.readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
     for i, trade in enumerate(test_trades):
         assert JalDB.readSQL("SELECT * FROM trades WHERE id=:id", [(":id", i + 1)]) == trade
+
+    # validate dividend & tax
+    test_dividends = [
+        [1, 2, 1592770800, '', '', 1, 1, 6, '16.76', '0.21', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)']
+    ]
+    assert JalDB.readSQL("SELECT COUNT(*) FROM dividends") == len(test_dividends)
+    for i, dividend in enumerate(test_dividends):
+        assert JalDB.readSQL("SELECT * FROM dividends WHERE id=:id", [(":id", i + 1)]) == dividend
 
     # validate corp actions
     test_asset_actions = [

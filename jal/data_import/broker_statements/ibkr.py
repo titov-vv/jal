@@ -5,7 +5,7 @@ from itertools import groupby
 from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import PredefinedCategory
+from jal.constants import PredefinedCategory, PredefinedAsset
 from jal.widgets.helpers import ManipulateDate
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -47,7 +47,8 @@ class IBKR_AssetType:
         try:
             self.type = self._asset_types[asset_type]
         except KeyError:
-            logging.warning(QApplication.translate("IBKR", "Asset type isn't supported: ") + f"'{asset_type}'")
+            raise Statement_ImportError(
+                QApplication.translate("IBKR", "Asset type isn't supported: ") + f"'{asset_type}'")
         if self.type == FOF.ASSET_STOCK and subtype:  # distinguish ADR and ETF from stocks
             try:
                 self.type = self._asset_types[subtype]
@@ -77,7 +78,8 @@ class IBKR_CorpActionType:
         try:
             self.type = self._corporate_action_types[action_type]
         except KeyError:
-            logging.warning(QApplication.translate("IBKR", "Corporate action isn't supported: ") + f"{action_type}")
+            raise Statement_ImportError(
+                QApplication.translate("IBKR", "Corporate action isn't supported: ") + f"{action_type}")
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -450,7 +452,8 @@ class StatementIBKR(StatementXML):
                 if len(trade) == 1:
                     trade[0]['note'] = description
                 else:
-                    logging.warning(self.tr("Original trade not found for Option E&A&E operation: ") + f"{option}")
+                    raise Statement_ImportError(
+                        self.tr("Original trade not found for Option E&A&E operation: ") + f"{option}")
                 cnt += 1
         logging.info(self.tr("Options E&A&E loaded: ") + f"{cnt} ({len(options)})")
 
@@ -823,8 +826,7 @@ class StatementIBKR(StatementXML):
 
         dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['asset'], previous_tax, new_tax, description)
         if dividend is None:
-            logging.warning(self.tr("Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
-            return 0
+            raise Statement_ImportError(self.tr("Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
         dividend["tax"] = new_tax
         # append new dividend if it came from DB and haven't been loaded in self._data yet
         if len([1 for x in self._data[FOF.ASSET_PAYMENTS] if x['id'] == dividend['id']]) == 0:
@@ -846,8 +848,10 @@ class StatementIBKR(StatementXML):
                      (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
                      and x['asset'] == asset_id and x['account'] == account_id]
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
-        db_account = JalAccount(data=account, search=True, create=False).id()
-        asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
+        currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == account['currency']][0]['symbol']
+        db_currency = JalAsset(data={'symbol': currency_symbol, 'type': PredefinedAsset.Money}, search=True, create=False).id()
+        db_account = JalAccount(data={'number': account['number'], 'currency': db_currency}, search=True, create=False).id()
+        asset = self._asset(asset_id)
         isin = asset['isin'] if 'isin' in asset else ''
         symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
         db_asset = JalAsset(data={'isin': isin, 'symbol': symbols[0]['symbol']}, search=True, create=False).id()
