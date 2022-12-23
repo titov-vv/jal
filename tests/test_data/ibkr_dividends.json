@@ -1,0 +1,26 @@
+{
+  "period": [1640995200, 1672531199],
+  "accounts": [
+    {"id": 1, "number": "U7654321", "currency": 1, "precision": 10, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89}
+  ],
+  "assets": [
+    {"id": 1, "name": "", "type": "money"},
+    {"id": 2, "type": "stock", "name": "BROOKFIELD RENEWABLE PARTNER", "isin": "BMG162581083", "country": "ca"}
+  ],
+  "symbols": [
+    {"id": 1,"asset": 1, "symbol": "USD", "currency": -1},
+    {"id": 2,"asset": 2, "symbol": "BEP", "currency": 1, "note": "NYSE"}
+  ],
+  "assets_data": [],
+  "asset_payments": [
+    {"id": 1, "type": "dividend", "account": 1, "timestamp": 1648758000, "number": "", "asset": 2, "amount": 0.01, "description": "BEP(114646358) CASH DIVIDEND USD 0.0002 PER SHARE (Return of Capital)"},
+    {"id": 2, "type": "dividend", "account": 1, "timestamp": 1648758000, "number": "", "asset": 2, "amount": 12.79, "tax": 1.92, "description": "BEP(BMG162581083) CASH DIVIDEND USD 0.3198 PER SHARE (Ordinary Dividend)"},
+    {"id": 3, "type": "dividend", "account": 1, "timestamp": 1656620400, "number": "", "asset": 2, "amount": 12.15, "tax": 1.82, "description": "BEP(BMG162581083) CASH DIVIDEND USD 0.30371 PER SHARE (Ordinary Dividend)"},
+    {"id": 4, "type": "dividend", "account": 1, "timestamp": 1656620400, "number": "", "asset": 2, "amount": 0.01, "description": "BEP(114646358) CASH DIVIDEND USD 0.00019 PER SHARE (Return of Capital)"},
+    {"id": 5, "type": "dividend", "account": 1, "timestamp": 1656620400, "number": "", "asset": 2, "amount": 0.64, "tax": 0.06, "description": "BEP(BMG162581083) CASH DIVIDEND USD 0.0161 PER SHARE (Bonus Dividend)"}
+  ],
+ "corporate_actions": [],
+ "income_spending": [],
+ "trades": [],
+ "transfers": []
+}

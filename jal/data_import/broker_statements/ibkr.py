@@ -1,12 +1,13 @@
 import logging
 import re
+from copy import deepcopy
 from datetime import datetime
 from itertools import groupby
 from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory, PredefinedAsset
-from jal.widgets.helpers import ManipulateDate
+from jal.widgets.helpers import ManipulateDate, ts2dt
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import Dividend
@@ -123,6 +124,8 @@ class StatementIBKR(StatementXML):
     statement_tag = 'FlexStatement'
     level_tag = 'levelOfDetail'
     CancelledFlag = 'Ca'
+    ReversalSuffix = " - REVERSAL"
+    CancelPrefix = "CANCEL "
 
     def __init__(self):
         super().__init__()
@@ -216,6 +219,7 @@ class StatementIBKR(StatementXML):
                                             ('symbol', 'asset', IBKR_Asset, 0),
                                             ('currency', 'currency', IBKR_Currency, None),
                                             ('dateTime', 'timestamp', datetime, None),
+                                            ('reportDate', 'reported', datetime, None),
                                             ('amount', 'amount', float, None),
                                             ('tradeID', 'number', str, ''),
                                             ('description', 'description', str, None)],
@@ -739,11 +743,12 @@ class StatementIBKR(StatementXML):
     def load_cash_transactions(self, cash):
         cnt = 0
         dividends = list(filter(lambda tr: tr['type'] in ['Dividends', 'Payment In Lieu Of Dividends'], cash))
+        dividends = self.aggregate_dividends(dividends)
         asset_payments_base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         for i, dividend in enumerate(dividends):
             dividend['id'] = asset_payments_base + i
             dividend['type'] = FOF.PAYMENT_DIVIDEND
-            self.drop_extra_fields(dividend, ["currency"])
+            self.drop_extra_fields(dividend, ["currency", "reported"])
             self._data[FOF.ASSET_PAYMENTS].append(dividend)
             cnt += 1
         asset_payments_base += cnt
@@ -751,11 +756,12 @@ class StatementIBKR(StatementXML):
         for i, bond_interest in enumerate(bond_interests):
             bond_interest['id'] = asset_payments_base + i
             bond_interest['type'] = FOF.PAYMENT_INTEREST
-            self.drop_extra_fields(bond_interest, ["currency"])
+            self.drop_extra_fields(bond_interest, ["currency", "reported"])
             self._data[FOF.ASSET_PAYMENTS].append(bond_interest)
             cnt += 1
 
         taxes = list(filter(lambda tr: tr['type'] == 'Withholding Tax', cash))
+        taxes = self.aggregate_taxes(taxes)
         for tax in taxes:
             cnt += self.apply_tax_withheld(tax)
 
@@ -771,7 +777,7 @@ class StatementIBKR(StatementXML):
                 transfer['account'] = [transfer['account'], 0, 0]
                 transfer['withdrawal'] = transfer['deposit'] = -transfer['amount']
             transfer['fee'] = 0.0
-            self.drop_extra_fields(transfer, ["type", "amount", "currency"])
+            self.drop_extra_fields(transfer, ["type", "amount", "currency", "reported"])
             self._data[FOF.TRANSFERS].append(transfer)
             cnt += 1
 
@@ -788,11 +794,67 @@ class StatementIBKR(StatementXML):
             else:
                 category = -PredefinedCategory.Fees
             fee['lines'] = [{'amount': fee['amount'], 'category': category, 'description': fee['description']}]
-            self.drop_extra_fields(fee, ["type", "amount", "description", "asset", "number", "currency"])
+            self.drop_extra_fields(fee, ["type", "amount", "description", "asset", "number", "currency", "reported"])
             self._data[FOF.INCOME_SPENDING].append(fee)
             cnt += 1
 
         logging.info(self.tr("Cash transactions loaded: ") + f"{cnt} ({len(cash)})")
+
+    # Method takes a list of dividend dictionaries and checks for REVERSAL and CANCEL
+    # For such description it looks for matching record (for the same symbol) with opposite amount and the same payment
+    # and report dates. Description may be different!
+    # FIXME - this algo may be not fully correct for CANCEL as it may cancel older record
+    def aggregate_dividends(self, dividends: list) -> list:
+        is_reversal = lambda x: self.ReversalSuffix in x or x.startswith(self.CancelPrefix)
+        payments = [x for x in deepcopy(dividends) if not is_reversal(x['description'])]
+        reversals = [x for x in deepcopy(dividends) if is_reversal(x['description'])]
+        # Drop reversals that match payments exactly
+        for reversal in reversals:
+            t_payment = deepcopy(reversal)  # target payment to search for
+            t_payment['description'] = t_payment['description'].replace(self.ReversalSuffix, '')
+            t_payment['description'] = t_payment['description'].replace(self.CancelPrefix, '')
+            t_payment['amount'] = -t_payment['amount']
+            if t_payment not in payments:
+                no_description = lambda x: {i:x[i] for i in x if i != 'description'}
+                m_payments = [x for x in payments if no_description(x) == no_description(t_payment)]
+                if len(m_payments):
+                    payments.remove(m_payments[0])
+                    logging.warning(self.tr("Payment was reversed by approximate description: ") +
+                             f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
+                else:
+                    raise Statement_ImportError(self.tr("Can't find match for reversal: ") + f"{reversal}")
+            else:
+                payments.remove(t_payment) # Source payment found -> remove it
+                logging.info(self.tr("Payment was reversed: ") +
+                             f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
+        return payments
+
+    # Method takes a list of taxes and checks if we have the same amount added and deducted the same day
+    # First it tries to find exact match. Second it does it again ignoring reportDate.
+    def aggregate_taxes(self, taxes: list) -> list:
+        payments = [x for x in deepcopy(taxes) if x['amount'] < 0]
+        reversals = [x for x in deepcopy(taxes) if x['amount'] > 0]
+        not_matched_reversals = []
+        for reversal in reversals:
+            t_payment = deepcopy(reversal)   # target payment to search for
+            t_payment['description'] = t_payment['description'].replace(self.CancelPrefix, '')
+            t_payment['amount'] = -t_payment['amount']
+            if t_payment not in payments:
+                no_report = lambda x: {i: x[i] for i in x if i != 'reported'}
+                m_payments = [x for x in payments if no_report(x) == no_report(t_payment)]
+                if len(m_payments):
+                    payments.remove(m_payments[0])
+                else:
+                    no_d_and_r = lambda x: {i: x[i] for i in x if i != 'description' and i != 'reported'}
+                    m_payments = [x for x in payments if no_d_and_r(x) == no_d_and_r(t_payment)]
+                    if len(m_payments):
+                        payments.remove(m_payments[0])
+                    else:
+                        not_matched_reversals.append(reversal)
+            else:
+                payments.remove(t_payment)    # it is possible to kill exact match silently
+        taxes = [x for x in taxes if x in payments or x in not_matched_reversals]
+        return taxes
 
     def load_taxes(self, taxes):
         cnt = 0   #FIXME Link this tax with asset
