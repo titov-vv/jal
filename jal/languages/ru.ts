@@ -2660,14 +2660,6 @@ do you want to save it?</source>
     </message>
 </context>
 <context>
-    <name>StackedWidget</name>
-    <message>
-        <location filename="../ui/operations_tabs.ui" line="14"/>
-        <source>StackedWidget</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
     <name>Statement</name>
     <message>
         <location filename="../data_import/statement.py" line="148"/>
