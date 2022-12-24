@@ -414,7 +414,8 @@ class Dividend(LedgerTransaction):
         dividends = []
         if skip_accrued:
             query = "SELECT d.id FROM dividends d LEFT JOIN trades t ON d.account_id=t.account_id "\
-                    "AND d.number=t.number WHERE d.account_id=:account AND t.id IS NULL"
+                    "AND d.asset_id=t.asset_id AND d.number=t.number AND t.number!='' "\
+                    "WHERE d.account_id=:account AND t.id IS NULL"
         else:
             query = "SELECT d.id FROM dividends d WHERE d.account_id=:account"
         params = [(":account", account_id)]

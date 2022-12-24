@@ -6,20 +6,25 @@
   "assets": [
     {"id": 1, "type": "money", "name":  ""},
     {"id": 2, "type": "bond", "name": "X 6 1/4 03/15/26", "isin": "US912909AN84"},
-    {"id": 3, "type": "bond", "name": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "isin": "US912CALAN84"}
+    {"id": 3, "type": "bond", "name": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "isin": "US912CALAN84"},
+    {"id": 4, "type": "stock", "name": "APPLE INC", "isin": "US0378331005"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "USD", "currency": -1},
     {"id": 2, "asset": 2, "symbol": "X 6 1/4 03/15/26", "currency": 1},
-    {"id": 3, "asset": 3, "symbol": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "currency": 1}
+    {"id": 3, "asset": 3, "symbol": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "currency": 1},
+    {"id": 4, "asset": 4, "symbol": "AAPL", "currency": 1,"note": "NASDAQ"}
   ],
   "assets_data": [
     {"id": 1, "asset": 2, "reg_number": "912909AN8", "expiry": 1773532800},
-    {"id": 2, "asset": 3, "reg_number": "912CALAN8", "expiry": 1773532800}
+    {"id": 2, "asset": 3, "reg_number": "912CALAN8", "expiry": 1773532800},
+    {"id": 3, "asset": 4, "reg_number": "037833100"}
   ],
   "trades": [
     {"id": 1, "number": "2882737839", "timestamp": 1622131065, "settlement": 1622246400, "account": 1, "asset": 2, "quantity": 2.0, "price": 637.09, "fee": 2.0},
-    {"id": 2, "number": "17849517124", "timestamp": 1632515100, "settlement": 1632515100, "account": 1, "asset": 3, "quantity": -2.0, "price": 1031.25, "fee": 0.0, "note": "(US912CALAN84) BOND MATURITY FOR USD 1.03125 PER BOND (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"}
+    {"id": 2, "number": "TEST_ID", "timestamp": 1631709966, "settlement": 1631836800, "account": 1, "asset": 4, "quantity": 1.0, "price": 123.45, "fee": -0.12},
+    {"id": 3, "number": "", "timestamp": 1640781240, "settlement": 1640908800, "account": 1, "asset": 2, "quantity": 2.0, "price": 637.09, "fee": 2.0},
+    {"id": 4, "number": "17849517124", "timestamp": 1632515100, "settlement": 1632515100, "account": 1, "asset": 3, "quantity": -2.0, "price": 1031.25, "fee": 0.0, "note": "(US912CALAN84) BOND MATURITY FOR USD 1.03125 PER BOND (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"}
   ],
   "corporate_actions": [
     {"id": 1, "type": "merger", "account": 1, "timestamp": 1630007100, "number": "17569476329", "asset": 2, "quantity": 2.0,
@@ -28,7 +33,7 @@
  "asset_payments": [
    {"id": 1, "type": "interest", "account": 1, "timestamp": 1622131065, "number": "2882737839", "asset": 2, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
    {"id": 2, "type": "interest", "account": 1, "timestamp": 1631664000, "number": "", "asset": 2, "amount": 62.0, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
-   {"id": 3, "type": "interest", "account": 1, "timestamp": 1631664000, "number": "", "asset": 2, "amount": 0.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
+   {"id": 3, "type": "interest", "account": 1, "timestamp": 1631664000, "number": "TEST_ID", "asset": 2, "amount": 0.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
    {"id": 4, "type": "interest", "account": 1, "timestamp": 1632700800, "number": "", "asset": 3, "amount": 3.82, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26)"}
  ],
  "income_spending": [],

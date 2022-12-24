@@ -106,7 +106,7 @@
       "interest": 0.5,
       "interest_rub": 36.36,
       "isin": "US912909AN84",
-      "number": "",
+      "number": "TEST_ID",
       "o_date": 1631664000,
       "profit": 0.5,
       "profit_rub": 36.36,
