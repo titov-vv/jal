@@ -579,57 +579,57 @@
 <context>
     <name>DateRangeSelector</name>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="15"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="15"/>
         <source>Week</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="16"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="16"/>
         <source>Month</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="17"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="17"/>
         <source>Quarter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="18"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="18"/>
         <source>Year</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="19"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="19"/>
         <source>Quarter to date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="20"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="20"/>
         <source>Year to date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="21"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="21"/>
         <source>This year</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="22"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="22"/>
         <source>Previous year</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="23"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="23"/>
         <source>All dates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="37"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="37"/>
         <source>From:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/date_range_selector.py" line="46"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="46"/>
         <source>To:</source>
         <translation type="unfinished"></translation>
     </message>

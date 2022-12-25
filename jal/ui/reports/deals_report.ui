@@ -54,7 +54,7 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="DateRangeSelector" name="ReportRange" native="true">
+       <widget class="DateRangeSelector" name="ReportRange">
         <property name="ItemsList" stdset="0">
          <string notr="true">QTD;YTD;this_year;last_year</string>
         </property>
@@ -128,15 +128,15 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>DateRangeSelector</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/custom/date_range_selector.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>AccountButton</class>
    <extends>QPushButton</extends>
    <header>jal/widgets/account_select.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DateRangeSelector</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/date_range_selector.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

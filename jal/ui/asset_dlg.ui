@@ -417,28 +417,38 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="4">
-    <widget class="CountryCombo" name="CountryCombo"/>
-   </item>
    <item row="1" column="4">
     <widget class="AssetTypeComboBox" name="TypeCombo"/>
    </item>
    <item row="0" column="1" colspan="4">
     <widget class="QLineEdit" name="NameEdit"/>
    </item>
+   <item row="2" column="4">
+    <widget class="DbLookupComboBox" name="CountryCombo">
+     <property name="db_table" stdset="0">
+      <string notr="true">countries</string>
+     </property>
+     <property name="key_field" stdset="0">
+      <string notr="true">id</string>
+     </property>
+     <property name="db_field" stdset="0">
+      <string notr="true">name</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>DbLookupComboBox</class>
+   <extends>QComboBox</extends>
+   <header>jal/widgets/custom/db_lookup_combobox.h</header>
+  </customwidget>
   <customwidget>
    <class>AssetSelector</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>CountryCombo</class>
-   <extends>QComboBox</extends>
-   <header>jal/widgets/db_lookup_combobox.h</header>
   </customwidget>
   <customwidget>
    <class>AssetTypeComboBox</class>

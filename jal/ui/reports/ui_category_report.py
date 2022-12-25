@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLay
     QHeaderView, QLabel, QSizePolicy, QSpacerItem,
     QTableView, QVBoxLayout, QWidget)
 
-from jal.widgets.date_range_selector import DateRangeSelector
+from jal.widgets.custom.date_range_selector import DateRangeSelector
 from jal.widgets.reference_selector import CategorySelector
 
 class Ui_CategoryReportWidget(object):

@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHBoxLay
     QHeaderView, QSizePolicy, QSpacerItem, QTreeView,
     QVBoxLayout, QWidget)
 
-from jal.widgets.date_range_selector import DateRangeSelector
+from jal.widgets.custom.date_range_selector import DateRangeSelector
 
 class Ui_IncomeSpendingReportWidget(object):
     def setupUi(self, IncomeSpendingReportWidget):

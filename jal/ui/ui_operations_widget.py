@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QDate
 
 from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
 from jal.widgets.corporate_action_widget import CorporateActionWidget
-from jal.widgets.date_range_selector import DateRangeSelector
+from jal.widgets.custom.date_range_selector import DateRangeSelector
 from jal.widgets.dividend_widget import DividendWidget
 from jal.widgets.income_spending_widget import IncomeSpendingWidget
 from jal.widgets.trade_widget import TradeWidget
@@ -69,7 +69,7 @@ class Ui_OperationsWidget(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 11, 25), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 11, 19), QTime(0, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 

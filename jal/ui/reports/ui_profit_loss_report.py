@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHBoxLay
     QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import AccountButton
-from jal.widgets.date_range_selector import DateRangeSelector
+from jal.widgets.custom.date_range_selector import DateRangeSelector
 
 class Ui_ProfitLossReportWidget(object):
     def setupUi(self, ProfitLossReportWidget):

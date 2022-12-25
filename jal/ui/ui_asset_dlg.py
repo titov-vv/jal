@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QFrame,
     QSplitter, QTableView, QVBoxLayout, QWidget)
 
 from jal.constants import AssetTypeComboBox
-from jal.widgets.db_lookup_combobox import CountryCombo
+from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
 from jal.widgets.reference_selector import AssetSelector
 
 class Ui_AssetDialog(object):
@@ -236,11 +236,6 @@ class Ui_AssetDialog(object):
 
         self.gridLayout.addWidget(self.CountryLbl, 2, 3, 1, 1)
 
-        self.CountryCombo = CountryCombo(AssetDialog)
-        self.CountryCombo.setObjectName(u"CountryCombo")
-
-        self.gridLayout.addWidget(self.CountryCombo, 2, 4, 1, 1)
-
         self.TypeCombo = AssetTypeComboBox(AssetDialog)
         self.TypeCombo.setObjectName(u"TypeCombo")
 
@@ -250,6 +245,14 @@ class Ui_AssetDialog(object):
         self.NameEdit.setObjectName(u"NameEdit")
 
         self.gridLayout.addWidget(self.NameEdit, 0, 1, 1, 4)
+
+        self.CountryCombo = DbLookupComboBox(AssetDialog)
+        self.CountryCombo.setObjectName(u"CountryCombo")
+        self.CountryCombo.setProperty("db_table", u"countries")
+        self.CountryCombo.setProperty("key_field", u"id")
+        self.CountryCombo.setProperty("db_field", u"name")
+
+        self.gridLayout.addWidget(self.CountryCombo, 2, 4, 1, 1)
 
 
         self.retranslateUi(AssetDialog)
