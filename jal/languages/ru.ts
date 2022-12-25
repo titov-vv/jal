@@ -1721,17 +1721,17 @@ Application will be terminated now</source>
 <context>
     <name>LogViewer</name>
     <message>
-        <location filename="../widgets/log_viewer.py" line="19"/>
+        <location filename="../widgets/custom/log_viewer.py" line="19"/>
         <source>▶ logs</source>
         <translation>▶ logs</translation>
     </message>
     <message>
-        <location filename="../widgets/log_viewer.py" line="21"/>
+        <location filename="../widgets/custom/log_viewer.py" line="21"/>
         <source>▲ logs</source>
         <translation>▲ logs</translation>
     </message>
     <message>
-        <location filename="../widgets/log_viewer.py" line="32"/>
+        <location filename="../widgets/custom/log_viewer.py" line="32"/>
         <source>Unknown logging level provided: </source>
         <translation>Неизвестный параметр критичности сообщения: </translation>
     </message>

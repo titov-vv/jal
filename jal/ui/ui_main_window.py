@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
     QSizePolicy, QSplitter, QStatusBar, QVBoxLayout,
     QWidget)
 
-from jal.widgets.log_viewer import LogViewer
+from jal.widgets.custom.log_viewer import LogViewer
 from jal.widgets.mdi import TabbedMdiArea
 
 class Ui_JAL_MainWindow(object):
@@ -92,7 +92,7 @@ class Ui_JAL_MainWindow(object):
         JAL_MainWindow.setCentralWidget(self.centralwidget)
         self.MainMenu = QMenuBar(JAL_MainWindow)
         self.MainMenu.setObjectName(u"MainMenu")
-        self.MainMenu.setGeometry(QRect(0, 0, 835, 23))
+        self.MainMenu.setGeometry(QRect(0, 0, 835, 22))
         self.menuMain = QMenu(self.MainMenu)
         self.menuMain.setObjectName(u"menuMain")
         self.menu_Data = QMenu(self.MainMenu)
