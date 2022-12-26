@@ -288,37 +288,9 @@
 <context>
     <name>CategoryReport</name>
     <message>
-        <location filename="../reports/category.py" line="103"/>
+        <location filename="../reports/category.py" line="32"/>
         <source>Operations by Category</source>
         <translation>Операции по категории</translation>
-    </message>
-</context>
-<context>
-    <name>CategoryReportModel</name>
-    <message>
-        <location filename="../reports/category.py" line="16"/>
-        <source>Timestamp</source>
-        <translation>Дата/Время</translation>
-    </message>
-    <message>
-        <location filename="../reports/category.py" line="16"/>
-        <source>Account</source>
-        <translation>Счет</translation>
-    </message>
-    <message>
-        <location filename="../reports/category.py" line="16"/>
-        <source>Peer Name</source>
-        <translation>Контрагент</translation>
-    </message>
-    <message>
-        <location filename="../reports/category.py" line="16"/>
-        <source>Amount</source>
-        <translation>Сумма</translation>
-    </message>
-    <message>
-        <location filename="../reports/category.py" line="18"/>
-        <source>Currency</source>
-        <translation>Валюта</translation>
     </message>
 </context>
 <context>
@@ -1683,52 +1655,52 @@ do you want to save it?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="143"/>
+        <location filename="../db/ledger.py" line="144"/>
         <source>No asset defined for: </source>
         <translation>Не указана ЦБ для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="147"/>
+        <location filename="../db/ledger.py" line="148"/>
         <source>No category set for: </source>
         <translation>Ну указана категория для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="149"/>
+        <location filename="../db/ledger.py" line="150"/>
         <source>No peer set for: </source>
         <translation>Не указан контрагент для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="223"/>
+        <location filename="../db/ledger.py" line="224"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="224"/>
+        <location filename="../db/ledger.py" line="225"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="275"/>
+        <location filename="../db/ledger.py" line="276"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation>Произошла ошибка. Расчёт итогов не окончен. Проверьте сообщения об ошибках</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="277"/>
+        <location filename="../db/ledger.py" line="278"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="278"/>
+        <location filename="../db/ledger.py" line="279"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="229"/>
+        <location filename="../db/ledger.py" line="230"/>
         <source>Leger is empty</source>
         <translation>Транзакции отсутствуют</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="234"/>
+        <location filename="../db/ledger.py" line="235"/>
         <source>Re-building ledger since: </source>
         <translation>Пересчёт итогов с: </translation>
     </message>
@@ -3674,37 +3646,9 @@ Application will be terminated now</source>
 <context>
     <name>TagReport</name>
     <message>
-        <location filename="../reports/tag.py" line="102"/>
+        <location filename="../reports/tag.py" line="32"/>
         <source>Operations by Tag</source>
         <translation>Операции по Тэгу</translation>
-    </message>
-</context>
-<context>
-    <name>TagReportModel</name>
-    <message>
-        <location filename="../reports/tag.py" line="16"/>
-        <source>Timestamp</source>
-        <translation>Дата/Время</translation>
-    </message>
-    <message>
-        <location filename="../reports/tag.py" line="16"/>
-        <source>Account</source>
-        <translation>Счет</translation>
-    </message>
-    <message>
-        <location filename="../reports/tag.py" line="16"/>
-        <source>Peer Name</source>
-        <translation>Контрагент</translation>
-    </message>
-    <message>
-        <location filename="../reports/tag.py" line="16"/>
-        <source>Amount</source>
-        <translation>Сумма</translation>
-    </message>
-    <message>
-        <location filename="../reports/tag.py" line="18"/>
-        <source>Currency</source>
-        <translation>Валюта</translation>
     </message>
 </context>
 <context>
