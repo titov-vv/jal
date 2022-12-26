@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLay
     QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.custom.date_range_selector import DateRangeSelector
-from jal.widgets.income_spending_widget import IncomeSpendingWidget
+from jal.widgets.operations_tabs import JalOperationsTabs
 from jal.widgets.reference_selector import TagSelector
 
 class Ui_TagReportWidget(object):
@@ -99,13 +99,13 @@ class Ui_TagReportWidget(object):
         self.verticalLayout_2 = QVBoxLayout(self.DetailsFrame)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.IncomeSpendingDetails = IncomeSpendingWidget(self.DetailsFrame)
-        self.IncomeSpendingDetails.setObjectName(u"IncomeSpendingDetails")
-        self.IncomeSpendingDetails.setEnabled(True)
-        sizePolicy.setHeightForWidth(self.IncomeSpendingDetails.sizePolicy().hasHeightForWidth())
-        self.IncomeSpendingDetails.setSizePolicy(sizePolicy)
+        self.OperationDetails = JalOperationsTabs(self.DetailsFrame)
+        self.OperationDetails.setObjectName(u"OperationDetails")
+        self.OperationDetails.setEnabled(True)
+        sizePolicy.setHeightForWidth(self.OperationDetails.sizePolicy().hasHeightForWidth())
+        self.OperationDetails.setSizePolicy(sizePolicy)
 
-        self.verticalLayout_2.addWidget(self.IncomeSpendingDetails)
+        self.verticalLayout_2.addWidget(self.OperationDetails)
 
 
         self.verticalLayout.addWidget(self.DetailsFrame)

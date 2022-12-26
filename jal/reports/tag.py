@@ -111,7 +111,6 @@ class TagReportWindow(MdiWidget, Ui_TagReportWidget):
         self.tag_model = TagReportModel(self.ReportTableView)
         self.ReportTableView.setModel(self.tag_model)
         self.tag_model.configureView()
-        self.IncomeSpendingDetails.setId(0)  # Reset details widget
 
         self.connect_signals_and_slots()
 
@@ -129,7 +128,7 @@ class TagReportWindow(MdiWidget, Ui_TagReportWidget):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
-            _operation_type, operation_id = self.ReportTableView.model().get_operation(selected_row)
-            self.IncomeSpendingDetails.setId(operation_id)
+            operation_type, operation_id = self.ReportTableView.model().get_operation(selected_row)
+            self.OperationDetails.show_operation(operation_type, operation_id)
         else:
-            self.IncomeSpendingDetails.setId(0)
+            self.OperationDetails.show_operation(LedgerTransaction.NA, 0)

@@ -4,7 +4,7 @@
 <context>
     <name>AbstractOperationDetails</name>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="72"/>
+        <location filename="../widgets/abstract_operation_details.py" line="69"/>
         <source>Operation submit failed: </source>
         <translation></translation>
     </message>
@@ -19,7 +19,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="89"/>
+        <location filename="../widgets/abstract_operation_details.py" line="86"/>
         <source>Unsaved changes were reverted to create new operation</source>
         <translation></translation>
     </message>
@@ -401,7 +401,7 @@
 <context>
     <name>CorporateActionWidget</name>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="49"/>
+        <location filename="../widgets/corporate_action_widget.py" line="31"/>
         <source>Corporate Action</source>
         <translation></translation>
     </message>
@@ -797,84 +797,84 @@
 <context>
     <name>DividendWidget</name>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="45"/>
-        <location filename="../widgets/dividend_widget.py" line="52"/>
-        <location filename="../widgets/dividend_widget.py" line="115"/>
+        <location filename="../widgets/dividend_widget.py" line="30"/>
+        <location filename="../widgets/dividend_widget.py" line="51"/>
+        <location filename="../widgets/dividend_widget.py" line="114"/>
         <source>Dividend</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="46"/>
+        <location filename="../widgets/dividend_widget.py" line="45"/>
         <source>Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="49"/>
+        <location filename="../widgets/dividend_widget.py" line="48"/>
         <source>#</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="50"/>
+        <location filename="../widgets/dividend_widget.py" line="49"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="51"/>
+        <location filename="../widgets/dividend_widget.py" line="50"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="53"/>
+        <location filename="../widgets/dividend_widget.py" line="52"/>
         <source>Price</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="54"/>
+        <location filename="../widgets/dividend_widget.py" line="53"/>
         <source>Tax</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="55"/>
+        <location filename="../widgets/dividend_widget.py" line="54"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="117"/>
+        <location filename="../widgets/dividend_widget.py" line="116"/>
         <source>Stock Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="118"/>
+        <location filename="../widgets/dividend_widget.py" line="117"/>
         <source>Stock Vesting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="163"/>
+        <location filename="../widgets/dividend_widget.py" line="162"/>
         <source>No quote</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="166"/>
+        <location filename="../widgets/dividend_widget.py" line="165"/>
         <source>You should set quote via Data-&gt;Quotes menu for Date/Time of the dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="47"/>
+        <location filename="../widgets/dividend_widget.py" line="46"/>
         <source>Ex-Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="48"/>
+        <location filename="../widgets/dividend_widget.py" line="47"/>
         <source>Type</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="114"/>
+        <location filename="../widgets/dividend_widget.py" line="113"/>
         <source>N/A</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="116"/>
+        <location filename="../widgets/dividend_widget.py" line="115"/>
         <source>Bond Interest</source>
         <translation></translation>
     </message>
@@ -1348,7 +1348,7 @@
 <context>
     <name>IncomeSpendingWidget</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="41"/>
+        <location filename="../widgets/income_spending_widget.py" line="30"/>
         <source>Income / Spending</source>
         <translation></translation>
     </message>
@@ -2029,24 +2029,13 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="90"/>
+        <location filename="../widgets/operations_widget.py" line="87"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="91"/>
+        <location filename="../widgets/operations_widget.py" line="88"/>
         <source>Are you sure to delete selected transacion(s)?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/operations_widget.py" line="140"/>
-        <source>You have unsaved changes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/operations_widget.py" line="142"/>
-        <source> has uncommitted changes,
-do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2108,7 +2097,7 @@ do you want to save it?</source>
 <context>
     <name>OptionalCurrencyComboBox</name>
     <message>
-        <location filename="../widgets/account_select.py" line="161"/>
+        <location filename="../widgets/account_select.py" line="158"/>
         <source>Currency</source>
         <translation></translation>
     </message>
@@ -3945,7 +3934,7 @@ do you want to save it?</source>
 <context>
     <name>TradeWidget</name>
     <message>
-        <location filename="../widgets/trade_widget.py" line="41"/>
+        <location filename="../widgets/trade_widget.py" line="29"/>
         <source>Buy / Sell</source>
         <translation></translation>
     </message>
@@ -4021,7 +4010,7 @@ do you want to save it?</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="45"/>
+        <location filename="../widgets/transfer_widget.py" line="29"/>
         <source>Transfer</source>
         <translation></translation>
     </message>
