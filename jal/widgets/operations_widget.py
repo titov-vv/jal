@@ -51,12 +51,10 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.connect_signals_and_slots()
 
         self.NewOperationMenu = QMenu()
-        for i in range(self.OperationsTabs.count()):
-            if hasattr(self.OperationsTabs.widget(i), "isCustom"):
-                self.OperationsTabs.widget(i).dbUpdated.connect(self.dbUpdated)
-                self.OperationsTabs.widget(i).dbUpdated.connect(self.operations_model.refresh)
-                self.NewOperationMenu.addAction(self.OperationsTabs.widget(i).name,
-                                                partial(self.createOperation, i))
+        self.OperationsTabs.dbUpdated.connect(self.dbUpdated)
+        self.OperationsTabs.dbUpdated.connect(self.operations_model.refresh)
+        for key, name in self.OperationsTabs.get_operations_list().items():
+            self.NewOperationMenu.addAction(name, partial(self.createOperation, key))
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
 
         # Setup balance and holdings parameters
@@ -65,7 +63,6 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.BalanceDate.setDateTime(current_time)
         self.BalancesCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
 
-        self.OperationsTabs.setCurrentIndex(LedgerTransaction.NA)
         self.OperationsTableView.selectRow(0)
         self.DateRange.setCurrentIndex(0)
 
@@ -82,8 +79,8 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.OperationsTableView.customContextMenuRequested.connect(self.onOperationContextMenu)
         self.DeleteOperationBtn.clicked.connect(self.deleteOperation)
         self.actionDelete.triggered.connect(self.deleteOperation)
-        self.CopyOperationBtn.clicked.connect(self.copyOperation)
-        self.actionCopy.triggered.connect(self.copyOperation)
+        self.CopyOperationBtn.clicked.connect(self.OperationsTabs.copy_operation)
+        self.actionCopy.triggered.connect(self.OperationsTabs.copy_operation)
 
     @Slot()
     def deleteOperation(self):
@@ -99,17 +96,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
 
     @Slot()
     def createOperation(self, operation_type):
-        self.checkForUncommittedChanges()
-        self.OperationsTabs.widget(operation_type).createNew(account_id=self.operations_model.getAccount())
-        self.OperationsTabs.setCurrentIndex(operation_type)
-
-    @Slot()
-    def copyOperation(self):
-        operation_type = self.OperationsTabs.currentIndex()
-        if operation_type == LedgerTransaction.NA:
-            return
-        self.checkForUncommittedChanges()
-        self.OperationsTabs.widget(operation_type).copyNew()
+        self.OperationsTabs.new_operation(operation_type, self.operations_model.getAccount())
 
     @Slot()
     def updateOperationsFilter(self):
@@ -121,30 +108,14 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
 
     @Slot()
     def OnOperationChange(self, selected, _deselected):
-        self.checkForUncommittedChanges()
-
-        if len(self.OperationsTableView.selectionModel().selectedRows()) != 1:
-            self.OperationsTabs.setCurrentIndex(LedgerTransaction.NA)
-        else:
+        op_type = LedgerTransaction.NA
+        op_id = 0
+        if len(self.OperationsTableView.selectionModel().selectedRows()) == 1:
             idx = selected.indexes()
             if idx:
                 selected_row = idx[0].row()
-                operation_type, operation_id = self.OperationsTableView.model().get_operation(selected_row)
-                self.OperationsTabs.setCurrentIndex(operation_type)
-                self.OperationsTabs.widget(operation_type).setId(operation_id)
-
-    @Slot()
-    def checkForUncommittedChanges(self):
-        for i in range(self.OperationsTabs.count()):
-            if hasattr(self.OperationsTabs.widget(i), "isCustom") and self.OperationsTabs.widget(i).modified:
-                reply = QMessageBox().warning(None, self.tr("You have unsaved changes"),
-                                              self.OperationsTabs.widget(i).name +
-                                              self.tr(" has uncommitted changes,\ndo you want to save it?"),
-                                              QMessageBox.Yes, QMessageBox.No)
-                if reply == QMessageBox.Yes:
-                    self.OperationsTabs.widget(i).saveChanges()
-                else:
-                    self.OperationsTabs.widget(i).revertChanges()
+                op_type, op_id = self.OperationsTableView.model().get_operation(selected_row)
+        self.OperationsTabs.show_operation(op_type, op_id)
 
     @Slot()
     def onOperationContextMenu(self, pos):
