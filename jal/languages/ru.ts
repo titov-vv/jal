@@ -318,7 +318,7 @@
     <message>
         <location filename="../reports/category.py" line="18"/>
         <source>Currency</source>
-        <translation type="unfinished">Валюта</translation>
+        <translation>Валюта</translation>
     </message>
 </context>
 <context>
@@ -581,57 +581,57 @@
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="15"/>
         <source>Week</source>
-        <translation type="unfinished"></translation>
+        <translation>Неделя</translation>
     </message>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="16"/>
         <source>Month</source>
-        <translation type="unfinished"></translation>
+        <translation>Месяц</translation>
     </message>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="17"/>
         <source>Quarter</source>
-        <translation type="unfinished"></translation>
+        <translation>Квартал</translation>
     </message>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="18"/>
         <source>Year</source>
-        <translation type="unfinished"></translation>
+        <translation>Год</translation>
     </message>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="19"/>
         <source>Quarter to date</source>
-        <translation type="unfinished"></translation>
+        <translation>Текущий до сегодня</translation>
     </message>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="20"/>
         <source>Year to date</source>
-        <translation type="unfinished"></translation>
+        <translation>Год до сегодня</translation>
     </message>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="21"/>
         <source>This year</source>
-        <translation type="unfinished"></translation>
+        <translation>Текущий год</translation>
     </message>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="22"/>
         <source>Previous year</source>
-        <translation type="unfinished"></translation>
+        <translation>Предыдущий год</translation>
     </message>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="23"/>
         <source>All dates</source>
-        <translation type="unfinished"></translation>
+        <translation>Все даты</translation>
     </message>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="37"/>
         <source>From:</source>
-        <translation type="unfinished"></translation>
+        <translation>С:</translation>
     </message>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="46"/>
         <source>To:</source>
-        <translation type="unfinished"></translation>
+        <translation>До:</translation>
     </message>
 </context>
 <context>
@@ -1670,13 +1670,14 @@ Application will be terminated now</source>
     <message>
         <location filename="../widgets/operations_tabs.py" line="41"/>
         <source>You have unsaved changes</source>
-        <translation type="unfinished"></translation>
+        <translation>Есть несохранённые изменния</translation>
     </message>
     <message>
         <location filename="../widgets/operations_tabs.py" line="43"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
-        <translation type="unfinished"></translation>
+        <translation> имеет несохранённые изменения,
+вы хотите их сохранить?</translation>
     </message>
 </context>
 <context>
