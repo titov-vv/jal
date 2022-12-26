@@ -117,9 +117,6 @@ class CurrencyComboBox(QComboBox):
         self.setModel(self.model)
         self.setModelColumn(self.model.fieldIndex("symbol"))
 
-    def isCustom(self):
-        return True
-
     def getId(self):
         return self.p_selected_id
 

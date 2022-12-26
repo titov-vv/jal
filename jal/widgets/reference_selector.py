@@ -78,9 +78,6 @@ class AbstractReferenceSelector(QWidget):
         self.selected_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
         self.changed.emit()
 
-    def isCustom(self):
-        return True
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountSelector(AbstractReferenceSelector):
