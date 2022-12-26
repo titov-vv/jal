@@ -18,16 +18,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QDateEdit,
     QFrame, QGroupBox, QHBoxLayout, QHeaderView,
     QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QSplitter, QStackedWidget, QTableView,
-    QVBoxLayout, QWidget)
+    QSpacerItem, QSplitter, QTableView, QVBoxLayout,
+    QWidget)
 
 from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
-from jal.widgets.corporate_action_widget import CorporateActionWidget
 from jal.widgets.custom.date_range_selector import DateRangeSelector
-from jal.widgets.dividend_widget import DividendWidget
-from jal.widgets.income_spending_widget import IncomeSpendingWidget
-from jal.widgets.trade_widget import TradeWidget
-from jal.widgets.transfer_widget import TransferWidget
+from jal.widgets.operations_tabs import JalOperationsTabs
 
 class Ui_OperationsWidget(object):
     def setupUi(self, OperationsWidget):
@@ -201,31 +197,23 @@ class Ui_OperationsWidget(object):
         self.horizontalLayout_4 = QHBoxLayout(self.OperationDetails)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.OperationsTabs = QStackedWidget(self.OperationDetails)
+        self.OperationsTabs = JalOperationsTabs(self.OperationDetails)
         self.OperationsTabs.setObjectName(u"OperationsTabs")
-        self.NoOperation = QWidget()
-        self.NoOperation.setObjectName(u"NoOperation")
-        self.OperationsTabs.addWidget(self.NoOperation)
-        self.IncomeSpending = IncomeSpendingWidget()
-        self.IncomeSpending.setObjectName(u"IncomeSpending")
-        self.OperationsTabs.addWidget(self.IncomeSpending)
-        self.Dividend = DividendWidget()
-        self.Dividend.setObjectName(u"Dividend")
-        self.OperationsTabs.addWidget(self.Dividend)
-        self.Trade = TradeWidget()
-        self.Trade.setObjectName(u"Trade")
-        self.OperationsTabs.addWidget(self.Trade)
-        self.Transfer = TransferWidget()
-        self.Transfer.setObjectName(u"Transfer")
-        self.OperationsTabs.addWidget(self.Transfer)
-        self.CorporateAction = CorporateActionWidget()
-        self.CorporateAction.setObjectName(u"CorporateAction")
-        self.OperationsTabs.addWidget(self.CorporateAction)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.OperationsTabs.sizePolicy().hasHeightForWidth())
+        self.OperationsTabs.setSizePolicy(sizePolicy5)
 
         self.horizontalLayout_4.addWidget(self.OperationsTabs)
 
         self.OperationsButtons = QFrame(self.OperationDetails)
         self.OperationsButtons.setObjectName(u"OperationsButtons")
+        sizePolicy6 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.OperationsButtons.sizePolicy().hasHeightForWidth())
+        self.OperationsButtons.setSizePolicy(sizePolicy6)
         self.verticalLayout_3 = QVBoxLayout(self.OperationsButtons)
         self.verticalLayout_3.setSpacing(2)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -262,9 +250,6 @@ class Ui_OperationsWidget(object):
 
 
         self.retranslateUi(OperationsWidget)
-
-        self.OperationsTabs.setCurrentIndex(5)
-
 
         QMetaObject.connectSlotsByName(OperationsWidget)
     # setupUi

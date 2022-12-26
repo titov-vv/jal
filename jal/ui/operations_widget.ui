@@ -260,7 +260,7 @@
            <number>2</number>
           </property>
           <item>
-           <widget class="DateRangeSelector" name="DateRange">
+           <widget class="DateRangeSelector" name="DateRange" native="true">
             <property name="ItemsList" stdset="0">
              <string notr="true">week;month;quarter;year;all</string>
             </property>
@@ -378,20 +378,23 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QStackedWidget" name="OperationsTabs">
-             <property name="currentIndex">
-              <number>5</number>
+            <widget class="JalOperationsTabs" name="OperationsTabs" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <widget class="QWidget" name="NoOperation"/>
-             <widget class="IncomeSpendingWidget" name="IncomeSpending"/>
-             <widget class="DividendWidget" name="Dividend"/>
-             <widget class="TradeWidget" name="Trade"/>
-             <widget class="TransferWidget" name="Transfer"/>
-             <widget class="CorporateActionWidget" name="CorporateAction"/>
             </widget>
            </item>
            <item>
             <widget class="QFrame" name="OperationsButtons">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <layout class="QVBoxLayout" name="verticalLayout_3">
               <property name="spacing">
                <number>2</number>
@@ -482,33 +485,9 @@
    <header>jal/widgets/account_select.h</header>
   </customwidget>
   <customwidget>
-   <class>DividendWidget</class>
+   <class>JalOperationsTabs</class>
    <extends>QWidget</extends>
-   <header>jal/widgets/dividend_widget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>TradeWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/trade_widget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>TransferWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/transfer_widget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>CorporateActionWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/corporate_action_widget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>IncomeSpendingWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/income_spending_widget.h</header>
+   <header>jal/widgets/operations_tabs.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

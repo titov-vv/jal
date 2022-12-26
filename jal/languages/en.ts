@@ -2090,17 +2090,17 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="414"/>
+        <location filename="../ui/operations_widget.ui" line="417"/>
         <source>New operation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="424"/>
+        <location filename="../ui/operations_widget.ui" line="427"/>
         <source>Copy operation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="434"/>
+        <location filename="../ui/operations_widget.ui" line="437"/>
         <source>Delete operation</source>
         <translation type="unfinished"></translation>
     </message>
