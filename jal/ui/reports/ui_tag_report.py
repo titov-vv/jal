@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLayout,
     QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QTableView, QVBoxLayout, QWidget)
+    QSplitter, QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.custom.date_range_selector import DateRangeSelector
 from jal.widgets.operations_tabs import JalOperationsTabs
@@ -29,7 +29,7 @@ class Ui_TagReportWidget(object):
             TagReportWidget.setObjectName(u"TagReportWidget")
         TagReportWidget.resize(636, 345)
         self.verticalLayout = QVBoxLayout(TagReportWidget)
-        self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(TagReportWidget)
@@ -68,11 +68,14 @@ class Ui_TagReportWidget(object):
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
 
-        self.ReportTableView = QTableView(TagReportWidget)
+        self.splitter = QSplitter(TagReportWidget)
+        self.splitter.setObjectName(u"splitter")
+        self.splitter.setOrientation(Qt.Vertical)
+        self.ReportTableView = QTableView(self.splitter)
         self.ReportTableView.setObjectName(u"ReportTableView")
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(3)
+        sizePolicy1.setVerticalStretch(4)
         sizePolicy1.setHeightForWidth(self.ReportTableView.sizePolicy().hasHeightForWidth())
         self.ReportTableView.setSizePolicy(sizePolicy1)
         self.ReportTableView.setFrameShape(QFrame.Panel)
@@ -81,34 +84,20 @@ class Ui_TagReportWidget(object):
         self.ReportTableView.setAlternatingRowColors(True)
         self.ReportTableView.setGridStyle(Qt.DotLine)
         self.ReportTableView.setWordWrap(False)
+        self.splitter.addWidget(self.ReportTableView)
         self.ReportTableView.verticalHeader().setVisible(False)
         self.ReportTableView.verticalHeader().setMinimumSectionSize(20)
         self.ReportTableView.verticalHeader().setDefaultSectionSize(20)
-
-        self.verticalLayout.addWidget(self.ReportTableView)
-
-        self.DetailsFrame = QFrame(TagReportWidget)
-        self.DetailsFrame.setObjectName(u"DetailsFrame")
+        self.OperationDetails = JalOperationsTabs(self.splitter)
+        self.OperationDetails.setObjectName(u"OperationDetails")
         sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(1)
-        sizePolicy2.setHeightForWidth(self.DetailsFrame.sizePolicy().hasHeightForWidth())
-        self.DetailsFrame.setSizePolicy(sizePolicy2)
-        self.DetailsFrame.setFrameShape(QFrame.Panel)
-        self.DetailsFrame.setFrameShadow(QFrame.Sunken)
-        self.verticalLayout_2 = QVBoxLayout(self.DetailsFrame)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.OperationDetails = JalOperationsTabs(self.DetailsFrame)
-        self.OperationDetails.setObjectName(u"OperationDetails")
-        self.OperationDetails.setEnabled(True)
-        sizePolicy.setHeightForWidth(self.OperationDetails.sizePolicy().hasHeightForWidth())
-        self.OperationDetails.setSizePolicy(sizePolicy)
+        sizePolicy2.setHeightForWidth(self.OperationDetails.sizePolicy().hasHeightForWidth())
+        self.OperationDetails.setSizePolicy(sizePolicy2)
+        self.splitter.addWidget(self.OperationDetails)
 
-        self.verticalLayout_2.addWidget(self.OperationDetails)
-
-
-        self.verticalLayout.addWidget(self.DetailsFrame)
+        self.verticalLayout.addWidget(self.splitter)
 
 
         self.retranslateUi(TagReportWidget)

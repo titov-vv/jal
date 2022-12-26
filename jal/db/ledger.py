@@ -111,11 +111,23 @@ class Ledger(QObject):
         return sequence
 
     @staticmethod
+    # Return a list of [op_type, op_id] of operation identifiers that have category_id involved
+    def get_operations_by_category(begin: int, end: int, category_id: int) -> list:
+        operations = []
+        query = JalDB.execSQL(
+            "SELECT DISTINCT op_type, operation_id AS id FROM ledger "
+            "WHERE category_id=:category AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
+            [(":begin", begin), (":end", end), (":category", category_id)], forward_only=True)
+        while query.next():
+            operations.append(JalDB.readSQLrecord(query, named=True))
+        return operations
+
+    @staticmethod
     # Return a list of [op_type, op_id] of operation identifiers that have tag_id involved
     def get_operations_by_tag(begin: int, end: int, tag_id: int) -> list:
         operations = []
         query = JalDB.execSQL("SELECT DISTINCT op_type, operation_id AS id FROM ledger "
-                              "WHERE tag_id==:tag AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
+                              "WHERE tag_id=:tag AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
                               [(":begin", begin), (":end", end), (":tag", tag_id)], forward_only=True)
         while query.next():
             operations.append(JalDB.readSQLrecord(query, named=True))

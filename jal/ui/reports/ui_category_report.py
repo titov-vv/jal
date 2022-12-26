@@ -17,9 +17,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLayout,
     QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QTableView, QVBoxLayout, QWidget)
+    QSplitter, QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.custom.date_range_selector import DateRangeSelector
+from jal.widgets.operations_tabs import JalOperationsTabs
 from jal.widgets.reference_selector import CategorySelector
 
 class Ui_CategoryReportWidget(object):
@@ -28,7 +29,7 @@ class Ui_CategoryReportWidget(object):
             CategoryReportWidget.setObjectName(u"CategoryReportWidget")
         CategoryReportWidget.resize(636, 345)
         self.verticalLayout = QVBoxLayout(CategoryReportWidget)
-        self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(CategoryReportWidget)
@@ -62,19 +63,36 @@ class Ui_CategoryReportWidget(object):
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
 
-        self.ReportTableView = QTableView(CategoryReportWidget)
+        self.splitter = QSplitter(CategoryReportWidget)
+        self.splitter.setObjectName(u"splitter")
+        self.splitter.setOrientation(Qt.Vertical)
+        self.ReportTableView = QTableView(self.splitter)
         self.ReportTableView.setObjectName(u"ReportTableView")
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(4)
+        sizePolicy.setHeightForWidth(self.ReportTableView.sizePolicy().hasHeightForWidth())
+        self.ReportTableView.setSizePolicy(sizePolicy)
         self.ReportTableView.setFrameShape(QFrame.Panel)
         self.ReportTableView.setFrameShadow(QFrame.Sunken)
         self.ReportTableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.ReportTableView.setAlternatingRowColors(True)
         self.ReportTableView.setGridStyle(Qt.DotLine)
         self.ReportTableView.setWordWrap(False)
+        self.splitter.addWidget(self.ReportTableView)
         self.ReportTableView.verticalHeader().setVisible(False)
         self.ReportTableView.verticalHeader().setMinimumSectionSize(20)
         self.ReportTableView.verticalHeader().setDefaultSectionSize(20)
+        self.OperationDetails = JalOperationsTabs(self.splitter)
+        self.OperationDetails.setObjectName(u"OperationDetails")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(1)
+        sizePolicy1.setHeightForWidth(self.OperationDetails.sizePolicy().hasHeightForWidth())
+        self.OperationDetails.setSizePolicy(sizePolicy1)
+        self.splitter.addWidget(self.OperationDetails)
 
-        self.verticalLayout.addWidget(self.ReportTableView)
+        self.verticalLayout.addWidget(self.splitter)
 
 
         self.retranslateUi(CategoryReportWidget)

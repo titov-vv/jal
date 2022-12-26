@@ -9,6 +9,7 @@ JAL_REPORT_CLASS = "TagReport"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# TODO This report file is similar to Category report. Probably need to combine them and use OperationsModel
 class TagReportModel(QAbstractTableModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)

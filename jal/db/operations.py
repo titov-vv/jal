@@ -223,6 +223,9 @@ class LedgerTransaction:
     def number(self):
         return self._number
 
+    def amount(self):
+        return 0
+
     def description(self) -> str:
         return ''
 
@@ -602,6 +605,9 @@ class Trade(LedgerTransaction):
 
     def fee(self) -> Decimal:
         return self._fee
+
+    def amount(self) -> Decimal:
+        return self._price * self._qty
 
     def description(self) -> str:
         if self._fee != Decimal('0'):

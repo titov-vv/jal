@@ -1,8 +1,7 @@
-from PySide6.QtCore import Qt, Slot, QObject
-from PySide6.QtSql import QSqlTableModel
-from PySide6.QtWidgets import QHeaderView
+from PySide6.QtCore import Qt, Slot, QObject, QAbstractTableModel
+from jal.db.ledger import Ledger
+from jal.db.operations import LedgerTransaction, Transfer
 from jal.ui.reports.ui_category_report import Ui_CategoryReportWidget
-from jal.db.db import JalDB
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.mdi import MdiWidget
 
@@ -10,75 +9,89 @@ JAL_REPORT_CLASS = "CategoryReport"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# TODO Reimplement report based on 'ledger' DB table in order to include all types of operations
-class CategoryReportModel(QSqlTableModel):
+# TODO This report file is similar to Tag report. Probably need to combine them and use OperationsModel
+class CategoryReportModel(QAbstractTableModel):
     def __init__(self, parent_view):
-        self._columns = [("timestamp", self.tr("Timestamp")),
-                         ("account", self.tr("Account")),
-                         ("name", self.tr("Peer Name")),
-                         ("amount", self.tr("Amount")),
-                         ("note", self.tr("Note"))]
+        super().__init__(parent_view)
+        self._columns = [self.tr("Timestamp"), self.tr("Account"), self.tr("Peer Name"), self.tr("Amount"),
+                         self.tr("Currency")]
         self._view = parent_view
-        self._query = None
+        self._data = []
         self._timestamp_delegate = None
         self._float_delegate = None
         self._begin = 0
         self._end = 0
         self._category_id = 0
-        QSqlTableModel.__init__(self, parent=parent_view, db=JalDB.connection())
 
-    def setColumnNames(self):
-        for column in self._columns:
-            self.setHeaderData(self.fieldIndex(column[0]), Qt.Horizontal, column[1])
+    def rowCount(self, parent=None):
+        return len(self._data)
+
+    def columnCount(self, parent=None):
+        return len(self._columns)
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self._columns[section]
 
     def resetDelegates(self):
-        for column in self._columns:
-            self._view.setItemDelegateForColumn(self.fieldIndex(column[0]), None)
+        for i, column in enumerate(self._columns):
+            self._view.setItemDelegateForColumn(i, None)
+
+    def data(self, index, role=Qt.DisplayRole, field=''):
+        row = index.row()
+        if not index.isValid():
+            return None
+        display_type = Transfer.Fee if self._data[row]['op_type']==LedgerTransaction.Transfer else None
+        operation = LedgerTransaction().get_operation(self._data[row]['op_type'], self._data[row]['id'], display_type)
+        if role == Qt.DisplayRole:
+            return self.data_text(operation, index.column())
+
+    def data_text(self, operation, column):
+        if column == 0:
+            return operation.timestamp()
+        elif column == 1:
+            return operation.account_name()
+        elif column == 2:
+            return operation.description()
+        elif column == 3:
+            return operation.amount()
+        elif column == 4:
+            return operation.value_currency()
+        else:
+            assert False, "Unexpected column number"
+
+    def get_operation(self, row):
+        if (row >= 0) and (row < self.rowCount()):
+            return self._data[row]['op_type'], self._data[row]['id']
+        else:
+            return [0, 0]
 
     def configureView(self):
-        if self.columnCount() == 0:
-            return
-        self._view.setModel(self)
-        self.setColumnNames()
         self.resetDelegates()
         font = self._view.horizontalHeader().font()
         font.setBold(True)
         self._view.horizontalHeader().setFont(font)
-        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("note"), QHeaderView.Stretch)
-        self._view.setColumnWidth(self.fieldIndex("account"), 200)
-        self._view.setColumnWidth(self.fieldIndex("name"), 200)
-        self._view.setColumnWidth(self.fieldIndex("amount"), 200)
-        self._view.setColumnWidth(self.fieldIndex("timestamp"),
-                                  self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
+        self._view.setColumnWidth(0, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
+        self._view.setColumnWidth(1, 200)
+        self._view.setColumnWidth(2, 200)
+        self._view.setColumnWidth(3, 200)
+        self._view.setColumnWidth(4, 100)
         self._timestamp_delegate = TimestampDelegate()
-        self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
+        self._view.setItemDelegateForColumn(0, self._timestamp_delegate)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
-        self._view.setItemDelegateForColumn(self.fieldIndex("amount"), self._float_delegate)
+        self._view.setItemDelegateForColumn(3, self._float_delegate)
 
     def setDatesRange(self, begin, end):
         self._begin = begin
         self._end = end
-        self.calculateCategoryReport()
-        self.configureView()
+        self.prepareData()
 
     def setCategory(self, category):
         self._category_id = category
-        self.calculateCategoryReport()
-        self.configureView()
+        self.prepareData()
 
-    def calculateCategoryReport(self):
-        if self._category_id == 0:
-            return
-        self._query = JalDB.execSQL("SELECT a.timestamp, ac.name AS account, p.name, d.amount, d.note "
-                                        "FROM actions AS a "
-                                        "LEFT JOIN action_details AS d ON d.pid=a.id "
-                                        "LEFT JOIN agents AS p ON p.id=a.peer_id "
-                                        "LEFT JOIN accounts AS ac ON ac.id=a.account_id "
-                                        "WHERE a.timestamp>=:begin AND a.timestamp<=:end "
-                                        "AND d.category_id=:category_id",
-                                    [(":category_id", self._category_id), (":begin", self._begin),
-                                         (":end", self._end)], forward_only=False)
-        self.setQuery(self._query)
+    def prepareData(self):
+        self._data = Ledger.get_operations_by_category(self._begin, self._end, self._category_id)
         self.modelReset.emit()
 
 
@@ -99,13 +112,25 @@ class CategoryReportWindow(MdiWidget, Ui_CategoryReportWidget):
 
         self.category_model = CategoryReportModel(self.ReportTableView)
         self.ReportTableView.setModel(self.category_model)
+        self.category_model.configureView()
 
         self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
         self.ReportRange.changed.connect(self.ReportTableView.model().setDatesRange)
         self.ReportCategoryEdit.changed.connect(self.onCategoryChange)
+        self.ReportTableView.selectionModel().selectionChanged.connect(self.onOperationSelect)
 
     @Slot()
     def onCategoryChange(self):
         self.ReportTableView.model().setCategory(self.ReportCategoryEdit.selected_id)
+
+    @Slot()
+    def onOperationSelect(self, selected, _deselected):
+        idx = selected.indexes()
+        if idx:
+            selected_row = idx[0].row()
+            operation_type, operation_id = self.ReportTableView.model().get_operation(selected_row)
+            self.OperationDetails.show_operation(operation_type, operation_id)
+        else:
+            self.OperationDetails.show_operation(LedgerTransaction.NA, 0)
