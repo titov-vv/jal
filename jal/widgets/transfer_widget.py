@@ -25,7 +25,7 @@ class TransferWidgetDelegate(WidgetMapperDelegateBase):
 class TransferWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
-        self.name = "Transfer"
+        self.name = self.tr("Transfer")
         self.operation_type = LedgerTransaction.Transfer
 
         self.from_date_label = QLabel(self)
@@ -42,7 +42,7 @@ class TransferWidget(AbstractOperationDetails):
         self.copy_date_btn = QPushButton(self)
         self.copy_amount_btn = QPushButton(self)
 
-        self.main_label.setText(self.tr("Transfer"))
+        self.main_label.setText(self.name)
         self.from_date_label.setText(self.tr("Date/Time"))
         self.from_account_label.setText(self.tr("From"))
         self.from_amount_label.setText(self.tr("Amount"))

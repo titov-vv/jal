@@ -27,7 +27,7 @@ class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
 class CorporateActionWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
-        self.name = "Corporate action"
+        self.name = self.tr("Corporate Action")
         self.operation_type = LedgerTransaction.CorporateAction
         self.combo_model = None
 
@@ -46,7 +46,7 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.comment_label = QLabel(self)
         self.arrow = QLabel(self)
 
-        self.main_label.setText(self.tr("Corporate Action"))
+        self.main_label.setText(self.name)
         self.date_label.setText(self.tr("Date/Time"))
         self.account_label.setText(self.tr("Account"))
         self.type_label.setText(self.tr("Type"))

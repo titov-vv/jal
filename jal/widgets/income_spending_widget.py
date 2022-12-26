@@ -26,7 +26,7 @@ class IncomeSpendingWidgetDelegate(WidgetMapperDelegateBase):
 class IncomeSpendingWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
-        self.name = "Income/Spending"
+        self.name = self.tr("Income / Spending")
         self.operation_type = LedgerTransaction.IncomeSpending
 
         self.category_delegate = CategorySelectorDelegate()
@@ -38,7 +38,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.account_label = QLabel(self)
         self.peer_label = QLabel(self)
 
-        self.main_label.setText(self.tr("Income / Spending"))
+        self.main_label.setText(self.name)
         self.date_label.setText(self.tr("Date/Time"))
         self.details_label.setText(self.tr("Details"))
         self.account_label.setText(self.tr("Account"))

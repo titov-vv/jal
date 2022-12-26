@@ -6,7 +6,6 @@ from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComb
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
-from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, Dividend
@@ -27,7 +26,7 @@ class DividendWidgetDelegate(WidgetMapperDelegateBase):
 class DividendWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
-        self.name = "Dividend"
+        self.name = self.tr("Dividend")
         self.operation_type = LedgerTransaction.Dividend
         self.combo_model = None
 
@@ -42,7 +41,7 @@ class DividendWidget(AbstractOperationDetails):
         self.tax_label = QLabel(self)
         self.comment_label = QLabel(self)
 
-        self.main_label.setText(self.tr("Dividend"))
+        self.main_label.setText(self.name)
         self.date_label.setText(self.tr("Date/Time"))
         self.ex_date_label.setText(self.tr("Ex-Date"))
         self.type_label.setText(self.tr("Type"))

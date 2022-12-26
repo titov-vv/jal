@@ -25,7 +25,7 @@ class TradeWidgetDelegate(WidgetMapperDelegateBase):
 class TradeWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
-        self.name = "Trade"
+        self.name = self.tr("Buy / Sell")
         self.operation_type = LedgerTransaction.Trade
 
         self.date_label = QLabel(self)
@@ -38,7 +38,7 @@ class TradeWidget(AbstractOperationDetails):
         self.fee_label = QLabel(self)
         self.comment_label = QLabel(self)
 
-        self.main_label.setText(self.tr("Buy / Sell"))
+        self.main_label.setText(self.name)
         self.date_label.setText(self.tr("Date/Time"))
         self.settlement_label.setText(self.tr("Settlement"))
         self.number_label.setText(self.tr("#"))
