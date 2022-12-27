@@ -53,7 +53,8 @@ def ts2d(timestamp: int) -> str:
 # Converts QImage class input into PIL.Image output
 # (save QImage into the buffer and then read PIL.Image out from the buffer)
 # Raises ValueError if image format isn't supported
-def QImage2Image(image: QImage) -> Image:
+# Return value has Image type - not included as a type hint as Pillow may not be imported
+def QImage2Image(image: QImage):
     buffer = QBuffer()
     buffer.open(QBuffer.ReadWrite)
     image.save(buffer, "BMP")
@@ -65,7 +66,8 @@ def QImage2Image(image: QImage) -> Image:
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Function takes PIL image and searches for QR in it. Content of first found QR is returned. Otherwise - empty string.
-def decodeQR(qr_image: Image) -> str:
+# qr_image has Image type - not included as a type hint as Pillow may not be imported
+def decodeQR(qr_image) -> str:
     barcodes = pyzbar.decode(qr_image, symbols=[pyzbar.ZBarSymbol.QRCODE])
     if barcodes:
         return barcodes[0].data.decode('utf-8')
