@@ -2,9 +2,10 @@ from datetime import datetime
 from PySide6.QtCore import Qt, QObject, QAbstractItemModel, QModelIndex
 from PySide6.QtGui import QBrush
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
-from jal.constants import BookAccount, PredefinedAsset, CustomColor
-from jal.db.db import JalDB
+from jal.constants import CustomColor
+from jal.db.category import JalCategory
 from jal.db.settings import JalSettings
+from jal.widgets.helpers import month_list
 from jal.widgets.delegates import GridLinesDelegate
 from jal.widgets.mdi import MdiWidget
 
@@ -122,6 +123,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
         super().__init__(parent_view)
         self._begin = 0
         self._end = 0
+        self._month_list = []
         self._view = parent_view
         self._root = None
         self._grid_delegate = None
@@ -204,7 +206,11 @@ class IncomeSpendingReportModel(QAbstractItemModel):
         if role == Qt.ForegroundRole:
             if index.column() != 0:
                 year, month = self._root.column2calendar(index.column())
-                if item.getAmount(year, month) == 0:
+                if item.getAmount(year, month) > 0:
+                    return QBrush(CustomColor.DarkGreen)
+                elif item.getAmount(year, month) < 0:
+                    return QBrush(CustomColor.DarkRed)
+                else:
                     return QBrush(CustomColor.Grey)
         if role == Qt.TextAlignmentRole:
             if index.column() == 0:
@@ -244,52 +250,30 @@ class IncomeSpendingReportModel(QAbstractItemModel):
     def setDatesRange(self, begin, end):
         self._begin = begin
         self._end = end
-        self.calculateIncomeSpendings()
+        self._month_list = month_list(begin, end)
+        self.prepareData()
         self.configureView()
 
-    def calculateIncomeSpendings(self):
-        query = JalDB.execSQL("WITH "
-                           "_months AS (SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) "
-                           "AS month, asset_id, MAX(timestamp) AS last_timestamp "
-                           "FROM quotes AS q "
-                           "LEFT JOIN assets AS a ON q.asset_id=a.id "
-                           "WHERE a.type_id=:asset_money "
-                           "GROUP BY month, asset_id), "
-                           "_category_amounts AS ( "
-                           "SELECT strftime('%s', datetime(t.timestamp, 'unixepoch', 'start of month')) AS month_start, "
-                           "t.category_id AS id, sum(-t.amount * coalesce(q.quote, 1)) AS amount "
-                           "FROM ledger AS t "
-                           "LEFT JOIN _months AS d ON month_start = d.month AND t.asset_id = d.asset_id "
-                           "LEFT JOIN quotes AS q ON d.last_timestamp = q.timestamp AND t.asset_id = q.asset_id "
-                           "AND q.currency_id=:base_currency "
-                           "WHERE (t.book_account=:book_costs OR t.book_account=:book_incomes) "
-                           "AND t.timestamp>=:begin AND t.timestamp<=:end "
-                           "GROUP BY month_start, category_id) "
-                           "SELECT ct.level, ct.id, c.pid, c.name, ct.path, ca.month_start, "
-                           "coalesce(ca.amount, 0) AS amount "
-                           "FROM categories_tree AS ct "
-                           "LEFT JOIN _category_amounts AS ca ON ct.id=ca.id "
-                           "LEFT JOIN categories AS c ON ct.id=c.id "
-                           "ORDER BY path, month_start",
-                              [(":asset_money", PredefinedAsset.Money), (":book_costs", BookAccount.Costs),
-                            (":book_incomes", BookAccount.Incomes), (":begin", self._begin), (":end", self._end),
-                            (":base_currency", JalSettings().getValue('BaseCurrency'))], forward_only=True)
+    def prepareData(self):
+        root_category = JalCategory(0)
         self._root = ReportTreeItem(self._begin, self._end, -1, "ROOT")  # invisible root
         self._root.appendChild(ReportTreeItem(self._begin, self._end, 0, self.tr("TOTAL")))  # visible root
-        indexes = range(query.record().count())
-        while query.next():
-            values = list(map(query.value, indexes))
-            leaf = self._root.getLeafById(values[self.COL_ID])
-            if leaf is None:
-                parent = self._root.getLeafById(values[self.COL_PID])
-                leaf = ReportTreeItem(self._begin, self._end, values[self.COL_ID], values[self.COL_NAME], parent)
-                parent.appendChild(leaf)
-            if values[self.COL_TIMESTAMP]:
-                year = int(datetime.utcfromtimestamp(int(values[self.COL_TIMESTAMP])).strftime('%Y'))
-                month = int(datetime.utcfromtimestamp(int(values[self.COL_TIMESTAMP])).strftime('%m').lstrip('0'))
-                leaf.addAmount(year, month, values[self.COL_AMOUNT])
+        self._load_child_amounts(root_category)
         self.modelReset.emit()
         self._view.expandAll()
+
+    def _load_child_amounts(self, parent_category: JalCategory):
+        for category in parent_category.get_child_categories():
+            leaf = self._root.getLeafById(category.id())
+            if leaf is None:
+                parent = self._root.getLeafById(category.parent_id())
+                leaf = ReportTreeItem(self._begin, self._end, category.id(), category.name(), parent)
+                parent.appendChild(leaf)
+            for month in self._month_list:
+                leaf.addAmount(month['year'], month['month'],
+                               category.get_turnover(month['begin_ts'], month['end_ts'],
+                                                     JalSettings().getValue('BaseCurrency')))
+            self._load_child_amounts(category)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
