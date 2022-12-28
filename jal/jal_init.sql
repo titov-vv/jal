@@ -350,37 +350,6 @@ FROM
 ORDER BY m.timestamp, m.seq, m.subtype, m.id;
 
 
--- View: categories_tree
-DROP VIEW IF EXISTS categories_tree;
-CREATE VIEW categories_tree AS
-WITH RECURSIVE tree (
-        id,
-        level,
-        path
-    )
-    AS (
-        SELECT id,
-               0,
-               name
-          FROM categories
-         WHERE pid = 0
-        UNION
-        SELECT categories.id,
-               tree.level + 1 AS level,
-               tree.path || CHAR(127) || categories.name AS path
-          FROM categories
-               JOIN
-               tree
-         WHERE categories.pid = tree.id
-    )
-    SELECT id,
-           level,
-           path
-      FROM tree
-     ORDER BY path;
-
-
-
 -- View: currencies
 DROP VIEW IF EXISTS currencies;
 CREATE VIEW currencies AS
