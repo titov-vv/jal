@@ -1,5 +1,6 @@
 from PySide6.QtCore import Slot, QObject
 from jal.db.ledger import Ledger
+from jal.reports.reports import Reports
 from jal.db.operations import LedgerTransaction
 from jal.db.operations_model import OperationsModel
 from jal.ui.reports.ui_tag_report import Ui_TagReportWidget
@@ -34,10 +35,10 @@ class TagReport(QObject):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class TagReportWindow(MdiWidget, Ui_TagReportWidget):
-    def __init__(self, parent=None):
-        MdiWidget.__init__(self, parent)
+    def __init__(self, parent: Reports, settings: dict = None):
+        MdiWidget.__init__(self, parent.mdi_area())
         self.setupUi(self)
-        self.parent_mdi = parent
+        self._parent = parent
 
         self.tag_model = TagOperationsModel(self.ReportTableView)
         self.ReportTableView.setModel(self.tag_model)

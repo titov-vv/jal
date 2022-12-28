@@ -13,10 +13,13 @@ class Reports(QObject):
     def __init__(self, parent, MdiArea):
         super().__init__()
         self.parent = parent
-        self.mdi = MdiArea
+        self._mdi = MdiArea
 
         self.items = []
         self.loadReportsList()
+
+    def mdi_area(self):
+        return self._mdi
 
     def loadReportsList(self):
         reports_folder = get_app_path() + Setup.REPORT_PATH
@@ -43,8 +46,19 @@ class Reports(QObject):
         report_loader = self.items[action.data()]
         module = report_loader['module']
         class_instance = getattr(module, report_loader['window_class'])
-        report = class_instance(self.mdi)
-        self.mdi.addSubWindow(report, maximized=True)
+        report = class_instance(self)
+        self._mdi.addSubWindow(report, maximized=True)
+
+    def show_report(self, window_class, settings):
+        report = [x for x in self.items if x['window_class'] == window_class]
+        if len(report) != 1:
+            logging.warning(self.tr("Report not found for window class: ") + window_class)
+            return
+        report_loader = report[0]
+        module = report_loader['module']
+        class_instance = getattr(module, report_loader['window_class'])
+        report = class_instance(self, settings)
+        self._mdi.addSubWindow(report, maximized=False)
 
     # FIXME This method is deprecated as now reports are independent and may not have QTableView member
     # The plan is to move this method into XLSX class itself with report data as an input

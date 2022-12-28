@@ -1,9 +1,10 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, Signal, QObject, QDateTime
+from PySide6.QtCore import Qt, Slot, QObject, QDateTime
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu
 from jal.ui.reports.ui_holdings_report import Ui_HoldingsWidget
+from jal.reports.reports import Reports
 from jal.db.settings import JalSettings
 from jal.db.holdings_model import HoldingsModel
 from jal.widgets.mdi import MdiWidget
@@ -23,10 +24,10 @@ class HoldingsReport(QObject):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
-    def __init__(self, parent=None):
-        MdiWidget.__init__(self, parent)
+    def __init__(self, parent: Reports, settings: dict = None):
+        MdiWidget.__init__(self, parent.mdi_area())
         self.setupUi(self)
-        self.parent_mdi = parent
+        self._parent = parent
 
         self.holdings_model = HoldingsModel(self.HoldingsTableView)
         self.HoldingsTableView.setModel(self.holdings_model)
@@ -62,10 +63,10 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
     def showPriceChart(self, index):
         model = index.model()
         account, asset, currency, asset_qty = model.get_data_for_tax(index)
-        self.parent_mdi.addSubWindow(ChartWindow(account, asset, currency, asset_qty))
+        self._parent.mdi_area().addSubWindow(ChartWindow(account, asset, currency, asset_qty))
 
     @Slot()
     def estimateRussianTax(self, index):
         model = index.model()
         account, asset, currency, asset_qty = model.get_data_for_tax(index)
-        self.parent_mdi.addSubWindow(TaxEstimator(account, asset, asset_qty))
+        self._parent.mdi_area().addSubWindow(TaxEstimator(account, asset, asset_qty))

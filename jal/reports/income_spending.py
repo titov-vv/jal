@@ -1,11 +1,14 @@
 from datetime import datetime
-from PySide6.QtCore import Qt, QObject, QAbstractItemModel, QModelIndex
-from PySide6.QtGui import QBrush
+from PySide6.QtCore import Qt, Slot, QObject, QAbstractItemModel, QModelIndex
+from PySide6.QtGui import QAction, QBrush
+from PySide6.QtWidgets import QMenu
+from jal.reports.reports import Reports
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.constants import CustomColor
+from jal.db.helpers import load_icon
 from jal.db.category import JalCategory
 from jal.db.settings import JalSettings
-from jal.widgets.helpers import month_list
+from jal.widgets.helpers import month_list, month_start_ts, month_end_ts
 from jal.widgets.delegates import GridLinesDelegate
 from jal.widgets.mdi import MdiWidget
 
@@ -14,10 +17,12 @@ JAL_REPORT_CLASS = "IncomeSpendingReport"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class ReportTreeItem:
-    def __init__(self, begin, end, id, name, parent=None):
+    def __init__(self, begin, end, item_id, name, parent=None):
         self._parent = parent
-        self._id = id
+        self._id = item_id
         self.name = name
+        self._begin = begin
+        self._end = end
         self._y_s = int(datetime.utcfromtimestamp(begin).strftime('%Y'))
         self._m_s = int(datetime.utcfromtimestamp(begin).strftime('%m').lstrip('0'))
         self._y_e = int(datetime.utcfromtimestamp(end).strftime('%Y'))
@@ -96,6 +101,26 @@ class ReportTreeItem:
         for child in self._children:
             leaf = child.getLeafById(id)
         return leaf
+
+    def details(self, year, month):
+        if month == 0:
+            m_begin = 1
+            m_end = 12
+        else:
+            m_begin = m_end = month
+        if year == 0:
+            begin_ts = self._begin
+            end_ts = self._end
+        else:
+            begin_ts = month_start_ts(year, m_begin) if month_start_ts(year, m_begin) > self._begin else self._begin
+            end_ts = month_end_ts(year, m_end) if month_end_ts(year, m_end) < self._end else self._end
+        item_summary = {
+            'category_id': self._id,
+            'begin_ts': begin_ts,
+            'end_ts': end_ts,
+            'total': self.getAmount(year, month)
+        }
+        return item_summary
 
     @property
     def year_begin(self):
@@ -222,6 +247,10 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                 return int(Qt.AlignLeft)
             else:
                 return int(Qt.AlignRight)
+        if role == Qt.UserRole:  # return category id for given index
+            if index.column() != 0:
+                year, month = self._root.column2calendar(index.column())
+                return item.details(year, month)
         return None
 
     def configureView(self):
@@ -292,12 +321,32 @@ class IncomeSpendingReport(QObject):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpendingReportWindow(MdiWidget, Ui_IncomeSpendingReportWidget):
-    def __init__(self, parent=None):
-        MdiWidget.__init__(self, parent)
+    def __init__(self, parent: Reports):
+        MdiWidget.__init__(self, parent.mdi_area())
         self.setupUi(self)
-        self.parent_mdi = parent
+        self._parent = parent
+        self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
         self.income_spending_model = IncomeSpendingReportModel(self.ReportTreeView)
         self.ReportTreeView.setModel(self.income_spending_model)
+        self.ReportTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
+
+        # Operations view context menu
+        self.contextMenu = QMenu(self.ReportTreeView)
+        self.actionDetails = QAction(load_icon("list.png"), self.tr("Show operations"), self)
+        self.contextMenu.addAction(self.actionDetails)
 
         self.ReportRange.changed.connect(self.ReportTreeView.model().setDatesRange)
+        self.ReportTreeView.customContextMenuRequested.connect(self.onCellContextMenu)
+        self.actionDetails.triggered.connect(self.showDetailsReport)
+
+    @Slot()
+    def onCellContextMenu(self, position):
+        self.current_index = self.ReportTreeView.indexAt(position)
+        if self.current_index.isValid() and self.current_index.column() != 0:
+            self.contextMenu.popup(self.ReportTreeView.viewport().mapToGlobal(position))
+
+    @Slot()
+    def showDetailsReport(self):
+        details = self.income_spending_model.data(self.current_index, Qt.UserRole)
+        self._parent.show_report("CategoryReportWindow", details)

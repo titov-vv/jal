@@ -80,15 +80,23 @@ class DateRangeSelector(QWidget):
         self.from_date.dateChanged.connect(self.onFromChange)
         self.to_date.dateChanged.connect(self.onToChange)
 
-    @Slot()
-    def onRangeChange(self, index):
-        item = self.range_combo.itemData(index)
-        self._begin, self._end = self.report_ranges[item][ITEM_METHOD]()
+    def _update_range(self):
         self.changing_range = True
         self.from_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._begin, spec=Qt.UTC))
         self.to_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._end, spec=Qt.UTC))
         self.changing_range = False
         self.changed.emit(self._begin, self._end)
+
+    def setRange(self, begin_ts, end_ts):
+        self._begin = begin_ts
+        self._end = end_ts
+        self._update_range()
+
+    @Slot()
+    def onRangeChange(self, index):
+        item = self.range_combo.itemData(index)
+        self._begin, self._end = self.report_ranges[item][ITEM_METHOD]()
+        self._update_range()
 
     @Slot()
     def onFromChange(self):

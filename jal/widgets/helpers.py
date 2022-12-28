@@ -36,42 +36,51 @@ def dependency_present(module_list):
             result = False
     return result
 
-
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date and time
 def ts2dt(timestamp: int) -> str:
     return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
-
 
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date
 def ts2d(timestamp: int) -> str:
     return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y')
 
+# -----------------------------------------------------------------------------------------------------------------------
+# returns unix timestamp for the first second of the month/year
+def month_start_ts(year: int, month: int) -> int:
+    start = datetime(year=year, month=month, day=1, hour=0, minute=0, second=0)
+    start = int(start.replace(tzinfo=timezone.utc).timestamp())
+    return start
 
+# -----------------------------------------------------------------------------------------------------------------------
+# returns unix timestamp for the last second of the month/year
+def month_end_ts(year: int, month: int) -> int:
+    start = datetime(year=year, month=month, day=1, hour=0, minute=0, second=0)
+    if month == 12:
+        end = start.replace(year=year + 1, month=1)
+    else:
+        end = start.replace(month=month + 1)
+    end = end - timedelta(seconds=1)
+    end = int(end.replace(tzinfo=timezone.utc).timestamp())
+    return end
+
+# -----------------------------------------------------------------------------------------------------------------------
 # returns a list of dictionaries for each month between 'begin' and 'end' timestamps (including):
 # { year, month, begin_ts, end_ts }
 def month_list(begin: int, end: int) -> list:
     result = []
-    year_start = int(datetime.utcfromtimestamp(begin).strftime('%Y'))
-    month_start = int(datetime.utcfromtimestamp(begin).strftime('%m').lstrip('0'))
+    year_begin = int(datetime.utcfromtimestamp(begin).strftime('%Y'))
+    month_begin = int(datetime.utcfromtimestamp(begin).strftime('%m').lstrip('0'))
     year_end = int(datetime.utcfromtimestamp(end).strftime('%Y'))
     month_end = int(datetime.utcfromtimestamp(end).strftime('%m').lstrip('0'))
-    for year in range(year_start, year_end+1):
-        month1 = month_start if year == year_start else 1
+    for year in range(year_begin, year_end+1):
+        month1 = month_begin if year == year_begin else 1
         month2 = month_end + 1 if year == year_end else 13
         for month in range(month1, month2):
-            start = datetime(year=year, month=month, day=1, hour=0, minute=0, second=0)
-            if month==12:
-                end = start.replace(year=year+1, month=1)
-            else:
-                end = start.replace(month=month+1)
-            end = end - timedelta(seconds=1)
-            start = int(start.replace(tzinfo=timezone.utc).timestamp())
-            end = int(end.replace(tzinfo=timezone.utc).timestamp())
-            result.append({'year': year, 'month': month, 'begin_ts': start, 'end_ts': end})
+            result.append({'year': year, 'month': month,
+                           'begin_ts': month_start_ts(year, month), 'end_ts': month_end_ts(year, month)})
     return result
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Converts QImage class input into PIL.Image output

@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from jal.ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
+from jal.reports.reports import Reports
 from jal.db.db import JalDB
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
@@ -161,10 +162,10 @@ class ProfitLossReport(QObject):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class ProfitLossReportWindow(MdiWidget, Ui_ProfitLossReportWidget):
-    def __init__(self, parent=None):
-        MdiWidget.__init__(self, parent)
+    def __init__(self, parent: Reports, settings: dict = None):
+        MdiWidget.__init__(self, parent.mdi_area())
         self.setupUi(self)
-        self.parent_mdi = parent
+        self._parent = parent
 
         self.category_model = ProfitLossReportModel(self.ReportTableView)
         self.ReportTableView.setModel(self.category_model)

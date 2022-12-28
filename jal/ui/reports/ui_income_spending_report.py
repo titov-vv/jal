@@ -55,6 +55,7 @@ class Ui_IncomeSpendingReportWidget(object):
         self.ReportTreeView.setObjectName(u"ReportTreeView")
         self.ReportTreeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.ReportTreeView.setAlternatingRowColors(True)
+        self.ReportTreeView.setSelectionBehavior(QAbstractItemView.SelectItems)
         self.ReportTreeView.header().setStretchLastSection(False)
 
         self.verticalLayout.addWidget(self.ReportTreeView)
