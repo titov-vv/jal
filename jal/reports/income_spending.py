@@ -41,6 +41,11 @@ class ReportTreeItem:
     def childrenCount(self):
         return len(self._children)
 
+    def removeEmptyChildren(self):
+        for child in self._children:
+            child.removeEmptyChildren()
+        self._children = [x for x in self._children if x.getAmount(0, 0) != 0]
+
     def dataCount(self):
         if self._y_s == self._y_e:
             return self._m_e - self._m_s + 3  # + 1 for year, + 1 for totals
@@ -259,6 +264,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
         self._root = ReportTreeItem(self._begin, self._end, -1, "ROOT")  # invisible root
         self._root.appendChild(ReportTreeItem(self._begin, self._end, 0, self.tr("TOTAL")))  # visible root
         self._load_child_amounts(root_category)
+        self._root.removeEmptyChildren()
         self.modelReset.emit()
         self._view.expandAll()
 
