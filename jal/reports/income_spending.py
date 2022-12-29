@@ -141,14 +141,6 @@ class ReportTreeItem:
 
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpendingReportModel(QAbstractItemModel):
-    COL_LEVEL = 0
-    COL_ID = 1
-    COL_PID = 2
-    COL_NAME = 3
-    COL_PATH = 4
-    COL_TIMESTAMP = 5
-    COL_AMOUNT = 6
-
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._begin = 0
