@@ -30,6 +30,9 @@ class JalClosedTrade(JalDB):
     def asset(self) -> jal.db.asset.JalAsset:
         return self._asset
 
+    def symbol(self) -> str:
+        return self._asset.symbol(self._account.currency())
+
     def open_operation(self):
         return self._open_op
 
@@ -38,3 +41,9 @@ class JalClosedTrade(JalDB):
 
     def qty(self) -> Decimal:
         return self._qty
+
+    def open_price(self) -> Decimal:
+        return self._open_price
+
+    def close_price(self) -> Decimal:
+        return self._close_price

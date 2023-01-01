@@ -144,6 +144,7 @@ class TaxesRus:
                         x.open_operation().subtype() == Dividend.StockVesting))]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
+            # FIXME - it appears all these fields 'rate', 'amount' etc should be part of JalClosedTrade class
             o_rate = currency.quote(trade.open_operation().timestamp(), JalSettings().getValue('BaseCurrency'))[1]
             c_rate = currency.quote(trade.close_operation().timestamp(), JalSettings().getValue('BaseCurrency'))[1]
             if self.use_settlement:
