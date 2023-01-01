@@ -47,3 +47,27 @@ class JalClosedTrade(JalDB):
 
     def close_price(self) -> Decimal:
         return self._close_price
+
+    # Fee of opening part of the deal
+    def open_fee(self) -> Decimal:
+        if self._open_op.type() == jal.db.operations.LedgerTransaction.Trade:
+            return self._open_op.fee() * abs(self._qty / self._open_op.qty())
+        else:
+            return Decimal('0')
+
+    # Fee of closing part of the deal
+    def close_fee(self) -> Decimal:
+        if self._close_op.type() == jal.db.operations.LedgerTransaction.Trade:
+            return self._close_op.fee() * abs(self._qty / self._close_op.qty())
+        else:
+            return Decimal('0')
+
+    # Total fee for the trade
+    def fee(self):
+        return self.open_fee() + self.close_fee()
+
+    def profit(self, percent=False) -> Decimal:
+        profit = self._qty * (self._close_price - self._open_price) - self.fee()
+        if percent:
+            profit = Decimal('100') * profit / (self._qty * self._open_price) if self._open_price else Decimal('0')
+        return profit

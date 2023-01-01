@@ -165,6 +165,7 @@ class TaxesRus:
             o_amount_rub = round(o_amount * os_rate, 2)
             c_amount = round(trade.close_operation().price() * abs(trade.qty()), 2)
             c_amount_rub = round(c_amount * cs_rate, 2)
+            # FIXME use trade.open_fee() and trade.close_fee()
             o_fee = trade.open_operation().fee() * abs(trade.qty() / trade.open_operation().qty())
             c_fee = trade.close_operation().fee() * abs(trade.qty() / trade.close_operation().qty())
             income = c_amount if trade.qty() >= Decimal('0') else o_amount
