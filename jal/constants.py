@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QApplication, QComboBox
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
+    DB_REQUIRED_VERSION = 38
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'
@@ -19,7 +20,6 @@ class Setup:
     STATEMENT_PATH = "broker_statements"
     TEMPLATE_PATH = "templates"
     UPDATE_PREFIX = 'jal_delta_'
-    TARGET_SCHEMA = 38
     DEFAULT_ACCOUNT_PRECISION = 2
 
 

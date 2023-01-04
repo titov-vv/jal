@@ -1896,18 +1896,28 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="268"/>
+        <location filename="../widgets/main_window.py" line="202"/>
+        <source>version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="205"/>
+        <source>github home page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="205"/>
+        <source>More information, manuals and problem reports are at </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="207"/>
+        <source>Questions, comments, help or donations:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="269"/>
         <source>Statement ending balance doesn&apos;t match: </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="208"/>
-        <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, help or donations:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="201"/>
-        <source>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, version {version}&lt;/p&gt;</source>
         <translation></translation>
     </message>
 </context>
@@ -2245,28 +2255,20 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
-    <name>ProfitLossReport</name>
+    <name>ProfitLossModel</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="160"/>
-        <source>P&amp;L by Account</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>ProfitLossReportModel</name>
-    <message>
-        <location filename="../reports/profit_loss.py" line="16"/>
+        <location filename="../reports/profit_loss.py" line="19"/>
         <source>Period</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="17"/>
+        <location filename="../reports/profit_loss.py" line="19"/>
         <source>In / Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="18"/>
-        <source>Assets value</source>
+        <location filename="../reports/profit_loss.py" line="19"/>
+        <source>Assets (begin)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2280,13 +2282,81 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="21"/>
+        <location filename="../reports/profit_loss.py" line="20"/>
         <source>Returns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Taxes &amp; Fees</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Jan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Feb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Mar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Apr</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>May</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Jun</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Jul</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Aug</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Sep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Oct</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Nov</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="25"/>
+        <source>Dec</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ProfitLossReport</name>
+    <message>
+        <location filename="../reports/profit_loss.py" line="105"/>
+        <source>P&amp;L by Account</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

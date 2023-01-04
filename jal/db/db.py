@@ -74,10 +74,10 @@ class JalDB:
             if error.code != JalDBError.NoError:
                 return error
         schema_version = self.readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
-        if schema_version < Setup.TARGET_SCHEMA:
+        if schema_version < Setup.DB_REQUIRED_VERSION:
             db.close()
             return JalDBError(JalDBError.OutdatedDbSchema)
-        elif schema_version > Setup.TARGET_SCHEMA:
+        elif schema_version > Setup.DB_REQUIRED_VERSION:
             db.close()
             return JalDBError(JalDBError.NewerDbSchema)
         self.enable_fk(True)
@@ -216,7 +216,7 @@ class JalDB:
             schema_version = int(version)
         except ValueError:
             return JalDBError(JalDBError.DbInitFailure)
-        for step in range(schema_version, Setup.TARGET_SCHEMA):
+        for step in range(schema_version, Setup.DB_REQUIRED_VERSION):
             delta_file = db_path + Setup.UPDATES_PATH + os.sep + Setup.UPDATE_PREFIX + f"{step + 1}.sql"
             logging.info(f"Applying delta schema {step}->{step + 1} from {delta_file}")
             error = self.run_sql_script(delta_file)

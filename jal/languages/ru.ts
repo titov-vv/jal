@@ -1900,19 +1900,29 @@ Application will be terminated now</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="268"/>
+        <location filename="../widgets/main_window.py" line="202"/>
+        <source>version</source>
+        <translation>версия</translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="205"/>
+        <source>github home page</source>
+        <translation>домашней странице github</translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="205"/>
+        <source>More information, manuals and problem reports are at </source>
+        <translation type="unfinished">Дополнительная информация, инструкции, сообщения о проблемах - на </translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="207"/>
+        <source>Questions, comments, help or donations:</source>
+        <translation>Вопросы, комментарии, помощь или донаты:</translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="269"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="208"/>
-        <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, help or donations:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</source>
-        <translation>&amp;lt;p&amp;gt;Дополнительная информация, инструкции, сообщения о проблемах - &amp;lt;a href=https://github.com/titov-vv/jal&amp;gt;github home page&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;Вопросы, комментарии, помощь или донаты:&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;&amp;lt;a href=mailto:jal@gmx.ru&amp;gt;jal@gmx.ru&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;&amp;lt;a href=https://t.me/jal_support&amp;gt;Telegram&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;</translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="201"/>
-        <source>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, version {version}&lt;/p&gt;</source>
-        <translation>&amp;lt;h3&amp;gt;JAL&amp;lt;/h3&amp;gt;&amp;lt;p&amp;gt;Just Another Ledger, версия {version}&amp;lt;/p&amp;gt;</translation>
     </message>
 </context>
 <context>
@@ -2249,29 +2259,21 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
-    <name>ProfitLossReport</name>
+    <name>ProfitLossModel</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="160"/>
-        <source>P&amp;L by Account</source>
-        <translation>ПиУ по счёту</translation>
-    </message>
-</context>
-<context>
-    <name>ProfitLossReportModel</name>
-    <message>
-        <location filename="../reports/profit_loss.py" line="16"/>
+        <location filename="../reports/profit_loss.py" line="19"/>
         <source>Period</source>
         <translation>Период</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="17"/>
+        <location filename="../reports/profit_loss.py" line="19"/>
         <source>In / Out</source>
         <translation>Ввод / Вывод</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="18"/>
-        <source>Assets value</source>
-        <translation>Оценка активов</translation>
+        <location filename="../reports/profit_loss.py" line="19"/>
+        <source>Assets (begin)</source>
+        <translation>Активы (начало)</translation>
     </message>
     <message>
         <location filename="../reports/profit_loss.py" line="19"/>
@@ -2284,14 +2286,82 @@ Application will be terminated now</source>
         <translation>Прибыль / Убыток</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="21"/>
+        <location filename="../reports/profit_loss.py" line="20"/>
         <source>Returns</source>
         <translation>Выплаты</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Taxes &amp; Fees</source>
         <translation>Налоги и комиссии</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Jan</source>
+        <translation>Янв</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Feb</source>
+        <translation>Фев</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Mar</source>
+        <translation>Мар</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Apr</source>
+        <translation>Апр</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>May</source>
+        <translation>Май</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Jun</source>
+        <translation>Июн</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Jul</source>
+        <translation>Июл</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Aug</source>
+        <translation>Авг</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Sep</source>
+        <translation>Сен</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Oct</source>
+        <translation>Окт</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Nov</source>
+        <translation>Ноя</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="25"/>
+        <source>Dec</source>
+        <translation>Дек</translation>
+    </message>
+</context>
+<context>
+    <name>ProfitLossReport</name>
+    <message>
+        <location filename="../reports/profit_loss.py" line="105"/>
+        <source>P&amp;L by Account</source>
+        <translation>ПиУ по счёту</translation>
     </message>
 </context>
 <context>

@@ -198,14 +198,15 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         about_box = QMessageBox(self)
         about_box.setAttribute(Qt.WA_DeleteOnClose)
         about_box.setWindowTitle(self.tr("About"))
-        title = self.tr("<h3>JAL</h3><p>Just Another Ledger, version {version}</p>".format(version=__version__))
+        version = f"{__version__} (db{Setup.DB_REQUIRED_VERSION})"
+        title = "<h3>JAL</h3><p>Just Another Ledger, " + self.tr("version") + " " + version +"</p>"
         about_box.setText(title)
-        about = self.tr("<p>More information, manuals and problem reports are at "
-                        "<a href=https://github.com/titov-vv/jal>github home page</a></p>"
-                        "<p>Questions, comments, help or donations:</p>"
-                        "<p><a href=mailto:jal@gmx.ru>jal@gmx.ru</a></p>"
-                        "<p><a href=https://t.me/jal_support>Telegram</a></p>")
-        about_box.setInformativeText(about)
+        about_text = "<p>" + self.tr("More information, manuals and problem reports are at ") + \
+                     "<a href=https://github.com/titov-vv/jal>" + self.tr("github home page") + "</a></p><p>" + \
+                     self.tr("Questions, comments, help or donations:") + \
+                     "</p><p><a href=mailto:jal@gmx.ru>jal@gmx.ru</a></p>" + \
+                     "<p><a href=https://t.me/jal_support>Telegram</a></p>"
+        about_box.setInformativeText(about_text)
         about_box.show()
 
     def showProgressBar(self, visible=False):
