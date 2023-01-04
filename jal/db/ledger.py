@@ -10,7 +10,7 @@ from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
-from jal.db.operations import LedgerTransaction
+from jal.db.operations import LedgerTransaction, LedgerError
 from jal.widgets.helpers import ts2dt, ts2d
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
@@ -256,7 +256,10 @@ class Ledger(QObject):
             if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
                 raise e
             exception_happened = True
-            logging.error(f"{traceback.format_exc()}")
+            if type(e) == LedgerError:
+                logging.error(e)   # Short log for ledger custom exception
+            else:
+                logging.error(f"{traceback.format_exc()}")  # and full log for anything unexpected
         finally:
             if fast_and_dirty:
                 JalDB().set_synchronous(True)

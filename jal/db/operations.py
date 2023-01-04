@@ -10,6 +10,12 @@ from jal.widgets.helpers import ts2dt
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Class to define and handle custom ledger errors
+class LedgerError(Exception):
+    pass
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class LedgerTransaction:
     NA = 0                  # Transaction types - these are aligned with tabs in main window
     IncomeSpending = 1
@@ -346,8 +352,7 @@ class IncomeSpending(LedgerTransaction):
 
     def processLedger(self, ledger):
         if len(self._details) == 0:
-            self.dump()
-            raise ValueError(self.tr("Can't process operation without details"))
+            raise LedgerError(self.tr("Can't process operation without details") + f"  Operation: {self.dump()}")
         if self._amount < Decimal('0'):
             credit_taken = ledger.takeCredit(self, self._account.id(), -self._amount)
             ledger.appendTransaction(self, BookAccount.Money, -(-self._amount - credit_taken))
@@ -509,7 +514,7 @@ class Dividend(LedgerTransaction):
 
     def processLedger(self, ledger):
         if self._broker is None:
-            raise ValueError(
+            raise LedgerError(
                 self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
         if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
             self.processStockDividendOrVesting(ledger)
@@ -519,7 +524,7 @@ class Dividend(LedgerTransaction):
         elif self._subtype == Dividend.BondInterest:
             category = PredefinedCategory.Interest
         else:
-            raise ValueError(self.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
+            raise LedgerError(self.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
         operation_value = (self._amount - self._tax)
         if operation_value > Decimal('0'):
             credit_returned = ledger.returnCredit(self, self._account.id(), operation_value)
@@ -650,9 +655,8 @@ class Trade(LedgerTransaction):
 
     def processLedger(self, ledger):
         if self._broker is None:
-            raise ValueError(
+            raise LedgerError(
                 self.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
-
         deal_sign = Decimal('1.0').copy_sign(self._qty)  # 1 is buy and -1 is sell operation
         qty = abs(self._qty)
         trade_value = self._price * qty + deal_sign * self._fee
@@ -874,14 +878,14 @@ class Transfer(LedgerTransaction):
         if self._display_type == Transfer.Outgoing:   # Withdraw asset from source account
             asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account.id(), self._asset.id())
             if asset_amount < self._withdrawal:
-                raise ValueError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
-                                 + f"{ts2dt(self._withdrawal_timestamp)}, "
-                                 + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
+                raise LedgerError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
+                                  + f"{ts2dt(self._withdrawal_timestamp)}, "
+                                  + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
             processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._withdrawal, None)
             if processed_qty < self._withdrawal:
-                raise ValueError(self.tr("Processed asset amount is less than transfer amount. Date: ")
-                                 + f"{ts2dt(self._withdrawal_timestamp)}, "
-                                 + f"Processed amount: {asset_amount}, Operation: {self.dump()}")
+                raise LedgerError(self.tr("Processed asset amount is less than transfer amount. Date: ")
+                                  + f"{ts2dt(self._withdrawal_timestamp)}, "
+                                  + f"Processed amount: {asset_amount}, Operation: {self.dump()}")
             if self._withdrawal_currency == JalSettings().getValue('BaseCurrency'):
                 currency_rate = Decimal('1.0')
             else:
@@ -898,7 +902,7 @@ class Transfer(LedgerTransaction):
                                   [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype),
                                     (":id", self._oid)], check_unique=True)
             if not value:
-                raise ValueError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
+                raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
             else:
                 value = Decimal(value)
             if self._deposit_currency == JalSettings().getValue('BaseCurrency'):
@@ -1071,22 +1075,22 @@ class CorporateAction(LedgerTransaction):
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
         if asset_amount < self._qty:
-            raise ValueError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
+            raise LedgerError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
                              + f"{ts2dt(self._timestamp)}, "
                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         if asset_amount > self._qty:
-            raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
-                             + f"{ts2dt(self._timestamp)}, "
-                             + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
+            raise LedgerError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
+                              + f"{ts2dt(self._timestamp)}, "
+                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         # Calculate total asset allocation after corporate action and verify it equals 100%
         allocation = Decimal('0')
         query = JalDB.execSQL("SELECT value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
             allocation += Decimal(JalDB.readSQLrecord(query))
         if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
-            raise ValueError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
-                                     + f"Date: {ts2dt(self._timestamp)}, "
-                                     + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
+            raise LedgerError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
+                                      + f"Date: {ts2dt(self._timestamp)}, "
+                                      + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._qty, None)
         # Withdraw value with old quantity of old asset
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,

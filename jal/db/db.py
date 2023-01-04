@@ -79,7 +79,8 @@ class JalDB:
             return JalDBError(JalDBError.OutdatedDbSchema)
         elif schema_version > Setup.DB_REQUIRED_VERSION:
             db.close()
-            return JalDBError(JalDBError.NewerDbSchema)
+            return JalDBError(JalDBError.NewerDbSchema,
+                              details=f"(expected: {Setup.DB_REQUIRED_VERSION}, got: {schema_version})")
         self.enable_fk(True)
         self.enable_triggers(True)
 
@@ -215,7 +216,7 @@ class JalDB:
         try:
             schema_version = int(version)
         except ValueError:
-            return JalDBError(JalDBError.DbInitFailure)
+            return JalDBError(JalDBError.DbInitFailure, details=f"(db schema: {version}")
         for step in range(schema_version, Setup.DB_REQUIRED_VERSION):
             delta_file = db_path + Setup.UPDATES_PATH + os.sep + Setup.UPDATE_PREFIX + f"{step + 1}.sql"
             logging.info(f"Applying delta schema {step}->{step + 1} from {delta_file}")
