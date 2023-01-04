@@ -1,155 +1,100 @@
-from PySide6.QtCore import Qt, Slot, QObject
-from PySide6.QtSql import QSqlTableModel
+from decimal import Decimal
+from PySide6.QtCore import Qt, Slot, QObject, QAbstractTableModel
 from jal.ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
 from jal.reports.reports import Reports
-from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.constants import BookAccount, PredefinedCategory
-from jal.widgets.delegates import FloatDelegate, TimestampDelegate
+from jal.widgets.helpers import month_list
+from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
 
 JAL_REPORT_CLASS = "ProfitLossReport"
+# TODO This report should be improved with more relevant data columns and tree structure for grouping by years
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-class ProfitLossReportModel(QSqlTableModel):
+class ProfitLossModel(QAbstractTableModel):
     def __init__(self, parent_view):
-        self._columns = [("period", self.tr("Period")),
-                         ("transfer", self.tr("In / Out")),
-                         ("assets", self.tr("Assets value")),
-                         ("result", self.tr("Total result")),
-                         ("profit", self.tr("Profit / Loss")),
-                         ("dividend", self.tr("Returns")),
-                         ("tax_fee", self.tr("Taxes & Fees"))]
+        super().__init__(parent_view)
+        self._columns = [self.tr("Period"), self.tr("In / Out"), self.tr("Assets (begin)"),self.tr("Total result"),
+                         self.tr("Profit / Loss"), self.tr("Returns"), self.tr("Taxes & Fees")]
+        self.month_name = [
+            self.tr('Jan'), self.tr('Feb'), self.tr('Mar'), self.tr('Apr'), self.tr('May'), self.tr('Jun'),
+            self.tr('Jul'), self.tr('Aug'), self.tr('Sep'), self.tr('Oct'), self.tr('Nov'), self.tr('Dec')
+        ]
         self._view = parent_view
+        self._data = []
+        self._month_list = []
         self._begin = 0
         self._end = 0
         self._account_id = 0
-        self._query = None
-        self._ym_delegate = None
         self._float_delegate = None
-        QSqlTableModel.__init__(self, parent=parent_view, db=JalDB.connection())
 
-    def setColumnNames(self):
-        for column in self._columns:
-            self.setHeaderData(self.fieldIndex(column[0]), Qt.Horizontal, column[1])
+    def rowCount(self, parent=None):
+        return len(self._data)
 
-    def resetDelegates(self):
-        for column in self._columns:
-            self._view.setItemDelegateForColumn(self.fieldIndex(column[0]), None)
+    def columnCount(self, parent=None):
+        return len(self._columns)
 
-    def configureView(self):
-        self._view.setModel(self)
-        self.setColumnNames()
-        self.resetDelegates()
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
-        self._view.setColumnWidth(self.fieldIndex("period"),
-                                  self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
-        self._ym_delegate = TimestampDelegate(display_format='%Y %B')
-        self._view.setItemDelegateForColumn(self.fieldIndex("period"), self._ym_delegate)
-        self._float_delegate = FloatDelegate(2, allow_tail=False)
-        self._view.setItemDelegateForColumn(self.fieldIndex("transfer"), self._float_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("assets"), self._float_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("result"), self._float_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("profit"), self._float_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("dividend"), self._float_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("tax_fee"), self._float_delegate)
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self._columns[section]
+        return None
+
+    def data(self, index, role=Qt.DisplayRole, field=''):
+        if role == Qt.DisplayRole:
+            return self._data[index.row()][index.column()]
 
     def setDatesRange(self, begin, end):
         self._begin = begin
         self._end = end
-        self.calculateProfitLossReport()
+        self._month_list = month_list(begin, end)
+        self.prepareData()
         self.configureView()
 
     def setAccount(self, account_id):
         self._account_id = account_id
-        self.calculateProfitLossReport()
+        self.prepareData()
         self.configureView()
 
-    def calculateProfitLossReport(self):
-        if self._account_id == 0:
-            return
-        self._query = JalDB.execSQL(
-            "WITH "
-            "_months AS ("
-            "SELECT DISTINCT(l.asset_id) AS asset_id, m.m_start AS month, MAX(q.timestamp) AS last_timestamp "
-            "FROM ledger AS l "
-            "LEFT JOIN "
-            "(WITH RECURSIVE months(m_start) AS "
-            "( "
-            "  VALUES(CAST(strftime('%s', date(:begin, 'unixepoch', 'start of month')) AS INTEGER)) "
-            "  UNION ALL "
-            "  SELECT CAST(strftime('%s', date(m_start, 'unixepoch', '+1 month')) AS INTEGER) "
-            "  FROM months "
-            "  WHERE m_start < :end "
-            ") "
-            "SELECT m_start FROM months) AS m "
-            "LEFT JOIN accounts AS a ON l.account_id=a.id "
-            "LEFT JOIN quotes AS q ON q.timestamp<=m.m_start AND q.asset_id=l.asset_id AND q.currency_id=a.currency_id "
-            "WHERE l.timestamp>=:begin AND l.timestamp<=:end AND l.account_id=:account_id "
-            "GROUP BY m.m_start, l.asset_id "
-            "ORDER BY m.m_start, l.asset_id ) "
-            "SELECT DISTINCT(m.month) AS period, coalesce(t.transfer, 0) AS transfer, coalesce(a.assets, 0) AS assets, "
-            "coalesce(p.result, 0) AS result, coalesce(o.profit, 0) AS profit, coalesce(d.dividend, 0) AS dividend, "
-            "coalesce(f.tax_fee, 0) AS tax_fee "
-            "FROM _months AS m "
-            "LEFT JOIN ( "
-            "  SELECT mt.month, SUM(-l.amount) AS transfer "
-            "  FROM _months AS mt "
-            "  LEFT JOIN ledger AS l ON mt.month = "
-            "  CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) "
-            "  AND mt.asset_id=l.asset_id "
-            "  WHERE l.book_account=:book_transfers AND l.account_id=:account_id GROUP BY mt.month "
-            ") AS t ON t.month = m.month "
-            "LEFT JOIN ( "
-            "  SELECT ma.month, SUM(l.amount*q.quote) AS assets "
-            "  FROM _months AS ma "
-            "  LEFT JOIN ledger AS l ON l.timestamp<=ma.month AND l.asset_id=ma.asset_id "
-            "  LEFT JOIN accounts AS a ON l.account_id=a.id "
-            "  LEFT JOIN quotes AS q ON ma.last_timestamp=q.timestamp AND ma.asset_id=q.asset_id AND q.currency_id=a.currency_id "
-            "  WHERE l.account_id =:account_id AND (l.book_account=:book_money OR l.book_account=:book_assets) "
-            "  GROUP BY ma.month "
-            ") AS a ON a.month = m.month "
-            "LEFT JOIN ( "
-            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) AS month,"
-            "  SUM(-l.amount) as result"
-            "  FROM ledger AS l  "
-            "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) AND l.account_id=:account_id "
-            "  GROUP BY month "
-            ") AS p ON p.month = m.month "
-            "LEFT JOIN ( "
-            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) "
-            "  AS INTEGER) AS month, SUM(-l.amount) as profit "
-            "  FROM ledger AS l "
-            "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) "
-            "  AND category_id=:category_profit AND l.account_id=:account_id "
-            "  GROUP BY month "
-            ") AS o ON o.month = m.month "
-            "LEFT JOIN ( "
-            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) "
-            "  AS month, SUM(-l.amount) as dividend "
-            "  FROM ledger AS l "
-            "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) "
-            "  AND (l.category_id=:category_dividend OR l.category_id=:category_interest) AND l.account_id=:account_id "
-            "  GROUP BY month "
-            ") AS d ON d.month = m.month "
-            "LEFT JOIN ( "
-            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) "
-            "  AS INTEGER) AS month, SUM(-l.amount) as tax_fee "
-            "  FROM ledger AS l "
-            "  WHERE l.book_account=:book_costs AND l.category_id<>:category_dividend "
-            "AND l.category_id<>:category_interest AND l.account_id=:account_id "
-            "  GROUP BY month "
-            ") AS f ON f.month = m.month",
-            [(":account_id", self._account_id), (":begin", self._begin), (":end", self._end),
-             (":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
-             (":book_money", BookAccount.Money), (":book_assets", BookAccount.Assets),
-             (":book_transfers", BookAccount.Transfers), (":category_profit", PredefinedCategory.Profit),
-             (":category_dividend", PredefinedCategory.Dividends), (":category_interest", PredefinedCategory.Interest)],
-            forward_only=False)
-        self.setQuery(self._query)
+    def prepareData(self):
+        self._data = []
+        account = JalAccount(self._account_id)
+        for month in self._month_list:
+            assets = account.assets_list(month['begin_ts'])
+            asset_value = Decimal('0')
+            for asset_data in assets:
+                asset = asset_data['asset']
+                asset_value += asset_data['amount'] * asset.quote(month['begin_ts'], account.currency())[1]
+            result = account.get_book_turnover(BookAccount.Costs, month['begin_ts'], month['end_ts']) + \
+                     account.get_book_turnover(BookAccount.Incomes, month['begin_ts'], month['end_ts'])
+            interest = account.get_category_turnover(PredefinedCategory.Dividends, month['begin_ts'], month['end_ts']) + \
+                       account.get_category_turnover(PredefinedCategory.Interest, month['begin_ts'], month['end_ts'])
+            fee_tax = account.get_category_turnover(PredefinedCategory.Fees, month['begin_ts'], month['end_ts']) + \
+                       account.get_category_turnover(PredefinedCategory.Taxes, month['begin_ts'], month['end_ts'])
+            data_row = [
+                f"{month['year']} {self.month_name[month['month'] - 1]}",
+                -account.get_book_turnover(BookAccount.Transfers, month['begin_ts'], month['end_ts']),
+                asset_value,
+                -result,
+                -account.get_category_turnover(PredefinedCategory.Profit, month['begin_ts'], month['end_ts']),
+                -interest,
+                -fee_tax]
+            self._data.append(data_row)
         self.modelReset.emit()
+
+    def configureView(self):
+        self._view.setModel(self)
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+        self._float_delegate = FloatDelegate(2, allow_tail=False, colors=True)
+        self._view.setItemDelegateForColumn(1, self._float_delegate)
+        self._view.setItemDelegateForColumn(2, self._float_delegate)
+        self._view.setItemDelegateForColumn(3, self._float_delegate)
+        self._view.setItemDelegateForColumn(4, self._float_delegate)
+        self._view.setItemDelegateForColumn(5, self._float_delegate)
+        self._view.setItemDelegateForColumn(6, self._float_delegate)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -167,8 +112,8 @@ class ProfitLossReportWindow(MdiWidget, Ui_ProfitLossReportWidget):
         self.setupUi(self)
         self._parent = parent
 
-        self.category_model = ProfitLossReportModel(self.ReportTableView)
-        self.ReportTableView.setModel(self.category_model)
+        self.pl_model = ProfitLossModel(self.ReportTableView)
+        self.ReportTableView.setModel(self.pl_model)
 
         self.connect_signals_and_slots()
 

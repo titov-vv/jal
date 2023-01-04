@@ -166,6 +166,20 @@ class JalAccount(JalDB):
             amount = Decimal(value) if value is not None else Decimal('0')
             return amount
 
+    def get_book_turnover(self, book, begin, end) -> Decimal:
+        value = self.readSQL("SELECT SUM(amount) FROM ledger WHERE account_id=:account_id AND book_account=:book "
+                             "AND timestamp>=:begin AND timestamp<=:end",
+                             [(":account_id", self._id), (":book", book), (":begin", begin), (":end", end)])
+        value = Decimal(value) if value else Decimal('0')
+        return value
+
+    def get_category_turnover(self, category_id, begin, end) -> Decimal:
+        value = self.readSQL("SELECT SUM(amount) FROM ledger WHERE account_id=:account_id AND category_id=:category "
+                             "AND timestamp>=:begin AND timestamp<=:end",
+                             [(":account_id", self._id), (":category", category_id), (":begin", begin), (":end", end)])
+        value = Decimal(value) if value else Decimal('0')
+        return value
+
     # Returns a list of JalClosedTrade objects recorded for the account
     def closed_trades_list(self) -> list:
         trades = []
