@@ -67,6 +67,7 @@ class DateTimeEditWithReset(QDateTimeEdit):
 class TimestampDelegate(QStyledItemDelegate):
     def __init__(self, display_format='%d/%m/%Y %H:%M:%S', parent=None):
         QStyledItemDelegate.__init__(self, parent)
+        self._parent = parent
         self._format = display_format
 
     def displayText(self, value, locale):
@@ -94,6 +95,18 @@ class TimestampDelegate(QStyledItemDelegate):
     def setModelData(self, editor, model, index):
         timestamp = editor.dateTime().toSecsSinceEpoch()
         model.setData(index, timestamp)
+
+    def paint(self, painter, option, index):
+        super().paint(painter, option, index)
+        if type(self._parent) == QTreeView:    # Extra code for tree views - to draw grid lines
+            painter.save()
+            pen = painter.pen()
+            pen.setWidth(1)
+            pen.setStyle(Qt.DotLine)
+            pen.setColor(Qt.GlobalColor.lightGray)
+            painter.setPen(pen)
+            painter.drawRect(option.rect)
+            painter.restore()
 
 
 # -----------------------------------------------------------------------------------------------------------------------
