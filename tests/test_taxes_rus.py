@@ -1,6 +1,6 @@
 import json
 import os
-from pytest import approx
+from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
@@ -9,6 +9,7 @@ from tests.helpers import create_assets, create_quotes, create_dividends, create
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.db.operations import CorporateAction, Dividend
 from jal.data_export.taxes import TaxesRus
 from jal.data_export.taxes_flow import TaxesFlowRus
@@ -199,8 +200,9 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
 
-    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE asset_id=4") == approx(49.71)
+    trades = JalAccount(1).closed_trades_list()
+    assert len(trades) == 1
+    assert trades[0].profit() == Decimal('49.71')
 
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)

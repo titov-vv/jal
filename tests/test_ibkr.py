@@ -4,6 +4,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
 from jal.db.ledger import Ledger
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.constants import PredefinedAsset
 
 
@@ -175,7 +176,7 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     assert JalDB.readSQL("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == ['0', '0']
 
     # Check correct number of deals
-    assert JalDB.readSQL("SELECT COUNT(*) FROM deals_ext") == 6
+    assert len(JalAccount(1).closed_trades_list()) == 6
 
 
 # ----------------------------------------------------------------------------------------------------------------------

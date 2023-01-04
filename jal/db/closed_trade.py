@@ -15,14 +15,27 @@ class JalClosedTrade(JalDB):
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
             self._asset = jal.db.asset.JalAsset(self._data['asset_id'])
-            self._open_op = jal.db.operations.LedgerTransaction.get_operation(self._data['open_op_type'], self._data['open_op_id'])
-            self._close_op = jal.db.operations.LedgerTransaction.get_operation(self._data['close_op_type'], self._data['close_op_id'])
+            self._open_op = jal.db.operations.LedgerTransaction.get_operation(self._data['open_op_type'], self._data['open_op_id'], jal.db.operations.Transfer.Incoming)
+            self._close_op = jal.db.operations.LedgerTransaction.get_operation(self._data['close_op_type'], self._data['close_op_id'], jal.db.operations.Transfer.Outgoing)
             self._open_price = Decimal(self._data['open_price'])
             self._close_price = Decimal(self._data['close_price'])
             self._qty = Decimal(self._data['qty'])
         else:
             self._account = self._asset = self._open_op = self._close_op = None
             self._open_price = self._close_price = self._qty = Decimal('0')
+
+    def dump(self) -> list:
+        return [
+            self._asset.symbol(self._account.currency()),
+            self._open_op.timestamp(),
+            self._close_op.timestamp(),
+            self._open_price,
+            self._close_price,
+            self._qty,
+            self.fee(),
+            self.profit(),
+            self.profit(percent=True)
+        ]
 
     def id(self) -> int:
         return self._id

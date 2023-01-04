@@ -1,6 +1,8 @@
+from decimal import Decimal
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from jal.db.ledger import Ledger
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.db.operations import CorporateAction
 from tests.helpers import create_stocks, create_quotes, create_trades, create_corporate_actions
 
@@ -39,7 +41,9 @@ def test_spin_off(prepare_db_fifo):
     assert JalDB.readSQL("SELECT * FROM ledger WHERE asset_id=4 AND timestamp<1628615520 ORDER BY id DESC LIMIT 1") == [11, 1627819200, 5, 2, 4, 4, 1, '13', '1452', '13', '1452', '', '', '']
     assert JalDB.readSQL("SELECT * FROM ledger WHERE asset_id=5 AND timestamp<1628615520 ORDER BY id DESC LIMIT 1") == [7, 1622548800, 5, 1, 4, 5, 1, '5', '0', '5', '0', '', '', '']
     assert JalDB.readSQL("SELECT * FROM ledger WHERE book_account=3 AND timestamp<1628615520 ORDER BY id DESC LIMIT 1") == [8, 1625140800, 3, 2, 3, 2, 1, '-52', '0', '8548', '0', '', '', '']
-    assert JalDB.readSQL("SELECT profit FROM deals_ext WHERE close_timestamp>=1629047520") == 498.0
+    trades = [x for x in JalAccount(1).closed_trades_list() if x.close_operation().timestamp()>=1629047520]
+    assert len(trades) == 1
+    assert trades[0].profit() == Decimal('497.9999999999999999999999999')
 
 
 def test_symbol_change(prepare_db_fifo):
@@ -65,8 +69,9 @@ def test_symbol_change(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert JalDB.readSQL("SELECT * FROM deals_ext WHERE asset_id=4") == [1, 'Inv. Account', 4, 'A', 1619870400, 1622548800, '1E+1', '1E+1', '1E+2', 0.0, 0.0, 0.0, -3]
-    assert JalDB.readSQL("SELECT * FROM deals_ext WHERE asset_id=5") == [1, 'Inv. Account', 5, 'B', 1622548800, 1625140800, '1E+1', '2E+1', '1E+2', 0.0, 1000.0, 100.0, 3]
+    trades = JalAccount(1).closed_trades_list()
+    assert trades[0].dump() == ['A', 1619870400, 1622548800, Decimal('1E+1'), Decimal('1E+1'), Decimal('1E+2'), Decimal('0'), Decimal('0'), Decimal('0')]
+    assert trades[1].dump() == ['B', 1622548800, 1625140800, Decimal('1E+1'), Decimal('2E+1'), Decimal('1E+2'), Decimal('0'), Decimal('1000'), Decimal('100')]
 
 
 def test_delisting(prepare_db_fifo):
@@ -86,6 +91,9 @@ def test_delisting(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert JalDB.readSQL("SELECT * FROM deals_ext WHERE asset_id=4") == [1, 'Inv. Account', 4, 'A', 1619870400, 1622548800, '1E+1', '1E+1', '1E+2', 0.0, 0.0, 0.0, -5]
+    trades = JalAccount(1).closed_trades_list()
+    assert len(trades) == 1
+    assert trades[0].dump() == ['A', 1619870400, 1622548800, Decimal('1E+1'), Decimal('1E+1'), Decimal('1E+2'), Decimal('0'), Decimal('0'), Decimal('0')]
+
     assert JalDB.readSQL("SELECT * FROM ledger_totals WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == [5, 5, 1, 1622548800, 4, 4, 1, '0', '0']
     assert JalDB.readSQL("SELECT * FROM ledger WHERE book_account=1") == [6, 1622548800, 5, 1, 1, 2, 1, '1E+3', '0', '1E+3', '0', 1, 9, '']
