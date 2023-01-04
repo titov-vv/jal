@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication, QComboBox
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 38
+    DB_REQUIRED_VERSION = 39
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'
