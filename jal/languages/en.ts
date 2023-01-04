@@ -328,44 +328,107 @@
     </message>
 </context>
 <context>
+    <name>ClosedTradesModel</name>
+    <message>
+        <location filename="../reports/deals.py" line="142"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="143"/>
+        <source>Open Date/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="144"/>
+        <source>Open Date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="145"/>
+        <source>Close Date/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="146"/>
+        <source>Close Date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="147"/>
+        <source>Open Price</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="148"/>
+        <source>Close Price</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="149"/>
+        <source>Qty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="150"/>
+        <source>Fee</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="151"/>
+        <source>P/L</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="152"/>
+        <source>P/L, %</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="153"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="956"/>
+        <location filename="../db/operations.py" line="960"/>
         <source>Symbol change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="957"/>
+        <location filename="../db/operations.py" line="961"/>
         <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="958"/>
+        <location filename="../db/operations.py" line="962"/>
         <source>Spin-off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="959"/>
+        <location filename="../db/operations.py" line="963"/>
         <source>Merger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="962"/>
+        <location filename="../db/operations.py" line="966"/>
         <source>Delisting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1070"/>
+        <location filename="../db/operations.py" line="1075"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1074"/>
+        <location filename="../db/operations.py" line="1079"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1083"/>
+        <location filename="../db/operations.py" line="1088"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
     </message>
@@ -609,91 +672,8 @@
 <context>
     <name>DealsReport</name>
     <message>
-        <location filename="../reports/deals.py" line="149"/>
+        <location filename="../reports/deals.py" line="295"/>
         <source>Deals by Account</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DealsReportModel</name>
-    <message>
-        <location filename="../reports/deals.py" line="16"/>
-        <source>Asset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="17"/>
-        <source>Open Date</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="18"/>
-        <source>Close Date</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="19"/>
-        <source>Open Price</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="20"/>
-        <source>Close Price</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="21"/>
-        <source>Qty</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="22"/>
-        <source>Fee</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="23"/>
-        <source>P/L</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="24"/>
-        <source>P/L, %</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="25"/>
-        <source>Note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="27"/>
-        <source>Symbol change</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="28"/>
-        <source>Split</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="29"/>
-        <source>Spin-off</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="32"/>
-        <source>Merger</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="62"/>
-        <source> Opened with </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="64"/>
-        <source> Closed with </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -706,12 +686,45 @@
     </message>
     <message>
         <location filename="../ui/reports/deals_report.ui" line="66"/>
-        <source>Group dates</source>
+        <source>Group by:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/deals_report.ui" line="73"/>
+        <location filename="../ui/reports/deals_report.ui" line="76"/>
         <source>Account:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DealsReportWindow</name>
+    <message>
+        <location filename="../reports/deals.py" line="306"/>
+        <source>&lt;None&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="307"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="308"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="309"/>
+        <source>Asset - Open - Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="310"/>
+        <source>Open - Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="311"/>
+        <source>Close - Open</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -741,27 +754,27 @@
 <context>
     <name>Dividend</name>
     <message>
-        <location filename="../db/operations.py" line="470"/>
+        <location filename="../db/operations.py" line="474"/>
         <source>Tax: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="509"/>
+        <location filename="../db/operations.py" line="513"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="518"/>
+        <location filename="../db/operations.py" line="522"/>
         <source>Unsupported dividend type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="540"/>
+        <location filename="../db/operations.py" line="544"/>
         <source>Not supported action: stock dividend or vesting closes short trade.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="450"/>
+        <location filename="../db/operations.py" line="454"/>
         <source>No stock quote for stock dividend or vesting.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1222,12 +1235,12 @@
 <context>
     <name>IncomeSpending</name>
     <message>
-        <location filename="../db/operations.py" line="310"/>
+        <location filename="../db/operations.py" line="314"/>
         <source>Rate: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="346"/>
+        <location filename="../db/operations.py" line="350"/>
         <source>Can&apos;t process operation without details</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1235,7 +1248,7 @@
 <context>
     <name>IncomeSpendingReport</name>
     <message>
-        <location filename="../reports/income_spending.py" line="319"/>
+        <location filename="../reports/income_spending.py" line="311"/>
         <source>Income/Spending</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1243,68 +1256,68 @@
 <context>
     <name>IncomeSpendingReportModel</name>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>Jan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>Feb</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>Mar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>Apr</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>May</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>Jun</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="155"/>
         <source>Jul</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="155"/>
         <source>Aug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="155"/>
         <source>Sep</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="155"/>
         <source>Oct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="155"/>
         <source>Nov</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="166"/>
+        <location filename="../reports/income_spending.py" line="158"/>
         <source>Dec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="196"/>
-        <location filename="../reports/income_spending.py" line="294"/>
+        <location filename="../reports/income_spending.py" line="188"/>
+        <location filename="../reports/income_spending.py" line="286"/>
         <source>TOTAL</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1320,7 +1333,7 @@
 <context>
     <name>IncomeSpendingReportWindow</name>
     <message>
-        <location filename="../reports/income_spending.py" line="336"/>
+        <location filename="../reports/income_spending.py" line="328"/>
         <source>Show operations</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3897,7 +3910,7 @@ Application will be terminated now</source>
 <context>
     <name>Trade</name>
     <message>
-        <location filename="../db/operations.py" line="650"/>
+        <location filename="../db/operations.py" line="654"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3958,22 +3971,22 @@ Application will be terminated now</source>
 <context>
     <name>Transfer</name>
     <message>
-        <location filename="../db/operations.py" line="796"/>
+        <location filename="../db/operations.py" line="800"/>
         <source>Error. Zero rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="874"/>
+        <location filename="../db/operations.py" line="878"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="879"/>
+        <location filename="../db/operations.py" line="883"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="897"/>
+        <location filename="../db/operations.py" line="901"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation type="unfinished"></translation>
     </message>

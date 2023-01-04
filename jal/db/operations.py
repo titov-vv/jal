@@ -27,6 +27,7 @@ class LedgerTransaction:
             operation_id = operation_data
         self._oid = operation_id
         self._otype = 0
+        self._oname = ''
         self._subtype = 0
         self._data = None
         self._view_rows = 1    # How many rows it will require operation in QTableView
@@ -191,6 +192,9 @@ class LedgerTransaction:
 
     def label(self):
         return self._label
+
+    def name(self):
+        return self._oname
 
     def label_color(self):
         return self._label_color
@@ -970,6 +974,7 @@ class CorporateAction(LedgerTransaction):
             self._results.append(JalDB.readSQLrecord(results_query, named=True))
         self._view_rows = len(self._results)
         self._subtype = self._data['type']
+        self._oname = self.names[self._subtype]
         if self._subtype == CorporateAction.SpinOff or self._view_rows < 2:
             self._view_rows = 2
         self._label, self._label_color = labels[self._subtype]

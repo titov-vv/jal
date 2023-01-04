@@ -328,44 +328,107 @@
     </message>
 </context>
 <context>
+    <name>ClosedTradesModel</name>
+    <message>
+        <location filename="../reports/deals.py" line="142"/>
+        <source>Asset</source>
+        <translation>Ценная бумага</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="143"/>
+        <source>Open Date/Time</source>
+        <translation>Дата/Время открытия</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="144"/>
+        <source>Open Date</source>
+        <translation>Дата открытия</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="145"/>
+        <source>Close Date/Time</source>
+        <translation>Дата/время закрытия</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="146"/>
+        <source>Close Date</source>
+        <translation>Дата закрытия</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="147"/>
+        <source>Open Price</source>
+        <translation>Цена открытия</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="148"/>
+        <source>Close Price</source>
+        <translation>Цена закрытия</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="149"/>
+        <source>Qty</source>
+        <translation>Кол-во</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="150"/>
+        <source>Fee</source>
+        <translation>Комиссия</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="151"/>
+        <source>P/L</source>
+        <translation>ПиУ</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="152"/>
+        <source>P/L, %</source>
+        <translation>ПиУ, %</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="153"/>
+        <source>Note</source>
+        <translation>Примечание</translation>
+    </message>
+</context>
+<context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="956"/>
+        <location filename="../db/operations.py" line="960"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="957"/>
+        <location filename="../db/operations.py" line="961"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="958"/>
+        <location filename="../db/operations.py" line="962"/>
         <source>Spin-off</source>
         <translation>Выделение компании (спин-офф)</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="959"/>
+        <location filename="../db/operations.py" line="963"/>
         <source>Merger</source>
         <translation>Реорганизация компании</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="962"/>
+        <location filename="../db/operations.py" line="966"/>
         <source>Delisting</source>
         <translation>Делистинг</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1070"/>
+        <location filename="../db/operations.py" line="1075"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количетво ценных бумаг недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1074"/>
+        <location filename="../db/operations.py" line="1079"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation>Неподерживаемый случай: Корпоративное событие покрывает не всю открытую позицию. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1083"/>
+        <location filename="../db/operations.py" line="1088"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation>Результаты корпоративного события не распределяют 100% стоимости изначального актива. </translation>
     </message>
@@ -609,92 +672,9 @@
 <context>
     <name>DealsReport</name>
     <message>
-        <location filename="../reports/deals.py" line="149"/>
+        <location filename="../reports/deals.py" line="295"/>
         <source>Deals by Account</source>
         <translation>Сделки по счету</translation>
-    </message>
-</context>
-<context>
-    <name>DealsReportModel</name>
-    <message>
-        <location filename="../reports/deals.py" line="16"/>
-        <source>Asset</source>
-        <translation>ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="17"/>
-        <source>Open Date</source>
-        <translation>Дата открытия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="18"/>
-        <source>Close Date</source>
-        <translation>Дата закрытия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="19"/>
-        <source>Open Price</source>
-        <translation>Цена открытия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="20"/>
-        <source>Close Price</source>
-        <translation>Цена закрытия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="21"/>
-        <source>Qty</source>
-        <translation>Кол-во</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="22"/>
-        <source>Fee</source>
-        <translation>Комиссия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="23"/>
-        <source>P/L</source>
-        <translation>ПиУ</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="24"/>
-        <source>P/L, %</source>
-        <translation>ПиУ, %</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="25"/>
-        <source>Note</source>
-        <translation>Описание</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="27"/>
-        <source>Symbol change</source>
-        <translation>Смена символа</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="28"/>
-        <source>Split</source>
-        <translation>Сплит</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="29"/>
-        <source>Spin-off</source>
-        <translation>Выделение компании (спин-офф)</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="32"/>
-        <source>Merger</source>
-        <translation>Объединение компании</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="62"/>
-        <source> Opened with </source>
-        <translation> Открыта с </translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="64"/>
-        <source> Closed with </source>
-        <translation> Закрыта с </translation>
     </message>
 </context>
 <context>
@@ -706,13 +686,46 @@
     </message>
     <message>
         <location filename="../ui/reports/deals_report.ui" line="66"/>
-        <source>Group dates</source>
-        <translation>Сгруппировать даты</translation>
+        <source>Group by:</source>
+        <translation>Группировать по:</translation>
     </message>
     <message>
-        <location filename="../ui/reports/deals_report.ui" line="73"/>
+        <location filename="../ui/reports/deals_report.ui" line="76"/>
         <source>Account:</source>
         <translation>Счет:</translation>
+    </message>
+</context>
+<context>
+    <name>DealsReportWindow</name>
+    <message>
+        <location filename="../reports/deals.py" line="306"/>
+        <source>&lt;None&gt;</source>
+        <translation>&lt;Пусто&gt;</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="307"/>
+        <source>Asset</source>
+        <translation>Ценная бумага</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="308"/>
+        <source>Close</source>
+        <translation>Закрытие</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="309"/>
+        <source>Asset - Open - Close</source>
+        <translation>ЦБ - Открытие - Закрытие</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="310"/>
+        <source>Open - Close</source>
+        <translation>Открытие - Закрытие</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="311"/>
+        <source>Close - Open</source>
+        <translation>Закрытие - Открытие</translation>
     </message>
 </context>
 <context>
@@ -741,27 +754,27 @@
 <context>
     <name>Dividend</name>
     <message>
-        <location filename="../db/operations.py" line="470"/>
+        <location filename="../db/operations.py" line="474"/>
         <source>Tax: </source>
         <translation>Налог: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="509"/>
+        <location filename="../db/operations.py" line="513"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
         <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="518"/>
+        <location filename="../db/operations.py" line="522"/>
         <source>Unsupported dividend type.</source>
         <translation>Неподдерживаемый тип дивиденда.</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="540"/>
+        <location filename="../db/operations.py" line="544"/>
         <source>Not supported action: stock dividend or vesting closes short trade.</source>
         <translation>Неподдерживаемое действие: дивиденд акциями или зачисление акций закрывает короткую позицию.</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="450"/>
+        <location filename="../db/operations.py" line="454"/>
         <source>No stock quote for stock dividend or vesting.</source>
         <translation>Нет котировки для дивиденда акциями или зачисления акций.</translation>
     </message>
@@ -1222,12 +1235,12 @@
 <context>
     <name>IncomeSpending</name>
     <message>
-        <location filename="../db/operations.py" line="310"/>
+        <location filename="../db/operations.py" line="314"/>
         <source>Rate: </source>
         <translation>Курс: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="346"/>
+        <location filename="../db/operations.py" line="350"/>
         <source>Can&apos;t process operation without details</source>
         <translation>Невозможно обработать операцию без детальных данных</translation>
     </message>
@@ -1235,7 +1248,7 @@
 <context>
     <name>IncomeSpendingReport</name>
     <message>
-        <location filename="../reports/income_spending.py" line="319"/>
+        <location filename="../reports/income_spending.py" line="311"/>
         <source>Income/Spending</source>
         <translation>Доходы/Расходы</translation>
     </message>
@@ -1243,68 +1256,68 @@
 <context>
     <name>IncomeSpendingReportModel</name>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>Jan</source>
         <translation>Янв</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>Feb</source>
         <translation>Фев</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>Mar</source>
         <translation>Мар</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>Apr</source>
         <translation>Апр</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>May</source>
         <translation>Май</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="162"/>
+        <location filename="../reports/income_spending.py" line="154"/>
         <source>Jun</source>
         <translation>Июн</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="155"/>
         <source>Jul</source>
         <translation>Июл</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="155"/>
         <source>Aug</source>
         <translation>Авг</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="155"/>
         <source>Sep</source>
         <translation>Сен</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="155"/>
         <source>Oct</source>
         <translation>Окт</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="155"/>
         <source>Nov</source>
         <translation>Ноя</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="166"/>
+        <location filename="../reports/income_spending.py" line="158"/>
         <source>Dec</source>
         <translation>Дек</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="196"/>
-        <location filename="../reports/income_spending.py" line="294"/>
+        <location filename="../reports/income_spending.py" line="188"/>
+        <location filename="../reports/income_spending.py" line="286"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
@@ -1320,7 +1333,7 @@
 <context>
     <name>IncomeSpendingReportWindow</name>
     <message>
-        <location filename="../reports/income_spending.py" line="336"/>
+        <location filename="../reports/income_spending.py" line="328"/>
         <source>Show operations</source>
         <translation>Показать операции</translation>
     </message>
@@ -3901,7 +3914,7 @@ Application will be terminated now</source>
 <context>
     <name>Trade</name>
     <message>
-        <location filename="../db/operations.py" line="650"/>
+        <location filename="../db/operations.py" line="654"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account: </source>
         <translation>Невозможно обработать сделку, т.к. не задан банк для инвестиционного счёта: </translation>
     </message>
@@ -3962,22 +3975,22 @@ Application will be terminated now</source>
 <context>
     <name>Transfer</name>
     <message>
-        <location filename="../db/operations.py" line="796"/>
+        <location filename="../db/operations.py" line="800"/>
         <source>Error. Zero rate</source>
         <translation>Ошибка. Курс равен нулю</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="874"/>
+        <location filename="../db/operations.py" line="878"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation>Количество актива недостаточно для обработки перевода. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="879"/>
+        <location filename="../db/operations.py" line="883"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation>Обработанное количество меньше, чем количество в трансфере. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="897"/>
+        <location filename="../db/operations.py" line="901"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation>Списание актива не найдено для трансфера.</translation>
     </message>

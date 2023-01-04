@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QFrame,
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame,
     QHBoxLayout, QHeaderView, QLabel, QSizePolicy,
-    QSpacerItem, QTableView, QVBoxLayout, QWidget)
+    QSpacerItem, QTreeView, QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import AccountButton
 from jal.widgets.custom.date_range_selector import DateRangeSelector
@@ -45,10 +45,15 @@ class Ui_DealsReportWidget(object):
 
         self.horizontalLayout.addWidget(self.ReportRange)
 
-        self.ReportGroupCheck = QCheckBox(self.ReportParamsFrame)
-        self.ReportGroupCheck.setObjectName(u"ReportGroupCheck")
+        self.GroupLbl = QLabel(self.ReportParamsFrame)
+        self.GroupLbl.setObjectName(u"GroupLbl")
 
-        self.horizontalLayout.addWidget(self.ReportGroupCheck)
+        self.horizontalLayout.addWidget(self.GroupLbl)
+
+        self.GroupCombo = QComboBox(self.ReportParamsFrame)
+        self.GroupCombo.setObjectName(u"GroupCombo")
+
+        self.horizontalLayout.addWidget(self.GroupCombo)
 
         self.ReportAccountLbl = QLabel(self.ReportParamsFrame)
         self.ReportAccountLbl.setObjectName(u"ReportAccountLbl")
@@ -67,19 +72,13 @@ class Ui_DealsReportWidget(object):
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
 
-        self.ReportTableView = QTableView(DealsReportWidget)
-        self.ReportTableView.setObjectName(u"ReportTableView")
-        self.ReportTableView.setFrameShape(QFrame.Panel)
-        self.ReportTableView.setFrameShadow(QFrame.Sunken)
-        self.ReportTableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.ReportTableView.setAlternatingRowColors(True)
-        self.ReportTableView.setGridStyle(Qt.DotLine)
-        self.ReportTableView.setWordWrap(False)
-        self.ReportTableView.verticalHeader().setVisible(False)
-        self.ReportTableView.verticalHeader().setMinimumSectionSize(20)
-        self.ReportTableView.verticalHeader().setDefaultSectionSize(20)
+        self.ReportTreeView = QTreeView(DealsReportWidget)
+        self.ReportTreeView.setObjectName(u"ReportTreeView")
+        self.ReportTreeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.ReportTreeView.setAlternatingRowColors(True)
+        self.ReportTreeView.header().setStretchLastSection(False)
 
-        self.verticalLayout.addWidget(self.ReportTableView)
+        self.verticalLayout.addWidget(self.ReportTreeView)
 
 
         self.retranslateUi(DealsReportWidget)
@@ -89,7 +88,7 @@ class Ui_DealsReportWidget(object):
 
     def retranslateUi(self, DealsReportWidget):
         DealsReportWidget.setWindowTitle(QCoreApplication.translate("DealsReportWidget", u"Deals", None))
-        self.ReportGroupCheck.setText(QCoreApplication.translate("DealsReportWidget", u"Group dates", None))
+        self.GroupLbl.setText(QCoreApplication.translate("DealsReportWidget", u"Group by:", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("DealsReportWidget", u"Account:", None))
     # retranslateUi
 
