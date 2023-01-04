@@ -1089,8 +1089,8 @@ class CorporateAction(LedgerTransaction):
             allocation += Decimal(JalDB.readSQLrecord(query))
         if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
             raise LedgerError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
-                                      + f"Date: {ts2dt(self._timestamp)}, "
-                                      + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
+                                      + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, " 
+                                        f"Distributed: {100.0 * float(allocation)}%, Operation: {self.dump()}")
         processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._qty, None)
         # Withdraw value with old quantity of old asset
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
