@@ -49,13 +49,13 @@ class JalAccount(JalDB):
 
     # Method returns a list of JalAccount objects for accounts of given type (or all if None given)
     # Flag "active_only" allows only active accounts output by default
-    @staticmethod
-    def get_all_accounts(account_type: int = None, active_only: bool = True) -> list:
+    @classmethod
+    def get_all_accounts(cls, account_type: int = None, active_only: bool = True) -> list:
         accounts = []
-        query = JalDB.execSQL("SELECT id, active FROM accounts WHERE type_id=:type OR :type IS NULL",
+        query = cls.execSQL("SELECT id, active FROM accounts WHERE type_id=:type OR :type IS NULL",
                               [(":type", account_type)])
         while query.next():
-            account_id, active = JalDB.readSQLrecord(query)
+            account_id, active = cls.readSQLrecord(query)
             if active_only and not active:
                 continue
             accounts.append(JalAccount(int(account_id)))

@@ -141,12 +141,12 @@ class JalAsset(JalDB):
             return source_id
 
     # Returns a dict (ID-Name) of all available data sources
-    @staticmethod
-    def get_sources_list() -> dict:
+    @classmethod
+    def get_sources_list(cls) -> dict:
         sources = {}
-        query = JalDB.execSQL("SELECT id, name FROM data_sources")
+        query = cls.execSQL("SELECT id, name FROM data_sources")
         while query.next():
-            source_id, name = JalDB.readSQLrecord(query)
+            source_id, name = cls.readSQLrecord(query)
             sources[source_id] = name
         return sources
 
@@ -296,28 +296,28 @@ class JalAsset(JalDB):
 
     # Method returns a list of {"asset": JalAsset, "currency" currency_id} that describes assets involved into ledger
     # operations between begin and end timestamps or that have non-zero value in ledger
-    @staticmethod
-    def get_active_assets(begin: int, end: int) -> list:
+    @classmethod
+    def get_active_assets(cls, begin: int, end: int) -> list:
         assets = []
-        query = JalDB.execSQL("SELECT MAX(l.id) AS id, l.asset_id, a.currency_id "
-                                  "FROM ledger l LEFT JOIN accounts a ON a.id=l.account_id "
-                                  "WHERE l.book_account=:assets "
-                                  "GROUP BY l.asset_id, a.currency_id "
-                                  "HAVING l.amount_acc!='0' OR (l.timestamp>=:begin AND l.timestamp<=:end)",
-                              [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
+        query = cls.execSQL("SELECT MAX(l.id) AS id, l.asset_id, a.currency_id "
+                            "FROM ledger l LEFT JOIN accounts a ON a.id=l.account_id "
+                            "WHERE l.book_account=:assets "
+                            "GROUP BY l.asset_id, a.currency_id "
+                            "HAVING l.amount_acc!='0' OR (l.timestamp>=:begin AND l.timestamp<=:end)",
+                            [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
         while query.next():
             try:
-                _id, asset_id, currency_id = JalDB.readSQLrecord(query)
+                _id, asset_id, currency_id = super(JalAsset, JalAsset).readSQLrecord(query)
             except TypeError:  # Skip if None is returned (i.e. there are no assets)
                 continue
             assets.append({"asset": JalAsset(int(asset_id)), "currency": int(currency_id)})
         return assets
 
     # Method returns a list of JalAsset objects that describe currencies defined in ledger
-    @staticmethod
-    def get_currencies() -> list:
+    @classmethod
+    def get_currencies(cls) -> list:
         currencies = []
-        query = JalDB.execSQL("SELECT id FROM currencies")
+        query = cls.execSQL("SELECT id FROM currencies")
         while query.next():
-            currencies.append(JalAsset(int(JalDB.readSQLrecord(query))))
+            currencies.append(JalAsset(int(super(JalAsset, JalAsset).readSQLrecord(query))))
         return currencies
