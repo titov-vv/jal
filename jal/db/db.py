@@ -108,11 +108,11 @@ class JalDB:
     # Current transaction will be committed if 'commit' set to true
     # Parameter 'forward_only' may be used for optimization
     # return value - QSqlQuery object (to allow iteration through result)
-    @staticmethod
-    def execSQL(sql_text, params=None, forward_only=True, commit=False):
+    @classmethod
+    def execSQL(cls, sql_text, params=None, forward_only=True, commit=False):
         if params is None:
             params = []
-        db = JalDB.connection()
+        db = cls.connection()
         query = QSqlQuery(db)
         query.setForwardOnly(forward_only)
         if not query.prepare(sql_text):
@@ -135,7 +135,7 @@ class JalDB:
     # check_unique = True: checks that only 1 record was returned by query, otherwise returns None
     @classmethod
     def readSQL(cls, sql_text, params=None, named=False, check_unique=False):
-        query = JalDB.execSQL(sql_text, params)
+        query = cls.execSQL(sql_text, params)
         if query.next():
             res = cls._read_sql_record(query, named=named)
             if check_unique and query.next():
