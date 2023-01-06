@@ -3,6 +3,7 @@ from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QAbstractItemView
 from jal.constants import PredefindedAccountType, PredefinedAsset
 from jal.db.db import JalDB
+from jal.db.peer import JalPeer
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, \
     PeerSelectorDelegate, AssetSelectorDelegate
@@ -193,9 +194,8 @@ class PeerTreeModel(SqlTreeModel):
             return None
         item_id = index.internalId()
         if role == Qt.DisplayRole:
-            if index.column() == 2:
-                return JalDB.readSQL("SELECT COUNT(d.id) FROM agents AS p "
-                                      "LEFT JOIN actions AS d ON d.peer_id=p.id WHERE p.id=:id", [(":id", item_id)])
+            if index.column() == self.fieldIndex("actions_count"):
+                return JalPeer(item_id).number_of_documents()
             else:
                 return super().data(index, role)
         return None
