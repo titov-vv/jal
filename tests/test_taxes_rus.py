@@ -148,7 +148,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
     IBKR.import_into_db()
 
     # Adjust share of result allocation to 100% of initial bond
-    JalDB.execSQL("UPDATE action_results SET value_share=1.0 WHERE asset_id=5")
+    JalDB._exec("UPDATE action_results SET value_share=1.0 WHERE asset_id=5")
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
@@ -229,8 +229,8 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     create_quotes(2, 1, usd_rates)
 
     # Adjust share of resulting assets: 100% SRNGU -> 95% DNA + 5% DNA WS
-    JalDB.execSQL("UPDATE action_results SET value_share=0.95 WHERE asset_id=5")
-    JalDB.execSQL("UPDATE action_results SET value_share=0.05 WHERE asset_id=4")
+    JalDB._exec("UPDATE action_results SET value_share=0.95 WHERE asset_id=5")
+    JalDB._exec("UPDATE action_results SET value_share=0.05 WHERE asset_id=4")
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
@@ -279,8 +279,8 @@ def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
     create_quotes(2, 1, usd_rates)
 
     # Adjust share of resulting assets: 100% GE -> 90% GE + 10% WAB
-    JalDB.execSQL("UPDATE action_results SET value_share=0.9 WHERE asset_id=4")
-    JalDB.execSQL("UPDATE action_results SET value_share=0.1 WHERE asset_id=5")
+    JalDB._exec("UPDATE action_results SET value_share=0.9 WHERE asset_id=4")
+    JalDB._exec("UPDATE action_results SET value_share=0.1 WHERE asset_id=5")
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)

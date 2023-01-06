@@ -86,7 +86,7 @@ class LedgerTransaction(JalDB):
 
     # Deletes operation from database
     def delete(self) -> None:
-        _ = self.execSQL(f"DELETE FROM {self._db_table} WHERE id={self._oid}")
+        _ = self._exec(f"DELETE FROM {self._db_table} WHERE id={self._oid}")
         self._oid = 0
         self._otype = 0
         self._data = None
@@ -118,23 +118,23 @@ class LedgerTransaction(JalDB):
         return self._view_rows
 
     def _money_total(self, account_id) -> Decimal:
-        money = self.readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
-                             "account_id = :account_id AND book_account=:book",
-                             [(":op_type", self._otype), (":oid", self._oid),
-                              (":account_id", account_id), (":book", BookAccount.Money)])
+        money = self._read("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
+                           "account_id = :account_id AND book_account=:book",
+                           [(":op_type", self._otype), (":oid", self._oid),
+                            (":account_id", account_id), (":book", BookAccount.Money)])
         money = Decimal('0') if money is None else Decimal(money)
-        debt = self.readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
-                            "account_id = :account_id AND book_account=:book",
-                            [(":op_type", self._otype), (":oid", self._oid),
-                             (":account_id", account_id), (":book", BookAccount.Liabilities)])
+        debt = self._read("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
+                          "account_id = :account_id AND book_account=:book",
+                          [(":op_type", self._otype), (":oid", self._oid),
+                           (":account_id", account_id), (":book", BookAccount.Liabilities)])
         debt = Decimal('0') if debt is None else Decimal(debt)
         return money + debt
 
     def _asset_total(self, account_id, asset_id) -> Decimal:
-        amount = self.readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
-                              "account_id=:account_id AND asset_id=:asset_id AND book_account=:book",
-                              [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
-                               (":asset_id", asset_id), (":book", BookAccount.Assets)])
+        amount = self._read("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
+                            "account_id=:account_id AND asset_id=:asset_id AND book_account=:book",
+                            [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
+                             (":asset_id", asset_id), (":book", BookAccount.Assets)])
         amount = Decimal('0') if amount is None else Decimal(amount)
         return amount
 
@@ -148,25 +148,25 @@ class LedgerTransaction(JalDB):
         processed_qty = Decimal('0')
         processed_value = Decimal('0')
         # Get a list of all previous not matched trades or corporate actions
-        query = self.execSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
-                             "FROM trades_opened "
-                             "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=:zero "
-                             "ORDER BY timestamp, op_type DESC",
-                             [(":account_id", self._account.id()), (":asset_id", self._asset.id()),
-                              (":zero", format_decimal(Decimal('0')))])
+        query = self._exec("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
+                           "FROM trades_opened "
+                           "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=:zero "
+                           "ORDER BY timestamp, op_type DESC",
+                           [(":account_id", self._account.id()), (":asset_id", self._asset.id()),
+                            (":zero", format_decimal(Decimal('0')))])
         while query.next():
             opening_trade = self._read_sql_record(query, named=True)
             next_deal_qty = Decimal(opening_trade['remaining_qty'])  # TODO implement type casting of result values inside _read_sql_record()
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
             remaining_qty = Decimal(opening_trade['remaining_qty']) - next_deal_qty
-            _ = self.execSQL("UPDATE trades_opened SET remaining_qty=:new_remaining_qty "
-                             "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                             [(":new_remaining_qty", format_decimal(remaining_qty)), (":asset_id", self._asset.id()),
-                              (":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id'])])
+            _ = self._exec("UPDATE trades_opened SET remaining_qty=:new_remaining_qty "
+                           "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
+                           [(":new_remaining_qty", format_decimal(remaining_qty)), (":asset_id", self._asset.id()),
+                            (":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id'])])
             open_price = Decimal(opening_trade['price'])
             close_price = Decimal(opening_trade['price']) if price is None else price
-            _ = self.execSQL(
+            _ = self._exec(
                 "INSERT INTO trades_closed(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
                 "close_op_type, close_op_id, close_timestamp, close_price, qty) "
                 "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
@@ -279,10 +279,10 @@ class IncomeSpending(LedgerTransaction):
     def __init__(self, operation_id=None):
         super().__init__(operation_id)
         self._otype = LedgerTransaction.IncomeSpending
-        self._data = self.readSQL("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
-                                  "a.alt_currency_id AS currency FROM actions AS a "
-                                  "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.id=:oid",
-                                  [(":oid", self._oid)], named=True)
+        self._data = self._read("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
+                                "a.alt_currency_id AS currency FROM actions AS a "
+                                "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.id=:oid",
+                                [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
@@ -291,11 +291,11 @@ class IncomeSpending(LedgerTransaction):
         self._peer_id = self._data['peer_id']
         self._peer = self._data['peer']
         self._currency = self._data['currency']
-        details_query = self.execSQL("SELECT d.category_id, c.name AS category, d.tag_id, t.tag, "
-                                     "d.amount, d.amount_alt, d.note FROM action_details AS d "
-                                     "LEFT JOIN categories AS c ON c.id=d.category_id "
-                                     "LEFT JOIN tags AS t ON t.id=d.tag_id "
-                                     "WHERE d.pid= :pid", [(":pid", self._oid)])
+        details_query = self._exec("SELECT d.category_id, c.name AS category, d.tag_id, t.tag, "
+                                   "d.amount, d.amount_alt, d.note FROM action_details AS d "
+                                   "LEFT JOIN categories AS c ON c.id=d.category_id "
+                                   "LEFT JOIN tags AS t ON t.id=d.tag_id "
+                                   "WHERE d.pid= :pid", [(":pid", self._oid)])
         self._details = []
         while details_query.next():
             self._details.append(self._read_sql_record(details_query, named=True))
@@ -394,14 +394,14 @@ class Dividend(LedgerTransaction):
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Dividend
         self._view_rows = 2
-        self._data = self.readSQL("SELECT d.type, d.timestamp, d.ex_date, d.number, d.account_id, d.asset_id, "
-                                  "d.amount, d.tax, l.amount_acc AS t_qty, d.note AS note, c.name AS country "
-                                  "FROM dividends AS d "
-                                  "LEFT JOIN assets AS a ON d.asset_id = a.id "
-                                  "LEFT JOIN countries AS c ON a.country_id = c.id "
-                                  "LEFT JOIN ledger_totals AS l ON l.op_type=d.op_type AND l.operation_id=d.id "
-                                  "AND l.book_account = :book_assets WHERE d.id=:oid",
-                                  [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
+        self._data = self._read("SELECT d.type, d.timestamp, d.ex_date, d.number, d.account_id, d.asset_id, "
+                                "d.amount, d.tax, l.amount_acc AS t_qty, d.note AS note, c.name AS country "
+                                "FROM dividends AS d "
+                                "LEFT JOIN assets AS a ON d.asset_id = a.id "
+                                "LEFT JOIN countries AS c ON a.country_id = c.id "
+                                "LEFT JOIN ledger_totals AS l ON l.op_type=d.op_type AND l.operation_id=d.id "
+                                "AND l.book_account = :book_assets WHERE d.id=:oid",
+                                [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
         self._subtype = self._data['type']
         self._label, self._label_color = labels[self._subtype]
         self._timestamp = self._data['timestamp']
@@ -436,7 +436,7 @@ class Dividend(LedgerTransaction):
         if subtype:
             query += " AND d.type=:type"
             params += [(":type", subtype)]
-        query = cls.execSQL(query, params)
+        query = cls._exec(query, params)
         while query.next():
             dividends.append(Dividend(int(cls._read_sql_record(query))))
         return dividends
@@ -508,8 +508,8 @@ class Dividend(LedgerTransaction):
             return super().value_total()
 
     def update_tax(self, new_tax) -> None:   # FIXME method should take Decimal value, not float
-        _ = self.execSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
-                         [(":dividend_id", self._oid), (":tax", new_tax)], commit=True)
+        _ = self._exec("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
+                       [(":dividend_id", self._oid), (":tax", new_tax)], commit=True)
 
     def processLedger(self, ledger):
         if self._broker is None:
@@ -546,7 +546,7 @@ class Dividend(LedgerTransaction):
         if asset_amount < Decimal('0'):
             raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
-        _ = self.execSQL(
+        _ = self._exec(
             "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
             "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
             [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
@@ -581,9 +581,9 @@ class Trade(LedgerTransaction):
         super().__init__(operation_data)
         self._otype = LedgerTransaction.Trade
         self._view_rows = 2
-        self._data = self.readSQL("SELECT t.timestamp, t.settlement, t.number, t.account_id, t.asset_id, t.qty, "
-                                  "t.price, t.fee, t.note FROM trades AS t WHERE t.id=:oid",
-                                  [(":oid", self._oid)], named=True)
+        self._data = self._read("SELECT t.timestamp, t.settlement, t.number, t.account_id, t.asset_id, t.qty, "
+                                "t.price, t.fee, t.note FROM trades AS t WHERE t.id=:oid",
+                                [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
         self._settlement = self._data['settlement']
         self._account = jal.db.account.JalAccount(self._data['account_id'])
@@ -642,10 +642,10 @@ class Trade(LedgerTransaction):
     # Searches for dividend with type BondInterest that matches trade by timestamp, account, asset and number
     # Returns None if accrued interest not found
     def get_accrued_interest(self) -> [Dividend, None]:
-        id = self.readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp AND account_id=:account "
-                          "AND asset_id=:asset AND number=:number AND type=:interest",
-                          [(":timestamp", self._timestamp), (":account", self._account.id()), (":number", self._number),
-                           (":asset", self._asset.id()), (":interest", Dividend.BondInterest)])
+        id = self._read("SELECT id FROM dividends WHERE timestamp=:timestamp AND account_id=:account "
+                        "AND asset_id=:asset AND number=:number AND type=:interest",
+                        [(":timestamp", self._timestamp), (":account", self._account.id()), (":number", self._number),
+                         (":asset", self._asset.id()), (":interest", Dividend.BondInterest)])
         if id:
             return Dividend(id)
         else:
@@ -678,7 +678,7 @@ class Trade(LedgerTransaction):
                                      deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
                                      category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have a reminder that opens a new position
-            _ = self.execSQL(
+            _ = self._exec(
                 "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                 [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
@@ -719,9 +719,9 @@ class Transfer(LedgerTransaction):
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Transfer
         self._display_type = display_type
-        self._data = self.readSQL("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
-                                  "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, "
-                                  "t.note FROM transfers AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
+        self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
+                                "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, "
+                                "t.note FROM transfers AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
         self._withdrawal_account = jal.db.account.JalAccount(self._data['withdrawal_account'])
         self._withdrawal_account_name = self._withdrawal_account.name()
         self._withdrawal_timestamp = self._data['withdrawal_timestamp']
@@ -895,10 +895,10 @@ class Transfer(LedgerTransaction):
                                      asset_id=self._asset.id(), value=processed_value*currency_rate)
         elif self._display_type == Transfer.Incoming:
             # get value of withdrawn asset
-            value = self.readSQL("SELECT value FROM ledger "
-                                 "WHERE book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
-                                 [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype),
-                                  (":id", self._oid)], check_unique=True)
+            value = self._read("SELECT value FROM ledger "
+                               "WHERE book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
+                               [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype),
+                                (":id", self._oid)], check_unique=True)
             if not value:
                 raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
             else:
@@ -909,7 +909,7 @@ class Transfer(LedgerTransaction):
                 _, currency_rate = JalAsset(self._deposit_account.currency()).quote(self._deposit_timestamp,
                                                                                     JalSettings().getValue('BaseCurrency'))
             price = value * currency_rate / self._deposit
-            _ = self.execSQL(
+            _ = self._exec(
                 "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                 [(":timestamp", self._deposit_timestamp), (":type", self._otype), (":operation_id", self._oid),
@@ -967,10 +967,10 @@ class CorporateAction(LedgerTransaction):
         }
         super().__init__(operation_id)
         self._otype = LedgerTransaction.CorporateAction
-        self._data = self.readSQL("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
-                                  "FROM asset_actions AS a WHERE a.id=:oid", [(":oid", self._oid)], named=True)
-        results_query = self.execSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
-                                     [(":oid", self._oid)])
+        self._data = self._read("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
+                                "FROM asset_actions AS a WHERE a.id=:oid", [(":oid", self._oid)], named=True)
+        results_query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
+                                   [(":oid", self._oid)])
         self._results = []
         while results_query.next():
             self._results.append(self._read_sql_record(results_query, named=True))
@@ -996,8 +996,8 @@ class CorporateAction(LedgerTransaction):
 
     def description(self) -> str:
         description = self.names[self._subtype]
-        query = self.execSQL("SELECT asset_id, value_share FROM action_results WHERE action_id=:oid",
-                             [(":oid", self._oid)])
+        query = self._exec("SELECT asset_id, value_share FROM action_results WHERE action_id=:oid",
+                           [(":oid", self._oid)])
         while query.next():
             result = self._read_sql_record(query, named=True)
             if self._subtype == CorporateAction.SpinOff and result['asset_id'] == self._asset.id():
@@ -1011,7 +1011,7 @@ class CorporateAction(LedgerTransaction):
         result = []
         if self._subtype != CorporateAction.SpinOff:
             result.append(Decimal(-self._qty))
-        query = self.execSQL("SELECT qty FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        query = self._exec("SELECT qty FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
             result.append(Decimal(self._read_sql_record(query)))
         if len(result) == 1:  # Need to feel at least 2 lines
@@ -1023,7 +1023,7 @@ class CorporateAction(LedgerTransaction):
             symbol = f" {self._asset.symbol(self._account.currency())}\n"
         else:
             symbol = ""
-        query = self.execSQL("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        query = self._exec("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
             symbol += f" {JalAsset(self._read_sql_record(query)).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
@@ -1060,10 +1060,10 @@ class CorporateAction(LedgerTransaction):
     @classmethod
     def get_payments(cls, account) -> list:
         payments = []
-        query = cls.execSQL("SELECT a.timestamp, r.qty, a.note FROM asset_actions AS a "
-                            "LEFT JOIN action_results AS r ON r.action_id=a.id "
-                            "WHERE a.account_id=:account_id AND r.asset_id=:account_currency",
-                            [(":account_id", account.id()), (":account_currency", account.currency())])
+        query = cls._exec("SELECT a.timestamp, r.qty, a.note FROM asset_actions AS a "
+                          "LEFT JOIN action_results AS r ON r.action_id=a.id "
+                          "WHERE a.account_id=:account_id AND r.asset_id=:account_currency",
+                          [(":account_id", account.id()), (":account_currency", account.currency())])
         while query.next():
             timestamp, amount, note = cls._read_sql_record(query)
             payments.append({"timestamp": timestamp, "amount": Decimal(amount), "note": note})
@@ -1082,7 +1082,7 @@ class CorporateAction(LedgerTransaction):
                               + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         # Calculate total asset allocation after corporate action and verify it equals 100%
         allocation = Decimal('0')
-        query = self.execSQL("SELECT value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        query = self._exec("SELECT value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
             allocation += Decimal(self._read_sql_record(query))  # TODO implement type casting of result values inside _read_sql_record()
         if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
@@ -1098,8 +1098,8 @@ class CorporateAction(LedgerTransaction):
                                      category=PredefinedCategory.Profit, peer=self._broker)
             return
         # Process assets after corporate action
-        query = self.execSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
-                             [(":oid", self._oid)])
+        query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
+                           [(":oid", self._oid)])
         while query.next():
             # TODO implement type casting of result values inside _read_sql_record()
             # Like in this function as example:
@@ -1119,7 +1119,7 @@ class CorporateAction(LedgerTransaction):
             else:
                 value = share * processed_value
                 price = value / qty
-                _ = self.execSQL(
+                _ = self._exec(
                     "INSERT INTO trades_opened(timestamp, op_type, operation_id, "
                     "account_id, asset_id, price, remaining_qty) "
                     "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",

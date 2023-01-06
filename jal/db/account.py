@@ -18,8 +18,7 @@ class JalAccount(JalDB):
             if search:
                 self._id = self._find_account(data)
             if create and not self._id:   # If we haven't found peer before and requested to create new record
-                similar_id = self.readSQL("SELECT id FROM accounts WHERE :number=number",
-                                          [(":number", data['number'])])
+                similar_id = self._read("SELECT id FROM accounts WHERE :number=number", [(":number", data['number'])])
                 if similar_id:
                     self._id = self._copy_similar_account(similar_id, data)
                 else:   # Create new account record
@@ -27,16 +26,15 @@ class JalAccount(JalDB):
                         data['organization'] = JalPeer(
                             data={'name': self.tr("Bank for account #" + str(data['number']))},
                             search=True, create=True).id()
-                    query = self.execSQL(
+                    query = self._exec(
                         "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, precision) "
                         "VALUES(:type, :name, 1, :number, :currency, :organization, :precision)",
                         [(":type", data['type']), (":name", data['name']), (":number", data['number']),
                          (":currency", data['currency']), (":organization", data['organization']),
                          (":precision", data['precision'])], commit=True)
                     self._id = query.lastInsertId()
-        self._data = self.readSQL("SELECT type_id, name, number, currency_id, active, organization_id, country_id, "
-                                   "reconciled_on, precision FROM accounts WHERE id=:id",
-                                  [(":id", self._id)], named=True)
+        self._data = self._read("SELECT type_id, name, number, currency_id, active, organization_id, country_id, "
+                                "reconciled_on, precision FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['name'] if self._data is not None else ''
         self._number = self._data['number'] if self._data is not None else None
@@ -52,8 +50,8 @@ class JalAccount(JalDB):
     @classmethod
     def get_all_accounts(cls, account_type: int = None, active_only: bool = True) -> list:
         accounts = []
-        query = cls.execSQL("SELECT id, active FROM accounts WHERE type_id=:type OR :type IS NULL",
-                              [(":type", account_type)])
+        query = cls._exec("SELECT id, active FROM accounts WHERE type_id=:type OR :type IS NULL",
+                          [(":type", account_type)])
         while query.next():
             account_id, active = cls._read_sql_record(query)
             if active_only and not active:
@@ -98,24 +96,24 @@ class JalAccount(JalDB):
     def set_organization(self, peer_id: int) -> None:
         if not peer_id:
             peer_id = None
-        _ = self.execSQL("UPDATE accounts SET organization_id=:peer_id WHERE id=:id",
-                         [(":id", self._id), (":peer_id", peer_id)])
+        _ = self._exec("UPDATE accounts SET organization_id=:peer_id WHERE id=:id",
+                       [(":id", self._id), (":peer_id", peer_id)])
         self._organization_id = peer_id
 
     def reconciled_at(self) -> int:
         return self._reconciled
 
     def reconcile(self, timestamp: int):
-        _ = self.execSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
-                         [(":timestamp", timestamp), (":account_id", self._id)])
+        _ = self._exec("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
+                       [(":timestamp", timestamp), (":account_id", self._id)])
 
     def precision(self) -> int:
         return self._precision
 
     def last_operation_date(self) -> int:
-        last_timestamp = self.readSQL("SELECT MAX(o.timestamp) FROM operation_sequence AS o "
-                                       "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.id=:account_id",
-                                      [(":account_id", self._id)])
+        last_timestamp = self._read("SELECT MAX(o.timestamp) FROM operation_sequence AS o "
+                                    "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.id=:account_id",
+                                    [(":account_id", self._id)])
         last_timestamp = 0 if last_timestamp == '' else last_timestamp
         return last_timestamp
 
@@ -123,7 +121,7 @@ class JalAccount(JalDB):
     # corresponding to assets present on account at given timestamp
     def assets_list(self, timestamp: int) -> list:
         assets = []
-        query = self.execSQL(
+        query = self._exec(
             "WITH _last_ids AS ("
             "SELECT MAX(id) AS id, asset_id FROM ledger "
             "WHERE account_id=:account_id AND timestamp<=:timestamp GROUP BY asset_id"
@@ -144,46 +142,46 @@ class JalAccount(JalDB):
     def get_asset_amount(self, timestamp: int, asset_id: int) -> Decimal:
         asset =JalAsset(asset_id)
         if asset.type() == PredefinedAsset.Money:
-            money = self.readSQL("SELECT amount_acc FROM ledger "
-                                  "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
-                                  "AND book_account=:money ORDER BY id DESC LIMIT 1",
-                                 [(":account_id", self._id), (":asset_id", asset_id),
-                                   (":timestamp", timestamp), (":money", BookAccount.Money)])
+            money = self._read("SELECT amount_acc FROM ledger "
+                               "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
+                               "AND book_account=:money ORDER BY id DESC LIMIT 1",
+                               [(":account_id", self._id), (":asset_id", asset_id),
+                                (":timestamp", timestamp), (":money", BookAccount.Money)])
             money = Decimal('0') if money is None else Decimal(money)
-            debt = self.readSQL("SELECT amount_acc FROM ledger "
-                                  "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
-                                  "AND book_account=:liabilities ORDER BY id DESC LIMIT 1",
-                                [(":account_id", self._id), (":asset_id", asset_id),
-                                   (":timestamp", timestamp), (":liabilities", BookAccount.Liabilities)])
+            debt = self._read("SELECT amount_acc FROM ledger "
+                              "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
+                              "AND book_account=:liabilities ORDER BY id DESC LIMIT 1",
+                              [(":account_id", self._id), (":asset_id", asset_id),
+                               (":timestamp", timestamp), (":liabilities", BookAccount.Liabilities)])
             debt = Decimal('0') if debt is None else Decimal(debt)
             return money + debt
         else:
-            value = self.readSQL("SELECT amount_acc FROM ledger "
-                                  "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
-                                  "AND book_account=:assets ORDER BY id DESC LIMIT 1",
-                                 [(":account_id", self._id), (":asset_id", asset_id),
-                                   (":timestamp", timestamp), (":assets", BookAccount.Assets)])
+            value = self._read("SELECT amount_acc FROM ledger "
+                               "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
+                               "AND book_account=:assets ORDER BY id DESC LIMIT 1",
+                               [(":account_id", self._id), (":asset_id", asset_id),
+                                (":timestamp", timestamp), (":assets", BookAccount.Assets)])
             amount = Decimal(value) if value is not None else Decimal('0')
             return amount
 
     def get_book_turnover(self, book, begin, end) -> Decimal:
-        value = self.readSQL("SELECT SUM(amount) FROM ledger WHERE account_id=:account_id AND book_account=:book "
-                             "AND timestamp>=:begin AND timestamp<=:end",
-                             [(":account_id", self._id), (":book", book), (":begin", begin), (":end", end)])
+        value = self._read("SELECT SUM(amount) FROM ledger WHERE account_id=:account_id AND book_account=:book "
+                           "AND timestamp>=:begin AND timestamp<=:end",
+                           [(":account_id", self._id), (":book", book), (":begin", begin), (":end", end)])
         value = Decimal(value) if value else Decimal('0')
         return value
 
     def get_category_turnover(self, category_id, begin, end) -> Decimal:
-        value = self.readSQL("SELECT SUM(amount) FROM ledger WHERE account_id=:account_id AND category_id=:category "
-                             "AND timestamp>=:begin AND timestamp<=:end",
-                             [(":account_id", self._id), (":category", category_id), (":begin", begin), (":end", end)])
+        value = self._read("SELECT SUM(amount) FROM ledger WHERE account_id=:account_id AND category_id=:category "
+                           "AND timestamp>=:begin AND timestamp<=:end",
+                           [(":account_id", self._id), (":category", category_id), (":begin", begin), (":end", end)])
         value = Decimal(value) if value else Decimal('0')
         return value
 
     # Returns a list of JalClosedTrade objects recorded for the account
     def closed_trades_list(self) -> list:
         trades = []
-        query = self.execSQL("SELECT id FROM trades_closed WHERE account_id=:account", [(":account", self._id)])
+        query = self._exec("SELECT id FROM trades_closed WHERE account_id=:account", [(":account", self._id)])
         while query.next():
             trades.append(jal.db.closed_trade.JalClosedTrade(self._read_sql_record(query)))
         return trades
@@ -194,10 +192,9 @@ class JalAccount(JalDB):
     # It doesn't take 'timestamp' as a parameter as it always return current open trades, not a retrospective position
     def open_trades_list(self, asset) -> list:
         trades = []
-        query = self.execSQL("SELECT op_type, operation_id, price, remaining_qty "
-                                 "FROM trades_opened "
-                                 "WHERE remaining_qty!='0' AND account_id=:account AND asset_id=:asset",
-                             [(":account", self._id), (":asset", asset.id())])
+        query = self._exec("SELECT op_type, operation_id, price, remaining_qty FROM trades_opened "
+                           "WHERE remaining_qty!='0' AND account_id=:account AND asset_id=:asset",
+                           [(":account", self._id), (":asset", asset.id())])
         while query.next():
             op_type, oid, price, qty = self._read_sql_record(query)
             operation = jal.db.operations.LedgerTransaction().get_operation(op_type, oid,
@@ -224,8 +221,8 @@ class JalAccount(JalDB):
         return True
 
     def _find_account(self, data: dict) -> int:
-        id = self.readSQL("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
-                          [(":account_number", data['number']), (":currency", data['currency'])], check_unique=True)
+        id = self._read("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
+                        [(":account_number", data['number']), (":currency", data['currency'])], check_unique=True)
         if id is None:
             return 0
         else:
@@ -241,7 +238,7 @@ class JalAccount(JalDB):
             name = similar.name()[:-len(currency.symbol())] + new_currency.symbol()
         else:
             name = similar.name() + '.' + new_currency.symbol()
-        query = self.execSQL(
+        query = self._exec(
             "INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, country_id, precision) "
             "SELECT type_id, :name, :currency, active, number, organization_id, country_id, precision "
             "FROM accounts WHERE id=:id", [(":id", similar.id()), (":name", name), (":currency", new_currency.id())])
@@ -257,8 +254,8 @@ class JalAccount(JalDB):
             self.MONEY_FLOW: f"SELECT SUM(:sign*amount) FROM ledger WHERE (:sign*amount)>0 AND (book_account={BookAccount.Money} OR book_account={BookAccount.Liabilities})",
             self.ASSETS_FLOW: f"SELECT SUM(:sign*value) FROM ledger WHERE (:sign*value)>0 AND book_account={BookAccount.Assets} AND op_type!={jal.db.operations.LedgerTransaction.CorporateAction}"
         }
-        value = self.readSQL(sql[flow_type] + " AND account_id=:account_id AND timestamp>=:begin AND timestamp<=:end",
-                             [(":sign", sign), (":account_id", self._id), (":begin", begin), (":end", end)])
+        value = self._read(sql[flow_type] + " AND account_id=:account_id AND timestamp>=:begin AND timestamp<=:end",
+                           [(":sign", sign), (":account_id", self._id), (":begin", begin), (":end", end)])
         if value:
             return Decimal(value)
         else:

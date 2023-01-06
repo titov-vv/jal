@@ -39,7 +39,6 @@ class JalDBError:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# FIXME all database calls should be via JalDB (or mate/descendant) class. Get rid of SQL calls from other code
 class JalDB:
     _tables = []
 
@@ -73,7 +72,7 @@ class JalDB:
             error = self.run_sql_script(db_path + Setup.INIT_SCRIPT_PATH)
             if error.code != JalDBError.NoError:
                 return error
-        schema_version = self.readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
+        schema_version = self._read("SELECT value FROM settings WHERE name='SchemaVersion'")
         if schema_version < Setup.DB_REQUIRED_VERSION:
             db.close()
             return JalDBError(JalDBError.OutdatedDbSchema)
@@ -89,7 +88,7 @@ class JalDB:
     # ------------------------------------------------------------------------------------------------------------------
     # Returns current version of sqlite library
     def get_engine_version(self):
-        return self.readSQL("SELECT sqlite_version()")
+        return self._read("SELECT sqlite_version()")
 
     # ------------------------------------------------------------------------------------------------------------------
     # This function returns SQLite connection used by JAL or fails with RuntimeError exception
@@ -103,13 +102,13 @@ class JalDB:
         return db
 
     # -------------------------------------------------------------------------------------------------------------------
-    # prepares SQL query from given sql_text
+    # Executes an SQL query from given sql_text
     # params is a list of tuples (":param", value) which are used to prepare SQL query
     # Current transaction will be committed if 'commit' set to true
     # Parameter 'forward_only' may be used for optimization
     # return value - QSqlQuery object (to allow iteration through result)
     @classmethod
-    def execSQL(cls, sql_text, params=None, forward_only=True, commit=False):
+    def _exec(cls, sql_text, params=None, forward_only=True, commit=False):
         if params is None:
             params = []
         db = cls.connection()
@@ -129,13 +128,14 @@ class JalDB:
         return query
 
     # ------------------------------------------------------------------------------------------------------------------
-    # Calls execSQL() method with given SQL query and parameters and returns its result or None if result is empty
+    # Reads the result of 'sql_test' query from the database (with given params - the same as for _exec() method)
+    # returns result of the query or None if result is empty
     # named = False: result is packed into a list of field values
     # named = True: result is packet into a dictionary with field names as keys
     # check_unique = True: checks that only 1 record was returned by query, otherwise returns None
     @classmethod
-    def readSQL(cls, sql_text, params=None, named=False, check_unique=False):
-        query = cls.execSQL(sql_text, params)
+    def _read(cls, sql_text, params=None, named=False, check_unique=False):
+        query = cls._exec(sql_text, params)
         if query.next():
             res = cls._read_sql_record(query, named=named)
             if check_unique and query.next():
@@ -168,25 +168,25 @@ class JalDB:
     # Enables DB triggers if enable == True and disables it otherwise
     def enable_triggers(self, enable):
         if enable:
-            _ = self.execSQL("UPDATE settings SET value=1 WHERE name='TriggersEnabled'", commit=True)
+            _ = self._exec("UPDATE settings SET value=1 WHERE name='TriggersEnabled'", commit=True)
         else:
-            _ = self.execSQL("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
+            _ = self._exec("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Set synchronous mode ON if synchronous == True and OFF it otherwise
     def set_synchronous(self, synchronous):
         if synchronous:
-            _ = self.execSQL("PRAGMA synchronous = ON")
+            _ = self._exec("PRAGMA synchronous = ON")
         else:
-            _ = self.execSQL("PRAGMA synchronous = OFF")
+            _ = self._exec("PRAGMA synchronous = OFF")
 
     # ------------------------------------------------------------------------------------------------------------------
     # Enables DB foreign keys if enable == True and disables it otherwise
     def enable_fk(self, enable):
         if enable:
-            _ = self.execSQL("PRAGMA foreign_keys = ON")
+            _ = self._exec("PRAGMA foreign_keys = ON")
         else:
-            _ = self.execSQL("PRAGMA foreign_keys = OFF")
+            _ = self._exec("PRAGMA foreign_keys = OFF")
 
     # Method loads sql script into database
     def run_sql_script(self, script_file) -> JalDBError:
@@ -195,8 +195,8 @@ class JalDB:
                 statements = sqlparse.split(sql_script)
                 for statement in statements:
                     clean_statement = sqlparse.format(statement, strip_comments=True)
-                    if self.execSQL(clean_statement, commit=False) is None:
-                        _ = self.execSQL("ROLLBACK")
+                    if self._exec(clean_statement, commit=False) is None:
+                        _ = self._exec("ROLLBACK")
                         self.connection().close()
                         return JalDBError(JalDBError.SQLFailure, f"FAILED: {clean_statement}")
                     else:
@@ -212,7 +212,7 @@ class JalDB:
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return JalDBError(JalDBError.OutdatedDbSchema)
         db = self.connection()
-        version = self.readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
+        version = self._read("SELECT value FROM settings WHERE name='SchemaVersion'")
         try:
             schema_version = int(version)
         except ValueError:
@@ -277,7 +277,7 @@ class JalDB:
                 query_text += f"{field} = :{field} AND "
                 params.append((f":{field}", data[field]))
         query_text = query_text[:-len(" AND ")]   # cut extra tail
-        oid = self.readSQL(query_text, params)
+        oid = self._read(query_text, params)
         if oid:
             return int(oid)
         return 0
@@ -296,7 +296,7 @@ class JalDB:
                 values_text += f":{field}, "
                 params.append((f":{field}", data[field]))
         query_text = query_text[:-2] + ") " + values_text[:-2] + ")"
-        query = self.execSQL(query_text, params, commit=True)
+        query = self._exec(query_text, params, commit=True)
         return query.lastInsertId()
 
     # Returns value of 'field_name' from 'table_name' where 'key_field' is equal to 'search_value'
@@ -309,4 +309,4 @@ class JalDB:
         if type(search_value) == str:
             search_value = "'" + search_value + "'"   # Enclose string into quotes
         query_text = f"SELECT {field_name} FROM {table_name} WHERE {key_field}={search_value}"
-        return JalDB.readSQL(query_text)
+        return JalDB._read(query_text)

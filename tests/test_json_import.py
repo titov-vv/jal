@@ -65,9 +65,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [42, PredefinedAsset.Stock, '', 'US218NSPODD6', 0, ''],
         [43, PredefinedAsset.Stock, '', 'CA6295231014', 0, '']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
+    assert JalDB._read("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
-        assert JalDB.readSQL("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset
+        assert JalDB._read("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset
 
     # validate symbols
     test_symbols = [
@@ -117,9 +117,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [44, 42, 'CORT.OD2', 2, 'CORPACT', -1, 1],
         [45, 43, 'NABIF', 2, '', -1, 1]
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
+    assert JalDB._read("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
     for i, symbol in enumerate(test_symbols):
-        assert JalDB.readSQL("SELECT * FROM asset_tickers WHERE id=:id", [(":id", i + 1)]) == symbol
+        assert JalDB._read("SELECT * FROM asset_tickers WHERE id=:id", [(":id", i + 1)]) == symbol
 
     # validate asset's data
     test_asset_data = [
@@ -160,9 +160,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [39, 42, 1, '218NSPODD'],
         [40, 43, 1, '629523101']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM asset_data") == len(test_asset_data)
+    assert JalDB._read("SELECT COUNT(*) FROM asset_data") == len(test_asset_data)
     for i, data in enumerate(test_asset_data):
-        assert JalDB.readSQL("SELECT * FROM asset_data WHERE id=:id", [(":id", i + 1)]) == data
+        assert JalDB._read("SELECT * FROM asset_data WHERE id=:id", [(":id", i + 1)]) == data
 
     # validate accounts
     test_accounts = [
@@ -173,18 +173,18 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [5, 4, 'TEST_ACC.CAD', 7, 1, 'TEST_ACC', 0, 2, 0, 10],
         [6, 4, 'Inv. Account.EUR', 3, 1, 'U7654321', 0, 1, 0, 10]
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM accounts") == len(test_accounts)
+    assert JalDB._read("SELECT COUNT(*) FROM accounts") == len(test_accounts)
     for i, account in enumerate(test_accounts):
-        assert JalDB.readSQL("SELECT * FROM accounts WHERE id=:id", [(":id", i + 1)]) == account
+        assert JalDB._read("SELECT * FROM accounts WHERE id=:id", [(":id", i + 1)]) == account
 
     # validate peers
     test_peers = [
         [1, 0, 'IB', ''],
         [2, 0, 'Bank for account #TEST_ACC', '']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM agents") == len(test_peers)
+    assert JalDB._read("SELECT COUNT(*) FROM agents") == len(test_peers)
     for i, peer in enumerate(test_peers):
-        assert JalDB.readSQL("SELECT * FROM agents WHERE id=:id", [(":id", i + 1)]) == peer
+        assert JalDB._read("SELECT * FROM agents WHERE id=:id", [(":id", i + 1)]) == peer
 
     # validate income/spending
     test_actions = [
@@ -193,9 +193,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [3, 3, 8, '', '0.5', '0', 'RUB CREDIT INT FOR MAY-2020'],
         [4, 4, 6, '', '-0.249018', '0', 'BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax']
     ]
-    assert JalDB.readSQL("SELECT COUNT(amount) FROM action_details") == len(test_actions)
+    assert JalDB._read("SELECT COUNT(amount) FROM action_details") == len(test_actions)
     for i, action in enumerate(test_actions):
-        assert JalDB.readSQL("SELECT * FROM action_details WHERE id=:id", [(":id", i + 1)]) == action
+        assert JalDB._read("SELECT * FROM action_details WHERE id=:id", [(":id", i + 1)]) == action
 
     # validate transfers
     test_transfers = [
@@ -205,9 +205,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [4, 4, 1600374600, 1, '123456.78', 1600374600, 2, '123456.78', '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
         [5, 4, 1605744000, 1, '1234.0', 1605744000, 1, '1234.0', '', '', '', 'DISBURSEMENT INITIATED BY John Doe']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM transfers") == len(test_transfers)
+    assert JalDB._read("SELECT COUNT(*) FROM transfers") == len(test_transfers)
     for i, transfer in enumerate(test_transfers):
-        assert JalDB.readSQL("SELECT * FROM transfers WHERE id=:id", [(":id", i + 1)]) == transfer
+        assert JalDB._read("SELECT * FROM transfers WHERE id=:id", [(":id", i + 1)]) == transfer
 
     # validate trades
     test_trades = [
@@ -224,9 +224,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [11, 3, 1638822300, 1638822300, '18694975077', 1, 36, '-8.0', '1103.06815', '0.0', '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)'],
         [12, 3, 1640031900, 1640031900, '18882610202', 1, 42, '-99.0', '20.75', '0.0', 'CORT.OD2(US218NSPODD6) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
+    assert JalDB._read("SELECT COUNT(*) FROM trades") == len(test_trades)
     for i, trade in enumerate(test_trades):
-        assert JalDB.readSQL("SELECT * FROM trades WHERE id=:id", [(":id", i + 1)]) == trade
+        assert JalDB._read("SELECT * FROM trades WHERE id=:id", [(":id", i + 1)]) == trade
 
     # validate asset payments
     test_payments = [
@@ -241,9 +241,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [9, 2, 1600128000, '', '', 2, 1, 12, '62.5', '0', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
         [10, 2, 1620345600, '', '', 4, 1, 8, '2.0', '0', 'Stock Award Grant for Cash Deposit']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM dividends") == len(test_payments)
+    assert JalDB._read("SELECT COUNT(*) FROM dividends") == len(test_payments)
     for i, payment in enumerate(test_payments):
-        assert JalDB.readSQL("SELECT * FROM dividends WHERE id=:id", [(":id", i + 1)]) == payment
+        assert JalDB._read("SELECT * FROM dividends WHERE id=:id", [(":id", i + 1)]) == payment
 
     # Verify that asset prices were loaded for stock dividends and vestings
     stock_quotes = [
@@ -253,9 +253,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [4, 1591215600, 34, 2, '8.59'],
         [5, 1620345600, 8, 2, '678']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM quotes") == len(stock_quotes)
+    assert JalDB._read("SELECT COUNT(*) FROM quotes") == len(stock_quotes)
     for i, quote in enumerate(stock_quotes):
-        assert JalDB.readSQL("SELECT * FROM quotes WHERE id=:id", [(":id", i + 1)]) == quote
+        assert JalDB._read("SELECT * FROM quotes WHERE id=:id", [(":id", i + 1)]) == quote
 
     # validate corp actions
     test_asset_actions = [
@@ -275,9 +275,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [14, 5, 1639597500, '18787960371', 1, 1, 41, '99.0', 'CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)'],
         [15, 5, 1612470300, '15238437826', 1, 5, 43, '20000.0', '(CA6295231014) DELISTED (NABIF, NABIS HOLDINGS INC, CA6295231014)']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM asset_actions") == len(test_asset_actions)
+    assert JalDB._read("SELECT COUNT(*) FROM asset_actions") == len(test_asset_actions)
     for i, action in enumerate(test_asset_actions):
-        assert JalDB.readSQL("SELECT * FROM asset_actions WHERE id=:id", [(":id", i + 1)]) == action
+        assert JalDB._read("SELECT * FROM asset_actions WHERE id=:id", [(":id", i + 1)]) == action
 
     test_action_results = [
         [1, 1, 8, '271.25', '1.0'],
@@ -295,9 +295,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [17, 13, 21, '320', '0.0'], [18, 13, 40, '29.0909', '0.0'],
         [19, 14, 42, '99.0', '0.0']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM action_results") == len(test_action_results)
+    assert JalDB._read("SELECT COUNT(*) FROM action_results") == len(test_action_results)
     for i, result in enumerate(test_action_results):
-        assert JalDB.readSQL("SELECT * FROM action_results WHERE id=:id", [(":id", i + 1)]) == result
+        assert JalDB._read("SELECT * FROM action_results WHERE id=:id", [(":id", i + 1)]) == result
 
 def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
     statement = Statement()
@@ -325,9 +325,9 @@ def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
         [15, PredefinedAsset.Stock, 'ПАО Московская Биржа', 'RU000A0JR4A1', 0, ''],
         [16, PredefinedAsset.Stock, 'Северсталь (ПАО)ао', 'RU0009046510', 0, '']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
+    assert JalDB._read("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
-        assert JalDB.readSQL("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset
+        assert JalDB._read("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset
 
     # validate assets
     test_symbols = [
@@ -348,9 +348,9 @@ def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
         [15, 15, 'MOEX', 1, 'MOEX', 1, 1],
         [16, 16, 'CHMF', 1, 'MOEX', 1, 1]
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
+    assert JalDB._read("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
     for i, symbol in enumerate(test_symbols):
-        assert JalDB.readSQL("SELECT * FROM asset_tickers WHERE id=:id", [(":id", i + 1)]) == symbol
+        assert JalDB._read("SELECT * FROM asset_tickers WHERE id=:id", [(":id", i + 1)]) == symbol
 
     # validate assets
     test_data = [
@@ -362,6 +362,6 @@ def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
         [8, 15, 1, '1-05-08443-H'],
         [9, 16, 1, '1-02-00143-A']
     ]
-    assert JalDB.readSQL("SELECT COUNT(*) FROM asset_data") == len(test_data)
+    assert JalDB._read("SELECT COUNT(*) FROM asset_data") == len(test_data)
     for i, data in enumerate(test_data):
-        assert JalDB.readSQL("SELECT * FROM asset_data WHERE id=:id", [(":id", i + 1)]) == data
+        assert JalDB._read("SELECT * FROM asset_data WHERE id=:id", [(":id", i + 1)]) == data

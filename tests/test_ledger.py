@@ -100,10 +100,10 @@ def test_ledger_rounding(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert Decimal(JalDB.readSQL("SELECT amount_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
-    assert Decimal(JalDB.readSQL("SELECT value_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
-    assert Decimal(JalDB.readSQL("SELECT amount_acc FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-10400')
-    assert Decimal(JalDB.readSQL("SELECT amount FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-133.34')
+    assert Decimal(JalDB._read("SELECT amount_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
+    assert Decimal(JalDB._read("SELECT value_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
+    assert Decimal(JalDB._read("SELECT amount_acc FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-10400')
+    assert Decimal(JalDB._read("SELECT amount FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-133.34')
 
 def test_buy_sell_change(prepare_db_fifo):
     # Prepare single stock
@@ -128,7 +128,7 @@ def test_buy_sell_change(prepare_db_fifo):
     assert trades[0].qty() == Decimal('7')
 
     # Modify closing deal quantity
-    _ = JalDB.execSQL("UPDATE trades SET qty=-5 WHERE id=2")
+    _ = JalDB._exec("UPDATE trades SET qty=-5 WHERE id=2")
 
     # Re-build ledger from last actual data
     ledger.rebuild()
@@ -142,7 +142,7 @@ def test_buy_sell_change(prepare_db_fifo):
     assert len(trades) == 1
 
     # Add one more trade
-    assert JalDB.execSQL("INSERT INTO trades (id, timestamp, settlement, account_id, asset_id, qty, price, fee) "
+    assert JalDB._exec("INSERT INTO trades (id, timestamp, settlement, account_id, asset_id, qty, price, fee) "
                              "VALUES (3, 1609815600, 1609902000, 1, 4, -8, 150, 3.0)") is not None
 
     # Re-build ledger from last actual data
@@ -151,19 +151,19 @@ def test_buy_sell_change(prepare_db_fifo):
     # Check that deal quantity remains correct
     trades = JalAccount(1).closed_trades_list()
     assert len(trades) == 2
-    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_opened") == 2
+    assert JalDB._read("SELECT COUNT(*) FROM trades_opened") == 2
 
-    _ = JalDB.execSQL("DELETE FROM trades WHERE id=2", commit=True)
+    _ = JalDB._exec("DELETE FROM trades WHERE id=2", commit=True)
 
-    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_opened") == 1
-    assert JalDB.readSQL("SELECT COUNT(*) FROM ledger WHERE timestamp>=1609729200") == 0
+    assert JalDB._read("SELECT COUNT(*) FROM trades_opened") == 1
+    assert JalDB._read("SELECT COUNT(*) FROM ledger WHERE timestamp>=1609729200") == 0
     # Re-build ledger from last actual data
     ledger.rebuild()
 
     # Check that deal quantity remains correct
     trades = JalAccount(1).closed_trades_list()
     assert len(trades) == 1
-    assert JalDB.readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '8'
+    assert JalDB._read("SELECT qty FROM trades_closed WHERE asset_id=4") == '8'
 
 
 def test_stock_dividend_change(prepare_db_fifo):
@@ -192,10 +192,10 @@ def test_stock_dividend_change(prepare_db_fifo):
     ledger.rebuild(from_timestamp=0)
 
     # Validate initial deal quantity
-    assert JalDB.readSQL("SELECT COUNT(*) FROM trades_closed WHERE asset_id=4") == 4
+    assert JalDB._read("SELECT COUNT(*) FROM trades_closed WHERE asset_id=4") == 4
 
     # Modify stock dividend
-    JalDB.execSQL("UPDATE dividends SET amount=3.0 WHERE asset_id=4")
+    JalDB._exec("UPDATE dividends SET amount=3.0 WHERE asset_id=4")
 
     # Re-build ledger from last actual data
     ledger.rebuild()
@@ -423,10 +423,10 @@ def test_fifo(prepare_db_fifo):
 
 
 def test_asset_transfer(prepare_db):
-    assert JalDB.execSQL("INSERT INTO agents (pid, name) VALUES (0, 'Test Peer')") is not None
-    assert JalDB.execSQL("INSERT INTO accounts (id, type_id, name, currency_id, active, number, organization_id) "
+    assert JalDB._exec("INSERT INTO agents (pid, name) VALUES (0, 'Test Peer')") is not None
+    assert JalDB._exec("INSERT INTO accounts (id, type_id, name, currency_id, active, number, organization_id) "
                          "VALUES (1, 4, 'account.USD', 2, 1, 'U7654321', 1)") is not None
-    assert JalDB.execSQL("INSERT INTO accounts (id, type_id, name, currency_id, active, number, organization_id) "
+    assert JalDB._exec("INSERT INTO accounts (id, type_id, name, currency_id, active, number, organization_id) "
                          "VALUES (2, 4, 'account.RUB', 1, 1, 'U7654321', 1)") is not None
     # Create starting balance
     create_actions([(d2t(220101), 1, 1, [(4, 1000.0)])])
@@ -435,9 +435,9 @@ def test_asset_transfer(prepare_db):
 
     # Prepare single stock
     create_stocks([(4, 'A.USD', 'A SHARE')], currency_id=2)
-    assert JalDB.execSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
+    assert JalDB._exec("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
                          "VALUES (:asset_id, :symbol, :currency_id)",
-                         [(":asset_id", 4), (":symbol", "A.RUB"), (":currency_id", 1)], commit=True) is not None
+                       [(":asset_id", 4), (":symbol", "A.RUB"), (":currency_id", 1)], commit=True) is not None
 
     create_trades(1, [(d2t(220201), d2t(220203), 4, 5.0, 100.0, 1.0)])
     create_trades(2, [(d2t(220211), d2t(220213), 4, -5.0, 8000.0, 5.0)])
@@ -448,8 +448,8 @@ def test_asset_transfer(prepare_db):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert JalDB.readSQL("SELECT COUNT(*) FROM ledger WHERE book_account=:transfers", [(":transfers", BookAccount.Transfers)]) == 2
-    assert JalDB.readSQL("SELECT SUM(value) FROM ledger WHERE book_account=:transfers", [(":transfers", BookAccount.Transfers)]) == 0.0
+    assert JalDB._read("SELECT COUNT(*) FROM ledger WHERE book_account=:transfers", [(":transfers", BookAccount.Transfers)]) == 2
+    assert JalDB._read("SELECT SUM(value) FROM ledger WHERE book_account=:transfers", [(":transfers", BookAccount.Transfers)]) == 0.0
     trades = JalAccount(1).closed_trades_list()
     assert len(trades) == 1
     assert sum([x.profit() for x in trades]) == Decimal('-1')
@@ -458,7 +458,7 @@ def test_asset_transfer(prepare_db):
     assert sum([x.profit() for x in trades]) == Decimal('2495')
 
     # Modify closing deal quantity
-    _ = JalDB.execSQL("UPDATE trades SET price=7700 WHERE id=2")
+    _ = JalDB._exec("UPDATE trades SET price=7700 WHERE id=2")
 
     # Build ledger from given date
     ledger = Ledger()
