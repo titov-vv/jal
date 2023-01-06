@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, QModelIndex
+from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QAbstractItemView
 from jal.constants import PredefindedAccountType, PredefinedAsset
@@ -58,15 +58,6 @@ class AccountListModel(AbstractReferenceListModel):
         type_id = JalDB.readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])
         type_id = 0 if type_id is None else type_id
         return type_id
-
-    def locateItem(self, item_id, use_filter=''):
-        row = JalDB.readSQL(f"SELECT row_number FROM ("
-                             f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
-                             f"FROM {self._table} WHERE {use_filter}) WHERE id=:id", [(":id", item_id)])
-        if row is None:
-            return QModelIndex()
-        return self.index(row-1, 0)
-
 
 class AccountListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -139,14 +130,6 @@ class AssetListModel(AbstractReferenceListModel):
         type_id = JalDB.readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])
         type_id = 0 if type_id is None else type_id
         return type_id
-
-    def locateItem(self, item_id, use_filter=''):
-        row = JalDB.readSQL(f"SELECT row_number FROM ("
-                             f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
-                             f"FROM {self._table} WHERE {use_filter}) WHERE id=:id", [(":id", item_id)])
-        if row is None:
-            return QModelIndex()
-        return self.index(row-1, 0)
 
 
 class AssetListDialog(ReferenceDataDialog):
@@ -297,13 +280,6 @@ class TagListModel(AbstractReferenceListModel):
         self._sort_by = "tag"
         self._hidden = ["id"]
         self._stretch = "tag"
-
-    def locateItem(self, item_id, use_filter=''):
-        row = JalDB.readSQL(f"SELECT row_number FROM (SELECT ROW_NUMBER() OVER (ORDER BY tag) AS row_number, id "
-                             f"FROM {self._table}) WHERE id=:id", [(":id", item_id)])
-        if row is None:
-            return QModelIndex()
-        return self.index(row - 1, 0)
 
 
 class TagsListDialog(ReferenceDataDialog):

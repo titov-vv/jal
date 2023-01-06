@@ -139,7 +139,14 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         super().revertAll()
 
     def locateItem(self, item_id, use_filter=''):
-        raise NotImplementedError(f"locateItem() method is not defined  in {type(self).__name__} class")
+        if use_filter:
+            use_filter = f"WHERE {use_filter}"
+        row = JalDB.readSQL(f"SELECT row_number FROM ("
+                            f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
+                            f"FROM {self._table} {use_filter}) WHERE id=:id", [(":id", item_id)])
+        if row is None:
+            return QModelIndex()
+        return self.index(row - 1, 0)
 
     def updateItemType(self, index, new_type):
         id = self.getId(index)
