@@ -28,7 +28,7 @@ class JalCategory(JalDB):
         children = []
         query = self._exec("SELECT id FROM categories WHERE pid=:category_id", [(":category_id", self._id)])
         while query.next():
-            children.append(JalCategory(self._read_sql_record(query)))
+            children.append(JalCategory(self._read_record(query)))
         return children
 
     # Calculates overall turnover in ledger for the category between begin and end timestamps in given currency
@@ -42,7 +42,7 @@ class JalCategory(JalDB):
                            [(":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
                             (":begin", begin), (":end", end), (":category_id", self._id)])
         while query.next():
-            timestamp, amount, currency_id = self._read_sql_record(query)
+            timestamp, amount, currency_id = self._read_record(query)
             if currency_id == output_currency_id:
                 rate = Decimal('1')
             else:
@@ -62,7 +62,7 @@ class JalCategory(JalDB):
         mapped_list = []
         query = cls._exec("SELECT value, mapped_to FROM map_category")
         while query.next():
-            mapped_list.append(cls._read_sql_record(query, named=True))
+            mapped_list.append(cls._read_record(query, named=True))
         return mapped_list
 
     # Returns a list of operations that include this category
@@ -72,5 +72,5 @@ class JalCategory(JalDB):
                            "WHERE d.category_id=:category AND a.timestamp>=:begin AND a.timestamp<:end",
                            [(":category", self._id), (":begin", begin), (":end", end)])
         while query.next():
-            operations.append(IncomeSpending(int(self._read_sql_record(query))))
+            operations.append(IncomeSpending(int(self._read_record(query))))  # TODO type cast in _read_record required
         return operations
