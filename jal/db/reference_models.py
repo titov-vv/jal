@@ -8,7 +8,7 @@ from jal.widgets.helpers import decodeError
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class AbstractReferenceListModel(QSqlRelationalTableModel):
+class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
     @property
     def completion_model(self):
         return self._completion_model
@@ -26,13 +26,13 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._hidden = []
         self._stretch = None
         self._default_values = {}   # To fill in default values for fields allowed to be NULL
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=JalDB.connection())
+        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=self.connection())
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(self._table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.select()
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
-        self._completion_model = QSqlTableModel(parent=parent_view, db=JalDB.connection())
+        self._completion_model = QSqlTableModel(parent=parent_view, db=self.connection())
         self._completion_model.setTable(self._table)
         self._completion_model.select()
 
@@ -89,7 +89,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         return self.getFieldValue(self.getId(index), self._default_name)
 
     def getFieldValue(self, item_id, field_name):
-        return JalDB.readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        return self.readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
     def addElement(self, index, in_group=0):
         row = index.row() if index.isValid() else 0
@@ -141,17 +141,17 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
     def locateItem(self, item_id, use_filter=''):
         if use_filter:
             use_filter = f"WHERE {use_filter}"
-        row = JalDB.readSQL(f"SELECT row_number FROM ("
-                            f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
-                            f"FROM {self._table} {use_filter}) WHERE id=:id", [(":id", item_id)])
+        row = self.readSQL(f"SELECT row_number FROM ("
+                           f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
+                           f"FROM {self._table} {use_filter}) WHERE id=:id", [(":id", item_id)])
         if row is None:
             return QModelIndex()
         return self.index(row - 1, 0)
 
     def updateItemType(self, index, new_type):
         id = self.getId(index)
-        JalDB.execSQL(f"UPDATE {self._table} SET {self._group_by}=:new_type WHERE id=:id",
-                      [(":new_type", new_type), (":id", id)])
+        self.execSQL(f"UPDATE {self._table} SET {self._group_by}=:new_type WHERE id=:id",
+                     [(":new_type", new_type), (":id", id)])
 
     def filterBy(self, field_name, value):
         self._filter_by = field_name
@@ -160,13 +160,13 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
 
     # returns group id for given item
     def getGroupId(self, item_id: int) -> int:
-        group_id = JalDB.readSQL(f"SELECT {self._group_by} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        group_id = self.readSQL(f"SELECT {self._group_by} FROM {self._table} WHERE id=:id", [(":id", item_id)])
         group_id = 0 if group_id is None else group_id
         return group_id
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class SqlTreeModel(QAbstractItemModel):
+class SqlTreeModel(QAbstractItemModel, JalDB):
     ROOT_PID = 0
 
     @property
@@ -176,11 +176,12 @@ class SqlTreeModel(QAbstractItemModel):
     def __init__(self, table, parent_view):
         super().__init__(parent_view)
         self._table = table
+        self._columns = []
         self._view = parent_view
         self._default_name = "name"
         self._stretch = None
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
-        self._completion_model = QSqlTableModel(parent=parent_view, db=JalDB.connection())
+        self._completion_model = QSqlTableModel(parent=parent_view, db=self.connection())
         self._completion_model.setTable(self._table)
         self._completion_model.select()
 
@@ -191,8 +192,8 @@ class SqlTreeModel(QAbstractItemModel):
             parent_id = self.ROOT_PID
         else:
             parent_id = parent.internalId()
-        child_id = JalDB.readSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
-                                 [(":pid", parent_id), (":row_n", row)])
+        child_id = self.readSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
+                                [(":pid", parent_id), (":row_n", row)])
         if child_id:
             return self.createIndex(row, column, id=child_id)
         return QModelIndex()
@@ -201,13 +202,13 @@ class SqlTreeModel(QAbstractItemModel):
         if not index.isValid():
             return QModelIndex()
         child_id = index.internalId()
-        parent_id = JalDB.readSQL(f"SELECT pid FROM {self._table} WHERE id=:id", [(":id", child_id)])
+        parent_id = self.readSQL(f"SELECT pid FROM {self._table} WHERE id=:id", [(":id", child_id)])
         if parent_id == self.ROOT_PID:
             return QModelIndex()
-        row = JalDB.readSQL(f"SELECT row_number FROM ("
-                             f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
-                             f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
-                             f"WHERE id=:id", [(":id", parent_id)])
+        row = self.readSQL(f"SELECT row_number FROM ("
+                           f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
+                           f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
+                           f"WHERE id=:id", [(":id", parent_id)])
         return self.createIndex(row-1, 0, id=parent_id)
 
     def rowCount(self, parent=None):
@@ -215,7 +216,7 @@ class SqlTreeModel(QAbstractItemModel):
             parent_id = self.ROOT_PID
         else:
             parent_id = parent.internalId()
-        count = JalDB.readSQL(f"SELECT COUNT(id) FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
+        count = self.readSQL(f"SELECT COUNT(id) FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
         if count:
             return int(count)
         else:
@@ -236,8 +237,8 @@ class SqlTreeModel(QAbstractItemModel):
         if role == Qt.DisplayRole:
             col = index.column()
             if (col >= 0) and (col < len(self._columns)):
-                return JalDB.readSQL(f"SELECT {self._columns[col][0]} FROM {self._table} WHERE id=:id",
-                                     [(":id", item_id)])
+                return self.readSQL(f"SELECT {self._columns[col][0]} FROM {self._table} WHERE id=:id",
+                                    [(":id", item_id)])
             else:
                 return None
         return None
@@ -249,9 +250,9 @@ class SqlTreeModel(QAbstractItemModel):
             return False
         item_id = index.internalId()
         col = index.column()
-        JalDB.connection().transaction()
-        _ = JalDB.execSQL(f"UPDATE {self._table} SET {self._columns[col][0]}=:value WHERE id=:id",
-                          [(":id", item_id), (":value", value)])
+        self.connection().transaction()
+        _ = self.execSQL(f"UPDATE {self._table} SET {self._columns[col][0]}=:value WHERE id=:id",
+                         [(":id", item_id), (":value", value)])
         self.dataChanged.emit(index, index, Qt.DisplayRole | Qt.EditRole)
         return True
 
@@ -289,13 +290,13 @@ class SqlTreeModel(QAbstractItemModel):
             self.getFieldValue(item_id, self._default_name)
 
     def getFieldValue(self, item_id, field_name):
-        return JalDB.readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        return self.readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
     def deleteWithChilderen(self, parent_id: int) -> None:
-        query = JalDB.execSQL(f"SELECT id FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
+        query = self.execSQL(f"SELECT id FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
         while query.next():
             self.deleteWithChilderen(query.value(0))
-        _ = JalDB.execSQL(f"DELETE FROM {self._table} WHERE id=:id", [(":id", parent_id)])
+        _ = self.execSQL(f"DELETE FROM {self._table} WHERE id=:id", [(":id", parent_id)])
 
     def insertRows(self, row, count, parent=None):
         if parent is None:
@@ -306,8 +307,8 @@ class SqlTreeModel(QAbstractItemModel):
             parent_id = parent.internalId()
 
         self.beginInsertRows(parent, row, row + count - 1)
-        JalDB.connection().transaction()
-        _ = JalDB.execSQL(f"INSERT INTO {self._table}(pid, name) VALUES (:pid, '')", [(":pid", parent_id)])
+        self.connection().transaction()
+        _ = self.execSQL(f"INSERT INTO {self._table}(pid, name) VALUES (:pid, '')", [(":pid", parent_id)])
         self.endInsertRows()
         self.layoutChanged.emit()
         return True
@@ -321,9 +322,9 @@ class SqlTreeModel(QAbstractItemModel):
             parent_id = parent.internalId()
 
         self.beginRemoveRows(parent, row, row + count - 1)
-        JalDB.connection().transaction()
-        query = JalDB.execSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT :row_c OFFSET :row_n",
-                              [(":pid", parent_id), (":row_c", count), (":row_n", row)])
+        self.connection().transaction()
+        query = self.execSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT :row_c OFFSET :row_n",
+                             [(":pid", parent_id), (":row_c", count), (":row_n", row)])
         while query.next():
             self.deleteWithChilderen(query.value(0))
         self.endRemoveRows()
@@ -343,12 +344,12 @@ class SqlTreeModel(QAbstractItemModel):
         assert self.removeRows(row, 1, index.parent())
 
     def submitAll(self):
-        _ = JalDB.execSQL("COMMIT")
+        _ = self.execSQL("COMMIT")
         self.layoutChanged.emit()
         return True
 
     def revertAll(self):
-        _ = JalDB.execSQL("ROLLBACK")
+        _ = self.execSQL("ROLLBACK")
         self.layoutChanged.emit()
 
     # expand all parent elements for tree element with given index
@@ -360,10 +361,10 @@ class SqlTreeModel(QAbstractItemModel):
 
     # find item by ID and make it selected in associated self._view
     def locateItem(self, item_id):
-        row = JalDB.readSQL(f"SELECT row_number FROM ("
-                             f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
-                             f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
-                             f"WHERE id=:id", [(":id", item_id)])
+        row = self.readSQL(f"SELECT row_number FROM ("
+                           f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
+                           f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
+                           f"WHERE id=:id", [(":id", item_id)])
         if row is None:
             return
         item_idx = self.createIndex(row-1, 0, id=item_id)
