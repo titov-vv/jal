@@ -27,11 +27,12 @@ class JalAccount(JalDB):
                             data={'name': self.tr("Bank for account #" + str(data['number']))},
                             search=True, create=True).id()
                     query = self._exec(
-                        "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, precision) "
-                        "VALUES(:type, :name, 1, :number, :currency, :organization, :precision)",
+                        "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, "
+                        "country_id, precision) "
+                        "VALUES(:type, :name, 1, :number, :currency, :organization, :country, :precision)",
                         [(":type", data['type']), (":name", data['name']), (":number", data['number']),
                          (":currency", data['currency']), (":organization", data['organization']),
-                         (":precision", data['precision'])], commit=True)
+                         (":country", data['country']), (":precision", data['precision'])], commit=True)
                     self._id = query.lastInsertId()
         self._data = self._read("SELECT type_id, name, number, currency_id, active, organization_id, country_id, "
                                 "reconciled_on, precision FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
@@ -217,6 +218,7 @@ class JalAccount(JalDB):
         if "name" not in data:
             data['name'] = data['number'] + '.' + JalAsset(data['currency']).symbol()
         data['organization'] = data['organization'] if 'organization' in data else None
+        data['country'] = data['country'] if 'country' in data else 0
         data['precision'] = data['precision'] if "precision" in data else Setup.DEFAULT_ACCOUNT_PRECISION
         return True
 
