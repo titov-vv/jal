@@ -6,6 +6,7 @@ from decimal import Decimal
 from tests.fixtures import project_root
 from constants import Setup
 from jal.db.db import JalDB, JalDBError
+from jal.db.asset import JalAsset
 from jal.db.helpers import get_dbfilename, localize_decimal
 from jal.db.backup_restore import JalBackup
 
@@ -38,7 +39,7 @@ def test_db_creation(tmp_path, project_root):
     assert os.path.getsize(result_path) > 0
     assert error.code == JalDBError.NoError
     # Verify db encoding
-    assert JalDB._read("SELECT full_name FROM assets WHERE id=1") == 'Российский Рубль'
+    assert JalAsset(1).name() == 'Российский Рубль'
 
     # Clean up db
     JalDB.connection().close()
