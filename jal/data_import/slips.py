@@ -394,7 +394,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             "lines": details
         }
         LedgerTransaction().create_new(LedgerTransaction.IncomeSpending, operation)
-        JalPeer.add_or_update_mapped_name(self.SlipShopName.text(), self.PeerEdit.selected_id)
+        JalPeer(self.PeerEdit.selected_id).add_or_update_mapped_name(self.SlipShopName.text(), )
         self.clearSlipData()
 
     def clearSlipData(self):
