@@ -442,7 +442,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if 'cancelled' in trade and trade['cancelled']:
                 del trade['cancelled']          # Remove extra data
                 trade['qty'] = -trade['qty']    # Change side as cancellation is an opposite operation
-                oid = LedgerTransaction.locate_operation(LedgerTransaction.Trade, trade)
+                oid = LedgerTransaction().find_operation(LedgerTransaction.Trade, trade)
                 if oid:
                     LedgerTransaction.get_operation(LedgerTransaction.Trade, oid).delete()
                 continue
