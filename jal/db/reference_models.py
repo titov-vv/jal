@@ -158,6 +158,12 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._filter_value = value
         self.setFilter(f"{self._table}.{field_name} = {value}")
 
+    # returns group id for given item
+    def getGroupId(self, item_id: int) -> int:
+        group_id = JalDB.readSQL(f"SELECT {self._group_by} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        group_id = 0 if group_id is None else group_id
+        return group_id
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class SqlTreeModel(QAbstractItemModel):
