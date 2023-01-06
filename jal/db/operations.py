@@ -16,7 +16,7 @@ class LedgerError(Exception):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class LedgerTransaction:
+class LedgerTransaction(JalDB):
     NA = 0                  # Transaction types - these are aligned with tabs in main window
     IncomeSpending = 1
     Dividend = 2
@@ -27,6 +27,7 @@ class LedgerTransaction:
     _db_fields = {}
 
     def __init__(self, operation_data=None):
+        super().__init__()
         if type(operation_data) == dict:
             operation_id = JalDB().create_operation(self._db_table, self._db_fields, operation_data)
         else:
@@ -155,8 +156,8 @@ class LedgerTransaction:
                               [(":account_id", self._account.id()), (":asset_id", self._asset.id()),
                                (":zero", format_decimal(Decimal('0')))])
         while query.next():
-            opening_trade = JalDB.readSQLrecord(query, named=True)
-            next_deal_qty = Decimal(opening_trade['remaining_qty'])
+            opening_trade = self.readSQLrecord(query, named=True)
+            next_deal_qty = Decimal(opening_trade['remaining_qty'])  # TODO implement type casting of result values inside readSQLrecord()
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
             remaining_qty = Decimal(opening_trade['remaining_qty']) - next_deal_qty
@@ -299,7 +300,7 @@ class IncomeSpending(LedgerTransaction):
                                           "WHERE d.pid= :pid", [(":pid", self._oid)])
         self._details = []
         while details_query.next():
-            self._details.append(JalDB.readSQLrecord(details_query, named=True))
+            self._details.append(self.readSQLrecord(details_query, named=True))
         self._amount = sum(Decimal(line['amount']) for line in self._details)
         self._label, self._label_color = ('—', CustomColor.DarkRed) if self._amount < 0 else ('+', CustomColor.DarkGreen)
         if self._currency:
@@ -421,8 +422,8 @@ class Dividend(LedgerTransaction):
     # Returns a list of Dividend objects for given asset, account and subtype
     # if asset_id is 0 - return for all assets, if subtype is 0 - return all types
     # skip_accrued=True - don't include accrued interest in resulting list
-    @staticmethod
-    def get_list(account_id: int, asset_id: int = 0, subtype: int = 0, skip_accrued: bool = False) -> list:
+    @classmethod
+    def get_list(cls, account_id: int, asset_id: int = 0, subtype: int = 0, skip_accrued: bool = False) -> list:
         dividends = []
         if skip_accrued:
             query = "SELECT d.id FROM dividends d LEFT JOIN trades t ON d.account_id=t.account_id "\
@@ -439,7 +440,7 @@ class Dividend(LedgerTransaction):
             params += [(":type", subtype)]
         query = JalDB.execSQL(query, params)
         while query.next():
-            dividends.append(Dividend(int(JalDB.readSQLrecord(query))))
+            dividends.append(Dividend(int(cls.readSQLrecord(query))))
         return dividends
 
     # Settlement returns timestamp - it is required for stock dividend/vesting
@@ -975,7 +976,7 @@ class CorporateAction(LedgerTransaction):
                                       [(":oid", self._oid)])
         self._results = []
         while results_query.next():
-            self._results.append(JalDB.readSQLrecord(results_query, named=True))
+            self._results.append(self.readSQLrecord(results_query, named=True))
         self._view_rows = len(self._results)
         self._subtype = self._data['type']
         self._oname = self.names[self._subtype]
@@ -1001,7 +1002,7 @@ class CorporateAction(LedgerTransaction):
         query = JalDB.execSQL("SELECT asset_id, value_share FROM action_results WHERE action_id=:oid",
                               [(":oid", self._oid)])
         while query.next():
-            result = JalDB.readSQLrecord(query, named=True)
+            result = self.readSQLrecord(query, named=True)
             if self._subtype == CorporateAction.SpinOff and result['asset_id'] == self._asset.id():
                 continue   # Don't display initial asset in list
             description += "\n" + self._asset.name()
@@ -1015,7 +1016,7 @@ class CorporateAction(LedgerTransaction):
             result.append(Decimal(-self._qty))
         query = JalDB.execSQL("SELECT qty FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
-            result.append(Decimal(JalDB.readSQLrecord(query)))
+            result.append(Decimal(self.readSQLrecord(query)))
         if len(result) == 1:  # Need to feel at least 2 lines
             result.append(None)
         return result
@@ -1027,7 +1028,7 @@ class CorporateAction(LedgerTransaction):
             symbol = ""
         query = JalDB.execSQL("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
-            symbol += f" {JalAsset(JalDB.readSQLrecord(query)).symbol()}\n"
+            symbol += f" {JalAsset(self.readSQLrecord(query)).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
 
     def value_total(self) -> str:    # FIXME - Method may give incorrect result if 'outgoing' asset was present before operation
@@ -1059,15 +1060,15 @@ class CorporateAction(LedgerTransaction):
 
     # Returns a list {"timestamp", "amount", "note"} that represents payments out of corporate actions to given account
     # in given account currency
-    @staticmethod
-    def get_payments(account) -> list:
+    @classmethod
+    def get_payments(cls, account) -> list:
         payments = []
         query = JalDB.execSQL("SELECT a.timestamp, r.qty, a.note FROM asset_actions AS a "
                                   "LEFT JOIN action_results AS r ON r.action_id=a.id "
                                   "WHERE a.account_id=:account_id AND r.asset_id=:account_currency",
                               [(":account_id", account.id()), (":account_currency", account.currency())])
         while query.next():
-            timestamp, amount, note = JalDB.readSQLrecord(query)
+            timestamp, amount, note = cls.readSQLrecord(query)
             payments.append({"timestamp": timestamp, "amount": Decimal(amount), "note": note})
         return payments
 
@@ -1086,7 +1087,7 @@ class CorporateAction(LedgerTransaction):
         allocation = Decimal('0')
         query = JalDB.execSQL("SELECT value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
-            allocation += Decimal(JalDB.readSQLrecord(query))
+            allocation += Decimal(self.readSQLrecord(query))  # TODO implement type casting of result values inside readSQLrecord()
         if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
             raise LedgerError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
                                       + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, " 
@@ -1110,7 +1111,7 @@ class CorporateAction(LedgerTransaction):
             #     for i, dtype in enumerate(cast):
             #       res.append(dtype(float(i)))
             #     return res
-            asset_id, qty, share = JalDB.readSQLrecord(query)
+            asset_id, qty, share = self.readSQLrecord(query)
             asset = JalAsset(asset_id)
             qty = Decimal(qty)
             share = Decimal(share)

@@ -133,11 +133,11 @@ class JalDB:
     # named = False: result is packed into a list of field values
     # named = True: result is packet into a dictionary with field names as keys
     # check_unique = True: checks that only 1 record was returned by query, otherwise returns None
-    @staticmethod
-    def readSQL(sql_text, params=None, named=False, check_unique=False):
+    @classmethod
+    def readSQL(cls, sql_text, params=None, named=False, check_unique=False):
         query = JalDB.execSQL(sql_text, params)
         if query.next():
-            res = JalDB.readSQLrecord(query, named=named)
+            res = cls.readSQLrecord(query, named=named)
             if check_unique and query.next():
                 return None  # More than one record in result when only one expected
             return res
