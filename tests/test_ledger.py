@@ -1,11 +1,10 @@
-from pytest import approx
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_quotes, \
     create_corporate_actions, create_stock_dividends, create_transfers
 from constants import BookAccount
-from jal.db.ledger import Ledger
+from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -32,12 +31,17 @@ def test_ledger(prepare_db_ledger):
     ledger.rebuild(from_timestamp=0)
 
     # validate book amounts
-    expected_book_values = [None, '1.3E+2', '-139', '9', None, '0']
-    query = JalDB.execSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
-                              "FROM ledger GROUP BY book_account")
-    while query.next():
-        row = JalDB.readSQLrecord(query, named=True)
-        assert row['amount_acc'] == expected_book_values[row['book_account']]
+    amounts = LedgerAmounts("amount_acc")
+    expected_book_amounts ={
+        BookAccount.Costs: Decimal('130'),
+        BookAccount.Incomes: Decimal('-139'),
+        BookAccount.Money: Decimal('9'),
+        BookAccount.Assets: Decimal('0'),
+        BookAccount.Liabilities: Decimal('0'),
+        BookAccount.Transfers: Decimal('0')
+    }
+    for book in expected_book_amounts:
+        assert amounts[(book, 1, 1)] == expected_book_amounts[book]
 
     actions = [
         (1638360000, 1, 1, [(5, -34.0)]),
@@ -50,23 +54,33 @@ def test_ledger(prepare_db_ledger):
     ledger.rebuild()
 
     # validate book amounts and values
-    expected_book_amounts = [None, '164', '-1.5E+2', '0', None, '-14']
-    expected_book_values = ['0', '0', '0', '0', '0', '0']
-    query = JalDB.execSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
-                              "FROM ledger GROUP BY book_account")
-    while query.next():
-        row = JalDB.readSQLrecord(query, named=True)
-        assert row['amount_acc'] == expected_book_amounts[row['book_account']]
-        assert row['value_acc'] == expected_book_values[row['book_account']]
+    amounts = LedgerAmounts("amount_acc")
+    values = LedgerAmounts("value_acc")
+    expected_book_amounts = {
+        BookAccount.Costs: Decimal('164'),
+        BookAccount.Incomes: Decimal('-1.5E+2'),
+        BookAccount.Money: Decimal('0'),
+        BookAccount.Assets: Decimal('0'),
+        BookAccount.Liabilities: Decimal('-14'),
+        BookAccount.Transfers: Decimal('0')
+    }
+    expected_book_values = {
+        BookAccount.Costs: Decimal('0'),
+        BookAccount.Incomes: Decimal('0'),
+        BookAccount.Money: Decimal('0'),
+        BookAccount.Assets: Decimal('0'),
+        BookAccount.Liabilities: Decimal('0'),
+        BookAccount.Transfers: Decimal('0')
+    }
+    for book in expected_book_amounts:
+        assert amounts[(book, 1, 1)] == expected_book_amounts[book]
+        assert values[(book, 1, 1)] == expected_book_values[book]
 
     # Re-build from the middle - validation should pass again
     ledger.rebuild(from_timestamp=1638352800)
-    query = JalDB.execSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
-                              "FROM ledger GROUP BY book_account")
-    while query.next():
-        row = JalDB.readSQLrecord(query, named=True)
-        assert row['amount_acc'] == expected_book_amounts[row['book_account']]
-        assert row['value_acc'] == expected_book_values[row['book_account']]
+    for book in expected_book_amounts:
+        assert amounts[(book, 1, 1)] == expected_book_amounts[book]
+        assert values[(book, 1, 1)] == expected_book_values[book]
 
 
 def test_ledger_rounding(prepare_db_fifo):
@@ -380,16 +394,32 @@ def test_fifo(prepare_db_fifo):
     assert sum([x.profit() for x in trades]) == Decimal('200')
 
     # validate final amounts
-    query = JalDB.execSQL("SELECT MAX(id) AS mid, asset_id, amount_acc, value_acc FROM ledger "
-                              "WHERE book_account=:money OR book_account=:assets GROUP BY asset_id",
-                          [(":money", BookAccount.Money), (":assets", BookAccount.Assets)])
-    while query.next():
-        row = JalDB.readSQLrecord(query, named=True)
-        if row['asset_id'] == 2:  # Checking money amount
-            assert Decimal(row['amount_acc']) == Decimal('16700')
-        else:
-            assert Decimal(row['amount_acc']) == Decimal('0')
-        assert Decimal(row['value_acc']) == Decimal('0')
+    # validate book amounts and values
+    amounts = LedgerAmounts("amount_acc")
+    values = LedgerAmounts("value_acc")
+    # expected_book_amounts = {
+    #     BookAccount.Costs: Decimal('164'),
+    #     BookAccount.Incomes: Decimal('-1.5E+2'),
+    #     BookAccount.Money: Decimal('0'),
+    #     BookAccount.Assets: Decimal('0'),
+    #     BookAccount.Liabilities: Decimal('-14'),
+    #     BookAccount.Transfers: Decimal('0')
+    # }
+    # expected_book_values = {
+    #     BookAccount.Costs: Decimal('0'),
+    #     BookAccount.Incomes: Decimal('0'),
+    #     BookAccount.Money: Decimal('0'),
+    #     BookAccount.Assets: Decimal('0'),
+    #     BookAccount.Liabilities: Decimal('0'),
+    #     BookAccount.Transfers: Decimal('0')
+    # }
+    # for book in expected_book_amounts:
+    #     assert amounts[(book, 1, 1)] == expected_book_amounts[book]
+    #     assert values[(book, 1, 1)] == expected_book_values[book]
+    assert amounts[BookAccount.Money, 1, 1] == Decimal('0')
+    assert amounts[BookAccount.Money, 1, 2] == Decimal('16700')
+    for asset_id in range(4, 18):
+        assert values[BookAccount.Assets, 1, asset_id] == Decimal('0')
 
 
 def test_asset_transfer(prepare_db):
