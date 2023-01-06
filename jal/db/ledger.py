@@ -107,7 +107,7 @@ class Ledger(QObject, JalDB):
             params += [(":account", account_id)]
         query = cls.execSQL(query_text, params, forward_only=True)
         while query.next():
-            sequence.append(cls.readSQLrecord(query, named=True))
+            sequence.append(cls._read_sql_record(query, named=True))
         return sequence
 
     @classmethod
@@ -119,7 +119,7 @@ class Ledger(QObject, JalDB):
             "WHERE category_id=:category AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
             [(":begin", begin), (":end", end), (":category", category_id)], forward_only=True)
         while query.next():
-            operations.append(cls.readSQLrecord(query, named=True))
+            operations.append(cls._read_sql_record(query, named=True))
         return operations
 
     @classmethod
@@ -131,7 +131,7 @@ class Ledger(QObject, JalDB):
             "WHERE tag_id=:tag AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
             [(":begin", begin), (":end", end), (":tag", tag_id)], forward_only=True)
         while query.next():
-            operations.append(cls.readSQLrecord(query, named=True))
+            operations.append(cls._read_sql_record(query, named=True))
         return operations
 
     # Add one more transaction to 'book' of ledger.
@@ -246,7 +246,7 @@ class Ledger(QObject, JalDB):
             query = self.execSQL("SELECT op_type, id, timestamp, account_id, subtype FROM operation_sequence "
                                  "WHERE timestamp >= :frontier", [(":frontier", frontier)])
             while query.next():
-                data = self.readSQLrecord(query, named=True)
+                data = self._read_sql_record(query, named=True)
                 last_timestamp = data['timestamp']
                 operation = LedgerTransaction().get_operation(data['op_type'], data['id'], data['subtype'])
                 operation.processLedger(self)

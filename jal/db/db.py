@@ -137,7 +137,7 @@ class JalDB:
     def readSQL(cls, sql_text, params=None, named=False, check_unique=False):
         query = JalDB.execSQL(sql_text, params)
         if query.next():
-            res = cls.readSQLrecord(query, named=named)
+            res = cls._read_sql_record(query, named=named)
             if check_unique and query.next():
                 return None  # More than one record in result when only one expected
             return res
@@ -148,8 +148,8 @@ class JalDB:
     # Method takes current active record of given query and returns its values as:
     # named = False: a list of field values
     # named = True: a dictionary with field names as keys
-    @staticmethod
-    def readSQLrecord(query, named=False):
+    @classmethod
+    def _read_sql_record(cls, query, named=False):
         values = {} if named else []
         for i in range(query.record().count()):
             if named:
