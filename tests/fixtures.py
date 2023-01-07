@@ -9,7 +9,7 @@ from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings
 from jal.db.helpers import get_dbfilename
-from tests.helpers import d2t, create_assets, create_actions, create_dividends
+from tests.helpers import d2t, dt2t, create_assets, create_actions, create_dividends
 
 
 @pytest.fixture
@@ -70,8 +70,8 @@ def prepare_db_ibkr(prepare_db):
     ]
     create_assets(test_assets, data=[(5, AssetData.RegistrationCode, "921910709")])
     dividends = [
-        (1529612400, 1, 5, 16.76, 1.68, "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"),
-        (1533673200, 1, 5, 20.35, 2.04, "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)")
+        (dt2t(1806212020), 1, 5, 16.76, 1.68, "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"),
+        (dt2t(1808072020), 1, 5, 20.35, 2.04, "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)")
     ]
     create_dividends(dividends)
     yield

@@ -9,6 +9,7 @@ from jal.db.db import JalDB, JalDBError
 from jal.db.asset import JalAsset
 from jal.db.helpers import get_dbfilename, localize_decimal
 from jal.db.backup_restore import JalBackup
+from tests.helpers import pop2minor_digits, d2t, dt2t
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -22,6 +23,12 @@ def test_number_formatting():
     assert localize_decimal(Decimal('1234.123'), precision=5) == '1\xa0234,12300'
     assert localize_decimal(Decimal('120')) == '120'
     assert localize_decimal(Decimal('13000')) == '13\xa0000'
+
+
+def test_helpers():
+    assert pop2minor_digits(12345) == (45, 123)
+    assert d2t(230107) == 1673049600
+    assert dt2t(1806212020) == 1529612400
 
 
 # ----------------------------------------------------------------------------------------------------------------------

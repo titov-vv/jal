@@ -6,15 +6,29 @@ from constants import PredefinedAsset
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Helper that takes 2 minor digits of x numer and returns them and number without it.
+# I.e. if x = 12345 then return value is (45, 123)
+def pop2minor_digits(x: int) -> (int, int):
+    minor = x % 100
+    reminder = (x - minor) // 100
+    return minor, reminder
+
 # converts YYMMDD integer into unix timestamp that corresponds to DD/MM/20YY 00:00:00
 def d2t(date_value: int) -> int:
-    d = date_value % 100
-    date_value = (date_value - d) // 100
-    m = date_value % 100
-    y = (date_value - m) // 100
+    d, date_value = pop2minor_digits(date_value)
+    m, y = pop2minor_digits( date_value)
     ts = int(datetime.strptime(f"{d:02d}/{m:02d}/{y:02d}", "%d/%m/%y").replace(tzinfo=timezone.utc).timestamp())
     return ts
 
+# converts YYMMDDHHMM integer into unix timestamp that corresponds to DD/MM/20YY HH:MM:00
+def dt2t(datetime_value: int) -> int:
+    hh, datetime_value = pop2minor_digits(datetime_value)
+    mm, datetime_value = pop2minor_digits(datetime_value)
+    d, datetime_value = pop2minor_digits(datetime_value)
+    m, y = pop2minor_digits(datetime_value)
+    dt = datetime.strptime(f"{d:02d}/{m:02d}/{y:02d} {hh:02d}:{mm:02d}", "%d/%m/%y %H:%M")
+    ts = int(dt.replace(tzinfo=timezone.utc).timestamp())
+    return ts
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Helper functions to convert Decimals inside nested dictionaries into flaots in order to compare with stored json
