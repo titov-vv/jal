@@ -1,6 +1,5 @@
 from decimal import Decimal
 from datetime import datetime, timezone
-from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, Dividend
 from constants import PredefinedAsset
@@ -121,12 +120,9 @@ def create_stock_dividends(dividends):
 def create_trades(account_id, trades):
     for trade in trades:
         number = trade[6] if len(trade) > 6 else ''
-        assert JalDB._exec(
-            "INSERT INTO trades (timestamp, settlement, account_id, asset_id, qty, price, fee, number) "
-            "VALUES (:timestamp, :settlement, :account_id, :asset, :qty, :price, :fee, :number)",
-            [(":timestamp", trade[0]), (":settlement", trade[1]), (":account_id", account_id),
-             (":asset", trade[2]), (":qty", trade[3]), (":price", trade[4]), (":fee", trade[5]),
-             (":number", number)], commit=True) is not None
+        data = {'timestamp': trade[0], 'settlement': trade[1], 'account_id': account_id, 'asset_id': trade[2],
+                'qty': trade[3], 'price': trade[4], 'fee': trade[5], 'number': number}
+        LedgerTransaction().create_new(LedgerTransaction.Trade, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -134,17 +130,12 @@ def create_trades(account_id, trades):
 # (timestamp, type, asset_old, qty_old, note, [(asset_new1, qty_new1, share1), (asset_new2, qty_new2, share2), ...])
 def create_corporate_actions(account_id, actions):
     for action in actions:
-        query = JalDB._exec("INSERT INTO asset_actions (timestamp, account_id, type, asset_id, qty, note) "
-                                  "VALUES (:timestamp, :account_id, :type, :asset_id, :qty, :note)",
-                            [(":timestamp", action[0]), (":account_id", account_id), (":type", action[1]),
-                                   (":asset_id", action[2]), (":qty", action[3]), (":note", action[4])], commit=True)
-        assert query is not None
-        action_id = query.lastInsertId()
+        outcomes = []
         for result in action[5]:
-            assert JalDB._exec("INSERT INTO action_results (action_id, asset_id, qty, value_share) "
-                                     "VALUES (:action_id, :asset_id, :qty, :value_share)",
-                               [(":action_id", action_id), (":asset_id", result[0]),
-                                      (":qty", result[1]), (":value_share", result[2])], commit=True) is not None
+            outcomes.append({"asset_id": result[0], "qty": result[1], "value_share": result[2]})
+        data = {'timestamp': action[0], 'account_id': account_id, 'type': action[1], 'asset_id': action[2],
+                'qty': action[3], 'note': action[4], 'outcome': outcomes}
+        LedgerTransaction().create_new(LedgerTransaction.CorporateAction, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -152,9 +143,7 @@ def create_corporate_actions(account_id, actions):
 # (timestamp, withdrawal_account, withdrawal, deposit_account, deposit, asset_id)
 def create_transfers(transfers):
     for transfer in transfers:
-        assert JalDB._exec("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
-                                 "deposit_timestamp, deposit_account, deposit, asset) "
-                                 "VALUES (:timestamp, :from, :withdrawal, :timestamp, :to, :deposit, :asset_id)",
-                           [(":timestamp", transfer[0]), (":from", transfer[1]), (":withdrawal", transfer[2]),
-                                  (":to", transfer[3]), (":deposit", transfer[4]), (":asset_id", transfer[5])],
-                           commit=True) is not None
+        data = {'withdrawal_timestamp': transfer[0], 'withdrawal_account': transfer[1], 'withdrawal': transfer[2],
+                'deposit_timestamp': transfer[0],'deposit_account': transfer[3], 'deposit': transfer[4],
+                'asset': transfer[5]}
+        LedgerTransaction().create_new(LedgerTransaction.Transfer, data)
