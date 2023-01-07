@@ -46,17 +46,11 @@ def json_decimal2float(json_obj):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples (asset_id, symbol, full_name)
+# Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples (symbol, full_name)
 def create_stocks(assets, currency_id):
-    for asset in assets:
-        query = JalDB._exec("INSERT INTO assets (id, type_id, full_name) VALUES (:id, :type, :full_name)",
-                            [(":id", asset[0]), (":type", PredefinedAsset.Stock),
-                                   (":full_name", asset[2])], commit=True)
-        asset_id = query.lastInsertId()
-        assert JalDB._exec("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
-                                 "VALUES (:asset_id, :symbol, :currency_id)",
-                           [(":asset_id", asset_id), (":symbol", asset[1]), (":currency_id", currency_id)],
-                           commit=True) is not None
+    for item in assets:
+        asset = JalAsset(data={'type': PredefinedAsset.Stock, 'name': item[1]}, create=True)
+        asset.add_symbol(item[0], currency_id, '')
 
 
 # ----------------------------------------------------------------------------------------------------------------------

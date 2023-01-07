@@ -9,11 +9,7 @@ from tests.helpers import create_stocks, create_quotes, create_trades, create_co
 
 def test_spin_off(prepare_db_fifo):
     # Prepare trades and corporate actions setup
-    test_assets = [
-        (4, 'A', 'A SHARE'),
-        (5, 'B', 'B SHARE')
-    ]
-    create_stocks(test_assets, currency_id=2)
+    create_stocks([('A', 'A SHARE'), ('B', 'B SHARE')], currency_id=2)  # id = 4, 5
 
     test_corp_actions = [
         (1622548800, CorporateAction.SpinOff, 4, 100.0, 'Spin-off 5 B from 100 A', [(4, 100.0, 1.0), (5, 5.0, 0.0)]),   # 01/06/2021
@@ -49,8 +45,8 @@ def test_spin_off(prepare_db_fifo):
 def test_symbol_change(prepare_db_fifo):
     # Prepare trades and corporate actions setup
     test_assets = [
-        (4, 'A', 'A SHARE'),
-        (5, 'B', 'B SHARE')
+        ('A', 'A SHARE'),  # id = 4
+        ('B', 'B SHARE')   # id = 5
     ]
     create_stocks(test_assets, currency_id=2)
 
@@ -75,7 +71,7 @@ def test_symbol_change(prepare_db_fifo):
 
 
 def test_delisting(prepare_db_fifo):
-    create_stocks([(4, 'A', 'A SHARE')], currency_id=2)
+    create_stocks([('A', 'A SHARE')], currency_id=2)  # ID = 4
 
     test_corp_actions = [
         (1622548800, CorporateAction.Delisting, 4, 100.0, 'Delisting 100 A', [])

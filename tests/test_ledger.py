@@ -84,7 +84,7 @@ def test_ledger(prepare_db_ledger):
 
 
 def test_ledger_rounding(prepare_db_fifo):
-    create_stocks([(4, 'A', 'A SHARE'), (5, 'B', 'B SHARE')], currency_id=1)
+    create_stocks([('A', 'A SHARE'), ('B', 'B SHARE')], currency_id=1)  # id = 4, 5
     test_trades = [
         (1609567200, 1609653600, 4, 2.0, 100.0, 1.0),  # + 2 A @ 100.0
         (1609891200, 1609977600, 5, -1.0, 200.0, 1.0),   # -1 B @ 200.0
@@ -107,7 +107,7 @@ def test_ledger_rounding(prepare_db_fifo):
 
 def test_buy_sell_change(prepare_db_fifo):
     # Prepare single stock
-    create_stocks([(4, 'A', 'A SHARE')], currency_id=2)
+    create_stocks([('A', 'A SHARE')], currency_id=2)  # id = 4
 
     test_trades = [
         (1609567200, 1609653600, 4, 10.0, 100.0, 1.0),
@@ -168,7 +168,7 @@ def test_buy_sell_change(prepare_db_fifo):
 
 def test_stock_dividend_change(prepare_db_fifo):
     # Prepare single stock
-    create_stocks([(4, 'A', 'A SHARE')], currency_id=2)
+    create_stocks([('A', 'A SHARE')], currency_id=2)   # id = 4
 
     test_trades = [
         (1628852820, 1629158400, 4, 2.0, 53.13, 0.34645725),
@@ -218,21 +218,21 @@ def test_stock_dividend_change(prepare_db_fifo):
 def test_fifo(prepare_db_fifo):
     # Prepare trades and corporate actions setup
     test_assets = [
-        (4, 'A', 'A SHARE'),
-        (5, 'B', 'B SHARE'),
-        (6, 'C', 'C SHARE'),
-        (7, 'D', 'D SHARE'),
-        (8, 'E', 'E SHARE'),
-        (9, 'F', 'F SHARE'),
-        (10, 'G1', 'G SHARE BEFORE'),
-        (11, 'G2', 'G SHARE AFTER'),
-        (12, 'H', 'H SPIN-OFF FROM G'),
-        (13, 'K', 'K SHARE'),
-        (14, 'L', 'L SHARE'),
-        (15, 'M', 'M SHARE'),
-        (16, 'N', 'N WITH STOCK DIVIDEND'),
-        (17, 'O', 'O SHARE'),
-        (18, 'P', 'P SHARE'),
+        ('A', 'A SHARE'),   # id 4 -> 18
+        ('B', 'B SHARE'),
+        ('C', 'C SHARE'),
+        ('D', 'D SHARE'),
+        ('E', 'E SHARE'),
+        ('F', 'F SHARE'),
+        ('G1', 'G SHARE BEFORE'),
+        ('G2', 'G SHARE AFTER'),
+        ('H', 'H SPIN-OFF FROM G'),
+        ('K', 'K SHARE'),
+        ('L', 'L SHARE'),
+        ('M', 'M SHARE'),
+        ('N', 'N WITH STOCK DIVIDEND'),
+        ('O', 'O SHARE'),
+        ('P', 'P SHARE'),
     ]
     create_stocks(test_assets, currency_id=2)
 
@@ -434,7 +434,7 @@ def test_asset_transfer(prepare_db):
     create_quotes(2, 1, usd_rates)
 
     # Prepare single stock
-    create_stocks([(4, 'A.USD', 'A SHARE')], currency_id=2)
+    create_stocks([('A.USD', 'A SHARE')], currency_id=2)   # id = 4
     assert JalDB._exec("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
                          "VALUES (:asset_id, :symbol, :currency_id)",
                        [(":asset_id", 4), (":symbol", "A.RUB"), (":currency_id", 1)], commit=True) is not None

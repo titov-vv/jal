@@ -98,7 +98,7 @@ def test_MOEX_details():
                                                                    'type': PredefinedAsset.Stock}
 
 def test_CBR_downloader(prepare_db):
-    create_stocks([(4, 'TRY', '')], currency_id=1)
+    create_stocks([('TRY', '')], currency_id=1)   # id = 4
     codes = pd.DataFrame({'ISO_name': ['AUD', 'ATS'], 'CBR_code': ['R01010', 'R01015']})
 
     downloader = QuoteDownloader()
@@ -167,7 +167,7 @@ def test_MOEX_downloader_USD(prepare_db_moex):
 
 
 def test_NYSE_downloader(prepare_db):
-    create_stocks([(4, 'AAPL', '')], currency_id=2)
+    create_stocks([('AAPL', '')], currency_id=2)   # id = 4
     quotes = pd.DataFrame({'Close': [Decimal('134.429993'), Decimal('132.029999')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     quotes = quotes.set_index('Date')
@@ -178,7 +178,7 @@ def test_NYSE_downloader(prepare_db):
 
 
 def test_LSE_downloader(prepare_db):
-    create_stocks([(4, 'TSL', '')], currency_id=3)
+    create_stocks([('TSL', '')], currency_id=3)   # id = 4
     quotes = pd.DataFrame({'Close': [Decimal('73.5'), Decimal('75.5')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     quotes = quotes.set_index('Date')
@@ -200,7 +200,7 @@ def test_Euronext_downloader(prepare_db):
 
 
 def test_TMX_downloader(prepare_db):
-    create_stocks([(4, 'RY', '')], currency_id=3)
+    create_stocks([('RY', '')], currency_id=3)   # id = 4
     quotes = pd.DataFrame({'Close': [Decimal('117.18'), Decimal('117.34'), Decimal('118.02')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
     quotes = quotes.set_index('Date')
@@ -211,7 +211,7 @@ def test_TMX_downloader(prepare_db):
 
 
 def test_Frankfurt_downloader(prepare_db):
-    create_stocks([(4, 'VOW3', '')], currency_id=3)
+    create_stocks([('VOW3', '')], currency_id=3)   # id = 4
     quotes = pd.DataFrame({'Close': [Decimal('233.399994'), Decimal('234.250000')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     quotes = quotes.set_index('Date')
