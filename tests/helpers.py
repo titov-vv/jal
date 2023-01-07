@@ -22,8 +22,8 @@ def d2t(date_value: int) -> int:
 
 # converts YYMMDDHHMM integer into unix timestamp that corresponds to DD/MM/20YY HH:MM:00
 def dt2t(datetime_value: int) -> int:
-    hh, datetime_value = pop2minor_digits(datetime_value)
     mm, datetime_value = pop2minor_digits(datetime_value)
+    hh, datetime_value = pop2minor_digits(datetime_value)
     d, datetime_value = pop2minor_digits(datetime_value)
     m, y = pop2minor_digits(datetime_value)
     dt = datetime.strptime(f"{d:02d}/{m:02d}/{y:02d} {hh:02d}:{mm:02d}", "%d/%m/%y %H:%M")

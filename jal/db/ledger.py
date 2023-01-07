@@ -48,11 +48,16 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 # ===================================================================================================================
 # Subclasses dictionary to store last amount/value for [book, account, asset]
 # Differs from dictionary in a way that __getitem__() method uses DB-stored values for initialization
+# Parameter 'timestamp' is used in tests only - in order to get a slice from ledger in past
 class LedgerAmounts(dict, JalDB):
-    def __init__(self, total_field=None, *args, **kwargs):
+    def __init__(self, total_field=None, timestamp=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if total_field is None:
             raise ValueError("Uninitialized field in LedgerAmounts")
+        if timestamp is None:
+            self.__time_filter__ = ''
+        else:
+            self.__time_filter__ = f"AND timestamp <= {timestamp:d}"
         self.total_field = total_field
 
     def __getitem__(self, key):
@@ -66,6 +71,7 @@ class LedgerAmounts(dict, JalDB):
         except KeyError:
             amount = self._read(f"SELECT {self.total_field} FROM ledger "
                                 f"WHERE book_account = :book AND account_id = :account_id AND asset_id = :asset_id "
+                                f"{self.__time_filter__} "
                                 f"ORDER BY id DESC LIMIT 1",
                                 [(":book", key[BOOK]), (":account_id", key[ACCOUNT]), (":asset_id", key[ASSET])])
             amount = Decimal(amount) if amount is not None else Decimal('0')
