@@ -88,11 +88,9 @@ def create_actions(actions):
 # (timestamp, account, asset_id, amount, tax, note)
 def create_dividends(dividends):
     for dividend in dividends:
-        assert JalDB._exec("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
-                                 "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note)",
-                           [(":timestamp", dividend[0]), (":div_type", Dividend.Dividend),
-                                  (":account_id", dividend[1]), (":asset_id", dividend[2]), (":amount", dividend[3]),
-                                  (":tax", dividend[4]), (":note", dividend[5])], commit=True) is not None
+        data = {'timestamp': dividend[0], 'type': Dividend.Dividend, 'account_id': dividend[1], 'asset_id': dividend[2],
+                'amount': dividend[3], 'tax': dividend[4], 'note': dividend[5]}
+        LedgerTransaction().create_new(LedgerTransaction.Dividend, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -100,12 +98,9 @@ def create_dividends(dividends):
 # (timestamp, account, asset_id, amount, tax, note, number)
 def create_coupons(coupons):
     for coupon in coupons:
-        assert JalDB._exec(
-            "INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note, number) "
-            "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note, :number)",
-            [(":timestamp", coupon[0]), (":div_type", Dividend.BondInterest),
-             (":account_id", coupon[1]), (":asset_id", coupon[2]), (":amount", coupon[3]),
-             (":tax", coupon[4]), (":note", coupon[5]), (":number", coupon[6])], commit=True) is not None
+        data = {'timestamp': coupon[0], 'type': Dividend.BondInterest, 'account_id': coupon[1], 'asset_id': coupon[2],
+                'amount': coupon[3], 'tax': coupon[4], 'note': coupon[5], 'number': coupon[6]}
+        LedgerTransaction().create_new(LedgerTransaction.Dividend, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -115,11 +110,9 @@ def create_coupons(coupons):
 def create_stock_dividends(dividends):
     for dividend in dividends:
         create_quotes(dividend[3], dividend[5], [(dividend[1], dividend[6])])
-        assert JalDB._exec("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
-                                 "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note)",
-                           [(":timestamp", dividend[1]), (":div_type", dividend[0]),
-                                  (":account_id", dividend[2]), (":asset_id", dividend[3]), (":amount", dividend[4]),
-                                  (":tax", dividend[7]), (":note", dividend[8])], commit=True) is not None
+        data = {'timestamp': dividend[1], 'type': dividend[0], 'account_id': dividend[2], 'asset_id': dividend[3],
+                'amount': dividend[4], 'tax': dividend[7], 'note': dividend[8]}
+        LedgerTransaction().create_new(LedgerTransaction.Dividend, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
