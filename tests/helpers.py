@@ -32,7 +32,7 @@ def dt2t(datetime_value: int) -> int:
     return ts
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Helper functions to convert Decimals inside nested dictionaries into flaots in order to compare with stored json
+# Helper functions to convert Decimals inside nested dictionaries into floats in order to compare with stored json
 def json_decimal2float(json_obj):
     if type(json_obj) == dict:
         for x in json_obj:
@@ -66,13 +66,8 @@ def create_assets(assets, data=[]):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Insert quotes for asset_id, currency_id into database. Quotes is a list of (timestamp, quote) tuples
-def create_quotes(asset_id, currency_id, quotes):
-    for quote in quotes:
-        assert JalDB._exec("INSERT OR REPLACE INTO quotes (asset_id, currency_id, timestamp, quote) "
-                                 "VALUES (:asset_id, :currency_id, :timestamp, :quote)",
-                           [(":asset_id", asset_id), (":currency_id", currency_id),
-                                  (":timestamp", quote[0]), (":quote", quote[1])],
-                           commit=True) is not None
+def create_quotes(asset_id: int, currency_id: int, quotes: list):
+    JalAsset(asset_id).set_quotes([{'timestamp': x[0], 'quote': Decimal(str(x[1]))} for x in quotes], currency_id)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
