@@ -2,7 +2,7 @@ from decimal import Decimal
 from datetime import datetime, timezone
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
-from jal.db.operations import Dividend
+from jal.db.operations import LedgerTransaction, Dividend
 from constants import PredefinedAsset
 
 
@@ -75,19 +75,12 @@ def create_quotes(asset_id: int, currency_id: int, quotes: list):
 # (timestamp, account, peer, [(category, amount, [note]), (category, amount, [note]), ...])
 def create_actions(actions):
     for action in actions:
-        query = JalDB._exec("INSERT INTO actions (timestamp, account_id, peer_id) "
-                                  "VALUES (:timestamp, :account, :peer)",
-                            [(":timestamp", action[0]), (":account", action[1]), (":peer", action[2])],
-                            commit=True)
-        assert query is not None
-        action_id = query.lastInsertId()
+        details = []
         for detail in action[3]:
             note = detail[2] if len(detail) > 2 else ''
-            assert JalDB._exec("INSERT INTO action_details (pid, category_id, amount, note) "
-                                     "VALUES (:pid, :category, :amount, :note)",
-                               [(":pid", action_id), (":category", detail[0]), (":amount", detail[1]),
-                                      (":note", note)],
-                               commit=True) is not None
+            details.append({"amount": detail[1], "category_id": detail[0], "note": note})
+        data = {'timestamp': action[0], 'account_id': action[1], 'peer_id': action[2], 'lines': details}
+        LedgerTransaction().create_new(LedgerTransaction.IncomeSpending, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
