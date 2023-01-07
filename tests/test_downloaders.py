@@ -118,7 +118,7 @@ def test_CBR_downloader(prepare_db):
     assert_frame_equal(rates_try, rates_downloaded)
 
 def test_MOEX_downloader(prepare_db_moex):
-    create_assets([(8, 'ЗПИФ ПНК', 'ЗПИФ ПНК Рентал', 'RU000A1013V9', 1, PredefinedAsset.ETF, 0)])
+    create_assets([('ЗПИФ ПНК', 'ЗПИФ ПНК Рентал', 'RU000A1013V9', 1, PredefinedAsset.ETF, 0)])   # ID = 8
     stock_quotes = pd.DataFrame({'Close': [Decimal('287.95'), Decimal('287.18')],
                                  'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     stock_quotes = stock_quotes.set_index('Date')
@@ -157,7 +157,7 @@ def test_MOEX_downloader(prepare_db_moex):
 
 
 def test_MOEX_downloader_USD(prepare_db_moex):
-    create_assets([(8, 'FXGD', 'FinEx Gold ETF', 'IE00B8XB7377', 2, PredefinedAsset.ETF, 0)])
+    create_assets([('FXGD', 'FinEx Gold ETF', 'IE00B8XB7377', 2, PredefinedAsset.ETF, 0)])   # ID = 8
     usd_quotes = pd.DataFrame({'Close': [Decimal('12.02'), Decimal('11.90')],
                                'Date': [datetime(2021, 12, 13), datetime(2021, 12, 14)]})
     usd_quotes = usd_quotes.set_index('Date')
@@ -189,7 +189,7 @@ def test_LSE_downloader(prepare_db):
 
 
 def test_Euronext_downloader(prepare_db):
-    create_assets([(4, 'NOK', 'Nokia', 'FI0009000681', 3, PredefinedAsset.Stock, 0)])
+    create_assets([('NOK', 'Nokia', 'FI0009000681', 3, PredefinedAsset.Stock, 0)])   # ID = 4
     quotes = pd.DataFrame({'Close': [Decimal('3.4945'), Decimal('3.50'), Decimal('3.4995')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
     quotes = quotes.set_index('Date')

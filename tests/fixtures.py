@@ -64,11 +64,11 @@ def prepare_db_ibkr(prepare_db):
         create=True)
     assert account.id() == 1
     test_assets = [
-        (4, 'VUG', 'Growth ETF', '', 2, PredefinedAsset.ETF, 0),
-        (5, 'EDV', 'VANGUARD EXTENDED DUR TREAS', '', 2, PredefinedAsset.ETF, 0),
-        (6, 'ZROZ', '', 'US72201R8824', 2, PredefinedAsset.ETF, 0)
+        ('VUG', 'Growth ETF', '', 2, PredefinedAsset.ETF, 0),  # ID = 4
+        ('EDV', 'VANGUARD EXTENDED DUR TREAS', '', 2, PredefinedAsset.ETF, 0),  # ID = 5
+        ('ZROZ', '', 'US72201R8824', 2, PredefinedAsset.ETF, 0)  # ID = 6
     ]
-    create_assets(test_assets, data=[(5, AssetData.RegistrationCode, "921910709")])
+    create_assets(test_assets, data=[(5, 'reg_number', "921910709")])
     dividends = [
         (dt2t(1806212020), 1, 5, 16.76, 1.68, "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"),
         (dt2t(1808072020), 1, 5, 20.35, 2.04, "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)")
@@ -91,17 +91,17 @@ def prepare_db_fifo(prepare_db):
 
 @pytest.fixture
 def prepare_db_xls(prepare_db):
-    create_assets([(4, 'AFLT', 'АО Аэрофлот', 'RU0009062285', 1, PredefinedAsset.Stock, 0)])
+    create_assets([('AFLT', 'АО Аэрофлот', 'RU0009062285', 1, PredefinedAsset.Stock, 0)])  # ID = 4
     yield
 
 
 @pytest.fixture
 def prepare_db_moex(prepare_db):   # Create assets in database to be updated from www.moex.com
     test_assets = [
-        (4, 'SBER', '', 'RU0009029540', 1, PredefinedAsset.Stock, 0),
-        (5, 'SiZ1', 'Si-12.11 Контракт на курс доллар-рубль', '', 1, PredefinedAsset.Derivative, 0),
-        (6, 'SU26238RMFS4', '', 'RU000A1038V6', 1, PredefinedAsset.Bond, 0),
-        (7, 'МКБ 1P2', '', 'RU000A1014H6', 1, PredefinedAsset.Bond, 0)
+        ('SBER', '', 'RU0009029540', 1, PredefinedAsset.Stock, 0),   # asset ID 4 - > 7
+        ('SiZ1', 'Si-12.11 Контракт на курс доллар-рубль', '', 1, PredefinedAsset.Derivative, 0),
+        ('SU26238RMFS4', '', 'RU000A1038V6', 1, PredefinedAsset.Bond, 0),
+        ('МКБ 1P2', '', 'RU000A1014H6', 1, PredefinedAsset.Bond, 0)
     ]
     create_assets(test_assets)
     yield

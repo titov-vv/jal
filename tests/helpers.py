@@ -1,6 +1,7 @@
 from decimal import Decimal
 from datetime import datetime, timezone
 from jal.db.db import JalDB
+from jal.db.asset import JalAsset
 from jal.db.operations import Dividend
 from constants import PredefinedAsset
 
@@ -60,23 +61,13 @@ def create_stocks(assets, currency_id):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples
-# (id, symbol, full_name, isin, currency_id, asset_type, country_id)
+# (symbol, full_name, isin, currency_id, asset_type, country_id)
 def create_assets(assets, data=[]):
-    for asset in assets:
-        query = JalDB._exec("INSERT INTO assets (id, type_id, full_name, isin, country_id) "
-                                  "VALUES (:id, :type, :full_name, :isin, :country_id)",
-                            [(":id", asset[0]), (":type", asset[5]), (":full_name", asset[2]),
-                                   (":isin", asset[3]), (":country_id", asset[6])], commit=True)
-        asset_id = query.lastInsertId()
-        assert JalDB._exec("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
-                                 "VALUES (:asset_id, :symbol, :currency_id)",
-                           [(":asset_id", asset_id), (":symbol", asset[1]), (":currency_id", asset[4])],
-                           commit=True) is not None
+    for item in assets:
+        asset = JalAsset(data={'type': item[4], 'name': item[1], 'isin': item[2], 'country': item[5]}, create=True)
+        asset.add_symbol(item[0], item[3], '')
     for item in data:
-        assert JalDB._exec(
-            "INSERT INTO asset_data (asset_id, datatype, value) VALUES (:asset_id, :datatype, :value)",
-            [(":asset_id", item[0]), (":datatype", item[1]), (":value", item[2])],
-            commit=True) is not None
+        JalAsset(item[0]).update_data({item[1]: item[2]})
 
 
 # ----------------------------------------------------------------------------------------------------------------------

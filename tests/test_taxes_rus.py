@@ -22,17 +22,17 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         report = json.load(json_file)
 
     assets = [
-        (4, "GE", "General Electric Company", "US3696043013", 2, PredefinedAsset.Stock, 2),
-        (5, "TLT", "iShares 20+ Year Treasury Bond ETF", "US4642874329", 2, PredefinedAsset.ETF, 2),
-        (6, "ERIC", "Telefonaktiebolaget LM Ericsson B ADR", "US2948216088", 2, PredefinedAsset.ETF, 7),
-        (7, "GOLD", "Barrick Gold Corp", "CA0679011084", 2, PredefinedAsset.ETF, 6),
-        (8, "TEVA", "Teva Pharma Industries Ltd ADR", "US8816242098", 2, PredefinedAsset.Stock, 0),
-        (9, "X 6 1/4 03/15/26", "X 6 1/4 03/15/26", "US912909AN84", 2, PredefinedAsset.Bond, 2),
-        (10, "AAL   210115C00030000", "AAL 15JAN21 30.0 C", "", 2, PredefinedAsset.Derivative, 0),
-        (11, "MYL", "MYLAN NV", "NL0011031208", 2, PredefinedAsset.Stock, 0),
-        (12, "VTRS", "VIATRIS INC", "US92556V1061", 2, PredefinedAsset.Stock, 0),
-        (13, "DEL", "DELISTED STOCK", "US12345X0000", 2, PredefinedAsset.Stock, 0),
-        (14, "BTC", "Bitcoin", "", 2, PredefinedAsset.Crypto, 0)
+        ("GE", "General Electric Company", "US3696043013", 2, PredefinedAsset.Stock, 'us'),   # ID 4 - > 14
+        ("TLT", "iShares 20+ Year Treasury Bond ETF", "US4642874329", 2, PredefinedAsset.ETF, 'us'),
+        ("ERIC", "Telefonaktiebolaget LM Ericsson B ADR", "US2948216088", 2, PredefinedAsset.ETF, 'se'),
+        ("GOLD", "Barrick Gold Corp", "CA0679011084", 2, PredefinedAsset.ETF, 'ca'),
+        ("TEVA", "Teva Pharma Industries Ltd ADR", "US8816242098", 2, PredefinedAsset.Stock, 0),
+        ("X 6 1/4 03/15/26", "X 6 1/4 03/15/26", "US912909AN84", 2, PredefinedAsset.Bond, 'us'),
+        ("AAL   210115C00030000", "AAL 15JAN21 30.0 C", "", 2, PredefinedAsset.Derivative, 0),
+        ("MYL", "MYLAN NV", "NL0011031208", 2, PredefinedAsset.Stock, 0),
+        ("VTRS", "VIATRIS INC", "US92556V1061", 2, PredefinedAsset.Stock, 0),
+        ("DEL", "DELISTED STOCK", "US12345X0000", 2, PredefinedAsset.Stock, 0),
+        ("BTC", "Bitcoin", "", 2, PredefinedAsset.Crypto, 0)
     ]
     create_assets(assets)
     usd_rates = [
@@ -181,7 +181,7 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
     with open(data_path + 'taxes_vesting_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
     assets = [
-        (4, "VTRS", "VIATRIS INC", "US92556V1061", 2, PredefinedAsset.Stock, 0)
+        ("VTRS", "VIATRIS INC", "US92556V1061", 2, PredefinedAsset.Stock, 0)   # ID = 4
     ]
     create_assets(assets)
     stock_dividends = [

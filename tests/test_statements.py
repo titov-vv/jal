@@ -72,7 +72,7 @@ def test_statement_open(tmp_path, project_root, data_path, prepare_db_xls):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_just2trade(tmp_path, project_root, data_path, prepare_db_xls):
-    create_assets([(5, 'JNJ', 'JOHNSON & JOHNSON', 'US4781601046', 1, PredefinedAsset.Stock, 0)])
+    create_assets([('JNJ', 'JOHNSON & JOHNSON', 'US4781601046', 1, PredefinedAsset.Stock, 0)])   # ID = 5
 
     with open(data_path + 'j2t.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)

@@ -11,6 +11,7 @@ class JalAccount(JalDB):
     MONEY_FLOW = 1
     ASSETS_FLOW = 2
 
+    # TODO: change 'country' in data from 'country_id' to 'country short code' - the same as JalAsset does
     def __init__(self, id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
         super().__init__()
         self._id = id
