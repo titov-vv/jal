@@ -40,6 +40,8 @@ class JalAsset(JalDB):
                                       [(":datatype", AssetData.RegistrationCode), (":id", self._id)])
         self._expiry = self._read("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
                                   [(":datatype", AssetData.ExpiryDate), (":id", self._id)])
+        self._principal = self._read("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
+                                     [(":datatype", AssetData.PrincipalValue), (":id", self._id)])
 
     def id(self) -> int:
         return self._id
@@ -165,6 +167,12 @@ class JalAsset(JalDB):
 
     def expiry(self):
         return self._expiry
+
+    def reg_number(self):
+        return self._reg_number
+
+    def principal(self):
+        return self._principal
 
     # Updates relevant asset data fields with information provided in data dictionary
     def update_data(self, data: dict) -> None:

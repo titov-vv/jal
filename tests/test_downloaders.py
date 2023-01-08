@@ -4,8 +4,7 @@ from decimal import Decimal
 from pandas._testing import assert_frame_equal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
-from tests.helpers import create_stocks, create_assets
-from jal.db.db import JalDB
+from tests.helpers import d2t, create_stocks, create_assets
 from jal.db.asset import JalAsset
 from jal.constants import PredefinedAsset
 from jal.net.helpers import isEnglish
@@ -135,22 +134,34 @@ def test_MOEX_downloader(prepare_db_moex):
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(4), 1, 1618272000, 1618358400)
     assert_frame_equal(stock_quotes, quotes_downloaded)
-    assert JalDB._read("SELECT * FROM assets_ext WHERE id=4") == [4, PredefinedAsset.Stock, 'SBER', '', 'RU0009029540', 1, 0, -1]
-    assert JalDB._read("SELECT value FROM asset_data WHERE asset_id=4 AND datatype=1") == '10301481B'
+    sber = JalAsset(4)
+    assert sber.type() == PredefinedAsset.Stock
+    assert sber.isin() == 'RU0009029540'
+    assert sber.symbol(1) == 'SBER'
+    assert sber.name() == ''
+    assert sber.reg_number() == '10301481B'
 
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(6), 1, 1626912000, 1626998400)
     assert_frame_equal(bond_quotes, quotes_downloaded)
-    assert JalDB._read("SELECT * FROM assets_ext WHERE id=6") == [6, PredefinedAsset.Bond, 'SU26238RMFS4', '', 'RU000A1038V6', 1, 0, -1]
-    assert JalDB._read("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=1") == '26238RMFS'
-    assert JalDB._read("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=2") == '2252188800'
-    assert JalDB._read("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=3") == '1000'
+    bond = JalAsset(6)
+    assert bond.type() == PredefinedAsset.Bond
+    assert bond.isin() == 'RU000A1038V6'
+    assert bond.symbol(1) == 'SU26238RMFS4'
+    assert bond.name() == ''
+    assert bond.reg_number() == '26238RMFS'
+    assert bond.expiry() == str(d2t(410515))
+    assert bond.principal() == '1000'
 
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(7), 1, 1626912000, 1626998400)
     assert_frame_equal(corp_quotes, quotes_downloaded)
-    assert JalDB._read("SELECT * FROM assets_ext WHERE id=7") == [7, PredefinedAsset.Bond, 'МКБ 1P2', '', 'RU000A1014H6', 1, 0, -1]
-    assert JalDB._read("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=1") == '4B020901978B001P'
-    assert JalDB._read("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=2") == '1638230400'
-    assert JalDB._read("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=3") == '1000'
+    bond2 = JalAsset(7)
+    assert bond2.type() == PredefinedAsset.Bond
+    assert bond2.isin() == 'RU000A1014H6'
+    assert bond2.symbol(1) == 'МКБ 1P2'
+    assert bond2.name() == ''
+    assert bond2.reg_number() == '4B020901978B001P'
+    assert bond2.expiry() == str(d2t(211130))
+    assert bond2.principal() == '1000'
 
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(8), 1, 1639353600, 1639440000, update_symbol=False)
     assert_frame_equal(etf_quotes, quotes_downloaded)
