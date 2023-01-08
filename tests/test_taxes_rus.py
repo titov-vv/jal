@@ -8,9 +8,9 @@ from tests.helpers import create_assets, create_quotes, create_dividends, create
     create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
-from jal.db.db import JalDB
 from jal.db.account import JalAccount
-from jal.db.operations import CorporateAction, Dividend
+from jal.db.asset import JalAsset
+from jal.db.operations import LedgerTransaction, CorporateAction, Dividend
 from jal.data_export.taxes import TaxesRus
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
@@ -148,7 +148,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
     IBKR.import_into_db()
 
     # Adjust share of result allocation to 100% of initial bond
-    JalDB._exec("UPDATE action_results SET value_share=1.0 WHERE asset_id=5")
+    LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 1).set_result_share(JalAsset(5), Decimal('1.0'))
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
@@ -229,8 +229,9 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     create_quotes(2, 1, usd_rates)
 
     # Adjust share of resulting assets: 100% SRNGU -> 95% DNA + 5% DNA WS
-    JalDB._exec("UPDATE action_results SET value_share=0.95 WHERE asset_id=5")
-    JalDB._exec("UPDATE action_results SET value_share=0.05 WHERE asset_id=4")
+    action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 1)
+    action.set_result_share(JalAsset(5), Decimal('0.95'))
+    action.set_result_share(JalAsset(4), Decimal('0.05'))
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
@@ -279,8 +280,9 @@ def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
     create_quotes(2, 1, usd_rates)
 
     # Adjust share of resulting assets: 100% GE -> 90% GE + 10% WAB
-    JalDB._exec("UPDATE action_results SET value_share=0.9 WHERE asset_id=4")
-    JalDB._exec("UPDATE action_results SET value_share=0.1 WHERE asset_id=5")
+    action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 1)
+    action.set_result_share(JalAsset(4), Decimal('0.9'))
+    action.set_result_share(JalAsset(5), Decimal('0.1'))
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)

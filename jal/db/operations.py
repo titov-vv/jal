@@ -1055,6 +1055,16 @@ class CorporateAction(LedgerTransaction):
         else:
             return Decimal('0'), Decimal('0')
 
+    # Sets value_share for the result of corporate action that corresponds to given asset
+    def set_result_share(self, asset, share: Decimal) -> None:
+        out = [x for x in self._results if x['asset_id'] == asset.id()]
+        if len(out) == 1:
+            self._exec("UPDATE action_results SET value_share=:share WHERE action_id=:action_id AND asset_id=:asset_id",
+                       [(":share", format_decimal(share)), (":action_id", self._oid), (":asset_id", asset.id())])
+            out[0]['value_share'] = format_decimal(share)
+        else:
+            raise  LedgerError(self.tr("Asset isn't a part of corporate action results: " + f"{asset.name()}"))
+
     # Returns a list {"timestamp", "amount", "note"} that represents payments out of corporate actions to given account
     # in given account currency
     @classmethod
