@@ -317,9 +317,3 @@ class JalDB:
 class JalModel(QSqlTableModel):
     def __init__(self, parent):
         super().__init__(parent=parent, db=JalDB.connection())
-
-
-class JalQuery(QSqlQuery):
-    def __init__(self):
-        super().__init__(db=JalDB.connection())
-
