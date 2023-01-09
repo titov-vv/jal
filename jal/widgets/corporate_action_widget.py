@@ -121,8 +121,7 @@ class CorporateActionWidget(AbstractOperationDetails):
 
         self.mapper.setItemDelegate(CorporateActionWidgetDelegate(self.mapper))
 
-        self.results_model = ResultsModel(self.results_table)
-        self.results_model.setTable("action_results")
+        self.results_model = ResultsModel(self.results_table, "action_results")
         self.results_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.results_table.setModel(self.results_model)
         self.results_model.dataChanged.connect(self.onDataChange)
@@ -230,8 +229,8 @@ class CorporateActionWidget(AbstractOperationDetails):
 # FIXME - class ResultsModel has common elements with DetailsModel class of income_spending_widget.py
 # Probably both should have common ancestor
 class ResultsModel(JalModel):
-    def __init__(self, parent_view):
-        super().__init__(parent=parent_view)
+    def __init__(self, parent_view, table_name):
+        super().__init__(parent_view, table_name)
         self._columns = ["id", "action_id", self.tr("Asset"), self.tr("Qty"), self.tr("Share, %")]
         self.deleted = []   # FIXME - this list isn't properly cleaned after deletion and change of an operation
         self._view = parent_view

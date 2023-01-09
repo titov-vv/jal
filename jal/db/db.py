@@ -315,5 +315,6 @@ class JalDB:
 # -------------------------------------------------------------------------------------------------------------------
 # Subclassing to hide db connection details
 class JalModel(QSqlTableModel):
-    def __init__(self, parent):
+    def __init__(self, parent, table_name):
         super().__init__(parent=parent, db=JalDB.connection())
+        self.setTable(table_name)

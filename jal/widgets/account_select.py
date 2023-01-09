@@ -107,8 +107,7 @@ class CurrencyComboBox(QComboBox):
         self.model = None
         self.activated.connect(self.OnUserSelection)
 
-        self.model = JalModel(self)
-        self.model.setTable("currencies")
+        self.model = JalModel(self, "currencies")
         self.model.select()
         self.setModel(self.model)
         self.setModelColumn(self.model.fieldIndex("symbol"))

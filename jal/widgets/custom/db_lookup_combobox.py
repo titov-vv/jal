@@ -1,11 +1,10 @@
 from PySide6.QtCore import Qt, Property
-from PySide6.QtSql import QSqlTableModel
 from PySide6.QtWidgets import QComboBox
-from jal.db.db import JalDB
+from jal.db.db import JalDB, JalModel
 
 
 # Combobox to lookup in db tables:
-# It is mandatory to setup 'table', 'key_field' and 'field' properties at design time
+# It is mandatory to set up 'table', 'key_field' and 'field' properties at design time
 class DbLookupComboBox(QComboBox):
     def __init__(self, parent=None):
         QComboBox.__init__(self, parent)
@@ -59,8 +58,7 @@ class DbLookupComboBox(QComboBox):
     def setupDb(self):
         if not self._table or not self._field:
             return
-        self._model = QSqlTableModel(parent=self, db=JalDB.connection())
-        self._model.setTable(self._table)
+        self._model = JalModel(self, self._table)
         field_idx = self._model.fieldIndex(self._field)
         self._model.setSort(field_idx, Qt.AscendingOrder)
         self._model.select()

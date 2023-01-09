@@ -41,8 +41,7 @@ class AbstractOperationDetails(QWidget):
 
     def _init_db(self, table_name):
         self.table_name = table_name
-        self.model = JalModel(parent=self)
-        self.model.setTable(table_name)
+        self.model = JalModel(self, table_name)
         self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
 
         self.mapper = QDataWidgetMapper(self.model)

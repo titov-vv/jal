@@ -97,8 +97,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.model.beforeUpdate.connect(self.before_record_update)
         self.mapper.setItemDelegate(IncomeSpendingWidgetDelegate(self.mapper))
 
-        self.details_model = DetailsModel(self.details_table)
-        self.details_model.setTable("action_details")
+        self.details_model = DetailsModel(self.details_table, "action_details")
         self.details_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.details_table.setModel(self.details_model)
         self.details_model.dataChanged.connect(self.onDataChange)
@@ -227,8 +226,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
 
 class DetailsModel(JalModel):
-    def __init__(self, parent_view):
-        super().__init__(parent=parent_view)
+    def __init__(self, parent_view, table_name):
+        super().__init__(parent_view, table_name)
         self._columns = ["id", "pid", self.tr("Category"), self.tr("Tag"),
                          self.tr("Amount"), self.tr("Amount"), self.tr("Note")]
         self.deleted = []
