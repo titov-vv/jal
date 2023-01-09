@@ -230,9 +230,10 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [9, 2, 1600128000, '', '', 2, 1, 12, '62.5', '0', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
         [10, 2, 1620345600, '', '', 4, 1, 8, '2.0', '0', 'Stock Award Grant for Cash Deposit']
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM dividends") == len(test_payments)
-    for i, payment in enumerate(test_payments):
-        assert JalDB._read("SELECT * FROM dividends WHERE id=:id", [(":id", i + 1)]) == payment
+    dividends = JalAccount(1).dump_dividends()
+    assert len(dividends) == len(test_payments)
+    for i, dividend in enumerate(test_payments):
+        assert dividends[i] == dividend
 
     # Verify that asset prices were loaded for stock dividends and vestings
     stock_quotes = [

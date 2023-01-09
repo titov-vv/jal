@@ -58,11 +58,12 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate dividend & tax
     test_dividends = [
-        [1, 2, 1592770800, '', '', 1, 1, 6, '16.76', '1.68', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)']
+        [1, 2, 1592770800, '', '', 1, 1, 6, '16.76', '1.68', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM dividends") == len(test_dividends)
+    dividends = JalAccount(1).dump_dividends()
+    assert len(dividends) == len(test_dividends)
     for i, dividend in enumerate(test_dividends):
-        assert JalDB._read("SELECT * FROM dividends WHERE id=:id", [(":id", i + 1)]) == dividend
+        assert dividends[i] == dividend
 
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
@@ -131,9 +132,10 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     test_dividends = [
         [1, 2, 1592770800, '', '', 1, 1, 6, '16.76', '0.21', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)']
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM dividends") == len(test_dividends)
+    dividends = JalAccount(1).dump_dividends()
+    assert len(dividends) == len(test_dividends)
     for i, dividend in enumerate(test_dividends):
-        assert JalDB._read("SELECT * FROM dividends WHERE id=:id", [(":id", i + 1)]) == dividend
+        assert dividends[i] == dividend
 
     # validate corp actions
     test_asset_actions = [
