@@ -1,9 +1,8 @@
 from PySide6.QtCore import Signal, Slot, Property
 from PySide6.QtWidgets import QApplication, QDialog, QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox, \
     QMessageBox
-from PySide6.QtSql import QSqlQuery, QSqlTableModel
 from jal.constants import Setup
-from jal.db.db import JalDB
+from jal.db.db import JalQuery, JalModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
@@ -108,10 +107,10 @@ class CurrencyComboBox(QComboBox):
         self.model = None
         self.activated.connect(self.OnUserSelection)
 
-        self.query = QSqlQuery(db=JalDB.connection())
+        self.query = JalQuery()
         self.query.prepare(f"SELECT id, symbol FROM currencies")
         self.query.exec()
-        self.model = QSqlTableModel(db=JalDB.connection())
+        self.model = JalModel(self)
         self.model.setQuery(self.query)
         self.model.select()
         self.setModel(self.model)

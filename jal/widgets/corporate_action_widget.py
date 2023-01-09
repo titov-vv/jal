@@ -9,7 +9,7 @@ from PySide6.QtGui import QFont
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
-from jal.db.db import JalDB
+from jal.db.db import JalModel
 from jal.db.helpers import load_icon
 from jal.db.operations import LedgerTransaction
 
@@ -121,7 +121,7 @@ class CorporateActionWidget(AbstractOperationDetails):
 
         self.mapper.setItemDelegate(CorporateActionWidgetDelegate(self.mapper))
 
-        self.results_model = ResultsModel(self.results_table, JalDB.connection())
+        self.results_model = ResultsModel(self.results_table)
         self.results_model.setTable("action_results")
         self.results_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.results_table.setModel(self.results_model)
@@ -229,9 +229,9 @@ class CorporateActionWidget(AbstractOperationDetails):
 
 # FIXME - class ResultsModel has common elements with DetailsModel class of income_spending_widget.py
 # Probably both should have common ancestor
-class ResultsModel(QSqlTableModel):
-    def __init__(self, parent_view, db):
-        super().__init__(parent=parent_view, db=db)
+class ResultsModel(JalModel):
+    def __init__(self, parent_view):
+        super().__init__(parent=parent_view)
         self._columns = ["id", "action_id", self.tr("Asset"), self.tr("Qty"), self.tr("Share, %")]
         self.deleted = []   # FIXME - this list isn't properly cleaned after deletion and change of an operation
         self._view = parent_view

@@ -4,7 +4,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QDataWidgetMapper
 from PySide6.QtSql import QSqlTableModel
 from jal.db.helpers import load_icon
-from jal.db.db import JalDB
+from jal.db.db import JalModel
 
 
 class AbstractOperationDetails(QWidget):
@@ -41,7 +41,7 @@ class AbstractOperationDetails(QWidget):
 
     def _init_db(self, table_name):
         self.table_name = table_name
-        self.model = QSqlTableModel(parent=self, db=JalDB.connection())
+        self.model = JalModel(parent=self)
         self.model.setTable(table_name)
         self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
 

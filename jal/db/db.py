@@ -4,7 +4,7 @@ import logging
 import sqlparse
 from pkg_resources import parse_version
 from PySide6.QtWidgets import QApplication, QMessageBox
-from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery
+from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlTableModel
 
 from jal.constants import Setup
 from jal.db.helpers import get_dbfilename
@@ -310,3 +310,16 @@ class JalDB:
             search_value = "'" + search_value + "'"   # Enclose string into quotes
         query_text = f"SELECT {field_name} FROM {table_name} WHERE {key_field}={search_value}"
         return JalDB._read(query_text)
+
+
+# -------------------------------------------------------------------------------------------------------------------
+# Subclassing to hide db connection details
+class JalModel(QSqlTableModel):
+    def __init__(self, parent):
+        super().__init__(parent=parent, db=JalDB.connection())
+
+
+class JalQuery(QSqlQuery):
+    def __init__(self):
+        super().__init__(db=JalDB.connection())
+
