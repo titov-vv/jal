@@ -61,6 +61,14 @@ class JalAccount(JalDB):
             accounts.append(JalAccount(int(account_id)))
         return accounts
 
+    # Returns everything from trades table associated with current account - used in test cases only
+    def dump_trades(self):
+        trades = []
+        query = self._exec("SELECT * FROM trades WHERE account_id=:id", [(":id", self._id)])
+        while query.next():
+            trades.append(self._read_record(query))
+        return trades
+
     # Returns database id of the account
     def id(self) -> int:
         return self._id

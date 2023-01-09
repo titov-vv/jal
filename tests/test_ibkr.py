@@ -2,9 +2,11 @@ import json
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
+from tests.helpers import d2t
 from jal.db.ledger import Ledger
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset, AssetData
 from jal.constants import PredefinedAsset
 
 
@@ -19,42 +21,28 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate assets
     test_assets = [
-        [1, PredefinedAsset.Money, 'Российский Рубль', '', 0, ''],
-        [2, PredefinedAsset.Money, 'Доллар США', '', 0, ''],
-        [3, PredefinedAsset.Money, 'Евро', '', 0, ''],
-        [4, PredefinedAsset.Stock, 'PACIFIC ETHANOL INC', 'US69423U3059', 0, ''],
-        [5, PredefinedAsset.Derivative, 'FANG 21JAN22 40.0 C', '', 0, ''],
-        [6, PredefinedAsset.Stock, 'EXXON MOBIL CORP', 'US30231G1022', 2, ''],
-        [7, PredefinedAsset.Derivative, 'XOM 21JAN22 42.5 C', '', 0, '']
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Российский Рубль', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'RUB', 'description': 'Российский Рубль', 'active': 1, 'currency_id': 1, 'quote_source': -1}]},
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Доллар США', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'USD', 'description': 'Доллар США (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Евро', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'EUR', 'description': 'Евро (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'PACIFIC ETHANOL INC', 'isin': 'US69423U3059', 'country_id': 0,
+         'symbols': [{'symbol': 'PEIX', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '69423U305'}]},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'FANG 21JAN22 40.0 C', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'FANG  220121C00040000', 'description': 'CBOE', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.ExpiryDate, 'value': str(d2t(220121))}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'EXXON MOBIL CORP', 'isin': 'US30231G1022', 'country_id': 2,
+         'symbols': [{'symbol': 'XOM', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '30231G102'}]},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'XOM 21JAN22 42.5 C', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'XOM   220121C00042500', 'description': 'CBOE', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.ExpiryDate, 'value': str(d2t(220121))}]}
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM assets") == len(test_assets)
-    for i, asset in enumerate(test_assets):
-        assert JalDB._read("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset
-
-    # validate assets symbols
-    test_symbols = [
-        [1, 1, 'RUB', 1, 'Российский Рубль', -1, 1],
-        [2, 2, 'USD', 1, 'Доллар США (Банк России)', 0, 1],
-        [3, 3, 'EUR', 1, 'Евро (Банк России)', 0, 1],
-        [4, 4, 'PEIX', 2, 'NASDAQ', 2, 1],
-        [5, 5, 'FANG  220121C00040000', 2, 'CBOE', -1, 1],
-        [6, 6, 'XOM', 2, 'NYSE', 2, 1],
-        [7, 7, 'XOM   220121C00042500', 2, 'CBOE', -1, 1]
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
-    for i, symbol in enumerate(test_symbols):
-        assert JalDB._read("SELECT * FROM asset_tickers WHERE id=:id", [(":id", i + 1)]) == symbol
-
-    # validate assets data
-    test_data = [
-        [1, 4, 1, '69423U305'],
-        [2, 5, 2, '1642723200'],
-        [3, 6, 1, '30231G102'],
-        [4, 7, 2, '1642723200']
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM asset_data") == len(test_data)
-    for i, data in enumerate(test_data):
-        assert JalDB._read("SELECT * FROM asset_data WHERE id=:id", [(":id", i + 1)]) == data
+    assets = JalAsset.get_assets()
+    assert len(assets) == len(test_assets)
+    assert [x.dump() for x in assets] == test_assets
 
     # validate trades
     test_trades = [
@@ -63,9 +51,10 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         [3, 3, 1606821387, 1606953600, '3264444280', 1, 4, '70.0', '6.08', '0.32925725', ''],
         [4, 3, 1607095765, 1607299200, '3276656996', 1, 7, '-100.0', '5.2', '0.667292', '']
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM trades") == len(test_trades)
+    trades = JalAccount(1).dump_trades()
+    assert len(trades) == len(test_trades)
     for i, trade in enumerate(test_trades):
-        assert JalDB._read("SELECT * FROM trades WHERE id=:id", [(":id", i + 1)]) == trade
+        assert trades[i] == trade
 
     # validate dividend & tax
     test_dividends = [
@@ -89,46 +78,37 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate assets
     test_assets = [
-        [1, PredefinedAsset.Money, 'Российский Рубль', '', 0, ''],
-        [2, PredefinedAsset.Money, 'Доллар США', '', 0, ''],
-        [3, PredefinedAsset.Money, 'Евро', '', 0, ''],
-        [4, PredefinedAsset.Stock, 'PACIFIC ETHANOL INC', 'US69423U3059', 0, ''],
-        [5, PredefinedAsset.Derivative, 'FANG 21JAN22 40.0 C', '', 0, ''],
-        [6, PredefinedAsset.Stock, 'EXXON MOBIL CORP', 'US30231G1022', 2, ''],
-        [7, PredefinedAsset.Derivative, 'XOM 21JAN22 42.5 C', '', 0, ''],
-        [8, PredefinedAsset.Stock, 'ALTO INGREDIENTS INC', 'US0215131063', 0, '']
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Российский Рубль', 'isin': '', 'country_id': 0,
+         'symbols': [
+             {'symbol': 'RUB', 'description': 'Российский Рубль', 'active': 1, 'currency_id': 1, 'quote_source': -1}]},
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Доллар США', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'USD', 'description': 'Доллар США (Банк России)', 'active': 1, 'currency_id': 1,
+                      'quote_source': 0}]},
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Евро', 'isin': '', 'country_id': 0,
+         'symbols': [
+             {'symbol': 'EUR', 'description': 'Евро (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'PACIFIC ETHANOL INC', 'isin': 'US69423U3059', 'country_id': 0,
+         'symbols': [{'symbol': 'PEIX', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '69423U305'}]},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'FANG 21JAN22 40.0 C', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'FANG  220121C00040000', 'description': 'CBOE', 'active': 1, 'currency_id': 2,
+                      'quote_source': -1}],
+         'data': [{'datatype': AssetData.ExpiryDate, 'value': str(d2t(220121))}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'EXXON MOBIL CORP', 'isin': 'US30231G1022', 'country_id': 2,
+         'symbols': [{'symbol': 'XOM', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '30231G102'}]},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'XOM 21JAN22 42.5 C', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'XOM   220121C00042500', 'description': 'CBOE', 'active': 1, 'currency_id': 2,
+                      'quote_source': -1}],
+         'data': [{'datatype': AssetData.ExpiryDate, 'value': str(d2t(220121))}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'ALTO INGREDIENTS INC', 'isin': 'US0215131063', 'country_id': 0,
+         'symbols': [{'symbol': 'ALTO', 'description': 'NASDAQ', 'active': 0, 'currency_id': 2, 'quote_source': 2},
+                     {'symbol': 'PEIX', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': 1, 'value': '021513106'}]}
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM assets") == len(test_assets)
-    for i, asset in enumerate(test_assets):
-        assert JalDB._read("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset
-
-    # validate assets
-    test_symbols = [
-        [1, 1, 'RUB', 1, 'Российский Рубль', -1, 1],
-        [2, 2, 'USD', 1, 'Доллар США (Банк России)', 0, 1],
-        [3, 3, 'EUR', 1, 'Евро (Банк России)', 0, 1],
-        [4, 4, 'PEIX', 2, 'NASDAQ', 2, 1],
-        [5, 5, 'FANG  220121C00040000', 2, 'CBOE', -1, 1],
-        [6, 6, 'XOM', 2, 'NYSE', 2, 1],
-        [7, 7, 'XOM   220121C00042500', 2, 'CBOE', -1, 1],
-        [8, 8, 'ALTO', 2, 'NASDAQ', 2, 0],
-        [9, 8, 'PEIX', 2, 'NASDAQ', 2, 1]
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
-    for i, symbol in enumerate(test_symbols):
-        assert JalDB._read("SELECT * FROM asset_tickers WHERE id=:id", [(":id", i + 1)]) == symbol
-
-    # validate assets
-    test_data = [
-        [1, 4, 1, '69423U305'],
-        [3, 6, 1, '30231G102'],
-        [5, 8, 1, '021513106'],
-        [6, 5, 2, '1642723200'],
-        [7, 7, 2, '1642723200']
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM asset_data") == len(test_data)
-    for data in test_data:
-        assert JalDB._read("SELECT * FROM asset_data WHERE id=:id", [(":id", data[0])]) == data
+    assets = JalAsset.get_assets()
+    assert len(assets) == len(test_assets)
+    assert [x.dump() for x in assets] == test_assets
 
     # validate trades
     test_trades = [
@@ -142,9 +122,10 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         [8, 3, 1620750000, 1620777600, '3764387737', 1, 7, '100.0', '0.0', '0.0', 'Option assignment'],
         [9, 3, 1623247000, 1623283200, '3836250920', 1, 5, '300.0', '50.8', '-0.1266', '']
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM trades") == len(test_trades)
+    trades = JalAccount(1).dump_trades()
+    assert len(trades) == len(test_trades)
     for i, trade in enumerate(test_trades):
-        assert JalDB._read("SELECT * FROM trades WHERE id=:id", [(":id", i + 1)]) == trade
+        assert trades[i] == trade
 
     # validate dividend & tax
     test_dividends = [

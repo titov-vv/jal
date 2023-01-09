@@ -4,6 +4,8 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr,
 from jal.data_import.statement import Statement
 from jal.db.db import JalDB
 from jal.constants import PredefinedAsset
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset, AssetData
 
 
 def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
@@ -21,148 +23,134 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate assets
     test_assets = [
-        [1, PredefinedAsset.Money, 'Российский Рубль', '', 0, ''],
-        [2, PredefinedAsset.Money, 'Доллар США', '', 0, ''],
-        [3, PredefinedAsset.Money, 'Евро', '', 0, ''],
-        [4, PredefinedAsset.ETF, 'Growth ETF', 'US9229087369', 2, ''],
-        [5, PredefinedAsset.ETF, 'VANGUARD EXTENDED DUR TREAS', '', 2, ''],
-        [6, PredefinedAsset.ETF, 'PIMCO 25+ YR ZERO CPN US TIF', 'US72201R8824', 2, ''],
-        [7, PredefinedAsset.Money, '', '', 0, ''],
-        [8, PredefinedAsset.Stock, 'AMAZON.COM INC', 'US0231351067', 0, ''],
-        [9, PredefinedAsset.Stock, 'ALIBABA GROUP HOLDING-SP ADR', 'US01609W1027', 0, ''],
-        [10, PredefinedAsset.Stock, 'DOMINION ENERGY INC', '', 0, ''],
-        [11, PredefinedAsset.Stock, 'DOMINION ENERGY MIDSTREAM PA', '', 0, ''],
-        [12, PredefinedAsset.Bond, 'X 6 1/4 03/15/26', 'US912909AN84', 0, ''],
-        [13, PredefinedAsset.Derivative, 'SPY 29MAY20 295.0 C', '', 0, ''],
-        [14, PredefinedAsset.Derivative, 'DSKEW 27FEB22 11.5 C', 'US23753F1158', 0, ''],
-        [15, PredefinedAsset.Stock, 'MYLAN NV', 'NL0011031208', 0, ''],
-        [16, PredefinedAsset.Stock, 'VIATRIS INC-W/I', 'US92556V1061', 0, ''],
-        [17, PredefinedAsset.Stock, 'WABTEC CORP', '', 0, ''],
-        [18, PredefinedAsset.Stock, 'TELEFONICA SA-SPON ADR', 'US8793822086', 0, ''],
-        [19, PredefinedAsset.Stock, 'EQM MIDSTREAM PARTNERS LP', 'US26885B1008', 0, ''],
-        [20, PredefinedAsset.Stock, 'EQUITRANS MIDSTREAM CORP', 'US2946001011', 0, ''],
-        [21, PredefinedAsset.Stock, 'GENERAL ELECTRIC CO', 'US3696041033', 0, ''],
-        [22, PredefinedAsset.Stock, 'EWELLNESS HEALTHCARE CORP', 'US30051D1063', 0, ''],
-        [23, PredefinedAsset.Stock, 'EWELLNESS HEALTHCARE CORP', 'US30051D2053', 0, ''],
-        [24, PredefinedAsset.Stock, 'LIVONGO HEALTH INC', 'US5391831030', 0, ''],
-        [25, PredefinedAsset.Stock, 'TELADOC HEALTH INC', 'US87918A1051', 0, ''],
-        [26, PredefinedAsset.Stock, 'LUMEN TECHNOLOGIES INC', 'US5502411037', 0, ''],
-        [27, PredefinedAsset.Stock, 'CENTURYLINK INC', 'US1567001060', 0, ''],
-        [28, PredefinedAsset.Bond, 'X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26', 'US912CALAN84', 0, ''],
-        [29, PredefinedAsset.Derivative, 'BKSY 30DEC24 11.5 C', 'US68839R1207', 0, ''],
-        [30, PredefinedAsset.Derivative, 'BKSY 30DEC24 11.5 C', 'US09263B1162', 0, ''],
-        [31, PredefinedAsset.Stock, 'APPLE INC', 'US0378331005', 0, ''],
-        [32, PredefinedAsset.Derivative, 'VLO 24JUL20 64.0 P', '', 0, ''],
-        [33, PredefinedAsset.Stock, 'VALERO ENERGY CORP', 'US91913Y1001', 0, ''],
-        [34, PredefinedAsset.Stock, '', 'US5543821012', 0, ''],
-        [35, PredefinedAsset.Stock, '', 'US3696043013', 0, ''],
-        [36, PredefinedAsset.Bond, '', 'US345370CV02', 0, ''],
-        [37, PredefinedAsset.Stock, '', 'CA1125851040', 0, ''],
-        [38, PredefinedAsset.Stock, '', 'BMG1624R1079', 0, ''],
-        [39, PredefinedAsset.Stock, '', 'US11282X1037', 0, ''],
-        [40, PredefinedAsset.Stock, '', 'US8713321029', 0, ''],
-        [41, PredefinedAsset.Stock, '', 'US2183521028', 0, ''],
-        [42, PredefinedAsset.Stock, '', 'US218NSPODD6', 0, ''],
-        [43, PredefinedAsset.Stock, '', 'CA6295231014', 0, '']
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Российский Рубль', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'RUB', 'description': 'Российский Рубль', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Доллар США', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'USD', 'description': 'Доллар США (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Евро', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'EUR', 'description': 'Евро (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+        {'type_id': PredefinedAsset.ETF, 'full_name': 'Growth ETF', 'isin': 'US9229087369', 'country_id': 2,
+         'symbols': [{'symbol': 'VUG', 'description': 'ARCA', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '922908736'}]},
+        {'type_id': PredefinedAsset.ETF, 'full_name': 'VANGUARD EXTENDED DUR TREAS', 'isin': '', 'country_id': 2,
+         'symbols': [{'symbol': 'EDV', 'description': 'ARCA', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '921910709'}]},
+        {'type_id': PredefinedAsset.ETF, 'full_name': 'PIMCO 25+ YR ZERO CPN US TIF', 'isin': 'US72201R8824', 'country_id': 2,
+         'symbols': [{'symbol': 'ZROZ', 'description': 'ARCA', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '72201R882'}]},
+        {'type_id': PredefinedAsset.Money, 'full_name': '', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'CAD', 'description': '', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+        {'type_id': PredefinedAsset.Stock, 'country_id': 0, 'full_name': 'AMAZON.COM INC', 'isin': 'US0231351067',
+         'symbols': [{'symbol': 'AMZN', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '023135106'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'ALIBABA GROUP HOLDING-SP ADR', 'isin': 'US01609W1027', 'country_id': 0,
+         'symbols': [{'symbol': 'BABA', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '01609W102'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'DOMINION ENERGY INC', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'D', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '25746U109'}]},
+        {'type_id': PredefinedAsset.Stock, 'country_id': 0, 'full_name': 'DOMINION ENERGY MIDSTREAM PA', 'isin': '',
+         'symbols': [{'symbol': 'DM', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '257454108'}]},
+        {'type_id': PredefinedAsset.Bond, 'full_name': 'X 6 1/4 03/15/26', 'isin': 'US912909AN84', 'country_id': 0,
+         'symbols': [{'symbol': 'X 6 1/4 03/15/26', 'description': '', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '912909AN8'}, {'datatype': AssetData.ExpiryDate, 'value': '1773532800'}]},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'SPY 29MAY20 295.0 C', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'SPY   200529C00295000', 'description': '', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.ExpiryDate, 'value': '1590710400'}]},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'DSKEW 27FEB22 11.5 C', 'isin': 'US23753F1158', 'country_id': 0,
+         'symbols': [{'symbol': 'DSKEW', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '23753F115'}, {'datatype': AssetData.ExpiryDate, 'value': '1645920000'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'MYLAN NV', 'isin': 'NL0011031208', 'country_id': 0,
+         'symbols': [{'symbol': 'MYL', 'description': '', 'active': 1, 'currency_id': 2, 'quote_source': -1}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'VIATRIS INC-W/I', 'isin': 'US92556V1061', 'country_id': 0,
+         'symbols': [{'symbol': 'VTRS', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '92556V106'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'WABTEC CORP', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'WAB', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2},
+                     {'symbol': 'WBB', 'description': 'TSE', 'active': 1, 'currency_id': 7, 'quote_source': 4}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '929740108'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'TELEFONICA SA-SPON ADR', 'isin': 'US8793822086', 'country_id': 0,
+         'symbols': [{'symbol': 'TEF', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '879382208'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'EQM MIDSTREAM PARTNERS LP', 'isin': 'US26885B1008','country_id': 0,
+         'symbols': [{'symbol': 'EQM', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '26885B100'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'EQUITRANS MIDSTREAM CORP', 'isin': 'US2946001011', 'country_id': 0,
+         'symbols': [{'symbol': 'ETRN', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '294600101'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'GENERAL ELECTRIC CO', 'isin': 'US3696041033', 'country_id': 0,
+         'symbols': [{'symbol': 'GE', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '369604103'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'EWELLNESS HEALTHCARE CORP', 'isin': 'US30051D1063', 'country_id': 0,
+         'symbols': [{'symbol': 'EWLL', 'description': 'PINK', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '30051D106'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'EWELLNESS HEALTHCARE CORP', 'isin': 'US30051D2053', 'country_id': 0,
+         'symbols': [{'symbol': 'EWLL', 'description': 'PINK', 'active': 0, 'currency_id': 2, 'quote_source': -1},
+                     {'symbol': 'EWLLD', 'description': 'PINK', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '30051D205'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'LIVONGO HEALTH INC', 'isin': 'US5391831030', 'country_id': 0,
+         'symbols': [{'symbol': 'LVGO', 'description': '', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '539183103'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'TELADOC HEALTH INC', 'isin': 'US87918A1051', 'country_id': 0,
+         'symbols': [{'symbol': 'TDOC', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '87918A105'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'LUMEN TECHNOLOGIES INC', 'isin': 'US5502411037', 'country_id': 0,
+         'symbols': [{'symbol': 'LUMN', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '550241103'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'CENTURYLINK INC', 'isin': 'US1567001060', 'country_id': 0,
+         'symbols': [{'symbol': 'LUMN', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '156700106'}]},
+        {'type_id': PredefinedAsset.Bond, 'full_name': 'X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26', 'isin': 'US912CALAN84', 'country_id': 0,
+         'symbols': [{'symbol': 'X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26', 'description': '', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '912CALAN8'}, {'datatype': AssetData.ExpiryDate, 'value': '1773532800'}]},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'BKSY 30DEC24 11.5 C', 'isin': 'US68839R1207', 'country_id': 0,
+         'symbols': [{'symbol': 'SFTW WS', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '68839R120'}, {'datatype': AssetData.ExpiryDate, 'value': '1735516800'}],},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'BKSY 30DEC24 11.5 C', 'isin': 'US09263B1162', 'country_id': 0,
+         'symbols': [{'symbol': 'BKSY WS', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.ExpiryDate, 'value': '1735516800'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'APPLE INC', 'isin': 'US0378331005', 'country_id': 0,
+         'symbols': [{'symbol': 'AAPL', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '037833100'}]},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'VLO 24JUL20 64.0 P', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'VLO   200724P00064000', 'description': 'CBOE', 'active': 1, 'currency_id': 2, 'quote_source': -1}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'VALERO ENERGY CORP', 'isin': 'US91913Y1001', 'country_id': 0,
+         'symbols': [{'symbol': 'VLO', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '91913Y100'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'US5543821012', 'country_id': 0,
+         'symbols': [{'symbol': 'MAC', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '554382101'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'US3696043013', 'country_id': 0,
+         'symbols': [{'symbol': 'GE', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '369604301'}]},
+        {'type_id': PredefinedAsset.Bond, 'full_name': '', 'isin': 'US345370CV02', 'country_id': 0,
+         'symbols': [{'symbol': 'F 8 1/2 04/21/23', 'description': '', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '345370CV0'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'CA1125851040', 'country_id': 0,
+         'symbols': [{'symbol': 'BAM', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '112585104'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'BMG1624R1079', 'country_id': 0,
+         'symbols': [{'symbol': 'BPYPM', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'US11282X1037', 'country_id': 0,
+         'symbols': [{'symbol': 'BPYU', 'description': '', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '11282X103'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'US8713321029', 'country_id': 0,
+         'symbols': [{'symbol': 'SLVM', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '871332102'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'US2183521028', 'country_id': 0,
+         'symbols': [{'symbol': 'CORT', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '218352102'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'US218NSPODD6', 'country_id': 0,
+         'symbols': [{'symbol': 'CORT.OD2', 'description': 'CORPACT', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '218NSPODD'}]},
+         {'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'CA6295231014', 'country_id': 0,
+          'symbols': [{'symbol': 'NABIF', 'description': '', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
+          'data': [{'datatype': AssetData.RegistrationCode, 'value': '629523101'}]}
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM assets") == len(test_assets)
-    for i, asset in enumerate(test_assets):
-        assert JalDB._read("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset
-
-    # validate symbols
-    test_symbols = [
-        [1, 1, 'RUB', 1, 'Российский Рубль', 0, 1],
-        [2, 2, 'USD', 1, 'Доллар США (Банк России)', 0, 1],
-        [3, 3, 'EUR', 1, 'Евро (Банк России)', 0, 1],
-        [4, 4, 'VUG', 2, 'ARCA', 2, 1],
-        [5, 5, 'EDV', 2, 'ARCA', 2, 1],
-        [6, 6, 'ZROZ', 2, 'ARCA', 2, 1],
-        [7, 7, 'CAD', 1, '', 0, 1],
-        [8, 8, 'AMZN', 2, 'NASDAQ', 2, 1],
-        [9, 9, 'BABA', 2, 'NYSE', 2, 1],
-        [10, 10, 'D', 2, 'NYSE', 2, 1],
-        [11, 11, 'DM', 2, 'NYSE', 2, 1],
-        [12, 12, 'X 6 1/4 03/15/26', 2, '', -1, 1],
-        [13, 13, 'SPY   200529C00295000', 2, '', -1, 1],
-        [14, 14, 'DSKEW', 2, 'NASDAQ', 2, 1],
-        [15, 15, 'MYL', 2, '', -1, 1],
-        [16, 16, 'VTRS', 2, 'NASDAQ', 2, 1],
-        [17, 17, 'WAB', 2, 'NYSE', 2, 1],
-        [18, 17, 'WBB', 7, 'TSE', 4, 1],
-        [19, 18, 'TEF', 2, 'NYSE', 2, 1],
-        [20, 19, 'EQM', 2, 'NYSE', 2, 1],
-        [21, 20, 'ETRN', 2, 'NYSE', 2, 1],
-        [22, 21, 'GE', 2, 'NYSE', 2, 1],
-        [23, 22, 'EWLL', 2, 'PINK', -1, 1],
-        [24, 23, 'EWLL', 2, 'PINK', -1, 0],
-        [25, 24, 'LVGO', 2, '', -1, 1],
-        [26, 25, 'TDOC', 2, 'NYSE', 2, 1],
-        [27, 26, 'LUMN', 2, 'NYSE', 2, 1],
-        [28, 27, 'LUMN', 2, 'NYSE', 2, 1],
-        [29, 28, 'X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26', 2, '', -1, 1],
-        [30, 29, 'SFTW WS', 2, 'NYSE', 2, 1],
-        [31, 30, 'BKSY WS', 2, 'NYSE', 2, 1],
-        [32, 31, 'AAPL', 2, 'NASDAQ', 2, 1],
-        [33, 32, 'VLO   200724P00064000', 2, 'CBOE', -1, 1],
-        [34, 33, 'VLO', 2, 'NYSE', 2, 1],
-        [35, 34, 'MAC', 2, 'NYSE', 2, 1],
-        [36, 23, 'EWLLD', 2, 'PINK', -1, 1],
-        [37, 35, 'GE', 2, 'NYSE', 2, 1],
-        [38, 36, 'F 8 1/2 04/21/23', 2, '', -1, 1],
-        [39, 37, 'BAM', 2, 'NYSE', 2, 1],
-        [40, 38, 'BPYPM', 2, 'NASDAQ', 2, 1],
-        [41, 39, 'BPYU', 2, '', -1, 1],
-        [42, 40, 'SLVM', 2, 'NYSE', 2, 1],
-        [43, 41, 'CORT', 2, 'NASDAQ', 2, 1],
-        [44, 42, 'CORT.OD2', 2, 'CORPACT', -1, 1],
-        [45, 43, 'NABIF', 2, '', -1, 1]
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
-    for i, symbol in enumerate(test_symbols):
-        assert JalDB._read("SELECT * FROM asset_tickers WHERE id=:id", [(":id", i + 1)]) == symbol
-
-    # validate asset's data
-    test_asset_data = [
-        [1, 5, 1, '921910709'],
-        [2, 8, 1, '023135106'],
-        [3, 9, 1, '01609W102'],
-        [4, 10, 1, '25746U109'],
-        [5, 11, 1, '257454108'],
-        [6, 12, 1, '912909AN8'], [7, 12, 2, '1773532800'],
-        [8, 13, 2, '1590710400'],
-        [9, 14, 1, '23753F115'], [10, 14, 2, '1645920000'],
-        [11, 16, 1, '92556V106'],
-        [12, 17, 1, '929740108'],
-        [13, 18, 1, '879382208'],
-        [14, 19, 1, '26885B100'],
-        [15, 20, 1, '294600101'],
-        [16, 21, 1, '369604103'],
-        [17, 22, 1, '30051D106'],
-        [18, 23, 1, '30051D205'],
-        [19, 6, 1, '72201R882'],
-        [20, 24, 1, '539183103'],
-        [21, 25, 1, '87918A105'],
-        [22, 26, 1, '550241103'],
-        [23, 27, 1, '156700106'],
-        [24, 28, 1, '912CALAN8'], [25, 28, 2, '1773532800'],
-        [26, 29, 1, '68839R120'], [27, 29, 2, '1735516800'],
-        [28, 30, 2, '1735516800'],
-        [29, 31, 1, '037833100'],
-        [30, 4, 1, '922908736'],
-        [31, 33, 1, '91913Y100'],
-        [32, 34, 1, '554382101'],
-        [33, 35, 1, '369604301'],
-        [34, 36, 1, '345370CV0'],
-        [35, 37, 1, '112585104'],
-        [36, 39, 1, '11282X103'],
-        [37, 40, 1, '871332102'],
-        [38, 41, 1, '218352102'],
-        [39, 42, 1, '218NSPODD'],
-        [40, 43, 1, '629523101']
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM asset_data") == len(test_asset_data)
-    for i, data in enumerate(test_asset_data):
-        assert JalDB._read("SELECT * FROM asset_data WHERE id=:id", [(":id", i + 1)]) == data
+    assets = JalAsset.get_assets()
+    assert len(assets) == len(test_assets)
+    assert [x.dump() for x in assets] == test_assets
 
     # validate accounts
     test_accounts = [
@@ -224,9 +212,10 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [11, 3, 1638822300, 1638822300, '18694975077', 1, 36, '-8.0', '1103.06815', '0.0', '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)'],
         [12, 3, 1640031900, 1640031900, '18882610202', 1, 42, '-99.0', '20.75', '0.0', 'CORT.OD2(US218NSPODD6) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM trades") == len(test_trades)
+    trades = JalAccount(1).dump_trades()
+    assert len(trades) == len(test_trades)
     for i, trade in enumerate(test_trades):
-        assert JalDB._read("SELECT * FROM trades WHERE id=:id", [(":id", i + 1)]) == trade
+        assert trades[i] == trade
 
     # validate asset payments
     test_payments = [
@@ -308,60 +297,46 @@ def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
 
     # validate assets
     test_assets = [
-        [1, PredefinedAsset.Money, 'Российский Рубль', '', 0, ''],
-        [2, PredefinedAsset.Money, 'Доллар США', '', 0, ''],
-        [3, PredefinedAsset.Money, 'Евро', '', 0, ''],
-        [4, PredefinedAsset.Stock, '', 'RU0009029540', 0, ''],
-        [5, PredefinedAsset.Derivative, 'Si-12.11 Контракт на курс доллар-рубль', '', 0, ''],
-        [6, PredefinedAsset.Bond, '', 'RU000A1038V6', 0, ''],
-        [7, PredefinedAsset.Bond, '', 'RU000A1014H6', 0, ''],
-        [8, PredefinedAsset.Stock, 'Аэрофлот-росс.авиалин(ПАО)ао', 'RU0009062285', 0, ''],
-        [9, PredefinedAsset.ETF, 'FinEx Gold ETF USD', 'IE00B8XB7377', 0, ''],
-        [10, PredefinedAsset.Bond, 'АО "Тинькофф Банк" БО-07', 'RU000A0JWM31', 0, ''],
-        [11, PredefinedAsset.ETF, 'ЗПИФ Фонд ПНК-Рентал', 'RU000A1013V9', 0, ''],
-        [12, PredefinedAsset.Stock, 'ао ПАО Банк ВТБ', 'RU000A0JP5V6', 0, ''],
-        [13, PredefinedAsset.Stock, 'Polymetal International plc', 'JE00B6T5S470', 0, ''],
-        [14, PredefinedAsset.Derivative, 'Фьючерсный контракт Si-12.21', '', 0, ''],
-        [15, PredefinedAsset.Stock, 'ПАО Московская Биржа', 'RU000A0JR4A1', 0, ''],
-        [16, PredefinedAsset.Stock, 'Северсталь (ПАО)ао', 'RU0009046510', 0, '']
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Российский Рубль', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'RUB', 'description': 'Российский Рубль', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Доллар США', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'USD', 'description': 'Доллар США (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+        {'type_id': PredefinedAsset.Money, 'full_name': 'Евро', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'EUR', 'description': 'Евро (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'RU0009029540', 'country_id': 0,
+         'symbols': [{'symbol': 'SBER',  'description': '', 'active': 1,'currency_id': 1, 'quote_source': -1}]},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'Si-12.11 Контракт на курс доллар-рубль', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'SiZ1', 'description': '', 'active': 1, 'currency_id': 1, 'quote_source': -1}]},
+        {'type_id': PredefinedAsset.Bond, 'full_name': '', 'isin': 'RU000A1038V6', 'country_id': 0,
+         'symbols': [{'symbol': 'SU26238RMFS4', 'description': '', 'active': 1, 'currency_id': 1, 'quote_source': -1}]},
+        {'type_id': PredefinedAsset.Bond, 'full_name': '', 'isin': 'RU000A1014H6', 'country_id': 0,
+         'symbols': [{'symbol': 'МКБ 1P2', 'description': '', 'active': 1, 'currency_id': 1, 'quote_source': -1}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'Аэрофлот-росс.авиалин(ПАО)ао', 'isin': 'RU0009062285', 'country_id': 0,
+         'symbols': [{'symbol': 'AFLT', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '1-01-00010-A'}]},
+        {'type_id': PredefinedAsset.ETF, 'full_name': 'FinEx Gold ETF USD', 'isin': 'IE00B8XB7377', 'country_id': 0,
+         'symbols': [{'symbol': 'FXGD', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}]},
+        {'type_id': PredefinedAsset.Bond, 'full_name': 'АО "Тинькофф Банк" БО-07', 'isin': 'RU000A0JWM31', 'country_id': 0,
+         'symbols': [{'symbol': 'ТинькоффБ7', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '4B020702673B'}, {'datatype': AssetData.ExpiryDate, 'value': '1624492800'}, {'datatype': AssetData.PrincipalValue, 'value': '1000'}],},
+        {'type_id': PredefinedAsset.ETF, 'full_name': 'ЗПИФ Фонд ПНК-Рентал', 'isin': 'RU000A1013V9', 'country_id': 0,
+         'symbols': [{'symbol': 'ЗПИФ ПНК', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '2770'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'ао ПАО Банк ВТБ', 'isin': 'RU000A0JP5V6', 'country_id': 0,
+         'symbols': [{'symbol': 'VTBR', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '10401000B'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'Polymetal International plc', 'isin': 'JE00B6T5S470', 'country_id': 0,
+         'symbols': [{'symbol': 'POLY', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}]},
+        {'type_id': PredefinedAsset.Derivative, 'full_name': 'Фьючерсный контракт Si-12.21', 'isin': '', 'country_id': 0,
+         'symbols': [{'symbol': 'SiZ1', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}],
+         'data': [{'datatype': AssetData.ExpiryDate, 'value': '1639612800'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'ПАО Московская Биржа', 'isin': 'RU000A0JR4A1', 'country_id': 0,
+         'symbols': [{'symbol': 'MOEX', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '1-05-08443-H'}]},
+        {'type_id': PredefinedAsset.Stock, 'full_name': 'Северсталь (ПАО)ао', 'isin': 'RU0009046510', 'country_id': 0,
+         'symbols': [{'symbol': 'CHMF', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}],
+         'data': [{'datatype': AssetData.RegistrationCode, 'value': '1-02-00143-A'}]}
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM assets") == len(test_assets)
-    for i, asset in enumerate(test_assets):
-        assert JalDB._read("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset
-
-    # validate assets
-    test_symbols = [
-        [1, 1, 'RUB', 1, 'Российский Рубль', 0, 1],
-        [2, 2, 'USD', 1, 'Доллар США (Банк России)', 0, 1],
-        [3, 3, 'EUR', 1, 'Евро (Банк России)', 0, 1],
-        [4, 4, 'SBER', 1, '', -1, 1],
-        [5, 5, 'SiZ1', 1, '', -1, 1],
-        [6, 6, 'SU26238RMFS4', 1, '', -1, 1],
-        [7, 7, 'МКБ 1P2', 1, '', -1, 1],
-        [8, 8, 'AFLT', 1, 'MOEX', 1, 1],
-        [9, 9, 'FXGD', 1, 'MOEX', 1, 1],
-        [10, 10, 'ТинькоффБ7', 1, 'MOEX', 1, 1],
-        [11, 11, 'ЗПИФ ПНК', 1, 'MOEX', 1, 1],
-        [12, 12, 'VTBR', 1, 'MOEX', 1, 1],
-        [13, 13, 'POLY', 1, 'MOEX', 1, 1],
-        [14, 14, 'SiZ1', 1, 'MOEX', 1, 1],
-        [15, 15, 'MOEX', 1, 'MOEX', 1, 1],
-        [16, 16, 'CHMF', 1, 'MOEX', 1, 1]
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
-    for i, symbol in enumerate(test_symbols):
-        assert JalDB._read("SELECT * FROM asset_tickers WHERE id=:id", [(":id", i + 1)]) == symbol
-
-    # validate assets
-    test_data = [
-        [1, 8, 1, '1-01-00010-A'],
-        [2, 10, 1, '4B020702673B'], [3, 10, 3, '1000'], [4, 10, 2, '1624492800'],
-        [5, 11, 1, '2770'],
-        [6, 12, 1, '10401000B'],
-        [7, 14, 2, '1639612800'],
-        [8, 15, 1, '1-05-08443-H'],
-        [9, 16, 1, '1-02-00143-A']
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM asset_data") == len(test_data)
-    for i, data in enumerate(test_data):
-        assert JalDB._read("SELECT * FROM asset_data WHERE id=:id", [(":id", i + 1)]) == data
+    assets = JalAsset.get_assets()
+    assert len(assets) == len(test_assets)
+    assert [x.dump() for x in assets] == test_assets

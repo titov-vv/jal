@@ -43,6 +43,23 @@ class JalAsset(JalDB):
         self._principal = self._read("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
                                      [(":datatype", AssetData.PrincipalValue), (":id", self._id)])
 
+    def dump(self) -> dict:
+        symbols = []
+        query = self._exec("SELECT * FROM asset_tickers WHERE asset_id=:id", [(":id", self._id)])
+        while query.next():
+            symbol = self._read_record(query, named=True)
+            del symbol['id']
+            del symbol['asset_id']
+            symbols.append(symbol)
+        self._data['symbols'] = symbols
+        extra_data = []
+        query = self._exec("SELECT datatype, value FROM asset_data WHERE asset_id=:id", [(":id", self._id)])
+        while query.next():
+            extra_data.append(self._read_record(query, named=True))
+        if extra_data:
+            self._data['data'] = extra_data
+        return self._data
+
     def id(self) -> int:
         return self._id
 
@@ -317,6 +334,15 @@ class JalAsset(JalDB):
             except TypeError:  # Skip if None is returned (i.e. there are no assets)
                 continue
             assets.append({"asset": JalAsset(int(asset_id)), "currency": int(currency_id)})
+        return assets
+
+    # Method returns a list of JalAsset objects that describe all assets defined in ledger
+    @classmethod
+    def get_assets(cls) -> list:
+        assets = []
+        query = cls._exec("SELECT id FROM assets")
+        while query.next():
+            assets.append(JalAsset(int(super(JalAsset, JalAsset)._read_record(query))))
         return assets
 
     # Method returns a list of JalAsset objects that describe currencies defined in ledger
