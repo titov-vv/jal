@@ -61,6 +61,20 @@ class JalAccount(JalDB):
             accounts.append(JalAccount(int(account_id)))
         return accounts
 
+    def dump(self):
+        return self._data
+
+    def dump_actions(self):
+        actions = []
+        query = self._exec("SELECT * FROM actions WHERE account_id=:id", [(":id", self._id)])
+        while query.next():
+            actions.append(self._read_record(query))
+        for action in actions:
+            query = self._exec("SELECT * FROM action_details WHERE pid=:id", [(":id", action[0])])
+            while query.next():
+                action.append(self._read_record(query))
+        return actions
+
     # Returns everything from 'dividends' table associated with current account - used in test cases only
     def dump_dividends(self):
         dividends = []
@@ -76,6 +90,16 @@ class JalAccount(JalDB):
         while query.next():
             trades.append(self._read_record(query))
         return trades
+
+    # Returns everything from 'transfers' table associated with current account - used in test cases only
+    def dump_transfers(self):
+        transfers = []
+        query = self._exec(
+            "SELECT * FROM transfers WHERE withdrawal_account=:id OR deposit_account=:id OR fee_account=:id",
+            [(":id", self._id)])
+        while query.next():
+            transfers.append(self._read_record(query))
+        return transfers
 
     def dump_corporate_actions(self):
         actions = []

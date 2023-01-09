@@ -16,11 +16,24 @@ class JalPeer(JalDB):
                                 [(":peer_id", self._id)], named=True)
         self._name = self._data['name'] if self._data is not None else None
 
+    def dump(self):
+        return self._data
+
     def id(self) -> int:
         return self._id
 
     def name(self) -> str:
         return self._name
+
+    # Returns a list of all available peers
+    @classmethod
+    def get_all_peers(cls):
+        peers = []
+        query = cls._exec("SELECT id FROM agents")
+        while query.next():
+            peer_id = cls._read_record(query)
+            peers.append(JalPeer(int(peer_id)))
+        return peers
 
     # Returns possible peer_id by a given name
     @classmethod

@@ -1,11 +1,13 @@
 import json
+from decimal import Decimal
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr, prepare_db_moex
 
 from jal.data_import.statement import Statement
-from jal.db.db import JalDB
+from tests.helpers import d2t
 from jal.constants import PredefinedAsset
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset, AssetData
+from jal.db.peer import JalPeer
 
 
 def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
@@ -154,48 +156,39 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate accounts
     test_accounts = [
-        [1, 4, 'Inv. Account', 2, 1, 'U7654321', 0, 1, 0, 10],
-        [2, 4, 'Inv. Account.RUB', 1, 1, 'U7654321', 0, 1, 0, 10],
-        [3, 4, 'TEST_ACC.USD', 2, 1, 'TEST_ACC', 0, 2, 0, 10],
-        [4, 4, 'Inv. Account.CAD', 7, 1, 'U7654321', 0, 1, 0, 10],
-        [5, 4, 'TEST_ACC.CAD', 7, 1, 'TEST_ACC', 0, 2, 0, 10],
-        [6, 4, 'Inv. Account.EUR', 3, 1, 'U7654321', 0, 1, 0, 10]
+        {'type_id': 4, 'name': 'Inv. Account', 'number': 'U7654321', 'currency_id': 2, 'active': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
+        {'type_id': 4, 'name': 'Inv. Account.RUB', 'number': 'U7654321', 'currency_id': 1, 'active': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
+        {'type_id': 4, 'name': 'TEST_ACC.USD', 'number': 'TEST_ACC', 'currency_id': 2, 'active': 1, 'organization_id': 2, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
+        {'type_id': 4, 'name': 'Inv. Account.CAD', 'number': 'U7654321', 'currency_id': 7, 'active': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
+        {'type_id': 4, 'name': 'TEST_ACC.CAD', 'number': 'TEST_ACC', 'currency_id': 7, 'active': 1, 'organization_id': 2, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
+        {'type_id': 4, 'name': 'Inv. Account.EUR', 'number': 'U7654321', 'currency_id': 3, 'active': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10}
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM accounts") == len(test_accounts)
-    for i, account in enumerate(test_accounts):
-        assert JalDB._read("SELECT * FROM accounts WHERE id=:id", [(":id", i + 1)]) == account
+    accounts = JalAccount.get_all_accounts()
+    assert [x.dump() for x in accounts] == test_accounts
 
     # validate peers
-    test_peers = [
-        [1, 0, 'IB', ''],
-        [2, 0, 'Bank for account #TEST_ACC', '']
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM agents") == len(test_peers)
-    for i, peer in enumerate(test_peers):
-        assert JalDB._read("SELECT * FROM agents WHERE id=:id", [(":id", i + 1)]) == peer
+    test_peers = [{'name': 'IB'}, {'name': 'Bank for account #TEST_ACC'}]
+    peers = JalPeer.get_all_peers()
+    assert [x.dump() for x in peers] == test_peers
 
     # validate income/spending
-    test_actions = [
-        [1, 1, 5, '', '-7.96', '0', 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019'],
-        [2, 2, 5, '', '0.6905565', '0', 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)'],
-        [3, 3, 8, '', '0.5', '0', 'RUB CREDIT INT FOR MAY-2020'],
-        [4, 4, 6, '', '-0.249018', '0', 'BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax']
+    assert JalAccount(1).dump_actions() == [
+        [1, 1, 1578073286, 1, 1, '', [1, 1, 5, '', '-7.96', '0', 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019']],
+        [2, 1, 1601462520, 1, 1, '', [2, 2, 5, '', '0.6905565', '0', 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)']],
+        [4, 1, 1549843200, 1, 1, '', [4, 4, 6, '', '-0.249018', '0', 'BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax']]
     ]
-    assert JalDB._read("SELECT COUNT(amount) FROM action_details") == len(test_actions)
-    for i, action in enumerate(test_actions):
-        assert JalDB._read("SELECT * FROM action_details WHERE id=:id", [(":id", i + 1)]) == action
+    assert JalAccount(2).dump_actions() == [
+        [3, 1, 1591142400, 2, 1, '', [3, 3, 8, '', '0.5', '0', 'RUB CREDIT INT FOR MAY-2020']]
+    ]
 
     # validate transfers
-    test_transfers = [
+    assert JalAccount(1).dump_transfers() == [
         [1, 4, 1580443370, 6, '890.47', 1580443370, 1, '1000.0', 1, '3.0', '', 'IDEALFX'],
         [2, 4, 1581322108, 2, '78986.6741', 1581322108, 1, '1234.0', 1, '2.0', '', 'IDEALFX'],
         [3, 4, 1590522832, 2, '44.07', 1590522832, 1, '0.621778209', '', '', '', 'IDEALFX'],
         [4, 4, 1600374600, 1, '123456.78', 1600374600, 2, '123456.78', '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
         [5, 4, 1605744000, 1, '1234.0', 1605744000, 1, '1234.0', '', '', '', 'DISBURSEMENT INITIATED BY John Doe']
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM transfers") == len(test_transfers)
-    for i, transfer in enumerate(test_transfers):
-        assert JalDB._read("SELECT * FROM transfers WHERE id=:id", [(":id", i + 1)]) == transfer
 
     # validate trades
     test_trades = [
@@ -236,16 +229,11 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         assert dividends[i] == dividend
 
     # Verify that asset prices were loaded for stock dividends and vestings
-    stock_quotes = [
-        [1, 946684800, 1, 1, '1.0'],
-        [2, 1633033200, 4, 2, '25.73'],
-        [3, 1595017200, 18, 2, '4.7299999999999995'],   # FIXME - here 4.73 is a correct value
-        [4, 1591215600, 34, 2, '8.59'],
-        [5, 1620345600, 8, 2, '678']
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM quotes") == len(stock_quotes)
-    for i, quote in enumerate(stock_quotes):
-        assert JalDB._read("SELECT * FROM quotes WHERE id=:id", [(":id", i + 1)]) == quote
+    assert JalAsset(1).quote(d2t(230101), 1) == (946684800, Decimal('1.0'))
+    assert JalAsset(4).quote(d2t(230101), 2) == (1633033200, Decimal('25.73'))
+    assert JalAsset(18).quote(d2t(230101), 2) == (1595017200, Decimal('4.7299999999999995'))  # FIXME - here 4.73 is a correct value
+    assert JalAsset(34).quote(d2t(230101), 2) == (1591215600, Decimal('8.59'))
+    assert JalAsset(8).quote(d2t(230101), 2) == (1620345600, Decimal('678'))
 
     # validate corp actions
     test_asset_actions = [
