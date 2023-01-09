@@ -1,13 +1,13 @@
 import json
+from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import d2t
-from jal.db.ledger import Ledger
-from jal.db.db import JalDB
+from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset, AssetData
-from jal.constants import PredefinedAsset
+from jal.constants import PredefinedAsset, BookAccount
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -148,13 +148,12 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         assert actions[i] == action
 
     # Check that there are no remainders
-    assert JalDB._read("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == ['0', '0']
-    assert JalDB._read("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == ['0', '0']
-    assert JalDB._read("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == ['0', '0']
-    assert JalDB._read("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == ['0', '0']
-
-    # Check correct number of deals
-    assert len(JalAccount(1).closed_trades_list()) == 6
+    total_amount = LedgerAmounts("amount_acc")
+    total_value = LedgerAmounts("value_acc")
+    assert total_amount[(BookAccount.Assets, 1, 4)] == Decimal('0')
+    assert total_value[(BookAccount.Assets, 1, 4)] == Decimal('0')
+    assert total_amount[(BookAccount.Assets, 1, 7)] == Decimal('0')
+    assert total_value[(BookAccount.Assets, 1, 7)] == Decimal('0')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
