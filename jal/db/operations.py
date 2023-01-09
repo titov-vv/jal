@@ -507,6 +507,10 @@ class Dividend(LedgerTransaction):
         else:
             return super().value_total()
 
+    def update_amount(self, amount: Decimal) -> None:
+        self._exec("UPDATE dividends SET amount=:amount WHERE id=:id",
+                   [(":id", self._oid), (":amount", format_decimal(amount))])
+
     def update_tax(self, new_tax) -> None:   # FIXME method should take Decimal value, not float
         _ = self._exec("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
                        [(":dividend_id", self._oid), (":tax", new_tax)], commit=True)
@@ -608,8 +612,15 @@ class Trade(LedgerTransaction):
     def price(self) -> Decimal:
         return self._price
 
+    def update_price(self, price: Decimal) -> None:
+        self._exec("UPDATE trades SET price=:price WHERE id=:id", [(":id", self._oid),
+                                                                   (":price", format_decimal(price))])
+
     def qty(self) -> Decimal:
         return self._qty
+
+    def update_qty(self, qty: Decimal) -> None:
+        self._exec("UPDATE trades SET qty=:qty WHERE id=:id", [(":id", self._oid), (":qty", format_decimal(qty))])
 
     def fee(self) -> Decimal:
         return self._fee
