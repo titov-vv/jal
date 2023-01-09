@@ -179,6 +179,7 @@ class JalAsset(JalDB):
                                 (":timestamp", quote['timestamp']), (":quote", format_decimal(quote['quote']))])
             begin = min(data, key=lambda x: x['timestamp'])['timestamp']
             end = max(data, key=lambda x: x['timestamp'])['timestamp']
+            self.commit()
             logging.info(self.tr("Quotations were updated: ") +
                          f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) {ts2d(begin)} - {ts2d(end)}")
 

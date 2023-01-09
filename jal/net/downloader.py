@@ -12,7 +12,6 @@ from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import MarketDataFeed, PredefinedAsset
-from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
@@ -114,7 +113,6 @@ class QuoteDownloader(QObject):
                 for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
                     quotations.append({'timestamp': int(date.timestamp()), 'quote': quote[0]})
                 asset.set_quotes(quotations, currency)
-        JalDB().commit()
         logging.info(self.tr("Download completed"))
 
     def PrepareRussianCBReader(self):
