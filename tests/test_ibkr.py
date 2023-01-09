@@ -139,18 +139,13 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate corp actions
     test_asset_actions = [
-        [1, 5, 1610569500, '14909999818', 1, 3, 4, '140.0', 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)']
+        [1, 5, 1610569500, '14909999818', 1, 3, 4, '140.0', 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)',
+         [1, 1, 8, '140.0', '1.0']]
     ]
-    assert JalDB._read("SELECT COUNT(*) FROM asset_actions") == len(test_asset_actions)
+    actions = JalAccount(1).dump_corporate_actions()
+    assert len(actions) == len(test_asset_actions)
     for i, action in enumerate(test_asset_actions):
-        assert JalDB._read("SELECT * FROM asset_actions WHERE id=:id", [(":id", i + 1)]) == action
-
-    test_action_results = [
-        [1, 1, 8, '140.0', '1.0']
-    ]
-    assert JalDB._read("SELECT COUNT(*) FROM action_results") == len(test_action_results)
-    for i, result in enumerate(test_action_results):
-        assert JalDB._read("SELECT * FROM action_results WHERE id=:id", [(":id", i + 1)]) == result
+        assert actions[i] == action
 
     # Check that there are no remainders
     assert JalDB._read("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == ['0', '0']

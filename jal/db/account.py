@@ -77,6 +77,17 @@ class JalAccount(JalDB):
             trades.append(self._read_record(query))
         return trades
 
+    def dump_corporate_actions(self):
+        actions = []
+        query = self._exec("SELECT * FROM asset_actions WHERE account_id=:id", [(":id", self._id)])
+        while query.next():
+            actions.append(self._read_record(query))
+        for action in actions:
+            query = self._exec("SELECT * FROM action_results WHERE action_id=:id", [(":id", action[0])])
+            while query.next():
+                action.append(self._read_record(query))
+        return actions
+
     # Returns database id of the account
     def id(self) -> int:
         return self._id
