@@ -258,14 +258,8 @@ class GridLinesDelegate(QStyledItemDelegate):
 # -----------------------------------------------------------------------------------------------------------------------
 # Base class for lookup delegate that allows Asset, Peer, Category and Tag selection
 class LookupSelectorDelegate(QStyledItemDelegate):
-    Category = 1
-    Tag = 2
-    Peer = 3
-    Asset = 4
-
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
-        self._type = 0
         self._table = ''
         self._field = ''
 
@@ -276,18 +270,11 @@ class LookupSelectorDelegate(QStyledItemDelegate):
         else:
             return item_name
 
+    def valueSelector(self, parent):
+        raise NotImplementedError("valueSelector() method is not defined in LookupSelectorDelegate descendant")
+
     def createEditor(self, aParent, option, index):
-        if self._type == self.Category:
-            selector = CategorySelector(aParent)
-        elif self._type == self.Tag:
-            selector = TagSelector(aParent)
-        elif self._type == self.Peer:
-            selector = PeerSelector(aParent)
-        elif self._type == self.Asset:
-            selector = AssetSelector(aParent)
-        else:
-            raise ValueError
-        return selector
+        return self.valueSelector(aParent)
 
     def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
         editor.selected_id = index.data()
@@ -299,30 +286,38 @@ class LookupSelectorDelegate(QStyledItemDelegate):
 class CategorySelectorDelegate(LookupSelectorDelegate):
     def __init__(self, parent=None):
         LookupSelectorDelegate.__init__(self, parent)
-        self._type = LookupSelectorDelegate.Category
         self._table = "categories"
         self._field = "name"
+
+    def valueSelector(self, parent):
+        return CategorySelector(parent)
 
 
 class TagSelectorDelegate(LookupSelectorDelegate):
     def __init__(self, parent=None):
         LookupSelectorDelegate.__init__(self, parent)
-        self._type = LookupSelectorDelegate.Tag
         self._table = "tags"
         self._field = "tag"
+
+    def valueSelector(self, parent):
+        return TagSelector(parent)
 
 
 class PeerSelectorDelegate(LookupSelectorDelegate):
     def __init__(self, parent=None):
         LookupSelectorDelegate.__init__(self, parent)
-        self._type = LookupSelectorDelegate.Peer
         self._table = "agents"
         self._field = "name"
+
+    def valueSelector(self, parent):
+        return PeerSelector(parent)
 
 
 class AssetSelectorDelegate(LookupSelectorDelegate):
     def __init__(self, parent=None):
         LookupSelectorDelegate.__init__(self, parent)
-        self._type = LookupSelectorDelegate.Asset
         self._table = "assets_ext"
         self._field = "symbol"
+
+    def valueSelector(self, parent):
+        return AssetSelector(parent)
