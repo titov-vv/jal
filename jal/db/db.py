@@ -299,18 +299,6 @@ class JalDB:
         query = self._exec(query_text, params, commit=True)
         return query.lastInsertId()
 
-    # Returns value of 'field_name' from 'table_name' where 'key_field' is equal to 'search_value'
-    @staticmethod
-    def get_db_value(table_name: str, field_name: str, key_field: str, search_value: Union[int, str]) -> str:
-        if table_name not in JalDB._tables:
-            return ''
-        if ' ' in field_name or ' ' in key_field:
-            return ''
-        if type(search_value) == str:
-            search_value = "'" + search_value + "'"   # Enclose string into quotes
-        query_text = f"SELECT {field_name} FROM {table_name} WHERE {key_field}={search_value}"
-        return JalDB._read(query_text)
-
 
 # -------------------------------------------------------------------------------------------------------------------
 # Subclassing to hide db connection details
@@ -318,3 +306,17 @@ class JalModel(QSqlTableModel):
     def __init__(self, parent, table_name):
         super().__init__(parent=parent, db=JalDB.connection())
         self.setTable(table_name)
+        self._table = table_name
+
+    # Returns value of 'field_name' where 'key_field' is equal to 'search_value'
+    def get_value(self, field_name: str, key_field: str, search_value: Union[int, str]) -> str:
+        if ' ' in field_name or ' ' in key_field:
+            return ''
+        if type(search_value) == str:
+            search_value = "'" + search_value + "'"   # Enclose string into quotes
+        self.setFilter(f"{key_field}={search_value}")
+        self.select()
+        result = self.record(0).field(field_name).value()
+        self.setFilter('')
+        self.select()
+        return result

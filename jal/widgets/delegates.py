@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, Q
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
 from jal.widgets.reference_selector import AssetSelector, PeerSelector, CategorySelector, TagSelector
-from jal.db.db import JalDB
+from jal.db.db import JalModel
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
 
@@ -264,7 +264,7 @@ class LookupSelectorDelegate(QStyledItemDelegate):
         self._field = ''
 
     def displayText(self, value, locale):
-        item_name = JalDB.get_db_value(self._table, self._field, "id", value)
+        item_name = JalModel(self, self._table).get_value(self._field, "id", value)
         if item_name is None:
             return ''
         else:

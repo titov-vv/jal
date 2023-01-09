@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Property
 from PySide6.QtWidgets import QComboBox
-from jal.db.db import JalDB, JalModel
+from jal.db.db import JalModel
 
 
 # Combobox to lookup in db tables:
@@ -15,13 +15,13 @@ class DbLookupComboBox(QComboBox):
         self._selected_id = -1
 
     def getKey(self):
-        return JalDB.get_db_value(self._table, self._key_field, self._field, self.currentText())
+        return self._model.get_value(self._key_field, self._field, self.currentText())
 
     def setKey(self, selected_id):
         if self._selected_id == selected_id:
             return
         self._selected_id = selected_id
-        value = JalDB.get_db_value(self._table, self._field, self._key_field, selected_id)
+        value = self._model.get_value(self._field, self._key_field, selected_id)
         self.setCurrentIndex(self.findText(value))
 
     def getTable(self):
