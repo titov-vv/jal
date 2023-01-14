@@ -1,5 +1,6 @@
 from typing import Union
 import os
+import re
 import logging
 import sqlparse
 from pkg_resources import parse_version
@@ -117,6 +118,8 @@ class JalDB:
         if not query.prepare(sql_text):
             logging.error(f"SQL query preparation failure: '{query.lastError().text()}' for query '{sql_text}'")
             return None
+        query_params = set(re.findall(r":(\w+)", sql_text, re.IGNORECASE))  # get all parameter names in query text
+        assert len(query_params) == len(params), f"SQL: wrong number of parameters {params} for '{sql_text}'"
         for param in params:
             query.bindValue(param[0], param[1])
             assert query.boundValue(param[0]) == param[1], f"SQL: failed to assign parameter {param} in '{sql_text}'"
