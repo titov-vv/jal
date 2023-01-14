@@ -8,20 +8,23 @@ from jal.constants import Setup, BookAccount, PredefindedAccountType, Predefined
 
 
 class JalAccount(JalDB):
+    db_cache = []
     MONEY_FLOW = 1
     ASSETS_FLOW = 2
 
     # TODO: change 'country' in data from 'country_id' to 'country short code' - the same as JalAsset does
-    def __init__(self, id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
+    def __init__(self, account_id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
         super().__init__()
-        self._id = id
+        if not JalAccount.db_cache:
+            self._fetch_data()
+        self._id = account_id
         if self._valid_data(data, search, create):
             if search:
                 self._id = self._find_account(data)
             if create and not self._id:   # If we haven't found peer before and requested to create new record
                 similar_id = self._read("SELECT id FROM accounts WHERE :number=number", [(":number", data['number'])])
                 if similar_id:
-                    self._id = self._copy_similar_account(similar_id, data)
+                    self._id = self.__copy_similar_account(similar_id, data)
                 else:   # Create new account record
                     if data['type'] == PredefindedAccountType.Investment and data['organization'] is None:
                         data['organization'] = JalPeer(
@@ -35,8 +38,11 @@ class JalAccount(JalDB):
                          (":currency", data['currency']), (":organization", data['organization']),
                          (":country", data['country']), (":precision", data['precision'])], commit=True)
                     self._id = query.lastInsertId()
-        self._data = self._read("SELECT type_id, name, number, currency_id, active, organization_id, country_id, "
-                                "reconciled_on, precision FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
+                self._fetch_data()
+        try:
+            self._data = [x for x in self.db_cache if x['id']==self._id][0]
+        except IndexError:
+            self._data = None
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['name'] if self._data is not None else ''
         self._number = self._data['number'] if self._data is not None else None
@@ -46,6 +52,12 @@ class JalAccount(JalDB):
         self._country_id = self._data['country_id'] if self._data is not None else None
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
         self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
+
+    def _fetch_data(self):
+        JalAccount.db_cache = []
+        query = self._exec("SELECT * FROM accounts ORDER BY id")
+        while query.next():
+            JalAccount.db_cache.append(self._read_record(query, named=True))
 
     # Method returns a list of JalAccount objects for accounts of given type (or all if None given)
     # Flag "active_only" allows only active accounts output by default
@@ -284,7 +296,7 @@ class JalAccount(JalDB):
 
     # Creates new account with different based on existing one.
     # Currency is taken from data['currency']. Name is auto-generated in form of AccountNumber.CurrencyName
-    def _copy_similar_account(self, similar_id: int, data: dict) -> int:
+    def __copy_similar_account(self, similar_id: int, data: dict) -> int:
         similar = JalAccount(similar_id)
         currency = JalAsset(similar.currency())
         new_currency = JalAsset(data['currency'])
