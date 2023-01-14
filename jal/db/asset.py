@@ -17,9 +17,13 @@ def db_timestamp2int(timestamp_string: str) -> int:
 
 
 class JalAsset(JalDB):
-    def __init__(self, id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
+    db_cache = []
+
+    def __init__(self, asset_id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
         super().__init__()
-        self._id = id
+        if not JalAsset.db_cache:
+            self._fetch_data()
+        self._id = asset_id
         if self._valid_data(data, search, create):
             if search:
                 self._id = self._find_asset(data)
@@ -30,18 +34,33 @@ class JalAsset(JalDB):
                     [(":type", data['type']), (":full_name", data['name']),
                      (":isin", data['isin']), (":country", data['country'])], commit=True)
                 self._id = query.lastInsertId()
-        self._data = self._read("SELECT type_id, full_name, isin, country_id FROM assets WHERE id=:id",
-                                [(":id", self._id)], named=True)
+                self._fetch_data()
+        try:
+            self._data = [x for x in self.db_cache if x['id'] == self._id][0]
+        except IndexError:
+            self._data = None
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['full_name'] if self._data is not None else ''
         self._isin = self._data['isin'] if self._data is not None else None
         self._country_id = self._data['country_id'] if self._data is not None else 0
-        self._reg_number = self._read("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
-                                      [(":datatype", AssetData.RegistrationCode), (":id", self._id)])
-        self._expiry = self._read("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
-                                  [(":datatype", AssetData.ExpiryDate), (":id", self._id)])
-        self._principal = self._read("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
-                                     [(":datatype", AssetData.PrincipalValue), (":id", self._id)])
+        self._reg_number = self._data.get('data', {}).get(AssetData.RegistrationCode, '') if self._data is not None else ''
+        self._expiry = self._data.get('data', {}).get(AssetData.ExpiryDate, '') if self._data is not None else ''
+        self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '') if self._data is not None else ''
+
+    def _fetch_data(self):
+        JalAsset.db_cache = []
+        query = self._exec("SELECT * FROM assets ORDER BY id")
+        while query.next():
+            asset_data = self._read_record(query, named=True)
+            extra_data = {}
+            data_query = self._exec("SELECT datatype, value FROM asset_data WHERE asset_id=:id ORDER BY datatype",
+                                    [(":id", asset_data['id'])])
+            while data_query.next():
+                datatype, value = self._read_record(data_query)
+                extra_data[datatype] = value
+            if extra_data:
+                asset_data['data'] = extra_data
+            JalAsset.db_cache.append(asset_data)
 
     def dump(self) -> dict:
         symbols = []
@@ -52,12 +71,6 @@ class JalAsset(JalDB):
             del symbol['asset_id']
             symbols.append(symbol)
         self._data['symbols'] = symbols
-        extra_data = []
-        query = self._exec("SELECT datatype, value FROM asset_data WHERE asset_id=:id", [(":id", self._id)])
-        while query.next():
-            extra_data.append(self._read_record(query, named=True))
-        if extra_data:
-            self._data['data'] = extra_data
         return self._data
 
     def id(self) -> int:
@@ -210,6 +223,7 @@ class JalAsset(JalDB):
                     updaters[key](data[key])
                 except KeyError:  # No updater for this key is present
                     continue
+        self._fetch_data()  # TODO optimize for 1 asset only
 
     def _update_isin(self, new_isin: str) -> None:
         if self._isin:
