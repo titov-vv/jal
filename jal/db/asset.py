@@ -52,6 +52,13 @@ class JalAsset(JalDB):
         query = self._exec("SELECT * FROM assets ORDER BY id")
         while query.next():
             asset_data = self._read_record(query, named=True)
+            asset_data['symbols'] = []
+            symbols_query = self._exec("SELECT * FROM asset_tickers WHERE asset_id=:id", [(":id", asset_data['id'])])
+            while symbols_query.next():
+                symbol = self._read_record(symbols_query, named=True)
+                del symbol['id']
+                del symbol['asset_id']
+                asset_data['symbols'].append(symbol)
             extra_data = {}
             data_query = self._exec("SELECT datatype, value FROM asset_data WHERE asset_id=:id ORDER BY datatype",
                                     [(":id", asset_data['id'])])
@@ -63,14 +70,6 @@ class JalAsset(JalDB):
             JalAsset.db_cache.append(asset_data)
 
     def dump(self) -> dict:
-        symbols = []
-        query = self._exec("SELECT * FROM asset_tickers WHERE asset_id=:id", [(":id", self._id)])
-        while query.next():
-            symbol = self._read_record(query, named=True)
-            del symbol['id']
-            del symbol['asset_id']
-            symbols.append(symbol)
-        self._data['symbols'] = symbols
         return self._data
 
     def id(self) -> int:
@@ -87,17 +86,13 @@ class JalAsset(JalDB):
 
     # Returns asset symbol for given currency or all symbols if no currency is given
     def symbol(self, currency: int = None) -> str:
+        if self._data is None:
+            return ''
         if currency is None:
-            query = self._exec("SELECT symbol FROM asset_tickers WHERE asset_id=:asset_id AND active=1",
-                               [(":asset_id", self._id)])
-            symbols = []
-            while query.next():
-                symbols.append(self._read_record(query))
-            return ','.join([x for x in symbols])  # concatenate all symbols via comma
+            return ','.join([x['symbol'] for x in self._data['symbols']])  # concatenate all symbols via comma
         else:
-            return self._read("SELECT symbol FROM asset_tickers "
-                              "WHERE asset_id=:asset_id AND active=1 AND currency_id=:currency_id",
-                              [(":asset_id", self._id), (":currency_id", currency)])
+            symbol = [x['symbol'] for x in self._data['symbols'] if x['active'] == 1 and x['currency_id'] == currency]
+            return ''.join(x for x in symbol)   # return symbol or empty string (there shouldn't be more than one)
 
     def add_symbol(self, symbol: str, currency_id: int, note: str, data_source: int = MarketDataFeed.NA) -> None:
         existing = self._read("SELECT id, symbol, description, quote_source FROM asset_tickers "
@@ -118,6 +113,7 @@ class JalAsset(JalDB):
             if existing['quote_source'] == MarketDataFeed.NA:
                 _ = self._exec("UPDATE asset_tickers SET quote_source=:data_source WHERE id=:id",
                                [(":data_source", data_source), (":id", existing['id'])])
+        self._fetch_data()
 
     # Returns country_id for the asset
     def country(self) -> int:
