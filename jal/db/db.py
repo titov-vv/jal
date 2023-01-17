@@ -42,9 +42,13 @@ class JalDBError:
 # ----------------------------------------------------------------------------------------------------------------------
 class JalDB:
     _tables = []
+    _instances_with_cache = []
 
-    def __init__(self):
-        pass
+    # By default, db objects don't cache data. But if and object may cache db data we need to track it so parameter
+    # 'cached' to be set to True. Such objects should implement invalidate_cache(), class_cache() methods also.
+    def __init__(self, cached=None):
+        if cached:
+            self._instances_with_cache.append(self)
 
     def tr(self, text):
         return QApplication.translate("JalDB", text)
@@ -166,6 +170,21 @@ class JalDB:
                 return values
         else:
             return None
+
+    # ------------------------------------------------------------------------------------------------------------------
+    def invalidate_cache(self):
+        cache_classes = set()   # a list of classes that were already invalidated and don't need extra action
+        for item in self._instances_with_cache:
+            if item.class_cache() and type(item) in cache_classes:
+                continue
+            else:
+                cache_classes.add(type(item))
+            item.invalidate_cache()
+
+    # Method returns true if data are cached on a class level, not in every instance
+    @classmethod
+    def class_cache(cls) -> True:
+        return False
 
     # ------------------------------------------------------------------------------------------------------------------
     # Enables DB triggers if enable == True and disables it otherwise

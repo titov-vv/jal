@@ -175,6 +175,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def OnCommit(self):
         if not self.model.submitAll():
             return
+        self.model.invalidate_cache()
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 

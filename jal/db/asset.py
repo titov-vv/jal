@@ -20,7 +20,7 @@ class JalAsset(JalDB):
     db_cache = []
 
     def __init__(self, asset_id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
-        super().__init__()
+        super().__init__(cached=True)
         if not JalAsset.db_cache:
             self._fetch_data()
         self._id = asset_id
@@ -46,6 +46,14 @@ class JalAsset(JalDB):
         self._reg_number = self._data.get('data', {}).get(AssetData.RegistrationCode, '') if self._data is not None else ''
         self._expiry = self._data.get('data', {}).get(AssetData.ExpiryDate, '') if self._data is not None else ''
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '') if self._data is not None else ''
+
+    def invalidate_cache(self):
+        self._fetch_data()
+
+    # JalAsset maintains single cache available for all instances
+    @classmethod
+    def class_cache(cls) -> True:
+        return True
 
     def _fetch_data(self):
         JalAsset.db_cache = []

@@ -14,7 +14,7 @@ class JalAccount(JalDB):
 
     # TODO: change 'country' in data from 'country_id' to 'country short code' - the same as JalAsset does
     def __init__(self, account_id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
-        super().__init__()
+        super().__init__(cached=True)
         if not JalAccount.db_cache:
             self._fetch_data()
         self._id = account_id
@@ -52,6 +52,14 @@ class JalAccount(JalDB):
         self._country_id = self._data['country_id'] if self._data is not None else None
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
         self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
+
+    def invalidate_cache(self):
+        self._fetch_data()
+
+    # JalAccount maintains single cache available for all instances
+    @classmethod
+    def class_cache(cls) -> True:
+        return True
 
     def _fetch_data(self):
         JalAccount.db_cache = []
