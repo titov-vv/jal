@@ -28,7 +28,7 @@ setup(
     python_requires=">=3.8.1",
     url="https://github.com/titov-vv/jal",
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Topic :: Office/Business",
         "Topic :: Office/Business :: Financial",
         "Topic :: Office/Business :: Financial :: Accounting",
