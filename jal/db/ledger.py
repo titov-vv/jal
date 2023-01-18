@@ -273,10 +273,8 @@ class Ledger(QObject, JalDB):
             if self.progress_bar is not None:
                 self.main_window.showProgressBar(False)
         # Fill ledger totals values
-        # FIXME: Probably need to replace 'ledger_totals' table by following view
-        # SELECT op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc
-        # FROM ledger
-        # WHERE id IN (SELECT MAX(id) FROM ledger GROUP BY op_type, operation_id, book_account, account_id, asset_id)
+        # NOFIXME: Table 'ledger_totals' may be replaced by a view. But it will impact performance heavily as
+        # this view won't have indices for optimal performance
         _ = self._exec(
             "INSERT INTO ledger_totals"
             "(op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc) "
