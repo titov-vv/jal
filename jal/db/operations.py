@@ -438,7 +438,7 @@ class Dividend(LedgerTransaction):
             params += [(":type", subtype)]
         query = cls._exec(query, params)
         while query.next():
-            dividends.append(Dividend(int(cls._read_record(query))))
+            dividends.append(Dividend(cls._read_record(query, cast=[int])))
         return dividends
 
     # Settlement returns timestamp - it is required for stock dividend/vesting
@@ -1010,12 +1010,12 @@ class CorporateAction(LedgerTransaction):
         query = self._exec("SELECT asset_id, value_share FROM action_results WHERE action_id=:oid",
                            [(":oid", self._oid)])
         while query.next():
-            result = self._read_record(query, named=True)
+            result = self._read_record(query, named=True, cast=[int, Decimal])
             if self._subtype == CorporateAction.SpinOff and result['asset_id'] == self._asset.id():
                 continue   # Don't display initial asset in list
             description += "\n" + self._asset.name()
-            if Decimal(result['value_share']) < Decimal('1.0'):
-                description += f" ({Decimal(result['value_share']) * Decimal('100')} %)"
+            if result['value_share'] < Decimal('1.0'):
+                description += f" ({result['value_share'] * Decimal('100')} %)"
         return description
 
     def value_change(self) -> list:
@@ -1024,7 +1024,7 @@ class CorporateAction(LedgerTransaction):
             result.append(Decimal(-self._qty))
         query = self._exec("SELECT qty FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
-            result.append(Decimal(self._read_record(query)))
+            result.append(self._read_record(query, cast=[Decimal]))
         if len(result) == 1:  # Need to feel at least 2 lines
             result.append(None)
         return result
@@ -1036,7 +1036,7 @@ class CorporateAction(LedgerTransaction):
             symbol = ""
         query = self._exec("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
-            symbol += f" {JalAsset(self._read_record(query)).symbol()}\n"
+            symbol += f" {JalAsset(self._read_record(query, cast=[int])).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
 
     def value_total(self) -> str:    # FIXME - Method may give incorrect result if 'outgoing' asset was present before operation
@@ -1086,8 +1086,8 @@ class CorporateAction(LedgerTransaction):
                           "WHERE a.account_id=:account_id AND r.asset_id=:account_currency",
                           [(":account_id", account.id()), (":account_currency", account.currency())])
         while query.next():
-            timestamp, amount, note = cls._read_record(query)
-            payments.append({"timestamp": timestamp, "amount": Decimal(amount), "note": note})
+            timestamp, amount, note = cls._read_record(query, cast=[int, Decimal, str])
+            payments.append({"timestamp": timestamp, "amount": amount, "note": note})
         return payments
 
     def processLedger(self, ledger):
@@ -1105,7 +1105,7 @@ class CorporateAction(LedgerTransaction):
         allocation = Decimal('0')
         query = self._exec("SELECT value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
-            allocation += Decimal(self._read_record(query))  # TODO implement type casting of result values inside _read_sql_record()
+            allocation += self._read_record(query, cast=[Decimal])
         if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
             raise LedgerError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
                                       + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, " 
@@ -1122,17 +1122,7 @@ class CorporateAction(LedgerTransaction):
         query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
                            [(":oid", self._oid)])
         while query.next():
-            # TODO implement type casting of result values inside _read_sql_record()
-            # Like in this function as example:
-            #   def x(cast=[float, str, Decimal]):
-            #     res = []
-            #     for i, dtype in enumerate(cast):
-            #       res.append(dtype(float(i)))
-            #     return res
-            asset_id, qty, share = self._read_record(query)
-            asset = JalAsset(asset_id)
-            qty = Decimal(qty)
-            share = Decimal(share)
+            asset, qty, share = self._read_record(query, cast=[JalAsset, Decimal, Decimal])
             if asset.type() == PredefinedAsset.Money:
                 ledger.appendTransaction(self, BookAccount.Money, qty)
                 ledger.appendTransaction(self, BookAccount.Incomes, -qty,

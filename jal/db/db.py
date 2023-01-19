@@ -156,13 +156,18 @@ class JalDB:
     # named = False: a list of field values
     # named = True: a dictionary with field names as keys
     @classmethod
-    def _read_record(cls, query, named=False):
+    def _read_record(cls, query, named=False, cast=None):
+        if cast is None:
+            cast = []
         values = {} if named else []
+        if cast:
+            assert len(cast) == query.record().count()
         for i in range(query.record().count()):
+            value = cast[i](query.value(i)) if cast else query.value(i)
             if named:
-                values[query.record().fieldName(i)] = query.value(i)
+                values[query.record().fieldName(i)] = value
             else:
-                values.append(query.value(i))
+                values.append(value)
         if values:
             if len(values) == 1 and not named:
                 return values[0]

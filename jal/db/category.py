@@ -42,12 +42,12 @@ class JalCategory(JalDB):
                            [(":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
                             (":begin", begin), (":end", end), (":category_id", self._id)])
         while query.next():
-            timestamp, amount, currency_id = self._read_record(query)
+            timestamp, amount, currency_id = self._read_record(query, cast=[int, Decimal, int])
             if currency_id == output_currency_id:
                 rate = Decimal('1')
             else:
                 rate = JalAsset(currency_id).quote(timestamp, output_currency_id)[1]
-            turnover += Decimal(amount) * rate
+            turnover += amount * rate
         return -turnover
 
     @classmethod
@@ -72,5 +72,5 @@ class JalCategory(JalDB):
                            "WHERE d.category_id=:category AND a.timestamp>=:begin AND a.timestamp<:end",
                            [(":category", self._id), (":begin", begin), (":end", end)])
         while query.next():
-            operations.append(IncomeSpending(int(self._read_record(query))))  # TODO type cast in _read_record required
+            operations.append(IncomeSpending(self._read_record(query, cast=[int])))
         return operations

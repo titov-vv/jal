@@ -149,8 +149,8 @@ class JalAsset(JalDB):
             "AND currency_id=:currency_id AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
             [(":asset_id", self._id), (":currency_id", currency_id), (":begin", begin), (":end", end)])
         while query.next():
-            timestamp, quote = self._read_record(query)
-            quotes.append((timestamp, Decimal(quote)))
+            timestamp, quote = self._read_record(query, cast=[int, Decimal])
+            quotes.append((timestamp, quote))
         return quotes
 
     # Returns tuple (begin_timestamp: int, end_timestamp: int) that defines timestamp range for which quotest are
@@ -181,7 +181,7 @@ class JalAsset(JalDB):
         sources = {}
         query = cls._exec("SELECT id, name FROM data_sources")
         while query.next():
-            source_id, name = cls._read_record(query)
+            source_id, name = cls._read_record(query, cast=[int, str])
             sources[source_id] = name
         return sources
 
@@ -349,10 +349,10 @@ class JalAsset(JalDB):
                           [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
         while query.next():
             try:
-                _id, asset_id, currency_id = super(JalAsset, JalAsset)._read_record(query)
+                _id, asset_id, currency_id = super(JalAsset, JalAsset)._read_record(query, cast=[int, int, int])
             except TypeError:  # Skip if None is returned (i.e. there are no assets)
                 continue
-            assets.append({"asset": JalAsset(int(asset_id)), "currency": int(currency_id)})
+            assets.append({"asset": JalAsset(asset_id), "currency": currency_id})
         return assets
 
     # Method returns a list of JalAsset objects that describe all assets defined in ledger
@@ -361,7 +361,7 @@ class JalAsset(JalDB):
         assets = []
         query = cls._exec("SELECT id FROM assets")
         while query.next():
-            assets.append(JalAsset(int(super(JalAsset, JalAsset)._read_record(query))))
+            assets.append(JalAsset(super(JalAsset, JalAsset)._read_record(query, cast=[int])))
         return assets
 
     # Method returns a list of JalAsset objects that describe currencies defined in ledger
@@ -370,5 +370,5 @@ class JalAsset(JalDB):
         currencies = []
         query = cls._exec("SELECT id FROM currencies")
         while query.next():
-            currencies.append(JalAsset(int(super(JalAsset, JalAsset)._read_record(query))))
+            currencies.append(JalAsset(super(JalAsset, JalAsset)._read_record(query, cast=[int])))
         return currencies

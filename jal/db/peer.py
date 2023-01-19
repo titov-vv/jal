@@ -31,8 +31,7 @@ class JalPeer(JalDB):
         peers = []
         query = cls._exec("SELECT id FROM agents")
         while query.next():
-            peer_id = cls._read_record(query)
-            peers.append(JalPeer(int(peer_id)))
+            peers.append(JalPeer(cls._read_record(query, cast=[int])))
         return peers
 
     # Returns possible peer_id by a given name
