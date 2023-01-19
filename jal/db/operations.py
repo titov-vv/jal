@@ -155,17 +155,17 @@ class LedgerTransaction(JalDB):
                            [(":account_id", self._account.id()), (":asset_id", self._asset.id()),
                             (":zero", format_decimal(Decimal('0')))])
         while query.next():
-            opening_trade = self._read_record(query, named=True)
-            next_deal_qty = Decimal(opening_trade['remaining_qty'])  # TODO implement type casting of result values inside _read_sql_record()
+            opening_trade = self._read_record(query, named=True, cast=[int, int, int, int, int, Decimal, Decimal])
+            next_deal_qty = opening_trade['remaining_qty']
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
-            remaining_qty = Decimal(opening_trade['remaining_qty']) - next_deal_qty
+            remaining_qty = opening_trade['remaining_qty'] - next_deal_qty
             _ = self._exec("UPDATE trades_opened SET remaining_qty=:new_remaining_qty "
                            "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
                            [(":new_remaining_qty", format_decimal(remaining_qty)), (":asset_id", self._asset.id()),
                             (":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id'])])
-            open_price = Decimal(opening_trade['price'])
-            close_price = Decimal(opening_trade['price']) if price is None else price
+            open_price = opening_trade['price']
+            close_price = opening_trade['price'] if price is None else price
             _ = self._exec(
                 "INSERT INTO trades_closed(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
                 "close_op_type, close_op_id, close_timestamp, close_price, qty) "
