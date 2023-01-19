@@ -889,6 +889,9 @@ class StatementIBKR(StatementXML):
         dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['asset'], previous_tax, new_tax, description)
         if dividend is None:
             raise Statement_ImportError(self.tr("Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
+        if abs(dividend['tax']) > 0:
+            logging.info(self.tr("Tax adjustment for dividend: ") +
+                         f"{dividend['tax']} -> {new_tax} ({ts2dt(dividend['timestamp'])} {dividend['description']})")
         dividend["tax"] = new_tax
         # append new dividend if it came from DB and haven't been loaded in self._data yet
         if len([1 for x in self._data[FOF.ASSET_PAYMENTS] if x['id'] == dividend['id']]) == 0:
