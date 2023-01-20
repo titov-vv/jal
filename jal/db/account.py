@@ -179,6 +179,7 @@ class JalAccount(JalDB):
     def reconcile(self, timestamp: int):
         _ = self._exec("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
                        [(":timestamp", timestamp), (":account_id", self._id)])
+        self._fetch_data()  # TODO optimize for 1 account only
 
     def precision(self) -> int:
         return self._precision
