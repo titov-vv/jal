@@ -381,4 +381,45 @@ class QuotesListDialog(ReferenceDataDialog):
         self.setWindowTitle(self.tr("Quotes"))
         self.Toggle.setVisible(False)
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+class BaseCurrencyListModel(AbstractReferenceListModel):
+    def __init__(self, table, parent_view):
+        AbstractReferenceListModel.__init__(self, table, parent_view)
+        self._columns = [("id", ''),
+                         ("since_timestamp", self.tr("Date")),
+                         ("currency_id", self.tr("Currency"))]
+        self._hidden = ["id"]
+        self._sort_by = "since_timestamp"
+        self._default_name = "currency_id"
+        self._timestamp_delegate = None
+        self._lookup_delegate = None
+        self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
+
+    def configureView(self):
+        super().configureView()
+        self._view.setColumnWidth(self.fieldIndex("since_timestamp"),
+                                  self._view.fontMetrics().horizontalAdvance("00/00/0000") * 1.1)
+        self._view.setColumnWidth(self.fieldIndex("currency_id"), 100)
+
+        self._timestamp_delegate = TimestampDelegate(display_format='%d/%m/%Y', parent=self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("since_timestamp"), self._timestamp_delegate)
+        self._lookup_delegate = QSqlRelationalDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
+
+
+class BaseCurrencyDialog(ReferenceDataDialog):
+    def __init__(self):
+        ReferenceDataDialog.__init__(self)
+        self.table = "base_currency"
+        self.model = BaseCurrencyListModel(self.table, self.DataView)
+        self.DataView.setModel(self.model)
+        self.model.configureView()
+        self.setup_ui()
+        super()._init_completed()
+
+    def setup_ui(self):
+        self.setWindowTitle(self.tr("Base currency"))
+        self.Toggle.setVisible(False)
+
 # ----------------------------------------------------------------------------------------------------------------------

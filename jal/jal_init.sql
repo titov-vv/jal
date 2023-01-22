@@ -77,7 +77,8 @@ CREATE TABLE asset_data (
 -- Table to keep history of base currency changes
 DROP TABLE IF EXISTS base_currency;
 CREATE TABLE base_currency (
-    since_timestamp INTEGER PRIMARY KEY NOT NULL UNIQUE,
+    id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    since_timestamp INTEGER NOT NULL UNIQUE,
     currency_id     INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -928,7 +929,7 @@ INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (246, 'Zambi
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (247, 'Zimbabwe', 'zw', '716', 0);
 
 -- Initialize base currency
-INSERT INTO base_currency(since_timestamp, currency_id) VALUES (946684800, 1);
+INSERT INTO base_currency(id, since_timestamp, currency_id) VALUES (1, 946684800, 1);
 INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote) VALUES (1, 946684800, 1, 1, '1.0');
 
 COMMIT TRANSACTION;
