@@ -1,11 +1,10 @@
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
-from jal.constants import BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset
+from jal.constants import BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset, RUSSIAN_RUBLE
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
 from jal.db.asset import JalAsset
-from jal.db.settings import JalSettings
 from jal.widgets.helpers import ts2dt
 
 
@@ -895,11 +894,10 @@ class Transfer(LedgerTransaction):
                 raise LedgerError(self.tr("Processed asset amount is less than transfer amount. Date: ")
                                   + f"{ts2dt(self._withdrawal_timestamp)}, "
                                   + f"Processed amount: {asset_amount}, Operation: {self.dump()}")
-            if self._withdrawal_currency == JalSettings().getValue('BaseCurrency'):
+            if self._withdrawal_currency == RUSSIAN_RUBLE:
                 currency_rate = Decimal('1.0')
             else:
-                _, currency_rate = JalAsset(self._withdrawal_account.currency()).quote(self._withdrawal_timestamp,
-                                                                                       JalSettings().getValue('BaseCurrency'))
+                _, currency_rate = JalAsset(self._withdrawal_account.currency()).quote(self._withdrawal_timestamp, RUSSIAN_RUBLE)
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                      asset_id=self._asset.id(), value=-processed_value)
             ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal,
@@ -914,11 +912,10 @@ class Transfer(LedgerTransaction):
                 raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
             else:
                 value = Decimal(value)
-            if self._deposit_currency == JalSettings().getValue('BaseCurrency'):
+            if self._deposit_currency == RUSSIAN_RUBLE:
                 currency_rate = Decimal('1.0')
             else:
-                _, currency_rate = JalAsset(self._deposit_account.currency()).quote(self._deposit_timestamp,
-                                                                                    JalSettings().getValue('BaseCurrency'))
+                _, currency_rate = JalAsset(self._deposit_account.currency()).quote(self._deposit_timestamp, RUSSIAN_RUBLE)
             price = value * currency_rate / self._deposit
             _ = self._exec(
                 "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "

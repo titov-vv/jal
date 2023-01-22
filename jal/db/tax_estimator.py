@@ -3,6 +3,7 @@ from decimal import Decimal
 import pandas as pd
 from PySide6.QtCore import Qt, QAbstractTableModel, QDate
 from PySide6.QtGui import QFont
+from jal.constants import RUSSIAN_RUBLE
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
@@ -94,8 +95,7 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
         account_currency = JalAsset(account.currency())
         self.currency_name = account_currency.symbol()
         self.quote = asset.quote(QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(), account.currency())[1]
-        self.rate = account_currency.quote(QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
-                                           JalSettings().getValue('BaseCurrency'))[1]
+        self.rate = account_currency.quote(QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(), RUSSIAN_RUBLE)[1]
         positions = account.open_trades_list(asset)
         table = []
         profit = Decimal('0')
@@ -105,8 +105,7 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
         for position in positions:
             qty = position['remaining_qty']
             price = position['price']
-            o_rate = account_currency.quote(position['operation'].settlement(),
-                                            JalSettings().getValue('BaseCurrency'))[1]
+            o_rate = account_currency.quote(position['operation'].settlement(), RUSSIAN_RUBLE)[1]
             position_profit = qty * (self.quote - price)
             position_profit_rub = qty * (self.quote * self.rate - price * o_rate)
             tax = Decimal('0.13') * position_profit_rub if position_profit_rub > Decimal('0') else Decimal('0')

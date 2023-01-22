@@ -6,7 +6,6 @@ from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefindedAccountType
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
-from jal.db.settings import JalSettings
 
 
 class BalancesModel(QAbstractTableModel):
@@ -125,8 +124,8 @@ class BalancesModel(QAbstractTableModel):
             value = value_adjusted = Decimal('0')
             assets = account.assets_list(self._date)
             # Calculate cross-rate between account currency and display currency
-            rate = JalAsset(account.currency()).quote(self._date, JalSettings().getValue('BaseCurrency'))[1] / \
-                   JalAsset(self._currency).quote(self._date, JalSettings().getValue('BaseCurrency'))[1]
+            rate = JalAsset(account.currency()).quote(self._date, JalAsset.get_base_currency(self._date))[1] / \
+                   JalAsset(self._currency).quote(self._date, JalAsset.get_base_currency(self._date))[1]
             for asset_data in assets:
                 asset = asset_data['asset']
                 asset_value = asset_data['amount'] * asset.quote(self._date, account.currency())[1]

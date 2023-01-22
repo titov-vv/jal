@@ -7,7 +7,7 @@ from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
 from jal.db.helpers import load_icon
 from jal.db.account import JalAccount
-from jal.db.settings import JalSettings
+from jal.db.asset import JalAsset
 from jal.db.balances_model import BalancesModel
 from jal.db.operations_model import OperationsModel
 from jal.db.operations import LedgerTransaction
@@ -61,7 +61,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         current_time = QDateTime.currentDateTime()
         current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
         self.BalanceDate.setDateTime(current_time)
-        self.BalancesCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
+        self.BalancesCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
         self.OperationsTableView.selectRow(0)
         self.DateRange.setCurrentIndex(0)

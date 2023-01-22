@@ -1,5 +1,6 @@
 import logging
 from decimal import Decimal, InvalidOperation
+from PySide6.QtCore import Qt, QDate
 from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal
@@ -372,3 +373,17 @@ class JalAsset(JalDB):
         while query.next():
             currencies.append(JalAsset(super(JalAsset, JalAsset)._read_record(query, cast=[int])))
         return currencies
+
+    # Returns id of the base currency that was in effect for given timestamp or current base currency (for now) if
+    # timestamp isn't given
+    @classmethod
+    def get_base_currency(cls, timestamp=None):
+        if timestamp is None:
+            timestamp = QDate.currentDate().startOfDay(Qt.UTC).toSecsSinceEpoch()
+        base_id = cls._read("SELECT currency_id FROM base_currency WHERE since_timestamp<=:timestamp "
+                            "ORDER BY since_timestamp DESC LIMIT 1", [(":timestamp", timestamp)])
+        try:
+            base_id = int(base_id)
+        except TypeError:
+            base_id = 0
+        return base_id

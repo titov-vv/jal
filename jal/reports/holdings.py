@@ -5,7 +5,7 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu
 from jal.ui.reports.ui_holdings_report import Ui_HoldingsWidget
 from jal.reports.reports import Reports
-from jal.db.settings import JalSettings
+from jal.db.asset import JalAsset
 from jal.db.holdings_model import HoldingsModel
 from jal.widgets.mdi import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
@@ -40,7 +40,7 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
         current_time = QDateTime.currentDateTime()
         current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
         self.HoldingsDate.setDateTime(current_time)
-        self.HoldingsCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
+        self.HoldingsCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
     def connect_signals_and_slots(self):
         self.HoldingsDate.dateChanged.connect(self.HoldingsTableView.model().setDate)

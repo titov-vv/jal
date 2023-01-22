@@ -10,11 +10,10 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset, PredefindedAccountType
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset, PredefindedAccountType, RUSSIAN_RUBLE
 from jal.db.helpers import get_app_path
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
@@ -549,8 +548,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
             self._data[FOF.ASSETS].append({"id": asset_id, "type": "money", "name": ""})
             symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
-            currency = {"id": symbol_id, "asset": asset_id, "symbol": currency_symbol,
-                        "currency": -JalSettings().getValue('BaseCurrency')}
+            currency = {"id": symbol_id, "asset": asset_id, "symbol": currency_symbol, "currency": -RUSSIAN_RUBLE}
             self._data[FOF.SYMBOLS].append(currency)
             return asset_id
 

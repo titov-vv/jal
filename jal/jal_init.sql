@@ -74,6 +74,13 @@ CREATE TABLE asset_data (
     value    TEXT    NOT NULL
 );
 
+-- Table to keep history of base currency changes
+DROP TABLE IF EXISTS base_currency;
+CREATE TABLE base_currency (
+    since_timestamp INTEGER PRIMARY KEY NOT NULL UNIQUE,
+    currency_id     INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 DROP INDEX IF EXISTS asset_data_uniqueness;
 CREATE UNIQUE INDEX asset_data_uniqueness ON asset_data ( asset_id, datatype);
 
@@ -625,9 +632,9 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 39);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 40);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
-INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
+-- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1); -- Deprecated and ID shouldn't be re-used
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
 INSERT INTO settings(id, name, value) VALUES (4, 'RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(id, name, value) VALUES (5, 'RuTaxSessionId', '');
@@ -920,7 +927,8 @@ INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (245, 'Yemen
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (246, 'Zambia', 'zm', '894', 0);
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (247, 'Zimbabwe', 'zw', '716', 0);
 
--- Initialize rate for base currency
+-- Initialize base currency
+INSERT INTO base_currency(since_timestamp, currency_id) VALUES (946684800, 1);
 INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote) VALUES (1, 946684800, 1, 1, '1.0');
 
 COMMIT TRANSACTION;

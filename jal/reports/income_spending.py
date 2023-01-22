@@ -4,10 +4,9 @@ from PySide6.QtGui import QAction, QBrush
 from PySide6.QtWidgets import QMenu
 from jal.reports.reports import Reports
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
-from jal.constants import CustomColor
+from jal.constants import CustomColor, RUSSIAN_RUBLE
 from jal.db.helpers import load_icon
 from jal.db.category import JalCategory
-from jal.db.settings import JalSettings
 from jal.widgets.helpers import month_list, month_start_ts, month_end_ts
 from jal.widgets.delegates import GridLinesDelegate
 from jal.widgets.mdi import MdiWidget
@@ -298,8 +297,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                 parent.appendChild(leaf)
             for month in self._month_list:
                 leaf.addAmount(month['year'], month['month'],
-                               category.get_turnover(month['begin_ts'], month['end_ts'],
-                                                     JalSettings().getValue('BaseCurrency')))
+                               category.get_turnover(month['begin_ts'], month['end_ts'], RUSSIAN_RUBLE))
             self._load_child_amounts(category)
 
 

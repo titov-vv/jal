@@ -5,7 +5,6 @@ from jal.constants import Setup
 from jal.db.db import JalModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.settings import JalSettings
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 
@@ -188,7 +187,7 @@ class OptionalCurrencyComboBox(QWidget):
     def onClick(self):
         if self.null_flag.isChecked():
             if self.currency.selected_id == 0:
-                self.currency.selected_id = JalSettings().getValue('BaseCurrency')
+                self.currency.selected_id = JalAsset.get_base_currency()
             self.currency_id = self.currency.selected_id
         else:
             self.currency_id = 0

@@ -1,14 +1,13 @@
 from datetime import datetime
 from decimal import Decimal
 
-from PySide6.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex, QLocale
+from PySide6.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefindedAccountType
 from jal.db.helpers import localize_decimal
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.settings import JalSettings
 from jal.widgets.delegates import GridLinesDelegate
 from jal.widgets.helpers import ts2d
 
@@ -235,8 +234,8 @@ class HoldingsModel(QAbstractItemModel):
             account_holdings = []
             assets = account.assets_list(self._date)
             # Calculate cross-rate between account currency and display currency
-            rate = JalAsset(account.currency()).quote(self._date, JalSettings().getValue('BaseCurrency'))[1] / \
-                   JalAsset(self._currency).quote(self._date, JalSettings().getValue('BaseCurrency'))[1]
+            rate = JalAsset(account.currency()).quote(self._date, JalAsset.get_base_currency(self._date))[1] / \
+                   JalAsset(self._currency).quote(self._date, JalAsset.get_base_currency(self._date))[1]
             for asset_data in assets:
                 asset = asset_data['asset']
                 record = {

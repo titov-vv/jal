@@ -11,7 +11,7 @@ from PySide6.QtCore import Qt, QObject, Signal, QDate
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
-from jal.constants import MarketDataFeed, PredefinedAsset
+from jal.constants import MarketDataFeed, PredefinedAsset, RUSSIAN_RUBLE
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
@@ -85,12 +85,12 @@ class QuoteDownloader(QObject):
     def UpdateQuotes(self, start_timestamp, end_timestamp, sources_list):
         self.PrepareRussianCBReader()
         assets = JalAsset.get_currencies()
-        # Append base currency id to each currency as currency rate is relative to base currency
-        assets = [{"asset": x, "currency": int(JalSettings().getValue('BaseCurrency'))} for x in assets]
+        # Currency rates are in relation to Russian Ruble yet
+        assets = [{"asset": x, "currency": RUSSIAN_RUBLE} for x in assets]
         assets += JalAsset.get_active_assets(start_timestamp, end_timestamp)  # append assets list
         for asset_data in assets:
             asset = asset_data['asset']
-            if asset.id() == int(JalSettings().getValue('BaseCurrency')):
+            if asset.id() == RUSSIAN_RUBLE:  # Skip ruble as RUB/RUB FX ration is always 1
                 continue
             currency = asset_data['currency']
             quotes_begin, quotes_end = asset.quotes_range(currency)

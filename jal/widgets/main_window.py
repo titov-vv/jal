@@ -112,7 +112,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         if self.running:
             return
         self.running = True
-        # Call slot via queued connection so it's called from the UI thread after the window has been shown
+        # Call slot via queued connection, so it's called from the UI thread after the window has been shown
         QMetaObject().invokeMethod(self, "afterShowEvent", Qt.ConnectionType.QueuedConnection)
 
     @Slot()
