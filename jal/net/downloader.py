@@ -158,6 +158,23 @@ class QuoteDownloader(QObject):
         rates = data.set_index("Date")
         return rates
 
+    def ECB_DataReader(self, asset, _currency_id, start_timestamp, end_timestamp):
+        date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
+        date2 = datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')
+        url = f"https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.{asset.symbol()}.EUR.SP00.A?startPeriod={date1}&endPeriod={date2}"
+        file = StringIO(get_web_data(url, headers={'Accept': 'text/csv'}))
+        try:
+            data = pd.read_csv(file, dtype={'TIME_PERIOD': str, 'OBS_VALUE': str})
+        except ParserError:
+            return None
+        data.rename(columns={'TIME_PERIOD': 'Date', 'OBS_VALUE': 'Rate'}, inplace=True)
+        data = data[['Date', 'Rate']]  # Keep only required columns
+        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
+        data['Rate'] = data['Rate'].apply(str)   # Convert from float to str
+        data['Rate'] = data['Rate'].apply(Decimal)   # Convert from str to Decimal
+        rates = data.set_index("Date")
+        return rates
+
     # Get asset data from http://www.moex.com
     # Accepts parameters:
     #     symbol, isin, reg_number - to identify asset

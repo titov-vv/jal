@@ -28,9 +28,11 @@ def isEnglish(text):
 
 # ===================================================================================================================
 # Retrieve URL from web with given method and params
-def request_url(method, url, params=None, json_params=None):
+def request_url(method, url, params=None, json_params=None, headers=None):
     session = requests.Session()
     session.headers['User-Agent'] = make_user_agent(url=url)
+    if headers is not None:
+        session.headers.update(headers)
     try:
         if method == "GET":
             response = session.get(url)
@@ -59,11 +61,11 @@ def request_url(method, url, params=None, json_params=None):
 
 # ===================================================================================================================
 # Function download URL and return it content as string or empty string if site returns error
-def get_web_data(url):
-    return request_url("GET", url)
+def get_web_data(url, headers=None):
+    return request_url("GET", url, headers=headers)
 
 
 # ===================================================================================================================
 # Function download URL and return it content as string or empty string if site returns error
-def post_web_data(url, params=None, json_params=None):
-    return request_url("POST", url, params=params, json_params=json_params)
+def post_web_data(url, params=None, json_params=None, headers=None):
+    return request_url("POST", url, params=params, json_params=json_params, headers=headers)
