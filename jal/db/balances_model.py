@@ -124,8 +124,9 @@ class BalancesModel(QAbstractTableModel):
             value = value_adjusted = Decimal('0')
             assets = account.assets_list(self._date)
             # Calculate cross-rate between account currency and display currency
-            rate = JalAsset(account.currency()).quote(self._date, JalAsset.get_base_currency(self._date))[1] / \
-                   JalAsset(self._currency).quote(self._date, JalAsset.get_base_currency(self._date))[1]
+            account_fx_rate = JalAsset(account.currency()).quote(self._date, JalAsset.get_base_currency(self._date))[1]
+            report_fx_rate = JalAsset(self._currency).quote(self._date, JalAsset.get_base_currency(self._date))[1]
+            rate = 0 if report_fx_rate == Decimal('0') else account_fx_rate / report_fx_rate
             for asset_data in assets:
                 asset = asset_data['asset']
                 asset_value = asset_data['amount'] * asset.quote(self._date, account.currency())[1]

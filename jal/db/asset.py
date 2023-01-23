@@ -138,6 +138,8 @@ class JalAsset(JalDB):
                            "AND currency_id=:currency_id AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
                            [(":asset_id", self._id), (":currency_id", currency_id), (":timestamp", timestamp)])
         if quote is None:
+            logging.warning(self.tr("Quote not found for ") +
+                            f"{self.symbol()} ({JalAsset(currency_id).symbol()}) {ts2d(timestamp)}")
             return 0, Decimal('0')
         return int(quote[0]), Decimal(quote[1])
 
