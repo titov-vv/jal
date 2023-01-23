@@ -651,7 +651,7 @@ INSERT INTO languages (id, language) VALUES (2, 'ru');
 
 -- Initialize sources of quotation data
 INSERT INTO data_sources (id, name) VALUES (-1, 'None');
-INSERT INTO data_sources (id, name) VALUES (0, 'Bank of Russia');
+INSERT INTO data_sources (id, name) VALUES (0, 'Central banks');
 INSERT INTO data_sources (id, name) VALUES (1, 'MOEX');
 INSERT INTO data_sources (id, name) VALUES (2, 'NYSE/Nasdaq');
 INSERT INTO data_sources (id, name) VALUES (3, 'Euronext');
@@ -930,7 +930,6 @@ INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (247, 'Zimba
 
 -- Initialize base currency
 INSERT INTO base_currency(id, since_timestamp, currency_id) VALUES (1, 946684800, 1);
-INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote) VALUES (1, 946684800, 1, 1, '1.0');
 
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

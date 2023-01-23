@@ -389,3 +389,18 @@ class JalAsset(JalDB):
         except TypeError:
             base_id = 0
         return base_id
+
+    # Method calculates FX1/FX2 exchange rate for currency_1 in units of currency_2
+    @classmethod
+    def fx_cross_rate(cls, currency_id1, currency_id2, timestamp):
+        if currency_id1 == currency_id2:
+            return Decimal('1')
+        # try to get direct quote if it is present in db:
+        rate = JalAsset(currency_id1).quote(timestamp, currency_id2)[1]
+        if rate:
+            return rate
+        # get both rates with respect to relevant base currency
+        rate1 = JalAsset(currency_id1).quote(timestamp, cls.get_base_currency(timestamp))[1]
+        rate2 = JalAsset(currency_id2).quote(timestamp, cls.get_base_currency(timestamp))[1]
+        rate = 0 if rate2 == Decimal('0') else rate1 / rate2
+        return rate
