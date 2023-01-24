@@ -98,7 +98,7 @@ class JalAsset(JalDB):
         if self._data is None:
             return ''
         if currency is None:
-            return ','.join([x['symbol'] for x in self._data['symbols']])  # concatenate all symbols via comma
+            return ','.join([x['symbol'] for x in self._data['symbols'] if x['active'] == 1])  # concatenate all symbols via comma
         else:
             symbol = [x['symbol'] for x in self._data['symbols'] if x['active'] == 1 and x['currency_id'] == currency]
             return ''.join(x for x in symbol)   # return symbol or empty string (there shouldn't be more than one)
