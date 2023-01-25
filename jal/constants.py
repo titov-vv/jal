@@ -127,7 +127,7 @@ class PredefinedPeer:
 
 class MarketDataFeed:
     NA = -1
-    CBR = 0
+    FX = 0
     RU = 1
     US = 2
     EU = 3

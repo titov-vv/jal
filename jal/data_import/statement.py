@@ -329,7 +329,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             asset = self._find_in_list(self._data[FOF.ASSETS], "id", symbol['asset'])
             note = symbol['note'] if 'note' in symbol else ''
             if asset['type'] == FOF.ASSET_MONEY:
-                source = MarketDataFeed.CBR
+                source = MarketDataFeed.FX
             else:
                 try:
                     source = self._sources[symbol['note']]

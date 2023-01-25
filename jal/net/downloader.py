@@ -65,9 +65,50 @@ class QuoteDownloader(QObject):
     def __init__(self):
         super().__init__()
         self.CBR_codes = None
-        self.data_loaders = {
+
+    def showQuoteDownloadDialog(self, parent):
+        dialog = QuotesUpdateDialog(parent)
+        if dialog.exec():
+            self.DownloadData(dialog.getStartDate(), dialog.getEndDate(), dialog.getSourceList())
+            self.download_completed.emit()
+
+    def DownloadData(self, start_timestamp, end_timestamp, sources_list):
+        if MarketDataFeed.FX in sources_list:
+            self.download_currency_rates(start_timestamp, end_timestamp, sources_list)
+        self.download_asset_prices(start_timestamp, end_timestamp, sources_list)
+        logging.info(self.tr("Download completed"))
+
+    def download_currency_rates(self, start_timestamp, end_timestamp, sources_list):
+        data_loaders = {
+            "RUB": self.CBR_DataReader,
+            "EUR": self.ECB_DataReader
+        }
+        self.PrepareRussianCBReader()
+        for base in set([x[1] for x in JalAsset.get_base_currency_history(start_timestamp, end_timestamp)]):
+            for currency in JalAsset.get_currencies():
+                if currency.id() == base:  # Skip as it is X/X ratio that is always 1
+                    continue
+                quotes_begin, quotes_end = currency.quotes_range(base)
+                if start_timestamp < quotes_begin:
+                    from_timestamp = start_timestamp
+                else:
+                    from_timestamp = quotes_end if quotes_end > start_timestamp else start_timestamp
+                if end_timestamp < from_timestamp:
+                    continue
+                try:
+                    data = data_loaders[JalAsset(base).symbol()](currency, from_timestamp, end_timestamp)
+                except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
+                    logging.warning(self.tr("No data were downloaded for ") + f"{currency.name()}")
+                    continue
+                if data is not None:
+                    quotations = []
+                    for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
+                        quotations.append({'timestamp': int(date.timestamp()), 'quote': quote[0]})
+                    currency.set_quotes(quotations, base)
+
+    def download_asset_prices(self, start_timestamp, end_timestamp, sources_list):
+        data_loaders = {
             MarketDataFeed.NA: self.Dummy_DataReader,
-            MarketDataFeed.CBR: self.CBR_DataReader,
             MarketDataFeed.RU: self.MOEX_DataReader,
             MarketDataFeed.EU: self.Euronext_DataReader,
             MarketDataFeed.US: self.Yahoo_Downloader,
@@ -75,23 +116,9 @@ class QuoteDownloader(QObject):
             MarketDataFeed.GB: self.YahooLSE_Downloader,
             MarketDataFeed.FRA: self.YahooFRA_Downloader
         }
-
-    def showQuoteDownloadDialog(self, parent):
-        dialog = QuotesUpdateDialog(parent)
-        if dialog.exec():
-            self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate(), dialog.getSourceList())
-            self.download_completed.emit()
-
-    def UpdateQuotes(self, start_timestamp, end_timestamp, sources_list):
-        self.PrepareRussianCBReader()
-        assets = JalAsset.get_currencies()
-        # Currency rates are in relation to Russian Ruble yet
-        assets = [{"asset": x, "currency": RUSSIAN_RUBLE} for x in assets]
-        assets += JalAsset.get_active_assets(start_timestamp, end_timestamp)  # append assets list
+        assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)  # append assets list
         for asset_data in assets:
             asset = asset_data['asset']
-            if asset.id() == RUSSIAN_RUBLE:  # Skip ruble as RUB/RUB FX ration is always 1
-                continue
             currency = asset_data['currency']
             quotes_begin, quotes_end = asset.quotes_range(currency)
             if start_timestamp < quotes_begin:
@@ -104,7 +131,7 @@ class QuoteDownloader(QObject):
                 data_source = asset.quote_source(currency)
                 if data_source not in sources_list:   # skip sources that are not requested
                     continue
-                data = self.data_loaders[data_source](asset, currency, from_timestamp, end_timestamp)
+                data = data_loaders[data_source](asset, currency, from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
                 logging.warning(self.tr("No data were downloaded for ") + f"{asset.name()}")
                 continue
@@ -113,7 +140,6 @@ class QuoteDownloader(QObject):
                 for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
                     quotations.append({'timestamp': int(date.timestamp()), 'quote': quote[0]})
                 asset.set_quotes(quotations, currency)
-        logging.info(self.tr("Download completed"))
 
     def PrepareRussianCBReader(self):
         rows = []
@@ -131,7 +157,7 @@ class QuoteDownloader(QObject):
     def Dummy_DataReader(self, _asset, _currency_id, _start_timestamp, _end_timestamp):
         return None
 
-    def CBR_DataReader(self, asset, _currency_id, start_timestamp, end_timestamp):
+    def CBR_DataReader(self, asset, start_timestamp, end_timestamp):
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
         # add 1 day to end_timestamp as CBR sets rate are a day ahead
         date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')
@@ -158,7 +184,7 @@ class QuoteDownloader(QObject):
         rates = data.set_index("Date")
         return rates
 
-    def ECB_DataReader(self, asset, _currency_id, start_timestamp, end_timestamp):
+    def ECB_DataReader(self, asset, start_timestamp, end_timestamp):
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
         date2 = datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')
         url = f"https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.{asset.symbol()}.EUR.SP00.A?startPeriod={date1}&endPeriod={date2}"
@@ -170,8 +196,9 @@ class QuoteDownloader(QObject):
         data.rename(columns={'TIME_PERIOD': 'Date', 'OBS_VALUE': 'Rate'}, inplace=True)
         data = data[['Date', 'Rate']]  # Keep only required columns
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
-        data['Rate'] = data['Rate'].apply(str)   # Convert from float to str
         data['Rate'] = data['Rate'].apply(Decimal)   # Convert from str to Decimal
+        data['Rate'] = Decimal('1') / data['Rate']
+        data['Rate'] = data['Rate'].apply(round, args=(10, ))
         rates = data.set_index("Date")
         return rates
 

@@ -107,21 +107,21 @@ def test_CBR_downloader(prepare_db):
     rates_usd = pd.DataFrame({'Rate': [Decimal('77.5104'), Decimal('77.2535'), Decimal('75.6826')],
                           'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
     rates_usd = rates_usd.set_index('Date')
-    rates_downloaded = downloader.CBR_DataReader(JalAsset(2), 1, 1618272000, 1618358400)
+    rates_downloaded = downloader.CBR_DataReader(JalAsset(2), 1618272000, 1618358400)
     assert_frame_equal(rates_usd, rates_downloaded)
 
     rates_try = pd.DataFrame({'Rate': [Decimal('9.45087'), Decimal('9.49270'), Decimal('9.37234')],
                               'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
     rates_try = rates_try.set_index('Date')
-    rates_downloaded = downloader.CBR_DataReader(JalAsset(4), 1, 1618272000, 1618358400)
+    rates_downloaded = downloader.CBR_DataReader(JalAsset(4), 1618272000, 1618358400)
     assert_frame_equal(rates_try, rates_downloaded)
 
 def test_ECB_downloader(prepare_db):
-    rates_usd = pd.DataFrame({'Rate': [Decimal('1.1896'), Decimal('1.1964')],
+    rates_usd = pd.DataFrame({'Rate': [Decimal('0.8406186954'), Decimal('0.8358408559')],
                               'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     rates_usd = rates_usd.set_index('Date')
     downloader = QuoteDownloader()
-    rates_downloaded = downloader.ECB_DataReader(JalAsset(2), 1, d2t(210413), d2t(210414))
+    rates_downloaded = downloader.ECB_DataReader(JalAsset(2), d2t(210413), d2t(210414))
     assert_frame_equal(rates_usd, rates_downloaded)
 
 def test_MOEX_downloader(prepare_db_moex):

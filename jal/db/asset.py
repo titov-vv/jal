@@ -379,7 +379,7 @@ class JalAsset(JalDB):
     # Returns id of the base currency that was in effect for given timestamp or current base currency (for now) if
     # timestamp isn't given
     @classmethod
-    def get_base_currency(cls, timestamp=None):
+    def get_base_currency(cls, timestamp: int=None) -> int:
         if timestamp is None:
             timestamp = QDate.currentDate().startOfDay(Qt.UTC).toSecsSinceEpoch()
         base_id = cls._read("SELECT currency_id FROM base_currency WHERE since_timestamp<=:timestamp "
@@ -390,9 +390,21 @@ class JalAsset(JalDB):
             base_id = 0
         return base_id
 
+    # Return a list of (timestamp, currency_id) tuples that represent currency valid currency IDs that were in force
+    # after between begin and end timestamps
+    @classmethod
+    def get_base_currency_history(cls, begin: int, end: int) -> list:
+        history = [(begin, cls.get_base_currency(begin))]
+        query = cls._exec("SELECT since_timestamp, currency_id FROM base_currency "
+                          "WHERE since_timestamp>:begin AND since_timestamp<=:end ORDER BY since_timestamp",
+                          [(":begin", begin), (":end", end)])
+        while query.next():
+            history.append(cls._read_record(query, cast=[int, int]))
+        return history
+
     # Method calculates FX1/FX2 exchange rate for currency_1 in units of currency_2
     @classmethod
-    def fx_cross_rate(cls, currency_id1, currency_id2, timestamp):
+    def fx_cross_rate(cls, currency_id1: int, currency_id2: int, timestamp: int) -> Decimal:
         if currency_id1 == currency_id2:
             return Decimal('1')
         # try to get direct quote if it is present in db:
