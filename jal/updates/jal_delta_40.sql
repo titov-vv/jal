@@ -10,7 +10,7 @@ CREATE TABLE base_currency (
 );
 --------------------------------------------------------------------------------
 -- Update data source name
-UPDATE data_sources SET name='Central banks' WHERE id=0
+UPDATE data_sources SET name='Central banks' WHERE id=0;
 --------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=40 WHERE name='SchemaVersion';
