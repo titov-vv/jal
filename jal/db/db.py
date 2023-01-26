@@ -40,6 +40,34 @@ class JalDBError:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+class JalSqlError:
+    def __init__(self, msg):
+        self.messages = {
+            'JAL_SQL_MSG_0001': self.tr("Investment account should have associated broker assigned"),
+            'JAL_SQL_MSG_0002': self.tr("Can't delete predefined category"),
+            'JAL_SQL_MSG_0003': self.tr("Incorrect currency assignment for an asset")
+        }
+        if msg[:4] == 'JAL_':
+            self._message = self.messages[msg[:16]]
+            self._custom = True
+        else:
+            self._message = msg
+            self._custom = False
+
+    def tr(self, text):
+        return QApplication.translate("JalSQLerror", text)
+
+    def show(self):
+        QMessageBox().warning(None, self.tr("Database error"), self._message, QMessageBox.Ok)
+
+    def custom(self):
+        return self._custom
+
+    def message(self):
+        return self._message
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class JalDB:
     _tables = []
     _instances_with_cache = []
@@ -128,7 +156,11 @@ class JalDB:
             query.bindValue(param[0], param[1])
             assert query.boundValue(param[0]) == param[1], f"SQL: failed to assign parameter {param} in '{sql_text}'"
         if not query.exec():
-            logging.error(f"SQL failure: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
+            error = JalSqlError(query.lastError().text())
+            if error.custom():
+                error.show()
+            else:
+                logging.error(f"SQL failure: '{error.message()}' for query '{sql_text}' with params '{params}'")
             return None
         if commit:
             db.commit()
