@@ -9,6 +9,8 @@ CREATE TABLE base_currency (
     currency_id     INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 --------------------------------------------------------------------------------
+-- Ensure compatibility with previous behavior
+INSERT INTO base_currency(id, since_timestamp, currency_id) VALUES (1, 946684800, 1);
 -- Update data source name
 UPDATE data_sources SET name='Central banks' WHERE id=0;
 --------------------------------------------------------------------------------
