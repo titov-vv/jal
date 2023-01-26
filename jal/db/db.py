@@ -1,5 +1,6 @@
 from typing import Union
 import os
+import sys
 import re
 import logging
 import sqlparse
@@ -64,6 +65,8 @@ class JalSqlError:
         return QApplication.translate("JalSQLerror", text)
 
     def show(self):
+        if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
+            raise RuntimeError(self._message)
         QMessageBox().warning(None, self.tr("Database error"), self._message, QMessageBox.Ok)
 
     def custom(self):
