@@ -47,8 +47,14 @@ class JalSqlError:
             'JAL_SQL_MSG_0002': self.tr("Can't delete predefined category"),
             'JAL_SQL_MSG_0003': self.tr("Incorrect currency assignment for an asset")
         }
+        self.translations = {
+            'FOREIGN KEY constraint failed': self.tr("Data are referenced in another place and can't be modified")
+        }
         if msg[:4] == 'JAL_':
             self._message = self.messages[msg[:16]]
+            self._custom = True
+        elif msg in self.translations:
+            self._message = self.translations[msg]
             self._custom = True
         else:
             self._message = msg

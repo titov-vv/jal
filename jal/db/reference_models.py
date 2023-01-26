@@ -122,13 +122,12 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
                     header_title = self.tableName() + ":" + self.headerData(self.fieldIndex(field_name))
                     QMessageBox().warning(self._view, self.tr("Data are incomplete"),
                                           self.tr("Column has no valid value: " + header_title), QMessageBox.Ok)
-            elif error_code == '1811':   # Foreign key constraint failed
-                QMessageBox().warning(self._view, self.tr("Data are in use"),
-                                      self.tr("Data are referenced in another place and can't be modified"),
-                                      QMessageBox.Ok)
             else:
-                error = JalSqlError(self.lastError().text())
-                logging.fatal(self.tr("Submit failed: ") + error.message())
+                error = JalSqlError(self.lastError().databaseText())
+                if error.custom():
+                    error.show()
+                else:
+                    logging.fatal(self.tr("Submit failed: ") + error.message())
         return result
 
     def revertAll(self):
