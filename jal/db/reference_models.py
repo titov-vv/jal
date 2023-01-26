@@ -3,8 +3,7 @@ from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView, QMessageBox
-from jal.db.db import JalDB
-from jal.widgets.helpers import decodeError
+from jal.db.db import JalDB, JalSqlError
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -117,21 +116,19 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
             self._deleted_rows = []
         else:
             error_code = self.lastError().nativeErrorCode()
-            if error_code == '1299':
-                prefix = "NOT NULL constraint failed: " + self.tableName() + "."
-                if self.lastError().databaseText().startswith(prefix):
-                    field_name = self.lastError().databaseText()[len(prefix):]
+            null_pfx = "NOT NULL constraint failed: " + self.tableName() + "."
+            if error_code == '1299' and self.lastError().databaseText().startswith(null_pfx):
+                    field_name = self.lastError().databaseText()[len(null_pfx):]
                     header_title = self.tableName() + ":" + self.headerData(self.fieldIndex(field_name))
                     QMessageBox().warning(self._view, self.tr("Data are incomplete"),
                                           self.tr("Column has no valid value: " + header_title), QMessageBox.Ok)
-                else:
-                    logging.fatal(self.tr("Submit failed: ") + decodeError(self.lastError().text()))
             elif error_code == '1811':   # Foreign key constraint failed
                 QMessageBox().warning(self._view, self.tr("Data are in use"),
                                       self.tr("Data are referenced in another place and can't be modified"),
                                       QMessageBox.Ok)
             else:
-                logging.fatal(self.tr("Submit failed: ") + decodeError(self.lastError().text()))
+                error = JalSqlError(self.lastError().text())
+                logging.fatal(self.tr("Submit failed: ") + error.message())
         return result
 
     def revertAll(self):

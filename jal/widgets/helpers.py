@@ -11,20 +11,6 @@ try:
 except ImportError:
     pass   # Helpers that use this imports shouldn't be called if imports are absent
 
-
-def decodeError(orginal_msg):
-    messages = {
-        'JAL_SQL_MSG_0001': QCoreApplication.translate("Error",
-                                                       "Investment account should have associated broker assigned"),
-        'JAL_SQL_MSG_0002': QCoreApplication.translate("Error", "Can't delete predefined category")
-    }
-
-    if orginal_msg[:4] != 'JAL_':
-        return orginal_msg
-    code = orginal_msg[:16]
-    return messages[code]
-
-
 # -----------------------------------------------------------------------------------------------------------------------
 # Returns True if all modules from module_list are present in the system
 def dependency_present(module_list):
