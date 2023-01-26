@@ -111,7 +111,8 @@ class QuoteDownloader(QObject):
                 try:
                     data = data_loaders[JalAsset(base).symbol()](currency, from_timestamp, end_timestamp)
                 except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
-                    logging.warning(self.tr("No rates were downloaded for ") + f"{currency.name()}")
+                    logging.warning(self.tr("No rates were downloaded for ") +
+                                    f"{currency.symbol()}/{JalAsset(base).symbol()}")
                     continue
                 self._store_quotations(currency, base, data)
 
@@ -138,7 +139,7 @@ class QuoteDownloader(QObject):
                     continue
                 data = data_loaders[data_source](asset, currency, from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
-                logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.name()}")
+                logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.symbol()}")
                 continue
             self._store_quotations(asset, currency, data)
 
@@ -158,14 +159,14 @@ class QuoteDownloader(QObject):
     def Dummy_DataReader(self, _asset, _currency_id, _start_timestamp, _end_timestamp):
         return None
 
-    def CBR_DataReader(self, asset, start_timestamp, end_timestamp):
+    def CBR_DataReader(self, currency, start_timestamp, end_timestamp):
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
         # add 1 day to end_timestamp as CBR sets rate are a day ahead
         date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')
         try:
-            code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == asset.symbol(), "CBR_code"].values[0]).strip()
+            code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency.symbol(), "CBR_code"].values[0]).strip()
         except IndexError:
-            logging.error(self.tr("Failed to get CBR data for: " + f"{asset.symbol()}"))
+            logging.debug(self.tr("There are no CBR data for: " + f"{currency.symbol()}"))
             return None
         url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
         xml_root = xml_tree.fromstring(get_web_data(url))
@@ -185,10 +186,10 @@ class QuoteDownloader(QObject):
         rates = data.set_index("Date")
         return rates
 
-    def ECB_DataReader(self, asset, start_timestamp, end_timestamp):
+    def ECB_DataReader(self, currency, start_timestamp, end_timestamp):
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
         date2 = datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')
-        url = f"https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.{asset.symbol()}.EUR.SP00.A?startPeriod={date1}&endPeriod={date2}"
+        url = f"https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.{currency.symbol()}.EUR.SP00.A?startPeriod={date1}&endPeriod={date2}"
         file = StringIO(get_web_data(url, headers={'Accept': 'text/csv'}))
         try:
             data = pd.read_csv(file, dtype={'TIME_PERIOD': str, 'OBS_VALUE': str})

@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
 from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset
 from jal.db.db import JalDB
-from jal.db.helpers import format_decimal
+from jal.db.helpers import format_decimal, year_begin, year_end
 from jal.db.country import JalCountry
 from jal.widgets.helpers import ts2d
 
@@ -391,13 +391,14 @@ class JalAsset(JalDB):
         return base_id
 
     # Return a list of (timestamp, currency_id) tuples that represent currency valid currency IDs that were in force
-    # after between begin and end timestamps
+    # after between beginning_of_the_year(begin) and end_of_the_year(end) timestamps.
+    # Begin and end of year it required to cover full tax year.
     @classmethod
     def get_base_currency_history(cls, begin: int, end: int) -> list:
-        history = [(begin, cls.get_base_currency(begin))]
+        history = [(year_begin(begin), cls.get_base_currency(year_begin(begin)))]
         query = cls._exec("SELECT since_timestamp, currency_id FROM base_currency "
                           "WHERE since_timestamp>:begin AND since_timestamp<=:end ORDER BY since_timestamp",
-                          [(":begin", begin), (":end", end)])
+                          [(":begin", year_begin(begin)), (":end", year_end(end))])
         while query.next():
             history.append(cls._read_record(query, cast=[int, int]))
         return history
