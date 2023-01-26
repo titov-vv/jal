@@ -74,11 +74,28 @@ class QuoteDownloader(QObject):
 
     def DownloadData(self, start_timestamp, end_timestamp, sources_list):
         if MarketDataFeed.FX in sources_list:
-            self.download_currency_rates(start_timestamp, end_timestamp, sources_list)
+            self.download_currency_rates(start_timestamp, end_timestamp)
         self.download_asset_prices(start_timestamp, end_timestamp, sources_list)
         logging.info(self.tr("Download completed"))
 
-    def download_currency_rates(self, start_timestamp, end_timestamp, sources_list):
+    # Checks for present quotations of 'asset' in given 'currency' and adjusts 'start' timestamp to be at
+    # the end of available quotes interval if needed.
+    def _adjust_start(self, asset: JalAsset, currency_id: int, start) -> int:
+        quotes_begin, quotes_end = asset.quotes_range(currency_id)
+        if start < quotes_begin:
+            from_timestamp = start
+        else:
+            from_timestamp = quotes_end if quotes_end > start else start
+        return from_timestamp
+
+    def _store_quotations(self, asset: JalAsset, currency_id: int, data: pd.DataFrame) -> None:
+        if data is not None:
+            quotations = []
+            for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
+                quotations.append({'timestamp': int(date.timestamp()), 'quote': quote[0]})
+            asset.set_quotes(quotations, currency_id)
+
+    def download_currency_rates(self, start_timestamp, end_timestamp):
         data_loaders = {
             "RUB": self.CBR_DataReader,
             "EUR": self.ECB_DataReader
@@ -88,23 +105,15 @@ class QuoteDownloader(QObject):
             for currency in JalAsset.get_currencies():
                 if currency.id() == base:  # Skip as it is X/X ratio that is always 1
                     continue
-                quotes_begin, quotes_end = currency.quotes_range(base)
-                if start_timestamp < quotes_begin:
-                    from_timestamp = start_timestamp
-                else:
-                    from_timestamp = quotes_end if quotes_end > start_timestamp else start_timestamp
+                from_timestamp = self._adjust_start(currency, base, start_timestamp)
                 if end_timestamp < from_timestamp:
                     continue
                 try:
                     data = data_loaders[JalAsset(base).symbol()](currency, from_timestamp, end_timestamp)
                 except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
-                    logging.warning(self.tr("No data were downloaded for ") + f"{currency.name()}")
+                    logging.warning(self.tr("No rates were downloaded for ") + f"{currency.name()}")
                     continue
-                if data is not None:
-                    quotations = []
-                    for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
-                        quotations.append({'timestamp': int(date.timestamp()), 'quote': quote[0]})
-                    currency.set_quotes(quotations, base)
+                self._store_quotations(currency, base, data)
 
     def download_asset_prices(self, start_timestamp, end_timestamp, sources_list):
         data_loaders = {
@@ -120,11 +129,7 @@ class QuoteDownloader(QObject):
         for asset_data in assets:
             asset = asset_data['asset']
             currency = asset_data['currency']
-            quotes_begin, quotes_end = asset.quotes_range(currency)
-            if start_timestamp < quotes_begin:
-                from_timestamp = start_timestamp
-            else:
-                from_timestamp = quotes_end if quotes_end > start_timestamp else start_timestamp
+            from_timestamp = self._adjust_start(asset, currency, start_timestamp)
             if end_timestamp < from_timestamp:
                 continue
             try:
@@ -133,13 +138,9 @@ class QuoteDownloader(QObject):
                     continue
                 data = data_loaders[data_source](asset, currency, from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
-                logging.warning(self.tr("No data were downloaded for ") + f"{asset.name()}")
+                logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.name()}")
                 continue
-            if data is not None:
-                quotations = []
-                for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
-                    quotations.append({'timestamp': int(date.timestamp()), 'quote': quote[0]})
-                asset.set_quotes(quotations, currency)
+            self._store_quotations(asset, currency, data)
 
     def PrepareRussianCBReader(self):
         rows = []
