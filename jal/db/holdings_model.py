@@ -233,7 +233,7 @@ class HoldingsModel(QAbstractItemModel):
         for account in accounts:
             account_holdings = []
             assets = account.assets_list(self._date)
-            rate = JalAsset.fx_cross_rate(account.currency(), self._currency, self._date)
+            rate = JalAsset(account.currency()).quote(self._date, self._currency)[1]
             for asset_data in assets:
                 asset = asset_data['asset']
                 record = {

@@ -142,9 +142,15 @@ class JalAsset(JalDB):
                            "AND currency_id=:currency_id AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
                            [(":asset_id", self._id), (":currency_id", currency_id), (":timestamp", timestamp)])
         if quote is None:
-            logging.warning(self.tr("Quote not found for ") +
-                            f"{self.symbol()} ({JalAsset(currency_id).symbol()}) {ts2d(timestamp)}")
-            return 0, Decimal('0')
+            if self._type == PredefinedAsset.Money and currency_id != self.get_base_currency(timestamp):  # find a cross-rate
+                rate1 = self.quote(timestamp, self.get_base_currency(timestamp))[1]
+                rate2 = JalAsset(currency_id).quote(timestamp, self.get_base_currency(timestamp))[1]
+                rate = 0 if rate2 == Decimal('0') else rate1 / rate2
+                return timestamp, rate
+            else:
+                logging.warning(self.tr("There are no quote/rate for ") +
+                                f"{self.symbol()} ({JalAsset(currency_id).symbol()}) {ts2d(timestamp)}")
+                return 0, Decimal('0')
         return int(quote[0]), Decimal(quote[1])
 
     # Return a list of tuples (timestamp:int, quote:Decimal) of all quotes available for asset
@@ -407,18 +413,3 @@ class JalAsset(JalDB):
         while query.next():
             history.append(cls._read_record(query, cast=[int, int]))
         return history
-
-    # Method calculates FX1/FX2 exchange rate for currency_1 in units of currency_2
-    @classmethod
-    def fx_cross_rate(cls, currency_id1: int, currency_id2: int, timestamp: int) -> Decimal:
-        if currency_id1 == currency_id2:
-            return Decimal('1')
-        # try to get direct quote if it is present in db:
-        rate = JalAsset(currency_id1).quote(timestamp, currency_id2)[1]
-        if rate:
-            return rate
-        # get both rates with respect to relevant base currency
-        rate1 = JalAsset(currency_id1).quote(timestamp, cls.get_base_currency(timestamp))[1]
-        rate2 = JalAsset(currency_id2).quote(timestamp, cls.get_base_currency(timestamp))[1]
-        rate = 0 if rate2 == Decimal('0') else rate1 / rate2
-        return rate
