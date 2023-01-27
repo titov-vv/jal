@@ -27,29 +27,18 @@
 <context>
     <name>AbstractReferenceListModel</name>
     <message>
-        <location filename="../db/reference_models.py" line="125"/>
+        <location filename="../db/reference_models.py" line="123"/>
         <source>Data are incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/reference_models.py" line="126"/>
+        <location filename="../db/reference_models.py" line="124"/>
         <source>Column has no valid value: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/reference_models.py" line="128"/>
-        <location filename="../db/reference_models.py" line="134"/>
-        <source>Submit failed: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../db/reference_models.py" line="130"/>
-        <source>Data are in use</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/reference_models.py" line="131"/>
-        <source>Data are referenced in another place and can&apos;t be modified</source>
+        <source>Submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -591,12 +580,12 @@
 <context>
     <name>DB</name>
     <message>
-        <location filename="../db/db.py" line="237"/>
+        <location filename="../db/db.py" line="278"/>
         <source>Database format is outdated</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="238"/>
+        <location filename="../db/db.py" line="279"/>
         <source>Do you agree to upgrade your data to newer format?</source>
         <translation></translation>
     </message>
@@ -887,19 +876,6 @@
     <message>
         <location filename="../widgets/dividend_widget.py" line="115"/>
         <source>Bond Interest</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
-    <name>Error</name>
-    <message>
-        <location filename="../widgets/helpers.py" line="22"/>
-        <source>Can&apos;t delete predefined category</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/helpers.py" line="18"/>
-        <source>Investment account should have associated broker assigned</source>
         <translation></translation>
     </message>
 </context>
@@ -1587,22 +1563,27 @@
 <context>
     <name>JalAsset</name>
     <message>
-        <location filename="../db/asset.py" line="202"/>
+        <location filename="../db/asset.py" line="152"/>
+        <source>There are no quote/rate for </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/asset.py" line="215"/>
         <source>Quotations were updated: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="237"/>
+        <location filename="../db/asset.py" line="250"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="258"/>
+        <location filename="../db/asset.py" line="271"/>
         <source>Country updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="268"/>
+        <location filename="../db/asset.py" line="281"/>
         <source>Reg.number updated for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1682,7 +1663,7 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/db.py" line="266"/>
+        <location filename="../db/db.py" line="307"/>
         <source>Operation already present in db: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1698,6 +1679,34 @@ Application will be terminated now</source>
         <location filename="../widgets/operations_tabs.py" line="43"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>JalSqlError</name>
+    <message>
+        <location filename="../db/db.py" line="47"/>
+        <source>Investment account should have associated broker assigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/db.py" line="48"/>
+        <source>Can&apos;t delete predefined category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/db.py" line="51"/>
+        <source>Incorrect currency assignment for an asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/db.py" line="54"/>
+        <source>Data are referenced in another place and can&apos;t be modified</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/db.py" line="70"/>
+        <source>Database error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1877,12 +1886,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="240"/>
+        <location filename="../net/downloader.py" line="286"/>
         <source>Unsupported MOEX security type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="283"/>
+        <location filename="../net/downloader.py" line="329"/>
         <source>Multiple MOEX assets found for: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2008,7 +2017,7 @@ Application will be terminated now</source>
 <context>
     <name>Net</name>
     <message>
-        <location filename="../net/helpers.py" line="56"/>
+        <location filename="../net/helpers.py" line="58"/>
         <source> failed: </source>
         <translation></translation>
     </message>
@@ -2425,37 +2434,42 @@ Application will be terminated now</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="109"/>
-        <source>No data were downloaded for </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../net/downloader.py" line="116"/>
+        <location filename="../net/downloader.py" line="79"/>
         <source>Download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="141"/>
-        <source>Failed to get CBR data for: </source>
+        <location filename="../net/downloader.py" line="115"/>
+        <source>No rates were downloaded for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="364"/>
+        <location filename="../net/downloader.py" line="142"/>
+        <source>No quotes were downloaded for </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="169"/>
+        <source>There are no CBR data for: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="410"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="367"/>
+        <location filename="../net/downloader.py" line="413"/>
         <source>Euronext quotes header not found in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="370"/>
+        <location filename="../net/downloader.py" line="416"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="408"/>
+        <location filename="../net/downloader.py" line="454"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation></translation>
     </message>
@@ -2786,133 +2800,133 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="343"/>
+        <location filename="../data_import/statement.py" line="345"/>
         <source>Asset data aren&apos;t linked to asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="351"/>
+        <location filename="../data_import/statement.py" line="353"/>
         <source>Unmatched currency for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="360"/>
+        <location filename="../data_import/statement.py" line="362"/>
         <source>Can&apos;t create account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="365"/>
+        <location filename="../data_import/statement.py" line="367"/>
         <source>Unmatched account for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="368"/>
+        <location filename="../data_import/statement.py" line="370"/>
         <source>Unmatched peer for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="374"/>
+        <location filename="../data_import/statement.py" line="376"/>
         <source>Unmatched category for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="383"/>
+        <location filename="../data_import/statement.py" line="385"/>
         <source>Unmatched account for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="386"/>
+        <location filename="../data_import/statement.py" line="388"/>
         <source>Unmatched asset for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="389"/>
+        <location filename="../data_import/statement.py" line="391"/>
         <source>Impossible to convert asset type in transfer: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="394"/>
+        <location filename="../data_import/statement.py" line="396"/>
         <source>Deposit of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="397"/>
+        <location filename="../data_import/statement.py" line="399"/>
         <source>Select account to withdraw from:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="399"/>
+        <location filename="../data_import/statement.py" line="401"/>
         <source>Withdrawal of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="402"/>
+        <location filename="../data_import/statement.py" line="404"/>
         <source>Select account to deposit to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="408"/>
+        <location filename="../data_import/statement.py" line="410"/>
         <source>Account not selected</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="435"/>
+        <location filename="../data_import/statement.py" line="437"/>
         <source>Unmatched account for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="438"/>
+        <location filename="../data_import/statement.py" line="440"/>
         <source>Unmatched asset for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="453"/>
+        <location filename="../data_import/statement.py" line="455"/>
         <source>Unmatched account for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="456"/>
+        <location filename="../data_import/statement.py" line="458"/>
         <source>Unmatched asset for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="484"/>
+        <location filename="../data_import/statement.py" line="486"/>
         <source>Unsupported payment type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="489"/>
+        <location filename="../data_import/statement.py" line="491"/>
         <source>Unmatched account for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="492"/>
-        <location filename="../data_import/statement.py" line="498"/>
+        <location filename="../data_import/statement.py" line="494"/>
+        <location filename="../data_import/statement.py" line="500"/>
         <source>Unmatched asset for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="505"/>
+        <location filename="../data_import/statement.py" line="507"/>
         <source>Unsupported corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="523"/>
+        <location filename="../data_import/statement.py" line="525"/>
         <source>Asset id not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="535"/>
+        <location filename="../data_import/statement.py" line="537"/>
         <source>Multiple match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="546"/>
+        <location filename="../data_import/statement.py" line="548"/>
         <source>Multiple currency match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="588"/>
+        <location filename="../data_import/statement.py" line="590"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3479,7 +3493,7 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/open_portfolio.py" line="91"/>
+        <location filename="../data_import/broker_statements/open_portfolio.py" line="92"/>
         <source>Imported #</source>
         <translation type="unfinished"></translation>
     </message>
