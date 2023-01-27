@@ -13,8 +13,8 @@
     {"id": 6, "type": "stock", "name": "Polymetal International plc", "isin": "JE00B6T5S470"}
   ],
   "symbols": [
-    {"id": 1, "asset": 1, "symbol": "RUB", "currency": -1},
-    {"id": 2, "asset": 2, "symbol": "USD", "currency": -1},
+    {"id": 1, "asset": 1, "symbol": "RUB"},
+    {"id": 2, "asset": 2, "symbol": "USD"},
     {"id": 3, "asset": 3, "symbol": "AFLT", "currency": 1, "note": "MOEX"},
     {"id": 4, "asset": 4, "symbol": "FXGD", "currency": 1, "note": "MOEX"},
     {"id": 5, "asset": 5, "symbol": "ТинькоффБ7", "currency": 1, "note": "MOEX"},

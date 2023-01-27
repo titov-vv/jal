@@ -103,12 +103,12 @@ class JalAsset(JalDB):
             symbol = [x['symbol'] for x in self._data['symbols'] if x['active'] == 1 and x['currency_id'] == currency]
             return ''.join(x for x in symbol)   # return symbol or empty string (there shouldn't be more than one)
 
-    def add_symbol(self, symbol: str, currency_id: int, note: str, data_source: int = MarketDataFeed.NA) -> None:
+    def add_symbol(self, symbol: str, currency_id: int=None, note: str='', data_source: int=MarketDataFeed.NA) -> None:
         existing = self._read("SELECT id, symbol, description, quote_source FROM asset_tickers "
-                              "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency",
+                              "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id IS :currency",
                               [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)
         if existing is None:  # Deactivate old symbols and create a new one
-            _ = self._exec("UPDATE asset_tickers SET active=0 WHERE asset_id=:asset_id AND currency_id=:currency",
+            _ = self._exec("UPDATE asset_tickers SET active=0 WHERE asset_id=:asset_id AND currency_id IS :currency",
                            [(":asset_id", self._id), (":currency", currency_id)])
             _ = self._exec(
                 "INSERT INTO asset_tickers (asset_id, symbol, currency_id, description, quote_source) "

@@ -8,7 +8,7 @@
     {"id": 2, "type": "stock", "name": "BROOKFIELD RENEWABLE PARTNER", "isin": "BMG162581083", "country": "ca"}
   ],
   "symbols": [
-    {"id": 1,"asset": 1, "symbol": "USD", "currency": -1},
+    {"id": 1,"asset": 1, "symbol": "USD"},
     {"id": 2,"asset": 2, "symbol": "BEP", "currency": 1, "note": "NYSE"}
   ],
   "assets_data": [],

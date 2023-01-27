@@ -12,8 +12,8 @@
     {"id": 52, "type": "stock", "name": "Ross Stores Inc", "isin": "US7782961038"}
   ],
   "symbols": [
-    {"id": 1, "asset": 0, "note": "", "symbol": "RUB", "currency": -1},
-    {"id": 2, "asset": 1, "note": "", "symbol": "USD", "currency": -1},
+    {"id": 1, "asset": 0, "note": "", "symbol": "RUB"},
+    {"id": 2, "asset": 1, "note": "", "symbol": "USD"},
     {"id": 3, "asset": 44, "note": "MOEX", "symbol": "SBER", "currency": -1},
     {"id": 4, "asset": 45, "note": "MOEX", "symbol": "GAZP", "currency": -1},
     {"id": 5, "asset": 46, "note": "MOEX", "symbol": "RU000A0JXU71", "currency": -1},

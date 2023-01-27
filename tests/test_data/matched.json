@@ -54,9 +54,9 @@
     {"id": -5, "type": "stock", "country": "us"}
   ],
   "symbols": [
-    {"id": 1, "asset": -1, "symbol": "RUB", "currency": -1},
-    {"id": 2, "asset": -2, "symbol": "USD", "currency": -1},
-    {"id": 3, "asset": 3, "symbol": "CAD", "currency": -1},
+    {"id": 1, "asset": -1, "symbol": "RUB"},
+    {"id": 2, "asset": -2, "symbol": "USD"},
+    {"id": 3, "asset": 3, "symbol": "CAD"},
     {"id": 4, "asset": 4, "symbol": "AMZN", "currency": -2, "note": "NASDAQ"},
     {"id": 5, "asset": -4, "symbol": "VUG", "currency": -2, "note": "ARCA"},
     {"id": 6, "asset": 6, "symbol": "BABA", "currency": -2, "note": "NYSE"},
@@ -86,7 +86,7 @@
     {"id": 30, "asset": 29, "symbol": "AAPL", "currency": -2, "note": "NASDAQ"},
     {"id": 31, "asset": 30, "symbol": "VLO   200724P00064000", "currency": -2, "note": "CBOE"},
     {"id": 32, "asset": 31, "symbol": "VLO", "currency": -2, "note": "NYSE"},
-    {"id": 33, "asset": -3, "symbol": "EUR", "currency": -1},
+    {"id": 33, "asset": -3, "symbol": "EUR"},
     {"id": 34, "asset": 33, "symbol": "MAC", "currency": -2, "note": "NYSE"},
     {"id": 35, "asset": 20, "symbol": "EWLLD", "currency": -2, "note": "PINK"},
     {"id": 36, "asset": 34, "symbol": "GE", "currency": -2, "note": "NYSE"},

@@ -10,7 +10,7 @@
     {"id": 4, "type": "stock", "name": "SOARING EAGLE ACQUISITION CO", "isin": "KYG8354H1002" }
   ],
   "symbols": [
-    {"id": 1, "asset": 1, "currency": -1, "symbol": "USD"},
+    {"id": 1, "asset": 1, "symbol": "USD"},
     {"id": 2, "asset": 2, "currency": 1, "symbol": "DNA WS", "note": "NYSE"},
     {"id": 3, "asset": 3, "currency": 1, "symbol": "DNA", "note": "NYSE"},
     {"id": 4, "asset": 4, "currency": 1, "symbol": "SRNGU"}

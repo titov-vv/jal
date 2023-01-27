@@ -10,7 +10,7 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset, PredefindedAccountType, RUSSIAN_RUBLE
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset, PredefindedAccountType
 from jal.db.helpers import get_app_path
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -324,18 +324,20 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         for symbol in symbols:
             if symbol['asset'] > 0:
                 raise Statement_ImportError(self.tr("Symbol ticker isn't linked to asset: ") + f"{symbol}")
-            if symbol['currency'] > 0:
+            if 'currency' in symbol and symbol['currency'] > 0:
                 raise Statement_ImportError(self.tr("Symbol currency isn't linked to asset: ") + f"{symbol}")
             asset = self._find_in_list(self._data[FOF.ASSETS], "id", symbol['asset'])
             note = symbol['note'] if 'note' in symbol else ''
             if asset['type'] == FOF.ASSET_MONEY:
+                currency = None
                 source = MarketDataFeed.FX
             else:
+                currency = -symbol['currency']
                 try:
                     source = self._sources[symbol['note']]
                 except KeyError:
                     source = MarketDataFeed.NA
-            JalAsset(-symbol['asset']).add_symbol(symbol['symbol'], -symbol['currency'], note, data_source=source)
+            JalAsset(-symbol['asset']).add_symbol(symbol['symbol'], currency, note, data_source=source)
 
     def _import_asset_data(self, data):
         for detail in data:
@@ -548,7 +550,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
             self._data[FOF.ASSETS].append({"id": asset_id, "type": "money", "name": ""})
             symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
-            currency = {"id": symbol_id, "asset": asset_id, "symbol": currency_symbol, "currency": -RUSSIAN_RUBLE}
+            currency = {"id": symbol_id, "asset": asset_id, "symbol": currency_symbol}
             self._data[FOF.SYMBOLS].append(currency)
             return asset_id
 

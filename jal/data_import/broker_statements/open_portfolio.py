@@ -2,7 +2,7 @@ import json
 import logging
 from pkg_resources import parse_version
 from jal.data_import.statement import FOF, Statement, Statement_ImportError
-from jal.constants import PredefinedCategory
+from jal.constants import PredefinedCategory, RUSSIAN_RUBLE
 
 JAL_STATEMENT_CLASS = "StatementOpenPortfolio"
 
@@ -74,8 +74,9 @@ class StatementOpenPortfolio(Statement):
             if "id" not in asset:
                 raise Statement_ImportError(self.tr("Asset without id: ") + asset)
             if "symbol" in asset:
-                symbol = {"id": symbol_id, "asset": asset['id'], "symbol": asset['symbol'],
-                          "currency": -1, "note": asset['exchange']}  # FIXME Need to put actual symbol currency
+                symbol = {"id": symbol_id, "asset": asset['id'], "symbol": asset['symbol'], "note": asset['exchange']}
+                if asset['type'] != FOF.ASSET_MONEY:
+                    symbol['currency'] = -RUSSIAN_RUBLE
                 self._data["symbols"].append(symbol)
                 asset.pop("symbol")
                 asset.pop("exchange")

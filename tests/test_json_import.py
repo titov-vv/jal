@@ -26,11 +26,11 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     # validate assets
     test_assets = [
         {'id': 1, 'type_id': PredefinedAsset.Money, 'full_name': 'Российский Рубль', 'isin': '', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'RUB', 'description': 'Российский Рубль', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+         'symbols': [{'symbol': 'RUB', 'description': 'Российский Рубль', 'active': 1, 'currency_id': '', 'quote_source': 0}]},
         {'id': 2, 'type_id': PredefinedAsset.Money, 'full_name': 'Доллар США', 'isin': '', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'USD', 'description': 'Доллар США (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+         'symbols': [{'symbol': 'USD', 'description': 'Доллар США', 'active': 1, 'currency_id': '', 'quote_source': 0}]},
         {'id': 3, 'type_id': PredefinedAsset.Money, 'full_name': 'Евро', 'isin': '', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'EUR', 'description': 'Евро (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+         'symbols': [{'symbol': 'EUR', 'description': 'Евро', 'active': 1, 'currency_id': '', 'quote_source': 0}]},
         {'id': 4, 'type_id': PredefinedAsset.ETF, 'full_name': 'Growth ETF', 'isin': 'US9229087369', 'country_id': 2, 'base_asset': '',
          'symbols': [{'symbol': 'VUG', 'description': 'ARCA', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
          'data': {AssetData.RegistrationCode: '922908736'}},
@@ -41,7 +41,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
          'symbols': [{'symbol': 'ZROZ', 'description': 'ARCA', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
          'data': {AssetData.RegistrationCode: '72201R882'}},
         {'id': 7, 'type_id': PredefinedAsset.Money, 'full_name': '', 'isin': '', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'CAD', 'description': '', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+         'symbols': [{'symbol': 'CAD', 'description': '', 'active': 1, 'currency_id': '', 'quote_source': 0}]},
         {'id': 8, 'type_id': PredefinedAsset.Stock, 'full_name': 'AMAZON.COM INC', 'isin': 'US0231351067', 'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'AMZN', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
          'data': {AssetData.RegistrationCode: '023135106'}},
@@ -283,11 +283,11 @@ def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
     # validate assets
     test_assets = [
         {'id': 1, 'type_id': PredefinedAsset.Money, 'full_name': 'Российский Рубль', 'isin': '', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'RUB', 'description': 'Российский Рубль', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+         'symbols': [{'symbol': 'RUB', 'description': 'Российский Рубль', 'active': 1, 'currency_id': '', 'quote_source': 0}]},
         {'id': 2, 'type_id': PredefinedAsset.Money, 'full_name': 'Доллар США', 'isin': '', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'USD', 'description': 'Доллар США (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+         'symbols': [{'symbol': 'USD', 'description': 'Доллар США', 'active': 1, 'currency_id': '', 'quote_source': 0}]},
         {'id': 3, 'type_id': PredefinedAsset.Money, 'full_name': 'Евро', 'isin': '', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'EUR', 'description': 'Евро (Банк России)', 'active': 1, 'currency_id': 1, 'quote_source': 0}]},
+         'symbols': [{'symbol': 'EUR', 'description': 'Евро', 'active': 1, 'currency_id': '', 'quote_source': 0}]},
         {'id': 4, 'type_id': PredefinedAsset.Stock, 'full_name': '', 'isin': 'RU0009029540', 'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'SBER',  'description': '', 'active': 1,'currency_id': 1, 'quote_source': -1}]},
         {'id': 5, 'type_id': PredefinedAsset.Derivative, 'full_name': 'Si-12.11 Контракт на курс доллар-рубль', 'isin': '', 'country_id': 0, 'base_asset': '',

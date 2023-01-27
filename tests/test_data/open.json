@@ -15,8 +15,8 @@
     {"id": 9, "type": "stock", "name": "ПАО \"НОВАТЭК\" ао", "isin": "RU000A0DKVS5"}
   ],
   "symbols": [
-    {"id": 1, "asset": 1, "symbol": "RUB", "currency": -1},
-    {"id": 2, "asset": 2, "symbol": "EUR", "currency": -1},
+    {"id": 1, "asset": 1, "symbol": "RUB"},
+    {"id": 2, "asset": 2, "symbol": "EUR"},
     {"id": 3, "asset": 3, "symbol": "Мордовия03", "currency": 1, "note": "MOEX"},
     {"id": 4, "asset": 4, "symbol": "МТС 1P-05", "currency": 1, "note": "MOEX"},
     {"id": 5, "asset": 5, "symbol": "СберБ БО37", "currency": 1, "note": "MOEX"},

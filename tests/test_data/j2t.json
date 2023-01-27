@@ -15,7 +15,7 @@
     {"id": 9, "type": "crypto", "name": "Ethereum"}
   ],
   "symbols": [
-    {"id": 1, "asset": 1, "symbol": "USD", "currency": -1},
+    {"id": 1, "asset": 1, "symbol": "USD"},
     {"id": 2, "asset": 2, "symbol": "ABT", "currency": 1},
     {"id": 3, "asset": 3, "symbol": "AFKS", "currency": 1, "note": "MOEX"},
     {"id": 4, "asset": 4, "symbol": "486-ME", "currency": 1, "note": "MOEX"},

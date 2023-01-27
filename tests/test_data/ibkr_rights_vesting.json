@@ -13,8 +13,8 @@
  "assets_data": [
    {"asset": 5, "id": 1, "reg_number": "45841N107"}
  ],
- "symbols": [{"id": 1, "asset": 1, "currency": -1, "symbol": "HKD"},
-             {"id": 2, "asset": 2, "currency": -1, "symbol": "USD"},
+ "symbols": [{"id": 1, "asset": 1, "symbol": "HKD"},
+             {"id": 2, "asset": 2, "symbol": "USD"},
              {"id": 3, "asset": 3, "currency": 1, "symbol": "698", "note": "SEHK"},
              {"id": 5, "asset": 5, "currency": 2, "symbol": "IBKR", "note": "NASDAQ"},
              {"id": 6, "asset": 6, "currency": 1, "symbol": "2965", "note": "CORPACT"}

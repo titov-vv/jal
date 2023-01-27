@@ -10,7 +10,7 @@
     {"id": 4, "type": "stock", "name": "APPLE INC", "isin": "US0378331005"}
   ],
   "symbols": [
-    {"id": 1, "asset": 1, "symbol": "USD", "currency": -1},
+    {"id": 1, "asset": 1, "symbol": "USD"},
     {"id": 2, "asset": 2, "symbol": "X 6 1/4 03/15/26", "currency": 1},
     {"id": 3, "asset": 3, "symbol": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "currency": 1},
     {"id": 4, "asset": 4, "symbol": "AAPL", "currency": 1,"note": "NASDAQ"}
