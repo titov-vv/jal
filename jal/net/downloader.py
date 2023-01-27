@@ -103,8 +103,8 @@ class QuoteDownloader(QObject):
         self.PrepareRussianCBReader()
         for base in set([x[1] for x in JalAsset.get_base_currency_history(start_timestamp, end_timestamp)]):
             for currency in JalAsset.get_currencies():
-                if currency.id() == base:  # Skip as it is X/X ratio that is always 1
-                    continue
+                if currency.id() == base or currency.quote_source(None) != MarketDataFeed.FX:
+                    continue  # Skip as it is X/X ratio that is always 1
                 from_timestamp = self._adjust_start(currency, base, start_timestamp)
                 if end_timestamp < from_timestamp:
                     continue
