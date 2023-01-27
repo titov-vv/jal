@@ -97,6 +97,7 @@ class JalAsset(JalDB):
     def symbol(self, currency: int = None) -> str:
         if self._data is None:
             return ''
+        currency = None if self._type == PredefinedAsset.Money else currency  # Money have one unique symbol
         if currency is None:
             return ','.join([x['symbol'] for x in self._data['symbols'] if x['active'] == 1])  # concatenate all symbols via comma
         else:
@@ -172,9 +173,10 @@ class JalAsset(JalDB):
         end = db_timestamp2int(end)
         return begin, end
 
-    # Returns a quote source id defined for given currency
+    # Returns a quote source id defined for given currency (currency_id can be None)
     def quote_source(self, currency_id: int) -> int:
-        source_id = self._read("SELECT quote_source FROM asset_tickers WHERE asset_id=:asset AND currency_id=:currency",
+        source_id = self._read("SELECT quote_source FROM asset_tickers "
+                               "WHERE asset_id=:asset AND currency_id IS :currency",
                                [(":asset", self._id), (":currency", currency_id)])
         if source_id is None:
             return MarketDataFeed.NA
