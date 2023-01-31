@@ -112,8 +112,8 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
             table.append({
                 'timestamp': ts2d(position['operation'].timestamp()),
                 'qty': qty,
-                'o_rate': o_rate,
                 'o_price': price,
+                'o_rate': o_rate,
                 'profit': position_profit,
                 'profit_rub': position_profit_rub,
                 'tax': tax
