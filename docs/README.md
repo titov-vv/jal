@@ -17,7 +17,7 @@ And while I can't name every one of them I would like to confirm my appreciation
 ### [FAQ](https://github.com/titov-vv/jal/blob/master/docs/FAQ.md)
 
 ### Main features
-- Multiple accounts with different currencies (base currency is russian rouble but might be changed in future versions)
+- Multiple accounts with different currencies (with totals in base currency by user choice)
 - 5 types of transactions: 
     1. Generic income/spending operations that may be split into several categories
     2. Asset and money transfers between accounts (with currency conversion if required)
@@ -29,6 +29,7 @@ And while I can't name every one of them I would like to confirm my appreciation
     2. profit/loss report for investments accounts
     3. closed deals report 
 - Stock/ETF prices are updated for NYSE, Nasdaq, LSE, Frankfurt (Yahoo), Euronext, TSX and MOEX exchanges traded stocks
+- Curerncy exchange rates may be taked from European and/or Russian central banks.
 - Broker statement import:
     1. Russian: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
     2. International: Interactive Brokers Flex statement (xml), Just2Trade (xls).
