@@ -6,7 +6,6 @@ from PySide6.QtGui import QFont
 from jal.constants import RUSSIAN_RUBLE
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.settings import JalSettings
 from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d
