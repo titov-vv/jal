@@ -29,7 +29,7 @@ And while I can't name every one of them I would like to confirm my appreciation
     2. profit/loss report for investments accounts
     3. closed deals report 
 - Stock/ETF prices are updated for NYSE, Nasdaq, LSE, Frankfurt (Yahoo), Euronext, TSX and MOEX exchanges traded stocks
-- Curerncy exchange rates may be taked from European and/or Russian central banks.
+- Currency exchange rates may be taken from European and/or Russian central banks.
 - Broker statement import:
     1. Russian: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
     2. International: Interactive Brokers Flex statement (xml), Just2Trade (xls).
