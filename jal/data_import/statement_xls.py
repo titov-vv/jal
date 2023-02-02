@@ -67,7 +67,7 @@ class StatementXLS(Statement):
 
         logging.info(self.tr("Statement loaded successfully: ") + f"{self.StatementName}")
 
-    # Finds a row with header in column self.HeaderCol starting with 'header' and returns it's index.
+    # Finds a row with header in column self.HeaderCol starting with 'header' and returns its index.
     # Return -1 if header isn't found
     def find_row(self, header) -> int:
         for i, row in self._statement.iterrows():
@@ -100,7 +100,7 @@ class StatementXLS(Statement):
         if start_row > 0:
             for idx in column_indices:                         # Verify that all columns were found
                 if column_indices[idx] < 0 and idx[0] != '*':  # * - means header is optional
-                    logging.error(self.tr("Column not found in section ") + f"{section_header}: {idx}")
+                    raise Statement_ImportError(self.tr("Column not found in section ") + f"{section_header}: {idx}")
                     start_row = -1
         start_row += header_height
         return start_row, column_indices
