@@ -1012,7 +1012,7 @@ class CorporateAction(LedgerTransaction):
             result = self._read_record(query, named=True, cast=[int, Decimal])
             if self._subtype == CorporateAction.SpinOff and result['asset_id'] == self._asset.id():
                 continue   # Don't display initial asset in list
-            description += "\n" + self._asset.name()
+            description += "\n" + JalAsset(result['asset_id']).name()
             if result['value_share'] < Decimal('1.0'):
                 description += f" ({result['value_share'] * Decimal('100')} %)"
         return description
