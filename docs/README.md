@@ -16,6 +16,8 @@ And while I can't name every one of them I would like to confirm my appreciation
 
 ### [FAQ](https://github.com/titov-vv/jal/blob/master/docs/FAQ.md)
 
+### [Description of error messages](https://github.com/titov-vv/jal/blob/master/docs/error_description.md)
+
 ### Main features
 - Multiple accounts with different currencies (with totals in base currency by user choice)
 - 5 types of transactions: 
