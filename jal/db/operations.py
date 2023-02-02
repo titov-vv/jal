@@ -998,6 +998,7 @@ class CorporateAction(LedgerTransaction):
         self._asset = JalAsset(self._data['asset_id'])
         self._qty = Decimal(self._data['qty'])
         self._number = self._data['number']
+        self._note = self._data['note']
         self._broker = self._account.organization()
 
     # Settlement returns timestamp as corporate action happens immediately in Jal
@@ -1006,6 +1007,8 @@ class CorporateAction(LedgerTransaction):
 
     def description(self) -> str:
         description = self.names[self._subtype]
+        if self._note:
+            description += ": " + self._note
         query = self._exec("SELECT asset_id, value_share FROM action_results WHERE action_id=:oid",
                            [(":oid", self._oid)])
         while query.next():
