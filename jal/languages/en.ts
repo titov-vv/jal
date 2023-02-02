@@ -403,47 +403,57 @@
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="970"/>
-        <source>Symbol change</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../db/operations.py" line="971"/>
-        <source>Split</source>
+        <source>UNDEFINED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="972"/>
-        <source>Spin-off</source>
+        <source>Symbol change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="973"/>
+        <source>Split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="974"/>
+        <source>Spin-off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="975"/>
         <source>Merger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="976"/>
+        <location filename="../db/operations.py" line="978"/>
         <source>Delisting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1074"/>
+        <location filename="../db/operations.py" line="1076"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="1095"/>
+        <source>Corporate action type isn&apos;t defined. Date: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="1100"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1099"/>
+        <location filename="../db/operations.py" line="1104"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1108"/>
+        <location filename="../db/operations.py" line="1113"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3841,12 +3851,12 @@ Application will be terminated now</source>
 <context>
     <name>TaxEstimator</name>
     <message>
-        <location filename="../db/tax_estimator.py" line="72"/>
+        <location filename="../db/tax_estimator.py" line="71"/>
         <source>Tax estimation for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="127"/>
+        <location filename="../db/tax_estimator.py" line="126"/>
         <source>TOTAL</source>
         <translation></translation>
     </message>
@@ -3854,37 +3864,37 @@ Application will be terminated now</source>
 <context>
     <name>TaxEstimatorModel</name>
     <message>
-        <location filename="../db/tax_estimator.py" line="48"/>
+        <location filename="../db/tax_estimator.py" line="47"/>
         <source>Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="49"/>
+        <location filename="../db/tax_estimator.py" line="48"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="50"/>
+        <location filename="../db/tax_estimator.py" line="49"/>
         <source>Open</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="51"/>
+        <location filename="../db/tax_estimator.py" line="50"/>
         <source>Rate, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="52"/>
+        <location filename="../db/tax_estimator.py" line="51"/>
         <source>Profit, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="53"/>
+        <location filename="../db/tax_estimator.py" line="52"/>
         <source>Profit, RUB</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="55"/>
+        <location filename="../db/tax_estimator.py" line="54"/>
         <source>Tax, RUB</source>
         <translation></translation>
     </message>

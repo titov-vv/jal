@@ -960,6 +960,7 @@ class CorporateAction(LedgerTransaction):
 
     def __init__(self, operation_id=None):
         labels = {
+            CorporateAction.NA: ("?", CustomColor.LightRed),
             CorporateAction.Merger: ('⭃', CustomColor.Black),
             CorporateAction.SpinOff: ('⎇', CustomColor.DarkGreen),
             CorporateAction.Split: ('ᗕ', CustomColor.Black),
@@ -967,6 +968,7 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.Delisting: ('✖', CustomColor.DarkRed)
         }
         self.names = {
+            CorporateAction.NA: self.tr("UNDEFINED"),
             CorporateAction.SymbolChange: self.tr("Symbol change"),
             CorporateAction.Split: self.tr("Split"),
             CorporateAction.SpinOff: self.tr("Spin-off"),
@@ -1088,6 +1090,9 @@ class CorporateAction(LedgerTransaction):
         return payments
 
     def processLedger(self, ledger):
+        if self._subtype == CorporateAction.NA:
+            raise LedgerError(self.tr("Corporate action type isn't defined. Date: ") \
+                  + f"{ts2dt(self._timestamp)}, " + f"{self._account.name()} - {self._asset.symbol()}")
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
         if asset_amount < self._qty:
