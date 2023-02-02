@@ -1024,7 +1024,7 @@ class CorporateAction(LedgerTransaction):
         query = self._exec("SELECT qty FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
             result.append(self._read_record(query, cast=[Decimal]))
-        if len(result) == 1:  # Need to feel at least 2 lines
+        if len(result) == 1:  # Need to feed at least 2 lines
             result.append(None)
         return result
 
@@ -1038,16 +1038,17 @@ class CorporateAction(LedgerTransaction):
             symbol += f" {JalAsset(self._read_record(query, cast=[int])).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
 
-    def value_total(self) -> str:    # FIXME - Method may give incorrect result if 'outgoing' asset was present before operation
-        balance = ""
-        changes = self.value_change()
-        for value in changes:
-            if value is None:
-                balance += "\n"
-            elif value < 0:
-                balance += f"{0.00:,.2f}\n"
-            else:
-                balance += f"{value:,.2f}\n"
+    def value_total(self) -> str:
+        if self._subtype == CorporateAction.SpinOff:
+            balance = ""
+        elif self._subtype == CorporateAction.Split:
+            balance = f"{0.00:,.2f}\n"
+        else:
+            balance = f"{self._account.get_asset_amount(self._timestamp, self._asset.id()):,.2f}\n"
+        query = self._exec("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        while query.next():
+            qty = self._account.get_asset_amount(self._timestamp, self._read_record(query, cast=[int]))
+            balance += f"{qty:,.2f}\n"
         return balance[:-1]  # Crop ending line break
 
     def qty(self) -> Decimal:
