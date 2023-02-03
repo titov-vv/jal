@@ -4,7 +4,7 @@ import logging
 import traceback
 
 from PySide6.QtCore import Property, Slot
-from PySide6.QtWidgets import QFileDialog, QMessageBox
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
 from jal.widgets.mdi import MdiWidget
@@ -17,16 +17,34 @@ from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 from jal.data_export.dlsg import DLSG
 
+PORTUGAL = 0
+RUSSIA = 1
 
 class TaxWidget(MdiWidget, Ui_TaxWidget):
     def __init__(self):
         MdiWidget.__init__(self)
         self.setupUi(self)
 
+        self.Country.currentIndexChanged.connect(self.OnCountryChange)
         self.Year.setValue(datetime.now().year - 1)   # Set previous year by default
         self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
         self.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
         self.SaveButton.pressed.connect(self.SaveReport)
+        self.Country.setCurrentIndex(RUSSIA)
+
+    def OnCountryChange(self, item_id):
+        if item_id == PORTUGAL:
+            self.RussianSpecificFrame.setVisible(False)
+        elif item_id == RUSSIA:
+            self.RussianSpecificFrame.setVisible(True)
+        else:
+            raise ValueError("Selected item has no country handler in code")
+        # Refresh and adjust MDI-window size
+        if not self.parent() is None:
+            self.parent().update()
+            QApplication.processEvents()
+            if not self.parent().isMaximized():  # Prevent size-change of maximized MDI
+                self.parent().adjustSize()
 
     @Slot()
     def OnFileBtn(self, type):

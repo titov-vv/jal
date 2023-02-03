@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFrame,
     QGridLayout, QGroupBox, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QSpinBox, QVBoxLayout,
-    QWidget)
+    QPushButton, QSizePolicy, QSpacerItem, QSpinBox,
+    QVBoxLayout, QWidget)
 
 from jal.widgets.reference_selector import AccountSelector
 
@@ -26,20 +26,20 @@ class Ui_TaxWidget(object):
     def setupUi(self, TaxWidget):
         if not TaxWidget.objectName():
             TaxWidget.setObjectName(u"TaxWidget")
-        TaxWidget.resize(698, 378)
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+        TaxWidget.resize(618, 345)
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(TaxWidget.sizePolicy().hasHeightForWidth())
         TaxWidget.setSizePolicy(sizePolicy)
         self.gridLayout = QGridLayout(TaxWidget)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.comboBox = QComboBox(TaxWidget)
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.setObjectName(u"comboBox")
+        self.Country = QComboBox(TaxWidget)
+        self.Country.addItem("")
+        self.Country.addItem("")
+        self.Country.setObjectName(u"Country")
 
-        self.gridLayout.addWidget(self.comboBox, 0, 1, 1, 2)
+        self.gridLayout.addWidget(self.Country, 0, 1, 1, 2)
 
         self.SaveButton = QPushButton(TaxWidget)
         self.SaveButton.setObjectName(u"SaveButton")
@@ -81,11 +81,8 @@ class Ui_TaxWidget(object):
 
         self.DlsgGroup = QGroupBox(self.RussianSpecificFrame)
         self.DlsgGroup.setObjectName(u"DlsgGroup")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.DlsgGroup.sizePolicy().hasHeightForWidth())
-        self.DlsgGroup.setSizePolicy(sizePolicy1)
+        sizePolicy.setHeightForWidth(self.DlsgGroup.sizePolicy().hasHeightForWidth())
+        self.DlsgGroup.setSizePolicy(sizePolicy)
         self.DlsgGroup.setFlat(False)
         self.DlsgGroup.setCheckable(True)
         self.DlsgGroup.setChecked(False)
@@ -132,21 +129,21 @@ class Ui_TaxWidget(object):
 
         self.XlsSelectBtn = QPushButton(TaxWidget)
         self.XlsSelectBtn.setObjectName(u"XlsSelectBtn")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.XlsSelectBtn.sizePolicy().hasHeightForWidth())
-        self.XlsSelectBtn.setSizePolicy(sizePolicy2)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.XlsSelectBtn.sizePolicy().hasHeightForWidth())
+        self.XlsSelectBtn.setSizePolicy(sizePolicy1)
 
         self.gridLayout.addWidget(self.XlsSelectBtn, 3, 2, 1, 1)
 
         self.XlsFileName = QLineEdit(TaxWidget)
         self.XlsFileName.setObjectName(u"XlsFileName")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.XlsFileName.sizePolicy().hasHeightForWidth())
-        self.XlsFileName.setSizePolicy(sizePolicy3)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.XlsFileName.sizePolicy().hasHeightForWidth())
+        self.XlsFileName.setSizePolicy(sizePolicy2)
 
         self.gridLayout.addWidget(self.XlsFileName, 3, 1, 1, 1)
 
@@ -174,6 +171,10 @@ class Ui_TaxWidget(object):
 
         self.gridLayout.addWidget(self.AccountLbl, 2, 0, 1, 1)
 
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout.addItem(self.verticalSpacer, 9, 2, 1, 1)
+
 
         self.retranslateUi(TaxWidget)
 
@@ -182,8 +183,8 @@ class Ui_TaxWidget(object):
 
     def retranslateUi(self, TaxWidget):
         TaxWidget.setWindowTitle(QCoreApplication.translate("TaxWidget", u"Taxes", None))
-        self.comboBox.setItemText(0, QCoreApplication.translate("TaxWidget", u"Portugal", None))
-        self.comboBox.setItemText(1, QCoreApplication.translate("TaxWidget", u"Russia", None))
+        self.Country.setItemText(0, QCoreApplication.translate("TaxWidget", u"Portugal", None))
+        self.Country.setItemText(1, QCoreApplication.translate("TaxWidget", u"Russia", None))
 
         self.SaveButton.setText(QCoreApplication.translate("TaxWidget", u"Save Report", None))
         self.YearLbl.setText(QCoreApplication.translate("TaxWidget", u"Year:", None))
