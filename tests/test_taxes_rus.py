@@ -11,7 +11,7 @@ from jal.db.ledger import Ledger
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, CorporateAction, Dividend
-from jal.data_export.taxes import TaxesRus
+from jal.data_export.taxes import TaxesRussia
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 
@@ -110,7 +110,7 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     ledger = Ledger()    # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
 
-    taxes = TaxesRus()
+    taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2020, 1)
     json_decimal2float(tax_report)
     assert tax_report == report
@@ -153,7 +153,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
 
-    taxes = TaxesRus()
+    taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2021, 1)
     json_decimal2float(tax_report)
     assert tax_report == report
@@ -204,7 +204,7 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
     assert len(trades) == 1
     assert trades[0].profit() == Decimal('49.71')
 
-    taxes = TaxesRus()
+    taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2021, 1)
     json_decimal2float(tax_report)
     assert tax_report == report
@@ -236,7 +236,7 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
 
-    taxes = TaxesRus()
+    taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2021, 1)
 
     with open(data_path + 'taxes_merger_complex_rus.json', 'r', encoding='utf-8') as json_file:
@@ -287,7 +287,7 @@ def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
 
-    taxes = TaxesRus()
+    taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2021, 1)
 
     with open(data_path + 'taxes_spinoff_rus.json', 'r', encoding='utf-8') as json_file:
@@ -338,7 +338,7 @@ def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    taxes = TaxesRus()
+    taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2021, 1)
 
     json_decimal2float(tax_report)

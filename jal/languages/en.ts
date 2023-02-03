@@ -2009,17 +2009,17 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="155"/>
+        <location filename="../widgets/tax_widget.py" line="156"/>
         <source>Excel files (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="155"/>
+        <location filename="../widgets/tax_widget.py" line="156"/>
         <source>Save money flow report to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="184"/>
+        <location filename="../widgets/tax_widget.py" line="185"/>
         <source>Money flow report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3907,134 +3907,134 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="47"/>
+        <location filename="../ui/tax_export_widget.ui" line="122"/>
         <source>Year:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="256"/>
+        <location filename="../ui/tax_export_widget.ui" line="249"/>
         <source>Account:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="54"/>
+        <location filename="../ui/tax_export_widget.ui" line="52"/>
         <source>Foreign account to prepare tax report for</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="110"/>
+        <location filename="../ui/tax_export_widget.ui" line="172"/>
         <source>Create tax form in &quot;Декларация&quot; program format (*.dcX)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="223"/>
+        <location filename="../ui/tax_export_widget.ui" line="73"/>
         <source>Excel file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="216"/>
+        <location filename="../ui/tax_export_widget.ui" line="38"/>
         <source>File where to store tax report in Excel format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="40"/>
+        <location filename="../ui/tax_export_widget.ui" line="115"/>
         <source>Save Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="27"/>
+        <location filename="../ui/tax_export_widget.ui" line="60"/>
         <source>Portugal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="32"/>
+        <location filename="../ui/tax_export_widget.ui" line="65"/>
         <source>Russia</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="164"/>
-        <location filename="../ui/tax_export_widget.ui" line="200"/>
+        <location filename="../ui/tax_export_widget.ui" line="105"/>
+        <location filename="../ui/tax_export_widget.ui" line="226"/>
         <source>Select file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="203"/>
+        <location filename="../ui/tax_export_widget.ui" line="108"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="230"/>
+        <location filename="../ui/tax_export_widget.ui" line="45"/>
         <source>Country:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="97"/>
+        <location filename="../ui/tax_export_widget.ui" line="261"/>
         <source>Below functions are experimental - use it with care</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="174"/>
+        <location filename="../ui/tax_export_widget.ui" line="236"/>
         <source>File where to store russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="140"/>
+        <location filename="../ui/tax_export_widget.ui" line="202"/>
         <source>Output file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="157"/>
+        <location filename="../ui/tax_export_widget.ui" line="219"/>
         <source>Update only information about dividends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="167"/>
+        <location filename="../ui/tax_export_widget.ui" line="229"/>
         <source> ... </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="147"/>
+        <location filename="../ui/tax_export_widget.ui" line="209"/>
         <source>Use broker name as income source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="184"/>
+        <location filename="../ui/tax_export_widget.ui" line="275"/>
         <source>Do not use settlement date for currency rates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="51"/>
+        <location filename="../widgets/tax_widget.py" line="52"/>
         <source>Save tax reports to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="51"/>
+        <location filename="../widgets/tax_widget.py" line="52"/>
         <source>Excel files (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="54"/>
+        <location filename="../widgets/tax_widget.py" line="55"/>
         <source>Save tax form to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="101"/>
+        <location filename="../widgets/tax_widget.py" line="102"/>
         <source>Data are incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="102"/>
+        <location filename="../widgets/tax_widget.py" line="103"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="130"/>
-        <location filename="../widgets/tax_widget.py" line="138"/>
+        <location filename="../widgets/tax_widget.py" line="131"/>
+        <location filename="../widgets/tax_widget.py" line="139"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="140"/>
+        <location filename="../widgets/tax_widget.py" line="141"/>
         <source>Can&apos;t write tax form into file </source>
         <translation type="unfinished"></translation>
     </message>

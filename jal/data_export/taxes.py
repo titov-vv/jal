@@ -13,7 +13,7 @@ from jal.db.country import JalCountry
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-class TaxesRus:
+class TaxesRussia:
     BOND_PRINCIPAL = Decimal('1000')  # TODO Principal should be used from 'asset_data' table
 
     CorpActionText = {
@@ -44,7 +44,7 @@ class TaxesRus:
         }
 
     def tr(self, text):
-        return QApplication.translate("TaxesRus", text)
+        return QApplication.translate("TaxesRussia", text)
 
     # Removes all keys listed in extra_keys_list from operation_dict
     def drop_extra_fields(self, operation_dict, extra_keys_list):

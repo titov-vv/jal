@@ -12,7 +12,8 @@ from jal.widgets.helpers import ts2d
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.country import JalCountry
-from jal.data_export.taxes import TaxesRus
+from jal.data_export.taxes import TaxesRussia
+from jal.data_export.taxes_pt import TaxesPortugal
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 from jal.data_export.dlsg import DLSG
@@ -102,7 +103,13 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             QMessageBox().warning(self, self.tr("Data are incomplete"),
                                   self.tr("You haven't selected an account for tax report"), QMessageBox.Ok)
             return
-        taxes = TaxesRus()
+        if self.Country.currentIndex() == RUSSIA:
+            taxes = TaxesRussia()
+        elif self.Country.currentIndex() == PORTUGAL:
+            taxes = TaxesPortugal()
+        else:
+            raise ValueError(f"Selected country item {self.Country.currentIndex()} has no country handler in code")
+
         tax_report = taxes.prepare_tax_report(self.year, self.account, use_settlement=(not self.no_settelement))
 
         reports_xls = XLSX(self.xls_filename)
