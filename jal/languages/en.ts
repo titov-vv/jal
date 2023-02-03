@@ -433,27 +433,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1076"/>
+        <location filename="../db/operations.py" line="1080"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1095"/>
+        <location filename="../db/operations.py" line="1099"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1100"/>
+        <location filename="../db/operations.py" line="1104"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1104"/>
+        <location filename="../db/operations.py" line="1108"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1113"/>
+        <location filename="../db/operations.py" line="1117"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1478,7 +1478,12 @@
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="185"/>
-        <source>&amp;Tax report [RU]</source>
+        <source>Investment &amp;tax report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.ui" line="230"/>
+        <source>Foreign accounts &amp;flow report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1519,11 +1524,6 @@
     <message>
         <location filename="../ui/main_window.ui" line="225"/>
         <source>&amp;Operations</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/main_window.ui" line="230"/>
-        <source>&amp;Flow report [RU]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3902,88 +3902,103 @@ Application will be terminated now</source>
 <context>
     <name>TaxWidget</name>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="14"/>
+        <location filename="../ui/tax_export_widget.ui" line="20"/>
         <source>Taxes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="128"/>
+        <location filename="../ui/tax_export_widget.ui" line="47"/>
         <source>Year:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="107"/>
+        <location filename="../ui/tax_export_widget.ui" line="256"/>
         <source>Account:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="215"/>
+        <location filename="../ui/tax_export_widget.ui" line="54"/>
         <source>Foreign account to prepare tax report for</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="141"/>
+        <location filename="../ui/tax_export_widget.ui" line="110"/>
         <source>Create tax form in &quot;Декларация&quot; program format (*.dcX)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="114"/>
+        <location filename="../ui/tax_export_widget.ui" line="223"/>
         <source>Excel file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="88"/>
+        <location filename="../ui/tax_export_widget.ui" line="216"/>
         <source>File where to store tax report in Excel format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="27"/>
+        <location filename="../ui/tax_export_widget.ui" line="40"/>
         <source>Save Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="40"/>
-        <location filename="../ui/tax_export_widget.ui" line="195"/>
+        <location filename="../ui/tax_export_widget.ui" line="27"/>
+        <source>Portugal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="32"/>
+        <source>Russia</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="164"/>
+        <location filename="../ui/tax_export_widget.ui" line="200"/>
         <source>Select file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="43"/>
+        <location filename="../ui/tax_export_widget.ui" line="203"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="100"/>
+        <location filename="../ui/tax_export_widget.ui" line="230"/>
+        <source>Country:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="97"/>
         <source>Below functions are experimental - use it with care</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="205"/>
+        <location filename="../ui/tax_export_widget.ui" line="174"/>
         <source>File where to store russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="171"/>
+        <location filename="../ui/tax_export_widget.ui" line="140"/>
         <source>Output file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="188"/>
+        <location filename="../ui/tax_export_widget.ui" line="157"/>
         <source>Update only information about dividends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="198"/>
+        <location filename="../ui/tax_export_widget.ui" line="167"/>
         <source> ... </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="178"/>
+        <location filename="../ui/tax_export_widget.ui" line="147"/>
         <source>Use broker name as income source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="121"/>
+        <location filename="../ui/tax_export_widget.ui" line="184"/>
         <source>Do not use settlement date for currency rates</source>
         <translation type="unfinished"></translation>
     </message>
