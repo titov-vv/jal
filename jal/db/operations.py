@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.constants import BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset, RUSSIAN_RUBLE
@@ -464,11 +465,31 @@ class Dividend(LedgerTransaction):
     def qty(self) -> Decimal:
         return self.amount()
 
-    def amount(self) -> Decimal:
-        return self._amount
+    # Returns amount of dividend:
+    # if currency_id = 0 - return unadjusted value of amount assigned to dividend (for example stock number for vesting)
+    # if currency is given - then converts dividend amount into given currency
+    def amount(self, currency_id: int = 0) -> Decimal:
+        if not currency_id:
+            return self._amount
+        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
+            price = self._asset.quote(self._timestamp, self._account.currency())[1]
+            if not price:
+                logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
+            amount = self._amount * price
+        else:
+            amount = self._amount
+        if currency_id != self._account.currency():
+            amount *= JalAsset(self._account.currency()).quote(self._timestamp, currency_id)[1]
+        return amount
 
-    def tax(self) -> Decimal:
-        return self._tax
+    # Returns tax of dividend:
+    # if currency_id = 0 - return unadjusted value of tax assigned to dividend
+    # if currency is given - then converts tax amount into given currency
+    def tax(self, currency_id: int = 0) -> Decimal:
+        if currency_id and currency_id != self._account.currency():
+            return self._tax * JalAsset(self._account.currency()).quote(self._timestamp, currency_id)[1]
+        else:
+            return self._tax
 
     def note(self) -> str:
         return self._note

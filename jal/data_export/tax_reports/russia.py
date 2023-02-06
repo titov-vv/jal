@@ -43,27 +43,15 @@ class TaxesRussia(TaxReport):
         dividends_report = []
         dividends = self.dividends_list()
         for dividend in dividends:
-            amount = dividend.amount()
-            rate = self.account_currency.quote(dividend.timestamp(), self._currency_id)[1]
-            price = dividend.asset().quote(dividend.timestamp(), self.account_currency.id())[1]
             country = JalCountry(dividend.asset().country())
             tax_treaty = "Да" if country.has_tax_treaty() else "Нет"
             note = ''
             if dividend.subtype() == Dividend.StockDividend:
-                if not price:
-                    logging.error(self.tr("No price data for stock dividend: ") + f"{dividend}")
-                    continue
-                amount = amount * price
                 note = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
             if dividend.subtype() == Dividend.StockVesting:
-                if not price:
-                    logging.error(self.tr("No price data for stock vesting: ") + f"{dividend}")
-                    continue
-                amount = amount * price
                 note = "Доход получен в натуральной форме (ценными бумагами)"
-            amount_rub = amount * rate
-            tax_rub = dividend.tax() * rate
-            tax2pay = Decimal('0.13') * amount_rub
+            tax_rub = dividend.tax(self._currency_id)
+            tax2pay = Decimal('0.13') * dividend.amount(self._currency_id)
             if tax_treaty:
                 if tax2pay > tax_rub:
                     tax2pay = tax2pay - tax_rub
@@ -75,14 +63,14 @@ class TaxesRussia(TaxReport):
                 'symbol': dividend.asset().symbol(self.account_currency.id()),
                 'full_name': dividend.asset().name(),
                 'isin': dividend.asset().isin(),
-                'amount': amount,
+                'amount': dividend.amount(self.account_currency.id()),
                 'tax': dividend.tax(),
-                'rate': rate,
+                'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
                 'country': country.name(),
                 'country_iso': country.iso_code(),
                 'tax_treaty': tax_treaty,
-                'amount_rub': round(amount_rub, 2),
-                'tax_rub': round(tax_rub, 2),
+                'amount_rub': round(dividend.amount(self._currency_id), 2),
+                'tax_rub': round(dividend.tax(self._currency_id), 2),
                 'tax2pay': round(tax2pay, 2),
                 'note': note
             }
