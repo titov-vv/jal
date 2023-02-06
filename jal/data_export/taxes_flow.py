@@ -6,10 +6,6 @@ from jal.db.asset import JalAsset
 from jal.data_export.dlsg import DLSG
 
 
-COUNTRY_NA_ID = 0
-COUNTRY_RUSSIA_ID = 1
-
-
 class TaxesFlowRus:
     def __init__(self):
         self.year_begin = 0
@@ -41,7 +37,7 @@ class TaxesFlowRus:
         values_begin = []
         values_end = []
         for account in accounts:
-            if account.country() == COUNTRY_NA_ID or account.country() == COUNTRY_RUSSIA_ID:
+            if account.country().iso_code() == 'xx' or account.country().iso_code() == 'ru':
                 continue
             values_begin += self.get_account_values(account, self.year_begin)
             values_end += self.get_account_values(account, self.year_end)
@@ -60,7 +56,7 @@ class TaxesFlowRus:
             {'type': JalAccount.ASSETS_FLOW, 'direction': 'out'}
         ]
         for account in accounts:
-            if account.country() == COUNTRY_NA_ID or account.country() == COUNTRY_RUSSIA_ID:
+            if account.country().iso_code() == 'xx' or account.country().iso_code() == 'ru':
                 continue
             for flow in flows:
                 value = account.get_flow(self.year_begin, self.year_end, flow['type'], flow['direction'])

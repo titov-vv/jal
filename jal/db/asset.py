@@ -125,9 +125,9 @@ class JalAsset(JalDB):
                                [(":data_source", data_source), (":id", existing['id'])])
         self._fetch_data()
 
-    # Returns country_id for the asset
-    def country(self) -> int:
-        return self._country_id
+    # Returns country object for the asset
+    def country(self) -> JalCountry:
+        return JalCountry(self._country_id)
 
     def country_name(self) -> str:
         return self._read("SELECT name FROM countries WHERE id=:id", [(":id", self._country_id)])

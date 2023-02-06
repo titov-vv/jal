@@ -5,6 +5,7 @@ from jal.db.peer import JalPeer
 import jal.db.operations
 import jal.db.closed_trade
 from jal.constants import Setup, BookAccount, PredefindedAccountType, PredefinedAsset
+from jal.db.country import JalCountry
 
 
 class JalAccount(JalDB):
@@ -162,9 +163,9 @@ class JalAccount(JalDB):
     def organization(self) -> int:
         return self._organization_id
 
-    # Returns country id of the account
-    def country(self) -> int:
-        return self._country_id
+    # Returns country object for the account
+    def country(self) -> JalCountry:
+        return JalCountry(self._country_id)
 
     def set_organization(self, peer_id: int) -> None:
         if not peer_id:

@@ -1,7 +1,6 @@
 import logging
 
 from jal.db.operations import Dividend
-from jal.db.country import JalCountry
 from jal.data_export.taxes import TaxReport
 
 
@@ -18,7 +17,7 @@ class TaxesPortugal(TaxReport):
         dividends_report = []
         dividends = self.dividends_list()
         for dividend in dividends:
-            country = JalCountry(dividend.asset().country())
+            country = dividend.asset().country()
             tax_treaty = "Y" if country.has_tax_treaty() else "N"
             note = ''
             if dividend.subtype() == Dividend.StockDividend:

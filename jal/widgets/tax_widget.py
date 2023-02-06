@@ -11,7 +11,6 @@ from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
-from jal.db.country import JalCountry
 from jal.data_export.taxes import TaxReport
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
@@ -121,7 +120,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             "account": f"{taxes.account.number()} ({JalAsset(taxes.account.currency()).symbol()})",
             "currency": JalAsset(taxes.account.currency()).symbol(),
             "broker_name": JalPeer(taxes.account.organization()).name(),
-            "broker_iso_country": JalCountry(taxes.account.country()).iso_code()
+            "broker_iso_country": taxes.account.country().iso_code()
         }
         for section in tax_report:
             reports_xls.output_data(tax_report[section], taxes.report_template(section), parameters)

@@ -6,7 +6,6 @@ from jal.db.helpers import remove_exponent
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
-from jal.db.country import JalCountry
 from jal.data_export.taxes import TaxReport
 
 
@@ -43,7 +42,7 @@ class TaxesRussia(TaxReport):
         dividends_report = []
         dividends = self.dividends_list()
         for dividend in dividends:
-            country = JalCountry(dividend.asset().country())
+            country = dividend.asset().country()
             tax_treaty = "Да" if country.has_tax_treaty() else "Нет"
             note = ''
             if dividend.subtype() == Dividend.StockDividend:
@@ -80,7 +79,7 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_stocks_and_etf(self):
-        country = JalCountry(self.account.country())
+        country = self.account.country()
         deals_report = []
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() in [PredefinedAsset.Stock, PredefinedAsset.ETF]]
@@ -162,7 +161,7 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_bonds(self):
-        country = JalCountry(self.account.country())
+        country = self.account.country()
         bonds_report = []
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() == PredefinedAsset.Bond]
@@ -239,7 +238,7 @@ class TaxesRussia(TaxReport):
             bonds_report.append(line)
         # Second - take all bond interest payments not linked with buy/sell transactions
         currency = JalAsset(self.account.currency())
-        country = JalCountry(self.account.country())
+        country = self.account.country()
         interests = Dividend.get_list(self.account.id(), subtype=Dividend.BondInterest, skip_accrued=True)
         interests = [x for x in interests if self.year_begin <= x.timestamp() <= self.year_end]  # Only in given range
         for interest in interests:
@@ -269,7 +268,7 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self):
-        country = JalCountry(self.account.country())
+        country = self.account.country()
         derivatives_report = []
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() == PredefinedAsset.Derivative]
@@ -336,7 +335,7 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_crypto(self):
-        country = JalCountry(self.account.country())
+        country = self.account.country()
         crypto_report = []
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() == PredefinedAsset.Crypto]
@@ -637,7 +636,7 @@ class TaxesRussia(TaxReport):
         return action.asset().id(), qty_before, share
 
     def output_accrued_interest(self, actions, operation, share, level):
-        country = JalCountry(self.account.country())
+        country = self.account.country()
         accrued_interest = operation.get_accrued_interest()
         if not accrued_interest:
             return
