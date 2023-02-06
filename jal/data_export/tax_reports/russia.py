@@ -39,12 +39,6 @@ class TaxesRussia(TaxReport):
             "Проценты": (self.prepare_broker_interest, "tax_rus_interests.json")
         }
 
-    # Removes all keys listed in extra_keys_list from operation_dict
-    def drop_extra_fields(self, operation_dict, extra_keys_list):
-        for key in extra_keys_list:
-            if key in operation_dict:
-                del operation_dict[key]
-
     def prepare_dividends(self):
         currency = JalAsset(self.account.currency())
         dividends_report = []
