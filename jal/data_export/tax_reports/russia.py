@@ -40,16 +40,12 @@ class TaxesRussia(TaxReport):
         }
 
     def prepare_dividends(self):
-        currency = JalAsset(self.account.currency())
         dividends_report = []
-        dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
-        dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockDividend)
-        dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockVesting)
-        dividends = [x for x in dividends if self.year_begin <= x.timestamp() <= self.year_end]  # Only in given range
+        dividends = self.dividends_list()
         for dividend in dividends:
             amount = dividend.amount()
-            rate = currency.quote(dividend.timestamp(), self._currency_id)[1]
-            price = dividend.asset().quote(dividend.timestamp(), currency.id())[1]
+            rate = self.account_currency.quote(dividend.timestamp(), self._currency_id)[1]
+            price = dividend.asset().quote(dividend.timestamp(), self.account_currency.id())[1]
             country = JalCountry(dividend.asset().country())
             tax_treaty = "Да" if country.has_tax_treaty() else "Нет"
             note = ''
@@ -76,7 +72,7 @@ class TaxesRussia(TaxReport):
             line = {
                 'report_template': "dividend",
                 'payment_date': dividend.timestamp(),
-                'symbol': dividend.asset().symbol(currency.id()),
+                'symbol': dividend.asset().symbol(self.account_currency.id()),
                 'full_name': dividend.asset().name(),
                 'isin': dividend.asset().isin(),
                 'amount': amount,

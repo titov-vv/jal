@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedAsset
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.operations import Dividend
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
@@ -17,7 +18,7 @@ class TaxReport:
         PORTUGAL: {"name": "Portugal", "module": "jal.data_export.tax_reports.portugal", "class": "TaxesPortugal"},
         RUSSIA: {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia"}
     }
-    currency_name = ''
+    currency_name = ''  # The name of the currency for tax values calculation
 
     def __init__(self):
         self._currency_id = JalAsset(data={'symbol': self.currency_name, 'type_id': PredefinedAsset.Money},
@@ -26,7 +27,8 @@ class TaxReport:
             self.reports = {}
             logging.error(self.tr("Currency is not defined: ") + self.currency_name)
             return
-        self.account = None
+        self.account = None           # Account for reporting
+        self.account_currency = None  # Currency of the account for reporting
         self.year_begin = 0
         self.year_end = 0
         self.use_settlement = True
@@ -65,9 +67,10 @@ class TaxReport:
             totals[field] = sum([x[field] for x in list_of_values if field in x])
         list_of_values.append(totals)
 
-    def prepare_tax_report(self, year, account_id, **kwargs):
+    def prepare_tax_report(self, year: int, account_id: int, **kwargs) -> dict:
         tax_report = {}
         self.account = JalAccount(account_id)
+        self.account_currency = JalAsset(self.account.currency())
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         if 'use_settlement' in kwargs:
@@ -75,3 +78,11 @@ class TaxReport:
         for report in self.reports:
             tax_report[report] = self.reports[report][REPORT_METHOD]()
         return tax_report
+
+    # Returns a list of dividends that should be included into the report for given year
+    def dividends_list(self) -> list:
+        dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
+        dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockDividend)
+        dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockVesting)
+        dividends = [x for x in dividends if self.year_begin <= x.timestamp() <= self.year_end]
+        return dividends
