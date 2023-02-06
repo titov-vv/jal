@@ -1899,12 +1899,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="286"/>
+        <location filename="../net/downloader.py" line="285"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="329"/>
+        <location filename="../net/downloader.py" line="328"/>
         <source>Multiple MOEX assets found for: </source>
         <translation>Найдено несколько ЦБ на MOEX для: </translation>
     </message>
@@ -2013,17 +2013,17 @@ Application will be terminated now</source>
         <translation>Файл Excel:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="156"/>
+        <location filename="../widgets/tax_widget.py" line="173"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="156"/>
+        <location filename="../widgets/tax_widget.py" line="173"/>
         <source>Save money flow report to:</source>
         <translation>Сохранить ОоДДС в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="185"/>
+        <location filename="../widgets/tax_widget.py" line="202"/>
         <source>Money flow report saved to file </source>
         <translation>ОоДДС сохранён в файле </translation>
     </message>
@@ -2448,42 +2448,42 @@ Application will be terminated now</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="79"/>
+        <location filename="../net/downloader.py" line="78"/>
         <source>Download completed</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="115"/>
+        <location filename="../net/downloader.py" line="114"/>
         <source>No rates were downloaded for </source>
         <translation>Не загружены курсы для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="142"/>
+        <location filename="../net/downloader.py" line="141"/>
         <source>No quotes were downloaded for </source>
         <translation>Не загружены котировки для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="169"/>
+        <location filename="../net/downloader.py" line="168"/>
         <source>There are no CBR data for: </source>
         <translation>Нет данных ЦБ РФ для: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="410"/>
+        <location filename="../net/downloader.py" line="409"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="413"/>
+        <location filename="../net/downloader.py" line="412"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="416"/>
+        <location filename="../net/downloader.py" line="415"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="454"/>
+        <location filename="../net/downloader.py" line="453"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
@@ -3911,12 +3911,12 @@ Application will be terminated now</source>
         <translation>Налоги</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="122"/>
+        <location filename="../ui/tax_export_widget.ui" line="111"/>
         <source>Year:</source>
         <translation>Год:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="249"/>
+        <location filename="../ui/tax_export_widget.ui" line="238"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
@@ -3926,12 +3926,12 @@ Application will be terminated now</source>
         <translation>Зарубежный счёт для которого нужно подготовить отчёт</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="172"/>
+        <location filename="../ui/tax_export_widget.ui" line="161"/>
         <source>Create tax form in &quot;Декларация&quot; program format (*.dcX)</source>
         <translation>Создать файл 3-НФДЛ в формате программы &quot;Декларация&quot; (*.dcX)</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="73"/>
+        <location filename="../ui/tax_export_widget.ui" line="62"/>
         <source>Excel file:</source>
         <translation>Файл Excel:</translation>
     </message>
@@ -3941,28 +3941,18 @@ Application will be terminated now</source>
         <translation>Файл для сохранения расчёта в формате Excel</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="115"/>
+        <location filename="../ui/tax_export_widget.ui" line="104"/>
         <source>Save Report</source>
         <translation>Сохранить Отчёт</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="60"/>
-        <source>Portugal</source>
-        <translation>Португалия</translation>
-    </message>
-    <message>
-        <location filename="../ui/tax_export_widget.ui" line="65"/>
-        <source>Russia</source>
-        <translation>Россия</translation>
-    </message>
-    <message>
-        <location filename="../ui/tax_export_widget.ui" line="105"/>
-        <location filename="../ui/tax_export_widget.ui" line="226"/>
+        <location filename="../ui/tax_export_widget.ui" line="94"/>
+        <location filename="../ui/tax_export_widget.ui" line="215"/>
         <source>Select file</source>
         <translation>Выберит файл</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="108"/>
+        <location filename="../ui/tax_export_widget.ui" line="97"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -3972,88 +3962,80 @@ Application will be terminated now</source>
         <translation>Страна:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="261"/>
+        <location filename="../ui/tax_export_widget.ui" line="250"/>
         <source>Below functions are experimental - use it with care</source>
         <translation>Ниже расположены экспериментальные функции - используйте с осторожностью</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="236"/>
+        <location filename="../ui/tax_export_widget.ui" line="225"/>
         <source>File where to store russian tax form</source>
         <translation>Файл для сохранения декларации 3-НДФЛ</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="202"/>
+        <location filename="../ui/tax_export_widget.ui" line="191"/>
         <source>Output file:</source>
         <translation>Файл с результатом:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="219"/>
+        <location filename="../ui/tax_export_widget.ui" line="208"/>
         <source>Update only information about dividends</source>
         <translation>Обновить только информацию о дивидендах</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="229"/>
+        <location filename="../ui/tax_export_widget.ui" line="218"/>
         <source> ... </source>
         <translation> ... </translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="209"/>
+        <location filename="../ui/tax_export_widget.ui" line="198"/>
         <source>Use broker name as income source</source>
         <translation>Использовать название брокера как источник выплаты</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="275"/>
+        <location filename="../ui/tax_export_widget.ui" line="264"/>
         <source>Do not use settlement date for currency rates</source>
         <translation>Не использовать дату поставки для курсов валют</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="52"/>
+        <location filename="../widgets/tax_widget.py" line="59"/>
         <source>Save tax reports to:</source>
         <translation>Сохранить налоговый отчёт в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="52"/>
+        <location filename="../widgets/tax_widget.py" line="59"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="55"/>
+        <location filename="../widgets/tax_widget.py" line="62"/>
         <source>Save tax form to:</source>
         <translation>Сохранить 3-НДФЛ в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="102"/>
+        <location filename="../widgets/tax_widget.py" line="109"/>
         <source>Data are incomplete</source>
         <translation>Данные неполные</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="103"/>
+        <location filename="../widgets/tax_widget.py" line="110"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation>Вы не выбрали счёт для налогового отчёта</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="131"/>
-        <location filename="../widgets/tax_widget.py" line="139"/>
+        <location filename="../widgets/tax_widget.py" line="116"/>
+        <source>Tax report is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="142"/>
+        <location filename="../widgets/tax_widget.py" line="150"/>
         <source>Tax report saved to file </source>
         <translation>Налоговый отчёт сохранён в файл </translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="141"/>
+        <location filename="../widgets/tax_widget.py" line="152"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать 3-НДФЛ в файл </translation>
-    </message>
-</context>
-<context>
-    <name>TaxesRus</name>
-    <message>
-        <location filename="../data_export/taxes.py" line="93"/>
-        <source>No price data for stock dividend: </source>
-        <translation>Нет котировки цены для дивиденда акциями: </translation>
-    </message>
-    <message>
-        <location filename="../data_export/taxes.py" line="99"/>
-        <source>No price data for stock vesting: </source>
-        <translation>Нет котировки цены для зачисленной акции: </translation>
     </message>
 </context>
 <context>

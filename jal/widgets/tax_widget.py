@@ -12,31 +12,30 @@ from jal.widgets.helpers import ts2d
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.country import JalCountry
-from jal.data_export.taxes import TaxesRussia
-from jal.data_export.taxes_pt import TaxesPortugal
+from jal.data_export.taxes import TaxReport
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 from jal.data_export.dlsg import DLSG
 
-PORTUGAL = 0
-RUSSIA = 1
 
 class TaxWidget(MdiWidget, Ui_TaxWidget):
     def __init__(self):
         MdiWidget.__init__(self)
         self.setupUi(self)
 
+        self.Country.clear()
+        self.Country.addItems([TaxReport.countries[x] for x in TaxReport.countries])
         self.Country.currentIndexChanged.connect(self.OnCountryChange)
         self.Year.setValue(datetime.now().year - 1)   # Set previous year by default
         self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
         self.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
         self.SaveButton.pressed.connect(self.SaveReport)
-        self.Country.setCurrentIndex(RUSSIA)
+        self.Country.setCurrentIndex(TaxReport.RUSSIA)
 
     def OnCountryChange(self, item_id):
-        if item_id == PORTUGAL:
+        if item_id == TaxReport.PORTUGAL:
             self.RussianSpecificFrame.setVisible(False)
-        elif item_id == RUSSIA:
+        elif item_id == TaxReport.RUSSIA:
             self.RussianSpecificFrame.setVisible(True)
         else:
             raise ValueError("Selected item has no country handler in code")
@@ -109,12 +108,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             QMessageBox().warning(self, self.tr("Data are incomplete"),
                                   self.tr("You haven't selected an account for tax report"), QMessageBox.Ok)
             return
-        if self.Country.currentIndex() == RUSSIA:
-            taxes = TaxesRussia()
-        elif self.Country.currentIndex() == PORTUGAL:
-            taxes = TaxesPortugal()
-        else:
-            raise ValueError(f"Selected country item {self.Country.currentIndex()} has no country handler in code")
+        taxes = TaxReport.create_report(self.Country.currentIndex())
 
         tax_report = taxes.prepare_tax_report(self.year, self.account, use_settlement=(not self.no_settelement))
         if not tax_report:

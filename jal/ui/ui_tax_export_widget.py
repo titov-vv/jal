@@ -57,8 +57,6 @@ class Ui_TaxWidget(object):
         self.gridLayout.addWidget(self.AccountWidget, 2, 1, 1, 2)
 
         self.Country = QComboBox(TaxWidget)
-        self.Country.addItem("")
-        self.Country.addItem("")
         self.Country.setObjectName(u"Country")
 
         self.gridLayout.addWidget(self.Country, 0, 1, 1, 2)
@@ -192,9 +190,6 @@ class Ui_TaxWidget(object):
 #if QT_CONFIG(tooltip)
         self.AccountWidget.setToolTip(QCoreApplication.translate("TaxWidget", u"Foreign account to prepare tax report for", None))
 #endif // QT_CONFIG(tooltip)
-        self.Country.setItemText(0, QCoreApplication.translate("TaxWidget", u"Portugal", None))
-        self.Country.setItemText(1, QCoreApplication.translate("TaxWidget", u"Russia", None))
-
         self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Excel file:", None))
         self.Year.setSuffix("")
 #if QT_CONFIG(tooltip)
