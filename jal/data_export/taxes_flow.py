@@ -37,7 +37,7 @@ class TaxesFlowRus:
         values_begin = []
         values_end = []
         for account in accounts:
-            if account.country().iso_code() == 'xx' or account.country().iso_code() == 'ru':
+            if account.country().code() == 'xx' or account.country().code() == 'ru':
                 continue
             values_begin += self.get_account_values(account, self.year_begin)
             values_end += self.get_account_values(account, self.year_end)
@@ -56,7 +56,7 @@ class TaxesFlowRus:
             {'type': JalAccount.ASSETS_FLOW, 'direction': 'out'}
         ]
         for account in accounts:
-            if account.country().iso_code() == 'xx' or account.country().iso_code() == 'ru':
+            if account.country().code() == 'xx' or account.country().code() == 'ru':
                 continue
             for flow in flows:
                 value = account.get_flow(self.year_begin, self.year_end, flow['type'], flow['direction'])
