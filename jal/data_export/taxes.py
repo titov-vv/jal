@@ -1,4 +1,4 @@
-import importlib
+import importlib   # it is used for delayed import in order to avoid circular reference in child classes
 from PySide6.QtWidgets import QApplication
 
 
@@ -6,8 +6,8 @@ class TaxReport:
     PORTUGAL = 0
     RUSSIA = 1
     countries = {
-        PORTUGAL: {"name": "Portugal", "module": "jal.data_export.taxes_pt", "class": "TaxesPortugal"},
-        RUSSIA: {"name": "Россия", "module": "jal.data_export.taxes_ru", "class": "TaxesRussia"}
+        PORTUGAL: {"name": "Portugal", "module": "jal.data_export.tax_reports.portugal", "class": "TaxesPortugal"},
+        RUSSIA: {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia"}
     }
 
     def __int__(self):
