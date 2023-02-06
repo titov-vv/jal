@@ -117,6 +117,9 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             raise ValueError(f"Selected country item {self.Country.currentIndex()} has no country handler in code")
 
         tax_report = taxes.prepare_tax_report(self.year, self.account, use_settlement=(not self.no_settelement))
+        if not tax_report:
+            logging.warning(self.tr("Tax report is empty"))
+            return
 
         reports_xls = XLSX(self.xls_filename)
         templates = {
