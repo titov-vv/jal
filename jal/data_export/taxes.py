@@ -461,6 +461,7 @@ class TaxesRussia:
         currency = JalAsset(self.account.currency())
         fees_report = []
         fee_operations = JalCategory(PredefinedCategory.Fees).get_operations(self.year_begin, self.year_end)
+        fee_operations = [x for x in fee_operations if x.account_id() == self.account.id()]
         for operation in fee_operations:
             rate = currency.quote(operation.timestamp(), RUSSIAN_RUBLE)[1]
             fees = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Fees]
@@ -483,6 +484,7 @@ class TaxesRussia:
         currency = JalAsset(self.account.currency())
         interests_report = []
         interest_operations = JalCategory(PredefinedCategory.Interest).get_operations(self.year_begin, self.year_end)
+        interest_operations = [x for x in interest_operations if x.account_id() == self.account.id()]
         for operation in interest_operations:
             rate = currency.quote(operation.timestamp(), RUSSIAN_RUBLE)[1]
             interests = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Interest]
