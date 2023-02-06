@@ -11,9 +11,8 @@ from PySide6.QtCore import Qt, QObject, Signal, QDate
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
-from jal.constants import MarketDataFeed, PredefinedAsset, RUSSIAN_RUBLE
+from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.asset import JalAsset
-from jal.db.settings import JalSettings
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
 
 
