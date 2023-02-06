@@ -92,7 +92,6 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_stocks_and_etf(self):
-        currency = JalAsset(self.account.currency())
         country = JalCountry(self.account.country())
         deals_report = []
         trades = self.account.closed_trades_list()
@@ -105,11 +104,11 @@ class TaxesRussia(TaxReport):
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
             # FIXME - it appears all these fields 'rate', 'amount' etc should be part of JalClosedTrade class
-            o_rate = currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
-            c_rate = currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
+            o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
+            c_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
             if self.use_settlement:
-                os_rate = currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
-                cs_rate = currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
+                os_rate = self.account_currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
+                cs_rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
@@ -136,7 +135,7 @@ class TaxesRussia(TaxReport):
             spending_rub += round(o_fee * o_rate, 2) + round(c_fee * c_rate, 2) + short_dividend
             line = {
                 'report_template': "trade",
-                'symbol': trade.asset().symbol(currency.id()),
+                'symbol': trade.asset().symbol(self.account_currency.id()),
                 'isin': trade.asset().isin(),
                 'qty': trade.qty(),
                 'country_iso': country.iso_code(),
@@ -175,7 +174,6 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_bonds(self):
-        currency = JalAsset(self.account.currency())
         country = JalCountry(self.account.country())
         bonds_report = []
         trades = self.account.closed_trades_list()
@@ -184,11 +182,11 @@ class TaxesRussia(TaxReport):
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
-            o_rate = currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
-            c_rate = currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
+            o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
+            c_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
             if self.use_settlement:
-                os_rate = currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
-                cs_rate = currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
+                os_rate = self.account_currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
+                cs_rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
@@ -213,7 +211,7 @@ class TaxesRussia(TaxReport):
             spending_rub += round(o_fee * o_rate, 2) + round(c_fee * c_rate, 2)
             line = {
                 'report_template': "bond_trade",
-                'symbol': trade.asset().symbol(currency.id()),
+                'symbol': trade.asset().symbol(self.account_currency.id()),
                 'isin': trade.asset().isin(),
                 'qty': trade.qty(),
                 'principal': self.BOND_PRINCIPAL,
@@ -283,7 +281,6 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self):
-        currency = JalAsset(self.account.currency())
         country = JalCountry(self.account.country())
         derivatives_report = []
         trades = self.account.closed_trades_list()
@@ -292,11 +289,11 @@ class TaxesRussia(TaxReport):
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
-            o_rate = currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
-            c_rate = currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
+            o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
+            c_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
             if self.use_settlement:
-                os_rate = currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
-                cs_rate = currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
+                os_rate = self.account_currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
+                cs_rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
@@ -314,7 +311,7 @@ class TaxesRussia(TaxReport):
             spending_rub += round(o_fee * o_rate, 2) + round(c_fee * c_rate, 2)
             line = {
                 'report_template': "trade",
-                'symbol': trade.asset().symbol(currency.id()),
+                'symbol': trade.asset().symbol(self.account_currency.id()),
                 'qty': trade.qty(),
                 'country_iso': country.iso_code(),
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
@@ -351,7 +348,6 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_crypto(self):
-        currency = JalAsset(self.account.currency())
         country = JalCountry(self.account.country())
         crypto_report = []
         trades = self.account.closed_trades_list()
@@ -360,11 +356,11 @@ class TaxesRussia(TaxReport):
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
-            o_rate = currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
-            c_rate = currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
+            o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
+            c_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
             if self.use_settlement:
-                os_rate = currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
-                cs_rate = currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
+                os_rate = self.account_currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
+                cs_rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
@@ -382,7 +378,7 @@ class TaxesRussia(TaxReport):
             spending_rub += round(o_fee * o_rate, 2) + round(c_fee * c_rate, 2)
             line = {
                 'report_template': "trade",
-                'symbol': trade.asset().symbol(currency.id()),
+                'symbol': trade.asset().symbol(self.account_currency.id()),
                 'qty': trade.qty(),
                 'country_iso': country.iso_code(),
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
@@ -419,12 +415,11 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self):
-        currency = JalAsset(self.account.currency())
         fees_report = []
         fee_operations = JalCategory(PredefinedCategory.Fees).get_operations(self.year_begin, self.year_end)
         fee_operations = [x for x in fee_operations if x.account_id() == self.account.id()]
         for operation in fee_operations:
-            rate = currency.quote(operation.timestamp(), self._currency_id)[1]
+            rate = self.account_currency.quote(operation.timestamp(), self._currency_id)[1]
             fees = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Fees]
             for fee in fees:
                 amount = -Decimal(fee['amount'])
@@ -442,12 +437,11 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_interest(self):
-        currency = JalAsset(self.account.currency())
         interests_report = []
         interest_operations = JalCategory(PredefinedCategory.Interest).get_operations(self.year_begin, self.year_end)
         interest_operations = [x for x in interest_operations if x.account_id() == self.account.id()]
         for operation in interest_operations:
-            rate = currency.quote(operation.timestamp(), self._currency_id)[1]
+            rate = self.account_currency.quote(operation.timestamp(), self._currency_id)[1]
             interests = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Interest]
             for interest in interests:
                 amount = Decimal(interest['amount'])
@@ -465,7 +459,7 @@ class TaxesRussia(TaxReport):
         payments = CorporateAction.get_payments(self.account)
         payments = [x for x in payments if self.year_begin <= x['timestamp'] <= self.year_end]
         for payment in payments:
-            rate = currency.quote(payment['timestamp'], self._currency_id)[1]
+            rate = self.account_currency.quote(payment['timestamp'], self._currency_id)[1]
             line = {
                 'report_template': "interest",
                 'payment_date': payment['timestamp'],
@@ -481,34 +475,33 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
-        currency = JalAsset(self.account.currency())
         corporate_actions_report = []
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.CorporateAction]
         trades = [x for x in trades if x.close_operation().settlement() <= self.year_end]   # TODO Why not self.year_begin<=?
-        trades = sorted(trades, key=lambda x: (x.asset().symbol(currency.id()), x.close_operation().timestamp()))
+        trades = sorted(trades, key=lambda x: (x.asset().symbol(self.account_currency.id()), x.close_operation().timestamp()))
         group = 1
         share = Decimal('1.0')   # This will track share of processed asset, so it starts from 100.0%
         previous_symbol = ""
         for trade in trades:
             lines = []
             sale = trade.close_operation()
-            t_rate = currency.quote(sale.timestamp(), self._currency_id)[1]
+            t_rate = self.account_currency.quote(sale.timestamp(), self._currency_id)[1]
             if self.use_settlement:
-                s_rate = currency.quote(sale.settlement(), self._currency_id)[1]
+                s_rate = self.account_currency.quote(sale.settlement(), self._currency_id)[1]
             else:
                 s_rate = t_rate
-            if previous_symbol != sale.asset().symbol(currency.id()):
+            if previous_symbol != sale.asset().symbol(self.account_currency.id()):
                 # Clean processed qty records if symbol have changed
                 self._processed_trade_qty = {}
                 if sale.settlement() >= self.year_begin:  # Don't put sub-header of operation is out of scope
                     corporate_actions_report.append({
                         'report_template': "symbol_header",
                         'report_group': 0,
-                        'description': f"Сделки по бумаге: {sale.asset().symbol(currency.id())} - {sale.asset().name()}"
+                        'description': f"Сделки по бумаге: {sale.asset().symbol(self.account_currency.id())} - {sale.asset().name()}"
                     })
-                    previous_symbol = sale.asset().symbol(currency.id())
+                    previous_symbol = sale.asset().symbol(self.account_currency.id())
             amount = round(sale.price() * trade.qty(), 2)
             amount_rub = round(amount * s_rate, 2)
             fee_rub = round(sale.fee() * t_rate, 2)
@@ -523,7 +516,7 @@ class TaxesRussia(TaxReport):
                     't_rate': t_rate,
                     's_date': sale.settlement(),
                     's_rate': s_rate,
-                    'symbol': sale.asset().symbol(currency.id()),
+                    'symbol': sale.asset().symbol(self.account_currency.id()),
                     'isin': sale.asset().isin(),
                     'trade_number': sale.number(),
                     'price': sale.price(),
@@ -569,12 +562,11 @@ class TaxesRussia(TaxReport):
                 assert False, "Unexpected opening transaction"
 
     def output_purchase(self, actions, purchase, proceed_qty, share, level, group):
-        currency = JalAsset(self.account.currency())
         if proceed_qty <= Decimal('0'):
             return proceed_qty
-        t_rate = currency.quote(purchase.timestamp(), self._currency_id)[1]
+        t_rate = self.account_currency.quote(purchase.timestamp(), self._currency_id)[1]
         if self.use_settlement:
-            s_rate = currency.quote(purchase.settlement(), self._currency_id)[1]
+            s_rate = self.account_currency.quote(purchase.settlement(), self._currency_id)[1]
         else:
             s_rate = t_rate
         if purchase.id() in self._processed_trade_qty:   # we have some qty processed already
@@ -597,7 +589,7 @@ class TaxesRussia(TaxReport):
                 'report_group': group,
                 'operation': ' ' * level * 3 + "Покупка",
                 'trade_number': purchase.number(),
-                'symbol': purchase.asset().symbol(currency.id()),
+                'symbol': purchase.asset().symbol(self.account_currency.id()),
                 'isin': purchase.asset().isin(),
                 't_date': purchase.timestamp(),
                 't_rate': t_rate,
@@ -657,12 +649,11 @@ class TaxesRussia(TaxReport):
         return action.asset().id(), qty_before, share
 
     def output_accrued_interest(self, actions, operation, share, level):
-        currency = JalAsset(self.account.currency())
         country = JalCountry(self.account.country())
         accrued_interest = operation.get_accrued_interest()
         if not accrued_interest:
             return
-        rate = currency.quote(operation.timestamp(), self._currency_id)[1]
+        rate = self.account_currency.quote(operation.timestamp(), self._currency_id)[1]
         interest = accrued_interest.amount() if share == 1 else share * accrued_interest.amount()
         interest_rub = abs(round(interest * rate, 2))
         if interest < 0:  # Accrued interest paid for purchase
@@ -678,7 +669,7 @@ class TaxesRussia(TaxReport):
             'report_template': 'bond_interest',
             'empty': '',
             'operation': op_name,
-            'symbol': operation.asset().symbol(currency.id()),
+            'symbol': operation.asset().symbol(self.account_currency.id()),
             'isin': operation.asset().isin(),
             'number': operation.number(),
             'o_date': operation.timestamp(),
