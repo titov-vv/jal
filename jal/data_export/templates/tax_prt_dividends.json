@@ -1,0 +1,40 @@
+{
+  "page": "Dividends",
+  "title": "Dividends report",
+  "headers": [
+      "Period: {parameters[period]}",
+      "Account owner: ",
+      "Account: {parameters[account]}"
+    ],
+  "columns": [  
+    {"name": "Payment date", "width": 10},
+    {"name": "Stock symbol", "width": 8},
+    {"name": "ISIN", "width": 11},
+    {"name": "Payer name", "width": 40},
+    {"name": "{parameters[currency]}/EUR rate for payment date", "width": 16},
+    {"name": "Amount, {parameters[currency]}", "width": 12},
+    {"name": "Amount, EUR", "width": 12},
+    {"name": "Tax withheld, {parameters[currency]}", "width": 12},
+    {"name": "Tax withheld, EUR", "width": 12},
+    {"name": "Country", "width": 20},
+    {"name": "Tax treaty", "width": 7}
+  ],
+  "columns_numbered": true,
+  "dividend": {
+    "rows": [
+      ["payment_date", "symbol", "isin", "full_name", "rate", "amount", "amount_rub", "tax", "tax_rub", "country", "tax_treaty", "note"]
+    ],
+    "formats": [
+      ["D", "T", "T", "T", "N:4", "N:2", "N:2", "N:2", "N:2", "T", "T", "-"]
+    ]
+  },
+  "totals": {
+    "rows": [
+      [null, null, null, null, "TOTAL", "amount", "amount_rub", "tax", "tax_rub", null, null]
+    ],
+    "formats": [
+      [null, null, null, null, "F", "F", "F", "F", "F", null, null]
+    ]
+  },
+  "footers": []
+}

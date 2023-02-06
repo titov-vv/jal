@@ -13,7 +13,7 @@ class TaxesPortugal(TaxReport):
         super().__init__()
         self._processed_trade_qty = {}  # It will handle {trade_id: qty} records to keep track of already processed qty
         self.reports = {
-            "Dividends": (self.prepare_dividends, "tax_rus_dividends.json")
+            "Dividends": (self.prepare_dividends, "tax_prt_dividends.json")
         }
 
     def prepare_dividends(self):
