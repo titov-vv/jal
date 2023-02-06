@@ -116,27 +116,15 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             return
 
         reports_xls = XLSX(self.xls_filename)
-        templates = {
-            "Дивиденды": "tax_rus_dividends.json",
-            "Акции": "tax_rus_trades.json",
-            "Облигации": "tax_rus_bonds.json",
-            "ПФИ": "tax_rus_derivatives.json",
-            "Криптовалюты": "tax_rus_crypto.json",
-            "Корп.события": "tax_rus_corporate_actions.json",
-            "Комиссии": "tax_rus_fees.json",
-            "Проценты": "tax_rus_interests.json"
-        }
         parameters = {
             "period": f"{ts2d(taxes.year_begin)} - {ts2d(taxes.year_end - 1)}",
-            "account": f"{taxes.account.number()} ({taxes.account.currency()})",
+            "account": f"{taxes.account.number()} ({JalAsset(taxes.account.currency()).symbol()})",
             "currency": JalAsset(taxes.account.currency()).symbol(),
             "broker_name": JalPeer(taxes.account.organization()).name(),
             "broker_iso_country": JalCountry(taxes.account.country()).iso_code()
         }
         for section in tax_report:
-            if section not in templates:
-                continue
-            reports_xls.output_data(tax_report[section], templates[section], parameters)
+            reports_xls.output_data(tax_report[section], taxes.report_template(section), parameters)
         reports_xls.save()
         logging.info(self.tr("Tax report saved to file ") + f"'{self.xls_filename}'")
 
