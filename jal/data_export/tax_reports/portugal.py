@@ -1,5 +1,4 @@
 import logging
-from decimal import Decimal
 
 from jal.db.operations import Dividend
 from jal.db.asset import JalAsset
@@ -28,28 +27,22 @@ class TaxesPortugal(TaxReport):
             rate = currency.quote(dividend.timestamp(), self._currency_id)[1]
             price = dividend.asset().quote(dividend.timestamp(), currency.id())[1]
             country = JalCountry(dividend.asset().country())
-            tax_treaty = "Да" if country.has_tax_treaty() else "Нет"
+            tax_treaty = "Y" if country.has_tax_treaty() else "N"
             note = ''
             if dividend.subtype() == Dividend.StockDividend:
                 if not price:
                     logging.error(self.tr("No price data for stock dividend: ") + f"{dividend}")
                     continue
                 amount = amount * price
-                note = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
+                note = "Stock dividend"
             if dividend.subtype() == Dividend.StockVesting:
                 if not price:
                     logging.error(self.tr("No price data for stock vesting: ") + f"{dividend}")
                     continue
                 amount = amount * price
-                note = "Доход получен в натуральной форме (ценными бумагами)"
+                note = "Stock vesting"
             amount_rub = amount * rate
             tax_rub = dividend.tax() * rate
-            tax2pay = Decimal('0.13') * amount_rub
-            if tax_treaty:
-                if tax2pay > tax_rub:
-                    tax2pay = tax2pay - tax_rub
-                else:
-                    tax2pay = Decimal('0.0')
             line = {
                 'report_template': "dividend",
                 'payment_date': dividend.timestamp(),
@@ -64,9 +57,8 @@ class TaxesPortugal(TaxReport):
                 'tax_treaty': tax_treaty,
                 'amount_rub': round(amount_rub, 2),
                 'tax_rub': round(tax_rub, 2),
-                'tax2pay': round(tax2pay, 2),
                 'note': note
             }
             dividends_report.append(line)
-        self.insert_totals(dividends_report, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"])
+        self.insert_totals(dividends_report, ["amount", "amount_rub", "tax", "tax_rub"])
         return dividends_report
