@@ -16,7 +16,6 @@ class TaxesPortugal(TaxReport):
         dividends = self.dividends_list()
         for dividend in dividends:
             country = dividend.asset().country()
-            tax_treaty = "Y" if country.has_tax_treaty() else "N"
             note = ''
             if dividend.subtype() == Dividend.StockDividend:
                 note = "Stock dividend"
@@ -32,7 +31,7 @@ class TaxesPortugal(TaxReport):
                 'tax': dividend.tax(),
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
                 'country': country.name(),
-                'tax_treaty': tax_treaty,
+                'tax_treaty': "Y" if country.has_tax_treaty() else "N",
                 'amount_eur': round(dividend.amount(self._currency_id), 2),
                 'tax_eur': round(dividend.tax(self._currency_id), 2),
                 'note': note

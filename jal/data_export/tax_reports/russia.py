@@ -42,7 +42,6 @@ class TaxesRussia(TaxReport):
         dividends = self.dividends_list()
         for dividend in dividends:
             country = dividend.asset().country()
-            tax_treaty = "Да" if country.has_tax_treaty() else "Нет"
             note = ''
             if dividend.subtype() == Dividend.StockDividend:
                 note = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
@@ -50,7 +49,7 @@ class TaxesRussia(TaxReport):
                 note = "Доход получен в натуральной форме (ценными бумагами)"
             tax_rub = dividend.tax(self._currency_id)
             tax2pay = Decimal('0.13') * dividend.amount(self._currency_id)
-            if tax_treaty:
+            if country.has_tax_treaty():
                 if tax2pay > tax_rub:
                     tax2pay = tax2pay - tax_rub
                 else:
@@ -66,7 +65,7 @@ class TaxesRussia(TaxReport):
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
                 'country': country.name(),
                 'country_iso': country.iso_code(),  # it is required for DLSG export
-                'tax_treaty': tax_treaty,
+                'tax_treaty': "Да" if country.has_tax_treaty() else "Нет",
                 'amount_rub': round(dividend.amount(self._currency_id), 2),
                 'tax_rub': round(dividend.tax(self._currency_id), 2),
                 'tax2pay': round(tax2pay, 2),
