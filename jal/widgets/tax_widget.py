@@ -28,6 +28,12 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
         self.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
         self.SaveButton.pressed.connect(self.SaveReport)
 
+    # Displays tax widget in a given MDI area.
+    # It is implemented as a separate static method in order to prevent unexpected object deletion
+    @staticmethod
+    def showInMDI(parent_mdi):
+        parent_mdi.addSubWindow(TaxWidget(), maximized=False)
+
     @Slot()
     def OnFileBtn(self, type):
         if type == 'XLS':
@@ -132,6 +138,12 @@ class MoneyFlowWidget(MdiWidget, Ui_MoneyFlowWidget):
         self.Year.setValue(datetime.now().year - 1)  # Set previous year by default
         self.XlsSelectBtn.pressed.connect(self.OnFileBtn)
         self.SaveButton.pressed.connect(self.SaveReport)
+
+    # Displays tax widget in a given MDI area.
+    # It is implemented as a separate static method in order to prevent unexpected object deletion
+    @staticmethod
+    def showInMDI(parent_mdi):
+        parent_mdi.addSubWindow(MoneyFlowWidget(), maximized=False)
 
     @Slot()
     def OnFileBtn(self):
