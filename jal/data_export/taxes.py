@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import PredefinedAsset, PredefinedCategory, RUSSIAN_RUBLE
+from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.helpers import remove_exponent
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.db.account import JalAccount
@@ -25,6 +25,13 @@ class TaxesRus:
     }
 
     def __init__(self):
+        self._base_currency_name = 'RUB'
+        self._base_currency_id = JalAsset(data={'symbol': self._base_currency_name, 'type_id': PredefinedAsset.Money},
+                                          search=True, create=False).id()
+        if not self._base_currency_id:
+            self.reports = {}
+            logging.error(self.tr("Currency is not defined: ") + self._base_currency_name)
+            return
         self.account = None
         self.year_begin = 0
         self.year_end = 0
@@ -83,7 +90,7 @@ class TaxesRus:
         dividends = [x for x in dividends if self.year_begin <= x.timestamp() <= self.year_end]  # Only in given range
         for dividend in dividends:
             amount = dividend.amount()
-            rate = currency.quote(dividend.timestamp(), RUSSIAN_RUBLE)[1]
+            rate = currency.quote(dividend.timestamp(), self._base_currency_id)[1]
             price = dividend.asset().quote(dividend.timestamp(), currency.id())[1]
             country = JalCountry(dividend.asset().country())
             tax_treaty = "Да" if country.has_tax_treaty() else "Нет"
@@ -144,11 +151,11 @@ class TaxesRus:
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
             # FIXME - it appears all these fields 'rate', 'amount' etc should be part of JalClosedTrade class
-            o_rate = currency.quote(trade.open_operation().timestamp(), RUSSIAN_RUBLE)[1]
-            c_rate = currency.quote(trade.close_operation().timestamp(), RUSSIAN_RUBLE)[1]
+            o_rate = currency.quote(trade.open_operation().timestamp(), self._base_currency_id)[1]
+            c_rate = currency.quote(trade.close_operation().timestamp(), self._base_currency_id)[1]
             if self.use_settlement:
-                os_rate = currency.quote(trade.open_operation().settlement(), RUSSIAN_RUBLE)[1]
-                cs_rate = currency.quote(trade.close_operation().settlement(), RUSSIAN_RUBLE)[1]
+                os_rate = currency.quote(trade.open_operation().settlement(), self._base_currency_id)[1]
+                cs_rate = currency.quote(trade.close_operation().settlement(), self._base_currency_id)[1]
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
@@ -223,11 +230,11 @@ class TaxesRus:
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
-            o_rate = currency.quote(trade.open_operation().timestamp(), RUSSIAN_RUBLE)[1]
-            c_rate = currency.quote(trade.close_operation().timestamp(), RUSSIAN_RUBLE)[1]
+            o_rate = currency.quote(trade.open_operation().timestamp(), self._base_currency_id)[1]
+            c_rate = currency.quote(trade.close_operation().timestamp(), self._base_currency_id)[1]
             if self.use_settlement:
-                os_rate = currency.quote(trade.open_operation().settlement(), RUSSIAN_RUBLE)[1]
-                cs_rate = currency.quote(trade.close_operation().settlement(), RUSSIAN_RUBLE)[1]
+                os_rate = currency.quote(trade.open_operation().settlement(), self._base_currency_id)[1]
+                cs_rate = currency.quote(trade.close_operation().settlement(), self._base_currency_id)[1]
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
@@ -297,7 +304,7 @@ class TaxesRus:
         interests = [x for x in interests if self.year_begin <= x.timestamp() <= self.year_end]  # Only in given range
         for interest in interests:
             amount = interest.amount()
-            rate = currency.quote(interest.timestamp(), RUSSIAN_RUBLE)[1]
+            rate = currency.quote(interest.timestamp(), self._base_currency_id)[1]
             amount_rub = round(amount * rate, 2)
             line = {
                 'report_template': "bond_interest",
@@ -331,11 +338,11 @@ class TaxesRus:
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
-            o_rate = currency.quote(trade.open_operation().timestamp(), RUSSIAN_RUBLE)[1]
-            c_rate = currency.quote(trade.close_operation().timestamp(), RUSSIAN_RUBLE)[1]
+            o_rate = currency.quote(trade.open_operation().timestamp(), self._base_currency_id)[1]
+            c_rate = currency.quote(trade.close_operation().timestamp(), self._base_currency_id)[1]
             if self.use_settlement:
-                os_rate = currency.quote(trade.open_operation().settlement(), RUSSIAN_RUBLE)[1]
-                cs_rate = currency.quote(trade.close_operation().settlement(), RUSSIAN_RUBLE)[1]
+                os_rate = currency.quote(trade.open_operation().settlement(), self._base_currency_id)[1]
+                cs_rate = currency.quote(trade.close_operation().settlement(), self._base_currency_id)[1]
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
@@ -399,11 +406,11 @@ class TaxesRus:
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
-            o_rate = currency.quote(trade.open_operation().timestamp(), RUSSIAN_RUBLE)[1]
-            c_rate = currency.quote(trade.close_operation().timestamp(), RUSSIAN_RUBLE)[1]
+            o_rate = currency.quote(trade.open_operation().timestamp(), self._base_currency_id)[1]
+            c_rate = currency.quote(trade.close_operation().timestamp(), self._base_currency_id)[1]
             if self.use_settlement:
-                os_rate = currency.quote(trade.open_operation().settlement(), RUSSIAN_RUBLE)[1]
-                cs_rate = currency.quote(trade.close_operation().settlement(), RUSSIAN_RUBLE)[1]
+                os_rate = currency.quote(trade.open_operation().settlement(), self._base_currency_id)[1]
+                cs_rate = currency.quote(trade.close_operation().settlement(), self._base_currency_id)[1]
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
@@ -463,7 +470,7 @@ class TaxesRus:
         fee_operations = JalCategory(PredefinedCategory.Fees).get_operations(self.year_begin, self.year_end)
         fee_operations = [x for x in fee_operations if x.account_id() == self.account.id()]
         for operation in fee_operations:
-            rate = currency.quote(operation.timestamp(), RUSSIAN_RUBLE)[1]
+            rate = currency.quote(operation.timestamp(), self._base_currency_id)[1]
             fees = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Fees]
             for fee in fees:
                 amount = -Decimal(fee['amount'])
@@ -486,7 +493,7 @@ class TaxesRus:
         interest_operations = JalCategory(PredefinedCategory.Interest).get_operations(self.year_begin, self.year_end)
         interest_operations = [x for x in interest_operations if x.account_id() == self.account.id()]
         for operation in interest_operations:
-            rate = currency.quote(operation.timestamp(), RUSSIAN_RUBLE)[1]
+            rate = currency.quote(operation.timestamp(), self._base_currency_id)[1]
             interests = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Interest]
             for interest in interests:
                 amount = Decimal(interest['amount'])
@@ -504,7 +511,7 @@ class TaxesRus:
         payments = CorporateAction.get_payments(self.account)
         payments = [x for x in payments if self.year_begin <= x['timestamp'] <= self.year_end]
         for payment in payments:
-            rate = currency.quote(payment['timestamp'], RUSSIAN_RUBLE)[1]
+            rate = currency.quote(payment['timestamp'], self._base_currency_id)[1]
             line = {
                 'report_template': "interest",
                 'payment_date': payment['timestamp'],
@@ -533,9 +540,9 @@ class TaxesRus:
         for trade in trades:
             lines = []
             sale = trade.close_operation()
-            t_rate = currency.quote(sale.timestamp(), RUSSIAN_RUBLE)[1]
+            t_rate = currency.quote(sale.timestamp(), self._base_currency_id)[1]
             if self.use_settlement:
-                s_rate = currency.quote(sale.settlement(), RUSSIAN_RUBLE)[1]
+                s_rate = currency.quote(sale.settlement(), self._base_currency_id)[1]
             else:
                 s_rate = t_rate
             if previous_symbol != sale.asset().symbol(currency.id()):
@@ -611,9 +618,9 @@ class TaxesRus:
         currency = JalAsset(self.account.currency())
         if proceed_qty <= Decimal('0'):
             return proceed_qty
-        t_rate = currency.quote(purchase.timestamp(), RUSSIAN_RUBLE)[1]
+        t_rate = currency.quote(purchase.timestamp(), self._base_currency_id)[1]
         if self.use_settlement:
-            s_rate = currency.quote(purchase.settlement(), RUSSIAN_RUBLE)[1]
+            s_rate = currency.quote(purchase.settlement(), self._base_currency_id)[1]
         else:
             s_rate = t_rate
         if purchase.id() in self._processed_trade_qty:   # we have some qty processed already
@@ -701,7 +708,7 @@ class TaxesRus:
         accrued_interest = operation.get_accrued_interest()
         if not accrued_interest:
             return
-        rate = currency.quote(operation.timestamp(), RUSSIAN_RUBLE)[1]
+        rate = currency.quote(operation.timestamp(), self._base_currency_id)[1]
         interest = accrued_interest.amount() if share == 1 else share * accrued_interest.amount()
         interest_rub = abs(round(interest * rate, 2)) 
         if interest < 0:  # Accrued interest paid for purchase
