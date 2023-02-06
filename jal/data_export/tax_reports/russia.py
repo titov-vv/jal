@@ -1,4 +1,3 @@
-import logging
 from decimal import Decimal
 
 from jal.constants import PredefinedAsset, PredefinedCategory
@@ -66,7 +65,7 @@ class TaxesRussia(TaxReport):
                 'tax': dividend.tax(),
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
                 'country': country.name(),
-                'country_iso': country.iso_code(),
+                'country_iso': country.iso_code(),  # it is required for DLSG export
                 'tax_treaty': tax_treaty,
                 'amount_rub': round(dividend.amount(self._currency_id), 2),
                 'tax_rub': round(dividend.tax(self._currency_id), 2),

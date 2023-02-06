@@ -1,5 +1,3 @@
-import logging
-
 from jal.db.operations import Dividend
 from jal.data_export.taxes import TaxReport
 
@@ -34,7 +32,6 @@ class TaxesPortugal(TaxReport):
                 'tax': dividend.tax(),
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
                 'country': country.name(),
-                'country_iso': country.iso_code(),
                 'tax_treaty': tax_treaty,
                 'amount_eur': round(dividend.amount(self._currency_id), 2),
                 'tax_eur': round(dividend.tax(self._currency_id), 2),
