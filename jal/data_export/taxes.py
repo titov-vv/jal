@@ -1,14 +1,13 @@
+import importlib
 from PySide6.QtWidgets import QApplication
-from jal.data_export.taxes_ru import TaxesRussia
-from jal.data_export.taxes_pt import TaxesPortugal
 
 
 class TaxReport:
     PORTUGAL = 0
     RUSSIA = 1
     countries = {
-        PORTUGAL: "Portugal",
-        RUSSIA: "Россия"
+        PORTUGAL: {"name": "Portugal", "module": "jal.data_export.taxes_pt", "class": "TaxesPortugal"},
+        RUSSIA: {"name": "Россия", "module": "jal.data_export.taxes_ru", "class": "TaxesRussia"}
     }
 
     def __int__(self):
@@ -19,9 +18,13 @@ class TaxReport:
 
     @staticmethod
     def create_report(country: int):
-        if country == TaxReport.RUSSIA:
-            return TaxesRussia()
-        elif country == TaxReport.PORTUGAL:
-            return TaxesPortugal()
-        else:
+        try:
+            report_data = TaxReport.countries[country]
+        except KeyError:
             raise ValueError(f"Selected country item {country} has no country handler in tax report code")
+        module = importlib.import_module(report_data['module'])
+        try:
+            class_instance = getattr(module, report_data['class'])
+        except AttributeError:
+            raise ValueError(f"Tax report class '{report_data['class']}' can't be loaded")
+        return class_instance()

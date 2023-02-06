@@ -2,7 +2,6 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.helpers import remove_exponent
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
@@ -10,10 +9,11 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
 from jal.db.country import JalCountry
+from jal.data_export.taxes import TaxReport
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-class TaxesRussia:
+class TaxesRussia(TaxReport):
     BOND_PRINCIPAL = Decimal('1000')  # TODO Principal should be used from 'asset_data' table
 
     CorpActionText = {
@@ -49,9 +49,6 @@ class TaxesRussia:
             "Комиссии": self.prepare_broker_fees,
             "Проценты": self.prepare_broker_interest
         }
-
-    def tr(self, text):
-        return QApplication.translate("TaxesRussia", text)
 
     # Removes all keys listed in extra_keys_list from operation_dict
     def drop_extra_fields(self, operation_dict, extra_keys_list):

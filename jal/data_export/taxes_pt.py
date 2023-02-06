@@ -2,15 +2,15 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedAsset
 from jal.db.operations import Dividend
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
+from jal.data_export.taxes import TaxReport
 
 
-class TaxesPortugal:
+class TaxesPortugal(TaxReport):
     def __init__(self):
         self._base_currency_name = 'EUR'
         self._base_currency_id = JalAsset(data={'symbol': self._base_currency_name, 'type_id': PredefinedAsset.Money},
@@ -31,9 +31,6 @@ class TaxesPortugal:
             # "Комиссии": self.prepare_broker_fees,
             # "Проценты": self.prepare_broker_interest
         }
-
-    def tr(self, text):
-        return QApplication.translate("TaxesPortugal", text)
 
     def prepare_tax_report(self, year, account_id, **kwargs):
         tax_report = {}

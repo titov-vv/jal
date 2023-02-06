@@ -24,7 +24,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
         self.setupUi(self)
 
         self.Country.clear()
-        self.Country.addItems([TaxReport.countries[x] for x in TaxReport.countries])
+        self.Country.addItems([TaxReport.countries[x]['name'] for x in TaxReport.countries])
         self.Country.currentIndexChanged.connect(self.OnCountryChange)
         self.Year.setValue(datetime.now().year - 1)   # Set previous year by default
         self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
