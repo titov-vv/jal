@@ -11,7 +11,7 @@ from jal.db.ledger import Ledger
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, CorporateAction, Dividend
-from jal.data_export.taxes import TaxesRussia
+from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 
