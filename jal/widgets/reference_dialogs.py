@@ -4,8 +4,8 @@ from PySide6.QtWidgets import QAbstractItemView
 from jal.constants import PredefindedAccountType, PredefinedAsset
 from jal.db.peer import JalPeer
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
-from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, \
-    PeerSelectorDelegate, AssetSelectorDelegate
+from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate, \
+    AssetSelectorDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
@@ -113,7 +113,7 @@ class AssetListModel(AbstractReferenceListModel):
         self._timestamp_delegate = None
         self._default_values = {'isin': '', 'country_id': 0, 'quote_source': -1}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
-        self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "name"))
+        self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries_ext", "id", "name"))
         self.setRelation(self.fieldIndex("quote_source"), QSqlRelation("data_sources", "id", "name"))
 
     def configureView(self):

@@ -426,7 +426,7 @@
    <item row="2" column="4">
     <widget class="DbLookupComboBox" name="CountryCombo">
      <property name="db_table" stdset="0">
-      <string notr="true">countries</string>
+      <string notr="true">countries_ext</string>
      </property>
      <property name="key_field" stdset="0">
       <string notr="true">id</string>

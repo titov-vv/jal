@@ -248,7 +248,7 @@ class Ui_AssetDialog(object):
 
         self.CountryCombo = DbLookupComboBox(AssetDialog)
         self.CountryCombo.setObjectName(u"CountryCombo")
-        self.CountryCombo.setProperty("db_table", u"countries")
+        self.CountryCombo.setProperty("db_table", u"countries_ext")
         self.CountryCombo.setProperty("key_field", u"id")
         self.CountryCombo.setProperty("db_field", u"name")
 
