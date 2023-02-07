@@ -209,11 +209,6 @@
     <string>Slip [RU]...</string>
    </property>
   </action>
-  <action name="actionCountries">
-   <property name="text">
-    <string>C&amp;ountries</string>
-   </property>
-  </action>
   <action name="actionQuotes">
    <property name="text">
     <string>&amp;Quotes</string>

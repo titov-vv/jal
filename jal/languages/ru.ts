@@ -1451,7 +1451,7 @@
         <translation>Инвестиционный &amp;налоговый отчет</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="229"/>
+        <location filename="../ui/main_window.ui" line="224"/>
         <source>Foreign accounts &amp;flow report</source>
         <translation>Отчет о &amp;движениях по зарубежным счетам</translation>
     </message>
@@ -1482,21 +1482,16 @@
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="214"/>
-        <source>C&amp;ountries</source>
-        <translation>&amp;Страны</translation>
-    </message>
-    <message>
-        <location filename="../ui/main_window.ui" line="219"/>
         <source>&amp;Quotes</source>
         <translation>&amp;Котировки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="224"/>
+        <location filename="../ui/main_window.ui" line="219"/>
         <source>&amp;Operations</source>
         <translation>&amp;Операции</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="234"/>
+        <location filename="../ui/main_window.ui" line="229"/>
         <source>&amp;Base Currency</source>
         <translation>&amp;Базовая валюта</translation>
     </message>

@@ -1456,7 +1456,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="229"/>
+        <location filename="../ui/main_window.ui" line="224"/>
         <source>Foreign accounts &amp;flow report</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1487,21 +1487,16 @@
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="214"/>
-        <source>C&amp;ountries</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/main_window.ui" line="219"/>
         <source>&amp;Quotes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="224"/>
+        <location filename="../ui/main_window.ui" line="219"/>
         <source>&amp;Operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="234"/>
+        <location filename="../ui/main_window.ui" line="229"/>
         <source>&amp;Base Currency</source>
         <translation type="unfinished"></translation>
     </message>
