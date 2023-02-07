@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from jal.db.operations import Dividend
 from jal.data_export.taxes import TaxReport
 
@@ -10,7 +12,8 @@ class TaxesPortugal(TaxReport):
         super().__init__()
         self._processed_trade_qty = {}  # It will handle {trade_id: qty} records to keep track of already processed qty
         self.reports = {
-            "Dividends": (self.prepare_dividends, "tax_prt_dividends.json")
+            "Dividends": (self.prepare_dividends, "tax_prt_dividends.json"),
+            "Shares": (self.prepare_stocks_and_etf, "tax_prt_shares.json")
         }
 
     def prepare_dividends(self):
@@ -41,3 +44,74 @@ class TaxesPortugal(TaxReport):
             dividends_report.append(line)
         self.insert_totals(dividends_report, ["amount", "amount_eur", "tax", "tax_eur"])
         return dividends_report
+
+    # -----------------------------------------------------------------------------------------------------------------------
+    def prepare_stocks_and_etf(self):
+        deals_report = []
+        ns = not self.use_settlement
+        trades = self.shares_trades_list()
+        for trade in trades:
+            if ns:
+                os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
+                cs_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
+            else:
+                os_rate = self.account_currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
+                cs_rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
+            if trade.qty() >= Decimal('0'):  # Long trade
+                note = ''
+                income = round(trade.close_amount(no_settlement=ns), 2)
+                income_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2)
+                spending = round(trade.open_amount(no_settlement=ns), 2) + trade.fee()
+                spending_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(
+                    trade.fee(self._currency_id), 2)
+            else:  # Short trade
+                # Check were there any dividends during short position holding
+                short_dividend_rub = Decimal('0')
+                dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
+                dividends = [x for x in dividends if
+                             trade.open_operation().settlement() <= x.ex_date() <= trade.close_operation().settlement()]
+                for dividend in dividends:
+                    short_dividend_rub += dividend.amount(self._currency_id)
+                note = f"Удержанный дивиденд: {short_dividend_rub} RUB" if short_dividend_rub > Decimal('0') else ''
+                income = round(trade.open_amount(no_settlement=ns), 2)
+                income_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2)
+                spending = round(trade.close_amount(no_settlement=ns), 2) + trade.fee() + short_dividend_rub
+                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(
+                    trade.fee(self._currency_id), 2)
+            line = {
+                'report_template': "trade",
+                'symbol': trade.asset().symbol(self.account_currency.id()),
+                'isin': trade.asset().isin(),
+                'qty': trade.qty(),
+                'o_type': "Buy" if trade.qty() >= Decimal('0') else "Sell",
+                'o_number': trade.open_operation().number(),
+                'o_date': trade.open_operation().timestamp(),
+                'o_rate': self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1],
+                'os_date': trade.open_operation().settlement(),
+                'os_rate': os_rate,
+                'o_price': trade.open_operation().price(),
+                'o_amount': round(trade.open_amount(no_settlement=ns), 2),
+                'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=ns), 2),
+                'o_fee': trade.open_fee(),
+                'o_fee_rub': round(trade.open_fee(self._currency_id), 2),
+                'c_type': "Sell" if trade.qty() >= Decimal('0') else "Buy",
+                'c_number': trade.close_operation().number(),
+                'c_date': trade.close_operation().timestamp(),
+                'c_rate': self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1],
+                'cs_date': trade.close_operation().settlement(),
+                'cs_rate': cs_rate,
+                'c_price': trade.close_operation().price(),
+                'c_amount': round(trade.close_amount(no_settlement=ns), 2),
+                'c_amount_rub': round(trade.close_amount(self._currency_id, no_settlement=ns), 2),
+                'c_fee': trade.close_fee(),
+                'c_fee_rub': round(trade.close_fee(self._currency_id), 2),
+                'income': income,  # this field is required for DLSG
+                'income_rub': income_rub,
+                'spending_rub': spending_rub,
+                'profit': income - spending,
+                'profit_rub': income_rub - spending_rub,
+                's_dividend_note': note
+            }
+            deals_report.append(line)
+        self.insert_totals(deals_report, ["income_rub", "spending_rub", "profit_rub", "profit"])
+        return deals_report

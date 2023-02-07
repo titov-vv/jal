@@ -11,7 +11,7 @@
     {"name": "Stock symbol", "width": 8},
     {"name": "ISIN", "width": 11},
     {"name": "Payer name", "width": 40},
-    {"name": "{parameters[currency]}/EUR rate for payment date", "width": 16},
+    {"name": "EUR/{parameters[currency]} rate for payment date", "width": 16},
     {"name": "Amount, {parameters[currency]}", "width": 12},
     {"name": "Amount, EUR", "width": 12},
     {"name": "Tax withheld, {parameters[currency]}", "width": 12},
