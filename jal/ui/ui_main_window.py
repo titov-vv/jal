@@ -128,7 +128,6 @@ class Ui_JAL_MainWindow(object):
         self.menu_Data.addAction(self.actionPeers)
         self.menu_Data.addAction(self.actionCategories)
         self.menu_Data.addAction(self.actionTags)
-        self.menu_Data.addAction(self.actionCountries)
         self.menu_Data.addAction(self.actionQuotes)
         self.menu_Data.addSeparator()
         self.menu_Data.addAction(self.actionBaseCurrency)

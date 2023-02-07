@@ -16,7 +16,7 @@ from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget
 from jal.widgets.helpers import dependency_present
 from jal.widgets.reference_dialogs import AccountListDialog, AssetListDialog, TagsListDialog,\
-    CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog
+    CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog
 from jal.constants import Setup
 from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_app_path, get_dbfilename, load_icon
@@ -98,7 +98,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.actionPeers.triggered.connect(partial(self.onDataDialog, "agents"))
         self.actionCategories.triggered.connect(partial(self.onDataDialog, "categories"))
         self.actionTags.triggered.connect(partial(self.onDataDialog, "tags"))
-        self.actionCountries.triggered.connect(partial(self.onDataDialog, "countries"))
         self.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
         self.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, "base_currency"))
         self.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInMDI, self.mdiArea))
@@ -237,8 +236,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             CategoryListDialog().exec()
         elif dlg_type == "tags":
             TagsListDialog().exec()
-        elif dlg_type == "countries":
-            CountryListDialog().exec()
         elif dlg_type == "quotes":
             QuotesListDialog().exec()
         elif dlg_type == "base_currency":

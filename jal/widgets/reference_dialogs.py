@@ -294,46 +294,6 @@ class TagsListDialog(ReferenceDataDialog):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class CountryListModel(AbstractReferenceListModel):
-    def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
-        self._columns = [("id", ''),
-                         ("name", self.tr("Country")),
-                         ("code", self.tr("Code")),
-                         ("iso_code", self.tr("ISO code")),
-                         ("tax_treaty", self.tr("Tax Treaty"))]
-        self._sort_by = "name"
-        self._hidden = ["id"]
-        self._stretch = "name"
-        self._default_values = {'tax_treaty': 0}
-        self._bool_delegate = None
-
-    def configureView(self):
-        super().configureView()
-        self._view.setColumnWidth(self.fieldIndex("code"), 50)
-
-        self._bool_delegate = BoolDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("tax_treaty"), self._bool_delegate)
-
-
-class CountryListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
-        self.table = "countries"
-        self.model = CountryListModel(self.table, self.DataView)
-        self.DataView.setModel(self.model)
-        self.model.configureView()
-        self.setup_ui()
-        super()._init_completed()
-
-    def setup_ui(self):
-        self.search_field = "name"
-        self.SearchFrame.setVisible(True)
-        self.setWindowTitle(self.tr("Countries"))
-        self.Toggle.setVisible(False)
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 class QuotesListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)

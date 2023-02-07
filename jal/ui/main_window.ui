@@ -79,7 +79,6 @@
     <addaction name="actionPeers"/>
     <addaction name="actionCategories"/>
     <addaction name="actionTags"/>
-    <addaction name="actionCountries"/>
     <addaction name="actionQuotes"/>
     <addaction name="separator"/>
     <addaction name="actionBaseCurrency"/>
