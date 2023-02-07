@@ -25,13 +25,13 @@
     {"name": "Spent, EUR", "width": 12},
     {"name": "Profit/Loss, EUR", "width": 12},
     {"name": "Profit/Loss, {parameters[currency]}", "width": 12},
-    {"name": "Note", "width": 12}
+    {"name": "Note", "width": 17}
   ],
   "columns_numbered": true,
   "trade": {
     "rows": [
-      ["symbol", "isin", "qty", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_fee", "o_fee_rub", "income_rub", "spending_rub", "profit_rub", "profit", "s_dividend_note"],
-      [null,     null,   null,  "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_fee", "c_fee_rub", null,         null,           null,         null,     null]
+      ["symbol", "isin", "qty", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_eur", "o_fee", "o_fee_eur", "income_eur", "spending_eur", "profit_eur", "profit", "note"],
+      [null,     null,   null,  "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_eur", "c_fee", "c_fee_eur", null,         null,           null,         null,     null]
     ],
     "formats": [
       ["T", "T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2", "T"],
@@ -44,7 +44,7 @@
   },
   "totals": {
     "rows": [
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, "TOTAL", "income_rub", "spending_rub", "profit_rub", "profit", null]
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, "TOTAL", "income_eur", "spending_eur", "profit_eur", "profit", null]
     ],
     "formats": [
       [null, null, null, null, null, null, null, null, null, null, null, null, null, "F", "F", "F", "F", "F", null]
