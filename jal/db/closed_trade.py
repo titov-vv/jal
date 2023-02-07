@@ -70,6 +70,20 @@ class JalClosedTrade(JalDB):
         else:
             return value
 
+    # Returns opening amount of the trade (open price x qty)
+    # If currency_id isn't 0 then converts amount into given currency using settlement date rate
+    # If no_settlement is set to True then transaction date is used for conversion
+    def open_amount(self, currency_id: int = 0, no_settlement=False) -> Decimal:
+        timestamp = self._open_op.timestamp() if no_settlement else self._open_op.settlement()
+        return self.adjusted(self._open_price * abs(self._qty), currency_id, timestamp)
+
+    # Returns closing amount of the trade (close price x qty)
+    # If currency_id isn't 0 then converts amount into given currency using settlement date rate
+    # If no_settlement is set to True then transaction date is used for conversion
+    def close_amount(self, currency_id: int = 0, no_settlement=False) -> Decimal:
+        timestamp = self._close_op.timestamp() if no_settlement else self._close_op.settlement()
+        return self.adjusted(self._close_price * abs(self._qty), currency_id, timestamp)
+
     # Fee of opening part of the deal
     # if currency_id isn't 0 then returns fee converted into given currency
     def open_fee(self, currency_id: int = 0) -> Decimal:
@@ -89,8 +103,8 @@ class JalClosedTrade(JalDB):
             return Decimal('0')
 
     # Total fee for the trade
-    def fee(self):
-        return self.open_fee() + self.close_fee()
+    def fee(self, currency_id: int = 0) -> Decimal:
+        return self.open_fee(currency_id) + self.close_fee(currency_id)
 
     def profit(self, percent=False) -> Decimal:
         profit = self._qty * (self._close_price - self._open_price) - self.fee()

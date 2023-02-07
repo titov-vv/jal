@@ -177,18 +177,18 @@
          "os_date": 1554163200,
          "os_rate": 65.4176,
          "profit": -2.986231466,
-         "profit_rub": -217.21,
+         "profit_rub": -217.2,
          "qty": 1.0,
          "s_dividend_note": "",
-         "spending_rub": 1060.51,
+         "spending_rub": 1060.5,
          "symbol": "TEVA"
       },
       {
          "report_template": "totals",
          "income_rub": 17570.29,
-         "spending_rub": 18039.62,
+         "spending_rub": 18039.61,
          "profit": -3.322920030,
-         "profit_rub": -469.33
+         "profit_rub": -469.32
       }
    ],
    "Облигации":[
