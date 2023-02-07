@@ -43,7 +43,7 @@ class JalAsset(JalDB):
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['full_name'] if self._data is not None else ''
         self._isin = self._data['isin'] if self._data is not None else None
-        self._country_id = self._data['country_id'] if self._data is not None else 0
+        self._country = JalCountry(self._data['country_id']) if self._data is not None else JalCountry(0)
         self._reg_number = self._data.get('data', {}).get(AssetData.RegistrationCode, '') if self._data is not None else ''
         self._expiry = self._data.get('data', {}).get(AssetData.ExpiryDate, '') if self._data is not None else ''
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '') if self._data is not None else ''
@@ -127,10 +127,10 @@ class JalAsset(JalDB):
 
     # Returns country object for the asset
     def country(self) -> JalCountry:
-        return JalCountry(self._country_id)
+        return self._country
 
     def country_name(self) -> str:
-        return self._read("SELECT name FROM countries WHERE id=:id", [(":id", self._country_id)])
+        return self._country.name()
 
     # Returns tuple in form of (timestamp:int, quote:Decimal) that contains last found quotation in given currency.
     # Returns (timestamp, 1) if quotation is requested relative to itself
@@ -260,15 +260,14 @@ class JalAsset(JalDB):
             self._name = new_name
 
     def _update_country(self, new_code: str) -> None:
-        country = JalCountry(self._country_id)
-        if new_code.lower() != country.code().lower():
+        if new_code.lower() != self._country.code().lower():
             new_country = JalCountry(data={'code': new_code.lower()}, search=True)
             if new_country.id():
                 _ = self._exec("UPDATE assets SET country_id=:new_country_id WHERE id=:asset_id",
                                [(":new_country_id", new_country.id()), (":asset_id", self._id)])
                 self._country_id = new_country.id()
                 logging.info(self.tr("Country updated for ")
-                             + f"{self.symbol()}: {country.name()} -> {new_country.name()}")
+                             + f"{self.symbol()}: {self._country.name()} -> {new_country.name()}")
 
     def _update_reg_number(self, new_number: str) -> None:
         if new_number != self._reg_number:

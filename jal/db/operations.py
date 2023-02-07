@@ -395,10 +395,9 @@ class Dividend(LedgerTransaction):
         self._otype = LedgerTransaction.Dividend
         self._view_rows = 2
         self._data = self._read("SELECT d.type, d.timestamp, d.ex_date, d.number, d.account_id, d.asset_id, "
-                                "d.amount, d.tax, l.amount_acc AS t_qty, d.note AS note, c.name AS country "
+                                "d.amount, d.tax, l.amount_acc AS t_qty, d.note AS note "
                                 "FROM dividends AS d "
                                 "LEFT JOIN assets AS a ON d.asset_id = a.id "
-                                "LEFT JOIN countries AS c ON a.country_id = c.id "
                                 "LEFT JOIN ledger_totals AS l ON l.op_type=d.op_type AND l.operation_id=d.id "
                                 "AND l.book_account = :book_assets WHERE d.id=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)

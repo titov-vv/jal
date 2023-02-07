@@ -403,18 +403,19 @@ CREATE VIEW frontier AS SELECT MAX(ledger.timestamp) AS ledger_frontier FROM led
 -- View: assets_ext
 DROP VIEW IF EXISTS assets_ext;
 CREATE VIEW assets_ext AS
-    SELECT a.id,
-           a.type_id,
-           t.symbol,
-           a.full_name,
-           a.isin,
-           t.currency_id,
-           a.country_id,
-           t.quote_source
+    SELECT a.id, a.type_id, t.symbol, a.full_name, a.isin, t.currency_id, a.country_id, t.quote_source
     FROM assets a
     LEFT JOIN asset_tickers t ON a.id = t.asset_id
     WHERE t.active = 1
     ORDER BY a.id;
+
+
+DROP VIEW IF EXISTS countries_ext;
+CREATE VIEW countries_ext AS
+    SELECT c.id, c.code, c.iso_code, n.name
+    FROM countries AS c
+    LEFT JOIN country_names AS n ON n.country_id = c.id AND n.language_id = (SELECT value FROM settings WHERE id = 3);
+
 
 --------------------------------------------------------------------------------
 -- TRIGGERS

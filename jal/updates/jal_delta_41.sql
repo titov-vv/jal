@@ -23,6 +23,12 @@ CREATE TABLE country_names (
 );
 CREATE UNIQUE INDEX country_name_by_language ON country_names (country_id, language_id);
 
+DROP VIEW IF EXISTS countries_ext;
+CREATE VIEW countries_ext AS
+    SELECT c.id, c.code, c.iso_code, n.name
+    FROM countries AS c
+    LEFT JOIN country_names AS n ON n.country_id = c.id AND n.language_id = (SELECT value FROM settings WHERE id = 3);
+
 -- Initialize countries
 -- ENGLISH --
 INSERT INTO country_names (country_id, language_id, name) VALUES (0, 1, 'N/A');
