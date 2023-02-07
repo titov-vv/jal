@@ -3,6 +3,7 @@ from jal.db.db import JalDB
 import jal.db.account
 import jal.db.asset
 import jal.db.operations
+from jal.db.asset import JalAsset
 
 
 class JalClosedTrade(JalDB):
@@ -61,17 +62,29 @@ class JalClosedTrade(JalDB):
     def close_price(self) -> Decimal:
         return self._close_price
 
+    # If currency_id is different from trade account currency then adjusts value to the rate of currency for
+    # given timestamp and returns it. Otherwise, simply returns unchanged value
+    def adjusted(self, value: Decimal, currency_id: int, timestamp: int) -> Decimal:
+        if currency_id and currency_id != self._account.currency():
+            return value * JalAsset(self._account.currency()).quote(timestamp, currency_id)[1]
+        else:
+            return value
+
     # Fee of opening part of the deal
-    def open_fee(self) -> Decimal:
+    # if currency_id isn't 0 then returns fee converted into given currency
+    def open_fee(self, currency_id: int = 0) -> Decimal:
         if self._open_op.type() == jal.db.operations.LedgerTransaction.Trade:
-            return self._open_op.fee() * abs(self._qty / self._open_op.qty())
+            o_fee = self._open_op.fee() * abs(self._qty / self._open_op.qty())
+            return self.adjusted(o_fee, currency_id, self._open_op.timestamp())
         else:
             return Decimal('0')
 
     # Fee of closing part of the deal
-    def close_fee(self) -> Decimal:
+    # if currency_id isn't 0 then returns fee converted into given currency
+    def close_fee(self, currency_id: int = 0) -> Decimal:
         if self._close_op.type() == jal.db.operations.LedgerTransaction.Trade:
-            return self._close_op.fee() * abs(self._qty / self._close_op.qty())
+            c_fee = self._close_op.fee() * abs(self._qty / self._close_op.qty())
+            return self.adjusted(c_fee, currency_id, self._close_op.timestamp())
         else:
             return Decimal('0')
 

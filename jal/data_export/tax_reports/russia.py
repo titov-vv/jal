@@ -78,16 +78,8 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_stocks_and_etf(self):
-        country = self.account.country()
         deals_report = []
-        trades = self.account.closed_trades_list()
-        trades = [x for x in trades if x.asset().type() in [PredefinedAsset.Stock, PredefinedAsset.ETF]]
-        trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
-        trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade or (
-                    x.open_operation().type() == LedgerTransaction.Dividend and (
-                        x.open_operation().subtype() == Dividend.StockDividend or
-                        x.open_operation().subtype() == Dividend.StockVesting))]
-        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
+        trades = self.shares_trades_list()
         for trade in trades:
             # FIXME - it appears all these fields 'rate', 'amount' etc should be part of JalClosedTrade class
             o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
@@ -110,21 +102,18 @@ class TaxesRussia(TaxReport):
             o_amount_rub = round(o_amount * os_rate, 2)
             c_amount = round(trade.close_operation().price() * abs(trade.qty()), 2)
             c_amount_rub = round(c_amount * cs_rate, 2)
-            # FIXME use trade.open_fee() and trade.close_fee()
-            o_fee = trade.open_operation().fee() * abs(trade.qty() / trade.open_operation().qty())
-            c_fee = trade.close_operation().fee() * abs(trade.qty() / trade.close_operation().qty())
             income = c_amount if trade.qty() >= Decimal('0') else o_amount
             income_rub = c_amount_rub if trade.qty() >= Decimal('0') else o_amount_rub
             spending = o_amount if trade.qty() >= Decimal('0') else c_amount
-            spending += o_fee + c_fee
+            spending += trade.open_fee() + trade.close_fee()
             spending_rub = o_amount_rub if trade.qty() >= Decimal('0') else c_amount_rub
-            spending_rub += round(o_fee * o_rate, 2) + round(c_fee * c_rate, 2) + short_dividend
+            spending_rub += round(trade.open_fee(self._currency_id), 2) + round(trade.close_fee(self._currency_id), 2) + short_dividend
             line = {
                 'report_template': "trade",
                 'symbol': trade.asset().symbol(self.account_currency.id()),
                 'isin': trade.asset().isin(),
                 'qty': trade.qty(),
-                'country_iso': country.iso_code(),
+                'country_iso': self.account.country().iso_code(),  # this field is required for DLSG
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
                 'o_number': trade.open_operation().number(),
                 'o_date': trade.open_operation().timestamp(),
@@ -134,8 +123,8 @@ class TaxesRussia(TaxReport):
                 'o_price': trade.open_operation().price(),
                 'o_amount':  o_amount,
                 'o_amount_rub': o_amount_rub,
-                'o_fee': o_fee,
-                'o_fee_rub': round(o_fee * o_rate, 2),
+                'o_fee': trade.open_fee(),
+                'o_fee_rub': round(trade.open_fee(self._currency_id), 2),
                 'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
                 'c_number': trade.close_operation().number(),
                 'c_date': trade.close_operation().timestamp(),
@@ -145,8 +134,8 @@ class TaxesRussia(TaxReport):
                 'c_price': trade.close_operation().price(),
                 'c_amount': c_amount,
                 'c_amount_rub': c_amount_rub,
-                'c_fee': c_fee,
-                'c_fee_rub': round(c_fee * c_rate, 2),
+                'c_fee': trade.close_fee(),
+                'c_fee_rub': round(trade.close_fee(self._currency_id), 2),
                 'income': income,    # this field is required for DLSG
                 'income_rub': income_rub,
                 'spending_rub': spending_rub,
