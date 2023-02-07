@@ -9,10 +9,9 @@ DROP TABLE countries;
 CREATE TABLE countries (
     id         INTEGER  PRIMARY KEY UNIQUE NOT NULL,
     code       CHAR (3) UNIQUE NOT NULL,
-    iso_code   CHAR (4) UNIQUE NOT NULL,
-    tax_treaty INTEGER  NOT NULL DEFAULT (0)
+    iso_code   CHAR (4) UNIQUE NOT NULL
 );
-INSERT INTO countries ( id, code, iso_code, tax_treaty) SELECT id, code, iso_code, tax_treaty FROM countries_temp;
+INSERT INTO countries ( id, code, iso_code) SELECT id, code, iso_code FROM countries_temp;
 DROP TABLE countries_temp;
 
 CREATE TABLE country_names (
