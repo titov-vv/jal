@@ -26,10 +26,6 @@ class JalCountry(JalDB):
     def iso_code(self) -> str:
         return self._iso_code
 
-    # Returns True/False status of Tax Treaty for this country
-    def has_tax_treaty(self) -> bool:
-        return False  # FIXME - replace this stub with real code
-
     def _valid_data(self, data: dict) -> bool:
         if data is None:
             return False

@@ -1,9 +1,12 @@
 import importlib   # it is used for delayed import in order to avoid circular reference in child classes
+import os
+import json
 import logging
 from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 
-from jal.constants import PredefinedAsset
+from jal.constants import Setup, PredefinedAsset
+from jal.db.helpers import get_app_path
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import Dividend
@@ -19,6 +22,7 @@ class TaxReport:
         RUSSIA: {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia"}
     }
     currency_name = ''  # The name of the currency for tax values calculation
+    country_name = ''   # The name of the country for tax preparation
 
     def __init__(self):
         self._currency_id = JalAsset(data={'symbol': self.currency_name, 'type_id': PredefinedAsset.Money},
@@ -32,6 +36,7 @@ class TaxReport:
         self.year_begin = 0
         self.year_end = 0
         self.use_settlement = True
+        self._parameters = {}
 
     def tr(self, text):
         return QApplication.translate("TaxReport", text)
@@ -56,6 +61,21 @@ class TaxReport:
         else:
             return self.reports[report_name][REPORT_TEMPLATE]
 
+    # Loads report parameters for given year into self._parameters
+    def load_parameters(self, year: int):
+        year_key = str(year)
+        file_path = get_app_path() + Setup.EXPORT_PATH + os.sep + Setup.TAX_REPORT_PATH + os.sep + self.country_name + ".json"
+        try:
+            with open(file_path, 'r', encoding='utf-8') as json_file:
+                parameters = json.load(json_file)
+        except Exception as e:
+            logging.error(self.tr("Can't load tax report parameters from file ") + f"'{file_path}' ({type(e).__name__} {e})")
+            return
+        if year_key not in parameters:
+            logging.warning(self.tr("There are no parameters found for tax report year: ") + year_key)
+            return
+        self._parameters = parameters[year_key]
+
     # ------------------------------------------------------------------------------------------------------------------
     # Create a totals row from provided list of dictionaries
     # it calculates sum for each field in fields and adds it to return dictionary
@@ -75,6 +95,7 @@ class TaxReport:
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         if 'use_settlement' in kwargs:
             self.use_settlement = kwargs['use_settlement']
+        self.load_parameters(year)
         for report in self.reports:
             tax_report[report] = self.reports[report][REPORT_METHOD]()
         return tax_report
@@ -86,3 +107,13 @@ class TaxReport:
         dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockVesting)
         dividends = [x for x in dividends if self.year_begin <= x.timestamp() <= self.year_end]
         return dividends
+
+    # Check if 2-letter country code present in tax treaty parameter of current report
+    def has_tax_treaty_with(self, country_code: str) -> bool:
+        if Setup.TAX_TREATY_PARAM not in self._parameters:
+            logging.warning(self.tr("There are no information about tax treaty in tax report parameters"))
+            return False
+        if country_code in self._parameters[Setup.TAX_TREATY_PARAM]:
+            return True
+        else:
+            return False

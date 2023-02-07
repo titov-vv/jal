@@ -22,6 +22,8 @@ class Setup:
     REPORT_PATH = "reports"
     STATEMENT_PATH = "broker_statements"
     TEMPLATE_PATH = "templates"
+    TAX_REPORT_PATH = "tax_reports"
+    TAX_TREATY_PARAM = "tax_treaty"
     UPDATE_PREFIX = 'jal_delta_'
     DEFAULT_ACCOUNT_PRECISION = 2
 

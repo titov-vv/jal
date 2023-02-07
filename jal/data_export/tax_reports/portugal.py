@@ -4,6 +4,8 @@ from jal.data_export.taxes import TaxReport
 
 class TaxesPortugal(TaxReport):
     currency_name = 'EUR'
+    country_name = 'portugal'
+
     def __init__(self):
         super().__init__()
         self._processed_trade_qty = {}  # It will handle {trade_id: qty} records to keep track of already processed qty
@@ -31,7 +33,7 @@ class TaxesPortugal(TaxReport):
                 'tax': dividend.tax(),
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
                 'country': country.name(),
-                'tax_treaty': "Y" if country.has_tax_treaty() else "N",
+                'tax_treaty': "Y" if self.has_tax_treaty_with(country.code()) else "N",
                 'amount_eur': round(dividend.amount(self._currency_id), 2),
                 'tax_eur': round(dividend.tax(self._currency_id), 2),
                 'note': note

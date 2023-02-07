@@ -11,6 +11,7 @@ from jal.data_export.taxes import TaxReport
 # -----------------------------------------------------------------------------------------------------------------------
 class TaxesRussia(TaxReport):
     currency_name = 'RUB'
+    country_name = "russia"
     BOND_PRINCIPAL = Decimal('1000')  # TODO Principal should be used from 'asset_data' table
 
     CorpActionText = {
@@ -49,7 +50,7 @@ class TaxesRussia(TaxReport):
                 note = "Доход получен в натуральной форме (ценными бумагами)"
             tax_rub = dividend.tax(self._currency_id)
             tax2pay = Decimal('0.13') * dividend.amount(self._currency_id)
-            if country.has_tax_treaty():
+            if self.has_tax_treaty_with(country.code()):
                 if tax2pay > tax_rub:
                     tax2pay = tax2pay - tax_rub
                 else:
@@ -65,7 +66,7 @@ class TaxesRussia(TaxReport):
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
                 'country': country.name(),
                 'country_iso': country.iso_code(),  # it is required for DLSG export
-                'tax_treaty': "Да" if country.has_tax_treaty() else "Нет",
+                'tax_treaty': "Да" if self.has_tax_treaty_with(country.code()) else "Нет",
                 'amount_rub': round(dividend.amount(self._currency_id), 2),
                 'tax_rub': round(dividend.tax(self._currency_id), 2),
                 'tax2pay': round(tax2pay, 2),

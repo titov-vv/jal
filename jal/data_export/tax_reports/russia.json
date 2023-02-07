@@ -1,0 +1,11 @@
+{
+  "2020": {
+    "tax_treaty": ["al", "am", "ar", "at", "au", "az", "be", "bg", "bw", "by", "ca", "ch", "cl", "cn", "cu", "cy", "cz", "de", "dk", "dz", "eg", "es", "fi", "fr", "gb", "gr", "hr", "hu", "id", "ie", "il", "in", "ir", "is", "it", "jp", "kg", "kp", "kr", "kw", "kz", "lb", "lk", "lt", "lu", "lv", "ma", "md", "me", "mk", "ml", "mn", "mt", "mx", "my", "na", "nl", "no", "nz", "ph", "pl", "pt", "qa", "rs", "sa", "se", "sg", "si", "sk", "sy", "th", "tj", "tm", "tr", "ua", "us", "uz", "ve", "vn", "za"]
+  },
+  "2021": {
+    "tax_treaty": ["al", "am", "ar", "at", "au", "az", "be", "bg", "bw", "by", "ca", "ch", "cl", "cn", "cu", "cy", "cz", "de", "dk", "dz", "eg", "es", "fi", "fr", "gb", "gr", "hr", "hu", "id", "ie", "il", "in", "ir", "is", "it", "jp", "kg", "kp", "kr", "kw", "kz", "lb", "lk", "lt", "lu", "lv", "ma", "md", "me", "mk", "ml", "mn", "mt", "mx", "my", "na", "nl", "no", "nz", "ph", "pl", "pt", "qa", "rs", "sa", "se", "sg", "si", "sk", "sy", "th", "tj", "tm", "tr", "ua", "us", "uz", "ve", "vn", "za"]
+  },
+  "2022": {
+    "tax_treaty": ["al", "am", "ar", "at", "au", "az", "be", "bg", "bw", "by", "ca", "ch", "cl", "cn", "cu", "cy", "cz", "de", "dk", "dz", "eg", "es", "fi", "fr", "gb", "gr", "hr", "hu", "id", "ie", "il", "in", "ir", "is", "it", "jp", "kg", "kp", "kr", "kw", "kz", "lb", "lk", "lt", "lu", "ma", "md", "me", "mk", "ml", "mn", "mt", "mx", "my", "na", "no", "nz", "ph", "pl", "pt", "qa", "rs", "sa", "se", "sg", "si", "sk", "sy", "th", "tj", "tm", "tr", "us", "uz", "ve", "vn", "za"]
+  }
+}
