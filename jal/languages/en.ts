@@ -2190,37 +2190,37 @@ Application will be terminated now</source>
 <context>
     <name>PredefindedAccountType</name>
     <message>
-        <location filename="../constants.py" line="65"/>
+        <location filename="../constants.py" line="67"/>
         <source>Cash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="66"/>
+        <location filename="../constants.py" line="68"/>
         <source>Bank accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="67"/>
+        <location filename="../constants.py" line="69"/>
         <source>Cards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="68"/>
+        <location filename="../constants.py" line="70"/>
         <source>Investments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="69"/>
+        <location filename="../constants.py" line="71"/>
         <source>Savings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="70"/>
+        <location filename="../constants.py" line="72"/>
         <source>Debts / Loans</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="74"/>
+        <location filename="../constants.py" line="76"/>
         <source>e-Wallets</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2228,47 +2228,47 @@ Application will be terminated now</source>
 <context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="103"/>
+        <location filename="../constants.py" line="105"/>
         <source>Money</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="104"/>
+        <location filename="../constants.py" line="106"/>
         <source>Shares</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="105"/>
+        <location filename="../constants.py" line="107"/>
         <source>Bonds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="106"/>
+        <location filename="../constants.py" line="108"/>
         <source>ETFs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="107"/>
+        <location filename="../constants.py" line="109"/>
         <source>Commodities</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="108"/>
+        <location filename="../constants.py" line="110"/>
         <source>Derivatives</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="109"/>
+        <location filename="../constants.py" line="111"/>
         <source>Forex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="110"/>
+        <location filename="../constants.py" line="112"/>
         <source>Funds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="114"/>
+        <location filename="../constants.py" line="116"/>
         <source>Crypto-currency</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3871,13 +3871,28 @@ Application will be terminated now</source>
 <context>
     <name>TaxReport</name>
     <message>
-        <location filename="../data_export/taxes.py" line="28"/>
+        <location filename="../data_export/taxes.py" line="32"/>
         <source>Currency is not defined: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="54"/>
+        <location filename="../data_export/taxes.py" line="59"/>
         <source>No report template found for section: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_export/taxes.py" line="72"/>
+        <source>Can&apos;t load tax report parameters from file </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_export/taxes.py" line="75"/>
+        <source>There are no parameters found for tax report year: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_export/taxes.py" line="106"/>
+        <source>There are no information about tax treaty in tax report parameters</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
