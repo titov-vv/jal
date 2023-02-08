@@ -36,7 +36,7 @@ class TaxesPortugal(TaxReport):
                 'amount': dividend.amount(self.account_currency.id()),
                 'tax': dividend.tax(),
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
-                'country': country.name(),
+                'country': country.name(language='en'),
                 'tax_treaty': "Y" if self.has_tax_treaty_with(country.code()) else "N",
                 'amount_eur': round(dividend.amount(self._currency_id), 2),
                 'tax_eur': round(dividend.tax(self._currency_id), 2),

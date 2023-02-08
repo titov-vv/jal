@@ -64,7 +64,7 @@ class TaxesRussia(TaxReport):
                 'amount': dividend.amount(self.account_currency.id()),
                 'tax': dividend.tax(),
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
-                'country': country.name(),
+                'country': country.name(language='ru'),
                 'country_iso': country.iso_code(),  # it is required for DLSG export
                 'tax_treaty': "Да" if self.has_tax_treaty_with(country.code()) else "Нет",
                 'amount_rub': round(dividend.amount(self._currency_id), 2),
