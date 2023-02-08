@@ -27,7 +27,7 @@ And while I can't name every one of them I would like to confirm my appreciation
     4. Dividend for stocks and Interest payments for bonds
     5. Corporate actions for stocks (Split, Symbol change, Merger, Spin-Off, Stock dividend)
 - Basic reports:
-    1. monthly incomes/spendings splitted by category
+    1. monthly incomes/spendings split by category
     2. profit/loss report for investments accounts
     3. closed deals report 
 - Stock/ETF prices are updated for NYSE, Nasdaq, LSE, Frankfurt (Yahoo), Euronext, TSX and MOEX exchanges traded stocks
@@ -35,14 +35,14 @@ And while I can't name every one of them I would like to confirm my appreciation
 - Broker statement import:
     1. Russian: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
     2. International: Interactive Brokers Flex statement (xml), Just2Trade (xls).
-- Tax report preparation for foreign investments according to Russian Tax Code (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md)).  
+- Investments report for tax declaration preparation for Russia (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md)) and Portugal (*draft*).  
 Russian tax estimation for open positions.
 - *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and additional dependencies to use these function - packages `pyzbar` and `Pillow`.  
 You may authorize via SMS, FNS personal account or ESIA/Gosuslugi. QR code may be scanned from camera, clipboard image or image file on disk.
 - *experimental* Category recognition for goods in electronic slip with help of `tensorflow`
 
 ### Installation
-*jal* was created to be portable and cross-platform. Thus you have several ways to install and run the program:
+*jal* was created to be portable and cross-platform. Thus, you have several ways to install and run the program:
 - You may get file archive from [the GitHub repository](https://github.com/titov-vv/jal), unpack it into suitable directory on your PC and use `run.py` to start application.
 In order to succeed this way you need to have at least Python 3.8.1 and satisfy all dependencies listed in `requirements.txt`. Let's say some words about installing python on windows-based computers, as this application becomes poplular for non-programming people. The best place to download python distro is official site, sure. Important, in installer dialogues to check boxes for installing `pip` and `Add python to environment variables`. Don't forget to reboot windows to be sure, that changes applies correctly.
 
@@ -50,9 +50,9 @@ In order to succeed this way you need to have at least Python 3.8.1 and satisfy 
 Alternatively you may use `python -m jal.jal` if you can't run application with `jal` entry point.
 - You may mix two methods together - download source files from github and then use `setup.py` for preferred way of installation.
 
-Database will be initialized automatically with minimal required set of data and you will be able to start use the program.
+Database will be initialized automatically with minimal required set of data, and you will be able to start use the program.
 
-<sup>*</sup> - entry point location is platform dependable. Eg. on Linux it might be in `~/.local/run`, on Windows - `Scripts` directory of your python installation or `Appdata/Roaming/Python/.../Scripts/` in user profile path.
+<sup>*</sup> - entry point location is platform dependable. E.g. on Linux it might be in `~/.local/run`, on Windows - `Scripts` directory of your python installation or `Appdata/Roaming/Python/.../Scripts/` in user profile path.
 
 ### Upgrades
 If you installed *jal* via *pip* then you may upgrade it to newer version with help of command `pip install jal -U`

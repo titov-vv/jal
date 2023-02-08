@@ -12,14 +12,14 @@ It was designed to keep records of personal incomes/spendings and investments wi
     4. Dividend for stocks and Interest payments for bonds
     5. Corporate actions for stocks (Split, Symbol change, Merger, Spin-Off, Stock dividend)
 - basic reports:
-    1. monthly incomes/spendings splitted by category
+    1. monthly incomes/spendings split by category
     2. profit/loss report for investments accounts
     3. closed deals report 
 - stock/ETF quotes updates for US (Yahoo), EU (Euronext), CA (TSX) and RU (MOEX) exchanges traded stocks
 - Broker statement import:
     1. Russian: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
     2. International: Interactive Brokers Flex statement (xml), Just2Trade (xls).
-- Tax report preparation for foreign investments according to Russian Tax Code (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md)).  
+- Investments report for tax declaration preparation for Russia and Portugal.  
 Russian tax estimation for open positions.
 - *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and additional dependencies to use these function - packages `pyzbar` and `Pillow`.  
 You may authorize via SMS, FNS personal account or ESIA/Gosuslugi. QR code may be scanned from camera, clipboard image or image file on disk.
