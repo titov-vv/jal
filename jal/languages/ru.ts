@@ -929,7 +929,7 @@
         <translation>Ценная бумага</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="129"/>
+        <location filename="../db/holdings_model.py" line="132"/>
         <source>Exp:</source>
         <translation>Эксп:</translation>
     </message>
@@ -945,12 +945,17 @@
 <context>
     <name>HoldingsReportWindow</name>
     <message>
-        <location filename="../reports/holdings.py" line="54"/>
+        <location filename="../reports/holdings.py" line="33"/>
+        <source>Holdings</source>
+        <translation>Портфель ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="56"/>
         <source>Show Price Chart</source>
         <translation>Показать график цены</translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="57"/>
+        <location filename="../reports/holdings.py" line="59"/>
         <source>Estimate Russian Tax</source>
         <translation>Оценка налога для России</translation>
     </message>
@@ -971,6 +976,11 @@
         <location filename="../ui/reports/holdings_report.ui" line="82"/>
         <source>Common currency:</source>
         <translation>Валюта пересчёта:</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/holdings_report.ui" line="105"/>
+        <source>Save...</source>
+        <translation>Сохранить...</translation>
     </message>
 </context>
 <context>
@@ -2280,97 +2290,97 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossModel</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="19"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Period</source>
         <translation>Период</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="19"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>In / Out</source>
         <translation>Ввод / Вывод</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="19"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Assets (begin)</source>
         <translation>Активы (начало)</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="19"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Total result</source>
         <translation>Результат</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="20"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
         <source>Profit / Loss</source>
         <translation>Прибыль / Убыток</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="20"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
         <source>Returns</source>
         <translation>Выплаты</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="21"/>
+        <location filename="../reports/profit_loss.py" line="23"/>
         <source>Taxes &amp; Fees</source>
         <translation>Налоги и комиссии</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Jan</source>
         <translation>Янв</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Feb</source>
         <translation>Фев</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Mar</source>
         <translation>Мар</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Apr</source>
         <translation>Апр</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>May</source>
         <translation>Май</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Jun</source>
         <translation>Июн</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Jul</source>
         <translation>Июл</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Aug</source>
         <translation>Авг</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Sep</source>
         <translation>Сен</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Oct</source>
         <translation>Окт</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Nov</source>
         <translation>Ноя</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="25"/>
+        <location filename="../reports/profit_loss.py" line="27"/>
         <source>Dec</source>
         <translation>Дек</translation>
     </message>
@@ -2378,7 +2388,7 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossReport</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="105"/>
+        <location filename="../reports/profit_loss.py" line="110"/>
         <source>P&amp;L by Account</source>
         <translation>ПиУ по счёту</translation>
     </message>
@@ -2394,6 +2404,19 @@ Application will be terminated now</source>
         <location filename="../ui/reports/profit_loss_report.ui" line="66"/>
         <source>Account:</source>
         <translation>Счет:</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/profit_loss_report.ui" line="89"/>
+        <source>Save...</source>
+        <translation>Сохранить...</translation>
+    </message>
+</context>
+<context>
+    <name>ProfitLossReportWindow</name>
+    <message>
+        <location filename="../reports/profit_loss.py" line="121"/>
+        <source>P&amp;L by Account</source>
+        <translation>ПиУ по счёту</translation>
     </message>
 </context>
 <context>
@@ -2612,15 +2635,20 @@ Application will be terminated now</source>
         <translation>Отчет не найден для класса окна: </translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="67"/>
+        <location filename="../reports/reports.py" line="65"/>
         <source>Save report to:</source>
         <translation>Сохранить отчет в:</translation>
     </message>
     <message>
+        <location filename="../reports/reports.py" line="66"/>
         <location filename="../reports/reports.py" line="68"/>
-        <location filename="../reports/reports.py" line="70"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="75"/>
+        <source>Report was saved to file </source>
+        <translation>Отчет сохранён в файл </translation>
     </message>
 </context>
 <context>
@@ -4025,6 +4053,10 @@ Application will be terminated now</source>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="128"/>
+        <source>Tax report was saved to file </source>
+        <translation>Налоговый отчёт сохранён в файл </translation>
+    </message>
+    <message>
         <location filename="../widgets/tax_widget.py" line="136"/>
         <source>Tax report saved to file </source>
         <translation>Налоговый отчёт сохранён в файл </translation>
@@ -4201,32 +4233,32 @@ Application will be terminated now</source>
 <context>
     <name>XLSX</name>
     <message>
-        <location filename="../data_export/xlsx.py" line="45"/>
+        <location filename="../data_export/xlsx.py" line="46"/>
         <source>Can&apos;t save report into file </source>
         <translation>Невозможно сохранить отчёт в файл </translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="54"/>
+        <location filename="../data_export/xlsx.py" line="55"/>
         <source>Can&apos;t load report template from file </source>
         <translation>Невозможно прочитать шаблон отчёта из файла </translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="70"/>
+        <location filename="../data_export/xlsx.py" line="71"/>
         <source>No report row template set</source>
         <translation>Не задан шаблон для данных отчёта</translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="74"/>
+        <location filename="../data_export/xlsx.py" line="75"/>
         <source>Report row template not found: </source>
         <translation>Шаблон для данных не найден: </translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="115"/>
+        <location filename="../data_export/xlsx.py" line="142"/>
         <source>Format is missing for report field: </source>
         <translation>Не указан формат для поля отчёта: </translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="142"/>
+        <location filename="../data_export/xlsx.py" line="169"/>
         <source>Unrecognized format string: </source>
         <translation>Неизвестная строка форматирования: </translation>
     </message>

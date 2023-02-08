@@ -3,6 +3,7 @@ import json
 import logging
 import xlsxwriter
 
+from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
@@ -75,6 +76,32 @@ class XLSX:
             even_odd = values['report_group'] if "report_group" in values else (i + 1)
             row += self.add_data_row(sheet, row, values, row_template, even_odd=even_odd)
         self.add_report_footers(sheet, template['footers'], start_row=row + 1)
+
+    def output_model(self, report_name, model):
+        sheet = self.workbook.add_worksheet(report_name)
+        headers = []
+        for col in range(model.columnCount()):   # 8.43 is adjustment coefficient for default font - see xlsxwriter.set_column() help
+            headers.append({"name": model.headerData(col, Qt.Horizontal), "width": model.headerWidth(col)/8.43})
+        row = self.add_column_headers(sheet, headers, {}, start_row=0)
+        self.output_model_element(sheet, model, QModelIndex(), row)
+
+    def output_model_element(self, sheet, model, element, start_row, level=0):
+        row = start_row
+        for i in range(model.rowCount(parent=element)):
+            values = {}
+            template = {"rows": [[]], "formats": [[]]}
+            for j in range(model.columnCount()):
+                field_name = f"{j}"
+                if j == 0 and level:  # Make indent for tree levels
+                    values[field_name] = ('   ' * level) + str(model.data(model.index(i, j, parent=element)))
+                else:
+                    values[field_name] = model.data(model.index(i, j, parent=element))
+                template["rows"][0].append(field_name)
+                template["formats"][0].append("T")
+            row += self.add_data_row(sheet, row, values, template)
+            if model.index(0, 0, model.index(0, 0, QModelIndex())) != model.index(0, 0, QModelIndex()):  # Traverse tree
+                row = self.output_model_element(sheet, model, model.index(i, 0, parent=element), row, level + 1)
+        return row
 
     # Put bold title in cell A1
     def add_report_title(self, sheet, title):

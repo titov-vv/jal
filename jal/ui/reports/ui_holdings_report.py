@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDateEdit, QFrame, QHBoxLayout,
-    QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QTreeView, QVBoxLayout, QWidget)
+    QHeaderView, QLabel, QPushButton, QSizePolicy,
+    QSpacerItem, QTreeView, QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import CurrencyComboBox
 
@@ -40,7 +40,7 @@ class Ui_HoldingsWidget(object):
         self.horizontalLayout_8.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 11, 24), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 11, 24), QTime(0, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -59,6 +59,11 @@ class Ui_HoldingsWidget(object):
         self.horizontalSpacer = QSpacerItem(1411, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_8.addItem(self.horizontalSpacer)
+
+        self.SaveButton = QPushButton(self.HoldingsParamsFrame)
+        self.SaveButton.setObjectName(u"SaveButton")
+
+        self.horizontalLayout_8.addWidget(self.SaveButton)
 
 
         self.verticalLayout.addWidget(self.HoldingsParamsFrame)
@@ -82,5 +87,6 @@ class Ui_HoldingsWidget(object):
         HoldingsWidget.setWindowTitle(QCoreApplication.translate("HoldingsWidget", u"Holdings", None))
         self.HoldingsDate.setDisplayFormat(QCoreApplication.translate("HoldingsWidget", u"dd/MM/yyyy", None))
         self.HoldingsCurrencyLbl.setText(QCoreApplication.translate("HoldingsWidget", u"Common currency:", None))
+        self.SaveButton.setText(QCoreApplication.translate("HoldingsWidget", u"Save...", None))
     # retranslateUi
 

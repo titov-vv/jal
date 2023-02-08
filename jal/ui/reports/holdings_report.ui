@@ -57,7 +57,7 @@
        <widget class="QDateEdit" name="HoldingsDate">
         <property name="dateTime">
          <datetime>
-          <hour>21</hour>
+          <hour>0</hour>
           <minute>0</minute>
           <second>0</second>
           <year>2020</year>
@@ -98,6 +98,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="SaveButton">
+        <property name="text">
+         <string>Save...</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

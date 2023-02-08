@@ -1,4 +1,6 @@
+from functools import partial
 from decimal import Decimal
+
 from PySide6.QtCore import Qt, Slot, QObject, QAbstractTableModel
 from jal.ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
 from jal.reports.reports import Reports
@@ -40,6 +42,9 @@ class ProfitLossModel(QAbstractTableModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._columns[section]
         return None
+
+    def headerWidth(self, section):
+        return self._view.horizontalHeader().sectionSize(section)
 
     def data(self, index, role=Qt.DisplayRole, field=''):
         if role == Qt.DisplayRole:
@@ -101,7 +106,7 @@ class ProfitLossModel(QAbstractTableModel):
 class ProfitLossReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.name = self.tr("P&L by Account")
+        self.name = self.tr("P&L by Account")
         self.window_class = "ProfitLossReportWindow"
 
 
@@ -111,6 +116,7 @@ class ProfitLossReportWindow(MdiWidget, Ui_ProfitLossReportWidget):
         MdiWidget.__init__(self, parent.mdi_area())
         self.setupUi(self)
         self._parent = parent
+        self.name = self.tr("P&L by Account")
 
         self.pl_model = ProfitLossModel(self.ReportTableView)
         self.ReportTableView.setModel(self.pl_model)
@@ -120,6 +126,7 @@ class ProfitLossReportWindow(MdiWidget, Ui_ProfitLossReportWidget):
     def connect_signals_and_slots(self):
         self.ReportRange.changed.connect(self.ReportTableView.model().setDatesRange)
         self.ReportAccountBtn.changed.connect(self.onAccountChange)
+        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ReportTableView.model()))
 
     @Slot()
     def onAccountChange(self):

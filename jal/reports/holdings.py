@@ -18,7 +18,7 @@ JAL_REPORT_CLASS = "HoldingsReport"
 class HoldingsReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.name = self.tr("Holdings")
+        self.name = self.tr("Holdings")
         self.window_class = "HoldingsReportWindow"
 
 
@@ -28,6 +28,7 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
         MdiWidget.__init__(self, parent.mdi_area())
         self.setupUi(self)
         self._parent = parent
+        self.name = self.tr("Holdings")
 
         self.holdings_model = HoldingsModel(self.HoldingsTableView)
         self.HoldingsTableView.setModel(self.holdings_model)
@@ -46,6 +47,7 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
         self.HoldingsDate.dateChanged.connect(self.HoldingsTableView.model().setDate)
         self.HoldingsCurrencyCombo.changed.connect(self.HoldingsTableView.model().setCurrency)
         self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
+        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.HoldingsTableView.model()))
 
     @Slot()
     def onHoldingsContextMenu(self, pos):

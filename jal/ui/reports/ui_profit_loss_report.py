@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHBoxLayout,
-    QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QTableView, QVBoxLayout, QWidget)
+    QHeaderView, QLabel, QPushButton, QSizePolicy,
+    QSpacerItem, QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import AccountButton
 from jal.widgets.custom.date_range_selector import DateRangeSelector
@@ -59,6 +59,11 @@ class Ui_ProfitLossReportWidget(object):
 
         self.horizontalLayout.addItem(self.ReportFrameSpacer)
 
+        self.SaveButton = QPushButton(self.ReportParamsFrame)
+        self.SaveButton.setObjectName(u"SaveButton")
+
+        self.horizontalLayout.addWidget(self.SaveButton)
+
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
 
@@ -85,5 +90,6 @@ class Ui_ProfitLossReportWidget(object):
     def retranslateUi(self, ProfitLossReportWidget):
         ProfitLossReportWidget.setWindowTitle(QCoreApplication.translate("ProfitLossReportWidget", u"P&L", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("ProfitLossReportWidget", u"Account:", None))
+        self.SaveButton.setText(QCoreApplication.translate("ProfitLossReportWidget", u"Save...", None))
     # retranslateUi
 

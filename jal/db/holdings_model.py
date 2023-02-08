@@ -78,6 +78,9 @@ class HoldingsModel(QAbstractItemModel):
                 return col_name
         return None
 
+    def headerWidth(self, section):
+        return self._view.header().sectionSize(section)
+
     def index(self, row, column, parent=None):
         if not parent.isValid():
             parent = self._root

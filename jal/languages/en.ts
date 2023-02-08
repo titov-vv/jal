@@ -929,7 +929,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="129"/>
+        <location filename="../db/holdings_model.py" line="132"/>
         <source>Exp:</source>
         <translation></translation>
     </message>
@@ -945,12 +945,17 @@
 <context>
     <name>HoldingsReportWindow</name>
     <message>
-        <location filename="../reports/holdings.py" line="54"/>
+        <location filename="../reports/holdings.py" line="33"/>
+        <source>Holdings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="56"/>
         <source>Show Price Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="57"/>
+        <location filename="../reports/holdings.py" line="59"/>
         <source>Estimate Russian Tax</source>
         <translation type="unfinished"></translation>
     </message>
@@ -970,6 +975,11 @@
     <message>
         <location filename="../ui/reports/holdings_report.ui" line="82"/>
         <source>Common currency:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/holdings_report.ui" line="105"/>
+        <source>Save...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2276,97 +2286,97 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossModel</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="19"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Period</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="19"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>In / Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="19"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Assets (begin)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="19"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Total result</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="20"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
         <source>Profit / Loss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="20"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
         <source>Returns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="21"/>
+        <location filename="../reports/profit_loss.py" line="23"/>
         <source>Taxes &amp; Fees</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Jan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Feb</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Mar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Apr</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>May</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Jun</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Jul</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Aug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Sep</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Oct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Nov</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="25"/>
+        <location filename="../reports/profit_loss.py" line="27"/>
         <source>Dec</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2374,7 +2384,7 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossReport</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="105"/>
+        <location filename="../reports/profit_loss.py" line="110"/>
         <source>P&amp;L by Account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2389,6 +2399,19 @@ Application will be terminated now</source>
     <message>
         <location filename="../ui/reports/profit_loss_report.ui" line="66"/>
         <source>Account:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/profit_loss_report.ui" line="89"/>
+        <source>Save...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ProfitLossReportWindow</name>
+    <message>
+        <location filename="../reports/profit_loss.py" line="121"/>
+        <source>P&amp;L by Account</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2608,15 +2631,20 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="67"/>
+        <location filename="../reports/reports.py" line="65"/>
         <source>Save report to:</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../reports/reports.py" line="66"/>
         <location filename="../reports/reports.py" line="68"/>
-        <location filename="../reports/reports.py" line="70"/>
         <source>Excel files (*.xlsx)</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="75"/>
+        <source>Report was saved to file </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4021,6 +4049,10 @@ Application will be terminated now</source>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="128"/>
+        <source>Tax report was saved to file </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../widgets/tax_widget.py" line="136"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
@@ -4197,32 +4229,32 @@ Application will be terminated now</source>
 <context>
     <name>XLSX</name>
     <message>
-        <location filename="../data_export/xlsx.py" line="45"/>
+        <location filename="../data_export/xlsx.py" line="46"/>
         <source>Can&apos;t save report into file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="54"/>
+        <location filename="../data_export/xlsx.py" line="55"/>
         <source>Can&apos;t load report template from file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="70"/>
+        <location filename="../data_export/xlsx.py" line="71"/>
         <source>No report row template set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="74"/>
+        <location filename="../data_export/xlsx.py" line="75"/>
         <source>Report row template not found: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="115"/>
+        <location filename="../data_export/xlsx.py" line="142"/>
         <source>Format is missing for report field: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="142"/>
+        <location filename="../data_export/xlsx.py" line="169"/>
         <source>Unrecognized format string: </source>
         <translation type="unfinished"></translation>
     </message>

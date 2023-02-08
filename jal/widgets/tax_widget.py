@@ -125,7 +125,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
         for section in tax_report:
             reports_xls.output_data(tax_report[section], taxes.report_template(section), parameters)
         reports_xls.save()
-        logging.info(self.tr("Tax report saved to file ") + f"'{self.xls_filename}'")
+        logging.info(self.tr("Tax report was saved to file ") + f"'{self.xls_filename}'")
 
         if self.update_dlsg:
             tax_forms = DLSG(self.year, broker_as_income=self.dlsg_broker_as_income,

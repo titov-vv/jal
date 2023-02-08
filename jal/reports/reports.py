@@ -60,10 +60,8 @@ class Reports(QObject):
         report = class_instance(self, settings)
         self._mdi.addSubWindow(report, maximized=False)
 
-    # FIXME This method is deprecated as now reports are independent and may not have QTableView member
-    # The plan is to move this method into XLSX class itself with report data as an input
-    # Probably reports should provide some kind of json intermediate output that will be formatted into a table
-    def saveReport(self):
+    # Save report content from the model to xls-file chosen by the user
+    def save_report(self, name, model):
         filename, filter = QFileDialog.getSaveFileName(None, self.tr("Save report to:"),
                                                        ".", self.tr("Excel files (*.xlsx)"))
         if filename:
@@ -71,20 +69,7 @@ class Reports(QObject):
                 filename = filename + '.xlsx'
         else:
             return
-
         report = XLSX(filename)
-        # sheet = report.add_report_sheet(self.tr("Report"))
-        #
-        # model = self.table_view.model()
-        # headers = {}
-        # for col in range(model.columnCount()):
-        #     headers[col] = (model.headerData(col, Qt.Horizontal), report.formats.ColumnHeader())
-        # report.write_row(sheet, 0, headers)
-        #
-        # for row in range(model.rowCount()):
-        #     data_row = {}
-        #     for col in range(model.columnCount()):
-        #         data_row[col] = (model.data(model.index(row, col)), report.formats.Text(row))
-        #     report.write_row(sheet, row+1, data_row)
-
+        report.output_model(name, model)
         report.save()
+        logging.info(self.tr("Report was saved to file ") + f"'{filename}'")
