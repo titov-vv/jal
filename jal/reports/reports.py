@@ -62,7 +62,7 @@ class Reports(QObject):
 
     # Save report content from the model to xls-file chosen by the user
     def save_report(self, name, model):
-        filename, filter = QFileDialog.getSaveFileName(None, self.tr("Save report to:"),
+        filename, filter = QFileDialog.getSaveFileName(self._mdi, self.tr("Save report to:"),
                                                        ".", self.tr("Excel files (*.xlsx)"))
         if filename:
             if filter == self.tr("Excel files (*.xlsx)") and filename[-5:] != '.xlsx':
