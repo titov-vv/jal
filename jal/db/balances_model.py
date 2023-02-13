@@ -144,7 +144,7 @@ class BalancesModel(QAbstractTableModel):
                     "unreconciled": (account.last_operation_date() - account.reconciled_at())/86400,
                     "active": account.is_active()
                 })
-        balances = sorted(balances, key=lambda x: (x['account_type']))
+        balances = sorted(balances, key=lambda x: (x['account_type'], x['account_name']))
         self._data = []
         field_names = ["account_type", "account", "account_name", "currency", "currency_name", "balance", "balance_a",
                        "unreconciled", "active", "level"]
