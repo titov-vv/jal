@@ -90,7 +90,7 @@ class BalancesModel(QAbstractTableModel):
         font = self._view.horizontalHeader().font()
         font.setBold(True)
         self._view.horizontalHeader().setFont(font)
-        self._float_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True)
+        self._float_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True, parent=self._view)
         self._view.setItemDelegateForColumn(1, self._float_delegate)
         self._view.setItemDelegateForColumn(3, self._float_delegate)
 

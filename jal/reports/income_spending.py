@@ -8,7 +8,7 @@ from jal.constants import CustomColor, RUSSIAN_RUBLE
 from jal.db.helpers import load_icon
 from jal.db.category import JalCategory
 from jal.widgets.helpers import month_list, month_start_ts, month_end_ts
-from jal.widgets.delegates import GridLinesDelegate
+from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 from jal.widgets.mdi import MdiWidget
 
 JAL_REPORT_CLASS = "IncomeSpendingReport"
@@ -148,7 +148,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
         self._view = parent_view
         self._root = None
         self._grid_delegate = None
-        self._report_delegate = None
+        self._float_delegate = None
         self.month_name = [
             self.tr('Jan'), self.tr('Feb'), self.tr('Mar'), self.tr('Apr'), self.tr('May'), self.tr('Jun'),
             self.tr('Jul'), self.tr('Aug'), self.tr('Sep'), self.tr('Oct'), self.tr('Nov'), self.tr('Dec')
@@ -223,7 +223,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                 return item.name
             else:
                 year, month = self._root.column2calendar(index.column())
-                return f"{item.getAmount(year, month):,.2f}"
+                return item.getAmount(year, month)
         if role == Qt.ForegroundRole:
             if index.column() != 0:
                 year, month = self._root.column2calendar(index.column())
@@ -246,11 +246,13 @@ class IncomeSpendingReportModel(QAbstractItemModel):
 
     def configureView(self):
         self._grid_delegate = GridLinesDelegate(self._view)
+        self._float_delegate = FloatDelegate(2, allow_tail=False, parent=self._view)
         for column in range(self.columnCount()):
-            self._view.setItemDelegateForColumn(column, self._grid_delegate)
             if column == 0:
+                self._view.setItemDelegateForColumn(column, self._grid_delegate)
                 self._view.setColumnWidth(column, 300)
             else:
+                self._view.setItemDelegateForColumn(column, self._float_delegate)
                 self._view.setColumnWidth(column, 100)
         font = self._view.header().font()
         font.setBold(True)
