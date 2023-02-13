@@ -115,10 +115,12 @@ class TimestampDelegate(QStyledItemDelegate):
 # 'allow_tail' - display more digits for numbers that have more digits than 'tolerance'
 #                and only 'tolerance' digits otherwise
 # 'colors' - make Green/Red background for positive/negative values
+# 'percent' - multiply values by 100 in order to display percents
+# 'empty_zero' - display nothing instead of number 0
 class FloatDelegate(QStyledItemDelegate):
     DEFAULT_TOLERANCE = 6
 
-    def __init__(self, tolerance=None, allow_tail=True, colors=False, percent=False, parent=None):
+    def __init__(self, tolerance=None, allow_tail=True, colors=False, percent=False, empty_zero=False, parent=None):
         self._parent = parent
         QStyledItemDelegate.__init__(self, parent)
         try:
@@ -129,6 +131,7 @@ class FloatDelegate(QStyledItemDelegate):
         self._colors = colors
         self._color = None
         self._percent = percent
+        self._empty_zero = empty_zero
         self._validator = QDoubleValidator()
         self._validator.setLocale(QLocale().system())
 
@@ -143,6 +146,8 @@ class FloatDelegate(QStyledItemDelegate):
             self._color = CustomColor.LightGreen
         elif amount < Decimal('0'):
             self._color = CustomColor.LightRed
+        if amount == Decimal('0') and self._empty_zero:
+            return ''
         decimal_places = -amount.normalize().as_tuple().exponent
         decimal_places = decimal_places if self._allow_tail and (decimal_places > self._tolerance) else self._tolerance
         return QLocale().toString(float(amount), 'f', decimal_places)

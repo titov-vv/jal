@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefindedAccountType
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
+from jal.widgets.delegates import FloatDelegate
 
 
 class BalancesModel(QAbstractTableModel):
@@ -18,6 +19,7 @@ class BalancesModel(QAbstractTableModel):
         self._active_only = True
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
         self._columns = [self.tr("Account"), self.tr("Balance"), " ", self.tr("Balance, ")]
+        self._float_delegate = None
 
     def rowCount(self, parent=None):
         return len(self._data)
@@ -54,12 +56,12 @@ class BalancesModel(QAbstractTableModel):
                 return self._data[row]['account_name']
             else:
                 return PredefindedAccountType().get_name(self._data[row]['account_type'], default=self.tr("Total"))
-        elif column == 1:  # FIXME - should floating formatting be done by FloatDelegate? for columns 1 & 3
-            return f"{self._data[row]['balance']:,.2f}" if self._data[row]['balance'] != 0 else ''
+        elif column == 1:
+            return self._data[row]['balance']
         elif column == 2:
             return self._data[row]['currency_name'] if self._data[row]['balance'] != 0 else ''
         elif column == 3:
-            return f"{self._data[row]['balance_a']:,.2f}" if self._data[row]['balance_a'] != 0 else ''
+            return self._data[row]['balance_a']
         else:
             assert False
 
@@ -88,6 +90,9 @@ class BalancesModel(QAbstractTableModel):
         font = self._view.horizontalHeader().font()
         font.setBold(True)
         self._view.horizontalHeader().setFont(font)
+        self._float_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True)
+        self._view.setItemDelegateForColumn(1, self._float_delegate)
+        self._view.setItemDelegateForColumn(3, self._float_delegate)
 
     @Slot()
     def setCurrency(self, currency_id):
