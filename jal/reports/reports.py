@@ -37,7 +37,9 @@ class Reports(QObject):
                 logging.error(self.tr("Report class can't be loaded: ") + report_class_name)
                 continue
             report = class_instance()
-            self.items.append({'name': report.name, 'module': module, 'window_class': report.window_class})
+            group = report.group if hasattr(report, "group") else ''
+            self.items.append({'group': group, 'name': report.name,
+                               'module': module, 'window_class': report.window_class})
             logging.debug(f"Report class '{report_class_name}' providing '{report.name}' report has been loaded")
         self.items = sorted(self.items, key=lambda item: item['name'])
 

@@ -8,7 +8,7 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QDir, QLocale, QMetaObject
 from PySide6.QtGui import QIcon, QActionGroup, QAction
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressBar
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressBar, QMenu
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
@@ -182,10 +182,18 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     # Create menu entry for all known reports based on self.reports.sources values
     def createReportsMenu(self):
+        groups = {}
         for i, report in enumerate(self.reports.items):
             action = QAction(report['name'].replace('&', '&&'), self)  # & -> && to prevent shortcut creation
             action.setData(i)
-            self.menuReports.addAction(action)
+            if report['group']:
+                if report['group'] not in groups:
+                    groups[report['group']] = QMenu(report['group'], self.menuReports)
+                    self.menuReports.addAction(groups[report['group']].menuAction())
+                submenu = groups[report['group']]
+                submenu.addAction(action)
+            else:
+                self.menuReports.addAction(action)
             self.reportsGroup.addAction(action)
 
     @Slot()
