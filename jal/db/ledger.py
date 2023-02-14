@@ -118,6 +118,18 @@ class Ledger(QObject, JalDB):
 
     @classmethod
     # Return a list of [op_type, op_id] of operation identifiers that have category_id involved
+    def get_operations_by_peer(cls, begin: int, end: int, peer_id: int) -> list:
+        operations = []
+        query = cls._exec(
+            "SELECT DISTINCT op_type, operation_id AS id, timestamp, account_id, 0 AS subtype FROM ledger "
+            "WHERE peer_id=:peer AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
+            [(":begin", begin), (":end", end), (":peer", peer_id)], forward_only=True)
+        while query.next():
+            operations.append(cls._read_record(query, named=True))
+        return operations
+
+    @classmethod
+    # Return a list of [op_type, op_id] of operation identifiers that have category_id involved
     def get_operations_by_category(cls, begin: int, end: int, category_id: int) -> list:
         operations = []
         query = cls._exec(

@@ -15,6 +15,7 @@
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_income_spending_report.py ./ui/reports/income_spending_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_category_report.py ./ui/reports/category_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_tag_report.py ./ui/reports/tag_report.ui
+/usr/lib/qt6/uic -g python -o ./ui/reports/ui_peer_report.py ./ui/reports/peer_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_deals_report.py ./ui/reports/deals_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_profit_loss_report.py ./ui/reports/profit_loss_report.ui
 

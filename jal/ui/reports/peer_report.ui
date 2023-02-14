@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TagReportWidget</class>
- <widget class="QWidget" name="TagReportWidget">
+ <class>PeerReportWidget</class>
+ <widget class="QWidget" name="PeerReportWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Report by tag</string>
+   <string>Report by peer</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -80,14 +80,14 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLabel" name="ReportTagLbl">
+       <widget class="QLabel" name="ReportPeerLbl">
         <property name="text">
-         <string>Tag:</string>
+         <string>Peer:</string>
         </property>
        </widget>
       </item>
       <item row="0" column="2">
-       <widget class="TagSelector" name="ReportTagEdit" native="true"/>
+       <widget class="PeerSelector" name="ReportPeerEdit" native="true"/>
       </item>
      </layout>
     </widget>
@@ -158,7 +158,7 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>TagSelector</class>
+   <class>PeerSelector</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>

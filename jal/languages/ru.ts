@@ -246,12 +246,12 @@
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="20"/>
+        <location filename="../db/balances_model.py" line="21"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="20"/>
+        <location filename="../db/balances_model.py" line="21"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
@@ -261,7 +261,7 @@
         <translation>Баланс, </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="56"/>
+        <location filename="../db/balances_model.py" line="58"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -299,8 +299,13 @@
     <name>CategoryReport</name>
     <message>
         <location filename="../reports/category.py" line="33"/>
-        <source>Operations by Category</source>
-        <translation>Операции по категории</translation>
+        <source>Operations</source>
+        <translation type="unfinished">Операции</translation>
+    </message>
+    <message>
+        <location filename="../reports/category.py" line="34"/>
+        <source>by Category</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1244,7 +1249,7 @@
 <context>
     <name>IncomeSpendingReport</name>
     <message>
-        <location filename="../reports/income_spending.py" line="309"/>
+        <location filename="../reports/income_spending.py" line="311"/>
         <source>Income/Spending</source>
         <translation>Доходы/Расходы</translation>
     </message>
@@ -1313,7 +1318,7 @@
     </message>
     <message>
         <location filename="../reports/income_spending.py" line="187"/>
-        <location filename="../reports/income_spending.py" line="285"/>
+        <location filename="../reports/income_spending.py" line="287"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
@@ -1329,7 +1334,7 @@
 <context>
     <name>IncomeSpendingReportWindow</name>
     <message>
-        <location filename="../reports/income_spending.py" line="326"/>
+        <location filename="../reports/income_spending.py" line="328"/>
         <source>Show operations</source>
         <translation>Показать операции</translation>
     </message>
@@ -1924,32 +1929,32 @@ Application will be terminated now</source>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="66"/>
-        <location filename="../widgets/main_window.py" line="200"/>
+        <location filename="../widgets/main_window.py" line="208"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="202"/>
+        <location filename="../widgets/main_window.py" line="210"/>
         <source>version</source>
         <translation>версия</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="205"/>
+        <location filename="../widgets/main_window.py" line="213"/>
         <source>github home page</source>
         <translation>домашней странице github</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="205"/>
+        <location filename="../widgets/main_window.py" line="213"/>
         <source>More information, manuals and problem reports are at </source>
         <translation>Дополнительная информация, инструкции, сообщения о проблемах на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="207"/>
+        <location filename="../widgets/main_window.py" line="215"/>
         <source>Questions, comments, help or donations:</source>
         <translation>Вопросы, комментарии, помощь или донаты:</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="269"/>
+        <location filename="../widgets/main_window.py" line="277"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
     </message>
@@ -2181,6 +2186,32 @@ Application will be terminated now</source>
         <location filename="../widgets/reference_dialogs.py" line="217"/>
         <source>Peers</source>
         <translation>Контрагенты</translation>
+    </message>
+</context>
+<context>
+    <name>PeerReport</name>
+    <message>
+        <location filename="../reports/peer.py" line="33"/>
+        <source>Operations</source>
+        <translation type="unfinished">Операции</translation>
+    </message>
+    <message>
+        <location filename="../reports/peer.py" line="34"/>
+        <source>by Peer</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PeerReportWidget</name>
+    <message>
+        <location filename="../ui/reports/peer_report.ui" line="14"/>
+        <source>Report by peer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/peer_report.ui" line="85"/>
+        <source>Peer:</source>
+        <translation type="unfinished">Контрагент:</translation>
     </message>
 </context>
 <context>
@@ -2630,23 +2661,23 @@ Application will be terminated now</source>
         <translation>Невозможно загрузить класс отчёта: </translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="55"/>
+        <location filename="../reports/reports.py" line="57"/>
         <source>Report not found for window class: </source>
         <translation>Отчет не найден для класса окна: </translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="65"/>
+        <location filename="../reports/reports.py" line="67"/>
         <source>Save report to:</source>
         <translation>Сохранить отчет в:</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="66"/>
         <location filename="../reports/reports.py" line="68"/>
+        <location filename="../reports/reports.py" line="70"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="75"/>
+        <location filename="../reports/reports.py" line="77"/>
         <source>Report was saved to file </source>
         <translation>Отчет сохранён в файл </translation>
     </message>
@@ -3800,16 +3831,21 @@ Application will be terminated now</source>
     <name>TagReport</name>
     <message>
         <location filename="../reports/tag.py" line="33"/>
-        <source>Operations by Tag</source>
-        <translation>Операции по Тэгу</translation>
+        <source>Operations</source>
+        <translation type="unfinished">Операции</translation>
+    </message>
+    <message>
+        <location filename="../reports/tag.py" line="34"/>
+        <source>by Tag</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TagReportWidget</name>
     <message>
         <location filename="../ui/reports/tag_report.ui" line="14"/>
-        <source>Report by category</source>
-        <translation>Отчёт по категории</translation>
+        <source>Report by tag</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/tag_report.ui" line="85"/>

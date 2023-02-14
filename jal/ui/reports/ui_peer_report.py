@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'tag_report.ui'
+## Form generated from reading UI file 'peer_report.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.4.2
 ##
@@ -21,18 +21,18 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLay
 
 from jal.widgets.custom.date_range_selector import DateRangeSelector
 from jal.widgets.operations_tabs import JalOperationsTabs
-from jal.widgets.reference_selector import TagSelector
+from jal.widgets.reference_selector import PeerSelector
 
-class Ui_TagReportWidget(object):
-    def setupUi(self, TagReportWidget):
-        if not TagReportWidget.objectName():
-            TagReportWidget.setObjectName(u"TagReportWidget")
-        TagReportWidget.resize(636, 345)
-        self.verticalLayout = QVBoxLayout(TagReportWidget)
+class Ui_PeerReportWidget(object):
+    def setupUi(self, PeerReportWidget):
+        if not PeerReportWidget.objectName():
+            PeerReportWidget.setObjectName(u"PeerReportWidget")
+        PeerReportWidget.resize(636, 345)
+        self.verticalLayout = QVBoxLayout(PeerReportWidget)
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.ReportParamsFrame = QFrame(TagReportWidget)
+        self.ReportParamsFrame = QFrame(PeerReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -55,20 +55,20 @@ class Ui_TagReportWidget(object):
 
         self.gridLayout.addWidget(self.ReportRange, 0, 0, 1, 1)
 
-        self.ReportTagLbl = QLabel(self.ReportParamsFrame)
-        self.ReportTagLbl.setObjectName(u"ReportTagLbl")
+        self.ReportPeerLbl = QLabel(self.ReportParamsFrame)
+        self.ReportPeerLbl.setObjectName(u"ReportPeerLbl")
 
-        self.gridLayout.addWidget(self.ReportTagLbl, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.ReportPeerLbl, 0, 1, 1, 1)
 
-        self.ReportTagEdit = TagSelector(self.ReportParamsFrame)
-        self.ReportTagEdit.setObjectName(u"ReportTagEdit")
+        self.ReportPeerEdit = PeerSelector(self.ReportParamsFrame)
+        self.ReportPeerEdit.setObjectName(u"ReportPeerEdit")
 
-        self.gridLayout.addWidget(self.ReportTagEdit, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.ReportPeerEdit, 0, 2, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
 
-        self.splitter = QSplitter(TagReportWidget)
+        self.splitter = QSplitter(PeerReportWidget)
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Vertical)
         self.ReportTableView = QTableView(self.splitter)
@@ -100,13 +100,13 @@ class Ui_TagReportWidget(object):
         self.verticalLayout.addWidget(self.splitter)
 
 
-        self.retranslateUi(TagReportWidget)
+        self.retranslateUi(PeerReportWidget)
 
-        QMetaObject.connectSlotsByName(TagReportWidget)
+        QMetaObject.connectSlotsByName(PeerReportWidget)
     # setupUi
 
-    def retranslateUi(self, TagReportWidget):
-        TagReportWidget.setWindowTitle(QCoreApplication.translate("TagReportWidget", u"Report by tag", None))
-        self.ReportTagLbl.setText(QCoreApplication.translate("TagReportWidget", u"Tag:", None))
+    def retranslateUi(self, PeerReportWidget):
+        PeerReportWidget.setWindowTitle(QCoreApplication.translate("PeerReportWidget", u"Report by peer", None))
+        self.ReportPeerLbl.setText(QCoreApplication.translate("PeerReportWidget", u"Peer:", None))
     # retranslateUi
 
