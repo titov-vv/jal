@@ -81,7 +81,7 @@ def test_statement_just2trade(tmp_path, project_root, data_path, prepare_db_xls)
     J2T.load(data_path + 'j2t.xlsx')
     assert J2T._data == statement
 
-def test_statement_open_portfolio(tmp_path, project_root, data_path):
+def test_statement_open_portfolio(tmp_path, project_root, data_path, prepare_db_xls):
     with open(data_path + 'pof_converted.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
 

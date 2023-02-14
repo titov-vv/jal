@@ -4,7 +4,8 @@ import difflib
 from datetime import datetime
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import PredefinedCategory, RUSSIAN_RUBLE
+from jal.constants import PredefinedCategory, PredefinedAsset
+from jal.db.asset import JalAsset
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
 from jal.net.downloader import QuoteDownloader
@@ -354,7 +355,8 @@ class StatementOpenBroker(StatementXML):
 
     def load_asset_transfer_out(self, transfer):
         transfer['id'] = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
-        transfer['account'] = [RUSSIAN_RUBLE, 0, 0]   # We assume russian ruble as default for Open Broker
+        ruble_id = JalAsset(data={'symbol': 'RUB', 'type_id': PredefinedAsset.Money}, search=True, create=False).id()
+        transfer['account'] = [ruble_id, 0, 0]   # Assume russian ruble as default for Open Broker
         transfer['asset'] = [transfer['asset'], transfer['asset']]
         transfer['withdrawal'] = transfer['deposit'] = -transfer['quantity']   # Withdrawal quantity is negative
         transfer['fee'] = 0.0

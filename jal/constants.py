@@ -3,9 +3,6 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication, QComboBox
 
 
-RUSSIAN_RUBLE = 1   # FIXME - to be removed after change of base currency is implemented
-
-
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
