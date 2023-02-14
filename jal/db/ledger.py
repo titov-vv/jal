@@ -116,7 +116,7 @@ class Ledger(QObject, JalDB):
             sequence.append(cls._read_record(query, named=True))
         return sequence
 
-    @classmethod
+    @classmethod            # FIXME Below 3 methods are very similar - combine?
     # Return a list of [op_type, op_id] of operation identifiers that have category_id involved
     def get_operations_by_peer(cls, begin: int, end: int, peer_id: int) -> list:
         operations = []

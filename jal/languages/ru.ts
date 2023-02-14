@@ -300,12 +300,12 @@
     <message>
         <location filename="../reports/category.py" line="33"/>
         <source>Operations</source>
-        <translation type="unfinished">Операции</translation>
+        <translation>Операции</translation>
     </message>
     <message>
         <location filename="../reports/category.py" line="34"/>
         <source>by Category</source>
-        <translation type="unfinished"></translation>
+        <translation>по Категории</translation>
     </message>
 </context>
 <context>
@@ -737,7 +737,7 @@
     <message>
         <location filename="../widgets/income_spending_widget.py" line="231"/>
         <source>Tag</source>
-        <translation>Тэг</translation>
+        <translation>Метка</translation>
     </message>
     <message>
         <location filename="../widgets/income_spending_widget.py" line="232"/>
@@ -2193,12 +2193,12 @@ Application will be terminated now</source>
     <message>
         <location filename="../reports/peer.py" line="33"/>
         <source>Operations</source>
-        <translation type="unfinished">Операции</translation>
+        <translation>Операции</translation>
     </message>
     <message>
         <location filename="../reports/peer.py" line="34"/>
         <source>by Peer</source>
-        <translation type="unfinished"></translation>
+        <translation>по Контрагенту</translation>
     </message>
 </context>
 <context>
@@ -2206,12 +2206,12 @@ Application will be terminated now</source>
     <message>
         <location filename="../ui/reports/peer_report.ui" line="14"/>
         <source>Report by peer</source>
-        <translation type="unfinished"></translation>
+        <translation>Отчет по контрагенту</translation>
     </message>
     <message>
         <location filename="../ui/reports/peer_report.ui" line="85"/>
         <source>Peer:</source>
-        <translation type="unfinished">Контрагент:</translation>
+        <translation>Контрагент:</translation>
     </message>
 </context>
 <context>
@@ -3832,12 +3832,12 @@ Application will be terminated now</source>
     <message>
         <location filename="../reports/tag.py" line="33"/>
         <source>Operations</source>
-        <translation type="unfinished">Операции</translation>
+        <translation>Операции</translation>
     </message>
     <message>
         <location filename="../reports/tag.py" line="34"/>
         <source>by Tag</source>
-        <translation type="unfinished"></translation>
+        <translation>по Метке</translation>
     </message>
 </context>
 <context>
@@ -3845,12 +3845,12 @@ Application will be terminated now</source>
     <message>
         <location filename="../ui/reports/tag_report.ui" line="14"/>
         <source>Report by tag</source>
-        <translation type="unfinished"></translation>
+        <translation>Отчет по метке</translation>
     </message>
     <message>
         <location filename="../ui/reports/tag_report.ui" line="85"/>
         <source>Tag:</source>
-        <translation>Тэг:</translation>
+        <translation>Метка:</translation>
     </message>
 </context>
 <context>
