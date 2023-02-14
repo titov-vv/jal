@@ -3,8 +3,9 @@ from PySide6.QtCore import Qt, Slot, QObject, QAbstractItemModel, QModelIndex
 from PySide6.QtGui import QAction, QBrush
 from PySide6.QtWidgets import QMenu
 from jal.reports.reports import Reports
+from jal.db.asset import JalAsset
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
-from jal.constants import CustomColor, RUSSIAN_RUBLE
+from jal.constants import CustomColor
 from jal.db.helpers import load_icon
 from jal.db.category import JalCategory
 from jal.widgets.helpers import month_list, month_start_ts, month_end_ts
@@ -144,6 +145,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
         super().__init__(parent_view)
         self._begin = 0
         self._end = 0
+        self._currency = 0
         self._month_list = []
         self._view = parent_view
         self._root = None
@@ -281,7 +283,15 @@ class IncomeSpendingReportModel(QAbstractItemModel):
         self.prepareData()
         self.configureView()
 
+    def setCurrency(self, currency_id):
+        if self._currency != currency_id:
+            self._currency = currency_id
+            self.prepareData()
+            self.configureView()
+
     def prepareData(self):
+        if not self._currency:
+            return
         root_category = JalCategory(0)
         self._root = ReportTreeItem(self._begin, self._end, -1, "ROOT")  # invisible root
         self._root.appendChild(ReportTreeItem(self._begin, self._end, 0, self.tr("TOTAL")))  # visible root
@@ -299,7 +309,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                 parent.appendChild(leaf)
             for month in self._month_list:
                 leaf.addAmount(month['year'], month['month'],
-                               category.get_turnover(month['begin_ts'], month['end_ts'], RUSSIAN_RUBLE))
+                               category.get_turnover(month['begin_ts'], month['end_ts'], self._currency))
             self._load_child_amounts(category)
 
 
@@ -313,7 +323,7 @@ class IncomeSpendingReport(QObject):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpendingReportWindow(MdiWidget, Ui_IncomeSpendingReportWidget):
-    def __init__(self, parent: Reports):
+    def __init__(self, parent: Reports, settings: dict = None):
         MdiWidget.__init__(self, parent.mdi_area())
         self.setupUi(self)
         self._parent = parent
@@ -328,7 +338,17 @@ class IncomeSpendingReportWindow(MdiWidget, Ui_IncomeSpendingReportWidget):
         self.actionDetails = QAction(load_icon("list.png"), self.tr("Show operations"), self)
         self.contextMenu.addAction(self.actionDetails)
 
+        self.connect_signals_and_slots()
+
+        if settings is None:
+            begin, end = self.ReportRange.getRange()
+            settings = {'begin_ts': begin, 'end_ts': end, 'currency_id': JalAsset.get_base_currency()}
+        self.ReportRange.setRange(settings['begin_ts'], settings['end_ts'])
+        self.CurrencyCombo.setIndex(settings['currency_id'])
+
+    def connect_signals_and_slots(self):
         self.ReportRange.changed.connect(self.ReportTreeView.model().setDatesRange)
+        self.CurrencyCombo.changed.connect(self.ReportTreeView.model().setCurrency)
         self.ReportTreeView.customContextMenuRequested.connect(self.onCellContextMenu)
         self.actionDetails.triggered.connect(self.showDetailsReport)
 

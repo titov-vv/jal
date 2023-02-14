@@ -16,9 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHBoxLayout,
-    QHeaderView, QSizePolicy, QSpacerItem, QTreeView,
-    QVBoxLayout, QWidget)
+    QHeaderView, QLabel, QSizePolicy, QSpacerItem,
+    QTreeView, QVBoxLayout, QWidget)
 
+from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.date_range_selector import DateRangeSelector
 
 class Ui_IncomeSpendingReportWidget(object):
@@ -44,6 +45,16 @@ class Ui_IncomeSpendingReportWidget(object):
 
         self.horizontalLayout.addWidget(self.ReportRange)
 
+        self.CurrencyLbl = QLabel(self.ReportParamsFrame)
+        self.CurrencyLbl.setObjectName(u"CurrencyLbl")
+
+        self.horizontalLayout.addWidget(self.CurrencyLbl)
+
+        self.CurrencyCombo = CurrencyComboBox(self.ReportParamsFrame)
+        self.CurrencyCombo.setObjectName(u"CurrencyCombo")
+
+        self.horizontalLayout.addWidget(self.CurrencyCombo)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
@@ -68,5 +79,6 @@ class Ui_IncomeSpendingReportWidget(object):
 
     def retranslateUi(self, IncomeSpendingReportWidget):
         IncomeSpendingReportWidget.setWindowTitle(QCoreApplication.translate("IncomeSpendingReportWidget", u"Income/Spending", None))
+        self.CurrencyLbl.setText(QCoreApplication.translate("IncomeSpendingReportWidget", u"Currency:", None))
     # retranslateUi
 

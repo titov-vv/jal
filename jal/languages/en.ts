@@ -1330,6 +1330,11 @@
         <source>Income/Spending</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../ui/reports/income_spending_report.ui" line="66"/>
+        <source>Currency:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>IncomeSpendingReportWindow</name>
@@ -1707,52 +1712,52 @@ do you want to save it?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="150"/>
+        <location filename="../db/ledger.py" line="162"/>
         <source>No asset defined for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="154"/>
+        <location filename="../db/ledger.py" line="166"/>
         <source>No category set for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="156"/>
+        <location filename="../db/ledger.py" line="168"/>
         <source>No peer set for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="230"/>
+        <location filename="../db/ledger.py" line="242"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="231"/>
+        <location filename="../db/ledger.py" line="243"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="287"/>
+        <location filename="../db/ledger.py" line="299"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="289"/>
+        <location filename="../db/ledger.py" line="301"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="290"/>
+        <location filename="../db/ledger.py" line="302"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="236"/>
+        <location filename="../db/ledger.py" line="248"/>
         <source>Leger is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="241"/>
+        <location filename="../db/ledger.py" line="253"/>
         <source>Re-building ledger since: </source>
         <translation></translation>
     </message>

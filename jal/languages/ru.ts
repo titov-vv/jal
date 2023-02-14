@@ -1330,6 +1330,11 @@
         <source>Income/Spending</source>
         <translation>Доходы/Расходы</translation>
     </message>
+    <message>
+        <location filename="../ui/reports/income_spending_report.ui" line="66"/>
+        <source>Currency:</source>
+        <translation>Валюта:</translation>
+    </message>
 </context>
 <context>
     <name>IncomeSpendingReportWindow</name>
@@ -1710,52 +1715,52 @@ do you want to save it?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="150"/>
+        <location filename="../db/ledger.py" line="162"/>
         <source>No asset defined for: </source>
         <translation>Не указана ЦБ для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="154"/>
+        <location filename="../db/ledger.py" line="166"/>
         <source>No category set for: </source>
         <translation>Ну указана категория для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="156"/>
+        <location filename="../db/ledger.py" line="168"/>
         <source>No peer set for: </source>
         <translation>Не указан контрагент для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="230"/>
+        <location filename="../db/ledger.py" line="242"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="231"/>
+        <location filename="../db/ledger.py" line="243"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="287"/>
+        <location filename="../db/ledger.py" line="299"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation>Произошла ошибка. Расчёт итогов не окончен. Проверьте сообщения об ошибках</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="289"/>
+        <location filename="../db/ledger.py" line="301"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="290"/>
+        <location filename="../db/ledger.py" line="302"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="236"/>
+        <location filename="../db/ledger.py" line="248"/>
         <source>Leger is empty</source>
         <translation>Транзакции отсутствуют</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="241"/>
+        <location filename="../db/ledger.py" line="253"/>
         <source>Re-building ledger since: </source>
         <translation>Пересчёт итогов с: </translation>
     </message>

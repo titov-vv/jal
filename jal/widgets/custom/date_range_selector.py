@@ -92,6 +92,9 @@ class DateRangeSelector(QWidget):
         self._end = end_ts
         self._update_range()
 
+    def getRange(self):
+        return self._begin, self._end
+
     @Slot()
     def onRangeChange(self, index):
         item = self.range_combo.itemData(index)
