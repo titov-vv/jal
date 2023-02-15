@@ -176,6 +176,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         self._view = parent_view
         self._default_name = "name"
         self._stretch = None
+        self._filter_text = ''
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
         self._completion_model = QSqlTableModel(parent=parent_view, db=self.connection())
         self._completion_model.setTable(self._table)
@@ -188,8 +189,12 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
             parent_id = self.ROOT_PID
         else:
             parent_id = parent.internalId()
-        child_id = self._read(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
-                              [(":pid", parent_id), (":row_n", row)])
+        if not self._filter_text:
+            child_id = self._read(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
+                                  [(":pid", parent_id), (":row_n", row)])
+        else:  # display a plain list in a filter mode
+            child_id = self._read(f"SELECT id FROM {self._table} WHERE {self._filter_text} LIMIT 1 OFFSET :row_n",
+                                  [(":row_n", row)])
         if child_id:
             return self.createIndex(row, column, id=child_id)
         return QModelIndex()
@@ -212,7 +217,12 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
             parent_id = self.ROOT_PID
         else:
             parent_id = parent.internalId()
-        count = self._read(f"SELECT COUNT(id) FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
+        if not self._filter_text:
+            count = self._read(f"SELECT COUNT(id) FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
+        else:
+            if parent_id:  # no children if we are in filter mode and display a plain list
+                return 0
+            count = self._read(f"SELECT COUNT(id) FROM {self._table} WHERE {self._filter_text}")
         if count:
             return int(count)
         else:
@@ -367,5 +377,6 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         self.expand_parent(item_idx)
         self._view.setCurrentIndex(item_idx)
 
-    def setFilter(self, filter_str):
-        pass
+    def setFilter(self, text):
+        self._filter_text = text
+        self.layoutChanged.emit()
