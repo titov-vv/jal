@@ -1,6 +1,6 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, Signal, QDateTime
+from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QSortFilterProxyModel
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QMessageBox
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
@@ -44,7 +44,9 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.balances_model.configureView()
 
         self.operations_model = OperationsModel(self.OperationsTableView)
-        self.OperationsTableView.setModel(self.operations_model)
+        self.operations_filtered_model = QSortFilterProxyModel(self.OperationsTableView)
+        self.operations_filtered_model.setSourceModel(self.operations_model)
+        self.OperationsTableView.setModel(self.operations_filtered_model)
         self.operations_model.configureView()
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
 
@@ -73,7 +75,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.BalancesTableView.doubleClicked.connect(self.OnBalanceDoubleClick)
         self.ShowInactiveCheckBox.stateChanged.connect(self.BalancesTableView.model().toggleActive)
         self.DateRange.changed.connect(self.operations_model.setDateRange)
-        self.ChooseAccountBtn.changed.connect(self.OperationsTableView.model().setAccount)
+        self.ChooseAccountBtn.changed.connect(self.operations_model.setAccount)
         self.SearchString.editingFinished.connect(self.updateOperationsFilter)
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.OperationsTableView.customContextMenuRequested.connect(self.onOperationContextMenu)
@@ -100,7 +102,8 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
 
     @Slot()
     def updateOperationsFilter(self):
-        self.OperationsTableView.model().filterText(self.SearchString.text())
+        self.OperationsTableView.model().setFilterFixedString(self.SearchString.text())
+        self.OperationsTableView.model().setFilterKeyColumn(-1)
 
     @Slot()
     def OnBalanceDoubleClick(self, index):
@@ -114,7 +117,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
             idx = selected.indexes()
             if idx:
                 selected_row = idx[0].row()
-                op_type, op_id = self.OperationsTableView.model().get_operation(selected_row)
+                op_type, op_id = self.operations_model.get_operation(selected_row)
         self.OperationsTabs.show_operation(op_type, op_id)
 
     @Slot()

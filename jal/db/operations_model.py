@@ -1,5 +1,5 @@
 from decimal import Decimal
-from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
+from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor
@@ -19,7 +19,6 @@ class OperationsModel(QAbstractTableModel):
         self._begin = 0
         self._end = 0
         self._account = 0
-        self._text_filter = ''
 
         self.prepareData()
 
@@ -124,14 +123,6 @@ class OperationsModel(QAbstractTableModel):
             self._end = end
         else:
             self._end = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
-        self.prepareData()
-
-    @Slot()
-    def filterText(self, filter):
-        if filter:    # FIXME Filter is not used with current query
-            self._text_filter = '' # f" AND (num_peer LIKE '%{filter}%' COLLATE NOCASE "
-        else:
-            self._text_filter = ''
         self.prepareData()
 
     def update(self):
