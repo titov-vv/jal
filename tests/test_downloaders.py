@@ -197,8 +197,8 @@ def test_NYSE_downloader(prepare_db):
 
 
 def test_LSE_downloader(prepare_db):
-    create_stocks([('TSL', '')], currency_id=3)   # id = 4
-    quotes = pd.DataFrame({'Close': [Decimal('73.5'), Decimal('75.5')],
+    create_stocks([('PSON', '')], currency_id=3)   # id = 4
+    quotes = pd.DataFrame({'Close': [Decimal('792.599976'), Decimal('800.799988')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     quotes = quotes.set_index('Date')
 
