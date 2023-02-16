@@ -1,6 +1,6 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QSortFilterProxyModel
+from PySide6.QtCore import Qt, Slot, Signal, QDateTime  #, QSortFilterProxyModel
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QMessageBox
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
@@ -44,9 +44,10 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.balances_model.configureView()
 
         self.operations_model = OperationsModel(self.OperationsTableView)
-        self.operations_filtered_model = QSortFilterProxyModel(self.OperationsTableView)
-        self.operations_filtered_model.setSourceModel(self.operations_model)
-        self.OperationsTableView.setModel(self.operations_filtered_model)
+        # It appears below change led to Segmentation fault after #5aaebadc
+        # self.operations_filtered_model = QSortFilterProxyModel(self.OperationsTableView)
+        # self.operations_filtered_model.setSourceModel(self.operations_model)
+        self.OperationsTableView.setModel(self.operations_model)
         self.operations_model.configureView()
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
 
@@ -102,8 +103,9 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
 
     @Slot()
     def updateOperationsFilter(self):
-        self.OperationsTableView.model().setFilterFixedString(self.SearchString.text())
-        self.OperationsTableView.model().setFilterKeyColumn(-1)
+        pass   # It appears below change led to Segmentation fault after #5aaebadc
+        # self.OperationsTableView.model().setFilterFixedString(self.SearchString.text())
+        # self.OperationsTableView.model().setFilterKeyColumn(-1)
 
     @Slot()
     def OnBalanceDoubleClick(self, index):
