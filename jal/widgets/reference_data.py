@@ -12,11 +12,12 @@ from jal.db.helpers import load_icon
 # --------------------------------------------------------------------------------------------------------------
 class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     # tree_view - table will be displayed as hierarchical tree with help of 2 columns: 'id', 'pid' in sql table
-    def __init__(self):
+    def __init__(self, parent=None):
         QDialog.__init__(self)
         self.setupUi(self)
-
+        self._parent = parent
         self.model = None
+        self._view = None
         self._previous_row = -1
         self.selected_id = 0
         self.p_selected_name = ''
@@ -33,6 +34,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.tree_view = False
         self.toolbar = None
         self.custom_editor = False
+        self.custom_context_menu = False
 
         self.AddChildBtn.setVisible(False)
         self.GroupLbl.setVisible(False)
@@ -61,30 +63,31 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def _init_completed(self):
         self.DataView.setVisible(not self.tree_view)
         self.TreeView.setVisible(self.tree_view)
-        if self.tree_view:
-            self.TreeView.selectionModel().selectionChanged.connect(self.OnRowSelected)
-        else:
-            self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
-            self.DataView.setContextMenuPolicy(Qt.CustomContextMenu)
-            self.DataView.customContextMenuRequested.connect(self.onDataViewContextMenu)
+        self._view = self.TreeView if self.tree_view else self.DataView
+        self._view.selectionModel().selectionChanged.connect(self.OnRowSelected)
+        self._view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self._view.customContextMenuRequested.connect(self.onDataViewContextMenu)
         self.model.dataChanged.connect(self.OnDataChanged)
         self.setFilter()
 
     def onDataViewContextMenu(self, pos):
-        if not self.group_id:
-            return
-        index = self.DataView.indexAt(pos)
-        menu_title = QWidgetAction(self.DataView)
-        title_lbl = QLabel()
-        title_lbl.setText(self.tr("Change type to:"))
-        menu_title.setDefaultWidget(title_lbl)
-        contextMenu = QMenu(self.DataView)
-        contextMenu.addAction(menu_title)
-        contextMenu.addSeparator()
-        for i in range(self.GroupCombo.count()):
-            contextMenu.addAction(self.GroupCombo.itemText(i),
-                                  partial(self.updateItemType, index, self.GroupCombo.itemData(i)))
-        contextMenu.popup(self.DataView.viewport().mapToGlobal(pos))
+        contextMenu = QMenu(self._view)
+        if self.custom_context_menu:
+            self.customizeContextMenu(contextMenu, self._view.indexAt(pos))
+        else:
+            if not self.group_id:
+                return
+            index = self._view.indexAt(pos)
+            menu_title = QWidgetAction(self._view)
+            title_lbl = QLabel()
+            title_lbl.setText(self.tr("Change type to:"))
+            menu_title.setDefaultWidget(title_lbl)
+            contextMenu.addAction(menu_title)
+            contextMenu.addSeparator()
+            for i in range(self.GroupCombo.count()):
+                contextMenu.addAction(self.GroupCombo.itemText(i),
+                                      partial(self.updateItemType, index, self.GroupCombo.itemData(i)))
+        contextMenu.popup(self._view.viewport().mapToGlobal(pos))
 
     @Slot()
     def updateItemType(self, index, new_type):
@@ -142,10 +145,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             editor.exec()
             self.model.select()   # TODO better to make self.beginInsertRows/endInsertRows
         else:
-            if self.tree_view:
-                idx = self.TreeView.selectionModel().selection().indexes()
-            else:
-                idx = self.DataView.selectionModel().selection().indexes()
+            idx = self._view.selectionModel().selection().indexes()
             current_index = idx[0] if idx else self.model.index(0, 0)
             self.model.addElement(current_index, in_group=self.group_id)
             self.CommitBtn.setEnabled(True)
@@ -162,10 +162,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     @Slot()
     def OnRemove(self):
-        if self.tree_view:
-            idx = self.TreeView.selectionModel().selection().indexes()
-        else:
-            idx = self.DataView.selectionModel().selection().indexes()
+        idx = self._view.selectionModel().selection().indexes()
         current_index = idx[0] if idx else self.model.index(0, 0)
         self.model.removeElement(current_index)
         self.CommitBtn.setEnabled(True)
@@ -274,3 +271,11 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     def locateItem(self, item_id):
         raise NotImplementedError("locateItem() method is not defined in subclass ReferenceDataDialog")
+
+    def customEditor(self):
+        raise NotImplementedError("Method customEditor() isn't implemented in a descendant of ReferenceDataDialog")
+
+    # this method should fill given menu with actions for element at given index
+    def customizeContextMenu(self, menu: QMenu, index):
+        raise NotImplementedError(
+            "Method customizeContextMenu() isn't implemented in a descendant of ReferenceDataDialog")
