@@ -8,6 +8,7 @@
 /usr/lib/qt6/uic -g python -o ./ui/ui_flow_export_widget.py ./ui/flow_export_widget.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_asset_dlg.py ./ui/asset_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_select_account_dlg.py ./ui/select_account_dlg.ui
+/usr/lib/qt6/uic -g python -o ./ui/ui_select_tag_dlg.py ./ui/select_tag_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_slip_import_dlg.py ./ui/slip_import_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_login_fns_dlg.py ./ui/login_fns_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_holdings_report.py ./ui/reports/holdings_report.ui

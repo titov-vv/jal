@@ -96,6 +96,7 @@ class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
         self.setResult(QDialog.Accepted)
         event.accept()
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 class CurrencyComboBox(QComboBox):
     changed = Signal(int)

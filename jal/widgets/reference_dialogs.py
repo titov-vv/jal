@@ -1,15 +1,19 @@
-from PySide6.QtCore import Qt, QDate
+import logging
+
+from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QAction
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
-from PySide6.QtWidgets import QAbstractItemView, QMenu
+from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog
 from jal.constants import PredefindedAccountType, PredefinedAsset
 from jal.db.peer import JalPeer
+from jal.db.tag import JalTag
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate, \
     AssetSelectorDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
+from jal.widgets.selection_dialog import SelectTagDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -283,9 +287,11 @@ class TagsListDialog(ReferenceDataDialog):
         self.setup_ui()
         super()._init_completed()
         self._menu_tag_id = 0
+        self._menu_tag_name = ''
         self.actionShowUsage = QAction(text=self.tr("Show operations with Tag"), parent=self)
         self.actionReplace = QAction(text=self.tr("Replace with..."), parent=self)
         self.actionShowUsage.triggered.connect(self.showUsageReport)
+        self.actionReplace.triggered.connect(self.replaceTag)
 
     def setup_ui(self):
         self.search_field = "tag"
@@ -301,13 +307,24 @@ class TagsListDialog(ReferenceDataDialog):
 
     def customizeContextMenu(self, menu: QMenu, index):
         self._menu_tag_id = self.model.getId(index)
+        self._menu_tag_name = self.model.getName(index)
         menu.addAction(self.actionShowUsage)
         menu.addAction(self.actionReplace)
 
+    @Slot()
     def showUsageReport(self):
         settings = {'begin_ts': 0, 'end_ts': QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
                     'tag_id': self._menu_tag_id}
         self._parent.reports.show_report("TagReportWindow", settings, maximized=True)
+
+    @Slot()
+    def replaceTag(self):
+        dialog = SelectTagDialog(self.tr("Replace tag '") + self._menu_tag_name + self.tr("' with: "))
+        if dialog.exec() != QDialog.Accepted:
+            return
+        JalTag(self._menu_tag_id).replace_with(dialog.tag_id)
+        logging.info(self.tr("Tag '") + self._menu_tag_name + self.tr("' was successfully replaced"))
+        self.close()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
