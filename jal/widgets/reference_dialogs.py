@@ -1,6 +1,7 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QDate
+from PySide6.QtGui import QAction
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
-from PySide6.QtWidgets import QAbstractItemView
+from PySide6.QtWidgets import QAbstractItemView, QMenu
 from jal.constants import PredefindedAccountType, PredefinedAsset
 from jal.db.peer import JalPeer
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
@@ -273,24 +274,40 @@ class TagListModel(AbstractReferenceListModel):
 
 
 class TagsListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent):
+        ReferenceDataDialog.__init__(self, parent)
         self.table = "tags"
         self.model = TagListModel(self.table, self.DataView)
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
+        self._menu_tag_id = 0
+        self.actionShowUsage = QAction(text=self.tr("Show operations with Tag"), parent=self)
+        self.actionReplace = QAction(text=self.tr("Replace with..."), parent=self)
+        self.actionShowUsage.triggered.connect(self.showUsageReport)
 
     def setup_ui(self):
         self.search_field = "tag"
         self.setWindowTitle(self.tr("Tags"))
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
+        if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
+            self.custom_context_menu = True
 
     def locateItem(self, item_id):
         item_idx = self.model.locateItem(item_id)
         self.DataView.setCurrentIndex(item_idx)
+
+    def customizeContextMenu(self, menu: QMenu, index):
+        self._menu_tag_id = self.model.getId(index)
+        menu.addAction(self.actionShowUsage)
+        menu.addAction(self.actionReplace)
+
+    def showUsageReport(self):
+        settings = {'begin_ts': 0, 'end_ts': QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
+                    'tag_id': self._menu_tag_id}
+        self._parent.reports.show_report("TagReportWindow", settings, maximized=True)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

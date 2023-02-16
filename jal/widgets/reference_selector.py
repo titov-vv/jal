@@ -121,5 +121,5 @@ class TagSelector(AbstractReferenceSelector):
         self.table = "tags"
         self.selector_field = "tag"
         self.details_field = None
-        self.dialog = ui_dialogs.TagsListDialog()
+        self.dialog = ui_dialogs.TagsListDialog(parent)
         AbstractReferenceSelector.__init__(self, parent)

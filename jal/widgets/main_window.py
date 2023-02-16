@@ -243,7 +243,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         elif dlg_type == "categories":
             CategoryListDialog().exec()
         elif dlg_type == "tags":
-            TagsListDialog().exec()
+            TagsListDialog(self).exec()
         elif dlg_type == "quotes":
             QuotesListDialog().exec()
         elif dlg_type == "base_currency":
