@@ -51,7 +51,7 @@ class Reports(QObject):
         report = class_instance(self)
         self._mdi.addSubWindow(report, maximized=True)
 
-    def show_report(self, window_class, settings):
+    def show_report(self, window_class, settings, maximized=False):
         report = [x for x in self.items if x['window_class'] == window_class]
         if len(report) != 1:
             logging.warning(self.tr("Report not found for window class: ") + window_class)
@@ -60,7 +60,7 @@ class Reports(QObject):
         module = report_loader['module']
         class_instance = getattr(module, report_loader['window_class'])
         report = class_instance(self, settings)
-        self._mdi.addSubWindow(report, maximized=False)
+        self._mdi.addSubWindow(report, maximized=maximized)
 
     # Save report content from the model to xls-file chosen by the user
     def save_report(self, name, model):
