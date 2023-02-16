@@ -47,6 +47,11 @@ class TagReportWindow(MdiWidget, Ui_TagReportWidget):
 
         self.connect_signals_and_slots()
 
+        if settings is not None:
+            self.ReportRange.setRange(settings['begin_ts'], settings['end_ts'])
+            self.ReportTagEdit.selected_id = settings['tag_id']
+            self.onTagChange()
+
     def connect_signals_and_slots(self):
         self.ReportRange.changed.connect(self.ReportTableView.model().setDateRange)
         self.ReportTagEdit.changed.connect(self.onTagChange)
