@@ -1,5 +1,5 @@
 from decimal import Decimal
-from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel
+from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel, QModelIndex
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor
@@ -131,9 +131,13 @@ class OperationsModel(QAbstractTableModel):
     @Slot()
     def refresh(self):
         idx = self._view.selectionModel().selection().indexes()
+        idx = idx[0] if idx else QModelIndex()  # Take first selected or empty index
+        if self._view.model() != self:          # View uses some proxy model
+            idx = self._view.model().mapToSource(idx)
         self.prepareData()
-        if idx:
-            self._view.setCurrentIndex(idx[0])
+        if self._view.model() != self:
+            idx = self._view.model().mapFromSource(idx)
+        self._view.setCurrentIndex(idx)
 
     def prepareData(self):
         self._data = []
