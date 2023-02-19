@@ -54,7 +54,7 @@ class Ui_SelectReferenceDlg(object):
         self.buttonBox = QDialogButtonBox(SelectReferenceDlg)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
 
         self.WindowLayout.addWidget(self.buttonBox)
 
@@ -65,6 +65,7 @@ class Ui_SelectReferenceDlg(object):
 
         self.retranslateUi(SelectReferenceDlg)
         self.buttonBox.accepted.connect(SelectReferenceDlg.close)
+        self.buttonBox.rejected.connect(SelectReferenceDlg.reject)
 
         QMetaObject.connectSlotsByName(SelectReferenceDlg)
     # setupUi

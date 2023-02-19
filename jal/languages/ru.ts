@@ -2783,37 +2783,30 @@ Application will be terminated now</source>
 <context>
     <name>SelectCategoryDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="55"/>
+        <location filename="../widgets/selection_dialog.py" line="43"/>
         <source>Please select category</source>
-        <translation type="unfinished">Выберите категорию</translation>
+        <translation>Выберите категорию</translation>
     </message>
+</context>
+<context>
+    <name>SelectReferenceDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="73"/>
+        <location filename="../widgets/selection_dialog.py" line="31"/>
         <source>No selection</source>
         <translation>Ничего не выбрано</translation>
     </message>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="73"/>
-        <source>Invalid category selected</source>
-        <translation>Выбрана некорректная категория</translation>
+        <location filename="../widgets/selection_dialog.py" line="31"/>
+        <source>You should select something</source>
+        <translation>Вы должны сделать выбор</translation>
     </message>
 </context>
 <context>
     <name>SelectTagDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="19"/>
+        <location filename="../widgets/selection_dialog.py" line="61"/>
         <source>Please select tag</source>
-        <translation type="unfinished">Выберите метку</translation>
-    </message>
-    <message>
-        <location filename="../widgets/selection_dialog.py" line="37"/>
-        <source>No selection</source>
-        <translation>Ничего не выбрано</translation>
-    </message>
-    <message>
-        <location filename="../widgets/selection_dialog.py" line="37"/>
-        <source>Invalid tag selected</source>
-        <translation>Выбрана некорректная метка</translation>
+        <translation>Выберите метку</translation>
     </message>
 </context>
 <context>
