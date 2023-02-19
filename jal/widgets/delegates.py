@@ -279,13 +279,10 @@ class LookupSelectorDelegate(QStyledItemDelegate):
     def createSelector(self, parent) -> None:
         raise NotImplementedError("Method createSelector() isn't defined")
 
-    def valueSelector(self, parent):
-        self.createSelector(parent)
+    def createEditor(self, aParent, option, index):
+        self.createSelector(aParent)
         assert self._selector is not None, "Selector isn't created in LookupSelectorDelegate descendant"
         return self._selector
-
-    def createEditor(self, aParent, option, index):
-        return self.valueSelector(aParent)
 
     def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
         editor.selected_id = index.data()
