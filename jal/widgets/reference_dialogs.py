@@ -13,7 +13,7 @@ from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
-from jal.widgets.selection_dialog import SelectTagDialog, SelectCategoryDialog
+from jal.widgets.selection_dialog import SelectPeerDialog, SelectCategoryDialog, SelectTagDialog 
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -205,14 +205,20 @@ class PeerTreeModel(SqlTreeModel):
 
 
 class PeerListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent):
+        ReferenceDataDialog.__init__(self, parent)
         self.table = "agents"
         self.model = PeerTreeModel(self.table, self.TreeView)
         self.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
+        self._menu_peer_id = 0
+        self._menu_peer_name = ''
+        self.actionShowUsage = QAction(text=self.tr("Show operations with Peer"), parent=self)
+        self.actionReplace = QAction(text=self.tr("Replace with..."), parent=self)
+        self.actionShowUsage.triggered.connect(self.showUsageReport)
+        self.actionReplace.triggered.connect(self.replacePeer)
 
     def setup_ui(self):
         self.search_field = "name"
@@ -221,9 +227,32 @@ class PeerListDialog(ReferenceDataDialog):
         self.SearchFrame.setVisible(True)
         self.setWindowTitle(self.tr("Peers"))
         self.Toggle.setVisible(False)
+        if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
+            self.custom_context_menu = True
 
     def locateItem(self, item_id):
         self.model.locateItem(item_id)
+        
+    def customizeContextMenu(self, menu: QMenu, index):
+        self._menu_peer_id = self.model.getId(index)
+        self._menu_peer_name = self.model.getName(index)
+        menu.addAction(self.actionShowUsage)
+        menu.addAction(self.actionReplace)
+
+    @Slot()
+    def showUsageReport(self):
+        settings = {'begin_ts': 0, 'end_ts': QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
+                    'peer_id': self._menu_peer_id}
+        self._parent.reports.show_report("PeerReportWindow", settings, maximized=True)
+
+    @Slot()
+    def replacePeer(self):
+        dialog = SelectPeerDialog(self.tr("Replace peer '") + self._menu_peer_name + self.tr("' with: "))
+        if dialog.exec() != QDialog.Accepted:
+            return
+        JalPeer(self._menu_peer_id).replace_with(dialog.selected_id)
+        logging.info(self.tr("Peer '") + self._menu_peer_name + self.tr("' was successfully replaced"))
+        self.close()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -290,7 +319,7 @@ class CategoryListDialog(ReferenceDataDialog):
         dialog = SelectCategoryDialog(self.tr("Replace category '") + self._menu_category_name + self.tr("' with: "))
         if dialog.exec() != QDialog.Accepted:
             return
-        JalCategory(self._menu_category_id).replace_with(dialog.category_id)
+        JalCategory(self._menu_category_id).replace_with(dialog.selected_id)
         logging.info(self.tr("Category '") + self._menu_category_name + self.tr("' was successfully replaced"))
         self.close()
 
@@ -351,7 +380,7 @@ class TagsListDialog(ReferenceDataDialog):
         dialog = SelectTagDialog(self.tr("Replace tag '") + self._menu_tag_name + self.tr("' with: "))
         if dialog.exec() != QDialog.Accepted:
             return
-        JalTag(self._menu_tag_id).replace_with(dialog.tag_id)
+        JalTag(self._menu_tag_id).replace_with(dialog.selected_id)
         logging.info(self.tr("Tag '") + self._menu_tag_name + self.tr("' was successfully replaced"))
         self.close()
 

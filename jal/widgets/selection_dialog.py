@@ -2,6 +2,7 @@ from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 from jal.constants import Setup
 from jal.ui.ui_select_reference_dlg import Ui_SelectReferenceDlg
+from jal.widgets.reference_selector import PeerSelector
 from jal.widgets.reference_selector import CategorySelector
 from jal.widgets.reference_selector import TagSelector
 
@@ -36,6 +37,22 @@ class SelectReferenceDialog(QDialog, Ui_SelectReferenceDlg):
 
 
 #-----------------------------------------------------------------------------------------------------------------------
+# Dialog for peer selection
+# Constructor takes description to show and default_peer for initial choice
+class SelectPeerDialog(SelectReferenceDialog):
+    def __init__(self, description, default_peer=0):
+        SelectReferenceDialog.__init__(self, self.tr("Please select peer"), description)
+        self.PeerWidget = PeerSelector(self.SelectorFrame)
+        self.FrameLayout.addWidget(self.PeerWidget)
+        self.PeerWidget.selected_id = self.selected_id = default_peer
+
+    @Slot()
+    def closeEvent(self, event):
+        self.selected_id = self.PeerWidget.selected_id
+        super().closeEvent(event)
+        
+        
+#-----------------------------------------------------------------------------------------------------------------------
 # Dialog for category selection
 # Constructor takes description to show and default_category for initial choice
 class SelectCategoryDialog(SelectReferenceDialog):
@@ -43,9 +60,7 @@ class SelectCategoryDialog(SelectReferenceDialog):
         SelectReferenceDialog.__init__(self, self.tr("Please select category"), description)
         self.CategoryWidget = CategorySelector(self.SelectorFrame)
         self.FrameLayout.addWidget(self.CategoryWidget)
-        self.selected_id = default_category
-        if self.selected_id:
-            self.CategoryWidget.selected_id = self.selected_id
+        self.CategoryWidget.selected_id = self.selected_id = default_category
 
     @Slot()
     def closeEvent(self, event):
@@ -61,9 +76,7 @@ class SelectTagDialog(SelectReferenceDialog):
         SelectReferenceDialog.__init__(self, self.tr("Please select tag"), description)
         self.TagWidget = TagSelector(self.SelectorFrame)
         self.FrameLayout.addWidget(self.TagWidget)
-        self.selected_id = default_tag
-        if self.selected_id:
-            self.TagWidget.selected_id = self.selected_id
+        self.TagWidget.selected_id = self.selected_id = default_tag
 
     @Slot()
     def closeEvent(self, event):

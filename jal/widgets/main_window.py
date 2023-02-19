@@ -239,7 +239,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         elif dlg_type == "assets":
             AssetListDialog().exec()
         elif dlg_type == "agents":
-            PeerListDialog().exec()
+            PeerListDialog(self).exec()
         elif dlg_type == "categories":
             CategoryListDialog(self).exec()
         elif dlg_type == "tags":

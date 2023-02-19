@@ -103,7 +103,7 @@ class PeerSelector(AbstractReferenceSelector):
         self.table = "agents"
         self.selector_field = "name"
         self.details_field = None
-        self.dialog = ui_dialogs.PeerListDialog()
+        self.dialog = ui_dialogs.PeerListDialog(parent)
         AbstractReferenceSelector.__init__(self, parent)
 
 

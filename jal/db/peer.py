@@ -63,3 +63,13 @@ class JalPeer(JalDB):
     def number_of_documents(self) -> int:
         return self._read("SELECT COUNT(*) FROM (SELECT DISTINCT op_type, operation_id FROM ledger WHERE peer_id=:id)",
                           [(":id", self._id)])
+
+    def replace_with(self, new_id):
+        self._exec("UPDATE accounts SET organization_id=:new_id WHERE organization_id=:old_id",
+                   [(":new_id", new_id), (":old_id", self._id)])
+        self._exec("UPDATE actions SET peer_id=:new_id WHERE peer_id=:old_id",
+                   [(":new_id", new_id), (":old_id", self._id)])
+        self._exec("UPDATE map_peer SET mapped_to=:new_id WHERE mapped_to=:old_id",
+                   [(":new_id", new_id), (":old_id", self._id)])
+        self._exec("DELETE FROM agents WHERE id=:old_id", [(":old_id", self._id)], commit=True)
+        self._id = 0
