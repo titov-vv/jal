@@ -291,9 +291,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         return index.internalId()
 
     def getName(self, index):
-        item_id = self.getId(index)
-        if item_id is not None:
-            self.getFieldValue(item_id, self._default_name)
+        return self.getFieldValue(self.getId(index), self._default_name)
 
     def getFieldValue(self, item_id, field_name):
         return self._read(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
