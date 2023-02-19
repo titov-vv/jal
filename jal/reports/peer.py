@@ -47,6 +47,11 @@ class PeerReportWindow(MdiWidget, Ui_PeerReportWidget):
 
         self.connect_signals_and_slots()
 
+        if settings is not None:
+            self.ReportRange.setRange(settings['begin_ts'], settings['end_ts'])
+            self.ReportPeerEdit.selected_id = settings['peer_id']
+            self.onPeerChange()
+
     def connect_signals_and_slots(self):
         self.ReportRange.changed.connect(self.ReportTableView.model().setDateRange)
         self.ReportPeerEdit.changed.connect(self.onPeerChange)
