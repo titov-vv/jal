@@ -269,7 +269,7 @@
 <context>
     <name>BaseCurrencyDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="416"/>
+        <location filename="../widgets/reference_dialogs.py" line="445"/>
         <source>Base currency</source>
         <translation>Базовая валюта</translation>
     </message>
@@ -277,12 +277,12 @@
 <context>
     <name>BaseCurrencyListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="384"/>
+        <location filename="../widgets/reference_dialogs.py" line="413"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="385"/>
+        <location filename="../widgets/reference_dialogs.py" line="414"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
@@ -290,9 +290,39 @@
 <context>
     <name>CategoryListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="262"/>
+        <location filename="../widgets/reference_dialogs.py" line="258"/>
+        <source>Show operations with Category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="259"/>
+        <source>Replace with...</source>
+        <translation type="unfinished">Заменить на...</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="268"/>
         <source>Categories</source>
         <translation>Категории</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="290"/>
+        <source>Replace category &apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="290"/>
+        <source>&apos; with: </source>
+        <translation type="unfinished">&apos; на: </translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="294"/>
+        <source>Category &apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="294"/>
+        <source>&apos; was successfully replaced</source>
+        <translation type="unfinished">&apos; заменена успешно</translation>
     </message>
 </context>
 <context>
@@ -2089,12 +2119,12 @@ Application will be terminated now</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="90"/>
+        <location filename="../widgets/operations_widget.py" line="89"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="91"/>
+        <location filename="../widgets/operations_widget.py" line="90"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation>Вы хотите удалить выбранные операции?</translation>
     </message>
@@ -2519,7 +2549,7 @@ Application will be terminated now</source>
 <context>
     <name>QuotesListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="375"/>
+        <location filename="../widgets/reference_dialogs.py" line="404"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
@@ -2527,22 +2557,22 @@ Application will be terminated now</source>
 <context>
     <name>QuotesListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="335"/>
+        <location filename="../widgets/reference_dialogs.py" line="364"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="336"/>
+        <location filename="../widgets/reference_dialogs.py" line="365"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="337"/>
+        <location filename="../widgets/reference_dialogs.py" line="366"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="338"/>
+        <location filename="../widgets/reference_dialogs.py" line="367"/>
         <source>Quote</source>
         <translation>Котировка</translation>
     </message>
@@ -2751,14 +2781,40 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
+    <name>SelectCategoryDialog</name>
+    <message>
+        <location filename="../widgets/selection_dialog.py" line="66"/>
+        <source>No selection</source>
+        <translation type="unfinished">Ничего не выбрано</translation>
+    </message>
+    <message>
+        <location filename="../widgets/selection_dialog.py" line="66"/>
+        <source>Invalid category selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SelectCategoryDlg</name>
+    <message>
+        <location filename="../ui/select_category_dlg.ui" line="14"/>
+        <source>Please select category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/select_category_dlg.ui" line="20"/>
+        <source>TextLabel</source>
+        <translation type="unfinished">Сообщение</translation>
+    </message>
+</context>
+<context>
     <name>SelectTagDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="32"/>
+        <location filename="../widgets/selection_dialog.py" line="33"/>
         <source>No selection</source>
         <translation>Ничего не выбрано</translation>
     </message>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="32"/>
+        <location filename="../widgets/selection_dialog.py" line="33"/>
         <source>Invalid tag selected</source>
         <translation>Выбрана некорректная метка</translation>
     </message>
@@ -3853,7 +3909,7 @@ Application will be terminated now</source>
 <context>
     <name>TagListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="273"/>
+        <location filename="../widgets/reference_dialogs.py" line="302"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
@@ -3887,37 +3943,37 @@ Application will be terminated now</source>
 <context>
     <name>TagsListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="291"/>
+        <location filename="../widgets/reference_dialogs.py" line="320"/>
         <source>Show operations with Tag</source>
         <translation>Показать операции с Меткой</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="292"/>
+        <location filename="../widgets/reference_dialogs.py" line="321"/>
         <source>Replace with...</source>
         <translation>Заменить на...</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="298"/>
+        <location filename="../widgets/reference_dialogs.py" line="327"/>
         <source>Tags</source>
         <translation>Тэги</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="322"/>
+        <location filename="../widgets/reference_dialogs.py" line="351"/>
         <source>Replace tag &apos;</source>
         <translation>Заменить метку &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="322"/>
+        <location filename="../widgets/reference_dialogs.py" line="351"/>
         <source>&apos; with: </source>
         <translation>&apos; на: </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="326"/>
+        <location filename="../widgets/reference_dialogs.py" line="355"/>
         <source>Tag &apos;</source>
         <translation>Метка &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="326"/>
+        <location filename="../widgets/reference_dialogs.py" line="355"/>
         <source>&apos; was successfully replaced</source>
         <translation>&apos; заменена успешно</translation>
     </message>

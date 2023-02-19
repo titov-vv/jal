@@ -1,11 +1,11 @@
 import logging
-
 from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QAction
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog
 from jal.constants import PredefindedAccountType, PredefinedAsset
 from jal.db.peer import JalPeer
+from jal.db.category import JalCategory
 from jal.db.tag import JalTag
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate, \
@@ -13,7 +13,7 @@ from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
-from jal.widgets.selection_dialog import SelectTagDialog
+from jal.widgets.selection_dialog import SelectTagDialog, SelectCategoryDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -245,14 +245,20 @@ class CategoryTreeModel(SqlTreeModel):
 
 
 class CategoryListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent):
+        ReferenceDataDialog.__init__(self, parent)
         self.table = "categories"
         self.model = CategoryTreeModel(self.table, self.TreeView)
         self.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
+        self._menu_category_id = 0
+        self._menu_category_name = ''
+        self.actionShowUsage = QAction(text=self.tr("Show operations with Category"), parent=self)
+        self.actionReplace = QAction(text=self.tr("Replace with..."), parent=self)
+        self.actionShowUsage.triggered.connect(self.showUsageReport)
+        self.actionReplace.triggered.connect(self.replaceCategory)
 
     def setup_ui(self):
         self.search_field = "name"
@@ -261,9 +267,32 @@ class CategoryListDialog(ReferenceDataDialog):
         self.SearchFrame.setVisible(True)
         self.setWindowTitle(self.tr("Categories"))
         self.Toggle.setVisible(False)
+        if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
+            self.custom_context_menu = True
 
     def locateItem(self, item_id):
         self.model.locateItem(item_id)
+
+    def customizeContextMenu(self, menu: QMenu, index):
+        self._menu_category_id = self.model.getId(index)
+        self._menu_category_name = self.model.getName(index)
+        menu.addAction(self.actionShowUsage)
+        menu.addAction(self.actionReplace)
+
+    @Slot()
+    def showUsageReport(self):
+        settings = {'begin_ts': 0, 'end_ts': QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
+                    'category_id': self._menu_category_id}
+        self._parent.reports.show_report("CategoryReportWindow", settings, maximized=True)
+
+    @Slot()
+    def replaceCategory(self):
+        dialog = SelectCategoryDialog(self.tr("Replace category '") + self._menu_category_name + self.tr("' with: "))
+        if dialog.exec() != QDialog.Accepted:
+            return
+        JalCategory(self._menu_category_id).replace_with(dialog.category_id)
+        logging.info(self.tr("Category '") + self._menu_category_name + self.tr("' was successfully replaced"))
+        self.close()
 
 # ----------------------------------------------------------------------------------------------------------------------
 class TagListModel(AbstractReferenceListModel):

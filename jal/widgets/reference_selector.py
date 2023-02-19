@@ -112,7 +112,7 @@ class CategorySelector(AbstractReferenceSelector):
         self.table = "categories"
         self.selector_field = "name"
         self.details_field = None
-        self.dialog = ui_dialogs.CategoryListDialog()
+        self.dialog = ui_dialogs.CategoryListDialog(parent)
         AbstractReferenceSelector.__init__(self, parent)
 
 

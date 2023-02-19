@@ -74,3 +74,11 @@ class JalCategory(JalDB):
         while query.next():
             operations.append(IncomeSpending(self._read_record(query, cast=[int])))
         return operations
+
+    def replace_with(self, new_id):
+        self._exec("UPDATE action_details SET category_id=:new_id WHERE category_id=:old_id",
+                   [(":new_id", new_id), (":old_id", self._id)])
+        self._exec("UPDATE map_category SET mapped_to=:new_id WHERE mapped_to=:old_id",
+                   [(":new_id", new_id), (":old_id", self._id)])
+        self._exec("DELETE FROM categories WHERE id=:old_id", [(":old_id", self._id)], commit=True)
+        self._id = 0

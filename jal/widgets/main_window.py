@@ -241,7 +241,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         elif dlg_type == "agents":
             PeerListDialog().exec()
         elif dlg_type == "categories":
-            CategoryListDialog().exec()
+            CategoryListDialog(self).exec()
         elif dlg_type == "tags":
             TagsListDialog(self).exec()
         elif dlg_type == "quotes":
