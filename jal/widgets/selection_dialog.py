@@ -1,19 +1,23 @@
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 from jal.constants import Setup
-from jal.ui.ui_select_category_dlg import Ui_SelectCategoryDlg
-from jal.ui.ui_select_tag_dlg import Ui_SelectTagDlg
+from jal.ui.ui_select_reference_dlg import Ui_SelectReferenceDlg
+from jal.widgets.reference_selector import CategorySelector
+from jal.widgets.reference_selector import TagSelector
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Dialog for tag selection
 # Constructor takes description to show and default_tag for initial choice
-class SelectTagDialog(QDialog, Ui_SelectTagDlg):
+class SelectTagDialog(QDialog, Ui_SelectReferenceDlg):
     def __init__(self, description, default_tag=None):
         QDialog.__init__(self)
         self.setupUi(self)
+        self.TagWidget = TagSelector(self.SelectorFrame)
+        self.FrameLayout.addWidget(self.TagWidget)
         self.tag_id = default_tag
         self.store_account = False
-        self.DescriptionLbl.setText(description)
+        self.setWindowTitle(self.tr("Please select tag"))
+        self.DescriptionLabel.setText(description)
         if self.tag_id:
             self.TagWidget.selected_id = self.tag_id
         # center dialog with respect to main application window
@@ -40,13 +44,16 @@ class SelectTagDialog(QDialog, Ui_SelectTagDlg):
 #-----------------------------------------------------------------------------------------------------------------------
 # Dialog for category selection
 # Constructor takes description to show and default_category for initial choice
-class SelectCategoryDialog(QDialog, Ui_SelectCategoryDlg):
+class SelectCategoryDialog(QDialog, Ui_SelectReferenceDlg):
     def __init__(self, description, default_category=None):
         QDialog.__init__(self)
         self.setupUi(self)
+        self.CategoryWidget = CategorySelector(self.SelectorFrame)
+        self.FrameLayout.addWidget(self.CategoryWidget)
         self.category_id = default_category
         self.store_account = False
-        self.DescriptionLbl.setText(description)
+        self.setWindowTitle(self.tr("Please select category"))
+        self.DescriptionLabel.setText(description)
         if self.category_id:
             self.CategoryWidget.selected_id = self.category_id
         # center dialog with respect to main application window

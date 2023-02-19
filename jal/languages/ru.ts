@@ -2783,53 +2783,37 @@ Application will be terminated now</source>
 <context>
     <name>SelectCategoryDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="66"/>
+        <location filename="../widgets/selection_dialog.py" line="55"/>
+        <source>Please select category</source>
+        <translation type="unfinished">Выберите категорию</translation>
+    </message>
+    <message>
+        <location filename="../widgets/selection_dialog.py" line="73"/>
         <source>No selection</source>
         <translation>Ничего не выбрано</translation>
     </message>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="66"/>
+        <location filename="../widgets/selection_dialog.py" line="73"/>
         <source>Invalid category selected</source>
         <translation>Выбрана некорректная категория</translation>
     </message>
 </context>
 <context>
-    <name>SelectCategoryDlg</name>
-    <message>
-        <location filename="../ui/select_category_dlg.ui" line="14"/>
-        <source>Please select category</source>
-        <translation>Выберите категорию</translation>
-    </message>
-    <message>
-        <location filename="../ui/select_category_dlg.ui" line="20"/>
-        <source>TextLabel</source>
-        <translation>Сообщение</translation>
-    </message>
-</context>
-<context>
     <name>SelectTagDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="33"/>
+        <location filename="../widgets/selection_dialog.py" line="19"/>
+        <source>Please select tag</source>
+        <translation type="unfinished">Выберите метку</translation>
+    </message>
+    <message>
+        <location filename="../widgets/selection_dialog.py" line="37"/>
         <source>No selection</source>
         <translation>Ничего не выбрано</translation>
     </message>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="33"/>
+        <location filename="../widgets/selection_dialog.py" line="37"/>
         <source>Invalid tag selected</source>
         <translation>Выбрана некорректная метка</translation>
-    </message>
-</context>
-<context>
-    <name>SelectTagDlg</name>
-    <message>
-        <location filename="../ui/select_tag_dlg.ui" line="14"/>
-        <source>Please select tag</source>
-        <translation>Выберите метку</translation>
-    </message>
-    <message>
-        <location filename="../ui/select_tag_dlg.ui" line="20"/>
-        <source>TextLabel</source>
-        <translation>Сообщение</translation>
     </message>
 </context>
 <context>

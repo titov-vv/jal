@@ -2779,52 +2779,36 @@ Application will be terminated now</source>
 <context>
     <name>SelectCategoryDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="66"/>
-        <source>No selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/selection_dialog.py" line="66"/>
-        <source>Invalid category selected</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>SelectCategoryDlg</name>
-    <message>
-        <location filename="../ui/select_category_dlg.ui" line="14"/>
+        <location filename="../widgets/selection_dialog.py" line="55"/>
         <source>Please select category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/select_category_dlg.ui" line="20"/>
-        <source>TextLabel</source>
+        <location filename="../widgets/selection_dialog.py" line="73"/>
+        <source>No selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/selection_dialog.py" line="73"/>
+        <source>Invalid category selected</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SelectTagDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="33"/>
-        <source>No selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/selection_dialog.py" line="33"/>
-        <source>Invalid tag selected</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>SelectTagDlg</name>
-    <message>
-        <location filename="../ui/select_tag_dlg.ui" line="14"/>
+        <location filename="../widgets/selection_dialog.py" line="19"/>
         <source>Please select tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/select_tag_dlg.ui" line="20"/>
-        <source>TextLabel</source>
+        <location filename="../widgets/selection_dialog.py" line="37"/>
+        <source>No selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/selection_dialog.py" line="37"/>
+        <source>Invalid tag selected</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
