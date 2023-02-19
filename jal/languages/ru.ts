@@ -292,12 +292,12 @@
     <message>
         <location filename="../widgets/reference_dialogs.py" line="258"/>
         <source>Show operations with Category</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать операции с Категорией</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="259"/>
         <source>Replace with...</source>
-        <translation type="unfinished">Заменить на...</translation>
+        <translation>Заменить на...</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="268"/>
@@ -307,22 +307,22 @@
     <message>
         <location filename="../widgets/reference_dialogs.py" line="290"/>
         <source>Replace category &apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Заменить категорию &apos;</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="290"/>
         <source>&apos; with: </source>
-        <translation type="unfinished">&apos; на: </translation>
+        <translation>&apos; на: </translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="294"/>
         <source>Category &apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Категория &apos;</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="294"/>
         <source>&apos; was successfully replaced</source>
-        <translation type="unfinished">&apos; заменена успешно</translation>
+        <translation>&apos; заменена успешно</translation>
     </message>
 </context>
 <context>
@@ -2785,12 +2785,12 @@ Application will be terminated now</source>
     <message>
         <location filename="../widgets/selection_dialog.py" line="66"/>
         <source>No selection</source>
-        <translation type="unfinished">Ничего не выбрано</translation>
+        <translation>Ничего не выбрано</translation>
     </message>
     <message>
         <location filename="../widgets/selection_dialog.py" line="66"/>
         <source>Invalid category selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбрана некорректная категория</translation>
     </message>
 </context>
 <context>
@@ -2798,12 +2798,12 @@ Application will be terminated now</source>
     <message>
         <location filename="../ui/select_category_dlg.ui" line="14"/>
         <source>Please select category</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите категорию</translation>
     </message>
     <message>
         <location filename="../ui/select_category_dlg.ui" line="20"/>
         <source>TextLabel</source>
-        <translation type="unfinished">Сообщение</translation>
+        <translation>Сообщение</translation>
     </message>
 </context>
 <context>
