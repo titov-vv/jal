@@ -147,7 +147,8 @@ class OperationsModel(QAbstractTableModel):
     def deleteRows(self, rows):
         for row in rows:
             if (row >= 0) and (row < len(self._data)):
-                LedgerTransaction.get_operation(self._data[row]['op_type'], self._data[row]['id']).delete()
+                LedgerTransaction.get_operation(self._data[row]['op_type'], self._data[row]['id'],
+                                                display_type=self._data[row]['subtype']).delete()
         self.prepareData()
 
 
