@@ -267,6 +267,7 @@ class LookupSelectorDelegate(QStyledItemDelegate):
         QStyledItemDelegate.__init__(self, parent)
         self._table = ''
         self._field = ''
+        self._selector = None
 
     def displayText(self, value, locale):
         item_name = JalModel(self, self._table).get_value(self._field, "id", value)
@@ -275,8 +276,13 @@ class LookupSelectorDelegate(QStyledItemDelegate):
         else:
             return item_name
 
+    def createSelector(self, parent) -> None:
+        raise NotImplementedError("Method createSelector() isn't defined")
+
     def valueSelector(self, parent):
-        raise NotImplementedError("valueSelector() method is not defined in LookupSelectorDelegate descendant")
+        self.createSelector(parent)
+        assert self._selector is not None, "Selector isn't created in LookupSelectorDelegate descendant"
+        return self._selector
 
     def createEditor(self, aParent, option, index):
         return self.valueSelector(aParent)
@@ -294,8 +300,8 @@ class CategorySelectorDelegate(LookupSelectorDelegate):
         self._table = "categories"
         self._field = "name"
 
-    def valueSelector(self, parent):
-        return CategorySelector(parent)
+    def createSelector(self, parent) -> None:
+        self._selector = CategorySelector(parent)
 
 
 class TagSelectorDelegate(LookupSelectorDelegate):
@@ -304,8 +310,8 @@ class TagSelectorDelegate(LookupSelectorDelegate):
         self._table = "tags"
         self._field = "tag"
 
-    def valueSelector(self, parent):
-        return TagSelector(parent)
+    def createSelector(self, parent) -> None:
+        self._selector = TagSelector(parent)
 
 
 class PeerSelectorDelegate(LookupSelectorDelegate):
@@ -314,8 +320,8 @@ class PeerSelectorDelegate(LookupSelectorDelegate):
         self._table = "agents"
         self._field = "name"
 
-    def valueSelector(self, parent):
-        return PeerSelector(parent)
+    def createSelector(self, parent) -> None:
+        self._selector = PeerSelector(parent)
 
 
 class AssetSelectorDelegate(LookupSelectorDelegate):
@@ -324,5 +330,5 @@ class AssetSelectorDelegate(LookupSelectorDelegate):
         self._table = "assets_ext"
         self._field = "symbol"
 
-    def valueSelector(self, parent):
-        return AssetSelector(parent)
+    def createSelector(self, parent) -> None:
+        self._selector = AssetSelector(parent)
