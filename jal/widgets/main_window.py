@@ -250,6 +250,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             BaseCurrencyDialog().exec()
         else:
             assert False, f"Unexpected dialog call: '{dlg_type}'"
+        self.ledger.rebuild()
 
     @Slot()
     def updateWidgets(self):
