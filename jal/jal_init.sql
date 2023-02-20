@@ -39,7 +39,8 @@ CREATE TABLE actions (
     timestamp       INTEGER NOT NULL,
     account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE
+    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    note            TEXT
 );
 
 -- Table: assets
@@ -661,7 +662,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 41);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 42);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 -- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1); -- Deprecated and ID shouldn't be re-used
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
