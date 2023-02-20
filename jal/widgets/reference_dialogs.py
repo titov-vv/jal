@@ -2,7 +2,7 @@ import logging
 from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QAction
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
-from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog
+from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog, QMessageBox
 from jal.constants import PredefindedAccountType, PredefinedAsset
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
@@ -250,7 +250,11 @@ class PeerListDialog(ReferenceDataDialog):
         dialog = SelectPeerDialog(self.tr("Replace peer '") + self._menu_peer_name + self.tr("' with: "))
         if dialog.exec() != QDialog.Accepted:
             return
-        JalPeer(self._menu_peer_id).replace_with(dialog.selected_id)
+        reply = QMessageBox().warning(self, '', self.tr("Keep old name in notes?"), QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            JalPeer(self._menu_peer_id).replace_with(dialog.selected_id, old_name=self._menu_peer_name)
+        else:
+            JalPeer(self._menu_peer_id).replace_with(dialog.selected_id)
         logging.info(self.tr("Peer '") + self._menu_peer_name + self.tr("' was successfully replaced"))
         self.close()
 

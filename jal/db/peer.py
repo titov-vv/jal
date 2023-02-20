@@ -64,9 +64,13 @@ class JalPeer(JalDB):
         return self._read("SELECT COUNT(*) FROM (SELECT DISTINCT op_type, operation_id FROM ledger WHERE peer_id=:id)",
                           [(":id", self._id)])
 
-    def replace_with(self, new_id):
+    # if old_name isn't empty then it is put in non-empty notes of action
+    def replace_with(self, new_id, old_name=''):
         self._exec("UPDATE accounts SET organization_id=:new_id WHERE organization_id=:old_id",
                    [(":new_id", new_id), (":old_id", self._id)])
+        if old_name:
+            self._exec("UPDATE actions SET note=:old_name WHERE peer_id=:old_id AND coalesce(note, '')=''",
+                       [(":old_id", self._id), (":old_name", old_name)])
         self._exec("UPDATE actions SET peer_id=:new_id WHERE peer_id=:old_id",
                    [(":new_id", new_id), (":old_id", self._id)])
         self._exec("UPDATE map_peer SET mapped_to=:new_id WHERE mapped_to=:old_id",
