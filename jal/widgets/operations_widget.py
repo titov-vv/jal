@@ -46,6 +46,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.operations_model = OperationsModel(self.OperationsTableView)
         self.operations_filtered_model = QSortFilterProxyModel(self.OperationsTableView)
         self.operations_filtered_model.setSourceModel(self.operations_model)
+        self.operations_filtered_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.OperationsTableView.setModel(self.operations_filtered_model)
         self.operations_model.configureView()
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
