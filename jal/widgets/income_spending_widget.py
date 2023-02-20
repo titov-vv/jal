@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil import tz
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView
+from PySide6.QtWidgets import QLabel, QLineEdit, QDateTimeEdit, QPushButton, QTableView, QHeaderView
 from PySide6.QtGui import QFont
 from PySide6.QtSql import QSqlTableModel
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
@@ -37,12 +37,14 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.details_label = QLabel(self)
         self.account_label = QLabel(self)
         self.peer_label = QLabel(self)
+        self.note_label = QLabel(self)
 
         self.main_label.setText(self.name)
         self.date_label.setText(self.tr("Date/Time"))
         self.details_label.setText(self.tr("Details"))
         self.account_label.setText(self.tr("Account"))
         self.peer_label.setText(self.tr("Peer"))
+        self.note_label.setText(self.tr("Note"))
 
         self.timestamp_editor = QDateTimeEdit(self)
         self.timestamp_editor.setCalendarPopup(True)
@@ -53,6 +55,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.peer_widget = PeerSelector(self)
         self.a_currency = OptionalCurrencyComboBox(self)
         self.a_currency.setText(self.tr("Paid in foreign currency:"))
+        self.note = QLineEdit(self)
         self.add_button = QPushButton(load_icon("add.png"), '', self)
         self.add_button.setToolTip(self.tr("Add detail"))
         self.del_button = QPushButton(load_icon("remove.png"), '', self)
@@ -80,13 +83,16 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.layout.addWidget(self.account_widget, 1, 6, 1, 1)
         self.layout.addWidget(self.peer_widget, 2, 6, 1, 1)
 
-        self.layout.addWidget(self.a_currency, 1, 7, 1, 1)
+        self.layout.addWidget(self.note_label, 2, 7, 1, 1, Qt.AlignRight)
 
-        self.layout.addWidget(self.commit_button, 0, 9, 1, 1)
-        self.layout.addWidget(self.revert_button, 0, 10, 1, 1)
+        self.layout.addWidget(self.a_currency, 1, 8, 1, 1)
+        self.layout.addWidget(self.note, 2, 8, 1, 1)
 
-        self.layout.addWidget(self.details_table, 4, 0, 1, 11)
-        self.layout.addItem(self.horizontalSpacer, 1, 8, 1, 1)
+        self.layout.addWidget(self.commit_button, 0, 10, 1, 1)
+        self.layout.addWidget(self.revert_button, 0, 11, 1, 1)
+
+        self.layout.addWidget(self.details_table, 4, 0, 1, 12)
+        self.layout.addItem(self.horizontalSpacer, 1, 9, 1, 1)
 
         self.add_button.clicked.connect(self.addChild)
         self.copy_button.clicked.connect(self.copyChild)
@@ -111,6 +117,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.account_widget, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.peer_widget, self.model.fieldIndex("peer_id"))
         self.mapper.addMapping(self.a_currency, self.model.fieldIndex("alt_currency_id"))
+        self.mapper.addMapping(self.note, self.model.fieldIndex("note"))
 
         self.details_table.setItemDelegateForColumn(2, self.category_delegate)
         self.details_table.setItemDelegateForColumn(3, self.tag_delegate)

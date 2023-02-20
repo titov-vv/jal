@@ -39,7 +39,7 @@ class DividendWidget(AbstractOperationDetails):
         self.amount_label = QLabel(self)
         self.price_label = QLabel(self)
         self.tax_label = QLabel(self)
-        self.comment_label = QLabel(self)
+        self.note_label = QLabel(self)
 
         self.main_label.setText(self.name)
         self.date_label.setText(self.tr("Date/Time"))
@@ -51,7 +51,7 @@ class DividendWidget(AbstractOperationDetails):
         self.amount_label.setText(self.tr("Dividend"))
         self.price_label.setText(self.tr("Price"))
         self.tax_label.setText(self.tr("Tax"))
-        self.comment_label.setText(self.tr("Note"))
+        self.note_label.setText(self.tr("Note"))
 
         self.timestamp_editor = QDateTimeEdit(self)
         self.timestamp_editor.setCalendarPopup(True)
@@ -74,17 +74,17 @@ class DividendWidget(AbstractOperationDetails):
         self.tax_edit = QLineEdit(self)
         self.tax_edit.setAlignment(Qt.AlignRight)
         self.number = QLineEdit(self)
-        self.comment = QLineEdit(self)
+        self.note = QLineEdit(self)
 
         self.layout.addWidget(self.date_label, 1, 0, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.account_label, 2, 0, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.symbol_label, 3, 0, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.comment_label, 4, 0, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.note_label, 4, 0, 1, 1, Qt.AlignLeft)
 
         self.layout.addWidget(self.timestamp_editor, 1, 1, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.account_widget, 2, 1, 1, 4)
         self.layout.addWidget(self.asset_widget, 3, 1, 1, 4)
-        self.layout.addWidget(self.comment, 4, 1, 1, 8)
+        self.layout.addWidget(self.note, 4, 1, 1, 8)
 
         self.layout.addWidget(self.ex_date_label, 1, 2, 1, 1, Qt.AlignRight)
         self.layout.addWidget(self.ex_date_editor, 1, 3, 1, 1, Qt.AlignLeft)
@@ -132,7 +132,7 @@ class DividendWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.dividend_edit, self.model.fieldIndex("amount"))
         self.mapper.addMapping(self.tax_edit, self.model.fieldIndex("tax"))
-        self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
+        self.mapper.addMapping(self.note, self.model.fieldIndex("note"))
 
         self.model.select()
 
