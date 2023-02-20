@@ -116,7 +116,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         if len(self.OperationsTableView.selectionModel().selectedRows()) == 1:
             idx = selected.indexes()
             if idx:
-                selected_row = idx[0].row()
+                selected_row = self.operations_filtered_model.mapToSource(idx[0]).row()
                 op_type, op_id = self.operations_model.get_operation(selected_row)
         self.OperationsTabs.show_operation(op_type, op_id)
 
