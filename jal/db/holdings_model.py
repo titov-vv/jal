@@ -177,6 +177,13 @@ class HoldingsModel(QAbstractItemModel):
                     else:
                         font.setItalic(True)
                     return font
+            if column == 4:
+                quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
+                quote_age = int((datetime.utcnow()- quote_date).total_seconds() / 86400)
+                if quote_age > 7:
+                    font = QFont()
+                    font.setItalic(True)
+                    return font
 
     def data_background(self, data, column, enabled=True):
         factor = 100 if enabled else 125
@@ -239,6 +246,7 @@ class HoldingsModel(QAbstractItemModel):
             rate = JalAsset(account.currency()).quote(self._date, self._currency)[1]
             for asset_data in assets:
                 asset = asset_data['asset']
+                quote_ts, quote = asset.quote(self._date, account.currency())
                 record = {
                     "currency_id": account.currency(),
                     "currency": JalAsset(account.currency()).symbol(),
@@ -251,8 +259,9 @@ class HoldingsModel(QAbstractItemModel):
                     "expiry": asset.expiry(),
                     "qty": asset_data['amount'],
                     "value_i": asset_data['value'],
-                    "quote": asset.quote(self._date, account.currency())[1],  # [0] is a timestamp
-                    "quote_a": rate * asset.quote(self._date, account.currency())[1]
+                    "quote": quote,
+                    "quote_ts": quote_ts,
+                    "quote_a": rate * quote
                 }
                 account_holdings.append(record)
             money = account.get_asset_amount(self._date, account.currency())
@@ -270,6 +279,7 @@ class HoldingsModel(QAbstractItemModel):
                     "qty": money,
                     "value_i": Decimal('0'),
                     "quote": Decimal('1'),
+                    "quote_ts": QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
                     "quote_a": rate
                 })
             account_total = sum(x['qty'] * x['quote'] for x in account_holdings)
