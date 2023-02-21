@@ -164,11 +164,11 @@ class HoldingsModel(QAbstractItemModel):
             assert False
 
     def data_tooltip(self, data, column):
-        if column == 4:
+        if column >= 4 and column <= 8:
             quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
             quote_age = int((datetime.utcnow() - quote_date).total_seconds() / 86400)
             if quote_age > 7:
-                return ts2d(int(data['quote_ts']))
+                return self.tr("Last quote date: ") + ts2d(int(data['quote_ts']))
         return ''
 
     def data_font(self, data, column):
@@ -187,7 +187,7 @@ class HoldingsModel(QAbstractItemModel):
                     else:
                         font.setItalic(True)
                     return font
-            if column == 4:
+            if column >= 4 and column <= 8:
                 quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
                 quote_age = int((datetime.utcnow()- quote_date).total_seconds() / 86400)
                 if quote_age > 7:

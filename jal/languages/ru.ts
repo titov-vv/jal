@@ -269,7 +269,7 @@
 <context>
     <name>BaseCurrencyDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="445"/>
+        <location filename="../widgets/reference_dialogs.py" line="480"/>
         <source>Base currency</source>
         <translation>Базовая валюта</translation>
     </message>
@@ -277,12 +277,12 @@
 <context>
     <name>BaseCurrencyListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="413"/>
+        <location filename="../widgets/reference_dialogs.py" line="448"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="414"/>
+        <location filename="../widgets/reference_dialogs.py" line="449"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
@@ -290,37 +290,37 @@
 <context>
     <name>CategoryListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="258"/>
+        <location filename="../widgets/reference_dialogs.py" line="293"/>
         <source>Show operations with Category</source>
         <translation>Показать операции с Категорией</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="259"/>
+        <location filename="../widgets/reference_dialogs.py" line="294"/>
         <source>Replace with...</source>
         <translation>Заменить на...</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="268"/>
+        <location filename="../widgets/reference_dialogs.py" line="303"/>
         <source>Categories</source>
         <translation>Категории</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="290"/>
+        <location filename="../widgets/reference_dialogs.py" line="325"/>
         <source>Replace category &apos;</source>
         <translation>Заменить категорию &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="290"/>
+        <location filename="../widgets/reference_dialogs.py" line="325"/>
         <source>&apos; with: </source>
         <translation>&apos; на: </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="294"/>
+        <location filename="../widgets/reference_dialogs.py" line="329"/>
         <source>Category &apos;</source>
         <translation>Категория &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="294"/>
+        <location filename="../widgets/reference_dialogs.py" line="329"/>
         <source>&apos; was successfully replaced</source>
         <translation>&apos; заменена успешно</translation>
     </message>
@@ -354,12 +354,12 @@
 <context>
     <name>CategoryTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="233"/>
+        <location filename="../widgets/reference_dialogs.py" line="267"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="234"/>
+        <location filename="../widgets/reference_dialogs.py" line="268"/>
         <source>Often</source>
         <translation>Частая</translation>
     </message>
@@ -760,22 +760,22 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="231"/>
+        <location filename="../widgets/income_spending_widget.py" line="238"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="231"/>
+        <location filename="../widgets/income_spending_widget.py" line="238"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="232"/>
+        <location filename="../widgets/income_spending_widget.py" line="239"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="233"/>
+        <location filename="../widgets/income_spending_widget.py" line="240"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
@@ -954,6 +954,11 @@
         <translation>Оценка, </translation>
     </message>
     <message>
+        <location filename="../db/holdings_model.py" line="171"/>
+        <source>Last quote date: </source>
+        <translation>Дата последней котировки: </translation>
+    </message>
+    <message>
         <location filename="../db/holdings_model.py" line="50"/>
         <source>Currency/Account/Asset</source>
         <translation>Валюта/Счёт/ЦБ</translation>
@@ -964,7 +969,7 @@
         <translation>Ценная бумага</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="132"/>
+        <location filename="../db/holdings_model.py" line="134"/>
         <source>Exp:</source>
         <translation>Эксп:</translation>
     </message>
@@ -1382,58 +1387,63 @@
         <translation>Доход / Расход</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="42"/>
+        <location filename="../widgets/income_spending_widget.py" line="43"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="43"/>
+        <location filename="../widgets/income_spending_widget.py" line="44"/>
         <source>Details</source>
         <translation>Детали</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="44"/>
+        <location filename="../widgets/income_spending_widget.py" line="45"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="45"/>
+        <location filename="../widgets/income_spending_widget.py" line="46"/>
         <source>Peer</source>
         <translation>Контрагент</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="55"/>
+        <location filename="../widgets/income_spending_widget.py" line="47"/>
+        <source>Note</source>
+        <translation>Примечание</translation>
+    </message>
+    <message>
+        <location filename="../widgets/income_spending_widget.py" line="57"/>
         <source>Paid in foreign currency:</source>
         <translation>Оплата в валюте:</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="57"/>
+        <location filename="../widgets/income_spending_widget.py" line="60"/>
         <source>Add detail</source>
         <translation>Добавить детальную запись</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="59"/>
+        <location filename="../widgets/income_spending_widget.py" line="62"/>
         <source>Remove detail</source>
         <translation>Удалить детальную запись</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="61"/>
+        <location filename="../widgets/income_spending_widget.py" line="64"/>
         <source>Copy detail</source>
         <translation>Скопировать детальную запись</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="135"/>
-        <location filename="../widgets/income_spending_widget.py" line="152"/>
+        <location filename="../widgets/income_spending_widget.py" line="142"/>
+        <location filename="../widgets/income_spending_widget.py" line="159"/>
         <source>Failed to add new record: </source>
         <translation>Невозможно добавить новую запись: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="165"/>
+        <location filename="../widgets/income_spending_widget.py" line="172"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="173"/>
+        <location filename="../widgets/income_spending_widget.py" line="180"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>
@@ -1989,7 +1999,7 @@ Application will be terminated now</source>
         <translation>Вопросы, комментарии, помощь или донаты:</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="277"/>
+        <location filename="../widgets/main_window.py" line="278"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
     </message>
@@ -2119,12 +2129,12 @@ Application will be terminated now</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="89"/>
+        <location filename="../widgets/operations_widget.py" line="90"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="90"/>
+        <location filename="../widgets/operations_widget.py" line="91"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation>Вы хотите удалить выбранные операции?</translation>
     </message>
@@ -2218,9 +2228,44 @@ Application will be terminated now</source>
 <context>
     <name>PeerListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="222"/>
+        <location filename="../widgets/reference_dialogs.py" line="219"/>
+        <source>Show operations with Peer</source>
+        <translation>Показать операции с Контрагентом</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="220"/>
+        <source>Replace with...</source>
+        <translation>Заменить на...</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="229"/>
         <source>Peers</source>
         <translation>Контрагенты</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="251"/>
+        <source>Replace peer &apos;</source>
+        <translation>Заменить контрагента &apos;</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="251"/>
+        <source>&apos; with: </source>
+        <translation>&apos; на: </translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="254"/>
+        <source>Keep old name in notes?</source>
+        <translation>Сохранить старое название в примечании?</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="259"/>
+        <source>Peer &apos;</source>
+        <translation>Контрагент &apos;</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="259"/>
+        <source>&apos; was successfully replaced</source>
+        <translation>&apos; заменена успешно</translation>
     </message>
 </context>
 <context>
@@ -2549,7 +2594,7 @@ Application will be terminated now</source>
 <context>
     <name>QuotesListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="404"/>
+        <location filename="../widgets/reference_dialogs.py" line="439"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
@@ -2557,22 +2602,22 @@ Application will be terminated now</source>
 <context>
     <name>QuotesListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="364"/>
+        <location filename="../widgets/reference_dialogs.py" line="399"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="365"/>
+        <location filename="../widgets/reference_dialogs.py" line="400"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="366"/>
+        <location filename="../widgets/reference_dialogs.py" line="401"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="367"/>
+        <location filename="../widgets/reference_dialogs.py" line="402"/>
         <source>Quote</source>
         <translation>Котировка</translation>
     </message>
@@ -2783,20 +2828,28 @@ Application will be terminated now</source>
 <context>
     <name>SelectCategoryDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="43"/>
+        <location filename="../widgets/selection_dialog.py" line="60"/>
         <source>Please select category</source>
         <translation>Выберите категорию</translation>
     </message>
 </context>
 <context>
+    <name>SelectPeerDialog</name>
+    <message>
+        <location filename="../widgets/selection_dialog.py" line="44"/>
+        <source>Please select peer</source>
+        <translation>Выберите контрагента</translation>
+    </message>
+</context>
+<context>
     <name>SelectReferenceDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="31"/>
+        <location filename="../widgets/selection_dialog.py" line="32"/>
         <source>No selection</source>
         <translation>Ничего не выбрано</translation>
     </message>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="31"/>
+        <location filename="../widgets/selection_dialog.py" line="32"/>
         <source>You should select something</source>
         <translation>Вы должны сделать выбор</translation>
     </message>
@@ -2804,7 +2857,7 @@ Application will be terminated now</source>
 <context>
     <name>SelectTagDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="61"/>
+        <location filename="../widgets/selection_dialog.py" line="76"/>
         <source>Please select tag</source>
         <translation>Выберите метку</translation>
     </message>
@@ -3886,7 +3939,7 @@ Application will be terminated now</source>
 <context>
     <name>TagListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="302"/>
+        <location filename="../widgets/reference_dialogs.py" line="337"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
@@ -3920,37 +3973,37 @@ Application will be terminated now</source>
 <context>
     <name>TagsListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="320"/>
+        <location filename="../widgets/reference_dialogs.py" line="355"/>
         <source>Show operations with Tag</source>
         <translation>Показать операции с Меткой</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="321"/>
+        <location filename="../widgets/reference_dialogs.py" line="356"/>
         <source>Replace with...</source>
         <translation>Заменить на...</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="327"/>
+        <location filename="../widgets/reference_dialogs.py" line="362"/>
         <source>Tags</source>
         <translation>Тэги</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="351"/>
+        <location filename="../widgets/reference_dialogs.py" line="386"/>
         <source>Replace tag &apos;</source>
         <translation>Заменить метку &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="351"/>
+        <location filename="../widgets/reference_dialogs.py" line="386"/>
         <source>&apos; with: </source>
         <translation>&apos; на: </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="355"/>
+        <location filename="../widgets/reference_dialogs.py" line="390"/>
         <source>Tag &apos;</source>
         <translation>Метка &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="355"/>
+        <location filename="../widgets/reference_dialogs.py" line="390"/>
         <source>&apos; was successfully replaced</source>
         <translation>&apos; заменена успешно</translation>
     </message>

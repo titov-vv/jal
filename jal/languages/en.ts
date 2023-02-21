@@ -269,7 +269,7 @@
 <context>
     <name>BaseCurrencyDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="445"/>
+        <location filename="../widgets/reference_dialogs.py" line="480"/>
         <source>Base currency</source>
         <translation type="unfinished"></translation>
     </message>
@@ -277,12 +277,12 @@
 <context>
     <name>BaseCurrencyListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="413"/>
+        <location filename="../widgets/reference_dialogs.py" line="448"/>
         <source>Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="414"/>
+        <location filename="../widgets/reference_dialogs.py" line="449"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
@@ -290,37 +290,37 @@
 <context>
     <name>CategoryListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="258"/>
+        <location filename="../widgets/reference_dialogs.py" line="293"/>
         <source>Show operations with Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="259"/>
+        <location filename="../widgets/reference_dialogs.py" line="294"/>
         <source>Replace with...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="268"/>
+        <location filename="../widgets/reference_dialogs.py" line="303"/>
         <source>Categories</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="290"/>
+        <location filename="../widgets/reference_dialogs.py" line="325"/>
         <source>Replace category &apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="290"/>
+        <location filename="../widgets/reference_dialogs.py" line="325"/>
         <source>&apos; with: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="294"/>
+        <location filename="../widgets/reference_dialogs.py" line="329"/>
         <source>Category &apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="294"/>
+        <location filename="../widgets/reference_dialogs.py" line="329"/>
         <source>&apos; was successfully replaced</source>
         <translation type="unfinished"></translation>
     </message>
@@ -354,12 +354,12 @@
 <context>
     <name>CategoryTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="233"/>
+        <location filename="../widgets/reference_dialogs.py" line="267"/>
         <source>Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="234"/>
+        <location filename="../widgets/reference_dialogs.py" line="268"/>
         <source>Often</source>
         <translation></translation>
     </message>
@@ -760,22 +760,22 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="231"/>
+        <location filename="../widgets/income_spending_widget.py" line="238"/>
         <source>Category</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="231"/>
+        <location filename="../widgets/income_spending_widget.py" line="238"/>
         <source>Tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="232"/>
+        <location filename="../widgets/income_spending_widget.py" line="239"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="233"/>
+        <location filename="../widgets/income_spending_widget.py" line="240"/>
         <source>Note</source>
         <translation></translation>
     </message>
@@ -954,6 +954,11 @@
         <translation></translation>
     </message>
     <message>
+        <location filename="../db/holdings_model.py" line="171"/>
+        <source>Last quote date: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../db/holdings_model.py" line="50"/>
         <source>Currency/Account/Asset</source>
         <translation></translation>
@@ -964,7 +969,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="132"/>
+        <location filename="../db/holdings_model.py" line="134"/>
         <source>Exp:</source>
         <translation></translation>
     </message>
@@ -1382,58 +1387,63 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="42"/>
+        <location filename="../widgets/income_spending_widget.py" line="43"/>
         <source>Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="43"/>
+        <location filename="../widgets/income_spending_widget.py" line="44"/>
         <source>Details</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="44"/>
+        <location filename="../widgets/income_spending_widget.py" line="45"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="45"/>
+        <location filename="../widgets/income_spending_widget.py" line="46"/>
         <source>Peer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="55"/>
+        <location filename="../widgets/income_spending_widget.py" line="47"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/income_spending_widget.py" line="57"/>
         <source>Paid in foreign currency:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="57"/>
+        <location filename="../widgets/income_spending_widget.py" line="60"/>
         <source>Add detail</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="59"/>
+        <location filename="../widgets/income_spending_widget.py" line="62"/>
         <source>Remove detail</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="61"/>
+        <location filename="../widgets/income_spending_widget.py" line="64"/>
         <source>Copy detail</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="135"/>
-        <location filename="../widgets/income_spending_widget.py" line="152"/>
+        <location filename="../widgets/income_spending_widget.py" line="142"/>
+        <location filename="../widgets/income_spending_widget.py" line="159"/>
         <source>Failed to add new record: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="165"/>
+        <location filename="../widgets/income_spending_widget.py" line="172"/>
         <source>Operation submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="173"/>
+        <location filename="../widgets/income_spending_widget.py" line="180"/>
         <source>Operation details submit failed: </source>
         <translation></translation>
     </message>
@@ -1985,7 +1995,7 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="277"/>
+        <location filename="../widgets/main_window.py" line="278"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation></translation>
     </message>
@@ -2115,12 +2125,12 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="89"/>
+        <location filename="../widgets/operations_widget.py" line="90"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="90"/>
+        <location filename="../widgets/operations_widget.py" line="91"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2214,9 +2224,44 @@ Application will be terminated now</source>
 <context>
     <name>PeerListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="222"/>
+        <location filename="../widgets/reference_dialogs.py" line="219"/>
+        <source>Show operations with Peer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="220"/>
+        <source>Replace with...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="229"/>
         <source>Peers</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="251"/>
+        <source>Replace peer &apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="251"/>
+        <source>&apos; with: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="254"/>
+        <source>Keep old name in notes?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="259"/>
+        <source>Peer &apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="259"/>
+        <source>&apos; was successfully replaced</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2545,7 +2590,7 @@ Application will be terminated now</source>
 <context>
     <name>QuotesListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="404"/>
+        <location filename="../widgets/reference_dialogs.py" line="439"/>
         <source>Quotes</source>
         <translation></translation>
     </message>
@@ -2553,22 +2598,22 @@ Application will be terminated now</source>
 <context>
     <name>QuotesListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="364"/>
+        <location filename="../widgets/reference_dialogs.py" line="399"/>
         <source>Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="365"/>
+        <location filename="../widgets/reference_dialogs.py" line="400"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="366"/>
+        <location filename="../widgets/reference_dialogs.py" line="401"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="367"/>
+        <location filename="../widgets/reference_dialogs.py" line="402"/>
         <source>Quote</source>
         <translation></translation>
     </message>
@@ -2779,20 +2824,28 @@ Application will be terminated now</source>
 <context>
     <name>SelectCategoryDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="43"/>
+        <location filename="../widgets/selection_dialog.py" line="60"/>
         <source>Please select category</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SelectPeerDialog</name>
+    <message>
+        <location filename="../widgets/selection_dialog.py" line="44"/>
+        <source>Please select peer</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SelectReferenceDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="31"/>
+        <location filename="../widgets/selection_dialog.py" line="32"/>
         <source>No selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="31"/>
+        <location filename="../widgets/selection_dialog.py" line="32"/>
         <source>You should select something</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2800,7 +2853,7 @@ Application will be terminated now</source>
 <context>
     <name>SelectTagDialog</name>
     <message>
-        <location filename="../widgets/selection_dialog.py" line="61"/>
+        <location filename="../widgets/selection_dialog.py" line="76"/>
         <source>Please select tag</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3882,7 +3935,7 @@ Application will be terminated now</source>
 <context>
     <name>TagListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="302"/>
+        <location filename="../widgets/reference_dialogs.py" line="337"/>
         <source>Tag</source>
         <translation></translation>
     </message>
@@ -3916,37 +3969,37 @@ Application will be terminated now</source>
 <context>
     <name>TagsListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="320"/>
+        <location filename="../widgets/reference_dialogs.py" line="355"/>
         <source>Show operations with Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="321"/>
+        <location filename="../widgets/reference_dialogs.py" line="356"/>
         <source>Replace with...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="327"/>
+        <location filename="../widgets/reference_dialogs.py" line="362"/>
         <source>Tags</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="351"/>
+        <location filename="../widgets/reference_dialogs.py" line="386"/>
         <source>Replace tag &apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="351"/>
+        <location filename="../widgets/reference_dialogs.py" line="386"/>
         <source>&apos; with: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="355"/>
+        <location filename="../widgets/reference_dialogs.py" line="390"/>
         <source>Tag &apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="355"/>
+        <location filename="../widgets/reference_dialogs.py" line="390"/>
         <source>&apos; was successfully replaced</source>
         <translation type="unfinished"></translation>
     </message>
