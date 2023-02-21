@@ -176,6 +176,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         self._view = parent_view
         self._default_name = "name"
         self._stretch = None
+        self._sort_by = None
         self._filter_text = ''
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
         self._completion_model = QSqlTableModel(parent=parent_view, db=self.connection())
@@ -189,12 +190,13 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
             parent_id = self.ROOT_PID
         else:
             parent_id = parent.internalId()
+        order_by = f"ORDER BY {self._sort_by}" if self._sort_by is not None else ''
         if not self._filter_text:
-            child_id = self._read(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
+            child_id = self._read(f"SELECT id FROM {self._table} WHERE pid=:pid {order_by} LIMIT 1 OFFSET :row_n",
                                   [(":pid", parent_id), (":row_n", row)])
         else:  # display a plain list in a filter mode
-            child_id = self._read(f"SELECT id FROM {self._table} WHERE {self._filter_text} LIMIT 1 OFFSET :row_n",
-                                  [(":row_n", row)])
+            child_id = self._read(f"SELECT id FROM {self._table} WHERE {self._filter_text} {order_by} "
+                                  "LIMIT 1 OFFSET :row_n", [(":row_n", row)])
         if child_id:
             return self.createIndex(row, column, id=child_id)
         return QModelIndex()
@@ -206,8 +208,9 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         parent_id = self._read(f"SELECT pid FROM {self._table} WHERE id=:id", [(":id", child_id)])
         if parent_id == self.ROOT_PID:
             return QModelIndex()
+        order_by = f"ORDER BY {self._sort_by}" if self._sort_by is not None else ''
         row = self._read(f"SELECT row_number FROM ("
-                         f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
+                         f"SELECT ROW_NUMBER() OVER ({order_by}) AS row_number, id, pid "
                          f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
                          f"WHERE id=:id", [(":id", parent_id)])
         return self.createIndex(row-1, 0, id=parent_id)
@@ -365,8 +368,9 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
 
     # find item by ID and make it selected in associated self._view
     def locateItem(self, item_id):
+        order_by = f"ORDER BY {self._sort_by}" if self._sort_by is not None else ''
         row = self._read(f"SELECT row_number FROM ("
-                         f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
+                         f"SELECT ROW_NUMBER() OVER ({order_by}) AS row_number, id, pid "
                          f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
                          f"WHERE id=:id", [(":id", item_id)])
         if row is None:

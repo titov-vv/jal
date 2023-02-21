@@ -180,6 +180,7 @@ class PeerTreeModel(SqlTreeModel):
         self._columns = [("name", self.tr("Name")),
                          ("location", self.tr("Location")),
                          ("actions_count", self.tr("Docs count"))]
+        self._sort_by = "name"
         self._stretch = "name"
         self._int_delegate = None
         self._grid_delegate = None
@@ -265,6 +266,7 @@ class CategoryTreeModel(SqlTreeModel):
         super().__init__(table, parent_view)
         self._columns = [("name", self.tr("Name")),
                          ("often", self.tr("Often"))]
+        self._sort_by = "name"
         self._stretch = "name"
         self._bool_delegate = None
         self._grid_delegate = None
