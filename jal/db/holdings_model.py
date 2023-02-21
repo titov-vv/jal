@@ -110,6 +110,8 @@ class HoldingsModel(QAbstractItemModel):
             return self.data_font(item.data, index.column())
         if role == Qt.BackgroundRole:
             return self.data_background(item.data, index.column(), self._view.isEnabled())
+        if role == Qt.ToolTipRole:
+            return self.data_tooltip(item.data, index.column())
         if role == Qt.TextAlignmentRole:
             if index.column() < 2:
                 return int(Qt.AlignLeft)
@@ -160,6 +162,14 @@ class HoldingsModel(QAbstractItemModel):
             return f"{data['value_a']:,.2f}" if data['value_a'] else '-.--'
         else:
             assert False
+
+    def data_tooltip(self, data, column):
+        if column == 4:
+            quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
+            quote_age = int((datetime.utcnow() - quote_date).total_seconds() / 86400)
+            if quote_age > 7:
+                return ts2d(int(data['quote_ts']))
+        return ''
 
     def data_font(self, data, column):
         if data['level'] < 2:
