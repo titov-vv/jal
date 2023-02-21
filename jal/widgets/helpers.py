@@ -1,6 +1,6 @@
 import io
 from datetime import time, datetime, timedelta, timezone
-from PySide6.QtCore import QCoreApplication, QBuffer
+from PySide6.QtCore import QBuffer
 from PySide6.QtGui import QImage
 try:
     from pyzbar import pyzbar
@@ -21,6 +21,13 @@ def dependency_present(module_list):
         except ImportError:
             result = False
     return result
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Check if given signal of an object is connected or not
+def is_signal_connected(object, signal_name) -> bool:
+    meta_object = object.metaObject()
+    method_index = meta_object.indexOfSignal(signal_name)
+    return object.isSignalConnected(meta_object.method(method_index))
 
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date and time

@@ -8,7 +8,7 @@ from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidg
 from jal.constants import CustomColor
 from jal.db.helpers import load_icon
 from jal.db.category import JalCategory
-from jal.widgets.helpers import month_list, month_start_ts, month_end_ts
+from jal.widgets.helpers import is_signal_connected, month_list, month_start_ts, month_end_ts
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 from jal.widgets.mdi import MdiWidget
 
@@ -260,7 +260,8 @@ class IncomeSpendingReportModel(QAbstractItemModel):
         font.setBold(True)
         self._view.header().setFont(font)
 
-        self._view.header().sectionDoubleClicked.connect(self.toggeYearColumns)
+        if not is_signal_connected(self._view.header(), "sectionDoubleClicked(int)"):
+            self._view.header().sectionDoubleClicked.connect(self.toggeYearColumns)
 
     def toggeYearColumns(self, section):
         year, month = self._root.column2calendar(section)
