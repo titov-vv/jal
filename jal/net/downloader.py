@@ -334,7 +334,7 @@ class QuoteDownloader(QObject):
     # noinspection PyMethodMayBeStatic
     def MOEX_DataReader(self, asset, currency_id, start_timestamp, end_timestamp, update_symbol=True):
         currency = JalAsset(currency_id).symbol()
-        moex_info = self.MOEX_info(symbol=asset.symbol(), isin=asset.isin(), currency=currency, special=True)
+        moex_info = self.MOEX_info(symbol=asset.symbol(currency_id), isin=asset.isin(), currency=currency, special=True)
         if (moex_info['engine'] is None) or (moex_info['market'] is None) or (moex_info['board'] is None):
             logging.warning(f"Failed to find {asset.symbol()} on moex.com")
             return None
@@ -344,7 +344,7 @@ class QuoteDownloader(QObject):
         elif (moex_info['market'] == 'shares') and (moex_info['board'] == 'TQIF'):
             asset_code = asset.isin()   # ETFs are quoted by ISIN
         else:
-            asset_code = asset.symbol()
+            asset_code = asset.symbol(currency_id)
         if update_symbol:
             isin = moex_info['isin'] if 'isin' in moex_info else ''
             reg_number = moex_info['reg_number'] if 'reg_number' in moex_info else ''

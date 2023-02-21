@@ -177,6 +177,7 @@ def test_MOEX_downloader(prepare_db_moex):
 
 def test_MOEX_downloader_USD(prepare_db_moex):
     create_assets([('FXGD', 'FinEx Gold ETF', 'IE00B8XB7377', 2, PredefinedAsset.ETF, 0)])   # ID = 8
+    JalAsset(8).add_symbol('FXGD', 1, 'FinEx Gold ETF - RUB')
     usd_quotes = pd.DataFrame({'Close': [Decimal('12.02'), Decimal('11.90')],
                                'Date': [datetime(2021, 12, 13), datetime(2021, 12, 14)]})
     usd_quotes = usd_quotes.set_index('Date')
