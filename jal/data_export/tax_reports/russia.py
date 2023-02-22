@@ -453,7 +453,7 @@ class TaxesRussia(TaxReport):
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.CorporateAction]
-        trades = [x for x in trades if x.close_operation().settlement() <= self.year_end]   # TODO Why not self.year_begin<=?
+        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         trades = sorted(trades, key=lambda x: (x.asset().symbol(self.account_currency.id()), x.close_operation().timestamp()))
         group = 1
         share = Decimal('1.0')   # This will track share of processed asset, so it starts from 100.0%
