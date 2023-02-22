@@ -126,6 +126,8 @@ def test_ECB_downloader(prepare_db):
 
 def test_MOEX_downloader(prepare_db_moex):
     create_assets([('ЗПИФ ПНК', 'ЗПИФ ПНК Рентал', 'RU000A1013V9', 1, PredefinedAsset.ETF, 0)])   # ID = 8
+    create_assets([('TEST', 'TEST', '', 1, PredefinedAsset.Stock, 0)])                            # ID = 9
+
     stock_quotes = pd.DataFrame({'Close': [Decimal('287.95'), Decimal('287.18')],
                                  'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     stock_quotes = stock_quotes.set_index('Date')
@@ -173,6 +175,9 @@ def test_MOEX_downloader(prepare_db_moex):
 
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(8), 1, 1639353600, 1639440000, update_symbol=False)
     assert_frame_equal(etf_quotes, quotes_downloaded)
+
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(9), 1, 1639353600, 1639440000, update_symbol=False)
+    assert quotes_downloaded is None
 
 
 def test_MOEX_downloader_USD(prepare_db_moex):

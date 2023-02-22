@@ -335,10 +335,10 @@ class QuoteDownloader(QObject):
     def MOEX_DataReader(self, asset, currency_id, start_timestamp, end_timestamp, update_symbol=True):
         currency = JalAsset(currency_id).symbol()
         moex_info = self.MOEX_info(symbol=asset.symbol(currency_id), isin=asset.isin(), currency=currency, special=True)
-        if (moex_info['engine'] is None) or (moex_info['market'] is None) or (moex_info['board'] is None):
+        if not ('engine' in moex_info and 'market' in moex_info and 'board' in moex_info) or \
+                (moex_info['engine'] is None) or (moex_info['market'] is None) or (moex_info['board'] is None):
             logging.warning(f"Failed to find {asset.symbol()} on moex.com")
             return None
-
         if (moex_info['market'] == 'bonds') and (moex_info['board'] == 'TQCB'):
             asset_code = asset.isin()   # Corporate bonds are quoted by ISIN
         elif (moex_info['market'] == 'shares') and (moex_info['board'] == 'TQIF'):
