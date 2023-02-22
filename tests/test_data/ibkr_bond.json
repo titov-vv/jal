@@ -16,8 +16,8 @@
     {"id": 4, "asset": 4, "symbol": "AAPL", "currency": 1,"note": "NASDAQ"}
   ],
   "assets_data": [
-    {"id": 1, "asset": 2, "reg_number": "912909AN8", "expiry": 1773532800},
-    {"id": 2, "asset": 3, "reg_number": "912CALAN8", "expiry": 1773532800},
+    {"id": 1, "asset": 2, "reg_number": "912909AN8", "expiry": 1773532800, "principal": 1000},
+    {"id": 2, "asset": 3, "reg_number": "912CALAN8", "expiry": 1773532800, "principal": 1000},
     {"id": 3, "asset": 4, "reg_number": "037833100"}
   ],
   "trades": [

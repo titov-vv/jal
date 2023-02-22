@@ -47,6 +47,7 @@ class JalAsset(JalDB):
         self._reg_number = self._data.get('data', {}).get(AssetData.RegistrationCode, '') if self._data is not None else ''
         self._expiry = self._data.get('data', {}).get(AssetData.ExpiryDate, '') if self._data is not None else ''
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '') if self._data is not None else ''
+        self._principal = Decimal(self._principal) if self._principal else Decimal('0')
 
     def invalidate_cache(self):
         self._fetch_data()
@@ -220,7 +221,7 @@ class JalAsset(JalDB):
     def reg_number(self):
         return self._reg_number
 
-    def principal(self):
+    def principal(self) -> Decimal:
         return self._principal
 
     # Updates relevant asset data fields with information provided in data dictionary

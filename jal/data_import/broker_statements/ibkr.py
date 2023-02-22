@@ -167,6 +167,7 @@ class StatementIBKR(StatementXML):
                                           ('cusip', 'reg_number', str, ''),
                                           ('expiry', 'expiry', datetime, 0),
                                           ('maturity', 'maturity', datetime, 0),
+                                          ('principalAdjustFactor', 'principal', str, ''),
                                           ('listingExchange', 'exchange', str, '')],
                                'loader': self.load_assets},
             'Trades': {'tag': 'Trade',
@@ -381,6 +382,8 @@ class StatementIBKR(StatementXML):
                 asset['expiry'] = asset['maturity']
             if asset['expiry'] == 0:
                 asset.pop('expiry')
+            if asset['principal']:
+                asset['principal'] = int(asset['principal']) * IBKR_Asset.BondPrincipal
             asset.pop('maturity')
             asset.pop('exchange')
             self.asset_id(asset)

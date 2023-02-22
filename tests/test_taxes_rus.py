@@ -34,7 +34,7 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         ("DEL", "DELISTED STOCK", "US12345X0000", 2, PredefinedAsset.Stock, 0),
         ("BTC", "Bitcoin", "", 2, PredefinedAsset.Crypto, 0)
     ]
-    create_assets(assets)
+    create_assets(assets, data=[(9, 'principal', "1000")])
     usd_rates = [
         (1569456000, 64.1873), (1569369600, 63.706), (1569283200, 63.9453), (1569024000, 63.8487),
         (1582243200, 63.7413), (1582156800, 63.6873), (1582070400, 63.7698), (1581984000, 63.3085),

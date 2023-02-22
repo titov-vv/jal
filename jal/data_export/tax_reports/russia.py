@@ -1,5 +1,4 @@
 from decimal import Decimal
-
 from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.helpers import remove_exponent
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
@@ -12,7 +11,6 @@ from jal.data_export.taxes import TaxReport
 class TaxesRussia(TaxReport):
     currency_name = 'RUB'
     country_name = "russia"
-    BOND_PRINCIPAL = Decimal('1000')  # TODO Principal should be used from 'asset_data' table
 
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
@@ -188,7 +186,7 @@ class TaxesRussia(TaxReport):
                 'symbol': trade.asset().symbol(self.account_currency.id()),
                 'isin': trade.asset().isin(),
                 'qty': trade.qty(),
-                'principal': self.BOND_PRINCIPAL,
+                'principal': trade.asset().principal(),
                 'country_iso': country.iso_code(),
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
                 'o_number': trade.open_operation().number(),
@@ -196,7 +194,7 @@ class TaxesRussia(TaxReport):
                 'o_rate': o_rate,
                 'os_date': trade.open_operation().settlement(),
                 'os_rate': os_rate,
-                'o_price': Decimal('100') * trade.open_operation().price() / self.BOND_PRINCIPAL,
+                'o_price': Decimal('100') * trade.open_operation().price() / trade.asset().principal(),
                 'o_int': o_interest,
                 'o_int_rub': o_interest_rub,
                 'o_amount': o_amount,
@@ -209,7 +207,7 @@ class TaxesRussia(TaxReport):
                 'c_rate': c_rate,
                 'cs_date': trade.close_operation().settlement(),
                 'cs_rate': cs_rate,
-                'c_price': Decimal('100') * trade.close_operation().price() / self.BOND_PRINCIPAL,
+                'c_price': Decimal('100') * trade.close_operation().price() / trade.asset().principal(),
                 'c_int': c_interest,
                 'c_int_rub': c_interest_rub,
                 'c_amount': c_amount,
