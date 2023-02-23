@@ -8,7 +8,7 @@ class JalViewModel(JalModel):
     def __init__(self, parent_view, table_name):
         super().__init__(parent_view, table_name)
         self._columns = []
-        self.deleted = []   # FIXME - this list isn't properly cleaned after deletion and change of an operation
+        self.deleted = []
         self._view = parent_view
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
