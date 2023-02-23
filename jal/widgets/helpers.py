@@ -2,6 +2,8 @@ import io
 from datetime import time, datetime, timedelta, timezone
 from PySide6.QtCore import QBuffer
 from PySide6.QtGui import QImage
+from PySide6.QtWidgets import QApplication
+from jal.constants import Setup
 try:
     from pyzbar import pyzbar
 except ImportError:
@@ -28,6 +30,18 @@ def is_signal_connected(object, signal_name) -> bool:
     meta_object = object.metaObject()
     method_index = meta_object.indexOfSignal(signal_name)
     return object.isSignalConnected(meta_object.method(method_index))
+
+# -----------------------------------------------------------------------------------------------------------------------
+# center given window with respect to main application window
+def center_window(window):
+    main_window = None
+    for widget in QApplication.topLevelWidgets():
+        if widget.objectName() == Setup.MAIN_WND_NAME:
+            main_window = widget
+    if main_window:
+        x = main_window.x() + main_window.width() / 2 - window.width() / 2
+        y = main_window.y() + main_window.height() / 2 - window.height() / 2
+        window.setGeometry(x, y, window.width(), window.height())
 
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date and time

@@ -1,7 +1,7 @@
 from PySide6.QtCore import Slot
-from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
-from jal.constants import Setup
+from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.ui.ui_select_reference_dlg import Ui_SelectReferenceDlg
+from jal.widgets.helpers import center_window
 from jal.widgets.reference_selector import PeerSelector
 from jal.widgets.reference_selector import CategorySelector
 from jal.widgets.reference_selector import TagSelector
@@ -16,15 +16,7 @@ class SelectReferenceDialog(QDialog, Ui_SelectReferenceDlg):
         self.selected_id = 0
         self.setWindowTitle(title)
         self.DescriptionLabel.setText(description)
-        # center dialog with respect to main application window
-        parent = None
-        for widget in QApplication.topLevelWidgets():           # TODO - repeating code - move to dedicated routine
-            if widget.objectName() == Setup.MAIN_WND_NAME:
-                parent = widget
-        if parent:
-            x = parent.x() + parent.width() / 2 - self.width() / 2
-            y = parent.y() + parent.height() / 2 - self.height() / 2
-            self.setGeometry(x, y, self.width(), self.height())
+        center_window(self)
 
     @Slot()
     def closeEvent(self, event):
