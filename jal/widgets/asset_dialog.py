@@ -21,7 +21,7 @@ class AssetsListModel(AbstractReferenceListModel):
                          ("base_asset", self.tr("Base asset"))]
 
 
-class AssetDialog(QDialog, Ui_AssetDialog):   # FIXME Dialog crashes with segmentation violation after 2-3 sequential calls
+class AssetDialog(QDialog, Ui_AssetDialog):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
