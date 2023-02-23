@@ -116,41 +116,38 @@ class Ledger(QObject, JalDB):
             sequence.append(cls._read_record(query, named=True))
         return sequence
 
-    @classmethod            # FIXME Below 3 methods are very similar - combine?
-    # Return a list of [op_type, op_id] of operation identifiers that have category_id involved
+    @classmethod
+    # Returns a list of [op_type, op_id, timestamp, account_id, subtype] ordered by timestamp
+    # collected from 'ledger' table with given WHERE statement set as condition and parameters
+    def _get_operations_by_filter(cls, condition, parameters) -> list:
+        operations = []
+        query = cls._exec(
+            f"SELECT DISTINCT op_type, operation_id AS id, timestamp, account_id, 0 AS subtype FROM ledger "
+            f"{condition} ORDER BY timestamp", parameters, forward_only=True)
+        while query.next():
+            operations.append(cls._read_record(query, named=True))
+        return operations
+
+    @classmethod
+    # Return a list of [op_type, op_id, timestamp, account_id, subtype] of operations that have peer_id involved
     def get_operations_by_peer(cls, begin: int, end: int, peer_id: int) -> list:
-        operations = []
-        query = cls._exec(
-            "SELECT DISTINCT op_type, operation_id AS id, timestamp, account_id, 0 AS subtype FROM ledger "
-            "WHERE peer_id=:peer AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
-            [(":begin", begin), (":end", end), (":peer", peer_id)], forward_only=True)
-        while query.next():
-            operations.append(cls._read_record(query, named=True))
-        return operations
+        condition = "WHERE peer_id=:peer AND timestamp>=:begin AND timestamp<=:end"
+        parameters = [(":begin", begin), (":end", end), (":peer", peer_id)]
+        return cls._get_operations_by_filter(condition, parameters)
 
     @classmethod
-    # Return a list of [op_type, op_id] of operation identifiers that have category_id involved
+    # Return a list of [op_type, op_id, timestamp, account_id, subtype] of operations that have category_id involved
     def get_operations_by_category(cls, begin: int, end: int, category_id: int) -> list:
-        operations = []
-        query = cls._exec(
-            "SELECT DISTINCT op_type, operation_id AS id, timestamp, account_id, 0 AS subtype FROM ledger "
-            "WHERE category_id=:category AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
-            [(":begin", begin), (":end", end), (":category", category_id)], forward_only=True)
-        while query.next():
-            operations.append(cls._read_record(query, named=True))
-        return operations
+        condition = "WHERE category_id=:category AND timestamp>=:begin AND timestamp<=:end"
+        parameters = [(":begin", begin), (":end", end), (":category", category_id)]
+        return cls._get_operations_by_filter(condition, parameters)
 
     @classmethod
-    # Return a list of [op_type, op_id] of operation identifiers that have tag_id involved
+    # Return a list of [op_type, op_id, timestamp, account_id, subtype] of operations that have tag_id involved
     def get_operations_by_tag(cls, begin: int, end: int, tag_id: int) -> list:
-        operations = []
-        query = cls._exec(
-            "SELECT DISTINCT op_type, operation_id AS id, timestamp, account_id, 0 AS subtype FROM ledger "
-            "WHERE tag_id=:tag AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
-            [(":begin", begin), (":end", end), (":tag", tag_id)], forward_only=True)
-        while query.next():
-            operations.append(cls._read_record(query, named=True))
-        return operations
+        condition = "WHERE tag_id=:tag AND timestamp>=:begin AND timestamp<=:end"
+        parameters = [(":begin", begin), (":end", end), (":tag", tag_id)]
+        return cls._get_operations_by_filter(condition, parameters)
 
     # Add one more transaction to 'book' of ledger.
     # If book is Assets and value is not None then amount contains Asset Quantity and Value contains amount
