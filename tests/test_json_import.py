@@ -231,7 +231,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     # Verify that asset prices were loaded for stock dividends and vestings
     assert JalAsset(1).quote(d2t(230101), 1) == (1672531200, Decimal('1'))
     assert JalAsset(4).quote(d2t(230101), 2) == (1633033200, Decimal('25.73'))
-    assert JalAsset(18).quote(d2t(230101), 2) == (1595017200, Decimal('4.7299999999999995'))  # FIXME - here 4.73 is a correct value
+    assert JalAsset(18).quote(d2t(230101), 2) == (1595017200, Decimal('4.73'))
     assert JalAsset(34).quote(d2t(230101), 2) == (1591215600, Decimal('8.59'))
     assert JalAsset(8).quote(d2t(230101), 2) == (1620345600, Decimal('678'))
 

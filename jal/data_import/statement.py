@@ -460,7 +460,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             payment['note'] = payment.pop('description')
             if 'price' in payment:
                 JalAsset(payment['asset_id']).set_quotes(
-                    [{'timestamp': payment['timestamp'], 'quote': Decimal(str(payment.pop('price')))}],  # FIXME Here should be no conversion to str
+                    [{'timestamp': payment['timestamp'], 'quote': Decimal(payment.pop('price'))}],
                     JalAccount(payment['account_id']).currency())
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend

@@ -8,6 +8,7 @@ from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory, PredefinedAsset
 from jal.widgets.helpers import ManipulateDate, ts2dt
+from jal.db.helpers import format_decimal
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import Dividend
@@ -232,7 +233,7 @@ class StatementIBKR(StatementXML):
                                                 ('awardDate', 'timestamp', datetime, None),
                                                 ('activityDescription', 'description', str, None),
                                                 ('quantity', 'amount', float, None),
-                                                ('price', 'price', float, None)],
+                                                ('price', 'price', str, None)],
                                      'loader': self.load_vestings},
             'TransactionTaxes': {'tag': 'TransactionTax',
                                  'level': 'SUMMARY',
@@ -669,7 +670,7 @@ class StatementIBKR(StatementXML):
 
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         action['amount'] = action['quantity']
-        action['price'] = action['value'] / action['quantity']
+        action['price'] = format_decimal(Decimal(str(action['value'])) / Decimal(str(action['quantity'])))
         action['tax'] = 0
         self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.ASSET_PAYMENTS].append(action)
