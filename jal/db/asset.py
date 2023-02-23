@@ -36,10 +36,7 @@ class JalAsset(JalDB):
                      (":isin", data['isin']), (":country", data['country'])], commit=True)
                 self._id = query.lastInsertId()
                 self._fetch_data()
-        try:
-            self._data = [x for x in self.db_cache if x['id'] == self._id][0]
-        except IndexError:
-            self._data = None
+        self._data = next((x for x in self.db_cache if x['id'] == self._id), None)
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['full_name'] if self._data is not None else ''
         self._isin = self._data['isin'] if self._data is not None else None
