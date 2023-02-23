@@ -39,11 +39,8 @@ class JalAccount(JalDB):
                          (":currency", data['currency']), (":organization", data['organization']),
                          (":country", data['country']), (":precision", data['precision'])], commit=True)
                     self._id = query.lastInsertId()
-                self._fetch_data()
-        try:
-            self._data = [x for x in self.db_cache if x['id']==self._id][0]
-        except IndexError:
-            self._data = None
+                self._fetch_data(only_self=True)
+        self._data = next((x for x in self.db_cache if x['id']==self._id), None)
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['name'] if self._data is not None else ''
         self._number = self._data['number'] if self._data is not None else None
@@ -62,11 +59,20 @@ class JalAccount(JalDB):
     def class_cache(cls) -> True:
         return True
 
-    def _fetch_data(self):
-        JalAccount.db_cache = []
-        query = self._exec("SELECT * FROM accounts ORDER BY id")
-        while query.next():
-            JalAccount.db_cache.append(self._read_record(query, named=True))
+    def _fetch_data(self, only_self=False):
+        if only_self:
+            element = next((x for x in self.db_cache if x['id']==self._id), None)
+            data = self._read("SELECT * FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
+            if data is not None:
+                if element is not None:
+                    JalAccount.db_cache[JalAccount.db_cache.index(element)] = data
+                else:
+                    JalAccount.db_cache.append(data)
+        else:
+            JalAccount.db_cache = []
+            query = self._exec("SELECT * FROM accounts ORDER BY id")
+            while query.next():
+                JalAccount.db_cache.append(self._read_record(query, named=True))
 
     # Method returns a list of JalAccount objects for accounts of given type (or all if None given)
     # Flag "active_only" allows only active accounts output by default
@@ -180,7 +186,7 @@ class JalAccount(JalDB):
     def reconcile(self, timestamp: int):
         _ = self._exec("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
                        [(":timestamp", timestamp), (":account_id", self._id)])
-        self._fetch_data()  # TODO optimize for 1 account only
+        self._fetch_data(only_self=True)
 
     def precision(self) -> int:
         return self._precision
