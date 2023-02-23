@@ -5,11 +5,10 @@ from dateutil import tz
 from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox, QTableView, QHeaderView, QPushButton
 from PySide6.QtSql import QSqlTableModel
-from PySide6.QtGui import QFont
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
-from jal.db.db import JalModel
+from jal.db.view_model import JalViewModel
 from jal.db.helpers import load_icon
 from jal.db.operations import LedgerTransaction
 
@@ -226,42 +225,11 @@ class CorporateActionWidget(AbstractOperationDetails):
         return new_record
 
 
-# FIXME - class ResultsModel has common elements with DetailsModel class of income_spending_widget.py
-# Probably both should have common ancestor
-class ResultsModel(JalModel):
+# ----------------------------------------------------------------------------------------------------------------------
+class ResultsModel(JalViewModel):
     def __init__(self, parent_view, table_name):
         super().__init__(parent_view, table_name)
         self._columns = ["id", "action_id", self.tr("Asset"), self.tr("Qty"), self.tr("Share, %")]
-        self.deleted = []   # FIXME - this list isn't properly cleaned after deletion and change of an operation
-        self._view = parent_view
-
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self._columns[section]
-        return None
-
-    def removeRow(self, row, parent=None):
-        self.deleted.append(row)
-        super().removeRow(row)
-
-    def submitAll(self):
-        result = super().submitAll()
-        if result:
-            self.deleted = []
-        return result
-
-    def revertAll(self):
-        self.deleted = []
-        super().revertAll()
-
-    def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid():
-            return None
-        if role == Qt.FontRole and (index.row() in self.deleted):
-            font = QFont()
-            font.setStrikeOut(True)
-            return font
-        return super().data(index, role)
 
     def configureView(self):
         self._view.setColumnHidden(0, True)

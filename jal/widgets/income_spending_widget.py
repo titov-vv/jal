@@ -9,7 +9,7 @@ from PySide6.QtSql import QSqlTableModel
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
-from jal.db.db import JalModel
+from jal.db.view_model import JalViewModel
 from jal.db.helpers import load_icon
 from jal.db.operations import LedgerTransaction
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
@@ -232,45 +232,19 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.before_record_insert(record)   # processing is the same as before insert
 
 
-class DetailsModel(JalModel):
+# ----------------------------------------------------------------------------------------------------------------------
+class DetailsModel(JalViewModel):
     def __init__(self, parent_view, table_name):
         super().__init__(parent_view, table_name)
         self._columns = ["id", "pid", self.tr("Category"), self.tr("Tag"),
                          self.tr("Amount"), self.tr("Amount"), self.tr("Note")]
-        self.deleted = []
         self.alt_currency_name = ''
-        self._view = parent_view
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            if section == 5:
-                return self._columns[section] + ', ' + self.alt_currency_name
-            else:
-                return self._columns[section]
-        return None
-
-    def removeRow(self, row, parent=None):
-        self.deleted.append(row)
-        super().removeRow(row)
-
-    def submitAll(self):
-        result = super().submitAll()
-        if result:
-            self.deleted = []
-        return result
-
-    def revertAll(self):
-        self.deleted = []
-        super().revertAll()
-
-    def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid():
-            return None
-        if role == Qt.FontRole and (index.row() in self.deleted):
-            font = QFont()
-            font.setStrikeOut(True)
-            return font
-        return super().data(index, role)
+        if section == 5 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self._columns[section] + ', ' + self.alt_currency_name
+        else:
+            super().headerData(section, orientation, role)
 
     def configureView(self):
         self._view.setColumnHidden(0, True)
