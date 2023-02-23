@@ -239,7 +239,7 @@ class JalAsset(JalDB):
                     updaters[key](data[key])
                 except KeyError:  # No updater for this key is present
                     continue
-        self._fetch_data()  # TODO optimize for 1 asset only
+        self._fetch_data()
 
     def _update_isin(self, new_isin: str) -> None:
         if self._isin:
