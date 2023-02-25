@@ -670,16 +670,18 @@ class Trade(LedgerTransaction):
             return f"{amount:,.2f}\n{qty:,.2f}"
 
     # Searches for dividend with type BondInterest that matches trade by timestamp, account, asset and number
-    # Returns None if accrued interest not found
-    def get_accrued_interest(self) -> [Dividend, None]:
+    # This dividend represents accrued interest for this operation.
+    # Returns value of accrued interest or 0 if such isn't found
+    def accrued_interest(self,currency_id: int = 0) -> Decimal:
         id = self._read("SELECT id FROM dividends WHERE timestamp=:timestamp AND account_id=:account "
                         "AND asset_id=:asset AND number=:number AND type=:interest",
                         [(":timestamp", self._timestamp), (":account", self._account.id()), (":number", self._number),
                          (":asset", self._asset.id()), (":interest", Dividend.BondInterest)])
-        if id:
-            return Dividend(id)
+        value = Dividend(id).amount() if id else Decimal('0')
+        if currency_id and currency_id != self._account.currency():
+            return value * JalAsset(self._account.currency()).quote(self.timestamp(), currency_id)[1]
         else:
-            return None
+            return value
 
     def processLedger(self, ledger):
         if self._broker is None:

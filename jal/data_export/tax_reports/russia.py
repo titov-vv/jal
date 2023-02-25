@@ -148,39 +148,29 @@ class TaxesRussia(TaxReport):
     def prepare_bonds(self):
         country = self.account.country()
         bonds_report = []
+        ns = not self.use_settlement
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() == PredefinedAsset.Bond]
         trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         for trade in trades:
-            o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
-            c_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
-            if self.use_settlement:
+            if ns:
+                os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
+                cs_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
+            else:
                 os_rate = self.account_currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
                 cs_rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
-            else:
-                os_rate = o_rate
-                cs_rate = c_rate
-            o_accrued_interest = trade.open_operation().get_accrued_interest()
-            o_interest = -o_accrued_interest.amount() if o_accrued_interest else Decimal('0')
-            o_interest_rub = round(o_interest * o_rate, 2)
-            c_accrued_interest = trade.close_operation().get_accrued_interest()
-            c_interest = c_accrued_interest.amount() if c_accrued_interest else Decimal('0')
-            c_interest_rub = round(c_interest * c_rate, 2)
-            o_amount = round(trade.open_operation().price() * abs(trade.qty()), 2)
-            o_amount_rub = round(o_amount * os_rate, 2)
-            c_amount = round(trade.close_operation().price() * abs(trade.qty()), 2)
-            c_amount_rub = round(c_amount * cs_rate, 2)
-            o_fee = trade.open_operation().fee() * abs(trade.qty() / trade.open_operation().qty())
-            c_fee = trade.close_operation().fee() * abs(trade.qty() / trade.close_operation().qty())
-            # FIXME accrued interest calculations for short deals is not clear - to be corrected
-            income = c_amount + c_interest if trade.qty() >= Decimal('0') else o_amount
-            income_rub = c_amount_rub + c_interest_rub if trade.qty() >= Decimal('0') else o_amount_rub
-            spending = o_amount + o_interest if trade.qty() >= Decimal('0') else c_amount
-            spending += o_fee + c_fee
-            spending_rub = o_amount_rub + o_interest_rub if trade.qty() >= Decimal('0') else c_amount_rub
-            spending_rub += round(o_fee * o_rate, 2) + round(c_fee * c_rate, 2)
+            if trade.qty() >= Decimal('0'):  # Long trade
+                income = round(trade.close_amount(no_settlement=ns), 2) + trade.close_operation().accrued_interest()
+                income_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.close_operation().accrued_interest(self._currency_id), 2)
+                spending = round(trade.open_amount(no_settlement=ns), 2) + trade.fee() - trade.open_operation().accrued_interest()
+                spending_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) - round(trade.open_operation().accrued_interest(self._currency_id), 2)
+            else:                            # Short trade
+                income = round(trade.open_amount(no_settlement=ns), 2) + trade.open_operation().accrued_interest()
+                income_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(trade.open_operation().accrued_interest(self._currency_id), 2)
+                spending = round(trade.close_amount(no_settlement=ns), 2) + trade.fee() - trade.close_operation().accrued_interest()
+                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) - round(trade.close_operation().accrued_interest(self._currency_id), 2)
             line = {
                 'report_template': "bond_trade",
                 'symbol': trade.asset().symbol(self.account_currency.id()),
@@ -191,29 +181,29 @@ class TaxesRussia(TaxReport):
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
                 'o_number': trade.open_operation().number(),
                 'o_date': trade.open_operation().timestamp(),
-                'o_rate': o_rate,
+                'o_rate': self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1],
                 'os_date': trade.open_operation().settlement(),
                 'os_rate': os_rate,
                 'o_price': Decimal('100') * trade.open_operation().price() / trade.asset().principal(),
-                'o_int': o_interest,
-                'o_int_rub': o_interest_rub,
-                'o_amount': o_amount,
-                'o_amount_rub': o_amount_rub,
-                'o_fee': o_fee,
-                'o_fee_rub': round(o_fee * o_rate, 2),
+                'o_int': -trade.open_operation().accrued_interest(),
+                'o_int_rub': -round(trade.open_operation().accrued_interest(self._currency_id), 2),
+                'o_amount':  round(trade.open_amount(no_settlement=ns), 2),
+                'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=ns), 2),
+                'o_fee': trade.open_fee(),
+                'o_fee_rub': round(trade.open_fee(self._currency_id), 2),
                 'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
                 'c_number': trade.close_operation().number(),
                 'c_date': trade.close_operation().timestamp(),
-                'c_rate': c_rate,
+                'c_rate': self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1],
                 'cs_date': trade.close_operation().settlement(),
                 'cs_rate': cs_rate,
                 'c_price': Decimal('100') * trade.close_operation().price() / trade.asset().principal(),
-                'c_int': c_interest,
-                'c_int_rub': c_interest_rub,
-                'c_amount': c_amount,
-                'c_amount_rub': c_amount_rub,
-                'c_fee': c_fee,
-                'c_fee_rub': round(c_fee * c_rate, 2),
+                'c_int': trade.close_operation().accrued_interest(),
+                'c_int_rub': round(trade.close_operation().accrued_interest(self._currency_id), 2),
+                'c_amount': round(trade.close_amount(no_settlement=ns), 2),
+                'c_amount_rub': round(trade.close_amount(self._currency_id, no_settlement=ns), 2),
+                'c_fee': trade.close_fee(),
+                'c_fee_rub': round(trade.close_fee(self._currency_id), 2),
                 'income': income,  # this field is required for DLSG
                 'income_rub': income_rub,
                 'spending_rub': spending_rub,
@@ -622,11 +612,11 @@ class TaxesRussia(TaxReport):
 
     def output_accrued_interest(self, actions, operation, share, level):
         country = self.account.country()
-        accrued_interest = operation.get_accrued_interest()
-        if not accrued_interest:
+        accrued_interest = operation.accrued_interest()
+        if accrued_interest == Decimal('0'):
             return
         rate = self.account_currency.quote(operation.timestamp(), self._currency_id)[1]
-        interest = accrued_interest.amount() if share == 1 else share * accrued_interest.amount()
+        interest = accrued_interest if share == 1 else share * accrued_interest
         interest_rub = abs(round(interest * rate, 2))
         if interest < 0:  # Accrued interest paid for purchase
             interest = -interest
