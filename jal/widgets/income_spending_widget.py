@@ -244,7 +244,7 @@ class DetailsModel(JalViewModel):
         if section == 5 and orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._columns[section] + ', ' + self.alt_currency_name
         else:
-            super().headerData(section, orientation, role)
+            return super().headerData(section, orientation, role)
 
     def configureView(self):
         self._view.setColumnHidden(0, True)
