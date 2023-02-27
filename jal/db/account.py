@@ -13,7 +13,6 @@ class JalAccount(JalDB):
     MONEY_FLOW = 1
     ASSETS_FLOW = 2
 
-    # TODO: change 'country' in data from 'country_id' to 'country short code' - the same as JalAsset does
     def __init__(self, account_id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
         super().__init__(cached=True)
         if not JalAccount.db_cache:
@@ -34,7 +33,8 @@ class JalAccount(JalDB):
                     query = self._exec(
                         "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, "
                         "country_id, precision) "
-                        "VALUES(:type, :name, 1, :number, :currency, :organization, :country, :precision)",
+                        "VALUES(:type, :name, 1, :number, :currency, :organization, "
+                        "coalesce((SELECT id FROM countries WHERE code=:country), 0), :precision)",
                         [(":type", data['type']), (":name", data['name']), (":number", data['number']),
                          (":currency", data['currency']), (":organization", data['organization']),
                          (":country", data['country']), (":precision", data['precision'])], commit=True)

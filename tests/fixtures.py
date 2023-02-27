@@ -112,7 +112,7 @@ def prepare_db_taxes(prepare_db):
     assert peer.id() == 1
     account = JalAccount(
         data={'type': PredefindedAccountType.Investment, 'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2,
-              'active': 1, 'organization': 1, 'country': 2, 'precision': 3},
+              'active': 1, 'organization': 1, 'country': 'us', 'precision': 3},
         create=True)
     assert account.id() == 1
     yield
