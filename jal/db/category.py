@@ -50,11 +50,10 @@ class JalCategory(JalDB):
             turnover += amount * rate
         return -turnover
 
-    @classmethod
-    def add_or_update_mapped_name(cls, name: str, category_id: int) -> None:  # TODO Review, should it be not static or not
-        _ = cls._exec("INSERT OR REPLACE INTO map_category (value, mapped_to) "
-                      "VALUES (:item_name, :category_id)",
-                      [(":item_name", name), (":category_id", category_id)], commit=True)
+    def add_or_update_mapped_name(self, name: str) -> None:
+        _ = self._exec("INSERT OR REPLACE INTO map_category (value, mapped_to) "
+                       "VALUES (:item_name, :category_id)",
+                       [(":item_name", name), (":category_id", self._id)], commit=True)
 
     # Returns a list of all names that were mapped to some category in for of {"value", "mapped_to"}
     @classmethod

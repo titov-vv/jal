@@ -386,7 +386,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                 "amount": row['sum'],
                 "note": row['name']
             })
-            JalCategory.add_or_update_mapped_name(row['name'], row['category'])
+            JalCategory(row['category']).add_or_update_mapped_name(row['name'])
         operation = {
             "timestamp": self.SlipDateTime.dateTime().toSecsSinceEpoch(),
             "account_id": self.AccountEdit.selected_id,
