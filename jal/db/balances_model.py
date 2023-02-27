@@ -28,10 +28,9 @@ class BalancesModel(QAbstractTableModel):
         return len(self._columns)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
-                col_name = self._columns[section] + self._currency_name if section == 3 else self._columns[section]
-                return col_name
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            col_name = self._columns[section] + self._currency_name if section == 3 else self._columns[section]
+            return col_name
         return None
 
     def data(self, index, role=Qt.DisplayRole):
