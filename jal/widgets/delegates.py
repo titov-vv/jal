@@ -146,8 +146,11 @@ class FloatDelegate(QStyledItemDelegate):
             self._color = CustomColor.LightGreen
         elif amount < Decimal('0'):
             self._color = CustomColor.LightRed
-        if amount == Decimal('0') and self._empty_zero:
-            return ''
+        else:
+            if self._empty_zero:
+                return ''
+            else:
+                self._color = None
         decimal_places = -amount.normalize().as_tuple().exponent
         decimal_places = decimal_places if self._allow_tail and (decimal_places > self._tolerance) else self._tolerance
         return QLocale().toString(float(amount), 'f', decimal_places)
@@ -175,7 +178,7 @@ class FloatDelegate(QStyledItemDelegate):
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
         option.displayAlignment = Qt.AlignRight
-        if self._colors:
+        if self._colors and self._color is not None:
             option.backgroundBrush = QBrush(self._color)
 
     def paint(self, painter, option, index):
