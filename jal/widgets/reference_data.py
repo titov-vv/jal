@@ -143,7 +143,8 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             editor = self.customEditor()
             editor.createNewRecord()
             editor.exec()
-            self.model.select()   # TODO better to make self.beginInsertRows/endInsertRows
+            self.model.select()
+            self.locateItem(editor.selected_id)
         else:
             idx = self._view.selectionModel().selection().indexes()
             current_index = idx[0] if idx else self.model.index(0, 0)

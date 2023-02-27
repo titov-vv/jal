@@ -99,6 +99,7 @@ class AssetDialog(QDialog, Ui_AssetDialog):
                 model.setData(model.index(row, model.fieldIndex("asset_id")), asset_id)
             if not model.submitAll():
                 return
+        self._asset_id = asset_id
         super().accept()
 
     def reject(self) -> None:
