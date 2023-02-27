@@ -80,7 +80,7 @@ class TimestampDelegate(QStyledItemDelegate):
         editor = DateTimeEditWithReset(aParent)
         editor.setTimeSpec(Qt.UTC)
         if 'H' in self._format:  # we have hours and need DataTime editor to edit it
-            editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")  # TODO should we use QLocale for formats?
+            editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
         else:
             editor.setDisplayFormat("dd/MM/yyyy")
         return editor

@@ -1,6 +1,6 @@
 from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel, QModelIndex
-from PySide6.QtGui import QBrush, QFont
+from PySide6.QtGui import QBrush, QFont, QFontDatabase, QFontMetrics
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor
 from jal.db.ledger import Ledger
@@ -19,6 +19,7 @@ class OperationsModel(QAbstractTableModel):
         self._begin = 0
         self._end = 0
         self._account = 0
+        self._mono_font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
 
         self.prepareData()
 
@@ -48,12 +49,15 @@ class OperationsModel(QAbstractTableModel):
                                                       self._data[row]['subtype'])
         if role == Qt.DisplayRole:
             return self.data_text(operation, index.column())
-        if role == Qt.FontRole and index.column() == 0:
-            # below line isn't related with font, it is put here to be called for each row minimal times (ideally 1)
-            self._view.setRowHeight(row, self._view.verticalHeader().defaultSectionSize() * operation.view_rows())
-            font = QFont()
-            font.setBold(True)
-            return font
+        if role == Qt.FontRole:
+            if index.column() == 0:
+                # below line isn't related with font, it is put here to be called for each row minimal times (ideally 1)
+                self._view.setRowHeight(row, self._view.verticalHeader().defaultSectionSize() * operation.view_rows())
+                font = QFont()
+                font.setBold(True)
+                return font
+            if index.column() == 1:
+                return self._mono_font
         if role == Qt.ForegroundRole and self._view.isEnabled():
             if index.column() == 0:
                 return QBrush(operation.label_color())
@@ -95,7 +99,7 @@ class OperationsModel(QAbstractTableModel):
 
     def configureView(self):
         self._view.setColumnWidth(0, 10)
-        self._view.setColumnWidth(1, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
+        self._view.setColumnWidth(1, QFontMetrics(self._mono_font).horizontalAdvance("00/00/0000 00:00:00") * 1.05)
         self._view.setColumnWidth(2, 300)
         self._view.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
         font = self._view.horizontalHeader().font()
