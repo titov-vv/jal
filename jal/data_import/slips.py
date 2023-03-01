@@ -183,7 +183,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             if qr_text:
                 self.qr_data_available.emit(qr_text)
             else:
-                logging.warning('ImportSlipDialog', "No QR codes were found in file")
+                logging.warning(self.tr("No QR codes were found in file"))
 
     #------------------------------------------------------------------------------------------
     # Qt operates with QImage class while pyzbar need PIL.Image as input
