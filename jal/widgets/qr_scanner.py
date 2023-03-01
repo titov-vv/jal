@@ -22,7 +22,7 @@ class QRScanner(QWidget):
         self.rectangle = None
 
         self.setMinimumHeight(405)
-        self.layout = QVBoxLayout()
+        self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.scene = QGraphicsScene(self)
         self.scene.setBackgroundBrush(QBrush(Qt.black))
@@ -44,7 +44,7 @@ class QRScanner(QWidget):
 
         self.processing = True   # disable any capture while camera is starting
         self.camera = QCamera(QMediaDevices.defaultVideoInput())
-        self.captureSession = QMediaCaptureSession()
+        self.captureSession = QMediaCaptureSession(self)
         self.imageCapture = QImageCapture(self.camera)
         self.captureSession.setCamera(self.camera)
         self.captureSession.setVideoOutput(self.viewfinder)

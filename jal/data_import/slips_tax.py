@@ -5,7 +5,7 @@ import requests
 from urllib import parse
 from datetime import datetime
 
-from PySide6.QtCore import Signal, Slot, QUrl
+from PySide6.QtCore import Signal, Slot, QUrl, QObject
 from PySide6.QtWidgets import QApplication, QDialog
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.db.settings import JalSettings
@@ -17,8 +17,8 @@ from jal.ui.ui_login_fns_dlg import Ui_LoginFNSDialog
 class RequestInterceptor(QWebEngineUrlRequestInterceptor):
     response_intercepted = Signal(str, str)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent = None):
+        super().__init__(parent)
         self.session = None
 
     # At successful login ESIA page will give Response '302 Found' with URL to irkkt-mobile.nalog.ru which
@@ -38,7 +38,7 @@ class RequestInterceptor(QWebEngineUrlRequestInterceptor):
 #-----------------------------------------------------------------------------------------------------------------------
 class LoginFNS(QDialog, Ui_LoginFNSDialog):
     def __init__(self, parent=None):
-        QDialog.__init__(self, parent=parent)
+        super().__init__(parent)
         self.setupUi(self)
 
         self.phone_number = ''
@@ -49,8 +49,8 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         self.web_session.headers['Content-Type'] = 'application/json; charset=UTF-8'
         self.web_session.headers['Accept-Encoding'] = 'gzip'
         self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'
-        self.web_profile = QWebEngineProfile()
-        self.web_interceptor = RequestInterceptor()
+        self.web_profile = QWebEngineProfile(self)
+        self.web_interceptor = RequestInterceptor(self)
         self.web_interceptor.response_intercepted.connect(self.response_esia)
         self.web_profile.setUrlRequestInterceptor(self.web_interceptor)
         self.ESIAWebView.setPage(QWebEnginePage(self.web_profile, self))
@@ -142,13 +142,14 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         self.accept()
 
 #-----------------------------------------------------------------------------------------------------------------------
-class SlipsTaxAPI:
+class SlipsTaxAPI(QObject):
     # Status codes that may be returned as result of class methods
     Failure = -1
     Success = 0
     Pending = 1
 
-    def __init__(self):
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.slip_json = None
         self.web_session = requests.Session()
         self.web_session.headers['ClientVersion'] = '2.9.0'

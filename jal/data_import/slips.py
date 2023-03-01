@@ -26,8 +26,8 @@ from jal.data_import.category_recognizer import recognize_categories
 #-----------------------------------------------------------------------------------------------------------------------
 # Custom model to display and edit slip lines
 class PandasLinesModel(QAbstractTableModel):
-    def __init__(self, data):
-        QAbstractTableModel.__init__(self)
+    def __init__(self, data, parent=None):
+        super().__init__(parent)
         self._data = data
 
     def flags(self, index):
@@ -126,8 +126,8 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     timestamp_patterns = ['yyyyMMddTHHmm', 'yyyyMMddTHHmmss', 'yyyy-MM-ddTHH:mm', 'yyyy-MM-ddTHH:mm:ss']
 
-    def __init__(self, parent):
-        QDialog.__init__(self, parent=parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setupUi(self)
         self.initUi()
         self.model = None
@@ -139,7 +139,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.slip_json = None
         self.slip_lines = None
 
-        self.slipsAPI = SlipsTaxAPI()
+        self.slipsAPI = SlipsTaxAPI(self)
         self.tensor_flow_present = dependency_present(['tensorflow'])
 
         self.qr_data_available.connect(self.parseQRdata)
@@ -347,7 +347,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.slip_lines['tag'] = None
         self.slip_lines = self.slip_lines[['name', 'category', 'confidence', 'tag', 'sum']]
 
-        self.model = PandasLinesModel(self.slip_lines)
+        self.model = PandasLinesModel(self.slip_lines, self)
         self.LinesTableView.setModel(self.model)
 
         self.delegate = SlipLinesDelegate(self.LinesTableView)
