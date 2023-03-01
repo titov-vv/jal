@@ -1,5 +1,5 @@
 import logging
-from PySide6.QtCore import Qt, Signal, QRectF
+from PySide6.QtCore import Qt, Signal, QRectF, QTimer
 from PySide6.QtGui import QImage, QPen, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView
 try:
@@ -12,8 +12,8 @@ from jal.widgets.helpers import decodeQR, QImage2Image
 
 # ----------------------------------------------------------------------------------------------------------------------
 class QRScanner(QWidget):
-    QR_SIZE = 0.75   # Size of rectangle for QR capture
-    readyForCapture = Signal(bool)
+    QR_SIZE = 0.75      # Size of rectangle for QR capture
+    QR_SCAN_RATE = 100  # Delay in ms between QR captures
     decodedQR = Signal(str)
 
     def __init__(self, parent=None):
@@ -49,22 +49,23 @@ class QRScanner(QWidget):
         self.captureSession.setCamera(self.camera)
         self.captureSession.setVideoOutput(self.viewfinder)
         self.captureSession.setImageCapture(self.imageCapture)
+        self.captureTimer = QTimer(self)
 
         self.camera.errorOccurred.connect(self.onCameraError)
-        self.readyForCapture.connect(self.onReadyForCapture)
         self.imageCapture.errorOccurred.connect(self.onCaptureError)
-        self.imageCapture.readyForCaptureChanged.connect(self.onReadyForCapture)
         self.imageCapture.imageCaptured.connect(self.onImageCaptured)
         self.viewfinder.nativeSizeChanged.connect(self.onVideoSizeChanged)
+        self.captureTimer.timeout.connect(self.scanQR)
 
         self.camera.start()
         self.processing = False
-        self.readyForCapture.emit(self.imageCapture.isReadyForCapture())
+        self.captureTimer.start(self.QR_SCAN_RATE)
 
     def stopScan(self):
         if self.camera is None:
             return
         self.processing = True   # disable capture
+        self.captureTimer.stop()
         self.camera.stop()
 
         self.camera = None
@@ -107,16 +108,16 @@ class QRScanner(QWidget):
     def onCameraError(self, error, error_str):
         logging.error(self.tr("Camera error: " + str(error) + " / " + error_str))
 
-    def onReadyForCapture(self, ready: bool):
-        if ready and not self.processing:
+    def scanQR(self):
+        if self.imageCapture is None:
+            return
+        if self.imageCapture.isReadyForCapture() and not self.processing:
             self.imageCapture.capture()
             self.processing = True
 
     def onImageCaptured(self, _id: int, img: QImage):
         self.decodeQR(img)
         self.processing = False
-        if self.imageCapture is not None:
-            self.readyForCapture.emit(self.imageCapture.isReadyForCapture())
 
     def decodeQR(self, qr_image: QImage):
         cropped = qr_image.copy(self.calculate_center_square(qr_image).toRect())
