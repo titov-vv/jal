@@ -348,7 +348,7 @@ class Ui_ImportSlipDlg(object):
         self.SlipGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Slip", None))
         self.SlipDateTime.setDisplayFormat(QCoreApplication.translate("ImportSlipDlg", u"dd/MM/yyyy hh:mm:ss", None))
         self.DateTimeLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Date / Time:", None))
-        self.CorrespondenceLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"-->", None))
+        self.CorrespondenceLbl.setText(QCoreApplication.translate("ImportSlipDlg", u" \u279c ", None))
         self.PeerLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Peer:", None))
         self.LinesLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Lines:", None))
         self.AccountLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Account:", None))
