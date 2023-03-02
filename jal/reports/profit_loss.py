@@ -65,91 +65,66 @@ class ProfitLossModel(QAbstractTableModel):
         self.prepareData()
         self.configureView()
 
+    # returns a dictionary with following keys (period is given by begin and end timestamps):
+    # money - amount of money by end of the period
+    # transfers - amount of money that came in(+) and out(-) of the account
+    # dividends, interests, fees, taxes - amount of money that changed account value due to such events
+    # assets - valuation of assets held by account by prices at the end of the period
+    # p&l - profit and loss of deals closed during the period
+    # total - total amount of money and assets by end of the period
+    def data4period(self, begin: int, end: int, account: JalAccount) -> dict:
+        assets = account.assets_list(end)
+        asset_value = Decimal('0')
+        for asset_data in assets:
+            asset = asset_data['asset']
+            asset_value += asset_data['amount'] * asset.quote(end, account.currency())[1]
+        data = {
+            'money': account.get_asset_amount(end, account.currency()),
+            'transfers': -account.get_book_turnover(BookAccount.Transfers, begin, end),
+            'dividends': -account.get_category_turnover(PredefinedCategory.Dividends, begin, end),
+            'interest': -account.get_category_turnover(PredefinedCategory.Interest, begin, end),
+            'fees': -account.get_category_turnover(PredefinedCategory.Fees, begin, end),
+            'taxes': -account.get_category_turnover(PredefinedCategory.Taxes, begin, end),
+            'assets': asset_value,
+            'p&l': -account.get_category_turnover(PredefinedCategory.Profit, begin, end),
+            'total': account.get_asset_amount(end, account.currency()) + asset_value
+        }
+        return data
+
     def prepareData(self):
         self._data = []
+        money_p = assets_p = money_0 = assets_0 = None
         if not self._month_list:
             self.modelReset.emit()
             return
         account = JalAccount(self._account_id)
-        first_month = self._month_list[0]
-        money_begin = money_prev = account.get_asset_amount(first_month['begin_ts'], account.currency())
-        assets = account.assets_list(first_month['begin_ts'])
-        asset_value_prev = Decimal('0')
-        for asset_data in assets:
-            asset = asset_data['asset']
-            asset_value_prev += asset_data['amount'] * asset.quote(first_month['begin_ts'], account.currency())[1]
-        assets_value_begin = asset_value_prev
-        initial_row = [
-            self.tr("Period start"),
-            money_prev,
-            Decimal('0'),  # No in/out for initial line
-            Decimal('0'),
-            Decimal('0'),
-            Decimal('0'),
-            Decimal('0'),
-            asset_value_prev,
-            Decimal('0'),
-            money_prev + asset_value_prev,
-            Decimal('0'),
-            Decimal('0')]
-        self._data.append(initial_row)
-
-        for month in self._month_list:
-            money = account.get_asset_amount(month['end_ts'], account.currency())
-            assets = account.assets_list(month['end_ts'])
-            asset_value = Decimal('0')
-            for asset_data in assets:
-                asset = asset_data['asset']
-                asset_value += asset_data['amount'] * asset.quote(month['end_ts'], account.currency())[1]
-            if money_prev + asset_value_prev:
-                rel_change = ((money + asset_value) - (money_prev + asset_value_prev)) / (
-                            money_prev + asset_value_prev)
+        # Prepend table with initial row and extend it with totals row
+        months = [{'begin_ts': self._month_list[0]['begin_ts'], 'end_ts': self._month_list[0]['begin_ts']}]
+        months.extend(self._month_list)
+        months.append({'begin_ts': self._month_list[0]['begin_ts'], 'end_ts': self._month_list[-1]['end_ts']})
+        for i, month in enumerate(months):
+            values = self.data4period(month['begin_ts'], month['end_ts'], account)
+            if i == 0:
+                row_name = self.tr("Period start")
+                money_p = money_0 = values['money']
+                assets_p = assets_0 = values['assets']
+            elif i == len(months) - 1:
+                row_name = self.tr("Period end")
+                money_p = money_0
+                assets_p = assets_0
             else:
+                row_name = f"{month['year']} {self.month_name[month['month'] - 1]}"
+            try:
+                rel_change = ((values['money'] + values['assets']) - (money_p + assets_p)) / (money_p + assets_p)
+            except ZeroDivisionError:
                 rel_change = Decimal('0')
-            data_row = [
-                f"{month['year']} {self.month_name[month['month'] - 1]}",
-                money,
-                -account.get_book_turnover(BookAccount.Transfers, month['begin_ts'], month['end_ts']),
-                -account.get_category_turnover(PredefinedCategory.Dividends, month['begin_ts'], month['end_ts']),
-                -account.get_category_turnover(PredefinedCategory.Interest, month['begin_ts'], month['end_ts']),
-                -account.get_category_turnover(PredefinedCategory.Fees, month['begin_ts'], month['end_ts']),
-                -account.get_category_turnover(PredefinedCategory.Taxes, month['begin_ts'], month['end_ts']),
-                asset_value,
-                -account.get_category_turnover(PredefinedCategory.Profit, month['begin_ts'], month['end_ts']),
-                money + asset_value,
-                (money + asset_value) - (money_prev + asset_value_prev),
-                rel_change]
+            data_row = [row_name, values['money'], values['transfers'], values['dividends'], values['interest'],
+                        values['fees'], values['taxes'], values['assets'], values['p&l'],
+                        values['total'], (values['money'] + values['assets']) - (money_p + assets_p),
+                        rel_change]
             self._data.append(data_row)
-            money_prev = money
-            asset_value_prev = asset_value
-
-        last_month = self._month_list[-1]
-        money_end = account.get_asset_amount(last_month['end_ts'], account.currency())
-        assets = account.assets_list(last_month['end_ts'])
-        assets_value_end = Decimal('0')
-        for asset_data in assets:
-            asset = asset_data['asset']
-            assets_value_end += asset_data['amount'] * asset.quote(last_month['end_ts'], account.currency())[1]
-        if money_begin + assets_value_begin:
-            rel_change = ((money_end + assets_value_end) - (money_begin + assets_value_begin)) / (
-                    money_begin + assets_value_begin)
-        else:
-            rel_change = Decimal('0')
-        initial_row = [
-            self.tr("Period end"),
-            money_end,
-            -account.get_book_turnover(BookAccount.Transfers, first_month['begin_ts'], last_month['end_ts']),
-            -account.get_category_turnover(PredefinedCategory.Dividends, first_month['begin_ts'], last_month['end_ts']),
-            -account.get_category_turnover(PredefinedCategory.Interest, first_month['begin_ts'], last_month['end_ts']),
-            -account.get_category_turnover(PredefinedCategory.Fees, first_month['begin_ts'], last_month['end_ts']),
-            -account.get_category_turnover(PredefinedCategory.Taxes, first_month['begin_ts'], last_month['end_ts']),
-            assets_value_end,
-            -account.get_category_turnover(PredefinedCategory.Profit, first_month['begin_ts'], last_month['end_ts']),
-            money_end + assets_value_end,
-            (money_end + assets_value_end) - (money_begin + assets_value_begin),
-            Decimal('0')]
-        self._data.append(initial_row)
-
+            money_p = values['money']
+            assets_p = values['assets']
         self.modelReset.emit()
 
     def configureView(self):
@@ -159,7 +134,7 @@ class ProfitLossModel(QAbstractTableModel):
         self._view.horizontalHeader().setFont(font)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._color_delegate = FloatDelegate(2, allow_tail=False, colors=True)
-        self._percent_delegate = FloatDelegate(2, allow_tail=False, colors=True, percent=True, empty_zero=True)
+        self._percent_delegate = FloatDelegate(2, allow_tail=False, colors=True, percent=True)
         self._view.setItemDelegateForColumn(1, self._float_delegate)
         self._view.setItemDelegateForColumn(2, self._color_delegate)
         self._view.setItemDelegateForColumn(3, self._float_delegate)
