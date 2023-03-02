@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory, PredefinedAsset
-from jal.widgets.helpers import ManipulateDate, ts2dt
+from jal.widgets.helpers import ManipulateDate, ts2dt, ts2d
 from jal.db.helpers import format_decimal
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -125,6 +125,7 @@ class StatementIBKR(StatementXML):
     statement_tag = 'FlexStatement'
     level_tag = 'levelOfDetail'
     CancelledFlag = 'Ca'
+    ReversalCode = 'Re'
     ReversalSuffix = " - REVERSAL"
     CancelPrefix = "CANCEL "
 
@@ -226,6 +227,17 @@ class StatementIBKR(StatementXML):
                                             ('tradeID', 'number', str, ''),
                                             ('description', 'description', str, None)],
                                  'loader': self.load_cash_transactions},
+            'ChangeInDividendAccruals': {'tag': 'ChangeInDividendAccrual',
+                                         'level': 'DETAIL',
+                                         'values': [('code', 'code', str, None),
+                                                    ('accountId', 'account', IBKR_Account, None),
+                                                    ('symbol', 'asset', IBKR_Asset, 0),
+                                                    ('currency', 'currency', IBKR_Currency, None),
+                                                    ('date', 'timestamp', datetime, None),
+                                                    ('exDate', 'ex_date', datetime, None),
+                                                    ('grossAmount', 'amount', float, None),
+                                                    ('grossRate', 'rate', float, 0)],
+                                         'loader': self.load_dividend_accruals},
             'StockGrantActivities': {'tag': 'StockGrantActivity',
                                      'level': '',
                                      'values': [('accountId', 'account', IBKR_Account, None),
@@ -1001,6 +1013,17 @@ class StatementIBKR(StatementXML):
         if len(dividends) == 1:
             return dividends[0]
         return None
+
+    # Assign ex-date from dividend accruals
+    def load_dividend_accruals(self, accruals):
+        posted = [x for x in accruals if x['code'] == StatementIBKR.ReversalCode]
+        for accrual in posted:
+            dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if x['account']==accrual['account'] and x['asset']==accrual['asset'] and ts2d(x['timestamp'])==ts2d(accrual['timestamp']) and x['amount']==-accrual['amount']]
+            if len(dividends) == 1:
+                dividend = dividends[0]
+            else:
+                continue
+            dividend['ex_date'] = accrual['ex_date']
 
     # Removes data that was used during XML processing but isn't needed in final output:
     # Drop any assets with type 'right' as JAL won't import them
