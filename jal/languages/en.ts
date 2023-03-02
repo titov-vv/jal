@@ -1049,6 +1049,11 @@
         <translation></translation>
     </message>
     <message>
+        <location filename="../data_import/slips.py" line="186"/>
+        <source>No QR codes were found in file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../data_import/slips.py" line="265"/>
         <source>Max retry count exceeded.</source>
         <translation></translation>
@@ -2510,7 +2515,7 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossReport</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="141"/>
+        <location filename="../reports/profit_loss.py" line="136"/>
         <source>P&amp;L by Account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2528,7 +2533,12 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/profit_loss_report.ui" line="89"/>
+        <location filename="../ui/reports/profit_loss_report.ui" line="76"/>
+        <source>Currency: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/profit_loss_report.ui" line="96"/>
         <source>Save...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2536,8 +2546,13 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossReportWindow</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="152"/>
+        <location filename="../reports/profit_loss.py" line="147"/>
         <source>P&amp;L by Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="161"/>
+        <source>Currency: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2549,12 +2564,12 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="108"/>
+        <location filename="../widgets/qr_scanner.py" line="109"/>
         <source>Camera error: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="126"/>
+        <location filename="../widgets/qr_scanner.py" line="127"/>
         <source>Image format isn&apos;t supported</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2876,67 +2891,67 @@ Application will be terminated now</source>
 <context>
     <name>SlipsTaxAPI</name>
     <message>
-        <location filename="../data_import/slips_tax.py" line="175"/>
+        <location filename="../data_import/slips_tax.py" line="176"/>
         <source>No Russian Tax SessionId available</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="190"/>
+        <location filename="../data_import/slips_tax.py" line="191"/>
         <source>Session refreshed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="199"/>
+        <location filename="../data_import/slips_tax.py" line="200"/>
         <source>Can&apos;t refresh session, response: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="222"/>
+        <location filename="../data_import/slips_tax.py" line="223"/>
         <source>Get ticket id failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="232"/>
+        <location filename="../data_import/slips_tax.py" line="233"/>
         <source>Get ticket failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="261"/>
+        <location filename="../data_import/slips_tax.py" line="262"/>
         <source>Can&apos;t get company name from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="183"/>
+        <location filename="../data_import/slips_tax.py" line="184"/>
         <source>Refreshing session...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="217"/>
+        <location filename="../data_import/slips_tax.py" line="218"/>
         <source>Unauthorized with reason: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="181"/>
+        <location filename="../data_import/slips_tax.py" line="182"/>
         <source>No valid session present</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="243"/>
+        <location filename="../data_import/slips_tax.py" line="244"/>
         <source>Incorrect length of INN. Can&apos;t get company name.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="224"/>
+        <location filename="../data_import/slips_tax.py" line="225"/>
         <source>Slip found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="227"/>
+        <location filename="../data_import/slips_tax.py" line="228"/>
         <source>Operation might be pending on server side. Trying again.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="234"/>
+        <location filename="../data_import/slips_tax.py" line="235"/>
         <source>Slip loaded: </source>
         <translation></translation>
     </message>

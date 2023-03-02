@@ -28,7 +28,6 @@ class ProfitLossModel(QAbstractTableModel):
         ]
         self._view = parent_view
         self._data = []
-        self._currency_name = ''
         self._month_list = []
         self._begin = 0
         self._end = 0
@@ -44,10 +43,7 @@ class ProfitLossModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            if self._currency_name and (section >= 1 and section <= 6):
-                return self._columns[section] + f", {self._currency_name}"
-            else:
-                return self._columns[section]
+            return self._columns[section]
         return None
 
     def headerWidth(self, section):
@@ -66,7 +62,6 @@ class ProfitLossModel(QAbstractTableModel):
 
     def setAccount(self, account_id):
         self._account_id = account_id
-        self._currency_name = JalAsset(JalAccount(self._account_id).currency()).symbol()
         self.prepareData()
         self.configureView()
 
@@ -161,4 +156,6 @@ class ProfitLossReportWindow(MdiWidget, Ui_ProfitLossReportWidget):
 
     @Slot()
     def onAccountChange(self):
-        self.ReportTableView.model().setAccount(self.ReportAccountBtn.account_id)
+        account_id = self.ReportAccountBtn.account_id
+        self.ReportTableView.model().setAccount(account_id)
+        self.CurrencyLbl.setText(self.tr("Currency: ") + JalAsset(JalAccount(account_id).currency()).symbol())

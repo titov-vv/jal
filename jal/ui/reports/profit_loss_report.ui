@@ -71,6 +71,13 @@
        <widget class="AccountButton" name="ReportAccountBtn"/>
       </item>
       <item>
+       <widget class="QLabel" name="CurrencyLbl">
+        <property name="text">
+         <string>Currency: </string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="ReportFrameSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

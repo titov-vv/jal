@@ -1069,6 +1069,11 @@
         <translation>Невозможно добавить чек: не указан контрагент для импорта</translation>
     </message>
     <message>
+        <location filename="../data_import/slips.py" line="186"/>
+        <source>No QR codes were found in file</source>
+        <translation>QR-код в файле не обнаружен</translation>
+    </message>
+    <message>
         <location filename="../data_import/slips.py" line="265"/>
         <source>Max retry count exceeded.</source>
         <translation>Превышено максимальное число попыток.</translation>
@@ -2514,7 +2519,7 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossReport</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="141"/>
+        <location filename="../reports/profit_loss.py" line="136"/>
         <source>P&amp;L by Account</source>
         <translation>ПиУ по счёту</translation>
     </message>
@@ -2532,7 +2537,12 @@ Application will be terminated now</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/reports/profit_loss_report.ui" line="89"/>
+        <location filename="../ui/reports/profit_loss_report.ui" line="76"/>
+        <source>Currency: </source>
+        <translation>Валюта: </translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/profit_loss_report.ui" line="96"/>
         <source>Save...</source>
         <translation>Сохранить...</translation>
     </message>
@@ -2540,9 +2550,14 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossReportWindow</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="152"/>
+        <location filename="../reports/profit_loss.py" line="147"/>
         <source>P&amp;L by Account</source>
         <translation>ПиУ по счёту</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="161"/>
+        <source>Currency: </source>
+        <translation>Валюта: </translation>
     </message>
 </context>
 <context>
@@ -2553,12 +2568,12 @@ Application will be terminated now</source>
         <translation>Нет доступных камер</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="108"/>
+        <location filename="../widgets/qr_scanner.py" line="109"/>
         <source>Camera error: </source>
         <translation>Ошибка камеры: </translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="126"/>
+        <location filename="../widgets/qr_scanner.py" line="127"/>
         <source>Image format isn&apos;t supported</source>
         <translation>Неподдерживаемый формат изображения</translation>
     </message>
@@ -2880,67 +2895,67 @@ Application will be terminated now</source>
 <context>
     <name>SlipsTaxAPI</name>
     <message>
-        <location filename="../data_import/slips_tax.py" line="175"/>
+        <location filename="../data_import/slips_tax.py" line="176"/>
         <source>No Russian Tax SessionId available</source>
         <translation>Нет SessionId для загрузки чека с сайта ФНС</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="261"/>
+        <location filename="../data_import/slips_tax.py" line="262"/>
         <source>Can&apos;t get company name from: </source>
         <translation>Не удалось получить название огранизации из: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="190"/>
+        <location filename="../data_import/slips_tax.py" line="191"/>
         <source>Session refreshed: </source>
         <translation>Сессия обновлена: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="199"/>
+        <location filename="../data_import/slips_tax.py" line="200"/>
         <source>Can&apos;t refresh session, response: </source>
         <translation>Невозможно обвновить сессию, ответ: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="222"/>
+        <location filename="../data_import/slips_tax.py" line="223"/>
         <source>Get ticket id failed: </source>
         <translation>Ошибка получения id чека: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="232"/>
+        <location filename="../data_import/slips_tax.py" line="233"/>
         <source>Get ticket failed: </source>
         <translation>Ошибка получения чека: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="183"/>
+        <location filename="../data_import/slips_tax.py" line="184"/>
         <source>Refreshing session...</source>
         <translation>Обновление сессии...</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="217"/>
+        <location filename="../data_import/slips_tax.py" line="218"/>
         <source>Unauthorized with reason: </source>
         <translation>Неавторизовано по причине: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="181"/>
+        <location filename="../data_import/slips_tax.py" line="182"/>
         <source>No valid session present</source>
         <translation>Нет активной сессии для ФНС</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="243"/>
+        <location filename="../data_import/slips_tax.py" line="244"/>
         <source>Incorrect length of INN. Can&apos;t get company name.</source>
         <translation>Неверная длина ИНН. Невозможно получить наименование компании.</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="224"/>
+        <location filename="../data_import/slips_tax.py" line="225"/>
         <source>Slip found: </source>
         <translation>Чек найден: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="227"/>
+        <location filename="../data_import/slips_tax.py" line="228"/>
         <source>Operation might be pending on server side. Trying again.</source>
         <translation>Операция обрабатывается на стороне сервера. Повторяю ещё раз.</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="234"/>
+        <location filename="../data_import/slips_tax.py" line="235"/>
         <source>Slip loaded: </source>
         <translation>Чек загружен: </translation>
     </message>

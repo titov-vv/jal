@@ -55,6 +55,11 @@ class Ui_ProfitLossReportWidget(object):
 
         self.horizontalLayout.addWidget(self.ReportAccountBtn)
 
+        self.CurrencyLbl = QLabel(self.ReportParamsFrame)
+        self.CurrencyLbl.setObjectName(u"CurrencyLbl")
+
+        self.horizontalLayout.addWidget(self.CurrencyLbl)
+
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout.addItem(self.ReportFrameSpacer)
@@ -90,6 +95,7 @@ class Ui_ProfitLossReportWidget(object):
     def retranslateUi(self, ProfitLossReportWidget):
         ProfitLossReportWidget.setWindowTitle(QCoreApplication.translate("ProfitLossReportWidget", u"P&L", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("ProfitLossReportWidget", u"Account:", None))
+        self.CurrencyLbl.setText(QCoreApplication.translate("ProfitLossReportWidget", u"Currency: ", None))
         self.SaveButton.setText(QCoreApplication.translate("ProfitLossReportWidget", u"Save...", None))
     # retranslateUi
 
