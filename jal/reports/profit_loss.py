@@ -196,11 +196,11 @@ class ProfitLossReportWindow(MdiWidget, Ui_ProfitLossReportWidget):
 
     def connect_signals_and_slots(self):
         self.ReportRange.changed.connect(self.ReportTableView.model().setDatesRange)
-        self.ReportAccountBtn.changed.connect(self.onAccountChange)
+        self.ReportAccountEdit.changed.connect(self.onAccountChange)
         self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ReportTableView.model()))
 
     @Slot()
     def onAccountChange(self):
-        account_id = self.ReportAccountBtn.account_id
+        account_id = self.ReportAccountEdit.selected_id
         self.ReportTableView.model().setAccount(account_id)
         self.CurrencyLbl.setText(self.tr("Currency: ") + JalAsset(JalAccount(account_id).currency()).symbol())
