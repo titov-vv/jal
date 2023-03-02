@@ -2406,120 +2406,140 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossModel</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Period</source>
         <translation>Период</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>In / Out</source>
         <translation>Ввод / Вывод</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="24"/>
-        <source>Total result</source>
-        <translation>Результат</translation>
-    </message>
-    <message>
-        <location filename="../reports/profit_loss.py" line="25"/>
-        <source>Profit / Loss</source>
-        <translation>Прибыль / Убыток</translation>
-    </message>
-    <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Money</source>
         <translation>ДС</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Dividends</source>
         <translation>Дивиденды</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>%</source>
         <translation>%</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
         <source>Fees</source>
         <translation>Комиссии</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
         <source>Taxes</source>
         <translation>Налоги</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
         <source>Assets</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>P&amp;L</source>
+        <translation>ПиУ</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Total</source>
+        <translation>Итого</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Change</source>
+        <translation>Изменение</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="24"/>
+        <source>Change, %</source>
+        <translation>Изменение, %</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Jan</source>
         <translation>Янв</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Feb</source>
         <translation>Фев</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Mar</source>
         <translation>Мар</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Apr</source>
         <translation>Апр</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>May</source>
         <translation>Май</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Jun</source>
         <translation>Июн</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="27"/>
+        <location filename="../reports/profit_loss.py" line="26"/>
         <source>Jul</source>
         <translation>Июл</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="27"/>
+        <location filename="../reports/profit_loss.py" line="26"/>
         <source>Aug</source>
         <translation>Авг</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="27"/>
+        <location filename="../reports/profit_loss.py" line="26"/>
         <source>Sep</source>
         <translation>Сен</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="27"/>
+        <location filename="../reports/profit_loss.py" line="26"/>
         <source>Oct</source>
         <translation>Окт</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="27"/>
+        <location filename="../reports/profit_loss.py" line="26"/>
         <source>Nov</source>
         <translation>Ноя</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="29"/>
+        <location filename="../reports/profit_loss.py" line="28"/>
         <source>Dec</source>
         <translation>Дек</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="83"/>
+        <source>Period start</source>
+        <translation>Начало периода</translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="139"/>
+        <source>Period end</source>
+        <translation>Конец периода</translation>
     </message>
 </context>
 <context>
     <name>ProfitLossReport</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="136"/>
+        <location filename="../reports/profit_loss.py" line="181"/>
         <source>P&amp;L by Account</source>
         <translation>ПиУ по счёту</translation>
     </message>
@@ -2550,12 +2570,12 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossReportWindow</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="147"/>
+        <location filename="../reports/profit_loss.py" line="192"/>
         <source>P&amp;L by Account</source>
         <translation>ПиУ по счёту</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="161"/>
+        <location filename="../reports/profit_loss.py" line="206"/>
         <source>Currency: </source>
         <translation>Валюта: </translation>
     </message>

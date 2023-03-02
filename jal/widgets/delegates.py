@@ -147,10 +147,9 @@ class FloatDelegate(QStyledItemDelegate):
         elif amount < Decimal('0'):
             self._color = CustomColor.LightRed
         else:
+            self._color = None
             if self._empty_zero:
                 return ''
-            else:
-                self._color = None
         decimal_places = -amount.normalize().as_tuple().exponent
         decimal_places = decimal_places if self._allow_tail and (decimal_places > self._tolerance) else self._tolerance
         return QLocale().toString(float(amount), 'f', decimal_places)

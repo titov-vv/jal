@@ -2402,120 +2402,140 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossModel</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Period</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>In / Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="24"/>
-        <source>Total result</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/profit_loss.py" line="25"/>
-        <source>Profit / Loss</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Money</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Dividends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="22"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
         <source>Fees</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
         <source>Taxes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="23"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
         <source>Assets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>P&amp;L</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="22"/>
+        <source>Total</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="23"/>
+        <source>Change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="24"/>
+        <source>Change, %</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Jan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Feb</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Mar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Apr</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>May</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="26"/>
+        <location filename="../reports/profit_loss.py" line="25"/>
         <source>Jun</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="27"/>
+        <location filename="../reports/profit_loss.py" line="26"/>
         <source>Jul</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="27"/>
+        <location filename="../reports/profit_loss.py" line="26"/>
         <source>Aug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="27"/>
+        <location filename="../reports/profit_loss.py" line="26"/>
         <source>Sep</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="27"/>
+        <location filename="../reports/profit_loss.py" line="26"/>
         <source>Oct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="27"/>
+        <location filename="../reports/profit_loss.py" line="26"/>
         <source>Nov</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="29"/>
+        <location filename="../reports/profit_loss.py" line="28"/>
         <source>Dec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="83"/>
+        <source>Period start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/profit_loss.py" line="139"/>
+        <source>Period end</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>ProfitLossReport</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="136"/>
+        <location filename="../reports/profit_loss.py" line="181"/>
         <source>P&amp;L by Account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2546,12 +2566,12 @@ Application will be terminated now</source>
 <context>
     <name>ProfitLossReportWindow</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="147"/>
+        <location filename="../reports/profit_loss.py" line="192"/>
         <source>P&amp;L by Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="161"/>
+        <location filename="../reports/profit_loss.py" line="206"/>
         <source>Currency: </source>
         <translation type="unfinished"></translation>
     </message>

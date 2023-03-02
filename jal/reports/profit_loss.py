@@ -12,7 +12,6 @@ from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
 
 JAL_REPORT_CLASS = "ProfitLossReport"
-# TODO This report should be improved with more relevant data columns and tree structure for grouping by years
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -20,8 +19,8 @@ class ProfitLossModel(QAbstractTableModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._columns = [self.tr("Period"), self.tr("Money"), self.tr("In / Out"), self.tr("Dividends"), self.tr("%"),
-                         self.tr("Fees"), self.tr("Taxes"), self.tr("Assets"),
-                         self.tr("Total result"), self.tr("Profit / Loss")]
+                         self.tr("Fees"), self.tr("Taxes"), self.tr("Assets"), self.tr("P&L"), self.tr("Total"),
+                         self.tr("Change"), self.tr("Change, %")]
         self.month_name = [
             self.tr('Jan'), self.tr('Feb'), self.tr('Mar'), self.tr('Apr'), self.tr('May'), self.tr('Jun'),
             self.tr('Jul'), self.tr('Aug'), self.tr('Sep'), self.tr('Oct'), self.tr('Nov'), self.tr('Dec')
@@ -34,6 +33,7 @@ class ProfitLossModel(QAbstractTableModel):
         self._account_id = 0
         self._float_delegate = None
         self._color_delegate = None
+        self._percent_delegate = None
 
     def rowCount(self, parent=None):
         return len(self._data)
@@ -72,42 +72,84 @@ class ProfitLossModel(QAbstractTableModel):
             return
         account = JalAccount(self._account_id)
         first_month = self._month_list[0]
+        money_begin = money_prev = account.get_asset_amount(first_month['begin_ts'], account.currency())
         assets = account.assets_list(first_month['begin_ts'])
-        asset_value = Decimal('0')
+        asset_value_prev = Decimal('0')
         for asset_data in assets:
             asset = asset_data['asset']
-            asset_value += asset_data['amount'] * asset.quote(first_month['begin_ts'], account.currency())[1]
+            asset_value_prev += asset_data['amount'] * asset.quote(first_month['begin_ts'], account.currency())[1]
+        assets_value_begin = asset_value_prev
         initial_row = [
-            f"{first_month['year']} {self.month_name[first_month['month'] - 1]} >",
-            account.get_asset_amount(first_month['begin_ts'], account.currency()),
+            self.tr("Period start"),
+            money_prev,
             Decimal('0'),  # No in/out for initial line
             Decimal('0'),
             Decimal('0'),
             Decimal('0'),
             Decimal('0'),
-            asset_value,
-            0, 0]
+            asset_value_prev,
+            Decimal('0'),
+            money_prev + asset_value_prev,
+            Decimal('0'),
+            Decimal('0')]
         self._data.append(initial_row)
+
         for month in self._month_list:
+            money = account.get_asset_amount(month['end_ts'], account.currency())
             assets = account.assets_list(month['end_ts'])
             asset_value = Decimal('0')
             for asset_data in assets:
                 asset = asset_data['asset']
                 asset_value += asset_data['amount'] * asset.quote(month['end_ts'], account.currency())[1]
-            result = account.get_book_turnover(BookAccount.Costs, month['begin_ts'], month['end_ts']) + \
-                     account.get_book_turnover(BookAccount.Incomes, month['begin_ts'], month['end_ts'])
+            if money_prev + asset_value_prev:
+                rel_change = ((money + asset_value) - (money_prev + asset_value_prev)) / (
+                            money_prev + asset_value_prev)
+            else:
+                rel_change = Decimal('0')
             data_row = [
                 f"{month['year']} {self.month_name[month['month'] - 1]}",
-                account.get_asset_amount(month['end_ts'], account.currency()),
+                money,
                 -account.get_book_turnover(BookAccount.Transfers, month['begin_ts'], month['end_ts']),
                 -account.get_category_turnover(PredefinedCategory.Dividends, month['begin_ts'], month['end_ts']),
                 -account.get_category_turnover(PredefinedCategory.Interest, month['begin_ts'], month['end_ts']),
                 -account.get_category_turnover(PredefinedCategory.Fees, month['begin_ts'], month['end_ts']),
                 -account.get_category_turnover(PredefinedCategory.Taxes, month['begin_ts'], month['end_ts']),
                 asset_value,
-                -result,
-                -account.get_category_turnover(PredefinedCategory.Profit, month['begin_ts'], month['end_ts'])]
+                -account.get_category_turnover(PredefinedCategory.Profit, month['begin_ts'], month['end_ts']),
+                money + asset_value,
+                (money + asset_value) - (money_prev + asset_value_prev),
+                rel_change]
             self._data.append(data_row)
+            money_prev = money
+            asset_value_prev = asset_value
+
+        last_month = self._month_list[-1]
+        money_end = account.get_asset_amount(last_month['end_ts'], account.currency())
+        assets = account.assets_list(last_month['end_ts'])
+        assets_value_end = Decimal('0')
+        for asset_data in assets:
+            asset = asset_data['asset']
+            assets_value_end += asset_data['amount'] * asset.quote(last_month['end_ts'], account.currency())[1]
+        if money_begin + assets_value_begin:
+            rel_change = ((money_end + assets_value_end) - (money_begin + assets_value_begin)) / (
+                    money_begin + assets_value_begin)
+        else:
+            rel_change = Decimal('0')
+        initial_row = [
+            self.tr("Period end"),
+            money_end,
+            -account.get_book_turnover(BookAccount.Transfers, first_month['begin_ts'], last_month['end_ts']),
+            -account.get_category_turnover(PredefinedCategory.Dividends, first_month['begin_ts'], last_month['end_ts']),
+            -account.get_category_turnover(PredefinedCategory.Interest, first_month['begin_ts'], last_month['end_ts']),
+            -account.get_category_turnover(PredefinedCategory.Fees, first_month['begin_ts'], last_month['end_ts']),
+            -account.get_category_turnover(PredefinedCategory.Taxes, first_month['begin_ts'], last_month['end_ts']),
+            assets_value_end,
+            -account.get_category_turnover(PredefinedCategory.Profit, first_month['begin_ts'], last_month['end_ts']),
+            money_end + assets_value_end,
+            (money_end + assets_value_end) - (money_begin + assets_value_begin),
+            Decimal('0')]
+        self._data.append(initial_row)
+
         self.modelReset.emit()
 
     def configureView(self):
@@ -117,6 +159,7 @@ class ProfitLossModel(QAbstractTableModel):
         self._view.horizontalHeader().setFont(font)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._color_delegate = FloatDelegate(2, allow_tail=False, colors=True)
+        self._percent_delegate = FloatDelegate(2, allow_tail=False, colors=True, percent=True, empty_zero=True)
         self._view.setItemDelegateForColumn(1, self._float_delegate)
         self._view.setItemDelegateForColumn(2, self._color_delegate)
         self._view.setItemDelegateForColumn(3, self._float_delegate)
@@ -125,7 +168,9 @@ class ProfitLossModel(QAbstractTableModel):
         self._view.setItemDelegateForColumn(6, self._float_delegate)
         self._view.setItemDelegateForColumn(7, self._float_delegate)
         self._view.setItemDelegateForColumn(8, self._color_delegate)
-        self._view.setItemDelegateForColumn(9, self._color_delegate)
+        self._view.setItemDelegateForColumn(9, self._float_delegate)
+        self._view.setItemDelegateForColumn(10, self._color_delegate)
+        self._view.setItemDelegateForColumn(11, self._percent_delegate)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
