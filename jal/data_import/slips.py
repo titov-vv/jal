@@ -408,6 +408,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     @Slot()
     def recognizeCategories(self):
         if not self.tensor_flow_present:
+            logging.warning(self.tr("Categories are not recognized: Tensorflow is not found"))
             return
         self.slip_lines['category'], self.slip_lines['confidence'] = \
             recognize_categories(self.slip_lines['name'].tolist())

@@ -1,24 +1,47 @@
 import logging
-from PySide6.QtCore import Qt, Signal, QRectF, QTimer
+from PySide6.QtCore import Qt, Signal, QRectF, QTimer, QThread
 from PySide6.QtGui import QImage, QPen, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView
 try:
+    from pyzbar import pyzbar
     from PySide6.QtMultimedia import QMediaDevices, QCamera, QMediaCaptureSession, QImageCapture
     from PySide6.QtMultimediaWidgets import QGraphicsVideoItem
 except ImportError:
     pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
-from jal.widgets.helpers import decodeQR, QImage2Image
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Helper class that will fire capture event form outside and trigger QR-recognition attempt.
+# Otherwise, process crashes on Windows if timer is executed in the main thread.
+class DetachedTimer(QThread):
+    finished = Signal()         # This signal happens before exit of the thread
+    triggered = Signal()        # This signal happens when timer timeouts
+
+    # Init takes interval in milliseconds for the timer
+    def __init__(self, interval):
+        QThread.__init__(self)
+        self.interval = interval
+
+    def run(self):
+        timer = QTimer()
+        timer.timeout.connect(self.on_timer)
+        timer.start(self.interval)
+        super().run()           # This is required to start an event-loop and process timer signals inside the thread
+        self.finished.emit()    # The thread is terminated externally by call to exit() or quit() methods
+
+    def on_timer(self):
+        self.triggered.emit()
+
+# ----------------------------------------------------------------------------------------------------------------------
 class QRScanner(QWidget):
-    QR_SIZE = 0.75      # Size of rectangle for QR capture
+    QR_SIZE = 0.75      # Size of rectangle for QR capture (used to display only currently)
     QR_SCAN_RATE = 100  # Delay in ms between QR captures
     decodedQR = Signal(str)
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.processing = False
+        self.started = False
         self.rectangle = None
 
         self.setMinimumHeight(405)
@@ -35,7 +58,7 @@ class QRScanner(QWidget):
         self.camera = None
         self.captureSession = None
         self.imageCapture = None
-        self.captureTimer = None
+        self.trigger = None
 
     def startScan(self):
         if len(QMediaDevices.videoInputs()) == 0:
@@ -49,29 +72,34 @@ class QRScanner(QWidget):
         self.captureSession.setCamera(self.camera)
         self.captureSession.setVideoOutput(self.viewfinder)
         self.captureSession.setImageCapture(self.imageCapture)
-        self.captureTimer = QTimer(self)
 
         self.camera.errorOccurred.connect(self.onCameraError)
         self.imageCapture.errorOccurred.connect(self.onCaptureError)
         self.imageCapture.imageCaptured.connect(self.onImageCaptured)
         self.viewfinder.nativeSizeChanged.connect(self.onVideoSizeChanged)
-        self.captureTimer.timeout.connect(self.scanQR)
 
         self.camera.start()
+
+        # Set up a timer to trigger image capture from camera from time to time
+        self.trigger = DetachedTimer(self.QR_SCAN_RATE)
+        self.trigger.finished.connect(self.trigger.deleteLater)
+        self.trigger.triggered.connect(self.scanQR)
+        self.trigger.start()
+
         self.processing = False
-        self.captureTimer.start(self.QR_SCAN_RATE)
+        self.started = True
 
     def stopScan(self):
-        if self.camera is None:
-            return
-        self.processing = True   # disable capture
-        self.captureTimer.stop()
-        self.camera.stop()
+        self.processing = True  # disable capture
+        if self.started:
+            self.trigger.exit(0)    # Stop the timer
+        if self.camera is not None:
+            self.camera.stop()
 
         self.camera = None
         self.captureSession = None
         self.imageCapture = None
-        self.captureTimer = None
+        self.started = False
 
     def onVideoSizeChanged(self, _size):
         self.resizeEvent(None)
@@ -111,7 +139,9 @@ class QRScanner(QWidget):
     def scanQR(self):
         if self.imageCapture is None:
             return
-        if self.imageCapture.isReadyForCapture() and not self.processing:
+        if self.processing:
+            return
+        if self.imageCapture.isReadyForCapture():
             self.imageCapture.capture()
             self.processing = True
 
@@ -120,12 +150,14 @@ class QRScanner(QWidget):
         self.processing = False
 
     def decodeQR(self, qr_image: QImage):
-        cropped = qr_image.copy(self.calculate_center_square(qr_image).toRect())
-        try:
-            pillow_image = QImage2Image(cropped)
-        except ValueError:
-            logging.warning(self.tr("Image format isn't supported"))
-            return
-        qr_text = decodeQR(pillow_image)
+        # cropped = qr_image.copy(self.calculate_center_square(qr_image).toRect())
+        # crop works but somehow bytes array size differs from the cropped image size and code breaks
+        qr_image.convertTo(QImage.Format_Grayscale8)
+        data = (qr_image.bits().tobytes(), qr_image.width(), qr_image.height())
+        barcodes = pyzbar.decode(data, symbols=[pyzbar.ZBarSymbol.QRCODE])
+        if barcodes:
+            qr_text = barcodes[0].data.decode('utf-8')
+        else:
+            qr_text = ''
         if qr_text:
             self.decodedQR.emit(qr_text)

@@ -94,7 +94,7 @@ def month_list(begin: int, end: int) -> list:
 # (save QImage into the buffer and then read PIL.Image out from the buffer)
 # Raises ValueError if image format isn't supported
 # Return value has Image type - not included as a type hint as Pillow may not be imported
-def QImage2Image(image: QImage):
+def QImage2Image(image: QImage):   # FIXME - get rid of this function (see QRScanner class for details)
     buffer = QBuffer()
     buffer.open(QBuffer.ReadWrite)
     image.save(buffer, "BMP")
