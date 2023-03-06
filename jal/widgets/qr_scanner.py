@@ -68,7 +68,7 @@ class QRScanner(QWidget):
         if len(QMediaDevices.videoInputs()) == 0:
             logging.warning(self.tr("There are no cameras available"))
             return
-        if not dependency_present("pyzbar"):
+        if not dependency_present(['pyzbar']):
             logging.warning(self.tr("Package pyzbar not found for QR recognition."))
             return ''
 

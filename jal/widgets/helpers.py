@@ -10,7 +10,7 @@ except ImportError:
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Returns True if all modules from module_list are present in the system
-def dependency_present(module_list):
+def dependency_present(module_list: list) -> bool:
     result = True
     for module in module_list:
         try:
@@ -88,7 +88,7 @@ def month_list(begin: int, end: int) -> list:
 # ----------------------------------------------------------------------------------------------------------------------
 # Function takes an image and searches for QR in it. Content of first found QR is returned. Otherwise - empty string.
 def decodeQR(qr_image: QImage) -> str:
-    if not dependency_present("pyzbar"):
+    if not dependency_present(['pyzbar']):
         logging.warning("Package pyzbar not found for QR recognition.")
         return ''
     qr_image.convertTo(QImage.Format_Grayscale8)
