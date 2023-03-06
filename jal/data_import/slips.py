@@ -117,10 +117,6 @@ class SlipLinesDelegate(QStyledItemDelegate):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
-    qr_data_available = Signal(str)
-    qr_data_validated = Signal()
-    qr_data_loaded = Signal()
-
     OPERATION_PURCHASE = 1
     OPERATION_RETURN = 2
 
@@ -142,9 +138,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.slipsAPI = SlipsTaxAPI(self)
         self.tensor_flow_present = dependency_present(['tensorflow'])
 
-        self.qr_data_available.connect(self.parseQRdata)
-        self.qr_data_validated.connect(self.downloadSlipJSON)
-        self.qr_data_loaded.connect(self.recognizeCategories)
         self.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
         self.GetQRfromClipboardBtn.clicked.connect(self.readClipboardQR)
         self.GetQRfromCameraBtn.clicked.connect(self.readCameraQR)
@@ -171,7 +164,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     #------------------------------------------------------------------------------------------
     # Loads graphics file and tries to read QR-code from it.
-    # Assignes self.QR_data after successful read and emit signal qr_data_available
     @Slot()
     def loadFileQR(self):
         self.initUi()
@@ -179,9 +171,9 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             QFileDialog.getOpenFileName(self, self.tr("Select file with QR code"),
                                         ".", "JPEG images (*.jpg);;PNG images (*.png)")
         if qr_file:
-            qr_text = decodeQR(Image.open(qr_file))
-            if qr_text:
-                self.qr_data_available.emit(qr_text)
+            self.QR_data = decodeQR(Image.open(qr_file))
+            if self.QR_data:
+                self.parseQRdata()
             else:
                 logging.warning(self.tr("No QR codes were found in file"))
 
@@ -189,16 +181,15 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     # Qt operates with QImage class while pyzbar need PIL.Image as input
     # So, we first need to save QImage into the buffer and then read PIL.Image out from buffer
     # Returns: True if QR found, False if no QR found
-    # Emits: qr_data_available(str: qr_data) if QR found
     def readImageQR(self, image):
         try:
             pillow_image = QImage2Image(image)
         except ValueError:
             logging.warning(self.tr("Image format isn't supported"))
             return False
-        qr_text = decodeQR(pillow_image)
-        if qr_text:
-            self.qr_data_available.emit(qr_text)
+        self.QR_data = decodeQR(pillow_image)
+        if self.QR_data:
+            self.parseQRdata()
             return True
         else:
             return False
@@ -224,16 +215,15 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     @Slot()
     def onCameraQR(self, decoded_qr):
+        self.QR_data = decoded_qr
         self.closeCamera()
-        self.qr_data_available.emit(decoded_qr)
+        self.parseQRdata()
 
     #-----------------------------------------------------------------------------------------------
-    # Check if available QR data matches with self.QR_pattern
-    # Emits qr_data_validated if match found. Otherwise shows warning message but allows to proceed
+    # Check if text in self.QR_data matches with self.QR_pattern
+    # Then it downloads the slip if match found. Otherwise, shows warning message but allows to proceed
     @Slot()
-    def parseQRdata(self, qr_data):
-        self.QR_data = qr_data
-
+    def parseQRdata(self):
         logging.info(self.tr("QR: " + self.QR_data))
         params = parse_qs(self.QR_data)
         try:
@@ -250,7 +240,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         except KeyError:
             logging.warning(self.tr("QR available but pattern isn't recognized: " + self.QR_data))
             return
-        self.qr_data_validated.emit()
+        self.downloadSlipJSON()
 
     def downloadSlipJSON(self):
         timestamp = self.SlipTimstamp.dateTime().toSecsSinceEpoch()
@@ -365,7 +355,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         font.setBold(True)
         self.LinesTableView.horizontalHeader().setFont(font)
         self.LinesTableView.show()
-        self.qr_data_loaded.emit()
+        self.recognizeCategories()
 
     def addOperation(self):
         if self.AccountEdit.selected_id == 0:
