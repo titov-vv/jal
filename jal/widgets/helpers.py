@@ -1,6 +1,4 @@
-import io
 from datetime import time, datetime, timedelta, timezone
-from PySide6.QtCore import QBuffer
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup
@@ -8,10 +6,6 @@ try:
     from pyzbar import pyzbar
 except ImportError:
     pass  # Helpers that use this imports shouldn't be called if imports are absent
-try:
-    from PIL import Image, UnidentifiedImageError
-except ImportError:
-    pass   # Helpers that use this imports shouldn't be called if imports are absent
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Returns True if all modules from module_list are present in the system
@@ -89,26 +83,13 @@ def month_list(begin: int, end: int) -> list:
                            'begin_ts': month_start_ts(year, month), 'end_ts': month_end_ts(year, month)})
     return result
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Converts QImage class input into PIL.Image output
-# (save QImage into the buffer and then read PIL.Image out from the buffer)
-# Raises ValueError if image format isn't supported
-# Return value has Image type - not included as a type hint as Pillow may not be imported
-def QImage2Image(image: QImage):   # FIXME - get rid of this function (see QRScanner class for details)
-    buffer = QBuffer()
-    buffer.open(QBuffer.ReadWrite)
-    image.save(buffer, "BMP")
-    try:
-        pillow_image = Image.open(io.BytesIO(buffer.data()))
-    except UnidentifiedImageError:
-        raise ValueError
-    return pillow_image
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Function takes PIL image and searches for QR in it. Content of first found QR is returned. Otherwise - empty string.
-# qr_image has Image type - not included as a type hint as Pillow may not be imported
-def decodeQR(qr_image) -> str:
-    barcodes = pyzbar.decode(qr_image, symbols=[pyzbar.ZBarSymbol.QRCODE])
+# Function takes an image and searches for QR in it. Content of first found QR is returned. Otherwise - empty string.
+def decodeQR(qr_image: QImage) -> str:
+    qr_image.convertTo(QImage.Format_Grayscale8)
+    data = (qr_image.bits().tobytes(), qr_image.width(), qr_image.height())
+    barcodes = pyzbar.decode(data, symbols=[pyzbar.ZBarSymbol.QRCODE])
     if barcodes:
         return barcodes[0].data.decode('utf-8')
     return ''

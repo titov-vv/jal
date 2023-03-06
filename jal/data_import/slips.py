@@ -3,18 +3,12 @@ import json
 import logging
 import pandas as pd
 from urllib.parse import parse_qs
-from PySide6.QtWidgets import QStyledItemDelegate
+from PySide6.QtCore import Qt, Slot, QDateTime, QAbstractTableModel
+from PySide6.QtGui import QImage
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView, QStyledItemDelegate
 from jal.widgets.reference_selector import CategorySelector, TagSelector
 from jal.constants import CustomColor
-try:
-    from PIL import Image
-except ImportError:
-    pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
-
-
-from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QAbstractTableModel
-from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
-from jal.widgets.helpers import dependency_present, decodeQR, QImage2Image
+from jal.widgets.helpers import dependency_present, decodeQR
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.operations import LedgerTransaction
@@ -169,35 +163,23 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.initUi()
         qr_file, _filter = \
             QFileDialog.getOpenFileName(self, self.tr("Select file with QR code"),
-                                        ".", "JPEG images (*.jpg);;PNG images (*.png)")
+                                        ".", "JPEG images (*.jpg);;PNG images (*.png);;BMP images (*.bmp)")
         if qr_file:
-            self.QR_data = decodeQR(Image.open(qr_file))
+            self.QR_data = decodeQR(QImage(qr_file))
             if self.QR_data:
                 self.parseQRdata()
             else:
                 logging.warning(self.tr("No QR codes were found in file"))
 
-    #------------------------------------------------------------------------------------------
-    # Qt operates with QImage class while pyzbar need PIL.Image as input
-    # So, we first need to save QImage into the buffer and then read PIL.Image out from buffer
-    # Returns: True if QR found, False if no QR found
-    def readImageQR(self, image):
-        try:
-            pillow_image = QImage2Image(image)
-        except ValueError:
-            logging.warning(self.tr("Image format isn't supported"))
-            return False
-        self.QR_data = decodeQR(pillow_image)
-        if self.QR_data:
-            self.parseQRdata()
-            return True
-        else:
-            return False
-
+    # ------------------------------------------------------------------------------------------
+    # Gets image from clipboard and tries to read QR-code from it.
     @Slot()
     def readClipboardQR(self):
         self.initUi()
-        if not self.readImageQR(QApplication.clipboard().image()):
+        self.QR_data = decodeQR(QApplication.clipboard().image())
+        if self.QR_data:
+            self.parseQRdata()
+        else:
             logging.warning(self.tr("No QR codes found in clipboard"))
 
     @Slot()

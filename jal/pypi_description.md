@@ -21,7 +21,7 @@ It was designed to keep records of personal incomes/spendings and investments wi
     2. International: Interactive Brokers Flex statement (xml), Just2Trade (xls).
 - Investments report for tax declaration preparation for Russia and Portugal.  
 Russian tax estimation for open positions.
-- *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and additional dependencies to use these function - packages `pyzbar` and `Pillow`.  
+- *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and `pyzbar` package installation for QR recognition.  
 You may authorize via SMS, FNS personal account or ESIA/Gosuslugi. QR code may be scanned from camera, clipboard image or image file on disk.
 
 Full description is available at Github - *[English](https://github.com/titov-vv/jal/blob/master/docs/README.md), [Русский](https://github.com/titov-vv/jal/blob/master/docs/README.ru.md)*
