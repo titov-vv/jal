@@ -61,7 +61,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.estimator = None
         self.price_chart = None
 
-        self.actionImportSlipRU.setEnabled(dependency_present(['PySide6.QtMultimedia', 'pyzbar']))
+        self.actionImportSlipRU.setEnabled(dependency_present(['PySide6.QtMultimedia']))
 
         self.actionAbout = QAction(text=self.tr("About"), parent=self)
         self.MainMenu.addAction(self.actionAbout)

@@ -2,8 +2,12 @@ import logging
 from PySide6.QtCore import Qt, Signal, QRectF, QTimer, QThread
 from PySide6.QtGui import QImage, QPen, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView
+from jal.widgets.helpers import dependency_present
 try:
     from pyzbar import pyzbar
+except ImportError:
+    pass  # pyzbar import will be checked separately
+try:
     from PySide6.QtMultimedia import QMediaDevices, QCamera, QMediaCaptureSession, QImageCapture
     from PySide6.QtMultimediaWidgets import QGraphicsVideoItem
 except ImportError:
@@ -64,6 +68,9 @@ class QRScanner(QWidget):
         if len(QMediaDevices.videoInputs()) == 0:
             logging.warning(self.tr("There are no cameras available"))
             return
+        if not dependency_present("pyzbar"):
+            logging.warning(self.tr("Package pyzbar not found for QR recognition."))
+            return ''
 
         self.processing = True   # disable any capture while camera is starting
         self.camera = QCamera(QMediaDevices.defaultVideoInput())

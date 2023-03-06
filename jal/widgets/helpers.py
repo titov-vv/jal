@@ -1,3 +1,4 @@
+import logging
 from datetime import time, datetime, timedelta, timezone
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QApplication
@@ -87,6 +88,9 @@ def month_list(begin: int, end: int) -> list:
 # ----------------------------------------------------------------------------------------------------------------------
 # Function takes an image and searches for QR in it. Content of first found QR is returned. Otherwise - empty string.
 def decodeQR(qr_image: QImage) -> str:
+    if not dependency_present("pyzbar"):
+        logging.warning("Package pyzbar not found for QR recognition.")
+        return ''
     qr_image.convertTo(QImage.Format_Grayscale8)
     data = (qr_image.bits().tobytes(), qr_image.width(), qr_image.height())
     barcodes = pyzbar.decode(data, symbols=[pyzbar.ZBarSymbol.QRCODE])
