@@ -1,5 +1,5 @@
 import logging
-from PySide6.QtCore import Qt, Signal, QRectF, QTimer, QThread
+from PySide6.QtCore import Qt, Signal, QRectF, QTimer
 from PySide6.QtGui import QImage, QPen, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView
 from jal.widgets.helpers import dependency_present
@@ -13,28 +13,6 @@ try:
 except ImportError:
     pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
 
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Helper class that will fire capture event form outside and trigger QR-recognition attempt.
-# Otherwise, process crashes on Windows if timer is executed in the main thread.
-class DetachedTimer(QThread):
-    finished = Signal()         # This signal happens before exit of the thread
-    triggered = Signal()        # This signal happens when timer timeouts
-
-    # Init takes interval in milliseconds for the timer
-    def __init__(self, interval):
-        QThread.__init__(self)
-        self.interval = interval
-
-    def run(self):
-        timer = QTimer()
-        timer.timeout.connect(self.on_timer)
-        timer.start(self.interval)
-        super().run()           # This is required to start an event-loop and process timer signals inside the thread
-        self.finished.emit()    # The thread is terminated externally by call to exit() or quit() methods
-
-    def on_timer(self):
-        self.triggered.emit()
 
 # ----------------------------------------------------------------------------------------------------------------------
 class QRScanner(QWidget):
@@ -62,9 +40,11 @@ class QRScanner(QWidget):
         self.camera = None
         self.captureSession = None
         self.imageCapture = None
-        self.trigger = None
+        self.captureTimer = None
 
     def startScan(self):
+        if self.started:
+            return
         if len(QMediaDevices.videoInputs()) == 0:
             logging.warning(self.tr("There are no cameras available"))
             return
@@ -79,33 +59,32 @@ class QRScanner(QWidget):
         self.captureSession.setCamera(self.camera)
         self.captureSession.setVideoOutput(self.viewfinder)
         self.captureSession.setImageCapture(self.imageCapture)
+        self.captureTimer = QTimer(self)
 
         self.camera.errorOccurred.connect(self.onCameraError)
         self.imageCapture.errorOccurred.connect(self.onCaptureError)
         self.imageCapture.imageCaptured.connect(self.onImageCaptured)
         self.viewfinder.nativeSizeChanged.connect(self.onVideoSizeChanged)
+        self.captureTimer.timeout.connect(self.scanQR)
 
         self.camera.start()
-
-        # Set up a timer to trigger image capture from camera from time to time
-        self.trigger = DetachedTimer(self.QR_SCAN_RATE)
-        self.trigger.finished.connect(self.trigger.deleteLater)
-        self.trigger.triggered.connect(self.scanQR)
-        self.trigger.start()
-
         self.processing = False
         self.started = True
+        self.captureTimer.start(self.QR_SCAN_RATE)
 
     def stopScan(self):
+        if self.camera is None:
+            return
+        if not self.started:
+            return
         self.processing = True  # disable capture
-        if self.started:
-            self.trigger.exit(0)    # Stop the timer
-        if self.camera is not None:
-            self.camera.stop()
+        self.captureTimer.stop()
+        self.camera.stop()
 
-        self.camera = None
-        self.captureSession = None
-        self.imageCapture = None
+        self.captureTimer.deleteLater()
+        self.captureSession.deleteLater()
+        self.imageCapture.deleteLater()
+        self.camera.deleteLater()
         self.started = False
 
     def onVideoSizeChanged(self, _size):
