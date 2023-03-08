@@ -1,7 +1,7 @@
 from datetime import datetime
 from dateutil import tz
 
-from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
+from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray, QDate
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComboBox
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
@@ -63,6 +63,8 @@ class DividendWidget(AbstractOperationDetails):
         self.ex_date_editor.setTimeSpec(Qt.UTC)
         self.ex_date_editor.setFixedWidth(self.ex_date_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
         self.ex_date_editor.setDisplayFormat("dd/MM/yyyy")
+        self.ex_date_editor.setMinimumDate(QDate(1970, 1, 1))
+        self.ex_date_editor.setSpecialValueText(self.tr("unknown"))
         self.type = QComboBox(self)
         self.account_widget = AccountSelector(self)
         self.asset_widget = AssetSelector(self)

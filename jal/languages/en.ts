@@ -818,7 +818,7 @@
     <message>
         <location filename="../widgets/dividend_widget.py" line="30"/>
         <location filename="../widgets/dividend_widget.py" line="51"/>
-        <location filename="../widgets/dividend_widget.py" line="114"/>
+        <location filename="../widgets/dividend_widget.py" line="116"/>
         <source>Dividend</source>
         <translation></translation>
     </message>
@@ -858,22 +858,27 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="116"/>
+        <location filename="../widgets/dividend_widget.py" line="67"/>
+        <source>unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/dividend_widget.py" line="118"/>
         <source>Stock Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="117"/>
+        <location filename="../widgets/dividend_widget.py" line="119"/>
         <source>Stock Vesting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="162"/>
+        <location filename="../widgets/dividend_widget.py" line="164"/>
         <source>No quote</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="165"/>
+        <location filename="../widgets/dividend_widget.py" line="167"/>
         <source>You should set quote via Data-&gt;Quotes menu for Date/Time of the dividend</source>
         <translation type="unfinished"></translation>
     </message>
@@ -888,12 +893,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="113"/>
+        <location filename="../widgets/dividend_widget.py" line="115"/>
         <source>N/A</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="115"/>
+        <location filename="../widgets/dividend_widget.py" line="117"/>
         <source>Bond Interest</source>
         <translation></translation>
     </message>
@@ -2579,17 +2584,17 @@ Application will be terminated now</source>
 <context>
     <name>QRScanner</name>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="69"/>
+        <location filename="../widgets/qr_scanner.py" line="49"/>
         <source>There are no cameras available</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="72"/>
+        <location filename="../widgets/qr_scanner.py" line="52"/>
         <source>Package pyzbar not found for QR recognition.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="144"/>
+        <location filename="../widgets/qr_scanner.py" line="123"/>
         <source>Camera error: </source>
         <translation></translation>
     </message>
