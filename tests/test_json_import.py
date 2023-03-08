@@ -212,16 +212,16 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate asset payments
     test_payments = [
-        [1, 2, 1529612400, '', '', 1, 1, 5, '16.76', '0', 'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
-        [2, 2, 1533673200, '', '', 1, 1, 5, '20.35', '0.54', 'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)'],
-        [3, 2, 1633033200, '', '16054321038', 3, 1, 4, '5.887', '15.0', 'VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000'],
-        [4, 2, 1595017200, '', '13259965038', 3, 1, 18, '3.0', '0', 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000'],
-        [5, 2, 1591215600, '', '12882908488', 3, 1, 34, '3.0', '0', 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000'],
+        [1, 2, 1529612400, 0, '', 1, 1, 5, '16.76', '0', 'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
+        [2, 2, 1533673200, 0, '', 1, 1, 5, '20.35', '0.54', 'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)'],
+        [3, 2, 1633033200, 0, '16054321038', 3, 1, 4, '5.887', '15.0', 'VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000'],
+        [4, 2, 1595017200, 0, '13259965038', 3, 1, 18, '3.0', '0', 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000'],
+        [5, 2, 1591215600, 0, '12882908488', 3, 1, 34, '3.0', '0', 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000'],
         [6, 2, 1578082800, 1577664000, '', 1, 1, 6, '60.2', '6.02', 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
-        [7, 2, 1633033200, '', '', 1, 1, 4, '158.6', '15.86', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
-        [8, 2, 1590595065, '', '2882737839', 2, 1, 12, '-25.69', '0', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
-        [9, 2, 1600128000, '', '', 2, 1, 12, '62.5', '0', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
-        [10, 2, 1620345600, '', '', 4, 1, 8, '2.0', '0', 'Stock Award Grant for Cash Deposit']
+        [7, 2, 1633033200, 0, '', 1, 1, 4, '158.6', '15.86', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
+        [8, 2, 1590595065, 0, '2882737839', 2, 1, 12, '-25.69', '0', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
+        [9, 2, 1600128000, 0, '', 2, 1, 12, '62.5', '0', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
+        [10, 2, 1620345600, 0, '', 4, 1, 8, '2.0', '0', 'Stock Award Grant for Cash Deposit']
     ]
     dividends = JalAccount(1).dump_dividends()
     assert len(dividends) == len(test_payments)

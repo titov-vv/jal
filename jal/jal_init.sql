@@ -153,16 +153,16 @@ CREATE TABLE data_sources (
 -- Table: dividends
 DROP TABLE IF EXISTS dividends;
 CREATE TABLE dividends (
-    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
-    op_type    INTEGER     NOT NULL DEFAULT (2),
-    timestamp  INTEGER     NOT NULL,
-    ex_date    INTEGER,
-    number     TEXT        DEFAULT (''),
-    type       INTEGER     NOT NULL,
-    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
-    amount     TEXT        NOT NULL DEFAULT ('0'),
-    tax        TEXT        DEFAULT ('0'),
+    id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    op_type    INTEGER NOT NULL DEFAULT (2),
+    timestamp  INTEGER NOT NULL,
+    ex_date    INTEGER NOT NULL DEFAULT (0),
+    number     TEXT    NOT NULL DEFAULT (''),
+    type       INTEGER NOT NULL,
+    account_id INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    amount     TEXT    NOT NULL DEFAULT ('0'),
+    tax        TEXT    NOT NULL DEFAULT ('0'),
     note       TEXT
 );
 
@@ -662,7 +662,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 42);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 43);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 -- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1); -- Deprecated and ID shouldn't be re-used
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);

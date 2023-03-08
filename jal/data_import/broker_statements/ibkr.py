@@ -819,7 +819,7 @@ class StatementIBKR(StatementXML):
     # Method takes a list of dividend dictionaries and checks for REVERSAL and CANCEL
     # For such description it looks for matching record (for the same symbol) with opposite amount and the same payment
     # and report dates. Description may be different!
-    # FIXME - this algo may be not fully correct for CANCEL as it may cancel older record
+    # FIXME - this algo may be not fully correct for CANCEL as it may cancel older record - Dividend Accruals may probably help
     def aggregate_dividends(self, dividends: list) -> list:
         is_reversal = lambda x: self.ReversalSuffix in x or x.startswith(self.CancelPrefix)
         payments = [x for x in deepcopy(dividends) if not is_reversal(x['description'])]

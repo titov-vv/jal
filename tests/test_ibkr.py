@@ -58,7 +58,7 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate dividend & tax
     test_dividends = [
-        [1, 2, 1592770800, '', '', 1, 1, 6, '16.76', '1.68', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
+        [1, 2, 1592770800, 0, '', 1, 1, 6, '16.76', '1.68', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
     ]
     dividends = JalAccount(1).dump_dividends()
     assert len(dividends) == len(test_dividends)
@@ -125,7 +125,7 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate dividend & tax
     test_dividends = [
-        [1, 2, 1592770800, '', '', 1, 1, 6, '16.76', '0.21', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)']
+        [1, 2, 1592770800, 0, '', 1, 1, 6, '16.76', '0.21', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)']
     ]
     dividends = JalAccount(1).dump_dividends()
     assert len(dividends) == len(test_dividends)
