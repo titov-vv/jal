@@ -3,6 +3,7 @@ from functools import partial
 from PySide6.QtCore import Qt, Slot, QObject, QDateTime
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu
+from jal.db.helpers import load_icon
 from jal.ui.reports.ui_holdings_report import Ui_HoldingsWidget
 from jal.reports.reports import Reports
 from jal.db.asset import JalAsset
@@ -53,12 +54,16 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
     def onHoldingsContextMenu(self, pos):
         index = self.HoldingsTableView.indexAt(pos)
         contextMenu = QMenu(self.HoldingsTableView)
-        actionShowChart = QAction(text=self.tr("Show Price Chart"), parent=self.HoldingsTableView)
+        actionShowChart = QAction(icon=load_icon("chart.png"), text=self.tr("Show Price Chart"), parent=self.HoldingsTableView)
         actionShowChart.triggered.connect(partial(self.showPriceChart, index))
         contextMenu.addAction(actionShowChart)
-        actionEstimateTax = QAction(text=self.tr("Estimate Russian Tax"), parent=self.HoldingsTableView)
-        actionEstimateTax.triggered.connect(partial(self.estimateRussianTax, index))
-        contextMenu.addAction(actionEstimateTax)
+        tax_submenu = contextMenu.addMenu(load_icon("tax.png"), self.tr("Estimate tax"))
+        actionEstimateTaxPt = QAction(text=self.tr("Portugal"), parent=self.HoldingsTableView)
+        actionEstimateTaxPt.triggered.connect(partial(self.estimateRussianTax, index, 'pt'))
+        tax_submenu.addAction(actionEstimateTaxPt)
+        actionEstimateTaxRu = QAction(text=self.tr("Russia"), parent=self.HoldingsTableView)
+        actionEstimateTaxRu.triggered.connect(partial(self.estimateRussianTax, index, 'ru'))
+        tax_submenu.addAction(actionEstimateTaxRu)
         contextMenu.popup(self.HoldingsTableView.viewport().mapToGlobal(pos))
 
     @Slot()
@@ -68,7 +73,7 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
         self._parent.mdi_area().addSubWindow(ChartWindow(account, asset, currency, asset_qty))
 
     @Slot()
-    def estimateRussianTax(self, index):
+    def estimateRussianTax(self, index, country_code):
         model = index.model()
         account, asset, currency, asset_qty = model.get_data_for_tax(index)
-        self._parent.mdi_area().addSubWindow(TaxEstimator(account, asset, asset_qty))
+        self._parent.mdi_area().addSubWindow(TaxEstimator(country_code, account, asset, asset_qty), size=(1000, 300))

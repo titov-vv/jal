@@ -982,7 +982,7 @@
 <context>
     <name>HoldingsReport</name>
     <message>
-        <location filename="../reports/holdings.py" line="22"/>
+        <location filename="../reports/holdings.py" line="23"/>
         <source>Holdings</source>
         <translation>Портфель ЦБ</translation>
     </message>
@@ -990,19 +990,29 @@
 <context>
     <name>HoldingsReportWindow</name>
     <message>
-        <location filename="../reports/holdings.py" line="33"/>
+        <location filename="../reports/holdings.py" line="34"/>
         <source>Holdings</source>
         <translation>Портфель ЦБ</translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="56"/>
+        <location filename="../reports/holdings.py" line="57"/>
         <source>Show Price Chart</source>
         <translation>Показать график цены</translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="59"/>
-        <source>Estimate Russian Tax</source>
-        <translation>Оценка налога для России</translation>
+        <location filename="../reports/holdings.py" line="60"/>
+        <source>Estimate tax</source>
+        <translation>Оценить налог</translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="61"/>
+        <source>Portugal</source>
+        <translation>Португалия</translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="64"/>
+        <source>Russia</source>
+        <translation>Россия</translation>
     </message>
 </context>
 <context>
@@ -4090,12 +4100,17 @@ Application will be terminated now</source>
 <context>
     <name>TaxEstimator</name>
     <message>
-        <location filename="../db/tax_estimator.py" line="71"/>
+        <location filename="../db/tax_estimator.py" line="88"/>
         <source>Tax estimation for </source>
         <translation>Оценка налога для </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="127"/>
+        <location filename="../db/tax_estimator.py" line="113"/>
+        <source>Tax rate not found for: </source>
+        <translation>Ставка налога не найдена для: </translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="150"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
@@ -4103,39 +4118,35 @@ Application will be terminated now</source>
 <context>
     <name>TaxEstimatorModel</name>
     <message>
-        <location filename="../db/tax_estimator.py" line="47"/>
+        <location filename="../db/tax_estimator.py" line="50"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="48"/>
+        <location filename="../db/tax_estimator.py" line="51"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="49"/>
+        <location filename="../db/tax_estimator.py" line="52"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="50"/>
+        <location filename="../db/tax_estimator.py" line="53"/>
         <source>Rate, </source>
         <translation>Курс, </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="51"/>
+        <location filename="../db/tax_estimator.py" line="54"/>
+        <location filename="../db/tax_estimator.py" line="55"/>
         <source>Profit, </source>
         <translation>Прибыль, </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="52"/>
-        <source>Profit, RUB</source>
-        <translation>Прибыль, RUB</translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="54"/>
-        <source>Tax, RUB</source>
-        <translation>Налог, RUB</translation>
+        <location filename="../db/tax_estimator.py" line="56"/>
+        <source>Tax, </source>
+        <translation>Налог, </translation>
     </message>
 </context>
 <context>

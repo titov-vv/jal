@@ -49,16 +49,22 @@ class TabbedMdiArea(QWidget):
     def subWindowList(self, order=QMdiArea.CreationOrder):
         return self.mdi.subWindowList(order)
 
-    def addSubWindow(self, widget, maximized=False):
+    def addSubWindow(self, widget, maximized=False, size=None):
         sub_window = self.mdi.addSubWindow(widget)
         widget.onClose.connect(self.subWindowClosed)
         self.tabs.addTab(sub_window.windowTitle().replace('&', '&&'))  # & -> && to prevent shortcut creation
         if maximized:
             sub_window.showMaximized()
         else:   # show centered otherwise
-            x = self.mdi.x() + self.mdi.width() / 2 - sub_window.width() / 2
-            y = self.mdi.y() + self.mdi.height() / 2 - sub_window.height() / 2
-            sub_window.setGeometry(x, y, sub_window.width(), sub_window.height())
+            if size is None:
+                w = sub_window.width()
+                h = sub_window.height()
+            else:
+                w = size[0]
+                h = size[1]
+            x = self.mdi.x() + self.mdi.width() / 2 - w / 2
+            y = self.mdi.y() + self.mdi.height() / 2 - h / 2
+            sub_window.setGeometry(x, y, w, h)
             sub_window.show()
         return sub_window
 

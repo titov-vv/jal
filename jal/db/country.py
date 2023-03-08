@@ -1,4 +1,5 @@
 from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 
 
 class JalCountry(JalDB):
@@ -39,12 +40,11 @@ class JalCountry(JalDB):
 
     # Returns country name in given language or in current interface language if no argument is given
     def name(self, language: str='') -> str:
-        if language:
-            return self._read("SELECT c.name FROM country_names c LEFT JOIN languages l ON c.language_id=l.id "
-                              "WHERE country_id=:country_id AND l.language=:language",
-                              [(":country_id", self._id), (":language", language)])
-        else:
-            return self._name
+        if not language:
+            language = JalSettings().getLanguage()
+        return self._read("SELECT c.name FROM country_names c LEFT JOIN languages l ON c.language_id=l.id "
+                          "WHERE country_id=:country_id AND l.language=:language",
+                          [(":country_id", self._id), (":language", language)])
 
     def code(self) -> str:
         return self._code
