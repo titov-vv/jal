@@ -1598,7 +1598,7 @@
     <message>
         <location filename="../ui/main_window.ui" line="109"/>
         <source>&amp;Statement</source>
-        <translation>&amp;Выписка</translation>
+        <translation>&amp;Отчёт</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="144"/>

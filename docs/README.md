@@ -57,6 +57,12 @@ Database will be initialized automatically with minimal required set of data, an
 ### Upgrades
 If you installed *jal* via *pip* then you may upgrade it to newer version with help of command `pip install jal -U`
 
+### Tax report for investment account
+
+Tax report can be prepared based on data from any broker if operations are present in JAL. Tax reports are supported for Russia and Portugal.    
+You can import operations from broker statement with help of menu *Import->Statement*.  
+Step-by-step example (in russian language) of Russian tax report preparation for Interactive Brokers can be found on [this page](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md). 
+Use contacts from beginning of this page if you need support regarding statements or reports.
 
 ### Screenshots
 Qt have a better look on Linux out of the box. Here is main program window:  
