@@ -242,5 +242,5 @@ def test_Frankfurt_downloader(prepare_db):
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.YahooFRA_Downloader(JalAsset(4), 3, 1618272000, 1618444800)
+    quotes_downloaded = downloader.YahooFRA_Downloader(JalAsset(4), 3, d2t(230317), d2t(230321))
     assert_frame_equal(quotes, quotes_downloaded)

@@ -386,6 +386,7 @@ class QuoteDownloader(QObject):
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
         data['Close'] = data['Close'].apply(Decimal)
         data = data.drop(columns=['Open', 'High', 'Low', 'Adj Close', 'Volume'])
+        data.dropna(inplace=True)
         close = data.set_index("Date")
         return close
 
