@@ -140,6 +140,7 @@ class FloatDelegate(QStyledItemDelegate):
             amount = Decimal(value)
         except ValueError:
             amount = Decimal('0')
+        amount = Decimal('0') if amount.is_nan() else amount  # Protection against occasional NaNs in database
         if self._percent:
             amount *= Decimal('100')
         if amount > Decimal('0'):
