@@ -182,6 +182,7 @@ class QuoteDownloader(QObject):
         data['Multiplier'] = data['Multiplier'].apply(Decimal)
         data['Rate'] = data['Rate'] / data['Multiplier']
         data.drop('Multiplier', axis=1, inplace=True)
+        data.dropna(inplace=True)
         rates = data.set_index("Date")
         return rates
 
@@ -200,6 +201,7 @@ class QuoteDownloader(QObject):
         data['Rate'] = data['Rate'].apply(Decimal)   # Convert from str to Decimal
         data['Rate'] = Decimal('1') / data['Rate']
         data['Rate'] = data['Rate'].apply(round, args=(10, ))
+        data.dropna(inplace=True)
         rates = data.set_index("Date")
         return rates
 
@@ -371,6 +373,7 @@ class QuoteDownloader(QObject):
         data = pd.DataFrame(quotes, columns=["Date", "Close"])
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
         data['Close'] = data['Close'].apply(Decimal)
+        data.dropna(inplace=True)
         close = data.set_index("Date")
         return close
 
@@ -424,6 +427,7 @@ class QuoteDownloader(QObject):
         data['Close'] = data['Close'].apply(Decimal)
         data = data.drop(columns=['Open', 'High', 'Low', 'Number of Shares', 'Number of Trades',
                                   'Turnover', 'Number of Trades', 'vwap'])
+        data.dropna(inplace=True)
         close = data.set_index("Date")
         close.sort_index(inplace=True)
         return close
@@ -458,6 +462,7 @@ class QuoteDownloader(QObject):
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
         data['Close'] = data['Close'].apply(str)   # Convert from float to str
         data['Close'] = data['Close'].apply(Decimal)   # Convert from str to Decimal
+        data.dropna(inplace=True)
         close = data.set_index("Date")
         close.sort_index(inplace=True)
         return close
