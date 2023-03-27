@@ -92,7 +92,8 @@ def decodeQR(qr_image: QImage) -> str:
         logging.warning("Package pyzbar not found for QR recognition.")
         return ''
     qr_image.convertTo(QImage.Format_Grayscale8)
-    data = (qr_image.bits().tobytes(), qr_image.width(), qr_image.height())
+    # bytesPerXXX is more accurate than width and height
+    data = (qr_image.bits().tobytes(), qr_image.bytesPerLine(), int(qr_image.sizeInBytes()/qr_image.bytesPerLine()))
     barcodes = pyzbar.decode(data, symbols=[pyzbar.ZBarSymbol.QRCODE])
     if barcodes:
         return barcodes[0].data.decode('utf-8')
