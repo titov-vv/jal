@@ -2,7 +2,7 @@ import logging
 from PySide6.QtCore import Qt, Signal, QRectF, QTimer
 from PySide6.QtGui import QImage, QPen, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView
-from jal.widgets.helpers import dependency_present
+from jal.widgets.helpers import dependency_present, decodeQR
 try:
     from pyzbar import pyzbar
 except ImportError:
@@ -136,14 +136,7 @@ class QRScanner(QWidget):
         self.processing = False
 
     def decodeQR(self, qr_image: QImage):
-        # cropped = qr_image.copy(self.calculate_center_square(qr_image).toRect())
-        # crop works but somehow bytes array size differs from the cropped image size and code breaks
-        qr_image.convertTo(QImage.Format_Grayscale8)
-        data = (qr_image.bits().tobytes(), qr_image.width(), qr_image.height())
-        barcodes = pyzbar.decode(data, symbols=[pyzbar.ZBarSymbol.QRCODE])
-        if barcodes:
-            qr_text = barcodes[0].data.decode('utf-8')
-        else:
-            qr_text = ''
+        cropped = qr_image.copy(self.calculate_center_square(qr_image).toRect())
+        qr_text = decodeQR(cropped)
         if qr_text:
             self.decodedQR.emit(qr_text)
