@@ -1948,12 +1948,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="285"/>
+        <location filename="../net/downloader.py" line="287"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="328"/>
+        <location filename="../net/downloader.py" line="330"/>
         <source>Multiple MOEX assets found for: </source>
         <translation>Найдено несколько ЦБ на MOEX для: </translation>
     </message>
@@ -2636,22 +2636,22 @@ Application will be terminated now</source>
         <translation>Нет данных ЦБ РФ для: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="409"/>
+        <location filename="../net/downloader.py" line="413"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="412"/>
+        <location filename="../net/downloader.py" line="416"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="415"/>
+        <location filename="../net/downloader.py" line="419"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="453"/>
+        <location filename="../net/downloader.py" line="458"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
@@ -3958,17 +3958,22 @@ Application will be terminated now</source>
 <context>
     <name>Statements</name>
     <message>
-        <location filename="../data_import/statements.py" line="38"/>
+        <location filename="../data_import/statements.py" line="33"/>
+        <source>Statement module can&apos;t be imported: </source>
+        <translation>Модуль отчёта не может быть импортирован: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="42"/>
         <source>Statement class can&apos;t be loaded: </source>
         <translation>Класс отчёта не может быть загружен: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="54"/>
+        <location filename="../data_import/statements.py" line="58"/>
         <source>Select statement file to import</source>
         <translation>Выберите файл отчета для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="67"/>
+        <location filename="../data_import/statements.py" line="71"/>
         <source>Import failed: </source>
         <translation>Ошибка импорта: </translation>
     </message>
@@ -4100,17 +4105,17 @@ Application will be terminated now</source>
 <context>
     <name>TaxEstimator</name>
     <message>
-        <location filename="../db/tax_estimator.py" line="88"/>
+        <location filename="../db/tax_estimator.py" line="102"/>
         <source>Tax estimation for </source>
         <translation>Оценка налога для </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="113"/>
+        <location filename="../db/tax_estimator.py" line="124"/>
         <source>Tax rate not found for: </source>
         <translation>Ставка налога не найдена для: </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="150"/>
+        <location filename="../db/tax_estimator.py" line="161"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
@@ -4118,33 +4123,33 @@ Application will be terminated now</source>
 <context>
     <name>TaxEstimatorModel</name>
     <message>
-        <location filename="../db/tax_estimator.py" line="50"/>
+        <location filename="../db/tax_estimator.py" line="24"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="51"/>
+        <location filename="../db/tax_estimator.py" line="25"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="52"/>
+        <location filename="../db/tax_estimator.py" line="26"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="53"/>
+        <location filename="../db/tax_estimator.py" line="27"/>
         <source>Rate, </source>
         <translation>Курс, </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="54"/>
-        <location filename="../db/tax_estimator.py" line="55"/>
+        <location filename="../db/tax_estimator.py" line="28"/>
+        <location filename="../db/tax_estimator.py" line="29"/>
         <source>Profit, </source>
         <translation>Прибыль, </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="56"/>
+        <location filename="../db/tax_estimator.py" line="30"/>
         <source>Tax, </source>
         <translation>Налог, </translation>
     </message>
