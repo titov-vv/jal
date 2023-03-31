@@ -27,7 +27,11 @@ class Statements(QObject):
         statement_modules = [filename[:-3] for filename in os.listdir(statements_folder) if filename.endswith(".py")]
         for module_name in statement_modules:
             logging.debug(f"Trying to load statement module: {module_name}")
-            module = importlib.import_module(f"jal.data_import.broker_statements.{module_name}")
+            try:
+                module = importlib.import_module(f"jal.data_import.broker_statements.{module_name}")
+            except ImportError:
+                logging.error(self.tr("Statement module can't be imported: ") + module_name)
+                continue
             try:
                 statement_class_name = getattr(module, "JAL_STATEMENT_CLASS")
             except AttributeError:
