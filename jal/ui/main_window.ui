@@ -144,11 +144,6 @@
     <string>&amp;Quotes...</string>
    </property>
   </action>
-  <action name="actionImportStatement">
-   <property name="text">
-    <string>&amp;Broker statement...</string>
-   </property>
-  </action>
   <action name="actionAccounts">
    <property name="text">
     <string>&amp;Accounts</string>
@@ -184,24 +179,9 @@
     <string>Investment &amp;tax report</string>
    </property>
   </action>
-  <action name="MakeDealsReport">
-   <property name="text">
-    <string>&amp;Deals report</string>
-   </property>
-  </action>
   <action name="actionTags">
    <property name="text">
     <string>&amp;Tags</string>
-   </property>
-  </action>
-  <action name="MakePLReport">
-   <property name="text">
-    <string>&amp;Profit/Loss report</string>
-   </property>
-  </action>
-  <action name="MakeCategoriesReport">
-   <property name="text">
-    <string>&amp;Income/Spending report</string>
    </property>
   </action>
   <action name="actionImportSlipRU">

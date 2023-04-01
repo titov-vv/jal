@@ -1,3 +1,4 @@
+from functools import partial
 from datetime import datetime
 from PySide6.QtCore import Qt, Slot, QObject, QAbstractItemModel, QModelIndex
 from PySide6.QtGui import QAction, QBrush
@@ -197,6 +198,9 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                 return int(Qt.AlignCenter)
         return None
 
+    def headerWidth(self, section):
+        return self._view.header().sectionSize(section)
+
     def index(self, row, column, parent=None):
         if not parent.isValid():
             parent = self._root
@@ -318,7 +322,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
 class IncomeSpendingReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Income/Spending")
+        self.name = self.tr("Income & Spending")
         self.window_class = "IncomeSpendingReportWindow"
 
 
@@ -328,6 +332,7 @@ class IncomeSpendingReportWindow(MdiWidget, Ui_IncomeSpendingReportWidget):
         MdiWidget.__init__(self, parent.mdi_area())
         self.setupUi(self)
         self._parent = parent
+        self.name = self.tr("Income & Spending")
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
         self.income_spending_model = IncomeSpendingReportModel(self.ReportTreeView)
@@ -352,6 +357,7 @@ class IncomeSpendingReportWindow(MdiWidget, Ui_IncomeSpendingReportWidget):
         self.CurrencyCombo.changed.connect(self.ReportTreeView.model().setCurrency)
         self.ReportTreeView.customContextMenuRequested.connect(self.onCellContextMenu)
         self.actionDetails.triggered.connect(self.showDetailsReport)
+        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ReportTreeView.model()))
 
     @Slot()
     def onCellContextMenu(self, position):

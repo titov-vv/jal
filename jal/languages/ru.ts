@@ -1304,76 +1304,76 @@
 <context>
     <name>IncomeSpendingReport</name>
     <message>
-        <location filename="../reports/income_spending.py" line="322"/>
-        <source>Income/Spending</source>
-        <translation>Доходы/Расходы</translation>
+        <location filename="../reports/income_spending.py" line="326"/>
+        <source>Income &amp; Spending</source>
+        <translation>Доходы и Траты</translation>
     </message>
 </context>
 <context>
     <name>IncomeSpendingReportModel</name>
     <message>
-        <location filename="../reports/income_spending.py" line="155"/>
+        <location filename="../reports/income_spending.py" line="156"/>
         <source>Jan</source>
         <translation>Янв</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="155"/>
+        <location filename="../reports/income_spending.py" line="156"/>
         <source>Feb</source>
         <translation>Фев</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="155"/>
+        <location filename="../reports/income_spending.py" line="156"/>
         <source>Mar</source>
         <translation>Мар</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="155"/>
+        <location filename="../reports/income_spending.py" line="156"/>
         <source>Apr</source>
         <translation>Апр</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="155"/>
+        <location filename="../reports/income_spending.py" line="156"/>
         <source>May</source>
         <translation>Май</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="155"/>
+        <location filename="../reports/income_spending.py" line="156"/>
         <source>Jun</source>
         <translation>Июн</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="156"/>
+        <location filename="../reports/income_spending.py" line="157"/>
         <source>Jul</source>
         <translation>Июл</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="156"/>
+        <location filename="../reports/income_spending.py" line="157"/>
         <source>Aug</source>
         <translation>Авг</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="156"/>
+        <location filename="../reports/income_spending.py" line="157"/>
         <source>Sep</source>
         <translation>Сен</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="156"/>
+        <location filename="../reports/income_spending.py" line="157"/>
         <source>Oct</source>
         <translation>Окт</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="156"/>
+        <location filename="../reports/income_spending.py" line="157"/>
         <source>Nov</source>
         <translation>Ноя</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="159"/>
+        <location filename="../reports/income_spending.py" line="160"/>
         <source>Dec</source>
         <translation>Дек</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="189"/>
-        <location filename="../reports/income_spending.py" line="298"/>
+        <location filename="../reports/income_spending.py" line="190"/>
+        <location filename="../reports/income_spending.py" line="302"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
@@ -1382,19 +1382,29 @@
     <name>IncomeSpendingReportWidget</name>
     <message>
         <location filename="../ui/reports/income_spending_report.ui" line="14"/>
-        <source>Income/Spending</source>
-        <translation>Доходы/Расходы</translation>
+        <source>Income &amp; Spending</source>
+        <translation>Доходы и Траты</translation>
     </message>
     <message>
         <location filename="../ui/reports/income_spending_report.ui" line="66"/>
         <source>Currency:</source>
         <translation>Валюта:</translation>
     </message>
+    <message>
+        <location filename="../ui/reports/income_spending_report.ui" line="89"/>
+        <source>Save...</source>
+        <translation>Сохранить...</translation>
+    </message>
 </context>
 <context>
     <name>IncomeSpendingReportWindow</name>
     <message>
-        <location filename="../reports/income_spending.py" line="339"/>
+        <location filename="../reports/income_spending.py" line="336"/>
+        <source>Income &amp; Spending</source>
+        <translation>Доходы и Траты</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="344"/>
         <source>Show operations</source>
         <translation>Показать операции</translation>
     </message>
@@ -1492,86 +1502,66 @@
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="149"/>
-        <source>&amp;Broker statement...</source>
-        <translation>&amp;Брокерский отчет...</translation>
-    </message>
-    <message>
-        <location filename="../ui/main_window.ui" line="154"/>
         <source>&amp;Accounts</source>
         <translation>&amp;Счета</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="159"/>
+        <location filename="../ui/main_window.ui" line="154"/>
         <source>A&amp;ssets</source>
         <translation>&amp;Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="164"/>
+        <location filename="../ui/main_window.ui" line="159"/>
         <source>&amp;Peers</source>
         <translation>К&amp;онтрагенты</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="169"/>
+        <location filename="../ui/main_window.ui" line="164"/>
         <source>&amp;Categories</source>
         <translation>&amp;Категории</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="174"/>
+        <location filename="../ui/main_window.ui" line="169"/>
         <source>&amp;Backup...</source>
         <translation>&amp;Бэкап...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="179"/>
+        <location filename="../ui/main_window.ui" line="174"/>
         <source>&amp;Restore...</source>
         <translation>&amp;Восстановление...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="184"/>
+        <location filename="../ui/main_window.ui" line="179"/>
         <source>Investment &amp;tax report</source>
         <translation>Инвестиционный &amp;налоговый отчет</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="224"/>
+        <location filename="../ui/main_window.ui" line="204"/>
         <source>Foreign accounts &amp;flow report</source>
         <translation>Отчет о &amp;движениях по зарубежным счетам</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="189"/>
-        <source>&amp;Deals report</source>
-        <translation>Отчет &amp;Сделки</translation>
-    </message>
-    <message>
-        <location filename="../ui/main_window.ui" line="194"/>
+        <location filename="../ui/main_window.ui" line="184"/>
         <source>&amp;Tags</source>
         <translation>&amp;Тэги</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="199"/>
-        <source>&amp;Profit/Loss report</source>
-        <translation>Отчет &amp;Прибыли/Убытки</translation>
-    </message>
-    <message>
-        <location filename="../ui/main_window.ui" line="204"/>
-        <source>&amp;Income/Spending report</source>
-        <translation>Отчет &amp;Доходы/Расходы</translation>
-    </message>
-    <message>
-        <location filename="../ui/main_window.ui" line="209"/>
+        <location filename="../ui/main_window.ui" line="189"/>
         <source>Slip [RU]...</source>
         <translation>Чек [RU]...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="214"/>
+        <location filename="../ui/main_window.ui" line="194"/>
         <source>&amp;Quotes</source>
         <translation>&amp;Котировки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="219"/>
+        <location filename="../ui/main_window.ui" line="199"/>
         <source>&amp;Operations</source>
         <translation>&amp;Операции</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="229"/>
+        <location filename="../ui/main_window.ui" line="209"/>
         <source>&amp;Base Currency</source>
         <translation>&amp;Базовая валюта</translation>
     </message>

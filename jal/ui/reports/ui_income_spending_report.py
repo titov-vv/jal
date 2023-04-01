@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHBoxLayout,
-    QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QTreeView, QVBoxLayout, QWidget)
+    QHeaderView, QLabel, QPushButton, QSizePolicy,
+    QSpacerItem, QTreeView, QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.date_range_selector import DateRangeSelector
@@ -59,6 +59,11 @@ class Ui_IncomeSpendingReportWidget(object):
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
+        self.SaveButton = QPushButton(self.ReportParamsFrame)
+        self.SaveButton.setObjectName(u"SaveButton")
+
+        self.horizontalLayout.addWidget(self.SaveButton)
+
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
 
@@ -78,7 +83,8 @@ class Ui_IncomeSpendingReportWidget(object):
     # setupUi
 
     def retranslateUi(self, IncomeSpendingReportWidget):
-        IncomeSpendingReportWidget.setWindowTitle(QCoreApplication.translate("IncomeSpendingReportWidget", u"Income/Spending", None))
+        IncomeSpendingReportWidget.setWindowTitle(QCoreApplication.translate("IncomeSpendingReportWidget", u"Income & Spending", None))
         self.CurrencyLbl.setText(QCoreApplication.translate("IncomeSpendingReportWidget", u"Currency:", None))
+        self.SaveButton.setText(QCoreApplication.translate("IncomeSpendingReportWidget", u"Save...", None))
     # retranslateUi
 
