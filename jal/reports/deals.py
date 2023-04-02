@@ -1,3 +1,5 @@
+from functools import partial
+
 from PySide6.QtCore import Slot, QObject
 from jal.ui.reports.ui_deals_report import Ui_DealsReportWidget
 from jal.reports.reports import Reports
@@ -21,6 +23,7 @@ class DealsReportWindow(MdiWidget, Ui_DealsReportWidget):
         MdiWidget.__init__(self, parent.mdi_area())
         self.setupUi(self)
         self._parent = parent
+        self.name = self.tr("Deals")
 
         # Add available groupings
         self.GroupCombo.addItem(self.tr("<None>"), "")
@@ -39,6 +42,7 @@ class DealsReportWindow(MdiWidget, Ui_DealsReportWidget):
         self.ReportAccountBtn.changed.connect(self.onAccountChange)
         self.ReportRange.changed.connect(self.ReportTreeView.model().setDatesRange)
         self.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
+        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ReportTreeView.model()))
 
     @Slot()
     def onAccountChange(self):

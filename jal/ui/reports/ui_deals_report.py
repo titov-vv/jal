@@ -16,8 +16,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame,
-    QHBoxLayout, QHeaderView, QLabel, QSizePolicy,
-    QSpacerItem, QTreeView, QVBoxLayout, QWidget)
+    QHBoxLayout, QHeaderView, QLabel, QPushButton,
+    QSizePolicy, QSpacerItem, QTreeView, QVBoxLayout,
+    QWidget)
 
 from jal.widgets.account_select import AccountButton
 from jal.widgets.custom.date_range_selector import DateRangeSelector
@@ -69,6 +70,11 @@ class Ui_DealsReportWidget(object):
 
         self.horizontalLayout.addItem(self.ReportFrameSpacer)
 
+        self.SaveButton = QPushButton(self.ReportParamsFrame)
+        self.SaveButton.setObjectName(u"SaveButton")
+
+        self.horizontalLayout.addWidget(self.SaveButton)
+
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
 
@@ -90,5 +96,6 @@ class Ui_DealsReportWidget(object):
         DealsReportWidget.setWindowTitle(QCoreApplication.translate("DealsReportWidget", u"Deals", None))
         self.GroupLbl.setText(QCoreApplication.translate("DealsReportWidget", u"Group by:", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("DealsReportWidget", u"Account:", None))
+        self.SaveButton.setText(QCoreApplication.translate("DealsReportWidget", u"Save...", None))
     # retranslateUi
 

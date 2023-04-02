@@ -373,69 +373,6 @@
     </message>
 </context>
 <context>
-    <name>ClosedTradesModel</name>
-    <message>
-        <location filename="../reports/deals.py" line="142"/>
-        <source>Asset</source>
-        <translation>Ценная бумага</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="143"/>
-        <source>Open Date/Time</source>
-        <translation>Дата/Время открытия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="144"/>
-        <source>Open Date</source>
-        <translation>Дата открытия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="145"/>
-        <source>Close Date/Time</source>
-        <translation>Дата/время закрытия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="146"/>
-        <source>Close Date</source>
-        <translation>Дата закрытия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="147"/>
-        <source>Open Price</source>
-        <translation>Цена открытия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="148"/>
-        <source>Close Price</source>
-        <translation>Цена закрытия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="149"/>
-        <source>Qty</source>
-        <translation>Кол-во</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="150"/>
-        <source>Fee</source>
-        <translation>Комиссия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="151"/>
-        <source>P/L</source>
-        <translation>ПиУ</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="152"/>
-        <source>P/L, %</source>
-        <translation>ПиУ, %</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="153"/>
-        <source>Note</source>
-        <translation>Примечание</translation>
-    </message>
-</context>
-<context>
     <name>CorporateAction</name>
     <message>
         <location filename="../db/operations.py" line="989"/>
@@ -701,7 +638,7 @@
 <context>
     <name>DealsReport</name>
     <message>
-        <location filename="../reports/deals.py" line="295"/>
+        <location filename="../reports/deals.py" line="17"/>
         <source>Deals by Account</source>
         <translation>Сделки по счету</translation>
     </message>
@@ -723,36 +660,46 @@
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
+    <message>
+        <location filename="../ui/reports/deals_report.ui" line="99"/>
+        <source>Save...</source>
+        <translation>Сохранить...</translation>
+    </message>
 </context>
 <context>
     <name>DealsReportWindow</name>
     <message>
-        <location filename="../reports/deals.py" line="306"/>
+        <location filename="../reports/deals.py" line="29"/>
         <source>&lt;None&gt;</source>
         <translation>&lt;Пусто&gt;</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="307"/>
+        <location filename="../reports/deals.py" line="29"/>
+        <source>Deals</source>
+        <translation>Сделки</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="30"/>
         <source>Asset</source>
         <translation>Ценная бумага</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="308"/>
+        <location filename="../reports/deals.py" line="31"/>
         <source>Close</source>
         <translation>Закрытие</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="309"/>
+        <location filename="../reports/deals.py" line="32"/>
         <source>Asset - Open - Close</source>
         <translation>ЦБ - Открытие - Закрытие</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="310"/>
+        <location filename="../reports/deals.py" line="33"/>
         <source>Open - Close</source>
         <translation>Открытие - Закрытие</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="311"/>
+        <location filename="../reports/deals.py" line="34"/>
         <source>Close - Open</source>
         <translation>Закрытие - Открытие</translation>
     </message>

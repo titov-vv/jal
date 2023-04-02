@@ -72,7 +72,7 @@ class TradeTreeItem:
             self._parent.updateGroupDetails(child_data)
 
     def getChild(self, id):
-        if id < 0 or id > len(self._children):
+        if id < 0 or id >= len(self._children):
             return None
         return self._children[id]
 
@@ -199,6 +199,9 @@ class ClosedTradesModel(QAbstractItemModel):
             if role == Qt.TextAlignmentRole:
                 return int(Qt.AlignCenter)
         return None
+
+    def headerWidth(self, section):
+        return self._view.header().sectionSize(section)
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
