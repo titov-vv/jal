@@ -1,12 +1,12 @@
 from datetime import datetime
 from decimal import Decimal
 
-from PySide6.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex
+from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefindedAccountType
 from jal.db.helpers import localize_decimal
-from jal.db.tree_model import AbstractTreeItem
+from jal.db.tree_model import AbstractTreeItem, AbstractTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.widgets.delegates import GridLinesDelegate
@@ -26,13 +26,11 @@ class AssetTreeItem(AbstractTreeItem):
             self.data = data.copy()
 
 # ----------------------------------------------------------------------------------------------------------------------
-class HoldingsModel(QAbstractItemModel):
+class HoldingsModel(AbstractTreeModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
-        self._view = parent_view
         self._groups = []
         self._grid_delegate = None
-        self._root = None
         self._currency = 0
         self._currency_name = ''
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
@@ -48,16 +46,6 @@ class HoldingsModel(QAbstractItemModel):
                          self.tr("Value"),
                          self.tr("Value, ")]
 
-    def rowCount(self, parent=None):
-        if not parent.isValid():
-            parent_item = self._root
-        else:
-            parent_item = parent.internalPointer()
-        if parent_item is not None:
-            return parent_item.childrenCount()
-        else:
-            return 0
-
     def columnCount(self, parent=None):
         return len(self._columns)
 
@@ -67,28 +55,6 @@ class HoldingsModel(QAbstractItemModel):
                 col_name = self._columns[section] + self._currency_name if section == 9 else self._columns[section]
                 return col_name
         return None
-
-    def headerWidth(self, section):
-        return self._view.header().sectionSize(section)
-
-    def index(self, row, column, parent=None):
-        if not parent.isValid():
-            parent = self._root
-        else:
-            parent = parent.internalPointer()
-        child = parent.getChild(row)
-        if child:
-            return self.createIndex(row, column, child)
-        return QModelIndex()
-
-    def parent(self, index):
-        if not index.isValid():
-            return QModelIndex()
-        child_item = index.internalPointer()
-        parent_item = child_item.getParent()
-        if parent_item == self._root:
-            return QModelIndex()
-        return self.createIndex(0, 0, parent_item)
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
@@ -219,21 +185,13 @@ class HoldingsModel(QAbstractItemModel):
         if self._currency != currency_id:
             self._currency = currency_id
             self._currency_name = JalAsset(currency_id).symbol()
-            self.calculateHoldings()
+            self.prepareData()
 
     @Slot()
     def setDate(self, new_date):
         if self._date != new_date.endOfDay(Qt.UTC).toSecsSinceEpoch():
             self._date = new_date.endOfDay(Qt.UTC).toSecsSinceEpoch()
-            self.calculateHoldings()
-
-    # defines report grouping by provided field list - 'group_field1;group_field2;...'
-    def setGrouping(self, group_list):
-        if group_list:
-            self._groups = group_list.split(';')
-        else:
-            self._groups = []
-        self.calculateHoldings()
+            self.prepareData()
 
     def get_data_for_tax(self, index):
         if not index.isValid():
@@ -242,10 +200,10 @@ class HoldingsModel(QAbstractItemModel):
         return item.data['account_id'], item.data['asset_id'], item.data['currency_id'], item.data['qty']
 
     def update(self):
-        self.calculateHoldings()
+        self.prepareData()
 
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
-    def calculateHoldings(self):
+    def prepareData(self):
         holdings = []
         accounts = JalAccount.get_all_accounts(account_type=PredefindedAccountType.Investment)
         for account in accounts:

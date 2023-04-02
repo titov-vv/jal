@@ -1,7 +1,7 @@
 from __future__ import annotations
 from decimal import Decimal
-from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
-from jal.db.tree_model import AbstractTreeItem
+from PySide6.QtCore import Qt
+from jal.db.tree_model import AbstractTreeItem, AbstractTreeModel
 from jal.db.account import JalAccount
 from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2d
@@ -89,11 +89,9 @@ class TradeTreeItem(AbstractTreeItem):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class ClosedTradesModel(QAbstractItemModel):
+class ClosedTradesModel(AbstractTreeModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
-        self._view = parent_view
-        self._root = None
         self._trades = []
         self._account_id = 0
         self._begin = self._end = 0
@@ -125,16 +123,6 @@ class ClosedTradesModel(QAbstractItemModel):
                 return i
         return -1
 
-    def rowCount(self, parent=None):
-        if not parent.isValid():
-            parent_item = self._root
-        else:
-            parent_item = parent.internalPointer()
-        if parent_item is not None:
-            return parent_item.childrenCount()
-        else:
-            return 0
-
     def columnCount(self, parent=None):
         if parent is None:
             parent_item = self._root
@@ -147,25 +135,6 @@ class ClosedTradesModel(QAbstractItemModel):
         else:
             return 0
 
-    def index(self, row, column, parent=None):
-        if not parent.isValid():
-            parent = self._root
-        else:
-            parent = parent.internalPointer()
-        child = parent.getChild(row)
-        if child:
-            return self.createIndex(row, column, child)
-        return QModelIndex()
-
-    def parent(self, index=None):
-        if not index.isValid():
-            return QModelIndex()
-        child_item = index.internalPointer()
-        parent_item = child_item.getParent()
-        if parent_item == self._root:
-            return QModelIndex()
-        return self.createIndex(0, 0, parent_item)
-
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
@@ -173,9 +142,6 @@ class ClosedTradesModel(QAbstractItemModel):
             if role == Qt.TextAlignmentRole:
                 return int(Qt.AlignCenter)
         return None
-
-    def headerWidth(self, section):
-        return self._view.header().sectionSize(section)
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
@@ -243,14 +209,5 @@ class ClosedTradesModel(QAbstractItemModel):
     def setDatesRange(self, begin, end):
         self._begin = begin
         self._end = end
-        self.prepareData()
-        self.configureView()
-
-    # defines report grouping by provided field list - 'group_field1;group_field2;...'
-    def setGrouping(self, group_list):
-        if group_list:
-            self._groups = group_list.split(';')
-        else:
-            self._groups = []
         self.prepareData()
         self.configureView()

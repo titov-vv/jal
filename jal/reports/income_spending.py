@@ -1,6 +1,6 @@
 from functools import partial
 from datetime import datetime
-from PySide6.QtCore import Qt, Slot, QObject, QAbstractItemModel, QModelIndex
+from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtGui import QAction, QBrush
 from PySide6.QtWidgets import QMenu
 from jal.reports.reports import Reports
@@ -8,7 +8,7 @@ from jal.db.asset import JalAsset
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.constants import CustomColor
 from jal.db.helpers import load_icon
-from jal.db.tree_model import AbstractTreeItem
+from jal.db.tree_model import AbstractTreeItem, AbstractTreeModel
 from jal.db.category import JalCategory
 from jal.widgets.helpers import is_signal_connected, month_list, month_start_ts, month_end_ts
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
@@ -123,31 +123,19 @@ class ReportTreeItem(AbstractTreeItem):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class IncomeSpendingReportModel(QAbstractItemModel):
+class IncomeSpendingReportModel(AbstractTreeModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._begin = 0
         self._end = 0
         self._currency = 0
         self._month_list = []
-        self._view = parent_view
-        self._root = None
         self._grid_delegate = None
         self._float_delegate = None
         self.month_name = [
             self.tr('Jan'), self.tr('Feb'), self.tr('Mar'), self.tr('Apr'), self.tr('May'), self.tr('Jun'),
             self.tr('Jul'), self.tr('Aug'), self.tr('Sep'), self.tr('Oct'), self.tr('Nov'), self.tr('Dec')
         ]
-
-    def rowCount(self, parent=None):
-        if not parent.isValid():
-            parent_item = self._root
-        else:
-            parent_item = parent.internalPointer()
-        if parent_item is not None:
-            return parent_item.childrenCount()
-        else:
-            return 0
 
     def columnCount(self, parent=None):
         if parent is None:
@@ -179,28 +167,6 @@ class IncomeSpendingReportModel(QAbstractItemModel):
             if role == Qt.TextAlignmentRole:
                 return int(Qt.AlignCenter)
         return None
-
-    def headerWidth(self, section):
-        return self._view.header().sectionSize(section)
-
-    def index(self, row, column, parent=None):
-        if not parent.isValid():
-            parent = self._root
-        else:
-            parent = parent.internalPointer()
-        child = parent.getChild(row)
-        if child:
-            return self.createIndex(row, column, child)
-        return QModelIndex()
-
-    def parent(self, index=None):
-        if not index.isValid():
-            return QModelIndex()
-        child_item = index.internalPointer()
-        parent_item = child_item.getParent()
-        if parent_item == self._root:
-            return QModelIndex()
-        return self.createIndex(0, 0, parent_item)
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
