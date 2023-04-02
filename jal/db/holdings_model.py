@@ -11,7 +11,7 @@ from jal.db.asset import JalAsset
 from jal.widgets.delegates import GridLinesDelegate
 from jal.widgets.helpers import ts2d
 
-
+# ----------------------------------------------------------------------------------------------------------------------
 class TreeItem:
     def __init__(self, data, parent=None):
         self._parent = parent
@@ -36,7 +36,7 @@ class TreeItem:
     def getParent(self):
         return self._parent
 
-
+# ----------------------------------------------------------------------------------------------------------------------
 class HoldingsModel(QAbstractItemModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
