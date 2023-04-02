@@ -376,7 +376,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     raise Statement_ImportError(self.tr("Unmatched category for income/spending: ") + f"{action}")
                 line['category_id'] = -line.pop('category')
                 line['note'] = line.pop('description')
-            LedgerTransaction().create_new(LedgerTransaction.IncomeSpending, action)
+            LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, action)
     
     def _import_transfers(self, transfers):
         for transfer in transfers:
@@ -429,7 +429,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if abs(transfer['fee']) < 1e-10:  # FIXME  Need to refactor this module for decimal usage
                 transfer.pop('fee_account')
                 transfer.pop('fee')
-            LedgerTransaction().create_new(LedgerTransaction.Transfer, transfer)
+            LedgerTransaction.create_new(LedgerTransaction.Transfer, transfer)
 
     def _import_trades(self, trades):
         for trade in trades:
@@ -447,7 +447,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 if oid:
                     LedgerTransaction.get_operation(LedgerTransaction.Trade, oid).delete()
                 continue
-            LedgerTransaction().create_new(LedgerTransaction.Trade, trade)
+            LedgerTransaction.create_new(LedgerTransaction.Trade, trade)
 
     def _import_asset_payments(self, payments):
         for payment in payments:
@@ -465,23 +465,23 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
                     payment['type'] = Dividend.Dividend
-                    LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
+                    LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
                 else:  # Dividend exists, only tax to be updated
                     dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
                     dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_INTEREST:
                 payment['type'] = Dividend.BondInterest
-                LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
+                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
             elif payment['type'] == FOF.PAYMENT_STOCK_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
                     payment['type'] = Dividend.StockDividend
-                    LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
+                    LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
                 else:  # Dividend exists, only tax to be updated
                     dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
                     dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_STOCK_VESTING:
                 payment['type'] = Dividend.StockVesting
-                LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
+                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 
@@ -505,7 +505,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 action['type'] = self._corp_actions[action.pop('type')]
             except KeyError:
                 raise Statement_ImportError(self.tr("Unsupported corporate action: ") + f"{action}")
-            LedgerTransaction().create_new(LedgerTransaction.CorporateAction, action)
+            LedgerTransaction.create_new(LedgerTransaction.CorporateAction, action)
 
     def select_account(self, text, account_id, recent_account_id=0):
         if "pytest" in sys.modules:

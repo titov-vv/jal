@@ -303,9 +303,10 @@ class JalDB:
     # present in database already (and 'default' is used for this check if no value provided in 'data')
     def create_operation(self, table_name, fields, data):
         self.validate_operation_data(table_name, fields, data)
-        if self.locate_operation(table_name, fields, data):
+        oid = self.locate_operation(table_name, fields, data)
+        if oid:
             logging.info(self.tr("Operation already present in db: ") + f"{table_name}, {data}")
-            return 0
+            return oid
         else:
             oid = self.insert_operation(table_name, fields, data)
         children = [x for x in fields if 'children' in fields[x] and fields[x]['children']]

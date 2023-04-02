@@ -365,7 +365,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             "peer_id": self.PeerEdit.selected_id,
             "lines": details
         }
-        LedgerTransaction().create_new(LedgerTransaction.IncomeSpending, operation)
+        LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, operation)
         JalPeer(self.PeerEdit.selected_id).add_or_update_mapped_name(self.SlipShopName.text(), )
         self.clearSlipData()
 
