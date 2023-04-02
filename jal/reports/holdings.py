@@ -35,10 +35,10 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
         self.GroupCombo.addItem(self.tr("Currency - Account - Asset"), "currency_id;account_id;asset_id")
         self.GroupCombo.addItem(self.tr("Asset - Account"), "asset_id;account_id")
 
-        self.holdings_model = HoldingsModel(self.HoldingsTableView)
-        self.HoldingsTableView.setModel(self.holdings_model)
+        self.holdings_model = HoldingsModel(self.HoldingsTreeView)
+        self.HoldingsTreeView.setModel(self.holdings_model)
         self.holdings_model.configureView()
-        self.HoldingsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.HoldingsTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.connect_signals_and_slots()
 
@@ -49,31 +49,31 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
         self.HoldingsCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
     def connect_signals_and_slots(self):
-        self.HoldingsDate.dateChanged.connect(self.HoldingsTableView.model().setDate)
-        self.HoldingsCurrencyCombo.changed.connect(self.HoldingsTableView.model().setCurrency)
-        self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
+        self.HoldingsDate.dateChanged.connect(self.HoldingsTreeView.model().setDate)
+        self.HoldingsCurrencyCombo.changed.connect(self.HoldingsTreeView.model().setCurrency)
+        self.HoldingsTreeView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
         self.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
-        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.HoldingsTableView.model()))
+        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.HoldingsTreeView.model()))
 
     @Slot()
     def onGroupingChange(self, idx):
-        self.HoldingsTableView.model().setGrouping(self.GroupCombo.itemData(idx))
+        self.HoldingsTreeView.model().setGrouping(self.GroupCombo.itemData(idx))
 
     @Slot()
     def onHoldingsContextMenu(self, pos):
-        index = self.HoldingsTableView.indexAt(pos)
-        contextMenu = QMenu(self.HoldingsTableView)
-        actionShowChart = QAction(icon=load_icon("chart.png"), text=self.tr("Show Price Chart"), parent=self.HoldingsTableView)
+        index = self.HoldingsTreeView.indexAt(pos)
+        contextMenu = QMenu(self.HoldingsTreeView)
+        actionShowChart = QAction(icon=load_icon("chart.png"), text=self.tr("Show Price Chart"), parent=self.HoldingsTreeView)
         actionShowChart.triggered.connect(partial(self.showPriceChart, index))
         contextMenu.addAction(actionShowChart)
         tax_submenu = contextMenu.addMenu(load_icon("tax.png"), self.tr("Estimate tax"))
-        actionEstimateTaxPt = QAction(text=self.tr("Portugal"), parent=self.HoldingsTableView)
+        actionEstimateTaxPt = QAction(text=self.tr("Portugal"), parent=self.HoldingsTreeView)
         actionEstimateTaxPt.triggered.connect(partial(self.estimateRussianTax, index, 'pt'))
         tax_submenu.addAction(actionEstimateTaxPt)
-        actionEstimateTaxRu = QAction(text=self.tr("Russia"), parent=self.HoldingsTableView)
+        actionEstimateTaxRu = QAction(text=self.tr("Russia"), parent=self.HoldingsTreeView)
         actionEstimateTaxRu.triggered.connect(partial(self.estimateRussianTax, index, 'ru'))
         tax_submenu.addAction(actionEstimateTaxRu)
-        contextMenu.popup(self.HoldingsTableView.viewport().mapToGlobal(pos))
+        contextMenu.popup(self.HoldingsTreeView.viewport().mapToGlobal(pos))
 
     @Slot()
     def showPriceChart(self, index):

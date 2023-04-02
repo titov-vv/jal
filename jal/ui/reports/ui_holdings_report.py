@@ -79,14 +79,14 @@ class Ui_HoldingsWidget(object):
 
         self.verticalLayout.addWidget(self.HoldingsParamsFrame)
 
-        self.HoldingsTableView = QTreeView(HoldingsWidget)
-        self.HoldingsTableView.setObjectName(u"HoldingsTableView")
-        self.HoldingsTableView.setFrameShape(QFrame.Panel)
-        self.HoldingsTableView.setAlternatingRowColors(True)
-        self.HoldingsTableView.setAnimated(True)
-        self.HoldingsTableView.setAllColumnsShowFocus(True)
+        self.HoldingsTreeView = QTreeView(HoldingsWidget)
+        self.HoldingsTreeView.setObjectName(u"HoldingsTreeView")
+        self.HoldingsTreeView.setFrameShape(QFrame.Panel)
+        self.HoldingsTreeView.setAlternatingRowColors(True)
+        self.HoldingsTreeView.setAnimated(True)
+        self.HoldingsTreeView.setAllColumnsShowFocus(True)
 
-        self.verticalLayout.addWidget(self.HoldingsTableView)
+        self.verticalLayout.addWidget(self.HoldingsTreeView)
 
 
         self.retranslateUi(HoldingsWidget)

@@ -919,62 +919,62 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="52"/>
+        <location filename="../db/holdings_model.py" line="53"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="53"/>
+        <location filename="../db/holdings_model.py" line="54"/>
         <source>Open</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="54"/>
+        <location filename="../db/holdings_model.py" line="55"/>
         <source>Last</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="55"/>
+        <location filename="../db/holdings_model.py" line="56"/>
         <source>Share, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="56"/>
+        <location filename="../db/holdings_model.py" line="57"/>
         <source>P/L, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="57"/>
+        <location filename="../db/holdings_model.py" line="58"/>
         <source>P/L</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="58"/>
+        <location filename="../db/holdings_model.py" line="59"/>
         <source>Value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="61"/>
+        <location filename="../db/holdings_model.py" line="62"/>
         <source>Value, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="171"/>
+        <location filename="../db/holdings_model.py" line="172"/>
         <source>Last quote date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="50"/>
+        <location filename="../db/holdings_model.py" line="51"/>
         <source>Currency/Account/Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="51"/>
+        <location filename="../db/holdings_model.py" line="52"/>
         <source>Asset Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="134"/>
+        <location filename="../db/holdings_model.py" line="135"/>
         <source>Exp:</source>
         <translation></translation>
     </message>
@@ -990,27 +990,37 @@
 <context>
     <name>HoldingsReportWindow</name>
     <message>
-        <location filename="../reports/holdings.py" line="34"/>
+        <location filename="../reports/holdings.py" line="35"/>
         <source>Holdings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="57"/>
+        <location filename="../reports/holdings.py" line="35"/>
+        <source>Currency - Account - Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="36"/>
+        <source>Asset - Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="66"/>
         <source>Show Price Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="60"/>
+        <location filename="../reports/holdings.py" line="69"/>
         <source>Estimate tax</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="61"/>
+        <location filename="../reports/holdings.py" line="70"/>
         <source>Portugal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="64"/>
+        <location filename="../reports/holdings.py" line="73"/>
         <source>Russia</source>
         <translation type="unfinished"></translation>
     </message>
