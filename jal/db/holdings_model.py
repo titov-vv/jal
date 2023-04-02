@@ -41,6 +41,7 @@ class HoldingsModel(QAbstractItemModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._view = parent_view
+        self._groups = []
         self._grid_delegate = None
         self._root = None
         self._currency = 0
@@ -236,6 +237,14 @@ class HoldingsModel(QAbstractItemModel):
         if self._date != new_date.endOfDay(Qt.UTC).toSecsSinceEpoch():
             self._date = new_date.endOfDay(Qt.UTC).toSecsSinceEpoch()
             self.calculateHoldings()
+
+    # defines report grouping by provided field list - 'group_field1;group_field2;...'
+    def setGrouping(self, group_list):
+        if group_list:
+            self._groups = group_list.split(';')
+        else:
+            self._groups = []
+        self.calculateHoldings()
 
     def get_data_for_tax(self, index):
         if not index.isValid():

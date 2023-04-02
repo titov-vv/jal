@@ -15,9 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDateEdit, QFrame, QHBoxLayout,
-    QHeaderView, QLabel, QPushButton, QSizePolicy,
-    QSpacerItem, QTreeView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDateEdit, QFrame,
+    QHBoxLayout, QHeaderView, QLabel, QPushButton,
+    QSizePolicy, QSpacerItem, QTreeView, QVBoxLayout,
+    QWidget)
 
 from jal.widgets.account_select import CurrencyComboBox
 
@@ -45,6 +46,16 @@ class Ui_HoldingsWidget(object):
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
         self.horizontalLayout_8.addWidget(self.HoldingsDate)
+
+        self.GroupLbl = QLabel(self.HoldingsParamsFrame)
+        self.GroupLbl.setObjectName(u"GroupLbl")
+
+        self.horizontalLayout_8.addWidget(self.GroupLbl)
+
+        self.GroupCombo = QComboBox(self.HoldingsParamsFrame)
+        self.GroupCombo.setObjectName(u"GroupCombo")
+
+        self.horizontalLayout_8.addWidget(self.GroupCombo)
 
         self.HoldingsCurrencyLbl = QLabel(self.HoldingsParamsFrame)
         self.HoldingsCurrencyLbl.setObjectName(u"HoldingsCurrencyLbl")
@@ -86,6 +97,7 @@ class Ui_HoldingsWidget(object):
     def retranslateUi(self, HoldingsWidget):
         HoldingsWidget.setWindowTitle(QCoreApplication.translate("HoldingsWidget", u"Holdings", None))
         self.HoldingsDate.setDisplayFormat(QCoreApplication.translate("HoldingsWidget", u"dd/MM/yyyy", None))
+        self.GroupLbl.setText(QCoreApplication.translate("HoldingsWidget", u"Group by:", None))
         self.HoldingsCurrencyLbl.setText(QCoreApplication.translate("HoldingsWidget", u"Common currency:", None))
         self.SaveButton.setText(QCoreApplication.translate("HoldingsWidget", u"Save...", None))
     # retranslateUi

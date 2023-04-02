@@ -77,6 +77,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="GroupLbl">
+        <property name="text">
+         <string>Group by:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="GroupCombo"/>
+      </item>
+      <item>
        <widget class="QLabel" name="HoldingsCurrencyLbl">
         <property name="text">
          <string>Common currency:</string>

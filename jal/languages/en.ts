@@ -1029,11 +1029,16 @@
     </message>
     <message>
         <location filename="../ui/reports/holdings_report.ui" line="82"/>
+        <source>Group by:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/holdings_report.ui" line="92"/>
         <source>Common currency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/holdings_report.ui" line="105"/>
+        <location filename="../ui/reports/holdings_report.ui" line="115"/>
         <source>Save...</source>
         <translation type="unfinished"></translation>
     </message>

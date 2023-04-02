@@ -31,6 +31,10 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
         self._parent = parent
         self.name = self.tr("Holdings")
 
+        # Add available groupings
+        self.GroupCombo.addItem(self.tr("Currency - Account - Asset"), "currency_id;account_id;asset_id")
+        self.GroupCombo.addItem(self.tr("Asset - Account"), "asset_id;account_id")
+
         self.holdings_model = HoldingsModel(self.HoldingsTableView)
         self.HoldingsTableView.setModel(self.holdings_model)
         self.holdings_model.configureView()
@@ -48,7 +52,12 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
         self.HoldingsDate.dateChanged.connect(self.HoldingsTableView.model().setDate)
         self.HoldingsCurrencyCombo.changed.connect(self.HoldingsTableView.model().setCurrency)
         self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
+        self.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
         self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.HoldingsTableView.model()))
+
+    @Slot()
+    def onGroupingChange(self, idx):
+        self.HoldingsTableView.model().setGrouping(self.GroupCombo.itemData(idx))
 
     @Slot()
     def onHoldingsContextMenu(self, pos):
