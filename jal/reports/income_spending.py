@@ -8,6 +8,7 @@ from jal.db.asset import JalAsset
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.constants import CustomColor
 from jal.db.helpers import load_icon
+from jal.db.tree_model import AbstractTreeItem
 from jal.db.category import JalCategory
 from jal.widgets.helpers import is_signal_connected, month_list, month_start_ts, month_end_ts
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
@@ -17,9 +18,9 @@ JAL_REPORT_CLASS = "IncomeSpendingReport"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class ReportTreeItem:
+class ReportTreeItem(AbstractTreeItem):
     def __init__(self, begin, end, item_id, name, parent=None):
-        self._parent = parent
+        super().__init__(parent)
         self._id = item_id
         self.name = name
         self._begin = begin
@@ -33,19 +34,6 @@ class ReportTreeItem:
         # amounts[year][0] - total per year
         self._amounts = [ [0] * 13 for _ in range(self._y_e - self._y_s + 1)]
         self._total = 0
-        self._children = []
-
-    def appendChild(self, child):
-        child.setParent(self)
-        self._children.append(child)
-
-    def getChild(self, id):
-        if id < 0 or id > len(self._children):
-            return None
-        return self._children[id]
-
-    def childrenCount(self):
-        return len(self._children)
 
     def removeEmptyChildren(self):
         for child in self._children:
@@ -73,12 +61,6 @@ class ReportTreeItem:
         year = self._y_s + int(column / 13)
         month = column % 13
         return year, month
-
-    def setParent(self, parent):
-        self._parent = parent
-
-    def getParent(self):
-        return self._parent
 
     def addAmount(self, year, month, amount):
         y_i = year - self._y_s

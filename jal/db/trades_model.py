@@ -1,6 +1,7 @@
 from __future__ import annotations
 from decimal import Decimal
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
+from jal.db.tree_model import AbstractTreeItem
 from jal.db.account import JalAccount
 from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2d
@@ -8,12 +9,10 @@ from jal.widgets.delegates import TimestampDelegate, FloatDelegate, GridLinesDel
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Class to group trades and display them in TreeView
-class TradeTreeItem:
-    def __init__(self, trade, parent=None, group=''):
-        self._parent = parent
+class TradeTreeItem(AbstractTreeItem):
+    def __init__(self, trade=None, parent=None, group=''):
+        super().__init__(parent, group)
         self._trade = trade
-        self._children = []
-        self._group = group
         if trade is None:
             self._data = {
                 'symbol': '',
@@ -42,19 +41,7 @@ class TradeTreeItem:
             if self._trade.close_operation().type() == LedgerTransaction.CorporateAction:
                 self._data['note'] += "▶ " + self._trade.close_operation().name()
 
-    def setParent(self, parent):
-        self._parent = parent
-
-    def getParent(self):
-        return self._parent
-
-    def appendChild(self, child):
-        child.setParent(self)
-        self._children.append(child)
-        if self._group:
-            self.updateGroupDetails(child.details())
-
-    def updateGroupDetails(self, child_data):
+    def _calculateGroupTotals(self, child_data):
         self._data['symbol'] = child_data['symbol']
         if self._data['open_ts'] == 0 or self._data['open_ts'] > child_data['open_ts']:
             self._data['open_ts'] = child_data['open_ts']
@@ -68,22 +55,9 @@ class TradeTreeItem:
         self._data['fee'] += child_data['fee']
         self._data['p/l'] += child_data['p/l']
         self._data['p/l%'] = Decimal('100') * self._data['p/l'] / (self._data['open_price'] * self._data['qty'])
-        if self._parent is not None:
-            self._parent.updateGroupDetails(child_data)
-
-    def getChild(self, id):
-        if id < 0 or id >= len(self._children):
-            return None
-        return self._children[id]
-
-    def childrenCount(self):
-        return len(self._children)
 
     def details(self):
         return self._data
-
-    def isGroup(self):
-        return self._group != ''
 
     # assigns group value if this tree item is a group item
     def setGroupValue(self, value):
@@ -227,7 +201,7 @@ class ClosedTradesModel(QAbstractItemModel):
     def prepareData(self):
         self._trades = JalAccount(self._account_id).closed_trades_list()
         self._trades = [x for x in self._trades if self._begin <= x.close_operation().timestamp() <= self._end]
-        self._root = TradeTreeItem(None)
+        self._root = TradeTreeItem()
         for trade in self._trades:
             new_item = TradeTreeItem(trade)
             leaf = self._root.getGroupLeaf(self._groups, new_item)

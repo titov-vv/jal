@@ -6,35 +6,24 @@ from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefindedAccountType
 from jal.db.helpers import localize_decimal
+from jal.db.tree_model import AbstractTreeItem
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.widgets.delegates import GridLinesDelegate
 from jal.widgets.helpers import ts2d
 
 # ----------------------------------------------------------------------------------------------------------------------
-class TreeItem:
-    def __init__(self, data, parent=None):
-        self._parent = parent
-        self.data = data.copy()
-        self._children = []
-
-    def appendChild(self, child):
-        child.setParent(self)
-        self._children.append(child)
-
-    def getChild(self, id):
-        if id < 0 or id > len(self._children):
-            return None
-        return self._children[id]
-
-    def count(self):
-        return len(self._children)
-
-    def setParent(self, parent):
-        self._parent = parent
-
-    def getParent(self):
-        return self._parent
+class AssetTreeItem(AbstractTreeItem):
+    def __init__(self, data=None, parent=None, group=''):
+        super().__init__(parent, group)
+        if data is None:
+            self.data = {
+                'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
+                'asset_is_currency': False, 'asset': '', 'asset_name': '', 'expiry': 0, 'qty': Decimal('0'),
+                'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0')
+            }
+        else:
+            self.data = data.copy()
 
 # ----------------------------------------------------------------------------------------------------------------------
 class HoldingsModel(QAbstractItemModel):
@@ -65,7 +54,7 @@ class HoldingsModel(QAbstractItemModel):
         else:
             parent_item = parent.internalPointer()
         if parent_item is not None:
-            return parent_item.count()
+            return parent_item.childrenCount()
         else:
             return 0
 
@@ -307,7 +296,7 @@ class HoldingsModel(QAbstractItemModel):
             holdings += account_holdings
         holdings = sorted(holdings, key=lambda x: (x['currency'], x['account'], x['asset_is_currency'], x['asset']))
 
-        self._root = TreeItem({})
+        self._root = AssetTreeItem()
         currency = 0
         c_node = None
         account = 0
@@ -316,7 +305,7 @@ class HoldingsModel(QAbstractItemModel):
             values['level'] = 2
             if values['currency_id'] != currency:
                 currency = values['currency_id']
-                c_node = TreeItem(values, self._root)
+                c_node = AssetTreeItem(values, self._root)
                 c_node.data['level'] = 0
                 c_node.data['asset_name'] = ''
                 c_node.data['expiry'] = 0
@@ -324,7 +313,7 @@ class HoldingsModel(QAbstractItemModel):
                 self._root.appendChild(c_node)
             if values['account_id'] != account:
                 account = values['account_id']
-                a_node = TreeItem(values, c_node)
+                a_node = AssetTreeItem(values, c_node)
                 a_node.data['level'] = 1
                 a_node.data['asset_name'] = ''
                 a_node.data['expiry'] = 0
@@ -346,22 +335,22 @@ class HoldingsModel(QAbstractItemModel):
             else:
                 values.update(dict(zip(self.calculated_names,
                                        [Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0')])))
-            node = TreeItem(values, a_node)
+            node = AssetTreeItem(values, a_node)
             a_node.appendChild(node)
 
         # Update totals
-        for i in range(self._root.count()):          # Iterate through each currency
+        for i in range(self._root.childrenCount()):          # Iterate through each currency
             currency_child = self._root.getChild(i)
-            for j in range(currency_child.count()):  # Iterate through each account for given currency
+            for j in range(currency_child.childrenCount()):  # Iterate through each account for given currency
                 self.add_node_totals(currency_child.getChild(j))
             self.add_node_totals(currency_child)
-            for j in range(currency_child.count()):  # Calculate share of each account within currency
+            for j in range(currency_child.childrenCount()):  # Calculate share of each account within currency
                 if currency_child.data['value']:
                     currency_child.getChild(j).data['share'] = \
                         Decimal('100') * currency_child.getChild(j).data['value'] / currency_child.data['value']
         # Get full total of totals for all currencies adjusted to common currency
-        total = sum([self._root.getChild(i).data['value_a'] for i in range(self._root.count())])
-        for i in range(self._root.count()):  # Calculate share of each currency (adjusted to common currency)
+        total = sum([self._root.getChild(i).data['value_a'] for i in range(self._root.childrenCount())])
+        for i in range(self._root.childrenCount()):  # Calculate share of each currency (adjusted to common currency)
             if total != Decimal('0'):
                 self._root.getChild(i).data['share'] = Decimal('100') * self._root.getChild(i).data['value_a'] / total
             else:
@@ -371,8 +360,8 @@ class HoldingsModel(QAbstractItemModel):
 
     # Update node totals with sum of profit, value and adjusted profit and value of all children
     def add_node_totals(self, node):
-        profit = sum([node.getChild(i).data['profit'] for i in range(node.count())])
-        value = sum([node.getChild(i).data['value'] for i in range(node.count())])
-        value_adjusted = sum([node.getChild(i).data['value_a'] for i in range(node.count())])
+        profit = sum([node.getChild(i).data['profit'] for i in range(node.childrenCount())])
+        value = sum([node.getChild(i).data['value'] for i in range(node.childrenCount())])
+        value_adjusted = sum([node.getChild(i).data['value_a'] for i in range(node.childrenCount())])
         profit_relative = profit / (value - profit) if value != profit else 0
         node.data.update(dict(zip(self.calculated_names, [Decimal('0'), profit, profit_relative, value, value_adjusted])))
