@@ -35,26 +35,22 @@ class HoldingsModel(AbstractTreeModel):
         self._currency_name = ''
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
         self.calculated_names = ['share', 'profit', 'profit_rel', 'value', 'value_a']
-        self._columns = [self.tr("Currency/Account/Asset"),
-                         self.tr("Asset Name"),
-                         self.tr("Qty"),
-                         self.tr("Open"),
-                         self.tr("Last"),
-                         self.tr("Share, %"),
-                         self.tr("P/L, %"),
-                         self.tr("P/L"),
-                         self.tr("Value"),
-                         self.tr("Value, ")]
-
-    def columnCount(self, parent=None):
-        return len(self._columns)
+        self._columns = [{'name': self.tr("Currency/Account/Asset")},
+                         {'name': self.tr("Asset Name")},
+                         {'name': self.tr("Qty")},
+                         {'name': self.tr("Open")},
+                         {'name': self.tr("Last")},
+                         {'name': self.tr("Share, %")},
+                         {'name': self.tr("P/L, %")},
+                         {'name': self.tr("P/L")},
+                         {'name': self.tr("Value")},
+                         {'name': self.tr("Value, ")}]
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
-                col_name = self._columns[section] + self._currency_name if section == 9 else self._columns[section]
-                return col_name
-        return None
+        value = super().headerData(section, orientation, role)
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole and section == 9:
+            value += self._currency_name
+        return value
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():

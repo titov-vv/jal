@@ -117,32 +117,6 @@ class ClosedTradesModel(AbstractTreeModel):
             {'name': self.tr("Note"), 'field': 'note'}
         ]
 
-    def fieldIndex(self, field_name: str) -> int:
-        for i, column in enumerate(self._columns):
-            if column['field'] == field_name:
-                return i
-        return -1
-
-    def columnCount(self, parent=None):
-        if parent is None:
-            parent_item = self._root
-        elif not parent.isValid():
-            parent_item = self._root
-        else:
-            parent_item = parent.internalPointer()
-        if parent_item is not None:
-            return len(self._columns)
-        else:
-            return 0
-
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
-                return self._columns[section]['name']
-            if role == Qt.TextAlignmentRole:
-                return int(Qt.AlignCenter)
-        return None
-
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None

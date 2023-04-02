@@ -137,37 +137,6 @@ class IncomeSpendingReportModel(AbstractTreeModel):
             self.tr('Jul'), self.tr('Aug'), self.tr('Sep'), self.tr('Oct'), self.tr('Nov'), self.tr('Dec')
         ]
 
-    def columnCount(self, parent=None):
-        if parent is None:
-            parent_item = self._root
-        elif not parent.isValid():
-            parent_item = self._root
-        else:
-            parent_item = parent.internalPointer()
-        if parent_item is not None:
-            return parent_item.dataCount() + 1  # + 1 for row header
-        else:
-            return 0
-
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
-                year, month = self._root.column2calendar(section)
-                if year < 0:
-                    col_name = ''
-                elif year == 0:
-                    col_name = self.tr("TOTAL")
-                else:
-                    if month == 0:
-                        status = '▼' if self._view.isColumnHidden(section + 1) else '▶'
-                        col_name = f"{year} " + status
-                    else:
-                        col_name = self.month_name[month-1]
-                return col_name
-            if role == Qt.TextAlignmentRole:
-                return int(Qt.AlignCenter)
-        return None
-
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
@@ -224,9 +193,10 @@ class IncomeSpendingReportModel(AbstractTreeModel):
                 year_columns = self._root.month_end
             else:
                 year_columns = 12
+            new_state = not self._view.isColumnHidden(section + 1)
             for i in range(year_columns):
-                new_state = not self._view.isColumnHidden(section + i + 1)
                 self._view.setColumnHidden(section + i + 1, new_state)
+            self._columns[section]['name'] = f"{year} ▼" if new_state else f"{year} ▶"
             self.headerDataChanged.emit(Qt.Horizontal, section, section)
 
     def setDatesRange(self, begin, end):
@@ -250,6 +220,7 @@ class IncomeSpendingReportModel(AbstractTreeModel):
         self._root.appendChild(ReportTreeItem(self._begin, self._end, 0, self.tr("TOTAL")))  # visible root
         self._load_child_amounts(root_category)
         self._root.removeEmptyChildren()
+        self._make_column_names()
         self.modelReset.emit()
         self._view.expandAll()
 
@@ -264,6 +235,21 @@ class IncomeSpendingReportModel(AbstractTreeModel):
                 leaf.addAmount(month['year'], month['month'],
                                category.get_turnover(month['begin_ts'], month['end_ts'], self._currency))
             self._load_child_amounts(category)
+
+    def _make_column_names(self):
+        self._columns = []
+        for i in range(self._root.dataCount() + 1):
+            year, month = self._root.column2calendar(i)
+            if year < 0:
+                col_name = ''
+            elif year == 0:
+                col_name = self.tr("TOTAL")
+            else:
+                if month == 0:
+                    col_name = f"{year} ▶"
+                else:
+                    col_name = self.month_name[month - 1]
+            self._columns.append({'name': col_name})
 
 
 # ----------------------------------------------------------------------------------------------------------------------

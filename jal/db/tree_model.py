@@ -1,5 +1,5 @@
 from __future__ import annotations
-from PySide6.QtCore import QAbstractItemModel, QModelIndex
+from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Base class to provide a common functionality of a tree element
@@ -29,7 +29,7 @@ class AbstractTreeItem:
             return None
         return self._children[id]
 
-    def details(self):
+    def details(self, **kwargs):
         raise NotImplementedError("To be defined in derived class")
 
     def updateGroupDetails(self, child_data):
@@ -51,6 +51,7 @@ class AbstractTreeModel(QAbstractItemModel):
         super().__init__(parent_view)
         self._view = parent_view
         self._root = None
+        self._columns = []
 
     def index(self, row, column, parent=None):
         if not parent.isValid():
@@ -83,6 +84,32 @@ class AbstractTreeModel(QAbstractItemModel):
 
     def headerWidth(self, section):
         return self._view.header().sectionSize(section)
+
+    def fieldIndex(self, field_name: str) -> int:
+        for i, column in enumerate(self._columns):
+            if column['field'] == field_name:
+                return i
+        return -1
+
+    def columnCount(self, parent=None):
+        if parent is None:
+            parent_item = self._root
+        elif not parent.isValid():
+            parent_item = self._root
+        else:
+            parent_item = parent.internalPointer()
+        if parent_item is not None:
+            return len(self._columns)
+        else:
+            return 0
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal:
+            if role == Qt.DisplayRole:
+                return self._columns[section]['name']
+            if role == Qt.TextAlignmentRole:
+                return int(Qt.AlignCenter)
+        return None
 
     # defines report grouping by provided field list - 'group_field1;group_field2;...'
     def setGrouping(self, group_list):
