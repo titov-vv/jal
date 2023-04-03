@@ -305,7 +305,7 @@ class JalDB:
         self.validate_operation_data(table_name, fields, data)
         oid = self.locate_operation(table_name, fields, data)
         if oid:
-            logging.info(self.tr("Operation already present in db: ") + f"{table_name}, {data}")
+            logging.warning(self.tr("Operation already present in db and was skipped: ") + f"{table_name}, {data}")
             return oid
         else:
             oid = self.insert_operation(table_name, fields, data)

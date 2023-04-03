@@ -353,10 +353,10 @@ CREATE TABLE transfers (
     deposit              TEXT        NOT NULL,
     fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
     fee                  TEXT,
+    number               TEXT        NOT NULL DEFAULT (''),
     asset                INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
     note                 TEXT
 );
-
 
 -- Index: agents_by_name_idx
 DROP INDEX IF EXISTS agents_by_name_idx;
@@ -662,7 +662,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 43);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 44);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 -- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1); -- Deprecated and ID shouldn't be re-used
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
