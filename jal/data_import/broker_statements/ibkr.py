@@ -225,6 +225,7 @@ class StatementIBKR(StatementXML):
                                             ('reportDate', 'reported', datetime, None),
                                             ('amount', 'amount', float, None),
                                             ('tradeID', 'number', str, ''),
+                                            ('transactionID', 'tid', str, ''),
                                             ('description', 'description', str, None)],
                                  'loader': self.load_cash_transactions},
             'ChangeInDividendAccruals': {'tag': 'ChangeInDividendAccrual',
@@ -757,8 +758,10 @@ class StatementIBKR(StatementXML):
         logging.info(self.tr("Stock vestings loaded: ") + f"{cnt} ({len(vestings)})")
 
     def load_cash_transactions(self, cash):
+        drop_fields = lambda x, y: {i: x[i] for i in x if i not in y}  # removes from dict(x) fields listed in [y]
         cnt = 0
         dividends = list(filter(lambda tr: tr['type'] in ['Dividends', 'Payment In Lieu Of Dividends'], cash))
+        dividends = [drop_fields(x, ['tid']) for x in dividends]  # remove 'tid' field as not used for dividends
         dividends = self.aggregate_dividends(dividends)
         asset_payments_base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         for i, dividend in enumerate(dividends):
@@ -772,11 +775,12 @@ class StatementIBKR(StatementXML):
         for i, bond_interest in enumerate(bond_interests):
             bond_interest['id'] = asset_payments_base + i
             bond_interest['type'] = FOF.PAYMENT_INTEREST
-            self.drop_extra_fields(bond_interest, ["currency", "reported"])
+            self.drop_extra_fields(bond_interest, ["currency", "reported", "tid"])
             self._data[FOF.ASSET_PAYMENTS].append(bond_interest)
             cnt += 1
 
         taxes = list(filter(lambda tr: tr['type'] == 'Withholding Tax', cash))
+        taxes = [drop_fields(x, ['tid']) for x in taxes]
         taxes = self.aggregate_taxes(taxes)
         for tax in taxes:
             cnt += self.apply_tax_withheld(tax)
@@ -785,6 +789,7 @@ class StatementIBKR(StatementXML):
         transfers = list(filter(lambda tr: tr['type'] == 'Deposits/Withdrawals', cash))
         for i, transfer in enumerate(transfers):
             transfer['id'] = transfer_base + i
+            transfer['number'] = transfer.pop('tid')
             transfer['asset'] = [transfer['currency'], transfer['currency']]
             if transfer['amount'] >= 0:  # Deposit
                 transfer['account'] = [0, transfer['account'], 0]
@@ -810,7 +815,7 @@ class StatementIBKR(StatementXML):
             else:
                 category = -PredefinedCategory.Fees
             fee['lines'] = [{'amount': fee['amount'], 'category': category, 'description': fee['description']}]
-            self.drop_extra_fields(fee, ["type", "amount", "description", "asset", "number", "currency", "reported"])
+            self.drop_extra_fields(fee, ["type", "amount", "description", "asset", "number", "currency", "reported", "tid"])
             self._data[FOF.INCOME_SPENDING].append(fee)
             cnt += 1
 
