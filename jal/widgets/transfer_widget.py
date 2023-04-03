@@ -38,6 +38,7 @@ class TransferWidget(AbstractOperationDetails):
         self.fee_amount_label = QLabel(self)
         self.comment_label = QLabel(self)
         self.asset_label = QLabel(self)
+        self.number_label = QLabel(self)
         self.arrow_account = QLabel(self)
         self.copy_date_btn = QPushButton(self)
         self.copy_amount_btn = QPushButton(self)
@@ -53,6 +54,7 @@ class TransferWidget(AbstractOperationDetails):
         self.fee_amount_label.setText(self.tr("Fee amount"))
         self.comment_label.setText(self.tr("Note"))
         self.asset_label.setText(self.tr("Asset"))
+        self.number_label.setText(self.tr("#"))
         self.arrow_account.setText(" ➜ ")
         self.copy_date_btn.setText("➜")
         self.copy_date_btn.setFixedWidth(self.copy_date_btn.fontMetrics().horizontalAdvance("XXXX"))
@@ -79,18 +81,19 @@ class TransferWidget(AbstractOperationDetails):
         self.fee = QLineEdit(self)
         self.fee.setAlignment(Qt.AlignRight)
         self.asset_widget = AssetSelector(self)
+        self.number = QLineEdit(self)
         self.comment = QLineEdit(self)
 
         self.layout.addWidget(self.from_date_label, 1, 0, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.from_account_label, 2, 0, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.from_amount_label, 3, 0, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.asset_label, 5, 0, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.number_label, 5, 0, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.comment_label, 6, 0, 1, 1, Qt.AlignLeft)
         
         self.layout.addWidget(self.withdrawal_timestamp, 1, 1, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.from_account_widget, 2, 1, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.withdrawal, 3, 1, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.asset_widget, 5, 1, 1, 4)
+        self.layout.addWidget(self.number, 5, 1, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.comment, 6, 1, 1, 4)
 
         self.layout.addWidget(self.copy_date_btn, 1, 2, 1, 1)
@@ -102,12 +105,14 @@ class TransferWidget(AbstractOperationDetails):
         self.layout.addWidget(self.to_amount_label, 3, 3, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.fee_account_label, 4, 0, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.fee_amount_label, 4, 3, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.asset_label, 5, 3, 1, 1, Qt.AlignLeft)
 
         self.layout.addWidget(self.deposit_timestamp, 1, 4, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.to_account_widget, 2, 4, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.deposit, 3, 4, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.fee_account_widget, 4, 1, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.fee, 4, 4, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.asset_widget, 5, 4, 1, 1)
 
         self.layout.addWidget(self.commit_button, 0, 6, 1, 1)
         self.layout.addWidget(self.revert_button, 0, 7, 1, 1)
@@ -135,6 +140,7 @@ class TransferWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.fee_account_widget, self.model.fieldIndex("fee_account"))
         self.mapper.addMapping(self.fee, self.model.fieldIndex("fee"))
         self.mapper.addMapping(self.asset_widget, self.model.fieldIndex("asset"))
+        self.mapper.addMapping(self.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
 
         self.model.select()
@@ -162,6 +168,7 @@ class TransferWidget(AbstractOperationDetails):
         new_record.setValue("fee_account", 0)
         new_record.setValue("fee", '0')
         new_record.setValue("asset", None)
+        new_record.setValue("number", None)
         new_record.setValue("note", None)
         return new_record
 
