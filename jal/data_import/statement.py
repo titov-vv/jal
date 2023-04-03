@@ -419,8 +419,6 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 transfer.pop('asset')
             if 'description' in transfer:
                 transfer['note'] = transfer.pop('description')
-            if 'number' in transfer:
-                transfer.pop('number')   # it isn't stored in Jal
             transfer['withdrawal_timestamp'] = transfer['deposit_timestamp'] = transfer.pop('timestamp')
             transfer['withdrawal_account'] = -transfer['account'][0]
             transfer['deposit_account'] = -transfer['account'][1]
