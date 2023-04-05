@@ -824,7 +824,6 @@ class StatementIBKR(StatementXML):
     # Method takes a list of dividend dictionaries and checks for REVERSAL and CANCEL
     # For such description it looks for matching record (for the same symbol) with opposite amount and the same payment
     # and report dates. Description may be different!
-    # FIXME - this algo may be not fully correct for CANCEL as it may cancel older record - Dividend Accruals may probably help
     def aggregate_dividends(self, dividends: list) -> list:
         is_reversal = lambda x: self.ReversalSuffix in x or x.startswith(self.CancelPrefix)
         payments = [x for x in deepcopy(dividends) if not is_reversal(x['description'])]
@@ -841,9 +840,16 @@ class StatementIBKR(StatementXML):
                 if len(m_payments):
                     payments.remove(m_payments[0])
                     logging.warning(self.tr("Payment was reversed by approximate description: ") +
-                             f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
-                else:
-                    raise Statement_ImportError(self.tr("Can't find match for reversal: ") + f"{reversal}")
+                                    f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
+                    continue
+                no_reported = lambda x: {i: x[i] for i in x if i != 'reported'}
+                m_payments = [x for x in payments if no_reported(x) == no_reported(t_payment)]
+                if len(m_payments):
+                    payments.remove(m_payments[0])
+                    logging.warning(self.tr("Payment was reversed with different reported date: ") +
+                                    f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
+                    continue
+                raise Statement_ImportError(self.tr("Can't find match for reversal: ") + f"{reversal}")
             else:
                 payments.remove(t_payment) # Source payment found -> remove it
                 logging.info(self.tr("Payment was reversed: ") +

@@ -5,22 +5,35 @@
   ],
   "assets": [
     {"id": 1, "name": "", "type": "money"},
-    {"id": 2, "type": "stock", "name": "BROOKFIELD RENEWABLE PARTNER", "isin": "BMG162581083", "country": "ca"}
+    {"id": 2, "type": "stock", "name": "BROOKFIELD RENEWABLE PARTNER", "isin": "BMG162581083", "country": "ca"},
+    {"id": 3, "type": "adr", "name": "TELEFONICA SA-SPON ADR", "isin": "US8793822086", "country": "es"}
   ],
   "symbols": [
-    {"id": 1,"asset": 1, "symbol": "USD"},
-    {"id": 2,"asset": 2, "symbol": "BEP", "currency": 1, "note": "NYSE"}
+    {"id": 1, "asset": 1, "symbol": "USD"},
+    {"id": 2, "asset": 2, "symbol": "BEP", "currency": 1, "note": "NYSE"},
+    {"id": 3, "asset": 3, "symbol": "TEF", "currency": 1, "note": "NYSE"}
   ],
-  "assets_data": [],
+  "assets_data": [
+    {"id": 1, "asset": 3, "reg_number": "879382208"}
+  ],
   "asset_payments": [
-    {"id": 1, "type": "dividend", "account": 1, "timestamp": 1648758000, "number": "", "asset": 2, "amount": 0.01, "description": "BEP(114646358) CASH DIVIDEND USD 0.0002 PER SHARE (Return of Capital)"},
-    {"id": 2, "type": "dividend", "account": 1, "timestamp": 1648758000, "number": "", "asset": 2, "amount": 12.79, "tax": 1.92, "description": "BEP(BMG162581083) CASH DIVIDEND USD 0.3198 PER SHARE (Ordinary Dividend)"},
-    {"id": 3, "type": "dividend", "account": 1, "timestamp": 1656620400, "number": "", "asset": 2, "amount": 12.15, "tax": 1.82, "description": "BEP(BMG162581083) CASH DIVIDEND USD 0.30371 PER SHARE (Ordinary Dividend)"},
-    {"id": 4, "type": "dividend", "account": 1, "timestamp": 1656620400, "number": "", "asset": 2, "amount": 0.01, "description": "BEP(114646358) CASH DIVIDEND USD 0.00019 PER SHARE (Return of Capital)"},
-    {"id": 5, "type": "dividend", "account": 1, "timestamp": 1656620400, "number": "", "asset": 2, "amount": 0.64, "tax": 0.06, "description": "BEP(BMG162581083) CASH DIVIDEND USD 0.0161 PER SHARE (Bonus Dividend)"}
+    {"id": 1, "type": "stock_dividend", "account": 1, "timestamp": 1595017200, "number": "13259965038", "asset": 3, "amount": 3.0, "price": "4.73", "tax": 0, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000"},
+    {"id": 2, "type": "stock_dividend", "account": 1, "timestamp": 1625084400, "number": "16907808998", "asset": 3, "amount": 15.0, "price": "4.7", "tax": 0, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 5 FOR 100"},
+    {"id": 3, "type": "dividend", "account": 1, "timestamp": 1648758000, "number": "", "asset": 2, "amount": 0.01, "description": "BEP(114646358) CASH DIVIDEND USD 0.0002 PER SHARE (Return of Capital)"},
+    {"id": 4, "type": "dividend", "account": 1, "timestamp": 1648758000, "number": "", "asset": 2, "amount": 12.79, "tax": 1.92, "description": "BEP(BMG162581083) CASH DIVIDEND USD 0.3198 PER SHARE (Ordinary Dividend)"},
+    {"id": 5, "type": "dividend", "account": 1, "timestamp": 1656620400, "number": "", "asset": 2, "amount": 12.15, "tax": 1.82, "description": "BEP(BMG162581083) CASH DIVIDEND USD 0.30371 PER SHARE (Ordinary Dividend)"},
+    {"id": 6, "type": "dividend", "account": 1, "timestamp": 1656620400, "number": "", "asset": 2, "amount": 0.01, "description": "BEP(114646358) CASH DIVIDEND USD 0.00019 PER SHARE (Return of Capital)"},
+    {"id": 7, "type": "dividend", "account": 1, "timestamp": 1656620400, "number": "", "asset": 2, "amount": 0.64, "tax": 0.06, "description": "BEP(BMG162581083) CASH DIVIDEND USD 0.0161 PER SHARE (Bonus Dividend)"},
+    {"id": 8, "type": "dividend", "account": 1, "timestamp": 1610569200, "number": "", "asset": 3, "amount": 24.55, "tax": 4.66, "description": "TEF (US8793822086) CASH DIVIDEND USD 0.238309 (Ordinary Dividend)"},
+    {"id": 9, "type": "dividend", "account": 1, "timestamp": 1625084400, "number": "", "asset": 3, "amount": 0.73, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 5 FOR 100 PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"},
+    {"id": 10, "type": "dividend", "account": 1, "timestamp": 1595017200, "number": "", "asset": 3, "amount": 3.7, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (Ordinary Dividend)"},
+    {"id": 11, "type": "dividend", "account": 1, "timestamp": 1595017200, "number": "", "asset": 3, "amount": 2.39, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"}
   ],
  "corporate_actions": [],
- "income_spending": [],
+ "income_spending": [
+   {"id": 1, "account": 1, "timestamp": 1610569200, "peer": 0, "lines": [{"amount": -2.58, "category": -5, "description": "TEF(US8793822086) CHOICE DIVIDEND USD 0.235574 DISTRIBUTION VALUE - FEE"}]},
+   {"id": 2, "account": 1, "timestamp": 1595017200, "peer": 0, "lines": [{"amount": -0.43, "category": -5, "description": "TEF(US8793822086) CHOICE DIVIDEND USD 0.217254 DISTRIBUTION VALUE - FEE"}]}
+ ],
  "trades": [],
  "transfers": []
 }
