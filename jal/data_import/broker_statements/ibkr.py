@@ -845,7 +845,7 @@ class StatementIBKR(StatementXML):
                 no_reported = lambda x: {i: x[i] for i in x if i != 'reported'}
                 m_payments = [x for x in payments if no_reported(x) == no_reported(t_payment)]
                 if len(m_payments):
-                    payments.remove(m_payments[0])
+                    payments.remove(m_payments[0])   # FIXME - this branch may lead to non-reversed taxes theoretically
                     logging.warning(self.tr("Payment was reversed with different reported date: ") +
                                     f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
                     continue

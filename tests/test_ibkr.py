@@ -38,7 +38,10 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
          'data': {AssetData.RegistrationCode: '30231G102'}},
         {'id': 7, 'type_id': PredefinedAsset.Derivative, 'full_name': 'XOM 21JAN22 42.5 C', 'isin': '', 'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'XOM   220121C00042500', 'description': 'CBOE', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
-         'data': {AssetData.ExpiryDate: str(d2t(220121))}}
+         'data': {AssetData.ExpiryDate: str(d2t(220121))}},
+        {'id': 8, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'isin': '', 'country_id': 0, 'base_asset': '',
+         'symbols': [{'symbol': 'ACB', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2, }],
+         'data': {1: '05156X108'}}
     ]
     assets = JalAsset.get_assets()
     assert len(assets) == len(test_assets)
@@ -46,10 +49,11 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate trades
     test_trades = [
-        [1, 3, 1604926434, 1604966400, '3210359211', 1, 5, '-300.0', '5.5', '0.953865', ''],
-        [2, 3, 1606471692, 1606780800, '3256333343', 1, 4, '70.0', '6.898', '0.36425725', ''],
-        [3, 3, 1606821387, 1606953600, '3264444280', 1, 4, '70.0', '6.08', '0.32925725', ''],
-        [4, 3, 1607095765, 1607299200, '3276656996', 1, 7, '-100.0', '5.2', '0.667292', '']
+        [1, 3, 1573716263, 1574035200, '2608038423', 1, 8, '150.0', '3.46', '1.0', ''],
+        [2, 3, 1604926434, 1604966400, '3210359211', 1, 5, '-300.0', '5.5', '0.953865', ''],
+        [3, 3, 1606471692, 1606780800, '3256333343', 1, 4, '70.0', '6.898', '0.36425725', ''],
+        [4, 3, 1606821387, 1606953600, '3264444280', 1, 4, '70.0', '6.08', '0.32925725', ''],
+        [5, 3, 1607095765, 1607299200, '3276656996', 1, 7, '-100.0', '5.2', '0.667292', '']
     ]
     trades = JalAccount(1).dump_trades()
     assert len(trades) == len(test_trades)
@@ -97,10 +101,16 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         {'id': 7, 'type_id': PredefinedAsset.Derivative, 'full_name': 'XOM 21JAN22 42.5 C', 'isin': '', 'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'XOM   220121C00042500', 'description': 'CBOE', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
          'data': {AssetData.ExpiryDate: str(d2t(220121))}},
-        {'id': 8, 'type_id': PredefinedAsset.Stock, 'full_name': 'ALTO INGREDIENTS INC', 'isin': 'US0215131063', 'country_id': 0, 'base_asset': '',
+        {'id': 8, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'isin': 'CA05156X1087', 'country_id': 0, 'base_asset': '',
+         'symbols': [{'symbol': 'ACB', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': {AssetData.RegistrationCode: '05156X108'}},
+        {'id': 9, 'type_id': PredefinedAsset.Stock, 'full_name': 'ALTO INGREDIENTS INC', 'isin': 'US0215131063', 'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'ALTO', 'description': 'NASDAQ', 'active': 0, 'currency_id': 2, 'quote_source': 2},
                      {'symbol': 'PEIX', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
-         'data': {AssetData.RegistrationCode: '021513106'}}
+         'data': {AssetData.RegistrationCode: '021513106'}},
+        {'id': 10, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'isin': 'CA05156X8843', 'country_id': 0, 'base_asset': '',
+         'symbols': [{'symbol': 'ACB', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': {1: '05156X884'}}
     ]
     assets = JalAsset.get_assets()
     assert len(assets) == len(test_assets)
@@ -108,15 +118,16 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate trades
     test_trades = [
-        [1, 3, 1604926434, 1604966400, '3210359211', 1, 5, '-300.0', '5.5', '0.953865', ''],
-        [2, 3, 1606471692, 1606780800, '3256333343', 1, 4, '70.0', '6.898', '0.36425725', ''],
-        [3, 3, 1606821387, 1606953600, '3264444280', 1, 4, '70.0', '6.08', '0.32925725', ''],
-        [4, 3, 1607095765, 1607299200, '3276656996', 1, 7, '-100.0', '5.2', '0.667292', ''],
-        [5, 3, 1610625615, 1611014400, '3381623127', 1, 8, '-70.0', '7.42', '0.23706599', ''],
-        [6, 3, 1612871230, 1613001600, '3480222427', 1, 8, '-70.0', '7.71', '0.23751462', ''],
-        [7, 3, 1620750000, 1620864000, '3764387743', 1, 6, '-100.0', '42.5', '0.033575', 'Option assignment/exercise'],
-        [8, 3, 1620750000, 1620777600, '3764387737', 1, 7, '100.0', '0.0', '0.0', 'Option assignment'],
-        [9, 3, 1623247000, 1623283200, '3836250920', 1, 5, '300.0', '50.8', '-0.1266', '']
+        [1, 3, 1573716263, 1574035200, '2608038423', 1, 8, '150.0', '3.46', '1.0', ''],
+        [2, 3, 1604926434, 1604966400, '3210359211', 1, 5, '-300.0', '5.5', '0.953865', ''],
+        [3, 3, 1606471692, 1606780800, '3256333343', 1, 4, '70.0', '6.898', '0.36425725', ''],
+        [4, 3, 1606821387, 1606953600, '3264444280', 1, 4, '70.0', '6.08', '0.32925725', ''],
+        [5, 3, 1607095765, 1607299200, '3276656996', 1, 7, '-100.0', '5.2', '0.667292', ''],
+        [6, 3, 1610625615, 1611014400, '3381623127', 1, 9, '-70.0', '7.42', '0.23706599', ''],
+        [7, 3, 1612871230, 1613001600, '3480222427', 1, 9, '-70.0', '7.71', '0.23751462', ''],
+        [8, 3, 1620750000, 1620864000, '3764387743', 1, 6, '-100.0', '42.5', '0.033575', 'Option assignment/exercise'],
+        [9, 3, 1620750000, 1620777600, '3764387737', 1, 7, '100.0', '0.0', '0.0', 'Option assignment'],
+        [10, 3, 1623247000, 1623283200, '3836250920', 1, 5, '300.0', '50.8', '-0.1266', '']
     ]
     trades = JalAccount(1).dump_trades()
     assert len(trades) == len(test_trades)
@@ -135,7 +146,9 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     # validate corp actions
     test_asset_actions = [
         [1, 5, 1610569500, '14909999818', 1, 3, 4, '140.0', 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)',
-         [1, 1, 8, '140.0', '1.0']]
+         [1, 1, 9, '140.0', '1.0']],
+        [2, 5, 1588969500, '12693114547', 1, 4, 8, '150.0', 'ACB(CA05156X1087) SPLIT 1 FOR 12 (ACB, AURORA CANNABIS INC, CA05156X8843)',
+         [2, 2, 10, '12.5', '1.0']]
     ]
     actions = JalAccount(1).dump_corporate_actions()
     assert len(actions) == len(test_asset_actions)

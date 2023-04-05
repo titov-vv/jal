@@ -206,12 +206,19 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             search_data = {'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]}
             self._uppend_keys_from(search_data, asset, ['isin'])
             data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset", symbol['asset'])
+            reg_number = ''
             if data is not None:
                 self._uppend_keys_from(search_data, data, ['expiry'])
-            asset_id = JalAsset(data=search_data, search=True, create=False).id()
-            if asset_id:
-                old_id, asset['id'] = asset['id'], -asset_id
-                self._update_id("asset", old_id, asset_id)
+                reg_number = data['reg_number'] if 'reg_number' in data else ''
+            db_asset = JalAsset(data=search_data, search=True, create=False)
+            db_id = db_asset.id()
+            if db_id:
+                if db_asset.isin() and 'isin' in asset and asset['isin'] and db_asset.isin() != asset['isin']:
+                    continue  # verify that we don't have ISIN mismatch
+                if db_asset.reg_number() and reg_number and db_asset.reg_number() != reg_number:
+                    continue  # verify that we don't have reg.number mismatch
+                old_id, asset['id'] = asset['id'], -db_id
+                self._update_id("asset", old_id, db_id)
 
     # Check and replace IDs for Accounts
     def _match_account_ids(self):
