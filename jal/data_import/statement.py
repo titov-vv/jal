@@ -131,6 +131,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             try:
                 with open(dump_name, 'w') as dump_file:
                     dump_file.write(f"JAL statement dump, {datetime.now().strftime('%y/%m/%d %H:%M:%S')}\n")
+                    dump_file.write("----------------------------------------------------------------\n")
                     dump_file.write(str(kwargs['debug_info']))
                 logging.warning(self.tr("Debug information is saved in ") + dump_name)
             except Exception as e:
