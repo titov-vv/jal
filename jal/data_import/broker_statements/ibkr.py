@@ -897,22 +897,18 @@ class StatementIBKR(StatementXML):
         taxes = [x for x in taxes if x in payments or x in not_matched_reversals]
 
         # Sometimes IB split tax in several parts for Payment in Lieu of Dividend
-        # Below code will aggregate such taxes into one
+        # Below code aggregates such taxes but only negative values (positive might be a correction of previous tax)
         key_func = lambda x: (x['account'], x['asset'], x['currency'], x['description'], x['timestamp'], x['reported'])
         taxes_sorted = sorted(taxes, key=key_func)
-        taxes_aggregated = []
-        current = None
-        for tax in taxes_sorted:
-            if current is not None:
-                if 'PAYMENT IN LIEU OF DIVIDEND' in tax['description'] and key_func(current) == key_func(tax):
-                    current['amount'] += tax['amount']
-                    continue
-                taxes_aggregated.append(current)
-            current = tax if 'PAYMENT IN LIEU OF DIVIDEND' in tax['description'] else None
-            if current is None:
-                taxes_aggregated.append(tax)
-        if current is not None:
-            taxes_aggregated.append(current)
+        tax_in_lieu = [x for x in taxes_sorted if x['amount'] < 0 and 'PAYMENT IN LIEU OF DIVIDEND' in x['description']]
+        other_taxes = [x for x in taxes_sorted if x not in tax_in_lieu]
+        lieu_aggregated = []
+        for k, group in groupby(tax_in_lieu, key=key_func):
+            group_list = list(group)
+            part = group_list[0]  # Take fist of several actions as a basis
+            part['amount'] = sum(tax['amount'] for tax in group_list)  # and update quantity in it
+            lieu_aggregated.append(part)
+        taxes_aggregated = sorted(other_taxes + lieu_aggregated, key=key_func)
         return taxes_aggregated
 
     def load_taxes(self, taxes):
