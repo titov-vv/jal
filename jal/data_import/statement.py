@@ -148,6 +148,22 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         end_of_day = datetime.utcfromtimestamp(timestamp).replace(hour=23, minute=59, second=59)
         return int(end_of_day.replace(tzinfo=timezone.utc).timestamp())
 
+    # Finds an account in jal database and returns its id
+    def _map_db_account(self, account_id: int) -> int:
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == account['currency']][0]['symbol']
+        db_currency = JalAsset(data={'symbol': currency_symbol, 'type': PredefinedAsset.Money}, search=True, create=False).id()
+        db_account = JalAccount(data={'number': account['number'], 'currency': db_currency}, search=True, create=False).id()
+        return db_account
+
+    # Finds an asset in jal database and returns its id
+    def _map_db_asset(self, asset_id: int) -> int:
+        asset = self._asset(asset_id)
+        isin = asset['isin'] if 'isin' in asset else ''
+        symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
+        db_asset = JalAsset(data={'isin': isin, 'symbol': symbols[0]['symbol']}, search=True, create=False).id()
+        return db_asset
+
     # Loads JSON statement format from file defined by 'filename'
     def load(self, filename: str) -> None:
         self._data = {}

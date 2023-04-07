@@ -968,14 +968,8 @@ class StatementIBKR(StatementXML):
         dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
                      (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
                      and x['asset'] == asset_id and x['account'] == account_id]
-        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
-        currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == account['currency']][0]['symbol']
-        db_currency = JalAsset(data={'symbol': currency_symbol, 'type': PredefinedAsset.Money}, search=True, create=False).id()
-        db_account = JalAccount(data={'number': account['number'], 'currency': db_currency}, search=True, create=False).id()
-        asset = self._asset(asset_id)
-        isin = asset['isin'] if 'isin' in asset else ''
-        symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
-        db_asset = JalAsset(data={'isin': isin, 'symbol': symbols[0]['symbol']}, search=True, create=False).id()
+        db_account = self._map_db_account(account_id)
+        db_asset = self._map_db_asset(asset_id)
         if db_account and db_asset:
             for db_dividend in Dividend.get_list(db_account, db_asset, Dividend.Dividend):
                 dividends.append({
