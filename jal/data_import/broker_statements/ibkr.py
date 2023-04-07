@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import datetime
 from itertools import groupby
 from decimal import Decimal
+from lxml import etree
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory, PredefinedAsset
@@ -261,6 +262,19 @@ class StatementIBKR(StatementXML):
 
     def tr(self, text):
         return QApplication.translate("IBKR", text)
+
+    # Saves information from XML that is related with a given asset
+    def save_debug_info(self, asset):
+        debug_info = ''
+        assert self._statement is not None
+        symbols = [x['symbol'] for x in self._data[FOF.SYMBOLS] if x["asset"] == asset]
+        for symbol in symbols:
+            elements = self._statement.findall(f".//*[@symbol='{symbol}']")
+            for element in elements:
+                if 'accountId' in element.attrib:
+                    element.attrib['accountId'] = 'U7654321'  # Hide real account number
+                debug_info += etree.tostring(element).decode("utf-8")
+        super().save_debug_info(debug_info=debug_info)
 
     def validate_file_header_attributes(self, attributes):
         if 'type' not in attributes:
@@ -915,6 +929,7 @@ class StatementIBKR(StatementXML):
 
         dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['asset'], previous_tax, new_tax, description)
         if dividend is None:
+            self.save_debug_info(asset=tax['asset'])
             raise Statement_ImportError(self.tr("Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
         if dividend['id'] < 0:  # Notification is required if we adjust data for dividend that is already in Jal DB
             logging.info(self.tr("Tax adjustment for dividend: ") +

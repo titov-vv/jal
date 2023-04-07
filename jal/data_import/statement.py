@@ -124,6 +124,18 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             FOF.CORP_ACTIONS: self._import_corporate_actions
         }
 
+    # If 'debug_info' is given as parameter it is saved in JAL main directory text file appened with timestamp
+    def save_debug_info(self, **kwargs):
+        if 'debug_info' in kwargs:
+            dump_name = get_app_path() + os.sep + Setup.STATEMENT_DUMP + datetime.now().strftime("%s") + ".txt"
+            try:
+                with open(dump_name, 'w') as dump_file:
+                    dump_file.write(f"JAL statement dump, {datetime.now().strftime('%y/%m/%d %H:%M:%S')}\n")
+                    dump_file.write(str(kwargs['debug_info']))
+                logging.warning(self.tr("Debug information is saved in ") + dump_name)
+            except Exception as e:
+                logging.error(self.tr("Failed to write statement dump into: ") + dump_name + ": " + str(e))
+
     # returns tuple (start_timestamp, end_timestamp)
     def period(self):
         if FOF.PERIOD in self._data:
