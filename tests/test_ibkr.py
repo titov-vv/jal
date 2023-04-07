@@ -42,9 +42,12 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         {'id': 8, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'isin': '', 'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'ACB', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
          'data': {1: '05156X108'}},
-        {'id': 9,  'type_id': PredefinedAsset.Stock, 'full_name': 'TWO HARBORS INVESTMENT CORP', 'isin': 'US90187B4086', 'country_id': 2, 'base_asset': '',
+        {'id': 9, 'type_id': PredefinedAsset.Stock, 'full_name': 'TWO HARBORS INVESTMENT CORP', 'isin': 'US90187B4086', 'country_id': 2, 'base_asset': '',
          'symbols': [{'symbol': 'TWO', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
-         'data': {1: '90187B408'}}
+         'data': {1: '90187B408'}},
+        {'id': 10, 'type_id': PredefinedAsset.Stock, 'full_name': 'NEW RESIDENTIAL INVESTMENT', 'isin': 'US64828T2015', 'country_id': 2, 'base_asset': '',
+         'symbols': [{'symbol': 'NRZ', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': {1: '64828T201'}}
     ]
     assets = JalAsset.get_assets()
     assert len(assets) == len(test_assets)
@@ -66,7 +69,8 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     # validate dividend & tax
     test_dividends = [
         [1, 2, 1592770800, 0, '', 1, 1, 6, '16.76', '1.68', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
-        [2, 2, 1596054000, 0, '', 1, 1, 9, '51.0', '5.1', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)']
+        [2, 2, 1596054000, 0, '', 1, 1, 9, '51.0', '5.1', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'],
+        [3, 2, 1588191600, 0, '', 1, 1, 10, '25.0', '2.5', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)']
     ]
     dividends = JalAccount(1).dump_dividends()
     assert len(dividends) == len(test_dividends)
@@ -108,15 +112,18 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         {'id': 8, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'isin': 'CA05156X1087', 'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'ACB', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
          'data': {AssetData.RegistrationCode: '05156X108'}},
-        {'id': 9, 'type_id': PredefinedAsset.Stock, 'full_name': 'TWO HARBORS INVESTMENT CORP', 'isin': 'US90187B4086',
-         'country_id': 2, 'base_asset': '',
+        {'id': 9, 'type_id': PredefinedAsset.Stock, 'full_name': 'TWO HARBORS INVESTMENT CORP', 'isin': 'US90187B4086', 'country_id': 2, 'base_asset': '',
          'symbols': [{'symbol': 'TWO', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
          'data': {1: '90187B408'}},
-        {'id': 10, 'type_id': PredefinedAsset.Stock, 'full_name': 'ALTO INGREDIENTS INC', 'isin': 'US0215131063', 'country_id': 0, 'base_asset': '',
+        {'id': 10, 'type_id': PredefinedAsset.Stock, 'full_name': 'NEW RESIDENTIAL INVESTMENT', 'isin': 'US64828T2015', 'country_id': 2, 'base_asset': '',
+         'symbols': [{'symbol': 'NRZ', 'description': 'NYSE', 'active': 0, 'currency_id': 2, 'quote_source': 2},
+                     {'symbol': 'RITM', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
+         'data': {1: '64828T201'}},
+        {'id': 11, 'type_id': PredefinedAsset.Stock, 'full_name': 'ALTO INGREDIENTS INC', 'isin': 'US0215131063', 'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'ALTO', 'description': 'NASDAQ', 'active': 0, 'currency_id': 2, 'quote_source': 2},
                      {'symbol': 'PEIX', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
          'data': {AssetData.RegistrationCode: '021513106'}},
-        {'id': 11, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'isin': 'CA05156X8843', 'country_id': 0, 'base_asset': '',
+        {'id': 12, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'isin': 'CA05156X8843', 'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'ACB', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
          'data': {1: '05156X884'}}
     ]
@@ -131,8 +138,8 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         [3, 3, 1606471692, 1606780800, '3256333343', 1, 4, '70.0', '6.898', '0.36425725', ''],
         [4, 3, 1606821387, 1606953600, '3264444280', 1, 4, '70.0', '6.08', '0.32925725', ''],
         [5, 3, 1607095765, 1607299200, '3276656996', 1, 7, '-100.0', '5.2', '0.667292', ''],
-        [6, 3, 1610625615, 1611014400, '3381623127', 1, 10, '-70.0', '7.42', '0.23706599', ''],
-        [7, 3, 1612871230, 1613001600, '3480222427', 1, 10, '-70.0', '7.71', '0.23751462', ''],
+        [6, 3, 1610625615, 1611014400, '3381623127', 1, 11, '-70.0', '7.42', '0.23706599', ''],
+        [7, 3, 1612871230, 1613001600, '3480222427', 1, 11, '-70.0', '7.71', '0.23751462', ''],
         [8, 3, 1620750000, 1620864000, '3764387743', 1, 6, '-100.0', '42.5', '0.033575', 'Option assignment/exercise'],
         [9, 3, 1620750000, 1620777600, '3764387737', 1, 7, '100.0', '0.0', '0.0', 'Option assignment'],
         [10, 3, 1623247000, 1623283200, '3836250920', 1, 5, '300.0', '50.8', '-0.1266', '']
@@ -145,7 +152,8 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     # validate dividend & tax
     test_dividends = [
         [1, 2, 1592770800, 0, '', 1, 1, 6, '16.76', '0.21', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
-        [2, 2, 1596054000, 0, '', 1, 1, 9, '51.0', '0.01', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)']
+        [2, 2, 1596054000, 0, '', 1, 1, 9, '51.0', '0.01', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'],
+        [3, 2, 1588191600, 0, '', 1, 1, 10, '25.0', '1.04', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)']
     ]
     dividends = JalAccount(1).dump_dividends()
     assert len(dividends) == len(test_dividends)
@@ -155,9 +163,9 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     # validate corp actions
     test_asset_actions = [
         [1, 5, 1610569500, '14909999818', 1, 3, 4, '140.0', 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)',
-         [1, 1, 10, '140.0', '1.0']],
+         [1, 1, 11, '140.0', '1.0']],
         [2, 5, 1588969500, '12693114547', 1, 4, 8, '150.0', 'ACB(CA05156X1087) SPLIT 1 FOR 12 (ACB, AURORA CANNABIS INC, CA05156X8843)',
-         [2, 2, 11, '12.5', '1.0']]
+         [2, 2, 12, '12.5', '1.0']]
     ]
     actions = JalAccount(1).dump_corporate_actions()
     assert len(actions) == len(test_asset_actions)

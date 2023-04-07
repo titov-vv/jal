@@ -313,6 +313,8 @@ class JalAsset(JalDB):
             id = self._read("SELECT id FROM assets_ext "
                             "WHERE ((isin=:isin OR isin='') AND symbol=:symbol) OR (isin=:isin AND :symbol='')",
                             [(":isin", data['isin']), (":symbol", data['symbol'])])
+            if id is None and data['symbol']:  # Make one more try by ISIN only if no match for ISIN+Symbol due to symbol change
+                id = self._read("SELECT id FROM assets_ext WHERE isin=:isin", [(":isin", data['isin'])])
             if id is None:
                 return 0
             else:
