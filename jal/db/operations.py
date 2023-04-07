@@ -738,6 +738,7 @@ class Transfer(LedgerTransaction):
         "deposit": {"mandatory": True, "validation": True},
         "fee_account": {"mandatory": False, "validation": True, "default": None},
         "fee": {"mandatory": False, "validation": True, "default": None},
+        "number": {"mandatory": False, "validation": True, "default": ''},
         "asset": {"mandatory": False, "validation": True, "default": None},
         "note": {"mandatory": False, "validation": False}
     }
@@ -753,7 +754,8 @@ class Transfer(LedgerTransaction):
         self._display_type = display_type
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
                                 "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, "
-                                "t.note FROM transfers AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
+                                "t.number, t.note FROM transfers AS t WHERE t.id=:oid",
+                                [(":oid", self._oid)], named=True)
         self._withdrawal_account = jal.db.account.JalAccount(self._data['withdrawal_account'])
         self._withdrawal_account_name = self._withdrawal_account.name()
         self._withdrawal_timestamp = self._data['withdrawal_timestamp']
@@ -773,6 +775,7 @@ class Transfer(LedgerTransaction):
         except KeyError:
             assert False, "Unknown transfer type"
         self._asset = JalAsset(self._data['asset'])
+        self._number = self._data['number']
         self._account = self._withdrawal_account
         self._note = self._data['note']
         if self._display_type == Transfer.Outgoing:
@@ -783,7 +786,6 @@ class Transfer(LedgerTransaction):
             self._reconciled = self._fee_account.reconciled_at() >= self._withdrawal_timestamp
         else:
             assert False, "Unknown transfer type"
-
 
     def timestamp(self):
         if self._display_type == Transfer.Incoming:

@@ -124,6 +124,19 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             FOF.CORP_ACTIONS: self._import_corporate_actions
         }
 
+    # If 'debug_info' is given as parameter it is saved in JAL main directory text file appened with timestamp
+    def save_debug_info(self, **kwargs):
+        if 'debug_info' in kwargs:
+            dump_name = get_app_path() + os.sep + Setup.STATEMENT_DUMP + datetime.now().strftime("%s") + ".txt"
+            try:
+                with open(dump_name, 'w') as dump_file:
+                    dump_file.write(f"JAL statement dump, {datetime.now().strftime('%y/%m/%d %H:%M:%S')}\n")
+                    dump_file.write("----------------------------------------------------------------\n")
+                    dump_file.write(str(kwargs['debug_info']))
+                logging.warning(self.tr("Debug information is saved in ") + dump_name)
+            except Exception as e:
+                logging.error(self.tr("Failed to write statement dump into: ") + dump_name + ": " + str(e))
+
     # returns tuple (start_timestamp, end_timestamp)
     def period(self):
         if FOF.PERIOD in self._data:
@@ -135,6 +148,22 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def _end_of_date(self, timestamp) -> int:
         end_of_day = datetime.utcfromtimestamp(timestamp).replace(hour=23, minute=59, second=59)
         return int(end_of_day.replace(tzinfo=timezone.utc).timestamp())
+
+    # Finds an account in jal database and returns its id
+    def _map_db_account(self, account_id: int) -> int:
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == account['currency']][0]['symbol']
+        db_currency = JalAsset(data={'symbol': currency_symbol, 'type': PredefinedAsset.Money}, search=True, create=False).id()
+        db_account = JalAccount(data={'number': account['number'], 'currency': db_currency}, search=True, create=False).id()
+        return db_account
+
+    # Finds an asset in jal database and returns its id
+    def _map_db_asset(self, asset_id: int) -> int:
+        asset = self._asset(asset_id)
+        isin = asset['isin'] if 'isin' in asset else ''
+        symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
+        db_asset = JalAsset(data={'isin': isin, 'symbol': symbols[0]['symbol']}, search=True, create=False).id()
+        return db_asset
 
     # Loads JSON statement format from file defined by 'filename'
     def load(self, filename: str) -> None:
@@ -206,12 +235,19 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             search_data = {'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]}
             self._uppend_keys_from(search_data, asset, ['isin'])
             data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset", symbol['asset'])
+            reg_number = ''
             if data is not None:
                 self._uppend_keys_from(search_data, data, ['expiry'])
-            asset_id = JalAsset(data=search_data, search=True, create=False).id()
-            if asset_id:
-                old_id, asset['id'] = asset['id'], -asset_id
-                self._update_id("asset", old_id, asset_id)
+                reg_number = data['reg_number'] if 'reg_number' in data else ''
+            db_asset = JalAsset(data=search_data, search=True, create=False)
+            db_id = db_asset.id()
+            if db_id:
+                if db_asset.isin() and 'isin' in asset and asset['isin'] and db_asset.isin() != asset['isin']:
+                    continue  # verify that we don't have ISIN mismatch
+                if db_asset.reg_number() and reg_number and db_asset.reg_number() != reg_number:
+                    continue  # verify that we don't have reg.number mismatch
+                old_id, asset['id'] = asset['id'], -db_id
+                self._update_id("asset", old_id, db_id)
 
     # Check and replace IDs for Accounts
     def _match_account_ids(self):
@@ -376,7 +412,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     raise Statement_ImportError(self.tr("Unmatched category for income/spending: ") + f"{action}")
                 line['category_id'] = -line.pop('category')
                 line['note'] = line.pop('description')
-            LedgerTransaction().create_new(LedgerTransaction.IncomeSpending, action)
+            LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, action)
     
     def _import_transfers(self, transfers):
         for transfer in transfers:
@@ -419,8 +455,6 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 transfer.pop('asset')
             if 'description' in transfer:
                 transfer['note'] = transfer.pop('description')
-            if 'number' in transfer:
-                transfer.pop('number')   # it isn't stored in Jal
             transfer['withdrawal_timestamp'] = transfer['deposit_timestamp'] = transfer.pop('timestamp')
             transfer['withdrawal_account'] = -transfer['account'][0]
             transfer['deposit_account'] = -transfer['account'][1]
@@ -429,7 +463,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if abs(transfer['fee']) < 1e-10:  # FIXME  Need to refactor this module for decimal usage
                 transfer.pop('fee_account')
                 transfer.pop('fee')
-            LedgerTransaction().create_new(LedgerTransaction.Transfer, transfer)
+            LedgerTransaction.create_new(LedgerTransaction.Transfer, transfer)
 
     def _import_trades(self, trades):
         for trade in trades:
@@ -447,7 +481,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 if oid:
                     LedgerTransaction.get_operation(LedgerTransaction.Trade, oid).delete()
                 continue
-            LedgerTransaction().create_new(LedgerTransaction.Trade, trade)
+            LedgerTransaction.create_new(LedgerTransaction.Trade, trade)
 
     def _import_asset_payments(self, payments):
         for payment in payments:
@@ -465,23 +499,23 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
                     payment['type'] = Dividend.Dividend
-                    LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
+                    LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
                 else:  # Dividend exists, only tax to be updated
                     dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
                     dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_INTEREST:
                 payment['type'] = Dividend.BondInterest
-                LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
+                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
             elif payment['type'] == FOF.PAYMENT_STOCK_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
                     payment['type'] = Dividend.StockDividend
-                    LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
+                    LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
                 else:  # Dividend exists, only tax to be updated
                     dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
                     dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_STOCK_VESTING:
                 payment['type'] = Dividend.StockVesting
-                LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
+                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 
@@ -505,7 +539,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 action['type'] = self._corp_actions[action.pop('type')]
             except KeyError:
                 raise Statement_ImportError(self.tr("Unsupported corporate action: ") + f"{action}")
-            LedgerTransaction().create_new(LedgerTransaction.CorporateAction, action)
+            LedgerTransaction.create_new(LedgerTransaction.CorporateAction, action)
 
     def select_account(self, text, account_id, recent_account_id=0):
         if "pytest" in sys.modules:

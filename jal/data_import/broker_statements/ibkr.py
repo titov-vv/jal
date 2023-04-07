@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import datetime
 from itertools import groupby
 from decimal import Decimal
+from lxml import etree
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory, PredefinedAsset
@@ -17,6 +18,7 @@ from jal.data_import.statement_xml import StatementXML
 
 JAL_STATEMENT_CLASS = "StatementIBKR"
 IBKR_CALCULATION_PRECISION = 10
+DIVIDENDS_TABLE_ASSET_FIELD = 7
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKRCashOp:
@@ -225,6 +227,7 @@ class StatementIBKR(StatementXML):
                                             ('reportDate', 'reported', datetime, None),
                                             ('amount', 'amount', float, None),
                                             ('tradeID', 'number', str, ''),
+                                            ('transactionID', 'tid', str, ''),
                                             ('description', 'description', str, None)],
                                  'loader': self.load_cash_transactions},
             'ChangeInDividendAccruals': {'tag': 'ChangeInDividendAccrual',
@@ -260,6 +263,29 @@ class StatementIBKR(StatementXML):
 
     def tr(self, text):
         return QApplication.translate("IBKR", text)
+
+    # Saves information from XML that is related with a given asset
+    def save_debug_info(self, account, asset):
+        # Dump statement info relevant to given asset
+        debug_info = 'Statement data:\n----------------------------------------------------------------\n'
+        assert self._statement is not None
+        symbols = [x['symbol'] for x in self._data[FOF.SYMBOLS] if x["asset"] == asset]
+        for symbol in symbols:
+            elements = self._statement.findall(f".//*[@symbol='{symbol}']")
+            for element in elements:
+                if 'accountId' in element.attrib:
+                    element.attrib['accountId'] = 'U7654321'  # Hide real account number
+                debug_info += etree.tostring(element).decode("utf-8")
+        debug_info += "----------------------------------------------------------------\n"
+        # Dump dividends info from database for the given asset from
+        db_account = self._map_db_account(account)
+        db_asset = self._map_db_asset(asset)
+        dividends = JalAccount(db_account).dump_dividends()
+        dividends = [x for x in dividends if x[DIVIDENDS_TABLE_ASSET_FIELD] == db_asset]
+        debug_info += "Database data:\n----------------------------------------------------------------\n"
+        debug_info += str(dividends)
+        debug_info += "\n----------------------------------------------------------------\n"
+        super().save_debug_info(debug_info=debug_info)
 
     def validate_file_header_attributes(self, attributes):
         if 'type' not in attributes:
@@ -757,8 +783,10 @@ class StatementIBKR(StatementXML):
         logging.info(self.tr("Stock vestings loaded: ") + f"{cnt} ({len(vestings)})")
 
     def load_cash_transactions(self, cash):
+        drop_fields = lambda x, y: {i: x[i] for i in x if i not in y}  # removes from dict(x) fields listed in [y]
         cnt = 0
         dividends = list(filter(lambda tr: tr['type'] in ['Dividends', 'Payment In Lieu Of Dividends'], cash))
+        dividends = [drop_fields(x, ['tid']) for x in dividends]  # remove 'tid' field as not used for dividends
         dividends = self.aggregate_dividends(dividends)
         asset_payments_base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         for i, dividend in enumerate(dividends):
@@ -772,11 +800,12 @@ class StatementIBKR(StatementXML):
         for i, bond_interest in enumerate(bond_interests):
             bond_interest['id'] = asset_payments_base + i
             bond_interest['type'] = FOF.PAYMENT_INTEREST
-            self.drop_extra_fields(bond_interest, ["currency", "reported"])
+            self.drop_extra_fields(bond_interest, ["currency", "reported", "tid"])
             self._data[FOF.ASSET_PAYMENTS].append(bond_interest)
             cnt += 1
 
         taxes = list(filter(lambda tr: tr['type'] == 'Withholding Tax', cash))
+        taxes = [drop_fields(x, ['tid']) for x in taxes]
         taxes = self.aggregate_taxes(taxes)
         for tax in taxes:
             cnt += self.apply_tax_withheld(tax)
@@ -785,6 +814,7 @@ class StatementIBKR(StatementXML):
         transfers = list(filter(lambda tr: tr['type'] == 'Deposits/Withdrawals', cash))
         for i, transfer in enumerate(transfers):
             transfer['id'] = transfer_base + i
+            transfer['number'] = transfer.pop('tid')
             transfer['asset'] = [transfer['currency'], transfer['currency']]
             if transfer['amount'] >= 0:  # Deposit
                 transfer['account'] = [0, transfer['account'], 0]
@@ -810,7 +840,7 @@ class StatementIBKR(StatementXML):
             else:
                 category = -PredefinedCategory.Fees
             fee['lines'] = [{'amount': fee['amount'], 'category': category, 'description': fee['description']}]
-            self.drop_extra_fields(fee, ["type", "amount", "description", "asset", "number", "currency", "reported"])
+            self.drop_extra_fields(fee, ["type", "amount", "description", "asset", "number", "currency", "reported", "tid"])
             self._data[FOF.INCOME_SPENDING].append(fee)
             cnt += 1
 
@@ -819,7 +849,6 @@ class StatementIBKR(StatementXML):
     # Method takes a list of dividend dictionaries and checks for REVERSAL and CANCEL
     # For such description it looks for matching record (for the same symbol) with opposite amount and the same payment
     # and report dates. Description may be different!
-    # FIXME - this algo may be not fully correct for CANCEL as it may cancel older record - Dividend Accruals may probably help
     def aggregate_dividends(self, dividends: list) -> list:
         is_reversal = lambda x: self.ReversalSuffix in x or x.startswith(self.CancelPrefix)
         payments = [x for x in deepcopy(dividends) if not is_reversal(x['description'])]
@@ -836,9 +865,16 @@ class StatementIBKR(StatementXML):
                 if len(m_payments):
                     payments.remove(m_payments[0])
                     logging.warning(self.tr("Payment was reversed by approximate description: ") +
-                             f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
-                else:
-                    raise Statement_ImportError(self.tr("Can't find match for reversal: ") + f"{reversal}")
+                                    f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
+                    continue
+                no_reported = lambda x: {i: x[i] for i in x if i != 'reported'}
+                m_payments = [x for x in payments if no_reported(x) == no_reported(t_payment)]
+                if len(m_payments):
+                    payments.remove(m_payments[0])   # FIXME - this branch may lead to non-reversed taxes theoretically
+                    logging.warning(self.tr("Payment was reversed with different reported date: ") +
+                                    f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
+                    continue
+                raise Statement_ImportError(self.tr("Can't find match for reversal: ") + f"{reversal}")
             else:
                 payments.remove(t_payment) # Source payment found -> remove it
                 logging.info(self.tr("Payment was reversed: ") +
@@ -870,7 +906,21 @@ class StatementIBKR(StatementXML):
             else:
                 payments.remove(t_payment)    # it is possible to kill exact match silently
         taxes = [x for x in taxes if x in payments or x in not_matched_reversals]
-        return taxes
+
+        # Sometimes IB split tax in several parts for Payment in Lieu of Dividend
+        # Below code aggregates such taxes but only negative values (positive might be a correction of previous tax)
+        key_func = lambda x: (x['account'], x['asset'], x['currency'], x['description'], x['timestamp'], x['reported'])
+        taxes_sorted = sorted(taxes, key=key_func)
+        tax_in_lieu = [x for x in taxes_sorted if x['amount'] < 0 and 'PAYMENT IN LIEU OF DIVIDEND' in x['description']]
+        other_taxes = [x for x in taxes_sorted if x not in tax_in_lieu]
+        lieu_aggregated = []
+        for k, group in groupby(tax_in_lieu, key=key_func):
+            group_list = list(group)
+            part = group_list[0]  # Take fist of several actions as a basis
+            part['amount'] = sum(tax['amount'] for tax in group_list)  # and update quantity in it
+            lieu_aggregated.append(part)
+        taxes_aggregated = sorted(other_taxes + lieu_aggregated, key=key_func)
+        return taxes_aggregated
 
     def load_taxes(self, taxes):
         cnt = 0   #FIXME Link this tax with asset
@@ -904,6 +954,7 @@ class StatementIBKR(StatementXML):
 
         dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['asset'], previous_tax, new_tax, description)
         if dividend is None:
+            self.save_debug_info(account=tax['account'], asset=tax['asset'])
             raise Statement_ImportError(self.tr("Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
         if dividend['id'] < 0:  # Notification is required if we adjust data for dividend that is already in Jal DB
             logging.info(self.tr("Tax adjustment for dividend: ") +
@@ -915,7 +966,7 @@ class StatementIBKR(StatementXML):
             self._data[FOF.ASSET_PAYMENTS].append(dividend)
         return 1
 
-    # Searches for divident that matches tax in the best way:
+    # Searches for dividend that matches tax in the best way:
     # - it should have exactly the same account_id and asset_id
     # - tax amount withheld from dividend should be equal to provided 'tax' value
     # - timestamp should be the same or within previous year for weak match of Q1 taxes
@@ -928,14 +979,8 @@ class StatementIBKR(StatementXML):
         dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
                      (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
                      and x['asset'] == asset_id and x['account'] == account_id]
-        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
-        currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == account['currency']][0]['symbol']
-        db_currency = JalAsset(data={'symbol': currency_symbol, 'type': PredefinedAsset.Money}, search=True, create=False).id()
-        db_account = JalAccount(data={'number': account['number'], 'currency': db_currency}, search=True, create=False).id()
-        asset = self._asset(asset_id)
-        isin = asset['isin'] if 'isin' in asset else ''
-        symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
-        db_asset = JalAsset(data={'isin': isin, 'symbol': symbols[0]['symbol']}, search=True, create=False).id()
+        db_account = self._map_db_account(account_id)
+        db_asset = self._map_db_asset(asset_id)
         if db_account and db_asset:
             for db_dividend in Dividend.get_list(db_account, db_asset, Dividend.Dividend):
                 dividends.append({

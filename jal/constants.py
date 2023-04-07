@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication, QComboBox
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 43
+    DB_REQUIRED_VERSION = 44
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'
@@ -18,6 +18,7 @@ class Setup:
     LANG_PATH = "languages"
     REPORT_PATH = "reports"
     STATEMENT_PATH = "broker_statements"
+    STATEMENT_DUMP = "statement_error_log_"
     TEMPLATE_PATH = "templates"
     TAX_REPORT_PATH = "tax_reports"
     TAX_TREATY_PARAM = "tax_treaty"

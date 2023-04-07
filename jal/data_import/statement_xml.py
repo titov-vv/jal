@@ -16,6 +16,7 @@ class StatementXML(Statement):
     def __init__(self):
         super().__init__()
         self.statement_name = ''
+        self._statement = None
         self._sections = {}
         self._data = {
             FOF.PERIOD: [None, None],
@@ -85,6 +86,7 @@ class StatementXML(Statement):
         for statement in statements:
             if statement.tag != self.statement_tag:
                 continue
+            self._statement = statement
             header_data = self.get_section_data(statement)
             self._sections[StatementXML.STATEMENT_ROOT]['loader'](header_data)
 

@@ -79,7 +79,7 @@ def create_actions(actions):
             note = detail[2] if len(detail) > 2 else ''
             details.append({"amount": detail[1], "category_id": detail[0], "note": note})
         data = {'timestamp': action[0], 'account_id': action[1], 'peer_id': action[2], 'lines': details}
-        LedgerTransaction().create_new(LedgerTransaction.IncomeSpending, data)
+        LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ def create_dividends(dividends):
     for dividend in dividends:
         data = {'timestamp': dividend[0], 'type': Dividend.Dividend, 'account_id': dividend[1], 'asset_id': dividend[2],
                 'amount': dividend[3], 'tax': dividend[4], 'note': dividend[5]}
-        LedgerTransaction().create_new(LedgerTransaction.Dividend, data)
+        LedgerTransaction.create_new(LedgerTransaction.Dividend, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ def create_coupons(coupons):
     for coupon in coupons:
         data = {'timestamp': coupon[0], 'type': Dividend.BondInterest, 'account_id': coupon[1], 'asset_id': coupon[2],
                 'amount': coupon[3], 'tax': coupon[4], 'note': coupon[5], 'number': coupon[6]}
-        LedgerTransaction().create_new(LedgerTransaction.Dividend, data)
+        LedgerTransaction.create_new(LedgerTransaction.Dividend, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -111,7 +111,7 @@ def create_stock_dividends(dividends):
         create_quotes(dividend[3], dividend[5], [(dividend[1], dividend[6])])
         data = {'timestamp': dividend[1], 'type': dividend[0], 'account_id': dividend[2], 'asset_id': dividend[3],
                 'amount': dividend[4], 'tax': dividend[7], 'note': dividend[8]}
-        LedgerTransaction().create_new(LedgerTransaction.Dividend, data)
+        LedgerTransaction.create_new(LedgerTransaction.Dividend, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -122,7 +122,7 @@ def create_trades(account_id, trades):
         number = trade[6] if len(trade) > 6 else ''
         data = {'timestamp': trade[0], 'settlement': trade[1], 'account_id': account_id, 'asset_id': trade[2],
                 'qty': trade[3], 'price': trade[4], 'fee': trade[5], 'number': number}
-        LedgerTransaction().create_new(LedgerTransaction.Trade, data)
+        LedgerTransaction.create_new(LedgerTransaction.Trade, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -135,7 +135,7 @@ def create_corporate_actions(account_id, actions):
             outcomes.append({"asset_id": result[0], "qty": result[1], "value_share": result[2]})
         data = {'timestamp': action[0], 'account_id': account_id, 'type': action[1], 'asset_id': action[2],
                 'qty': action[3], 'note': action[4], 'outcome': outcomes}
-        LedgerTransaction().create_new(LedgerTransaction.CorporateAction, data)
+        LedgerTransaction.create_new(LedgerTransaction.CorporateAction, data)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -146,4 +146,4 @@ def create_transfers(transfers):
         data = {'withdrawal_timestamp': transfer[0], 'withdrawal_account': transfer[1], 'withdrawal': transfer[2],
                 'deposit_timestamp': transfer[0],'deposit_account': transfer[3], 'deposit': transfer[4],
                 'asset': transfer[5]}
-        LedgerTransaction().create_new(LedgerTransaction.Transfer, data)
+        LedgerTransaction.create_new(LedgerTransaction.Transfer, data)
