@@ -895,7 +895,25 @@ class StatementIBKR(StatementXML):
             else:
                 payments.remove(t_payment)    # it is possible to kill exact match silently
         taxes = [x for x in taxes if x in payments or x in not_matched_reversals]
-        return taxes
+
+        # Sometimes IB split tax in several parts for Payment in Lieu of Dividend
+        # Below code will aggregate such taxes into one
+        key_func = lambda x: (x['account'], x['asset'], x['currency'], x['description'], x['timestamp'], x['reported'])
+        taxes_sorted = sorted(taxes, key=key_func)
+        taxes_aggregated = []
+        current = None
+        for tax in taxes_sorted:
+            if current is not None:
+                if 'PAYMENT IN LIEU OF DIVIDEND' in tax['description'] and key_func(current) == key_func(tax):
+                    current['amount'] += tax['amount']
+                    continue
+                taxes_aggregated.append(current)
+            current = tax if 'PAYMENT IN LIEU OF DIVIDEND' in tax['description'] else None
+            if current is None:
+                taxes_aggregated.append(tax)
+        if current is not None:
+            taxes_aggregated.append(current)
+        return taxes_aggregated
 
     def load_taxes(self, taxes):
         cnt = 0   #FIXME Link this tax with asset
@@ -941,7 +959,7 @@ class StatementIBKR(StatementXML):
             self._data[FOF.ASSET_PAYMENTS].append(dividend)
         return 1
 
-    # Searches for divident that matches tax in the best way:
+    # Searches for dividend that matches tax in the best way:
     # - it should have exactly the same account_id and asset_id
     # - tax amount withheld from dividend should be equal to provided 'tax' value
     # - timestamp should be the same or within previous year for weak match of Q1 taxes

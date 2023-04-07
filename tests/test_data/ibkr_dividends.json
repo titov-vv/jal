@@ -6,15 +6,18 @@
   "assets": [
     {"id": 1, "name": "", "type": "money"},
     {"id": 2, "type": "stock", "name": "BROOKFIELD RENEWABLE PARTNER", "isin": "BMG162581083", "country": "ca"},
-    {"id": 3, "type": "adr", "name": "TELEFONICA SA-SPON ADR", "isin": "US8793822086", "country": "es"}
+    {"id": 3, "type": "adr", "name": "TELEFONICA SA-SPON ADR", "isin": "US8793822086", "country": "es"},
+    {"id": 4, "type": "stock", "name": "OWL ROCK CAPITAL CORP", "isin": "US69121K1043", "country": "us"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "USD"},
     {"id": 2, "asset": 2, "symbol": "BEP", "currency": 1, "note": "NYSE"},
-    {"id": 3, "asset": 3, "symbol": "TEF", "currency": 1, "note": "NYSE"}
+    {"id": 3, "asset": 3, "symbol": "TEF", "currency": 1, "note": "NYSE"},
+    {"id": 4, "asset": 4, "symbol": "ORCC", "currency": 1, "note": "NYSE"}
   ],
   "assets_data": [
-    {"id": 1, "asset": 3, "reg_number": "879382208"}
+    {"id": 1, "asset": 3, "reg_number": "879382208"},
+    {"id": 2, "asset": 4, "reg_number": "69121K104"}
   ],
   "asset_payments": [
     {"id": 1, "type": "stock_dividend", "account": 1, "timestamp": 1595017200, "number": "13259965038", "asset": 3, "amount": 3.0, "price": "4.73", "tax": 0, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000"},
@@ -27,7 +30,12 @@
     {"id": 8, "type": "dividend", "account": 1, "timestamp": 1610569200, "number": "", "asset": 3, "amount": 24.55, "tax": 4.66, "description": "TEF (US8793822086) CASH DIVIDEND USD 0.238309 (Ordinary Dividend)"},
     {"id": 9, "type": "dividend", "account": 1, "timestamp": 1625084400, "number": "", "asset": 3, "amount": 0.73, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 5 FOR 100 PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"},
     {"id": 10, "type": "dividend", "account": 1, "timestamp": 1595017200, "number": "", "asset": 3, "amount": 3.7, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (Ordinary Dividend)"},
-    {"id": 11, "type": "dividend", "account": 1, "timestamp": 1595017200, "number": "", "asset": 3, "amount": 2.39, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"}
+    {"id": 11, "type": "dividend", "account": 1, "timestamp": 1595017200, "number": "", "asset": 3, "amount": 2.39, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"},
+    {"id": 12, "type": "dividend", "account": 1, "timestamp": 1611087600, "number": "", "asset": 4, "amount": 0.39, "tax": 0.03, "description": "ORCC(US69121K1043) CASH DIVIDEND USD 0.39 PER SHARE (Ordinary Dividend)"},
+    {"id": 13, "type": "dividend", "account": 1, "timestamp": 1621023600, "number": "", "asset": 4, "amount": 20.46, "tax": 2.05, "description": "ORCC(US69121K1043) CASH DIVIDEND USD 0.31 PER SHARE (Ordinary Dividend)"},
+    {"id": 14, "type": "dividend", "account": 1, "timestamp": 1628886000, "number": "", "asset": 4, "amount": 31.0, "tax": 3.1, "description": "ORCC(US69121K1043) CASH DIVIDEND USD 0.31 PER SHARE (Ordinary Dividend)"},
+    {"id": 15, "type": "dividend", "account": 1, "timestamp": 1611087600, "number": "", "asset": 4, "amount": 38.61, "tax": 3.58, "description": "ORCC(US69121K1043) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"},
+    {"id": 16, "type": "dividend", "account": 1, "timestamp": 1621023600, "number": "", "asset": 4, "amount": 10.54, "tax": 1.05,"description": "ORCC(US69121K1043) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"}
   ],
  "corporate_actions": [],
  "income_spending": [

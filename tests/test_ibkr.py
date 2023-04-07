@@ -180,6 +180,7 @@ def test_ibkr_warrants(tmp_path, project_root, data_path, prepare_db_taxes):
 # Payment was reversed by approximate description: 30/06/2022 20:20:00, 'BEP(BMG162581083) CASH DIVIDEND USD 0.0161 PER SHARE (Bonus Dividend)': 0.65
 # Payment was reversed by approximate description: 30/06/2022 20:20:00, 'BEP(BMG162581083) CASH DIVIDEND USD 0.0161 PER SHARE (Ordinary Dividend)': 12.15
 # Payment was reversed by approximate description: 30/06/2022 20:20:00, 'BEP(BMG162581083) CASH DIVIDEND USD 0.30371 PER SHARE (Ordinary Dividend)': 0.64
+# Payment was reversed with different reported date: 17/07/2020 20:20:00, 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (Ordinary Dividend)': 3.69
 def test_ibkr_dividends(tmp_path, project_root, data_path, prepare_db_taxes):
     with open(data_path + 'ibkr_dividends.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
