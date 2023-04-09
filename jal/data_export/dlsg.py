@@ -71,11 +71,11 @@ form_3nfl_template = {
             "@HomePhone": ('', ''),
             "@WorkPhone": ('', ''),
             "@DeclInquiry": (0, 0, 0, 0, 0, 0),
-            # "@DeclForeign": {
+            "@DeclForeign": {
                 # "@CurrencyIncome0000": (0, 1530, "(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)", "IBKR", 324,
                 #     840, datetime(2022, 1, 31), datetime(2022, 1, 31), 1, 840, 7618.54, 100, 7618.54, 100, "Доллар США",
                 #     123, 9370.8, 11, 838.04, 201, 321, 0, 0, 0, '', 0,)
-            # },
+            },
             "@StandartDeduct": (0, ),
             "@SocialDeduct": (0, ),
             "@ConstructionDeduct": (0, ),

@@ -25,7 +25,8 @@ def test_empty_dlsg(tmp_path, project_root, data_path):
 def test_full_dlsg(tmp_path, project_root, data_path):
     test_tax_files_full = {
         2020: "3ndfl_2020.dc0",
-        2021: "3ndfl_2021.dc1"
+        2021: "3ndfl_2021.dc1",
+        2022: "3ndfl_2022.dc2"
     }
 
     for year in test_tax_files_full:
