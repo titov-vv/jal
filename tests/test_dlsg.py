@@ -8,7 +8,8 @@ from tests.fixtures import project_root, data_path
 def test_empty_dlsg(tmp_path, project_root, data_path):
     test_tax_files_empty = {
         2020: "3ndfl_2020_empty.dc0",
-        2021: "3ndfl_2021_empty.dc1"
+        2021: "3ndfl_2021_empty.dc1",
+        2022: "3ndfl_2022_empty.dc2"
     }
 
     for year in test_tax_files_empty:
