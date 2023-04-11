@@ -42,6 +42,9 @@ You may authorize via SMS, FNS personal account or ESIA/Gosuslugi. QR code may b
 - *experimental* Category recognition for goods in electronic slip with help of `tensorflow`
 
 ### Installation
+
+#### *jal* doesn't work with PySide6 6.5.0 yet. Please use 6.4.3 as maximum PySide6 version.
+
 *jal* was created to be portable and cross-platform. Thus, you have several ways to install and run the program:
 - You may get file archive from [the GitHub repository](https://github.com/titov-vv/jal), unpack it into suitable directory on your PC and use `run.py` to start application.
 In order to succeed this way you need to have at least Python 3.8.1 and satisfy all dependencies listed in `requirements.txt`. Let's say some words about installing python on windows-based computers, as this application becomes poplular for non-programming people. The best place to download python distro is official site, sure. Important, in installer dialogues to check boxes for installing `pip` and `Add python to environment variables`. Don't forget to reboot windows to be sure, that changes applies correctly.
