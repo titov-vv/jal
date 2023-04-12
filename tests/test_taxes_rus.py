@@ -363,3 +363,50 @@ def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
     #         continue
     #     reports_xls.output_data(tax_report[section], templates[section], parameters)
     # reports_xls.save()
+
+# Load double IBKR statement with mergers and spin-offs
+def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
+    with open(data_path + 'ibkr_merger_spinoff.json', 'r', encoding='utf-8') as json_file:
+        statement = json.load(json_file)
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_merger_spinoff.xml', index=0)   # Load statement for the first year
+    assert IBKR._data == statement[0]
+
+    IBKR.validate_format()
+    IBKR.match_db_ids()
+    IBKR.import_into_db()
+
+    usd_rates = [
+        (1630972800, 72.9538), (1631145600, 73.4421), (1631491200, 72.7600), (1631664000, 72.7171),
+        (1632441600, 72.7245), (1632787200, 72.6613), (1633478400, 72.5686), (1633651200, 72.2854),
+        (1634601600, 71.1714), (1634774400, 71.0555)
+    ]
+    create_quotes(2, 1, usd_rates)
+
+    # Adjust share of resulting assets:
+    # 100% NTRP -> 100% PTPI
+    action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 1)
+    action.set_result_share(JalAsset(5), Decimal('1.0'))
+    # 100% NTRP -> 100% NTRP + 0% SNPX
+    action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 2)
+    action.set_result_share(JalAsset(4), Decimal('1.0'))
+
+    ledger = Ledger()  # Build ledger to have everything in place
+    ledger.rebuild(from_timestamp=0)
+
+    IBKR.load(data_path + 'ibkr_merger_spinoff.xml', index=1)  # Load statement for the second year
+    assert IBKR._data == statement[1]
+
+    IBKR.validate_format()
+    IBKR.match_db_ids()
+    IBKR.import_into_db()
+
+    ledger.rebuild(from_timestamp=0)  # re-build after second year loading
+
+    taxes = TaxesRussia()
+    tax_report = taxes.prepare_tax_report(2022, 1)
+
+    with open(data_path + 'taxes_merger_complex_rus.json', 'r', encoding='utf-8') as json_file:
+        report = json.load(json_file)
+    json_decimal2float(tax_report)
+    assert tax_report == report

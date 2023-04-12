@@ -18,6 +18,14 @@ class StatementXML(Statement):
         self.statement_name = ''
         self._statement = None
         self._sections = {}
+        self._init_data()
+        self.attr_loader = {
+            str: self.attr_string,
+            float: self.attr_number,
+            datetime: self.attr_timestamp
+        }
+
+    def _init_data(self):
         self._data = {
             FOF.PERIOD: [None, None],
             FOF.ACCOUNTS: [],
@@ -29,11 +37,6 @@ class StatementXML(Statement):
             FOF.CORP_ACTIONS: [],
             FOF.ASSET_PAYMENTS: [],
             FOF.INCOME_SPENDING: []
-        }
-        self.attr_loader = {
-            str: self.attr_string,
-            float: self.attr_number,
-            datetime: self.attr_timestamp
         }
 
     # -----------------------------------------------------------------------------------------------------------------------
@@ -78,6 +81,7 @@ class StatementXML(Statement):
 
     # XML file can contain several statements - load 1st one by default, but may be changed by index
     def load(self, filename: str, index : int = 0) -> None:
+        self._init_data()
         try:
             xml_root = etree.parse(filename)
         except etree.XMLSyntaxError as e:
