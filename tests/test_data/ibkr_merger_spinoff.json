@@ -62,7 +62,7 @@
       {"id": 4, "asset": 5, "reg_number": "71678J100"}
     ],
     "trades": [
-      {"id": 1,  "number": "", "timestamp": 1621369500, "settlement": 1621369500, "account": 1, "asset": 2, "quantity": -0.5, "price": 6.24, "fee": 0.0},
+      {"id": 1,  "number": "", "timestamp": 1652905500, "settlement": 1652905500, "account": 1, "asset": 2, "quantity": -0.5, "price": 6.24, "fee": 0.0},
       {"id": 2, "number": "", "timestamp": 1669839900, "settlement": 1669839900, "account": 1, "asset": 4, "quantity": -0.2, "price": 4.111, "fee": 0.0}
     ],
     "corporate_actions": [
