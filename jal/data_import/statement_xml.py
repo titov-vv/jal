@@ -76,29 +76,37 @@ class StatementXML(Statement):
             raise Statement_ImportError(QApplication.translate("StatementXML", "Unsupported date/time format: ")
                                         + f"{xml_element.attrib[attr_name]}")
 
-    def load(self, filename: str) -> None:
+    # XML file can contain several statements - load 1st one by default, but may be changed by index
+    def load(self, filename: str, index : int = 0) -> None:
         try:
             xml_root = etree.parse(filename)
         except etree.XMLSyntaxError as e:
             raise Statement_ImportError(self.tr("Can't parse XML file: ") + e.msg)
         self.validate_file_header_attributes(xml_root.findall('.')[0].attrib)
         statements = xml_root.findall(self.statements_path)
-        for statement in statements:
-            if statement.tag != self.statement_tag:
-                continue
-            self._statement = statement
-            header_data = self.get_section_data(statement)
-            self._sections[StatementXML.STATEMENT_ROOT]['loader'](header_data)
-
-            for section in self._sections:
-                if section == StatementXML.STATEMENT_ROOT:
-                    continue  # skip header description
-                section_elements = statement.xpath(section)  # Actually should be list of 0 or 1 element
-                if section_elements:
-                    section_data = self.get_section_data(section_elements[0])
-                    if section_data is None:
-                        return
-                    self._sections[section]['loader'](section_data)
+        if len(statements) == 0:
+            logging.info(self.tr("No statement was found in file: " + filename))
+            return
+        try:
+            statement = statements[index]
+        except IndexError:
+            logging.warning(self.tr("Failed to find statement index: ") + f"{index}@{filename}")
+            return
+        if statement.tag != self.statement_tag:
+            logging.warning(self.tr("Unknown statement tag: ") + f"'{statement.tag}'@{filename}")
+            return
+        self._statement = statement
+        header_data = self.get_section_data(statement)
+        self._sections[StatementXML.STATEMENT_ROOT]['loader'](header_data)
+        for section in self._sections:
+            if section == StatementXML.STATEMENT_ROOT:
+                continue  # skip header description
+            section_elements = statement.xpath(section)  # Actually should be list of 0 or 1 element
+            if section_elements:
+                section_data = self.get_section_data(section_elements[0])
+                if section_data is None:
+                    return
+                self._sections[section]['loader'](section_data)
         self.strip_unused_data()
         logging.info(self.statement_name + self.tr(" loaded successfully"))
 
