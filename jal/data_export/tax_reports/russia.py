@@ -519,7 +519,7 @@ class TaxesRussia(TaxReport):
             if item.open_operation().type() == LedgerTransaction.Trade:
                 qty = self.output_purchase(actions, item.open_operation(), qty, share, level, group)
             elif item.open_operation().type() == LedgerTransaction.CorporateAction:
-                self.proceed_corporate_action(actions, trade, qty, share, level, group)
+                self.proceed_corporate_action(actions, item, qty, share, level, group)
             else:
                 assert False, "Unexpected opening transaction"
 
