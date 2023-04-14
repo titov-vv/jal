@@ -83,9 +83,10 @@ class JalDB:
 
     # By default, db objects don't cache data. But if and object may cache db data we need to track it so parameter
     # 'cached' to be set to True. Such objects should implement invalidate_cache(), class_cache() methods also.
-    def __init__(self, cached=None):
+    def __init__(self, cached=None, **kwargs):
         if cached:
             self._instances_with_cache.append(self)
+        super().__init__()
 
     def tr(self, text):
         return QApplication.translate("JalDB", text)
