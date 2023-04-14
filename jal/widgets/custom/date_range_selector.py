@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal, Slot, QDateTime, Property
+from PySide6.QtCore import Qt, Signal, Slot, Property, QDateTime, QTimeZone
 from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QLabel, QDateEdit
 from jal.widgets.helpers import ManipulateDate
 
@@ -82,8 +82,8 @@ class DateRangeSelector(QWidget):
 
     def _update_range(self):
         self.changing_range = True
-        self.from_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._begin, spec=Qt.UTC))
-        self.to_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._end, spec=Qt.UTC))
+        self.from_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._begin, QTimeZone(0)))
+        self.to_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._end, QTimeZone(0)))
         self.changing_range = False
         self.changed.emit(self._begin, self._end)
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
-from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime
+from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime, QTimeZone
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
 from jal.widgets.reference_selector import AssetSelector, PeerSelector, CategorySelector, TagSelector
@@ -90,7 +90,7 @@ class TimestampDelegate(QStyledItemDelegate):
         if timestamp == '':
             QStyledItemDelegate.setEditorData(self, editor, index)
         else:
-            editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, spec=Qt.UTC))
+            editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, QTimeZone(0)))
 
     def setModelData(self, editor, model, index):
         timestamp = editor.dateTime().toSecsSinceEpoch()

@@ -25,7 +25,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
         self._hidden = []
         self._stretch = None
         self._default_values = {}   # To fill in default values for fields allowed to be NULL
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=self.connection())
+        super().__init__(parent=parent_view, db=self.connection())
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(self._table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)

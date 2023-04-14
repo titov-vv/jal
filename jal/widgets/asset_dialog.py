@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from PySide6.QtCore import Qt, Property, QDateTime, QLocale
+from PySide6.QtCore import Qt, Property, QDateTime, QTimeZone, QLocale
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit
 from jal.ui.ui_asset_dlg import Ui_AssetDialog
@@ -226,7 +226,7 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
             elif self.types[type_idx][1] == "date":
                 try:
                     timestamp = int(index.model().data(index, Qt.EditRole))
-                    editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, spec=Qt.UTC))
+                    editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, QTimeZone(0)))
                 except ValueError:
                     QStyledItemDelegate.setEditorData(self, editor, index)
             elif self.types[type_idx][1] == "float":
