@@ -19,19 +19,20 @@ from jal.net.helpers import get_web_data, post_web_data, isEnglish
 # ===================================================================================================================
 # UI dialog class
 # ===================================================================================================================
-class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
+class QuotesUpdateDialog(QDialog):
     def __init__(self, parent):
-        QDialog.__init__(self, parent=parent)
-        self.setupUi(self)
-        self.StartDateEdit.setDate(QDate.currentDate().addMonths(-1))
-        self.EndDateEdit.setDate(QDate.currentDate())
+        super().__init__(parent=parent)
+        self.ui = Ui_UpdateQuotesDlg()
+        self.ui.setupUi(self)
+        self.ui.StartDateEdit.setDate(QDate.currentDate().addMonths(-1))
+        self.ui.EndDateEdit.setDate(QDate.currentDate())
         sources = JalAsset.get_sources_list()
         for source in sources:
             if source != MarketDataFeed.NA:
-                item = QListWidgetItem(sources[source], self.SourcesList)
+                item = QListWidgetItem(sources[source], self.ui.SourcesList)
                 item.setData(Qt.UserRole, source)
                 item.setCheckState(Qt.Checked)
-                self.SourcesList.addItem(item)
+                self.ui.SourcesList.addItem(item)
 
         # center dialog with respect to parent window
         x = parent.x() + parent.width() / 2 - self.width() / 2
@@ -39,16 +40,16 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
         self.setGeometry(x, y, self.width(), self.height())
 
     def getStartDate(self):
-        return self.StartDateEdit.dateTime().toSecsSinceEpoch()
+        return self.ui.StartDateEdit.dateTime().toSecsSinceEpoch()
 
     def getEndDate(self):
-        return self.EndDateEdit.dateTime().toSecsSinceEpoch()
+        return self.ui.EndDateEdit.dateTime().toSecsSinceEpoch()
 
     # Returns a list that contains IDs of all checked data sources
     def getSourceList(self):
         checked = []
-        for item_index in range(self.SourcesList.count()):
-            item = self.SourcesList.item(item_index)
+        for item_index in range(self.ui.SourcesList.count()):
+            item = self.ui.SourcesList.item(item_index)
             if item.checkState() == Qt.Checked:
                 checked.append(item.data(Qt.UserRole))
         return checked
