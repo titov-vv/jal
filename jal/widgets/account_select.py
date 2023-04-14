@@ -55,29 +55,30 @@ class AccountButton(QPushButton):
 # Dialog for account selection
 # Constructor takes description to show and recent_account for default choice.
 # Selected account won't be equal to current_account
-class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
+class SelectAccountDialog(QDialog):
     def __init__(self, description, current_account, recent_account=None):
-        QDialog.__init__(self)
-        self.setupUi(self)
+        super().__init__()
+        self.ui = Ui_SelectAccountDlg()
+        self.ui.setupUi(self)
         self.account_id = recent_account
         self.store_account = False
         self.current_account = current_account
 
-        self.DescriptionLbl.setText(description)
+        self.ui.DescriptionLbl.setText(description)
         if self.account_id:
-            self.AccountWidget.selected_id = self.account_id
+            self.ui.AccountWidget.selected_id = self.account_id
         center_window(self)
 
     @Slot()
     def closeEvent(self, event):
-        self.account_id = self.AccountWidget.selected_id
-        self.store_account = self.ReuseAccount.isChecked()
-        if self.AccountWidget.selected_id == 0:
+        self.account_id = self.ui.AccountWidget.selected_id
+        self.store_account = self.ui.ReuseAccount.isChecked()
+        if self.ui.AccountWidget.selected_id == 0:
             QMessageBox().warning(None, self.tr("No selection"), self.tr("Invalid account selected"), QMessageBox.Ok)
             event.ignore()
             return
 
-        if self.AccountWidget.selected_id == self.current_account:
+        if self.ui.AccountWidget.selected_id == self.current_account:
             QMessageBox().warning(None, self.tr("No selection"), self.tr("Please select different account"),
                                   QMessageBox.Ok)
             event.ignore()
