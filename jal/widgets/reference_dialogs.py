@@ -163,7 +163,7 @@ class AssetListDialog(ReferenceDataDialog):
         self.DataView.setCurrentIndex(item_idx)
 
     def customEditor(self):
-        return AssetDialog()
+        return AssetDialog(self)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

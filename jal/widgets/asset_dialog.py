@@ -21,10 +21,11 @@ class AssetsListModel(AbstractReferenceListModel):
                          ("base_asset", self.tr("Base asset"))]
 
 
-class AssetDialog(QDialog, Ui_AssetDialog):
-    def __init__(self):
-        QDialog.__init__(self)
-        self.setupUi(self)
+class AssetDialog(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.ui = Ui_AssetDialog()
+        self.ui.setupUi(self)
         self._asset_id = -1
         # Custom model to allow common submit errors handling and error message display
         self._model = AssetsListModel("assets", self)
@@ -33,36 +34,36 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self._mapper.setModel(self._model)
         self._mapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
 
-        self._mapper.addMapping(self.NameEdit, self._model.fieldIndex("full_name"))
-        self._mapper.addMapping(self.isinEdit, self._model.fieldIndex("isin"))
-        self._mapper.addMapping(self.TypeCombo, self._model.fieldIndex("type_id"))
-        self._mapper.addMapping(self.CountryCombo, self._model.fieldIndex("country_id"))
-        self._mapper.addMapping(self.BaseAssetSelector, self._model.fieldIndex("base_asset"))
+        self._mapper.addMapping(self.ui.NameEdit, self._model.fieldIndex("full_name"))
+        self._mapper.addMapping(self.ui.isinEdit, self._model.fieldIndex("isin"))
+        self._mapper.addMapping(self.ui.TypeCombo, self._model.fieldIndex("type_id"))
+        self._mapper.addMapping(self.ui.CountryCombo, self._model.fieldIndex("country_id"))
+        self._mapper.addMapping(self.ui.BaseAssetSelector, self._model.fieldIndex("base_asset"))
 
         self._model.select()
 
-        self._symbols_model = SymbolsListModel("asset_tickers", self.SymbolsTable)
-        self.SymbolsTable.setModel(self._symbols_model)
+        self._symbols_model = SymbolsListModel("asset_tickers", self.ui.SymbolsTable)
+        self.ui.SymbolsTable.setModel(self._symbols_model)
         self._symbols_model.select()
         self._symbols_model.configureView()
 
-        self._data_model = ExtraDataModel("asset_data", self.DataTable)
-        self.DataTable.setModel(self._data_model)
+        self._data_model = ExtraDataModel("asset_data", self.ui.DataTable)
+        self.ui.DataTable.setModel(self._data_model)
         self._data_model.select()
         self._data_model.configureView()
 
-        self.AddSymbolButton.setIcon(load_icon("add.png"))
-        self.RemoveSymbolButton.setIcon(load_icon("delete.png"))
-        self.AddDataButton.setIcon(load_icon("add.png"))
-        self.RemoveDataButton.setIcon(load_icon("delete.png"))
-        self.OkButton.setIcon(load_icon("accept.png"))
-        self.CancelButton.setIcon(load_icon("cancel.png"))
+        self.ui.AddSymbolButton.setIcon(load_icon("add.png"))
+        self.ui.RemoveSymbolButton.setIcon(load_icon("delete.png"))
+        self.ui.AddDataButton.setIcon(load_icon("add.png"))
+        self.ui.RemoveDataButton.setIcon(load_icon("delete.png"))
+        self.ui.OkButton.setIcon(load_icon("accept.png"))
+        self.ui.CancelButton.setIcon(load_icon("cancel.png"))
 
-        self.TypeCombo.currentIndexChanged.connect(self.onTypeUpdate)
-        self.AddSymbolButton.clicked.connect(self.onAddSymbol)
-        self.RemoveSymbolButton.clicked.connect(self.onRemoveSymbol)
-        self.AddDataButton.clicked.connect(self.onAddData)
-        self.RemoveDataButton.clicked.connect(self.onRemoveData)
+        self.ui.TypeCombo.currentIndexChanged.connect(self.onTypeUpdate)
+        self.ui.AddSymbolButton.clicked.connect(self.onAddSymbol)
+        self.ui.RemoveSymbolButton.clicked.connect(self.onRemoveSymbol)
+        self.ui.AddDataButton.clicked.connect(self.onAddData)
+        self.ui.RemoveDataButton.clicked.connect(self.onRemoveData)
 
     def getSelectedId(self):
         return self._asset_id
@@ -108,32 +109,32 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         super().reject()
 
     def onTypeUpdate(self, _index):
-        if self.TypeCombo.key == PredefinedAsset.Derivative:
-            self.BaseAssetSelector.setEnabled(True)
-            self.isinEdit.setEnabled(False)
-        elif self.TypeCombo.key == PredefinedAsset.Money or self.TypeCombo.key == PredefinedAsset.Commodity:
-            self.BaseAssetSelector.setEnabled(False)
-            self.isinEdit.setEnabled(False)
+        if self.ui.TypeCombo.key == PredefinedAsset.Derivative:
+            self.ui.BaseAssetSelector.setEnabled(True)
+            self.ui.isinEdit.setEnabled(False)
+        elif self.ui.TypeCombo.key == PredefinedAsset.Money or self.ui.TypeCombo.key == PredefinedAsset.Commodity:
+            self.ui.BaseAssetSelector.setEnabled(False)
+            self.ui.isinEdit.setEnabled(False)
         else:
-            self.BaseAssetSelector.setEnabled(False)
-            self.isinEdit.setEnabled(True)
+            self.ui.BaseAssetSelector.setEnabled(False)
+            self.ui.isinEdit.setEnabled(True)
 
     def onAddSymbol(self):
-        idx = self.SymbolsTable.selectionModel().selection().indexes()
+        idx = self.ui.SymbolsTable.selectionModel().selection().indexes()
         current_index = idx[0] if idx else self._symbols_model.index(0, 0)
         self._symbols_model.addElement(current_index)
 
     def onRemoveSymbol(self):
-        idx = self.SymbolsTable.selectionModel().selection().indexes()
+        idx = self.ui.SymbolsTable.selectionModel().selection().indexes()
         current_index = idx[0] if idx else self._symbols_model.index(0, 0)
         self._symbols_model.removeElement(current_index)
 
     def onAddData(self):
-        idx = self.DataTable.selectionModel().selection().indexes()
+        idx = self.ui.DataTable.selectionModel().selection().indexes()
         current_index = idx[0] if idx else self._data_model.index(0, 0)
         self._data_model.addElement(current_index)
     def onRemoveData(self):
-        idx = self.DataTable.selectionModel().selection().indexes()
+        idx = self.ui.DataTable.selectionModel().selection().indexes()
         current_index = idx[0] if idx else self._data_model.index(0, 0)
         self._data_model.removeElement(current_index)
 
