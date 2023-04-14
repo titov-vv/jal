@@ -31,11 +31,12 @@ from jal.data_import.slips import ImportSlipDialog
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-class MainWindow(QMainWindow, Ui_JAL_MainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, language):
         super().__init__()
         self.running = False
-        self.setupUi(self)
+        self.ui = Ui_JAL_MainWindow()
+        self.ui.setupUi(self)
         self.restoreGeometry(base64.decodebytes(JalSettings().getValue('WindowGeometry', '').encode('utf-8')))
         self.restoreState(base64.decodebytes(JalSettings().getValue('WindowState', '').encode('utf-8')))
 
@@ -43,62 +44,62 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         # Customize Status bar and logs
         self.ProgressBar = QProgressBar(self)
-        self.StatusBar.addPermanentWidget(self.ProgressBar)
+        self.ui.StatusBar.addPermanentWidget(self.ProgressBar)
         self.ProgressBar.setVisible(False)
         self.ledger.setProgressBar(self, self.ProgressBar)
-        self.Logs.setStatusBar(self.StatusBar)
-        self.Logs.startLogging()
+        self.ui.Logs.setStatusBar(self.ui.StatusBar)
+        self.ui.Logs.startLogging()
 
         self.currentLanguage = language
 
         self.downloader = QuoteDownloader()
         self.statements = Statements(self)
-        self.reports = Reports(self, self.mdiArea)
+        self.reports = Reports(self, self.ui.mdiArea)
         self.backup = JalBackup(self, get_dbfilename(get_app_path()))
         self.estimator = None
         self.price_chart = None
 
-        self.actionImportSlipRU.setEnabled(dependency_present(['PySide6.QtMultimedia']))
+        self.ui.actionImportSlipRU.setEnabled(dependency_present(['PySide6.QtMultimedia']))
 
         self.actionAbout = QAction(text=self.tr("About"), parent=self)
-        self.MainMenu.addAction(self.actionAbout)
+        self.ui.MainMenu.addAction(self.actionAbout)
 
-        self.langGroup = QActionGroup(self.menuLanguage)
+        self.langGroup = QActionGroup(self.ui.menuLanguage)
         self.createLanguageMenu()
 
-        self.statementGroup = QActionGroup(self.menuStatement)
+        self.statementGroup = QActionGroup(self.ui.menuStatement)
         self.createStatementsImportMenu()
 
-        self.reportsGroup = QActionGroup(self.menuReports)
+        self.reportsGroup = QActionGroup(self.ui.menuReports)
         self.createReportsMenu()
 
         self.setWindowIcon(load_icon("jal.png"))
 
         self.connect_signals_and_slots()
 
-        self.actionOperations.trigger()
+        self.ui.actionOperations.trigger()
 
     def connect_signals_and_slots(self):
-        self.actionExit.triggered.connect(QApplication.instance().quit)
-        self.actionOperations.triggered.connect(self.createOperationsWindow)
+        self.ui.actionExit.triggered.connect(QApplication.instance().quit)
+        self.ui.actionOperations.triggered.connect(self.createOperationsWindow)
         self.actionAbout.triggered.connect(self.showAboutWindow)
         self.langGroup.triggered.connect(self.onLanguageChanged)
         self.statementGroup.triggered.connect(self.statements.load)
         self.reportsGroup.triggered.connect(self.reports.show)
-        self.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
-        self.actionImportSlipRU.triggered.connect(self.importSlip)
-        self.actionBackup.triggered.connect(self.backup.create)
-        self.actionRestore.triggered.connect(self.backup.restore)
-        self.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
-        self.actionAccounts.triggered.connect(partial(self.onDataDialog, "accounts"))
-        self.actionAssets.triggered.connect(partial(self.onDataDialog, "assets"))
-        self.actionPeers.triggered.connect(partial(self.onDataDialog, "agents"))
-        self.actionCategories.triggered.connect(partial(self.onDataDialog, "categories"))
-        self.actionTags.triggered.connect(partial(self.onDataDialog, "tags"))
-        self.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
-        self.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, "base_currency"))
-        self.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInMDI, self.mdiArea))
-        self.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInMDI, self.mdiArea))
+        self.ui.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
+        self.ui.actionImportSlipRU.triggered.connect(self.importSlip)
+        self.ui.actionBackup.triggered.connect(self.backup.create)
+        self.ui.actionRestore.triggered.connect(self.backup.restore)
+        self.ui.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
+        self.ui.actionAccounts.triggered.connect(partial(self.onDataDialog, "accounts"))
+        self.ui.actionAssets.triggered.connect(partial(self.onDataDialog, "assets"))
+        self.ui.actionPeers.triggered.connect(partial(self.onDataDialog, "agents"))
+        self.ui.actionCategories.triggered.connect(partial(self.onDataDialog, "categories"))
+        self.ui.actionTags.triggered.connect(partial(self.onDataDialog, "tags"))
+        self.ui.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
+        self.ui.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, "base_currency"))
+        self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInMDI, self.ui.mdiArea))
+        self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInMDI, self.ui.mdiArea))
         self.downloader.download_completed.connect(self.updateWidgets)
         self.ledger.updated.connect(self.updateWidgets)
         self.statements.load_completed.connect(self.onStatementImport)
@@ -133,7 +134,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def closeEvent(self, event):
         JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
         JalSettings().setValue('WindowState', base64.encodebytes(self.saveState().data()).decode('utf-8'))
-        self.Logs.stopLogging()
+        self.ui.Logs.stopLogging()
         super().closeEvent(event)
 
     def createLanguageMenu(self):
@@ -147,7 +148,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             action = QAction(language_icon, language, self)
             action.setCheckable(True)
             action.setData(language_code)
-            self.menuLanguage.addAction(action)
+            self.ui.menuLanguage.addAction(action)
             self.langGroup.addAction(action)
 
     @Slot()
@@ -173,7 +174,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             else:
                 action = QAction(statement_name, self)
             action.setData(i)
-            self.menuStatement.addAction(action)
+            self.ui.menuStatement.addAction(action)
             self.statementGroup.addAction(action)
 
     # Create menu entry for all known reports based on self.reports.sources values
@@ -184,17 +185,17 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             action.setData(i)
             if report['group']:
                 if report['group'] not in groups:
-                    groups[report['group']] = QMenu(report['group'], self.menuReports)
-                    self.menuReports.addAction(groups[report['group']].menuAction())
+                    groups[report['group']] = QMenu(report['group'], self.ui.menuReports)
+                    self.ui.menuReports.addAction(groups[report['group']].menuAction())
                 submenu = groups[report['group']]
                 submenu.addAction(action)
             else:
-                self.menuReports.addAction(action)
+                self.ui.menuReports.addAction(action)
             self.reportsGroup.addAction(action)
 
     @Slot()
     def createOperationsWindow(self):
-        operations_window = self.mdiArea.addSubWindow(OperationsWidget(self), maximized=True)
+        operations_window = self.ui.mdiArea.addSubWindow(OperationsWidget(self), maximized=True)
         operations_window.widget().dbUpdated.connect(self.ledger.rebuild)
 
     @Slot()
@@ -215,8 +216,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     def showProgressBar(self, visible=False):
         self.ProgressBar.setVisible(visible)
-        self.centralwidget.setEnabled(not visible)
-        self.MainMenu.setEnabled(not visible)
+        self.ui.centralwidget.setEnabled(not visible)
+        self.ui.MainMenu.setEnabled(not visible)
 
     @Slot()
     def importSlip(self):
@@ -250,7 +251,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     @Slot()
     def updateWidgets(self):
-        for window in self.mdiArea.subWindowList():
+        for window in self.ui.mdiArea.subWindowList():
             window.widget().refresh()
 
     @Slot()
