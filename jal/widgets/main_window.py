@@ -33,7 +33,7 @@ from jal.data_import.slips import ImportSlipDialog
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def __init__(self, language):
-        QMainWindow.__init__(self, None)
+        super().__init__()
         self.running = False
         self.setupUi(self)
         self.restoreGeometry(base64.decodebytes(JalSettings().getValue('WindowGeometry', '').encode('utf-8')))

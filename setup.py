@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 def read(rel_path: str) -> str:
     here = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(here, rel_path)) as fp:
+    with open(os.path.join(here, rel_path), 'r', encoding='utf-8') as fp:
         return fp.read()
 
 
@@ -37,7 +37,7 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python"
     ],
-    install_requires=["lxml", "pandas", "PySide6>=6.2.0", "requests", "XlsxWriter", "jsonschema", "sqlparse"],
+    install_requires=["lxml", "pandas", "PySide6>=6.2.0,<6.5.0", "requests", "XlsxWriter", "jsonschema", "sqlparse"],
     entry_points={
         'console_scripts': ['jal=jal.jal:main', ]
     },

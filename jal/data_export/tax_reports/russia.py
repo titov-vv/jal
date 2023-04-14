@@ -14,7 +14,7 @@ class TaxesRussia(TaxReport):
 
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
-        CorporateAction.Split: "Сплит {old} {before} в {after}",
+        CorporateAction.Split: "Сплит {old} {before} в {after} {new}",
         CorporateAction.SpinOff: "Выделение компании {new} из {old}; доля выделяемого актива {share:.2f}%",
         CorporateAction.Merger: "Реорганизация компании, конвертация {share:.2f}% стоимости {before} {old} в {after} {new}",
         CorporateAction.Delisting: "Делистинг"
@@ -519,7 +519,7 @@ class TaxesRussia(TaxReport):
             if item.open_operation().type() == LedgerTransaction.Trade:
                 qty = self.output_purchase(actions, item.open_operation(), qty, share, level, group)
             elif item.open_operation().type() == LedgerTransaction.CorporateAction:
-                self.proceed_corporate_action(actions, trade, qty, share, level, group)
+                self.proceed_corporate_action(actions, item, qty, share, level, group)
             else:
                 assert False, "Unexpected opening transaction"
 

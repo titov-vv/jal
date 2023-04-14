@@ -7,11 +7,10 @@ from decimal import Decimal
 from lxml import etree
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import PredefinedCategory, PredefinedAsset
+from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ManipulateDate, ts2dt, ts2d
 from jal.db.helpers import format_decimal
 from jal.db.account import JalAccount
-from jal.db.asset import JalAsset
 from jal.db.operations import Dividend
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML

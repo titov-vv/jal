@@ -127,7 +127,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # If 'debug_info' is given as parameter it is saved in JAL main directory text file appened with timestamp
     def save_debug_info(self, **kwargs):
         if 'debug_info' in kwargs:
-            dump_name = get_app_path() + os.sep + Setup.STATEMENT_DUMP + datetime.now().strftime("%s") + ".txt"
+            dump_name = get_app_path() + os.sep + Setup.STATEMENT_DUMP + datetime.now().strftime("%y-%m-%d_%H-%M-%S") + ".txt"
             try:
                 with open(dump_name, 'w') as dump_file:
                     dump_file.write(f"JAL statement dump, {datetime.now().strftime('%y/%m/%d %H:%M:%S')}\n")

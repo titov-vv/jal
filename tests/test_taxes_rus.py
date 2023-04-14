@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
-from tests.helpers import create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
+from tests.helpers import d2t, create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
     create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
@@ -353,6 +353,69 @@ def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
     # }
     # parameters = {
     #     "period": "01.01.2021 - 31.12.2021",
+    #     "account": "TEST U7654321 (USD)",
+    #     "currency": "USD",
+    #     "broker_name": "IBKR",
+    #     "broker_iso_country": "840"
+    # }
+    # for section in tax_report:
+    #     if section not in templates:
+    #         continue
+    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
+    # reports_xls.save()
+
+# Load double IBKR statement with mergers and spin-offs
+def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
+    with open(data_path + 'ibkr_merger_spinoff.json', 'r', encoding='utf-8') as json_file:
+        statement = json.load(json_file)
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_merger_spinoff.xml', index=0)   # Load statement for the first year
+    assert IBKR._data == statement[0]
+
+    IBKR.validate_format()
+    IBKR.match_db_ids()
+    IBKR.import_into_db()
+
+    usd_rates = [
+        (d2t(210905), 72.8545), (d2t(210907), 72.9538), (d2t(210909), 73.4421), (d2t(211126), 74.6004),
+        (d2t(211201), 74.8926), (d2t(220518), 63.5428), (d2t(221130), 61.0742)
+    ]
+    create_quotes(2, 1, usd_rates)
+
+    # Adjust share of resulting assets:
+    # 100% NTRP -> 100% PTPI
+    action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 1)
+    action.set_result_share(JalAsset(5), Decimal('1.0'))
+    # 100% NTRP -> 100% NTRP + 0% SNPX
+    action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 2)
+    action.set_result_share(JalAsset(4), Decimal('1.0'))
+
+    ledger = Ledger()  # Build ledger to have everything in place
+    ledger.rebuild(from_timestamp=0)
+
+    IBKR.load(data_path + 'ibkr_merger_spinoff.xml', index=1)  # Load statement for the second year
+    assert IBKR._data == statement[1]
+
+    IBKR.validate_format()
+    IBKR.match_db_ids()
+    IBKR.import_into_db()
+
+    ledger.rebuild(from_timestamp=0)  # re-build after second year loading
+
+    taxes = TaxesRussia()
+    tax_report = taxes.prepare_tax_report(2022, 1)
+
+    with open(data_path + 'taxes_merger_spinoff_rus.json', 'r', encoding='utf-8') as json_file:
+        report = json.load(json_file)
+    json_decimal2float(tax_report)
+    assert tax_report == report
+
+    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
+    # templates = {
+    #     "Корп.события": "tax_rus_corporate_actions.json",
+    # }
+    # parameters = {
+    #     "period": "01.01.2022 - 31.12.2022",
     #     "account": "TEST U7654321 (USD)",
     #     "currency": "USD",
     #     "broker_name": "IBKR",

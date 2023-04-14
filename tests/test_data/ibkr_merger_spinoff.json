@@ -1,0 +1,78 @@
+[
+  {
+    "period": [1609459200, 1640995199],
+    "accounts": [
+      {"id": 1, "number": "U7654321", "currency": 1, "precision": 10, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89}
+    ],
+    "assets": [
+      {"id": 1, "type": "money", "name": ""},
+      {"id": 2, "type": "stock", "name": "NEUROTROPE INC", "isin": "US64129T2078"},
+      {"id": 3, "type": "stock", "name": "PETROS PHARMACEUTICALS INC", "isin": "US71678J1007"},
+      {"id": 4, "type": "stock", "name": "SYNAPTOGENIX INC", "isin": "US87167T1025"}
+    ],
+    "symbols": [
+      {"id": 1, "asset": 1, "symbol": "USD"},
+      {"id": 2, "asset": 2, "symbol": "NTRP", "currency": 1, "note": "NASDAQ"},
+      {"id": 3, "asset": 3, "symbol": "PTPI", "currency": 1, "note": "NASDAQ"},
+      {"id": 4, "asset": 4, "symbol": "SNPX", "currency": 1, "note": "PINK"}
+    ],
+    "assets_data": [
+      {"id": 1, "asset": 2, "reg_number": "64129T207"},
+      {"id": 2, "asset": 3, "reg_number": "71678J100"},
+      {"id": 3, "asset": 4, "reg_number": "87167T102"}
+    ],
+    "trades": [
+      {"id": 1, "number": "2543065342", "timestamp": 1630844624, "settlement": 1631145600, "account": 1, "asset": 2, "quantity": 100.0, "price": 4.74, "fee": 1.0},
+      {"id": 2, "number": "2543065352", "timestamp": 1630844625, "settlement": 1631145600, "account": 1, "asset": 2, "quantity": 10.0, "price": 4.74, "fee": 0.0}
+    ],
+    "corporate_actions": [
+      {"id": 1, "type": "merger", "account": 1, "timestamp": 1638390300, "number": "14466531593", "asset": 2, "quantity": 110.0,
+       "outcome": [{"asset": 3, "quantity": 22.0, "share": 0.0}], "description": "NTRP(US64129T2078) MERGED(Acquisition) WITH US71678J1007 1 FOR 5 (PTPI, PETROS PHARMACEUTICALS INC, US71678J1007)"},
+      {"id": 2, "type": "spin-off", "account": 1, "timestamp": 1637958300, "number": "14533718279", "asset": 2, "quantity": 110,
+       "outcome": [{"asset": 2, "quantity": 110, "share": 0.0}, {"asset": 4, "quantity": 22.0, "share": 0.0}], "description": "NTRP(US64129T2078) SPINOFF  1 FOR 5 (SNPX, SYNAPTOGENIX INC, US87167T1025)"}
+    ],
+    "asset_payments": [],
+    "income_spending": [],
+    "transfers": []
+  },
+  {
+    "period": [1640995200, 1672531199],
+    "accounts": [
+      {"id": 1, "number": "U7654321", "currency": 1,  "precision": 10, "cash_begin": 123.45, "cash_end": 100000.1, "cash_end_settled": 100000.1}
+    ],
+    "assets": [
+      {"id": 1, "type": "money", "name": ""},
+      {"id": 2, "type": "stock", "name": "SYNAPTOGENIX INC", "isin": "US87167T2015"},
+      {"id": 3, "type": "stock", "name": "SYNAPTOGENIX INC", "isin": "US87167T1025"},
+      {"id": 4, "type": "stock", "name": "PETROS PHARMACEUTICALS INC", "isin": "US71678J2096"},
+      {"id": 5, "type": "stock", "name": "PETROS PHARMACEUTICALS INC", "isin": "US71678J1007"}
+    ],
+    "symbols": [
+      {"id": 1, "asset": 1, "symbol": "USD"},
+      {"id": 2, "asset": 2, "symbol": "SNPX", "currency": 1, "note": "NASDAQ"},
+      {"id": 3, "asset": 3, "symbol": "SNPX", "currency": 1, "note": "PINK"},
+      {"id": 4, "asset": 4, "symbol": "PTPI", "currency": 1, "note": "NASDAQ"},
+      {"id": 5, "asset": 5, "symbol": "PTPI", "currency": 1, "note": "NASDAQ"},
+      {"id": 6, "asset": 2, "symbol": "SNPXD", "currency": 1, "note": "PINK"}
+    ],
+    "assets_data": [
+      {"id": 1, "asset": 2, "reg_number": "87167T201"},
+      {"id": 2, "asset": 3, "reg_number": "87167T102"},
+      {"id": 3, "asset": 4, "reg_number": "71678J209"},
+      {"id": 4, "asset": 5, "reg_number": "71678J100"}
+    ],
+    "trades": [
+      {"id": 1,  "number": "", "timestamp": 1652905500, "settlement": 1652905500, "account": 1, "asset": 2, "quantity": -0.5, "price": 6.24, "fee": 0.0},
+      {"id": 2, "number": "", "timestamp": 1669839900, "settlement": 1669839900, "account": 1, "asset": 4, "quantity": -0.2, "price": 4.111, "fee": 0.0}
+    ],
+    "corporate_actions": [
+      {"id": 1, "type": "split", "account": 1, "timestamp": 1652905500, "number": "16441206180", "asset": 3, "quantity": 22.0,
+       "outcome": [{"asset": 2, "quantity": 5.5, "share": 1.0}], "description": "SNPX(US87167T1025) SPLIT 1 FOR 4 (SNPXD, SYNAPTOGENIX INC, US87167T2015)"},
+      {"id": 2, "type": "split", "account": 1, "timestamp": 1669839900, "number": "22349072094", "asset": 5, "quantity": 22.0,
+       "outcome": [{"asset": 4, "quantity": 2.2, "share": 1.0}], "description": "PTPI(US71678J1007) SPLIT 1 FOR 10 (PTPI, PETROS PHARMACEUTICALS INC, US71678J2096)"}
+    ],
+    "asset_payments": [],
+    "income_spending": [],
+    "transfers": []
+  }
+]
