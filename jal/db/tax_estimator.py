@@ -73,7 +73,7 @@ class TaxEstimatorModel(QAbstractTableModel):
         self._view.horizontalHeader().setFont(font)
 
 
-class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
+class TaxEstimator(MdiWidget):
     TAX_RATE = {
         'pt': Decimal('0.28'),
         'ru': Decimal('0.13')
@@ -84,8 +84,9 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
     }
 
     def __init__(self, country_code, account_id, asset_id, asset_qty, parent=None):
-        super(TaxEstimator, self).__init__(parent)
-        self.setupUi(self)
+        super().__init__(parent)
+        self.ui = Ui_TaxEstimationDialog()
+        self.ui.setupUi(self)
 
         self.country = JalCountry(data={'code': country_code}, search=True)
         self.account_id = account_id
@@ -108,11 +109,11 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
         if self.dataframe is None:
             return
 
-        self.QuoteLbl.setText(f"{self.quote:.4f}")
-        self.RateLbl.setText(f"{self.rate:.4f} {self.currency_name}/{self.tax_currency_symbol}")
+        self.ui.QuoteLbl.setText(f"{self.quote:.4f}")
+        self.ui.RateLbl.setText(f"{self.rate:.4f} {self.currency_name}/{self.tax_currency_symbol}")
 
-        self.model = TaxEstimatorModel(self.DealsView, self.dataframe, self.currency_name, self.tax_currency_symbol)
-        self.DealsView.setModel(self.model)
+        self.model = TaxEstimatorModel(self.ui.DealsView, self.dataframe, self.currency_name, self.tax_currency_symbol)
+        self.ui.DealsView.setModel(self.model)
         self.model.configureView()
         self.ready = True
 
