@@ -14,22 +14,23 @@ from jal.db.operations import LedgerTransaction
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class OperationsWidget(MdiWidget, Ui_OperationsWidget):
+class OperationsWidget(MdiWidget):
     dbUpdated = Signal()
 
     def __init__(self, parent=None):
-        MdiWidget.__init__(self, parent)
-        self.setupUi(self)
+        super().__init__(parent)
+        self.ui = Ui_OperationsWidget()
+        self.ui.setupUi(self)
 
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
         # Set icons
-        self.NewOperationBtn.setIcon(load_icon("new.png"))
-        self.CopyOperationBtn.setIcon(load_icon("copy.png"))
-        self.DeleteOperationBtn.setIcon(load_icon("delete.png"))
+        self.ui.NewOperationBtn.setIcon(load_icon("new.png"))
+        self.ui.CopyOperationBtn.setIcon(load_icon("copy.png"))
+        self.ui.DeleteOperationBtn.setIcon(load_icon("delete.png"))
 
         # Operations view context menu
-        self.contextMenu = QMenu(self.OperationsTableView)
+        self.contextMenu = QMenu(self.ui.OperationsTableView)
         self.actionReconcile = QAction(load_icon("reconcile.png"), self.tr("Reconcile"), self)
         self.actionCopy = QAction(load_icon("copy.png"), self.tr("Copy"), self)
         self.actionDelete = QAction(load_icon("delete.png"), self.tr("Delete"), self)
@@ -39,51 +40,51 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.contextMenu.addAction(self.actionDelete)
 
         # Customize UI configuration
-        self.balances_model = BalancesModel(self.BalancesTableView)
-        self.BalancesTableView.setModel(self.balances_model)
+        self.balances_model = BalancesModel(self.ui.BalancesTableView)
+        self.ui.BalancesTableView.setModel(self.balances_model)
         self.balances_model.configureView()
 
-        self.operations_model = OperationsModel(self.OperationsTableView)
-        self.operations_filtered_model = QSortFilterProxyModel(self.OperationsTableView)
+        self.operations_model = OperationsModel(self.ui.OperationsTableView)
+        self.operations_filtered_model = QSortFilterProxyModel(self.ui.OperationsTableView)
         self.operations_filtered_model.setSourceModel(self.operations_model)
         self.operations_filtered_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.OperationsTableView.setModel(self.operations_filtered_model)
+        self.ui.OperationsTableView.setModel(self.operations_filtered_model)
         self.operations_model.configureView()
-        self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.connect_signals_and_slots()
 
         self.NewOperationMenu = QMenu()
-        self.OperationsTabs.dbUpdated.connect(self.dbUpdated)
-        self.OperationsTabs.dbUpdated.connect(self.operations_model.refresh)
-        for key, name in self.OperationsTabs.get_operations_list().items():
+        self.ui.OperationsTabs.dbUpdated.connect(self.dbUpdated)
+        self.ui.OperationsTabs.dbUpdated.connect(self.operations_model.refresh)
+        for key, name in self.ui.OperationsTabs.get_operations_list().items():
             self.NewOperationMenu.addAction(name, partial(self.createOperation, key))
-        self.NewOperationBtn.setMenu(self.NewOperationMenu)
+        self.ui.NewOperationBtn.setMenu(self.NewOperationMenu)
 
         # Setup balance and holdings parameters
         current_time = QDateTime.currentDateTime()
         current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
-        self.BalanceDate.setDateTime(current_time)
-        self.BalancesCurrencyCombo.setIndex(JalAsset.get_base_currency())
+        self.ui.BalanceDate.setDateTime(current_time)
+        self.ui.BalancesCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
-        self.OperationsTableView.selectRow(0)
-        self.DateRange.setCurrentIndex(0)
+        self.ui.OperationsTableView.selectRow(0)
+        self.ui.DateRange.setCurrentIndex(0)
 
     def connect_signals_and_slots(self):
         self.actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
-        self.BalanceDate.dateChanged.connect(self.BalancesTableView.model().setDate)
-        self.BalancesCurrencyCombo.changed.connect(self.BalancesTableView.model().setCurrency)
-        self.BalancesTableView.doubleClicked.connect(self.OnBalanceDoubleClick)
-        self.ShowInactiveCheckBox.stateChanged.connect(self.BalancesTableView.model().toggleActive)
-        self.DateRange.changed.connect(self.operations_model.setDateRange)
-        self.ChooseAccountBtn.changed.connect(self.operations_model.setAccount)
-        self.SearchString.editingFinished.connect(self.updateOperationsFilter)
-        self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
-        self.OperationsTableView.customContextMenuRequested.connect(self.onOperationContextMenu)
-        self.DeleteOperationBtn.clicked.connect(self.deleteOperation)
+        self.ui.BalanceDate.dateChanged.connect(self.ui.BalancesTableView.model().setDate)
+        self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTableView.model().setCurrency)
+        self.ui.BalancesTableView.doubleClicked.connect(self.OnBalanceDoubleClick)
+        self.ui.ShowInactiveCheckBox.stateChanged.connect(self.ui.BalancesTableView.model().toggleActive)
+        self.ui.DateRange.changed.connect(self.operations_model.setDateRange)
+        self.ui.ChooseAccountBtn.changed.connect(self.operations_model.setAccount)
+        self.ui.SearchString.editingFinished.connect(self.updateOperationsFilter)
+        self.ui.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
+        self.ui.OperationsTableView.customContextMenuRequested.connect(self.onOperationContextMenu)
+        self.ui.DeleteOperationBtn.clicked.connect(self.deleteOperation)
         self.actionDelete.triggered.connect(self.deleteOperation)
-        self.CopyOperationBtn.clicked.connect(self.OperationsTabs.copy_operation)
-        self.actionCopy.triggered.connect(self.OperationsTabs.copy_operation)
+        self.ui.CopyOperationBtn.clicked.connect(self.ui.OperationsTabs.copy_operation)
+        self.actionCopy.triggered.connect(self.ui.OperationsTabs.copy_operation)
 
     @Slot()
     def deleteOperation(self):
@@ -92,45 +93,45 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return
         rows = []
-        for index in self.OperationsTableView.selectionModel().selectedRows():
+        for index in self.ui.OperationsTableView.selectionModel().selectedRows():
             rows.append(index.row())
         self.operations_model.deleteRows(rows)
         self.dbUpdated.emit()
 
     @Slot()
     def createOperation(self, operation_type):
-        self.OperationsTabs.new_operation(operation_type, self.operations_model.getAccount())
+        self.ui.OperationsTabs.new_operation(operation_type, self.operations_model.getAccount())
 
     @Slot()
     def updateOperationsFilter(self):
-        self.OperationsTableView.model().setFilterFixedString(self.SearchString.text())
-        self.OperationsTableView.model().setFilterKeyColumn(-1)
+        self.ui.OperationsTableView.model().setFilterFixedString(self.ui.SearchString.text())
+        self.ui.OperationsTableView.model().setFilterKeyColumn(-1)
 
     @Slot()
     def OnBalanceDoubleClick(self, index):
-        self.ChooseAccountBtn.account_id = index.model().getAccountId(index.row())
+        self.ui.ChooseAccountBtn.account_id = index.model().getAccountId(index.row())
 
     @Slot()
     def OnOperationChange(self, selected, _deselected):
         op_type = LedgerTransaction.NA
         op_id = 0
-        if len(self.OperationsTableView.selectionModel().selectedRows()) == 1:
+        if len(self.ui.OperationsTableView.selectionModel().selectedRows()) == 1:
             idx = selected.indexes()
             if idx:
                 selected_row = self.operations_filtered_model.mapToSource(idx[0]).row()
                 op_type, op_id = self.operations_model.get_operation(selected_row)
-        self.OperationsTabs.show_operation(op_type, op_id)
+        self.ui.OperationsTabs.show_operation(op_type, op_id)
 
     @Slot()
     def onOperationContextMenu(self, pos):
-        self.current_index = self.OperationsTableView.indexAt(pos)
-        if len(self.OperationsTableView.selectionModel().selectedRows()) != 1:
+        self.current_index = self.ui.OperationsTableView.indexAt(pos)
+        if len(self.ui.OperationsTableView.selectionModel().selectedRows()) != 1:
             self.actionReconcile.setEnabled(False)
             self.actionCopy.setEnabled(False)
         else:
             self.actionReconcile.setEnabled(True)
             self.actionCopy.setEnabled(True)
-        self.contextMenu.popup(self.OperationsTableView.viewport().mapToGlobal(pos))
+        self.contextMenu.popup(self.ui.OperationsTableView.viewport().mapToGlobal(pos))
 
     @Slot()
     def reconcileAtCurrentOperation(self):

@@ -37,7 +37,7 @@ class CategoryReport(QObject):
 # ----------------------------------------------------------------------------------------------------------------------
 class CategoryReportWindow(MdiWidget, Ui_CategoryReportWidget):
     def __init__(self, parent: Reports, settings: dict = None):
-        MdiWidget.__init__(self, parent.mdi_area())
+        super().__init__(parent.mdi_area())
         self.setupUi(self)
         self._parent = parent
 
