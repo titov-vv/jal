@@ -139,24 +139,25 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
                               f"\n{traceback.format_exc()}")
 
 
-class MoneyFlowWidget(MdiWidget, Ui_MoneyFlowWidget):
-    def __init__(self):
-        MdiWidget.__init__(self)
-        self.setupUi(self)
+class MoneyFlowWidget(MdiWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_MoneyFlowWidget()
+        self.ui.setupUi(self)
 
-        self.Year.setValue(datetime.now().year - 1)  # Set previous year by default
-        self.XlsSelectBtn.pressed.connect(self.OnFileBtn)
-        self.SaveButton.pressed.connect(self.SaveReport)
+        self.ui.Year.setValue(datetime.now().year - 1)  # Set previous year by default
+        self.ui.XlsSelectBtn.pressed.connect(self.OnFileBtn)
+        self.ui.SaveButton.pressed.connect(self.SaveReport)
 
     # Displays tax widget in a given MDI area.
     # It is implemented as a separate static method in order to prevent unexpected object deletion
     @staticmethod
     def showInMDI(parent_mdi):
-        parent_mdi.addSubWindow(MoneyFlowWidget(), maximized=False)
+        parent_mdi.addSubWindow(MoneyFlowWidget(parent_mdi), maximized=False)
 
     @Slot()
     def OnFileBtn(self):
-        selector = (self.tr("Save money flow report to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.XlsFileName)
+        selector = (self.tr("Save money flow report to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.ui.XlsFileName)
         filename = QFileDialog.getSaveFileName(self, selector[0], ".", selector[1])
         if filename[0]:
             if filename[1] == selector[1] and filename[0][-len(selector[2]):] != selector[2]:
@@ -165,10 +166,10 @@ class MoneyFlowWidget(MdiWidget, Ui_MoneyFlowWidget):
                 selector[3].setText(filename[0])
 
     def getYear(self):
-        return self.Year.value()
+        return self.ui.Year.value()
 
     def getXlsFilename(self):
-        return self.XlsFileName.text()
+        return self.ui.XlsFileName.text()
 
     year = Property(int, fget=getYear)
     xls_filename = Property(str, fget=getXlsFilename)
