@@ -296,34 +296,35 @@ class DealsReport(QObject):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class DealsReportWindow(MdiWidget, Ui_DealsReportWidget):
+class DealsReportWindow(MdiWidget):
     def __init__(self, parent: Reports, settings: dict = None):
-        MdiWidget.__init__(self, parent.mdi_area())
-        self.setupUi(self)
+        super().__init__(parent.mdi_area())
+        self.ui = Ui_DealsReportWidget()
+        self.ui.setupUi(self)
         self._parent = parent
 
         # Add available groupings
-        self.GroupCombo.addItem(self.tr("<None>"), "")
-        self.GroupCombo.addItem(self.tr("Asset"), "symbol")
-        self.GroupCombo.addItem(self.tr("Close"), "close_date")
-        self.GroupCombo.addItem(self.tr("Asset - Open - Close"), "symbol;open_date;close_date")
-        self.GroupCombo.addItem(self.tr("Open - Close"), "open_date;close_date")
-        self.GroupCombo.addItem(self.tr("Close - Open"), "close_date;open_date")
+        self.ui.GroupCombo.addItem(self.tr("<None>"), "")
+        self.ui.GroupCombo.addItem(self.tr("Asset"), "symbol")
+        self.ui.GroupCombo.addItem(self.tr("Close"), "close_date")
+        self.ui.GroupCombo.addItem(self.tr("Asset - Open - Close"), "symbol;open_date;close_date")
+        self.ui.GroupCombo.addItem(self.tr("Open - Close"), "open_date;close_date")
+        self.ui.GroupCombo.addItem(self.tr("Close - Open"), "close_date;open_date")
 
-        self.trades_model = ClosedTradesModel(self.ReportTreeView)
-        self.ReportTreeView.setModel(self.trades_model)
+        self.trades_model = ClosedTradesModel(self.ui.ReportTreeView)
+        self.ui.ReportTreeView.setModel(self.trades_model)
 
         self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
-        self.ReportAccountBtn.changed.connect(self.onAccountChange)
-        self.ReportRange.changed.connect(self.ReportTreeView.model().setDatesRange)
-        self.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
+        self.ui.ReportAccountBtn.changed.connect(self.onAccountChange)
+        self.ui.ReportRange.changed.connect(self.ui.ReportTreeView.model().setDatesRange)
+        self.ui.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
 
     @Slot()
     def onAccountChange(self):
-        self.ReportTreeView.model().setAccount(self.ReportAccountBtn.account_id)
+        self.ui.ReportTreeView.model().setAccount(self.ui.ReportAccountBtn.account_id)
 
     @Slot()
     def onGroupingChange(self, idx):
-        self.ReportTreeView.model().setGrouping(self.GroupCombo.itemData(idx))
+        self.ui.ReportTreeView.model().setGrouping(self.ui.GroupCombo.itemData(idx))
