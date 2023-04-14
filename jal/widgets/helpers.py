@@ -88,6 +88,8 @@ def month_list(begin: int, end: int) -> list:
 # ----------------------------------------------------------------------------------------------------------------------
 # Function takes an image and searches for QR in it. Content of first found QR is returned. Otherwise - empty string.
 def decodeQR(qr_image: QImage) -> str:
+    if qr_image.isNull():
+        return ''
     if not dependency_present(['pyzbar']):
         logging.warning("Package pyzbar not found for QR recognition.")
         return ''
