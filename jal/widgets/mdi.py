@@ -9,7 +9,7 @@ class MdiWidget(QWidget):
     onClose = Signal(QWidget)
 
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        super().__init__(parent)
 
     @Slot()
     def closeEvent(self, event):
