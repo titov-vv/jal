@@ -1,3 +1,4 @@
+import decimal
 from functools import partial
 from decimal import Decimal
 
@@ -116,7 +117,7 @@ class ProfitLossModel(QAbstractTableModel):
                 row_name = f"{month['year']} {self.month_name[month['month'] - 1]}"
             try:
                 rel_change = ((values['money'] + values['assets']) - (money_p + assets_p)) / (money_p + assets_p)
-            except ZeroDivisionError:
+            except (ZeroDivisionError, decimal.InvalidOperation):
                 rel_change = Decimal('0')
             data_row = [row_name, values['money'], values['transfers'], values['dividends'], values['interest'],
                         values['fees'], values['taxes'], values['assets'], values['p&l'],
