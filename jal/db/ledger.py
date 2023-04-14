@@ -17,16 +17,17 @@ from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Class to display window with ledger rebuild configuration options
-class RebuildDialog(QDialog, Ui_ReBuildDialog):
+class RebuildDialog(QDialog):
     def __init__(self, parent, frontier):
-        QDialog.__init__(self)
-        self.setupUi(self)
+        super().__init__(parent)
+        self.ui = Ui_ReBuildDialog()
+        self.ui.setupUi(self)
 
-        self.LastRadioButton.toggle()   # Set default option selection
+        self.ui.LastRadioButton.toggle()   # Set default option selection
         self.frontier = frontier
         frontier_text = ts2d(frontier)
-        self.FrontierDateLabel.setText(frontier_text)
-        self.CustomDateEdit.setDate(QDate.currentDate())
+        self.ui.FrontierDateLabel.setText(frontier_text)
+        self.ui.CustomDateEdit.setDate(QDate.currentDate())
 
         # center dialog with respect to parent window
         x = parent.x() + parent.width()/2 - self.width()/2
@@ -34,13 +35,13 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
         self.setGeometry(x, y, self.width(), self.height())
 
     def isFastAndDirty(self):
-        return self.FastAndDirty.isChecked()
+        return self.ui.FastAndDirty.isChecked()
 
     def getTimestamp(self):
-        if self.LastRadioButton.isChecked():
+        if self.ui.LastRadioButton.isChecked():
             return self.frontier
-        elif self.DateRadionButton.isChecked():
-            return self.CustomDateEdit.dateTime().toSecsSinceEpoch()
+        elif self.ui.DateRadionButton.isChecked():
+            return self.ui.CustomDateEdit.dateTime().toSecsSinceEpoch()
         else:  # self.AllRadioButton.isChecked()
             return 0
 
