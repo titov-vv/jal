@@ -157,25 +157,26 @@ class ProfitLossReport(QObject):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class ProfitLossReportWindow(MdiWidget, Ui_ProfitLossReportWidget):
+class ProfitLossReportWindow(MdiWidget):
     def __init__(self, parent: Reports, settings: dict = None):
-        MdiWidget.__init__(self, parent.mdi_area())
-        self.setupUi(self)
+        super().__init__(parent.mdi_area())
+        self.ui = Ui_ProfitLossReportWidget()
+        self.ui.setupUi(self)
         self._parent = parent
         self.name = self.tr("P&L by Account")
 
-        self.pl_model = ProfitLossModel(self.ReportTableView)
-        self.ReportTableView.setModel(self.pl_model)
+        self.pl_model = ProfitLossModel(self.ui.ReportTableView)
+        self.ui.ReportTableView.setModel(self.pl_model)
 
         self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
-        self.ReportRange.changed.connect(self.ReportTableView.model().setDatesRange)
-        self.ReportAccountEdit.changed.connect(self.onAccountChange)
-        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ReportTableView.model()))
+        self.ui.ReportRange.changed.connect(self.ui.ReportTableView.model().setDatesRange)
+        self.ui.ReportAccountEdit.changed.connect(self.onAccountChange)
+        self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTableView.model()))
 
     @Slot()
     def onAccountChange(self):
-        account_id = self.ReportAccountEdit.selected_id
-        self.ReportTableView.model().setAccount(account_id)
-        self.CurrencyLbl.setText(self.tr("Currency: ") + JalAsset(JalAccount(account_id).currency()).symbol())
+        account_id = self.ui.ReportAccountEdit.selected_id
+        self.ui.ReportTableView.model().setAccount(account_id)
+        self.ui.CurrencyLbl.setText(self.tr("Currency: ") + JalAsset(JalAccount(account_id).currency()).symbol())
