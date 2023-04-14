@@ -36,10 +36,11 @@ class RequestInterceptor(QWebEngineUrlRequestInterceptor):
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-class LoginFNS(QDialog, Ui_LoginFNSDialog):
+class LoginFNS(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setupUi(self)
+        self.ui = Ui_LoginFNSDialog()
+        self.ui.setupUi(self)
 
         self.phone_number = ''
         self.web_session = requests.Session()
@@ -53,12 +54,12 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         self.web_interceptor = RequestInterceptor(self)
         self.web_interceptor.response_intercepted.connect(self.response_esia)
         self.web_profile.setUrlRequestInterceptor(self.web_interceptor)
-        self.ESIAWebView.setPage(QWebEnginePage(self.web_profile, self))
+        self.ui.ESIAWebView.setPage(QWebEnginePage(self.web_profile, self))
 
-        self.LoginMethodTabs.currentChanged.connect(self.on_tab_changed)
-        self.GetCodeBtn.clicked.connect(self.send_sms)
-        self.SMSLoginBtn.clicked.connect(self.login_sms)
-        self.FNSLoginBtn.clicked.connect(self.login_fns)
+        self.ui.LoginMethodTabs.currentChanged.connect(self.on_tab_changed)
+        self.ui.GetCodeBtn.clicked.connect(self.send_sms)
+        self.ui.SMSLoginBtn.clicked.connect(self.login_sms)
+        self.ui.FNSLoginBtn.clicked.connect(self.login_fns)
 
     def on_tab_changed(self, index):
         if index == 2: # ESIA login selected
@@ -66,7 +67,7 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
 
     def send_sms(self):
         client_secret = JalSettings().getValue('RuTaxClientSecret')
-        self.phone_number = self.PhoneNumberEdit.text().replace('-', '')
+        self.phone_number = self.ui.PhoneNumberEdit.text().replace('-', '')
 
         payload = '{' + f'"client_secret":"{client_secret}","phone":"{self.phone_number}"' + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/auth/phone/request', data=payload)
@@ -79,7 +80,7 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         if not self.phone_number:
             return
         client_secret = JalSettings().getValue('RuTaxClientSecret')
-        code = self.CodeEdit.text()
+        code = self.ui.CodeEdit.text()
 
         payload = '{' + f'"client_secret":"{client_secret}","code":"{code}","phone":"{self.phone_number}"' + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/auth/phone/verify', data=payload)
@@ -97,8 +98,8 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
 
     def login_fns(self):
         client_secret = JalSettings().getValue('RuTaxClientSecret')
-        inn = self.InnEdit.text()
-        password = self.PasswordEdit.text()
+        inn = self.ui.InnEdit.text()
+        password = self.ui.PasswordEdit.text()
 
         payload = '{' + f'"client_secret":"{client_secret}","inn":"{inn}","password":"{password}"' + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/lkfl/auth', data=payload)
@@ -121,7 +122,7 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
             return
         json_content = json.loads(response.text)
         auth_url = json_content['url']
-        self.ESIAWebView.load(QUrl(auth_url))
+        self.ui.ESIAWebView.load(QUrl(auth_url))
 
     @Slot()
     def response_esia(self, auth_code, state):
