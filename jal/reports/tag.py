@@ -35,38 +35,39 @@ class TagReport(QObject):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class TagReportWindow(MdiWidget, Ui_TagReportWidget):
+class TagReportWindow(MdiWidget):
     def __init__(self, parent: Reports, settings: dict = None):
-        MdiWidget.__init__(self, parent.mdi_area())
-        self.setupUi(self)
+        super().__init__(parent.mdi_area())
+        self.ui = Ui_TagReportWidget()
+        self.ui.setupUi(self)
         self._parent = parent
 
-        self.tag_model = TagOperationsModel(self.ReportTableView)
-        self.ReportTableView.setModel(self.tag_model)
+        self.tag_model = TagOperationsModel(self.ui.ReportTableView)
+        self.ui.ReportTableView.setModel(self.tag_model)
         self.tag_model.configureView()
 
         self.connect_signals_and_slots()
 
         if settings is not None:
-            self.ReportRange.setRange(settings['begin_ts'], settings['end_ts'])
-            self.ReportTagEdit.selected_id = settings['tag_id']
+            self.ui.ReportRange.setRange(settings['begin_ts'], settings['end_ts'])
+            self.ui.ReportTagEdit.selected_id = settings['tag_id']
             self.onTagChange()
 
     def connect_signals_and_slots(self):
-        self.ReportRange.changed.connect(self.ReportTableView.model().setDateRange)
-        self.ReportTagEdit.changed.connect(self.onTagChange)
-        self.ReportTableView.selectionModel().selectionChanged.connect(self.onOperationSelect)
+        self.ui.ReportRange.changed.connect(self.ui.ReportTableView.model().setDateRange)
+        self.ui.ReportTagEdit.changed.connect(self.onTagChange)
+        self.ui.ReportTableView.selectionModel().selectionChanged.connect(self.onOperationSelect)
 
     @Slot()
     def onTagChange(self):
-        self.ReportTableView.model().setTag(self.ReportTagEdit.selected_id)
+        self.ui.ReportTableView.model().setTag(self.ui.ReportTagEdit.selected_id)
 
     @Slot()
     def onOperationSelect(self, selected, _deselected):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
-            operation_type, operation_id = self.ReportTableView.model().get_operation(selected_row)
-            self.OperationDetails.show_operation(operation_type, operation_id)
+            operation_type, operation_id = self.ui.ReportTableView.model().get_operation(selected_row)
+            self.ui.OperationDetails.show_operation(operation_type, operation_id)
         else:
-            self.OperationDetails.show_operation(LedgerTransaction.NA, 0)
+            self.ui.OperationDetails.show_operation(LedgerTransaction.NA, 0)
