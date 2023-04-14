@@ -47,10 +47,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.ProgressBar.setVisible(False)
         self.ledger.setProgressBar(self, self.ProgressBar)
         self.Logs.setStatusBar(self.StatusBar)
-        self.logger = logging.getLogger()
-        self.logger.addHandler(self.Logs)
-        log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
-        self.logger.setLevel(log_level)
+        self.Logs.startLogging()
 
         self.currentLanguage = language
 
@@ -136,8 +133,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def closeEvent(self, event):
         JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
         JalSettings().setValue('WindowState', base64.encodebytes(self.saveState().data()).decode('utf-8'))
-        self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
-        logging.raiseExceptions = False         # Silencing logging module exceptions
+        self.Logs.stopLogging()
         super().closeEvent(event)
 
     def createLanguageMenu(self):
