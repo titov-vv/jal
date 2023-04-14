@@ -327,43 +327,44 @@ class IncomeSpendingReport(QObject):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class IncomeSpendingReportWindow(MdiWidget, Ui_IncomeSpendingReportWidget):
+class IncomeSpendingReportWindow(MdiWidget):
     def __init__(self, parent: Reports, settings: dict = None):
-        MdiWidget.__init__(self, parent.mdi_area())
-        self.setupUi(self)
+        super().__init__(parent.mdi_area())
+        self.ui = Ui_IncomeSpendingReportWidget()
+        self.ui.setupUi(self)
         self._parent = parent
         self.name = self.tr("Income & Spending")
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
-        self.income_spending_model = IncomeSpendingReportModel(self.ReportTreeView)
-        self.ReportTreeView.setModel(self.income_spending_model)
-        self.ReportTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.income_spending_model = IncomeSpendingReportModel(self.ui.ReportTreeView)
+        self.ui.ReportTreeView.setModel(self.income_spending_model)
+        self.ui.ReportTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         # Operations view context menu
-        self.contextMenu = QMenu(self.ReportTreeView)
+        self.contextMenu = QMenu(self.ui.ReportTreeView)
         self.actionDetails = QAction(load_icon("list.png"), self.tr("Show operations"), self)
         self.contextMenu.addAction(self.actionDetails)
 
         self.connect_signals_and_slots()
 
         if settings is None:
-            begin, end = self.ReportRange.getRange()
+            begin, end = self.ui.ReportRange.getRange()
             settings = {'begin_ts': begin, 'end_ts': end, 'currency_id': JalAsset.get_base_currency()}
-        self.ReportRange.setRange(settings['begin_ts'], settings['end_ts'])
-        self.CurrencyCombo.setIndex(settings['currency_id'])
+        self.ui.ReportRange.setRange(settings['begin_ts'], settings['end_ts'])
+        self.ui.CurrencyCombo.setIndex(settings['currency_id'])
 
     def connect_signals_and_slots(self):
-        self.ReportRange.changed.connect(self.ReportTreeView.model().setDatesRange)
-        self.CurrencyCombo.changed.connect(self.ReportTreeView.model().setCurrency)
-        self.ReportTreeView.customContextMenuRequested.connect(self.onCellContextMenu)
+        self.ui.ReportRange.changed.connect(self.ui.ReportTreeView.model().setDatesRange)
+        self.ui.CurrencyCombo.changed.connect(self.ui.ReportTreeView.model().setCurrency)
+        self.ui.ReportTreeView.customContextMenuRequested.connect(self.onCellContextMenu)
         self.actionDetails.triggered.connect(self.showDetailsReport)
-        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ReportTreeView.model()))
+        self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
     @Slot()
     def onCellContextMenu(self, position):
-        self.current_index = self.ReportTreeView.indexAt(position)
+        self.current_index = self.ui.ReportTreeView.indexAt(position)
         if self.current_index.isValid() and self.current_index.column() != 0:
-            self.contextMenu.popup(self.ReportTreeView.viewport().mapToGlobal(position))
+            self.contextMenu.popup(self.ui.ReportTreeView.viewport().mapToGlobal(position))
 
     @Slot()
     def showDetailsReport(self):
