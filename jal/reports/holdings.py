@@ -24,47 +24,48 @@ class HoldingsReport(QObject):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
+class HoldingsReportWindow(MdiWidget):
     def __init__(self, parent: Reports, settings: dict = None):
-        MdiWidget.__init__(self, parent.mdi_area())
-        self.setupUi(self)
+        super().__init__(parent.mdi_area())
+        self.ui = Ui_HoldingsWidget()
+        self.ui.setupUi(self)
         self._parent = parent
         self.name = self.tr("Holdings")
 
-        self.holdings_model = HoldingsModel(self.HoldingsTableView)
-        self.HoldingsTableView.setModel(self.holdings_model)
+        self.holdings_model = HoldingsModel(self.ui.HoldingsTableView)
+        self.ui.HoldingsTableView.setModel(self.holdings_model)
         self.holdings_model.configureView()
-        self.HoldingsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.HoldingsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.connect_signals_and_slots()
 
         # Setup holdings parameters
         current_time = QDateTime.currentDateTime()
         current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
-        self.HoldingsDate.setDateTime(current_time)
-        self.HoldingsCurrencyCombo.setIndex(JalAsset.get_base_currency())
+        self.ui.HoldingsDate.setDateTime(current_time)
+        self.ui.HoldingsCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
     def connect_signals_and_slots(self):
-        self.HoldingsDate.dateChanged.connect(self.HoldingsTableView.model().setDate)
-        self.HoldingsCurrencyCombo.changed.connect(self.HoldingsTableView.model().setCurrency)
-        self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
-        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.HoldingsTableView.model()))
+        self.ui.HoldingsDate.dateChanged.connect(self.ui.HoldingsTableView.model().setDate)
+        self.ui.HoldingsCurrencyCombo.changed.connect(self.ui.HoldingsTableView.model().setCurrency)
+        self.ui.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
+        self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.HoldingsTableView.model()))
 
     @Slot()
     def onHoldingsContextMenu(self, pos):
-        index = self.HoldingsTableView.indexAt(pos)
-        contextMenu = QMenu(self.HoldingsTableView)
-        actionShowChart = QAction(icon=load_icon("chart.png"), text=self.tr("Show Price Chart"), parent=self.HoldingsTableView)
+        index = self.ui.HoldingsTableView.indexAt(pos)
+        contextMenu = QMenu(self.ui.HoldingsTableView)
+        actionShowChart = QAction(icon=load_icon("chart.png"), text=self.tr("Show Price Chart"), parent=self.ui.HoldingsTableView)
         actionShowChart.triggered.connect(partial(self.showPriceChart, index))
         contextMenu.addAction(actionShowChart)
         tax_submenu = contextMenu.addMenu(load_icon("tax.png"), self.tr("Estimate tax"))
-        actionEstimateTaxPt = QAction(text=self.tr("Portugal"), parent=self.HoldingsTableView)
+        actionEstimateTaxPt = QAction(text=self.tr("Portugal"), parent=self.ui.HoldingsTableView)
         actionEstimateTaxPt.triggered.connect(partial(self.estimateRussianTax, index, 'pt'))
         tax_submenu.addAction(actionEstimateTaxPt)
-        actionEstimateTaxRu = QAction(text=self.tr("Russia"), parent=self.HoldingsTableView)
+        actionEstimateTaxRu = QAction(text=self.tr("Russia"), parent=self.ui.HoldingsTableView)
         actionEstimateTaxRu.triggered.connect(partial(self.estimateRussianTax, index, 'ru'))
         tax_submenu.addAction(actionEstimateTaxRu)
-        contextMenu.popup(self.HoldingsTableView.viewport().mapToGlobal(pos))
+        contextMenu.popup(self.ui.HoldingsTableView.viewport().mapToGlobal(pos))
 
     @Slot()
     def showPriceChart(self, index):
