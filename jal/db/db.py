@@ -83,7 +83,7 @@ class JalDB:
 
     # By default, db objects don't cache data. But if and object may cache db data we need to track it so parameter
     # 'cached' to be set to True. Such objects should implement invalidate_cache(), class_cache() methods also.
-    def __init__(self, cached=None, **kwargs):
+    def __init__(self, cached=False, **kwargs):
         if cached:
             self._instances_with_cache.append(self)
         super().__init__()
@@ -224,12 +224,12 @@ class JalDB:
 
     # ------------------------------------------------------------------------------------------------------------------
     def invalidate_cache(self):
-        cache_classes = set()   # a list of classes that were already invalidated and don't need extra action
+        processed_cache_classes = set()   # a list of classes that were already invalidated and don't need extra action
         for item in self._instances_with_cache:
-            if item.class_cache() and type(item) in cache_classes:
+            if item.class_cache() and type(item) in processed_cache_classes:
                 continue
             else:
-                cache_classes.add(type(item))
+                processed_cache_classes.add(type(item))
             item.invalidate_cache()
 
     # Method returns true if data are cached on a class level, not in every instance

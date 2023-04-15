@@ -18,8 +18,8 @@ from jal.widgets.selection_dialog import SelectPeerDialog, SelectCategoryDialog,
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(AbstractReferenceListModel):
-    def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+    def __init__(self, table, parent_view, **kwargs):
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("type_id", ''),
                          ("name", self.tr("Name")),
@@ -61,10 +61,10 @@ class AccountListModel(AbstractReferenceListModel):
 
 
 class AccountListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.table = "accounts"
-        self.model = AccountListModel(self.table, self.ui.DataView)
+        self.model = AccountListModel(table=self.table, parent_view=self.ui.DataView)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -96,8 +96,8 @@ class AccountListDialog(ReferenceDataDialog):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AssetListModel(AbstractReferenceListModel):
-    def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+    def __init__(self, table, parent_view, **kwargs):
+        super().__init__(table=table, parent_view=parent_view)
         pk = QSqlIndex()   # Manual primary key setup is required as we use underlying sql view instead of sql table
         pk.append(self.record().field("id"))
         self.setPrimaryKey(pk)
@@ -129,8 +129,8 @@ class AssetListModel(AbstractReferenceListModel):
 
 
 class AssetListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.table = "assets_ext"
         self.model = AssetListModel(self.table, self.ui.DataView)
         self.ui.DataView.setModel(self.model)
@@ -168,8 +168,8 @@ class AssetListDialog(ReferenceDataDialog):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class PeerTreeModel(SqlTreeModel):
-    def __init__(self, table, parent_view):
-        super().__init__(table, parent_view)
+    def __init__(self, table, parent_view, **kwargs):
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("name", self.tr("Name")),
                          ("location", self.tr("Location")),
                          ("actions_count", self.tr("Docs count"))]
@@ -199,8 +199,8 @@ class PeerTreeModel(SqlTreeModel):
 
 
 class PeerListDialog(ReferenceDataDialog):
-    def __init__(self, parent):
-        ReferenceDataDialog.__init__(self, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.table = "agents"
         self.model = PeerTreeModel(self.table, self.ui.TreeView)
         self.ui.TreeView.setModel(self.model)
@@ -255,8 +255,8 @@ class PeerListDialog(ReferenceDataDialog):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CategoryTreeModel(SqlTreeModel):
-    def __init__(self, table, parent_view):
-        super().__init__(table, parent_view)
+    def __init__(self, table, parent_view, **kwargs):
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("name", self.tr("Name")),
                          ("often", self.tr("Often"))]
         self._sort_by = "name"
@@ -273,8 +273,8 @@ class CategoryTreeModel(SqlTreeModel):
 
 
 class CategoryListDialog(ReferenceDataDialog):
-    def __init__(self, parent):
-        ReferenceDataDialog.__init__(self, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.table = "categories"
         self.model = CategoryTreeModel(self.table, self.ui.TreeView)
         self.ui.TreeView.setModel(self.model)
@@ -325,7 +325,7 @@ class CategoryListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class TagListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("tag", self.tr("Tag"))]
         self._default_name = "tag"
@@ -335,8 +335,8 @@ class TagListModel(AbstractReferenceListModel):
 
 
 class TagsListDialog(ReferenceDataDialog):
-    def __init__(self, parent):
-        ReferenceDataDialog.__init__(self, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.table = "tags"
         self.model = TagListModel(self.table, self.ui.DataView)
         self.ui.DataView.setModel(self.model)
@@ -387,7 +387,7 @@ class TagsListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class QuotesListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("timestamp", self.tr("Date")),
                          ("asset_id", self.tr("Asset")),
@@ -417,8 +417,8 @@ class QuotesListModel(AbstractReferenceListModel):
 
 
 class QuotesListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.table = "quotes"
         self.model = QuotesListModel(self.table, self.ui.DataView)
         self.ui.DataView.setModel(self.model)
@@ -436,7 +436,7 @@ class QuotesListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class BaseCurrencyListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("since_timestamp", self.tr("Date")),
                          ("currency_id", self.tr("Currency"))]
@@ -460,8 +460,8 @@ class BaseCurrencyListModel(AbstractReferenceListModel):
 
 
 class BaseCurrencyDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent=None):
+        super().__init__(None)
         self.table = "base_currency"
         self.model = BaseCurrencyListModel(self.table, self.ui.DataView)
         self.ui.DataView.setModel(self.model)
