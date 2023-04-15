@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from decimal import Decimal
 from PySide6.QtCore import Qt, Property, QDateTime, QTimeZone, QLocale
@@ -90,16 +91,22 @@ class AssetDialog(QDialog):
         self._data_model.filterBy("asset_id", self._asset_id)
 
     def accept(self) -> None:
-        if not self._model.submitAll():
+        self._model.database().transaction()
+        try:
+            if not self._model.submitAll():
+                raise RuntimeError(self.tr("Asset submit failed: ") + self._model.lastError().text())
+            asset_id = self._model.data(self._model.index(0, self._model.fieldIndex("id")))
+            if asset_id is None:  # we just have saved new asset record and need last inserted id
+                asset_id = self._model.query().lastInsertId()
+            for model in [self._data_model, self._symbols_model]:
+                for row in range(model.rowCount()):
+                    model.setData(model.index(row, model.fieldIndex("asset_id")), asset_id)
+                if not model.submitAll():
+                    raise RuntimeError(self.tr("Asset details submit failed: ") + model.lastError().text())
+        except Exception as e:
+            self._model.database().rollback()
+            logging.fatal(e)
             return
-        asset_id = self._model.data(self._model.index(0, self._model.fieldIndex("id")))
-        if asset_id is None:  # we just have saved new asset record and need last inserted id
-            asset_id = self._model.query().lastInsertId()
-        for model in [self._data_model, self._symbols_model]:
-            for row in range(model.rowCount()):
-                model.setData(model.index(row, model.fieldIndex("asset_id")), asset_id)
-            if not model.submitAll():
-                return
         self._asset_id = asset_id
         super().accept()
 
