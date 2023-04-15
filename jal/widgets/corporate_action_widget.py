@@ -166,16 +166,20 @@ class CorporateActionWidget(AbstractOperationDetails):
 
     @Slot()
     def saveChanges(self):
-        if not self.model.submitAll():
-            logging.fatal(self.tr("Operation submit failed: ") + self.model.lastError().text())
-            return
-        oid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
-        if oid is None:  # we just have saved new action record and need last inserted id
-            oid = self.model.query().lastInsertId()
-        for row in range(self.results_model.rowCount()):
-            self.results_model.setData(self.results_model.index(row, self.results_model.fieldIndex("action_id")), oid)
-        if not self.results_model.submitAll():
-            logging.fatal(self.tr("Operation details submit failed: ") + self.results_model.lastError().text())
+        self.model.database().transaction()
+        try:
+            if not self.model.submitAll():
+                raise RuntimeError(self.tr("Operation submit failed: ") + self.model.lastError().text())
+            oid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
+            if oid is None:  # we just have saved new action record and need last inserted id
+                oid = self.model.query().lastInsertId()
+            for row in range(self.results_model.rowCount()):
+                self.results_model.setData(self.results_model.index(row, self.results_model.fieldIndex("action_id")), oid)
+            if not self.results_model.submitAll():
+                raise RuntimeError(self.tr("Operation details submit failed: ") + self.results_model.lastError().text())
+        except Exception as e:
+            self.model.database().rollback()
+            logging.fatal(e)
             return
         self.modified = False
         self.commit_button.setEnabled(False)
