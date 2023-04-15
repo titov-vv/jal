@@ -11,7 +11,7 @@ It was designed to keep records of personal incomes/spendings and investments wi
 If you want to ask a question, report a bug, provide help or support an author - you may use email [jal@gmx.ru](mailto:jal@gmx.ru?subject=%5BJAL%5D%20Help) or [Telegram](https://t.me/jal_support) ([Issues](https://github.com/titov-vv/jal/issues) on GitHub are always welcome also).
 
 ### Thanks!
-I would like to a mention people who helped me in 2022 as I got more donations, help and feedback from users this year. 
+I would like to a mention people who helped me in 2022 and 2023 as I got more donations, help and feedback from users this year. 
 And while I can't name every one of them I would like to confirm my appreciation for this help. They did the project better!
 
 ### [FAQ](https://github.com/titov-vv/jal/blob/master/docs/FAQ.md)
@@ -42,8 +42,6 @@ You may authorize via SMS, FNS personal account or ESIA/Gosuslugi. QR code may b
 - *experimental* Category recognition for goods in electronic slip with help of `tensorflow`
 
 ### Installation
-
-#### *jal* doesn't work with PySide6 6.5.0 yet. Please use 6.4.3 as maximum PySide6 version.
 
 *jal* was created to be portable and cross-platform. Thus, you have several ways to install and run the program:
 - You may get file archive from [the GitHub repository](https://github.com/titov-vv/jal), unpack it into suitable directory on your PC and use `run.py` to start application.
