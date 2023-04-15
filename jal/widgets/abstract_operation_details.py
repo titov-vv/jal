@@ -11,7 +11,7 @@ class AbstractOperationDetails(QWidget):
     dbUpdated = Signal()
 
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        super().__init__(parent)
         self.model = None
         self.table_name = ''
         self.mapper = None

@@ -168,17 +168,22 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
     @Slot()
     def saveChanges(self):
-        if not self.model.submitAll():
-            logging.fatal(self.tr("Operation submit failed: ") + self.model.lastError().text())
+        self.model.database().transaction()
+        try:
+            if not self.model.submitAll():
+                raise RuntimeError(self.tr("Operation submit failed: ") + self.model.lastError().text())
+            pid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
+            if pid is None:  # we just have saved new action record and need last inserted id
+                pid = self.model.query().lastInsertId()
+            for row in range(self.details_model.rowCount()):
+                self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("pid")), pid)
+            if not self.details_model.submitAll():
+                raise RuntimeError(self.tr("Operation details submit failed: ") + self.details_model.lastError().text())
+        except Exception as e:
+            self.model.database().rollback()
+            logging.fatal(e)
             return
-        pid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
-        if pid is None:  # we just have saved new action record and need last inserted id
-            pid = self.model.query().lastInsertId()
-        for row in range(self.details_model.rowCount()):
-            self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("pid")), pid)
-        if not self.details_model.submitAll():
-            logging.fatal(self.tr("Operation details submit failed: ") + self.details_model.lastError().text())
-            return
+        self.model.database().commit()
         self.modified = False
         self.commit_button.setEnabled(False)
         self.revert_button.setEnabled(False)
