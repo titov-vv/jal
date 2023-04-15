@@ -172,7 +172,7 @@ class CorporateActionWidget(AbstractOperationDetails):
                 raise RuntimeError(self.tr("Operation submit failed: ") + self.model.lastError().text())
             oid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
             if oid is None:  # we just have saved new action record and need last inserted id
-                oid = self.model.query().lastInsertId()
+                oid = self.model.last_insert_id()
             for row in range(self.results_model.rowCount()):
                 self.results_model.setData(self.results_model.index(row, self.results_model.fieldIndex("action_id")), oid)
             if not self.results_model.submitAll():

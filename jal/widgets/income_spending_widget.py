@@ -174,7 +174,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
                 raise RuntimeError(self.tr("Operation submit failed: ") + self.model.lastError().text())
             pid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
             if pid is None:  # we just have saved new action record and need last inserted id
-                pid = self.model.query().lastInsertId()
+                pid = self.model.last_insert_id()
             for row in range(self.details_model.rowCount()):
                 self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("pid")), pid)
             if not self.details_model.submitAll():

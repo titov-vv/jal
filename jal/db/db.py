@@ -133,6 +133,10 @@ class JalDB:
     def get_engine_version(self):
         return self._read("SELECT sqlite_version()")
 
+    # Returns last inserted id
+    def last_insert_id(self):
+        return self._read("SELECT last_insert_rowid()")
+
     # ------------------------------------------------------------------------------------------------------------------
     # This function returns SQLite connection used by JAL or fails with RuntimeError exception
     @staticmethod
@@ -372,9 +376,9 @@ class JalDB:
 
 # -------------------------------------------------------------------------------------------------------------------
 # Subclassing to hide db connection details
-class JalModel(QSqlTableModel):
+class JalModel(QSqlTableModel, JalDB):
     def __init__(self, parent, table_name):
-        super().__init__(parent=parent, db=JalDB.connection())
+        super().__init__(parent=parent, db=self.connection())
         self.setTable(table_name)
         self._table = table_name
 

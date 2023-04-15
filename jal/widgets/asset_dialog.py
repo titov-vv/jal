@@ -97,7 +97,7 @@ class AssetDialog(QDialog):
                 raise RuntimeError(self.tr("Asset submit failed: ") + self._model.lastError().text())
             asset_id = self._model.data(self._model.index(0, self._model.fieldIndex("id")))
             if asset_id is None:  # we just have saved new asset record and need last inserted id
-                asset_id = self._model.query().lastInsertId()
+                asset_id = self._model.last_insert_id()
             for model in [self._data_model, self._symbols_model]:
                 for row in range(model.rowCount()):
                     model.setData(model.index(row, model.fieldIndex("asset_id")), asset_id)
