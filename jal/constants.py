@@ -152,7 +152,7 @@ class CustomColor:
 
 class AssetTypeComboBox(QComboBox):
     def __init__(self, parent=None):
-        QComboBox.__init__(self, parent)
+        super().__init__(parent=parent)
         PredefinedAsset().load2combo(self)
 
     def getKey(self):

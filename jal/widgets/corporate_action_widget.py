@@ -16,7 +16,7 @@ from jal.db.operations import LedgerTransaction
 # ----------------------------------------------------------------------------------------------------------------------
 class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
-        WidgetMapperDelegateBase.__init__(self, parent)
+        super().__init__(parent=parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'asset_id': self.symbol_delegate,
                           'qty': self.decimal_delegate}
@@ -25,7 +25,7 @@ class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class CorporateActionWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        AbstractOperationDetails.__init__(self, parent)
+        super().__init__(parent=parent)
         self.name = self.tr("Corporate Action")
         self.operation_type = LedgerTransaction.CorporateAction
         self.combo_model = None

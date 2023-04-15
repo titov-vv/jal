@@ -12,7 +12,7 @@ from jal.widgets.mdi import MdiWidget
 
 class ChartWidget(QWidget):
     def __init__(self, parent, quotes, trades, data_range, currency_name):
-        QWidget.__init__(self, parent)
+        super().__init__(parent=parent)
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
 

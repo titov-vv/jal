@@ -9,7 +9,7 @@ class AbstractReferenceSelector(QWidget):
     changed = Signal()
 
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        super().__init__(parent=parent)
         self.completer = None
         self.p_selected_id = 0
 
@@ -86,7 +86,7 @@ class AccountSelector(AbstractReferenceSelector):
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.AccountListDialog()
-        AbstractReferenceSelector.__init__(self, parent)
+        super().__init__(parent=parent)
 
 
 class AssetSelector(AbstractReferenceSelector):
@@ -95,7 +95,7 @@ class AssetSelector(AbstractReferenceSelector):
         self.selector_field = "symbol"
         self.details_field = "full_name"
         self.dialog = ui_dialogs.AssetListDialog()
-        AbstractReferenceSelector.__init__(self, parent)
+        super().__init__(parent=parent)
 
 
 class PeerSelector(AbstractReferenceSelector):
@@ -104,7 +104,7 @@ class PeerSelector(AbstractReferenceSelector):
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.PeerListDialog(parent)
-        AbstractReferenceSelector.__init__(self, parent)
+        super().__init__(parent=parent)
 
 
 class CategorySelector(AbstractReferenceSelector):
@@ -113,7 +113,7 @@ class CategorySelector(AbstractReferenceSelector):
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.CategoryListDialog(parent)
-        AbstractReferenceSelector.__init__(self, parent)
+        super().__init__(parent=parent)
 
 
 class TagSelector(AbstractReferenceSelector):
@@ -122,4 +122,4 @@ class TagSelector(AbstractReferenceSelector):
         self.selector_field = "tag"
         self.details_field = None
         self.dialog = ui_dialogs.TagsListDialog(parent)
-        AbstractReferenceSelector.__init__(self, parent)
+        super().__init__(parent=parent)

@@ -13,7 +13,7 @@ from jal.db.reference_models import AbstractReferenceListModel
 
 class AssetsListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("type_id", 'Asset type'),
                          ("full_name", self.tr("Asset name")),
@@ -148,7 +148,7 @@ class AssetDialog(QDialog):
 
 class SymbolsListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("asset_id", ''),
                          ("symbol", self.tr("Symbol")),
@@ -179,7 +179,7 @@ class SymbolsListModel(AbstractReferenceListModel):
 # indices). Editors are created based on data type associated with 'key_field' via self.types dictionary
 class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from delegates.py
     def __init__(self, key_field, value_field, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
         self._key = key_field
         self._value = value_field
         self.types = {
@@ -270,7 +270,7 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
 
 class ExtraDataModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("asset_id", ''),
                          ("datatype", self.tr("Property")),

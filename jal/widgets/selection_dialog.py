@@ -34,7 +34,7 @@ class SelectReferenceDialog(QDialog):
 # Constructor takes description to show and default_peer for initial choice
 class SelectPeerDialog(SelectReferenceDialog):
     def __init__(self, description, default_peer=0):
-        SelectReferenceDialog.__init__(self, self.tr("Please select peer"), description)
+        super().__init__(title=self.tr("Please select peer"), description=description)
         self.PeerWidget = PeerSelector(self.ui.SelectorFrame)
         self.ui.FrameLayout.addWidget(self.PeerWidget)
         self.PeerWidget.selected_id = self.selected_id = default_peer
@@ -50,7 +50,7 @@ class SelectPeerDialog(SelectReferenceDialog):
 # Constructor takes description to show and default_category for initial choice
 class SelectCategoryDialog(SelectReferenceDialog):
     def __init__(self, description, default_category=0):
-        SelectReferenceDialog.__init__(self, self.tr("Please select category"), description)
+        super().__init__(title=self.tr("Please select category"), description=description)
         self.CategoryWidget = CategorySelector(self.ui.SelectorFrame)
         self.ui.FrameLayout.addWidget(self.CategoryWidget)
         self.CategoryWidget.selected_id = self.selected_id = default_category
@@ -66,7 +66,7 @@ class SelectCategoryDialog(SelectReferenceDialog):
 # Constructor takes description to show and default_tag for initial choice
 class SelectTagDialog(SelectReferenceDialog):
     def __init__(self, description, default_tag=0):
-        SelectReferenceDialog.__init__(self, self.tr("Please select tag"), description)
+        super().__init__(title=self.tr("Please select tag"), description=description)
         self.TagWidget = TagSelector(self.ui.SelectorFrame)
         self.ui.FrameLayout.addWidget(self.TagWidget)
         self.TagWidget.selected_id = self.selected_id = default_tag

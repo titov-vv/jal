@@ -64,7 +64,7 @@ class PandasLinesModel(QAbstractTableModel):
 
 class SlipLinesDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
 
     def paint(self, painter, option, index):
         painter.save()

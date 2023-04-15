@@ -9,8 +9,8 @@ ITEM_METHOD = 1
 class DateRangeSelector(QWidget):
     changed = Signal(int, int)   # emits signal when one or both dates were changed, "from" and "to" timestamps are sent
 
-    def __init__(self, parent):
-        QWidget.__init__(self, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.report_ranges = {
             'week': (self.tr("Week"), ManipulateDate.PreviousWeek),
             'month': (self.tr("Month"), ManipulateDate.PreviousMonth),

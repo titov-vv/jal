@@ -86,7 +86,7 @@ class Ledger(QObject, JalDB):
     SILENT_REBUILD_THRESHOLD = 1000
 
     def __init__(self):
-        QObject.__init__(self)
+        super().__init__()
         self.amounts = LedgerAmounts("amount_acc")    # store last amount for [book, account, asset]
         self.values = LedgerAmounts("value_acc")      # together with corresponding value
         self.main_window = None

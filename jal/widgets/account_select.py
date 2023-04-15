@@ -15,7 +15,7 @@ class AccountButton(QPushButton):
     changed = Signal(int)
 
     def __init__(self, parent):
-        QPushButton.__init__(self, parent)
+        super().__init__(parent=parent)
         self.p_account_id = 0
 
         self.Menu = QMenu(self)
@@ -93,7 +93,7 @@ class CurrencyComboBox(QComboBox):
     changed = Signal(int)
 
     def __init__(self, parent):
-        QComboBox.__init__(self, parent)
+        super().__init__(parent=parent)
         self.p_selected_id = 0
         self.model = None
         self.activated.connect(self.OnUserSelection)
@@ -133,8 +133,8 @@ class OptionalCurrencyComboBox(QWidget):
     changed = Signal()
     name_updated = Signal(str)
 
-    def __init__(self, parent):
-        QWidget.__init__(self, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self._id = 0
 
         self.layout = QHBoxLayout()

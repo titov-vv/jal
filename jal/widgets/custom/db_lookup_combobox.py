@@ -7,7 +7,7 @@ from jal.db.db import JalModel
 # It is mandatory to set up 'table', 'key_field' and 'field' properties at design time
 class DbLookupComboBox(QComboBox):
     def __init__(self, parent=None):
-        QComboBox.__init__(self, parent)
+        super().__init__(parent=parent)
         self._model = None
         self._table = ''
         self._key_field = ''

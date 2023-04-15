@@ -18,14 +18,14 @@ from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, Categ
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpendingWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
-        WidgetMapperDelegateBase.__init__(self, parent)
+        super().__init__(parent=parent)
         self.delegates = {'timestamp': self.timestamp_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpendingWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        AbstractOperationDetails.__init__(self, parent)
+        super().__init__(parent=parent)
         self.name = self.tr("Income / Spending")
         self.operation_type = LedgerTransaction.IncomeSpending
 

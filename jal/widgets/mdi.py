@@ -25,7 +25,7 @@ class MdiWidget(QWidget):
 # Child windows should be derived from MdiWidget class for correct operation
 class TabbedMdiArea(QWidget):
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        super().__init__(parent=parent)
 
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
