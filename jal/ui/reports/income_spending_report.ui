@@ -61,6 +61,27 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="PeriodLbl">
+        <property name="text">
+         <string>Periodicity:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="PeriodComboBox">
+        <item>
+         <property name="text">
+          <string>Monthly</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Weekly</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="CurrencyLbl">
         <property name="text">
          <string>Currency:</string>

@@ -1314,7 +1314,7 @@
 <context>
     <name>IncomeSpendingReport</name>
     <message>
-        <location filename="../reports/income_spending.py" line="326"/>
+        <location filename="../reports/income_spending.py" line="378"/>
         <source>Income &amp; Spending</source>
         <translation>Доходы и Траты</translation>
     </message>
@@ -1322,68 +1322,8 @@
 <context>
     <name>IncomeSpendingReportModel</name>
     <message>
-        <location filename="../reports/income_spending.py" line="156"/>
-        <source>Jan</source>
-        <translation>Янв</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="156"/>
-        <source>Feb</source>
-        <translation>Фев</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="156"/>
-        <source>Mar</source>
-        <translation>Мар</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="156"/>
-        <source>Apr</source>
-        <translation>Апр</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="156"/>
-        <source>May</source>
-        <translation>Май</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="156"/>
-        <source>Jun</source>
-        <translation>Июн</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="157"/>
-        <source>Jul</source>
-        <translation>Июл</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="157"/>
-        <source>Aug</source>
-        <translation>Авг</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="157"/>
-        <source>Sep</source>
-        <translation>Сен</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="157"/>
-        <source>Oct</source>
-        <translation>Окт</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="157"/>
-        <source>Nov</source>
-        <translation>Ноя</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="160"/>
-        <source>Dec</source>
-        <translation>Дек</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending.py" line="190"/>
-        <location filename="../reports/income_spending.py" line="302"/>
+        <location filename="../reports/income_spending.py" line="229"/>
+        <location filename="../reports/income_spending.py" line="354"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
@@ -1397,11 +1337,26 @@
     </message>
     <message>
         <location filename="../ui/reports/income_spending_report.ui" line="66"/>
+        <source>Periodicity:</source>
+        <translation>Периодичность:</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/income_spending_report.ui" line="74"/>
+        <source>Monthly</source>
+        <translation>Помесячно</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/income_spending_report.ui" line="79"/>
+        <source>Weekly</source>
+        <translation>Понедельно</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/income_spending_report.ui" line="87"/>
         <source>Currency:</source>
         <translation>Валюта:</translation>
     </message>
     <message>
-        <location filename="../ui/reports/income_spending_report.ui" line="89"/>
+        <location filename="../ui/reports/income_spending_report.ui" line="110"/>
         <source>Save...</source>
         <translation>Сохранить...</translation>
     </message>
@@ -1409,12 +1364,12 @@
 <context>
     <name>IncomeSpendingReportWindow</name>
     <message>
-        <location filename="../reports/income_spending.py" line="337"/>
+        <location filename="../reports/income_spending.py" line="389"/>
         <source>Income &amp; Spending</source>
         <translation>Доходы и Траты</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="345"/>
+        <location filename="../reports/income_spending.py" line="397"/>
         <source>Show operations</source>
         <translation>Показать операции</translation>
     </message>
@@ -2796,6 +2751,74 @@ Application will be terminated now</source>
         <location filename="../ui/reference_data_dlg.ui" line="141"/>
         <source>Revert changes</source>
         <translation>Отменить изменения</translation>
+    </message>
+</context>
+<context>
+    <name>ReportTreeItem</name>
+    <message>
+        <location filename="../reports/income_spending.py" line="99"/>
+        <source>Jan</source>
+        <translation>Янв</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="99"/>
+        <source>Feb</source>
+        <translation>Фев</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="99"/>
+        <source>Mar</source>
+        <translation>Мар</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="99"/>
+        <source>Apr</source>
+        <translation>Апр</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="99"/>
+        <source>May</source>
+        <translation>Май</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="99"/>
+        <source>Jun</source>
+        <translation>Июн</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="100"/>
+        <source>Jul</source>
+        <translation>Июл</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="100"/>
+        <source>Aug</source>
+        <translation>Авг</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="100"/>
+        <source>Sep</source>
+        <translation>Сен</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="100"/>
+        <source>Oct</source>
+        <translation>Окт</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="100"/>
+        <source>Nov</source>
+        <translation>Ноя</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="102"/>
+        <source>Dec</source>
+        <translation>Дек</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending.py" line="106"/>
+        <source>wk</source>
+        <translation>нед</translation>
     </message>
 </context>
 <context>

@@ -114,7 +114,7 @@ class ProfitLossModel(QAbstractTableModel):
                 money_p = money_0
                 assets_p = assets_0
             else:
-                row_name = f"{month['year']} {self.month_name[month['month'] - 1]}"
+                row_name = f"{month['year']} {self.month_name[month['number'] - 1]}"
             try:
                 rel_change = ((values['money'] + values['assets']) - (money_p + assets_p)) / (money_p + assets_p)
             except (ZeroDivisionError, decimal.InvalidOperation):

@@ -39,6 +39,15 @@ def center_window(window):
         window.setGeometry(x, y, window.width(), window.height())
 
 # -----------------------------------------------------------------------------------------------------------------------
+# converts string with leading zeros to integer (like '03'->3, '00'->0, ''->0)
+def str2int(value: str) -> int:
+    value = value.lstrip('0')
+    if value:
+        return int(value)
+    else:
+        return 0
+
+# -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date and time
 def ts2dt(timestamp: int) -> str:
     return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
@@ -49,11 +58,20 @@ def ts2d(timestamp: int) -> str:
     return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y')
 
 # -----------------------------------------------------------------------------------------------------------------------
+# converts given datetime value into unix-timestamp
+def dt2ts(value: datetime) -> int:
+    return int(value.replace(tzinfo=timezone.utc).timestamp())
+
+# -----------------------------------------------------------------------------------------------------------------------
 # returns unix timestamp for the first second of the month/year
 def month_start_ts(year: int, month: int) -> int:
     start = datetime(year=year, month=month, day=1, hour=0, minute=0, second=0)
-    start = int(start.replace(tzinfo=timezone.utc).timestamp())
-    return start
+    return dt2ts(start)
+
+# returns unix timestamp for the first second of the given week of the month
+def week_start_ts(year: int, week: int) -> int:
+    start = datetime.strptime(f"{year}-W{week}-1", "%Y-W%W-%w")
+    return dt2ts(start)
 
 # -----------------------------------------------------------------------------------------------------------------------
 # returns unix timestamp for the last second of the month/year
@@ -64,26 +82,53 @@ def month_end_ts(year: int, month: int) -> int:
     else:
         end = start.replace(month=month + 1)
     end = end - timedelta(seconds=1)
-    end = int(end.replace(tzinfo=timezone.utc).timestamp())
-    return end
+    return dt2ts(end)
+
+# returns unix timestamp for the last second of the given week of the month
+def week_end_ts(year: int, week: int) -> int:
+    end = datetime.strptime(f"{year}-W{week}-1", "%Y-W%W-%w") + timedelta(days=7)
+    return dt2ts(end)
 
 # -----------------------------------------------------------------------------------------------------------------------
 # returns a list of dictionaries for each month between 'begin' and 'end' timestamps (including):
-# { year, month, begin_ts, end_ts }
+# { year, number, begin_ts, end_ts }
+# where number is a month number from 1 to 12
 def month_list(begin: int, end: int) -> list:
     result = []
     year_begin = int(datetime.utcfromtimestamp(begin).strftime('%Y'))
-    month_begin = int(datetime.utcfromtimestamp(begin).strftime('%m').lstrip('0'))
+    month_begin = str2int(datetime.utcfromtimestamp(begin).strftime('%m'))
     year_end = int(datetime.utcfromtimestamp(end).strftime('%Y'))
-    month_end = int(datetime.utcfromtimestamp(end).strftime('%m').lstrip('0'))
+    month_end = str2int(datetime.utcfromtimestamp(end).strftime('%m'))
     for year in range(year_begin, year_end+1):
         month1 = month_begin if year == year_begin else 1
         month2 = month_end + 1 if year == year_end else 13
         for month in range(month1, month2):
-            result.append({'year': year, 'month': month,
+            result.append({'year': year, 'number': month,
                            'begin_ts': month_start_ts(year, month), 'end_ts': month_end_ts(year, month)})
     return result
 
+# returns a list of dictionaries for each week between 'begin' and 'end' timestamps (including):
+# { year, number, begin_ts, end_ts }
+# where number is a week number in year from 1 to 53
+def week_list(begin: int, end: int) -> list:
+    result = []
+    year_begin = int(datetime.utcfromtimestamp(begin).strftime('%Y'))
+    week_begin = str2int(datetime.utcfromtimestamp(begin).strftime('%W'))
+    if week_begin == 0:
+        year_begin -= 1
+        week_begin = 53
+    year_end = int(datetime.utcfromtimestamp(end).strftime('%Y'))
+    week_end = int(datetime.utcfromtimestamp(end).strftime('%W'))
+    if week_end == 0:
+        year_end -= 1
+        week_end = 53
+    for year in range(year_begin, year_end + 1):
+        wk1 = week_begin if year == year_begin else 1
+        wk2 = week_end + 1 if year == year_end else 54
+        for week in range(wk1, wk2):
+            result.append({'year': year, 'number': week,
+                           'begin_ts': week_start_ts(year, week), 'end_ts': week_end_ts(year, week)})
+    return result
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Function takes an image and searches for QR in it. Content of first found QR is returned. Otherwise - empty string.
