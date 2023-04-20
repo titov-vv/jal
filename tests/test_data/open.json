@@ -12,7 +12,8 @@
     {"id": 6, "type": "stock", "name": "Сбербанк России ПАО ао", "isin": "RU0009029540"},
     {"id": 7, "type": "stock", "name": "PLLC Yandex N.V. class A shs", "isin": "NL0009805522"},
     {"id": 8, "type": "stock", "name": "АДР Ozon Holdings PLC ORD SHS", "isin": "US69269L1044"},
-    {"id": 9, "type": "stock", "name": "ПАО \"НОВАТЭК\" ао", "isin": "RU000A0DKVS5"}
+    {"id": 9, "type": "stock", "name": "ПАО \"НОВАТЭК\" ао", "isin": "RU000A0DKVS5"},
+    {"id": 10, "type": "bond", "name": "ПИК-Корпорация 001Р-03", "isin": "RU000A1026C1"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "RUB"},
@@ -23,7 +24,8 @@
     {"id": 6, "asset": 6, "symbol": "SBER", "currency": 1, "note": "MOEX"},
     {"id": 8, "asset": 7, "symbol": "YNDX", "currency": 2, "note": "MOEX"},
     {"id": 10, "asset": 8, "symbol": "OZON", "currency": 1, "note": "MOEX"},
-    {"id": 12, "asset": 9, "symbol": "NVTK", "currency": 1, "note": "MOEX"}
+    {"id": 12, "asset": 9, "symbol": "NVTK", "currency": 1, "note": "MOEX"},
+    {"id": 14, "asset": 10, "symbol": "ПИК К 1P3", "currency": 1, "note": "MOEX"}
   ],
   "assets_data": [
     {"id": 1, "asset": 3, "reg_number": "RU34003MOR0", "principal": 400.0, "expiry": 1630627200},
@@ -31,7 +33,8 @@
     {"id": 3, "asset": 5, "reg_number": "4B023701481B", "principal": 1000.0, "expiry": 1632960000},
     {"id": 4, "asset": 6, "reg_number": "10301481B", "principal": 3.0},
     {"id": 5, "asset": 7, "principal": 0.01},
-    {"id": 6, "asset": 9, "principal": 0.1, "reg_number": "1-02-00268-E"}
+    {"id": 6, "asset": 9, "principal": 0.1, "reg_number": "1-02-00268-E"},
+    {"id": 7, "asset": 10, "principal": 1000.0, "reg_number": "4B02-03-00464-R-001P", "expiry": 1680048000}
   ],
   "trades": [
     {"id": 1, "number": "4196406008", "timestamp": 1622127229, "settlement": 1622160000, "account": 1, "asset": 3, "quantity": 50.0, "price": 401.6, "fee": 10.04},
@@ -39,7 +42,8 @@
     {"id": 3, "number": "4196915558", "timestamp": 1622135723, "settlement": 1622160000, "account": 1, "asset": 4, "quantity": 5.0, "price": 1001.5, "fee": 2.5},
     {"id": 4, "number": "4861111954", "timestamp": 1642181400, "settlement": 1642464000, "account": 1, "asset": 6, "quantity": 50.0, "price": 258.61, "fee": 6.47},
     {"id": 5, "number": "20210901-1", "timestamp": 1630454400, "settlement": 1630454400, "account": 1, "asset": 4, "quantity": -60.0, "price": 1000.0, "fee": 0.0, "note": "Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05"},
-    {"id": 6, "number": "20210903-2", "timestamp": 1630627200, "settlement": 1630627200, "account": 1, "asset": 3, "quantity": -75.0, "price": 400.0, "fee": 0.0, "note": "Отчет депозитария б/н от 03.09.2021. Снятие ЦБ с учета. Погашение облигаций - Мордовия-обл-03"}
+    {"id": 6, "number": "20210903-2", "timestamp": 1630627200, "settlement": 1630627200, "account": 1, "asset": 3, "quantity": -75.0, "price": 400.0, "fee": 0.0, "note": "Отчет депозитария б/н от 03.09.2021. Снятие ЦБ с учета. Погашение облигаций - Мордовия-обл-03"},
+    {"id": 7, "number": "20230329-3", "timestamp": 1680048000, "settlement": 1680048000, "account": 1, "asset": 10, "quantity": -1000.0, "price": 1000.0, "fee": 0.0, "note": "Отчет депозитария б/н от 29.03.2023. Снятие ЦБ с учета. Погашение облигаций - ПИК-Корпорация-обл-001Р-03"}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1647993600, "account": 1, "peer": 0, "lines": [{"amount": 100.0, "category": -6, "description": "Возврат излишне удержанного налога с клиента  12345 за 2021 год"}]},
