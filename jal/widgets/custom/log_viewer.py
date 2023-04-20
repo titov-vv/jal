@@ -1,6 +1,7 @@
 import os
 import logging
 from jal.constants import CustomColor
+from jal.db.helpers import load_icon
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
 from PySide6.QtGui import QBrush, QAction
@@ -34,18 +35,13 @@ class LogViewer(QPlainTextEdit):
         self.expanded_text = self.tr("▲ logs")
 
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
-        self.addAction(self.tr('Copy'), self._copy)
+        self.addAction(load_icon("copy.png"), self.tr('Copy'), self._copy2clipboard)
         self.addAction(self.tr('Select all'), self.selectAll)
-        self.addAction(self.tr('Clear'), self.clear)
+        self.addAction(load_icon("delete.png"), self.tr('Clear'), self.clear)
 
-    def _addAction(self, name, slot):
-        act = QAction(name)
-        act.toggled.connect(slot)
-        self.addAction(act)
-
-    def _copy(self):
+    def _copy2clipboard(self):
         cursor = self.textCursor()
-        text = cursor.selectedText() if cursor.selectedText() else self.toPlainText()
+        text = cursor.selectedText() if cursor.selectedText().toPlainText() else self.toPlainText()
         QApplication.clipboard().setText(text)
 
     def startLogging(self):
