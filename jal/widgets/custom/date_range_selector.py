@@ -1,5 +1,6 @@
 from PySide6.QtCore import Qt, Signal, Slot, Property, QDateTime, QTimeZone
 from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QLabel, QDateEdit
+from PySide6.QtGui import QFontMetrics
 from jal.widgets.helpers import ManipulateDate
 
 
@@ -51,6 +52,11 @@ class DateRangeSelector(QWidget):
         self.to_date.setCalendarPopup(True)
         self.to_date.setTimeSpec(Qt.UTC)
         self.layout.addWidget(self.to_date)
+
+        # Ensure the date edit field is fit date text.
+        dtw = QFontMetrics(self.to_date.font()).boundingRect('0').width() + self.to_date.sizeHint().width()
+        self.from_date.setMinimumWidth(dtw)
+        self.to_date.setMinimumWidth(dtw)
 
         self.setLayout(self.layout)
 

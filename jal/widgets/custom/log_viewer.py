@@ -3,7 +3,7 @@ import logging
 from jal.constants import CustomColor
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
-from PySide6.QtGui import QBrush
+from PySide6.QtGui import QBrush, QAction
 
 
 # Adapter class to have custom log handler that may be passed to logger.addHandler/logger.removeHandler methods and
@@ -32,6 +32,21 @@ class LogViewer(QPlainTextEdit):
         self.clear_color = None   # Variable to store initial "clear" background color
         self.collapsed_text = self.tr("▶ logs")
         self.expanded_text = self.tr("▲ logs")
+
+        self.setContextMenuPolicy(Qt.ActionsContextMenu)
+        self.addAction(self.tr('Copy'), self._copy)
+        self.addAction(self.tr('Select all'), self.selectAll)
+        self.addAction(self.tr('Clear'), self.clear)
+
+    def _addAction(self, name, slot):
+        act = QAction(name)
+        act.toggled.connect(slot)
+        self.addAction(act)
+
+    def _copy(self):
+        cursor = self.textCursor()
+        text = cursor.selectedText() if cursor.selectedText() else self.toPlainText()
+        QApplication.clipboard().setText(text)
 
     def startLogging(self):
         self._logger = logging.getLogger()
