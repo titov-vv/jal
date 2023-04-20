@@ -703,7 +703,7 @@
         <translation>С:</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="46"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="48"/>
         <source>To:</source>
         <translation>До:</translation>
     </message>
@@ -1783,17 +1783,32 @@ do you want to save it?</source>
 <context>
     <name>LogViewer</name>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="34"/>
+        <location filename="../widgets/custom/log_viewer.py" line="35"/>
         <source>▶ logs</source>
         <translation>▶ logs</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="36"/>
+        <location filename="../widgets/custom/log_viewer.py" line="37"/>
         <source>▲ logs</source>
         <translation>▲ logs</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="58"/>
+        <location filename="../widgets/custom/log_viewer.py" line="38"/>
+        <source>Copy</source>
+        <translation>Копировать</translation>
+    </message>
+    <message>
+        <location filename="../widgets/custom/log_viewer.py" line="39"/>
+        <source>Select all</source>
+        <translation>Выбрать всё</translation>
+    </message>
+    <message>
+        <location filename="../widgets/custom/log_viewer.py" line="40"/>
+        <source>Clear</source>
+        <translation>Очистить</translation>
+    </message>
+    <message>
+        <location filename="../widgets/custom/log_viewer.py" line="69"/>
         <source>Unknown logging level provided: </source>
         <translation>Неизвестный параметр критичности сообщения: </translation>
     </message>
@@ -3822,13 +3837,13 @@ Application will be terminated now</source>
     <name>StatementUKFU</name>
     <message>
         <location filename="../data_import/broker_statements/uralsib.py" line="49"/>
-        <source>Uralsib Broker</source>
-        <translation>Уралсиб Кэпитал</translation>
+        <source>Tvoy Broker (ex. Uralsib Broker)</source>
+        <translation>Твой брокер (ex. брокер Уралсиб)</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/uralsib.py" line="51"/>
-        <source>Uralsib statement (*.zip)</source>
-        <translation>Отчёт брокера Уралсиб Кэпитал (*.zip)</translation>
+        <source>Tvoy Broker statement (*.zip)</source>
+        <translation>Отчёт Твой брокер (*.zip)</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/uralsib.py" line="110"/>
