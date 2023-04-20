@@ -51,3 +51,4 @@
 
 2019/04/08 - Spin-Off of Alcon from Novartis. Alcon cost basis 12.2166% (![From 8937](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/cost_basis/20190416_Form8937-NVS_ALC_SpinOff.pdf))  
 2020/11/17 - Spin-Off of Viatris from Pfizer. Viatris cost basis 5.20% (![Form 8937](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/cost_basis/20201130_Form8937_PFE_VTRS_SpinOff.pdf))  
+2022/04/04 - Spin-Off of Warner Bros. Discovery from AT&T. Warner Bros. cost basis 23.48% (![Form 8937](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/cost_basis/20220411_Form8937_T_WBD_SpinOff.pdf)) 
