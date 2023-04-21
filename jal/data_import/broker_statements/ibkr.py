@@ -130,6 +130,7 @@ class StatementIBKR(StatementXML):
     ReversalCode = 'Re'
     ReversalSuffix = " - REVERSAL"
     CancelPrefix = "CANCEL "
+    NoAsset = -1
 
     def __init__(self):
         super().__init__()
@@ -258,7 +259,16 @@ class StatementIBKR(StatementXML):
                                             ('taxAmount', 'amount', float, None),
                                             ('description', 'description', str, None),
                                             ('taxDescription', 'tax_description', str, None)],
-                                 'loader': self.load_taxes}
+                                 'loader': self.load_taxes},
+            'CFDCharges': {'tag': 'CFDCharge',
+                           'level': '',
+                           'values': [('accountId', 'account', IBKR_Account, None),
+                                      ('symbol', 'asset', IBKR_Asset, self.NoAsset),
+                                      ('date', 'timestamp', datetime, None),
+                                      ('total', 'amount', float, None),
+                                      ('transactionID', 'number', str, ''),
+                                      ('activityDescription', 'description', str, None)],
+                           'loader': self.load_cfd_charges},
         }
 
     def tr(self, text):
@@ -934,6 +944,27 @@ class StatementIBKR(StatementXML):
             self._data[FOF.INCOME_SPENDING].append(tax)
             cnt += 1
         logging.info(self.tr("Taxes loaded: ") + f"{cnt} ({len(taxes)})")
+
+    def load_cfd_charges(self, charges):
+        cnt = 0
+        charges_base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        for i, charge in enumerate(charges):
+            if charge['asset'] != self.NoAsset and not charge['description'].startswith('CFD BORROW FEE FOR'):
+                # FIXME if asset is present -> put this charge not in Income/Spending but in Asset Payments section
+                logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
+                continue
+            if charge['asset'] == self.NoAsset and not (
+                    charge['description'].startswith('LONG CFD INTEREST FOR') or
+                    charge['description'].startswith('SHORT CFD INTEREST FOR')):
+                logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
+                continue
+            charge['id'] = charges_base + i
+            charge['peer'] = 0
+            charge['lines'] = [{'amount': charge['amount'], 'category': -PredefinedCategory.Fees, 'description': charge['description']}]
+            self.drop_extra_fields(charge, ["amount", "asset", "description", "number"])
+            self._data[FOF.INCOME_SPENDING].append(charge)
+            cnt += 1
+        logging.info(self.tr("CFD charges loaded: ") + f"{cnt} ({len(charges)})")
 
     # Applies tax to matching dividend:
     # if tax < 0: apply it to dividend without tax

@@ -27,6 +27,10 @@
  "asset_payments": [
    {"id": 1, "type": "dividend", "account": 1, "timestamp": 1658866800, "number": "", "asset": 3, "amount": -4.6, "description": "MUn(120549262) PAYMENT IN LIEU OF DIVIDEND (ICFDUK Dividend)"}
  ],
- "income_spending": [],
+ "income_spending": [
+   {"id": 1, "timestamp": 1657152000, "account": 1, "peer": 0, "lines": [{"amount": -0.28, "category": -5, "description": "LONG CFD INTEREST FOR 07-JUL-2022"}]},
+   {"id": 2, "timestamp": 1657238400, "account": 1, "peer": 0, "lines": [{"amount": -0.02, "category": -5, "description": "CFD BORROW FEE FOR MU for 08-JUL-2022"}]},
+   {"id": 3, "timestamp": 1657238400, "account": 1, "peer": 0, "lines": [{"amount": -0.06, "category": -5, "description": "SHORT CFD INTEREST FOR 08-JUL-2022"}]}
+ ],
  "transfers": []
 }
