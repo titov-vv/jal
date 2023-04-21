@@ -42,6 +42,7 @@ class FOF:
     ASSET_WARRANT = "warrant"
     ASSET_RIGHTS = "right"
     ASSET_CRYPTO = "crypto"
+    ASSET_CFD = "cfd"
 
     ACTION_MERGER = "merger"
     ACTION_SPLIT = "split"
@@ -87,6 +88,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         FOF.ASSET_FUTURES: PredefinedAsset.Derivative,
         FOF.ASSET_OPTION: PredefinedAsset.Derivative,
         FOF.ASSET_WARRANT: PredefinedAsset.Derivative,
+        FOF.ASSET_CFD: PredefinedAsset.Derivative,
         FOF.ASSET_CRYPTO: PredefinedAsset.Crypto
     }
     _corp_actions = {

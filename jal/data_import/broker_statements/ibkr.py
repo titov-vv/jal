@@ -42,7 +42,8 @@ class IBKR_AssetType:
         'OPT': FOF.ASSET_OPTION,
         'FUT': FOF.ASSET_FUTURES,
         'WAR': FOF.ASSET_WARRANT,
-        'RIGHT': FOF.ASSET_RIGHTS
+        'RIGHT': FOF.ASSET_RIGHTS,
+        'CFD': FOF.ASSET_CFD
     }
 
     def __init__(self, asset_type, subtype):
@@ -307,7 +308,7 @@ class StatementIBKR(StatementXML):
         if attr_name not in xml_element.attrib:
             return default_value
         asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
-        if asset_category not in [FOF.ASSET_STOCK, FOF.ASSET_BOND, FOF.ASSET_WARRANT]:
+        if asset_category not in [FOF.ASSET_STOCK, FOF.ASSET_BOND, FOF.ASSET_WARRANT, FOF.ASSET_CFD]:
             logging.error(self.tr("Corporate action isn't supported for asset type: ") + f"'{asset_category}'")
             return default_value
         return IBKR_CorpActionType(xml_element.attrib[attr_name]).type
@@ -714,7 +715,7 @@ class StatementIBKR(StatementXML):
         return 1
 
     def load_split(self, action, parts_b) -> int:
-        SplitPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)\)$"
+        SplitPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)*\)$"
 
         parts = re.match(SplitPattern, action['description'], re.IGNORECASE)
         if parts is None:
@@ -722,7 +723,7 @@ class StatementIBKR(StatementXML):
         split = parts.groupdict()
         if len(split) != SplitPattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Split description miss some data ") + f"'{action}'")
-        if parts['isin_old'] == parts['id']:  # Simple split without ISIN change
+        if parts['id'] is None or parts['isin_old'] == parts['id']:  # Simple split without ISIN change
             qty_delta = action['quantity']
             qty_old = qty_delta / (int(split['X']) / int(split['Y']) - 1)
             qty_new = qty_old + qty_delta

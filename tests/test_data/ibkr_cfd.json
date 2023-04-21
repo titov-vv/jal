@@ -1,0 +1,32 @@
+{
+  "period": [1641168000, 1672703999],
+  "accounts": [
+    {"id": 1, "number": "U7654321F", "currency": 1, "precision": 10, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89}
+  ],
+  "assets": [
+    {"id": 1, "name": "", "type": "money"},
+    {"id": 2, "name": "USD TSLA", "type": "cfd"},
+    {"id": 3, "name": "USD MU", "type": "cfd"}
+  ],
+  "symbols": [
+    {"id": 1, "asset": 1, "symbol": "USD"},
+    {"id": 2, "asset": 2, "currency": 1, "symbol": "TSLAn"},
+    {"id": 3, "asset": 3, "currency": 1, "symbol": "MUn"}
+  ],
+  "assets_data": [
+    {"id": 1, "asset": 2, "expiry": 2093212800},
+    {"id": 2, "asset": 3, "expiry": 2093212800}
+  ],
+  "trades": [
+    {"id": 1, "number": "200000523", "timestamp": 1645695065, "settlement": 1645833600, "account": 1, "asset": 2, "quantity": 1.0, "price": 901.4, "fee": 1.0}
+  ],
+  "corporate_actions": [
+    {"id": 1, "type": "split", "account": 1, "timestamp": 1661372700, "number": "1031017435", "asset": 2, "quantity": -1.0,
+     "outcome": [{"asset": 2, "quantity": -3.0, "share": 1.0}], "description": "TSLAn(131067756) SPLIT 3 FOR 1 (TSLAn, USD TSLA, )"}
+  ],
+ "asset_payments": [
+   {"id": 1, "type": "dividend", "account": 1, "timestamp": 1658866800, "number": "", "asset": 3, "amount": -4.6, "description": "MUn(120549262) PAYMENT IN LIEU OF DIVIDEND (ICFDUK Dividend)"}
+ ],
+ "income_spending": [],
+ "transfers": []
+}
