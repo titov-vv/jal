@@ -323,6 +323,12 @@ class QuoteDownloader(QObject):
             securities = asset_data['securities']
             columns = securities['columns']
             data = securities['data']  # take the whole list if we search by isin
+        if not data and 'name' in kwargs:
+            url = f"https://iss.moex.com/iss/securities.json?q={kwargs['name']}&iss.meta=off&limit=10"
+            asset_data = json.loads(get_web_data(url))
+            securities = asset_data['securities']
+            columns = securities['columns']
+            data = [x for x in securities['data'] if x[columns.index('name')] == kwargs['name']]
         if data:
             if len(data) > 1:
                 # remove not traded assets if there are any outdated doubles present
