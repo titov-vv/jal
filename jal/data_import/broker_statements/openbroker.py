@@ -379,7 +379,9 @@ class StatementOpenBroker(StatementXML):
             'Возврат излишне удержанного налога': self.tax_refund,
             'Проценты по предоставленным займам ЦБ': None,   # Loan payments are loaded in self.load_loans
             'Удержан налог на прочий доход': self.cash_tax,
-            'Плата за остаток на счете': self.cash_interest
+            'Плата за остаток на счете': self.cash_interest,
+            'Удержан налог с дарения по договору дарения': self.cash_tax,  # FIXME - better to combine with next operation
+            'Поступили средства клиента': self.cash_interest
         }
 
         for cash in cash_operations:

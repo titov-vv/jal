@@ -430,6 +430,8 @@
 <item operation_date="2022-04-25T00:00:00" currency_code="RUB" amount="875.40" comment="Выплата дохода клиент 12345 дивиденды Новатэк-ао-2 налог к удержанию 114.00 рублей" />
 <item operation_date="2022-06-01T00:00:00" currency_code="RUB" amount="-50.00" comment="Комиссия Брокера за выдачу справок по заявке 12345678 от 01.06.2022" />
 <item operation_date="2023-03-29T00:00:00" currency_code="RUB" amount="1000000.00" comment="Выплата дохода клиент 12345 (Погашение ПИК-Корпорация-обл-001Р-03) налог не удерживается" />
+<item operation_date="2023-02-06T00:00:00" currency_code="RUB" amount="-75.00" comment="Удержан налог с дарения по договору дарения 44433322 от 04.02.2023 в рамках &quot;Программы лояльности&quot;" />
+<item operation_date="2023-02-06T00:00:00" currency_code="RUB" amount="75.00" comment="Поступили средства клиента 12345. Дарение ДС по договору дарения 44433322 от 04.02.2023 в рамках &quot;Программы лояльности&quot;" />
 </spot_non_trade_money_operations>
 <spot_non_trade_security_operations>
 <item operation_date="2021-09-01T00:00:00" security_name="МТС 1P-05 " grn_code="4B02-05-04715-A-001P" quantity="-60.00000000" comment="Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05" board_name="Фондовый Рынок Московской биржи (ФР МБ)" />
