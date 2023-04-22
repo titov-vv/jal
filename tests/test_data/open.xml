@@ -432,6 +432,8 @@
 <item operation_date="2023-03-29T00:00:00" currency_code="RUB" amount="1000000.00" comment="Выплата дохода клиент 12345 (Погашение ПИК-Корпорация-обл-001Р-03) налог не удерживается" />
 <item operation_date="2023-02-06T00:00:00" currency_code="RUB" amount="-75.00" comment="Удержан налог с дарения по договору дарения 44433322 от 04.02.2023 в рамках &quot;Программы лояльности&quot;" />
 <item operation_date="2023-02-06T00:00:00" currency_code="RUB" amount="75.00" comment="Поступили средства клиента 12345. Дарение ДС по договору дарения 44433322 от 04.02.2023 в рамках &quot;Программы лояльности&quot;" />
+<item operation_date="2023-02-27T00:00:00" currency_code="RUB" amount="-1945.00" comment="Удержан налог на купонный доход  по ФПК Гарант-Инвест БО 002Р-04 с клиента 12345" />
+<item operation_date="2023-02-27T00:00:00" currency_code="RUB" amount="14960.00" comment="Выплата дохода клиент 12345 (НКД 5 ФПК Гарант-Инвест БО 002Р-04) налог к удержанию 1945.00 рублей" />
 </spot_non_trade_money_operations>
 <spot_non_trade_security_operations>
 <item operation_date="2021-09-01T00:00:00" security_name="МТС 1P-05 " grn_code="4B02-05-04715-A-001P" quantity="-60.00000000" comment="Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05" board_name="Фондовый Рынок Московской биржи (ФР МБ)" />
@@ -449,5 +451,6 @@
 <item security_name="OZON-адр  " security_grn_code="" board_name="ПАО Московская биржа" issuer_name="BNY Mellon" isin="US69269L1044" security_type="ADR" securyty_type_add="AD " nominal="0.000000" lot_size="1" ticker="OZON" market_price="1083.000000" />
 <item security_name="Новатэк ао" security_grn_code="1-02-00268-E" board_name="ПАО Московская биржа" issuer_name="ПАО &quot;НОВАТЭК&quot;" isin="RU000A0DKVS5" security_type="Акции" securyty_type_add="АО " nominal="0.100000" nominal_curr="RUB" lot_size="1" ticker="NVTK" market_price="940.800000" />
 <item security_name="ПИК К 1P3" security_grn_code="4B02-03-00464-R-001P" board_name="ПАО Московская биржа" issuer_name="ООО &quot;ПИК-Корпорация&quot;" isin="RU000A1026C1" security_type="Облигации" securyty_type_add="ОБ " nominal_curr="RUB" lot_size="1" ticker="RU000A1026C1" market_price="0.00000000" />
+<item security_name="ГарИнв2P04" security_grn_code="4B02-04-71794-H-002P" board_name="ПАО Московская биржа" issuer_name="АО &quot;Коммерческая недвижимость ФПК &quot;Гарант-Инвест&quot;" isin="RU000A103WX4" security_type="Облигации" securyty_type_add="ОБ " nominal="1000.000000" nominal_curr="RUB" lot_size="1" ticker="RU000A103WX4" nkd="16.110000" nkd_face_curr="16.110000" market_price="100.59000000" />
 </spot_portfolio_security_params>
 </broker_report>

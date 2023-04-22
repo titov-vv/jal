@@ -611,6 +611,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset_info['search_online'] == "MOEX":
                 search_data = {}
                 self._uppend_keys_from(search_data, asset_info, ['isin', 'reg_number'])
+                if 'symbol' in asset_info:
+                    search_data['name'] = asset_info['symbol']   # Search as by name as it is more flexible
                 symbol = QuoteDownloader.MOEX_find_secid(**search_data)
                 if not symbol and 'symbol' in asset_info:
                     symbol = asset_info['symbol']

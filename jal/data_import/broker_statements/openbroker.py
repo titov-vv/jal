@@ -475,7 +475,7 @@ class StatementOpenBroker(StatementXML):
         interest = parts.groupdict()
         if len(interest) != intrest_pattern.count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Interest description miss some data ") + f"'{description}'")
-        asset_id = self.asset_id({'symbol': interest['symbol']})
+        asset_id = self.asset_id({'symbol': interest['symbol'], 'search_online': 'MOEX'})
         if asset_id is None:
             raise Statement_ImportError(self.tr("Can't find asset for bond interest ")
                                         + f"'{interest['symbol']}'")

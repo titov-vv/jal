@@ -13,7 +13,8 @@
     {"id": 7, "type": "stock", "name": "PLLC Yandex N.V. class A shs", "isin": "NL0009805522"},
     {"id": 8, "type": "stock", "name": "АДР Ozon Holdings PLC ORD SHS", "isin": "US69269L1044"},
     {"id": 9, "type": "stock", "name": "ПАО \"НОВАТЭК\" ао", "isin": "RU000A0DKVS5"},
-    {"id": 10, "type": "bond", "name": "ПИК-Корпорация 001Р-03", "isin": "RU000A1026C1"}
+    {"id": 10, "type": "bond", "name": "ПИК-Корпорация 001Р-03", "isin": "RU000A1026C1"},
+    {"id": 11, "type": "bond", "name": "ФПК Гарант-Инвест БО 002Р-04", "isin": "RU000A103WX4"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "RUB"},
@@ -25,7 +26,8 @@
     {"id": 8, "asset": 7, "symbol": "YNDX", "currency": 2, "note": "MOEX"},
     {"id": 10, "asset": 8, "symbol": "OZON", "currency": 1, "note": "MOEX"},
     {"id": 12, "asset": 9, "symbol": "NVTK", "currency": 1, "note": "MOEX"},
-    {"id": 14, "asset": 10, "symbol": "ПИК К 1P3", "currency": 1, "note": "MOEX"}
+    {"id": 14, "asset": 10, "symbol": "ПИК К 1P3", "currency": 1, "note": "MOEX"},
+    {"id": 15, "asset": 11, "symbol": "ГарИнв2P04", "currency": 1, "note": "MOEX"}
   ],
   "assets_data": [
     {"id": 1, "asset": 3, "reg_number": "RU34003MOR0", "principal": 400.0, "expiry": 1630627200},
@@ -34,7 +36,8 @@
     {"id": 4, "asset": 6, "reg_number": "10301481B", "principal": 3.0},
     {"id": 5, "asset": 7, "principal": 0.01},
     {"id": 6, "asset": 9, "principal": 0.1, "reg_number": "1-02-00268-E"},
-    {"id": 7, "asset": 10, "principal": 1000.0, "reg_number": "4B02-03-00464-R-001P", "expiry": 1680048000}
+    {"id": 7, "asset": 10, "principal": 1000.0, "reg_number": "4B02-03-00464-R-001P", "expiry": 1680048000},
+    {"id": 8, "asset": 11, "principal": 1000.0, "reg_number": "4B02-04-71794-H-002P", "expiry": 1685059200}
   ],
   "trades": [
     {"id": 1, "number": "4196406008", "timestamp": 1622127229, "settlement": 1622160000, "account": 1, "asset": 3, "quantity": 50.0, "price": 401.6, "fee": 10.04},
@@ -70,6 +73,7 @@
     {"id": 3, "type": "interest", "account": 1, "timestamp": 1622135723, "number": "4196915558", "asset": 4, "amount": -142.95, "description": "НКД"},
     {"id": 4, "type": "interest", "account": 1, "timestamp": 1630454400, "asset": 4, "amount": 204.0, "tax": 197.0, "description": "НКД 7"},
     {"id": 5, "type": "interest", "account": 1, "timestamp": 1630627200, "asset": 3, "amount": 834.0, "tax": 108.0, "description": "НКД 20"},
-    {"id": 6, "type": "dividend", "account": 1, "timestamp": 1650844800, "asset": 9, "amount": 875.4, "tax": 114.0, "description": "Выплата дохода клиент 12345 дивиденды Новатэк-ао-2 налог к удержанию 114.00 рублей"}
+    {"id": 6, "type": "dividend", "account": 1, "timestamp": 1650844800, "asset": 9, "amount": 875.4, "tax": 114.0, "description": "Выплата дохода клиент 12345 дивиденды Новатэк-ао-2 налог к удержанию 114.00 рублей"},
+    {"id": 7, "type": "interest", "account": 1, "timestamp": 1677456000, "asset": 11, "amount": 14960.0, "tax": 1945.0,"description": "НКД 5"}
   ]
 }
