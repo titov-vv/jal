@@ -3,10 +3,11 @@ import importlib
 import os
 from collections import defaultdict
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, QFileInfo, QStandardPaths, Signal
 from PySide6.QtWidgets import QFileDialog
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
+from jal.db.settings import JalSettings
 from jal.data_import.statement import Statement_ImportError
 
 
@@ -57,8 +58,12 @@ class Statements(QObject):
         statement_loader = self.items[action.data()]
         module = statement_loader['module']
         dlg = QFileDialog.getOpenFileNames if 'sortInputStatementFiles' in dir(module) else QFileDialog.getOpenFileName
+        LAST_DIR_KEY = "LAST_OPEN_STATEMENT_DIR"
+        folder = JalSettings().getValue(LAST_DIR_KEY)
+        if not folder: folder = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
+        if not folder: folder = ".."
         statement_files, active_filter = dlg(None, self.tr("Select statement files to import"),
-                                             ".", statement_loader['filename_filter'])
+                                             folder, statement_loader['filename_filter'])
         if not statement_files:
             return
 
@@ -66,6 +71,8 @@ class Statements(QObject):
             statement_files = [statement_files]
         else:
             module.sortInputStatementFiles(statement_files)
+
+        JalSettings().setValue(LAST_DIR_KEY, QFileInfo(statement_files[0]).absolutePath())
 
         class_instance = getattr(module, statement_loader['loader_class'])
         for statement_file in statement_files:
