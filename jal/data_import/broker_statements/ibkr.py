@@ -12,7 +12,7 @@ from jal.widgets.helpers import ManipulateDate, ts2dt, ts2d
 from jal.db.helpers import format_decimal
 from jal.db.account import JalAccount
 from jal.db.operations import Dividend
-from jal.data_import.statement import FOF, Statement_ImportError
+from jal.data_import.statement import FOF, Statement_ImportError, Statement_Capabilities
 from jal.data_import.statement_xml import StatementXML
 
 JAL_STATEMENT_CLASS = "StatementIBKR"
@@ -271,8 +271,13 @@ class StatementIBKR(StatementXML):
                            'loader': self.load_cfd_charges},
         }
 
-    def tr(self, text):
+    @staticmethod
+    def tr(text):
         return QApplication.translate("IBKR", text)
+
+    @staticmethod
+    def capabilities() -> set:
+        return {Statement_Capabilities.MULTIPLE_LOAD}
 
     # Saves information from XML that is related with a given asset
     def save_debug_info(self, account, asset):
@@ -1105,25 +1110,26 @@ class StatementIBKR(StatementXML):
         for asset_id in rights_id:
             self.remove_asset(asset_id)
 
-# -----------------------------------------------------------------------------------------------------------------------
-def sortInputStatementFiles(statementFiles):
-    READ_COUNT=1024
-    pattern = re.compile(r'<FlexStatement.*fromDate=\"([0-9]*)\"\stoDate=\"([0-9]*)\".*>')
-    files = []
-    for file in statementFiles:
-        with open(file) as f:
-            m = re.search(pattern, f.read(READ_COUNT))
-            if not m:
-                logging.error(QApplication.translate("IBKR", "Can't find a FlexStatement in first {} bytes of {}".format(READ_COUNT,file)))
-                return []
-            start = int(m.group(1))
-            end = int(m.group(2))
-            item = [start, end, file]
-            idx = 0
-            for i in files:
-                if item[1] <= i[0]:
-                    break
-                idx += 1
-            files.insert(idx, item)
-            f.close()
-    return [x[2] for x in files]
+    # -----------------------------------------------------------------------------------------------------------------------
+    @staticmethod
+    def order_statements(statementFiles) -> list:
+        READ_COUNT=1024
+        pattern = re.compile(r'<FlexStatement.*fromDate=\"([0-9]*)\"\stoDate=\"([0-9]*)\".*>')
+        files = []
+        for file in statementFiles:
+            with open(file) as f:
+                m = re.search(pattern, f.read(READ_COUNT))
+                if not m:
+                    logging.error(StatementIBKR.tr("Can't find a FlexStatement in first {} bytes of {}".format(READ_COUNT,file)))
+                    return []
+                start = int(m.group(1))
+                end = int(m.group(2))
+                item = [start, end, file]
+                idx = 0
+                for i in files:
+                    if item[1] <= i[0]:
+                        break
+                    idx += 1
+                files.insert(idx, item)
+                f.close()
+        return [x[2] for x in files]

@@ -74,6 +74,10 @@ class FOF:
 class Statement_ImportError(Exception):
     pass
 
+# Possible statement module capabilities
+class Statement_Capabilities:
+    MULTIPLE_LOAD = 1
+
 
 # -----------------------------------------------------------------------------------------------------------------------
 class Statement(QObject):   # derived from QObject to have proper string translation
@@ -138,6 +142,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 logging.warning(self.tr("Debug information is saved in ") + dump_name)
             except Exception as e:
                 logging.error(self.tr("Failed to write statement dump into: ") + dump_name + ": " + str(e))
+
+    # Returns a specific capabilities that is supported by some statement modules
+    @staticmethod
+    def capabilities() -> set:
+        return set()
 
     # returns tuple (start_timestamp, end_timestamp)
     def period(self):

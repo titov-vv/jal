@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QFileDialog
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
 from jal.db.settings import JalSettings
-from jal.data_import.statement import Statement_ImportError
+from jal.data_import.statement import Statement_ImportError, Statement_Capabilities
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -56,24 +56,27 @@ class Statements(QObject):
     # method is called directly from menu, so it contains QAction that was triggered
     def load(self, action):
         statement_loader = self.items[action.data()]
-        module = statement_loader['module']
-        dlg = QFileDialog.getOpenFileNames if 'sortInputStatementFiles' in dir(module) else QFileDialog.getOpenFileName
         folder = JalSettings().getValue("RecentFolder_Statement")
         if not folder: folder = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
         if not folder: folder = "."
-        statement_files, active_filter = dlg(None, self.tr("Select statement files to import"),
-                                             folder, statement_loader['filename_filter'])
+        statement_files, active_filter = QFileDialog.getOpenFileNames(None, self.tr("Select statement files to import"),
+                                                                      folder, statement_loader['filename_filter'])
         if not statement_files:
             return
+        JalSettings().setValue("RecentFolder_Statement", QFileInfo(statement_files[0]).absolutePath())
 
+        module = statement_loader['module']
+        class_instance = getattr(module, statement_loader['loader_class'])
         if type(statement_files) is str:
             statement_files = [statement_files]
         else:
-            module.sortInputStatementFiles(statement_files)
-
-        JalSettings().setValue("RecentFolder_Statement", QFileInfo(statement_files[0]).absolutePath())
-
-        class_instance = getattr(module, statement_loader['loader_class'])
+            if not Statement_Capabilities.MULTIPLE_LOAD in class_instance.capabilities():
+                logging.warning(statement_loader['name'] +
+                                self.tr(" - module doesn't support multiple statements load."))
+                return
+            statement_files = class_instance.order_statements(statement_files)
+        if not statement_files:
+            return
         for statement_file in statement_files:
             statement = class_instance()
             try:
