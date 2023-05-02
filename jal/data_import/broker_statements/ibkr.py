@@ -1107,3 +1107,26 @@ class StatementIBKR(StatementXML):
         rights_id = [x['id'] for x in self._data[FOF.ASSETS] if x['type'] == FOF.ASSET_RIGHTS]
         for asset_id in rights_id:
             self.remove_asset(asset_id)
+
+# -----------------------------------------------------------------------------------------------------------------------
+def sortInputStatementFiles(statementFiles):
+    READ_COUNT=1024
+    pattern = re.compile(r'<FlexStatement.*fromDate=\"([0-9]*)\"\stoDate=\"([0-9]*)\".*>')
+    files = []
+    for file in statementFiles:
+        with open(file) as f:
+            m = re.search(pattern, f.read(READ_COUNT))
+            if not m:
+                logging.error(QApplication.translate("IBKR", "Can't find a FlexStatement in first {} bytes of {}".format(READ_COUNT,file)))
+                return []
+            start = int(m.group(1))
+            end = int(m.group(2))
+            item = [start, end, file]
+            idx = 0
+            for i in files:
+                if item[1] <= i[0]:
+                    break
+                idx += 1
+            files.insert(idx, item)
+            f.close()
+    return [x[2] for x in files]
