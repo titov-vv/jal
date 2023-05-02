@@ -58,10 +58,9 @@ class Statements(QObject):
         statement_loader = self.items[action.data()]
         module = statement_loader['module']
         dlg = QFileDialog.getOpenFileNames if 'sortInputStatementFiles' in dir(module) else QFileDialog.getOpenFileName
-        LAST_DIR_KEY = "LAST_OPEN_STATEMENT_DIR"
-        folder = JalSettings().getValue(LAST_DIR_KEY)
+        folder = JalSettings().getValue("RecentFolder_Statement")
         if not folder: folder = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
-        if not folder: folder = ".."
+        if not folder: folder = "."
         statement_files, active_filter = dlg(None, self.tr("Select statement files to import"),
                                              folder, statement_loader['filename_filter'])
         if not statement_files:
@@ -72,7 +71,7 @@ class Statements(QObject):
         else:
             module.sortInputStatementFiles(statement_files)
 
-        JalSettings().setValue(LAST_DIR_KEY, QFileInfo(statement_files[0]).absolutePath())
+        JalSettings().setValue("RecentFolder_Statement", QFileInfo(statement_files[0]).absolutePath())
 
         class_instance = getattr(module, statement_loader['loader_class'])
         for statement_file in statement_files:
