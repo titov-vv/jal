@@ -3,10 +3,11 @@ import importlib
 import os
 from collections import defaultdict
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, QFileInfo, QStandardPaths, Signal
 from PySide6.QtWidgets import QFileDialog
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
+from jal.db.settings import JalSettings
 from jal.data_import.statement import Statement_ImportError
 
 
@@ -55,20 +56,33 @@ class Statements(QObject):
     # method is called directly from menu, so it contains QAction that was triggered
     def load(self, action):
         statement_loader = self.items[action.data()]
-        statement_file, active_filter = QFileDialog.getOpenFileName(None, self.tr("Select statement file to import"),
-                                                                    ".", statement_loader['filename_filter'])
-        if not statement_file:
-            return
         module = statement_loader['module']
-        class_instance = getattr(module, statement_loader['loader_class'])
-        statement = class_instance()
-        try:
-            statement.load(statement_file)
-            statement.validate_format()
-            statement.match_db_ids()
-            totals = statement.import_into_db()
-        except Statement_ImportError as e:
-            logging.error(self.tr("Import failed: ") + str(e))
-            self.load_failed.emit()
+        dlg = QFileDialog.getOpenFileNames if 'sortInputStatementFiles' in dir(module) else QFileDialog.getOpenFileName
+        folder = JalSettings().getValue("RecentFolder_Statement")
+        if not folder: folder = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
+        if not folder: folder = "."
+        statement_files, active_filter = dlg(None, self.tr("Select statement files to import"),
+                                             folder, statement_loader['filename_filter'])
+        if not statement_files:
             return
+
+        if type(statement_files) is str:
+            statement_files = [statement_files]
+        else:
+            module.sortInputStatementFiles(statement_files)
+
+        JalSettings().setValue("RecentFolder_Statement", QFileInfo(statement_files[0]).absolutePath())
+
+        class_instance = getattr(module, statement_loader['loader_class'])
+        for statement_file in statement_files:
+            statement = class_instance()
+            try:
+                statement.load(statement_file)
+                statement.validate_format()
+                statement.match_db_ids()
+                totals = statement.import_into_db()
+            except Statement_ImportError as e:
+                logging.error(self.tr("Import failed: ") + str(e))
+                self.load_failed.emit()
+                return
         self.load_completed.emit(statement.period()[1], totals)
