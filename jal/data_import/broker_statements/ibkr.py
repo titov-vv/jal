@@ -318,9 +318,6 @@ class StatementIBKR(StatementXML):
         if attr_name not in xml_element.attrib:
             return default_value
         asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
-        if asset_category not in [FOF.ASSET_STOCK, FOF.ASSET_BOND, FOF.ASSET_WARRANT, FOF.ASSET_CFD, FOF.ASSET_ETF]:
-            logging.error(self.tr("Corporate action isn't supported for asset type: ") + f"'{asset_category}'")
-            return default_value
         return IBKR_CorpActionType(xml_element.attrib[attr_name]).type
 
     def attr_currency(self, xml_element, attr_name, default_value):
