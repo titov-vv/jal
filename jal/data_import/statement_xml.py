@@ -54,7 +54,7 @@ class StatementXML(Statement):
         if attr_name not in xml_element.attrib:
             return default_value
         try:
-            value = float(xml_element.attrib[attr_name])
+            value = float(xml_element.attrib[attr_name].replace(',', '').replace(' ', ''))
         except ValueError:
             return None
         return value
