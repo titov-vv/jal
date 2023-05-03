@@ -4053,7 +4053,7 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="86"/>
+        <location filename="../data_import/statements.py" line="88"/>
         <source>Import failed: </source>
         <translation type="unfinished"></translation>
     </message>

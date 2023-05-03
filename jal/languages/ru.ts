@@ -4057,7 +4057,7 @@ Application will be terminated now</source>
         <translation> - модуль не поддерживает загрузку нескольких отчётов одновременно.</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="86"/>
+        <location filename="../data_import/statements.py" line="88"/>
         <source>Import failed: </source>
         <translation>Ошибка импорта: </translation>
     </message>

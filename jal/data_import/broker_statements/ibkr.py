@@ -273,7 +273,7 @@ class StatementIBKR(StatementXML):
 
     @staticmethod
     def tr(text):
-        return QApplication.translate("IBKR", text)
+        return QApplication.translate("StatementIBKR", text)
 
     @staticmethod
     def capabilities() -> set:
@@ -1120,7 +1120,7 @@ class StatementIBKR(StatementXML):
             with open(file) as f:
                 m = re.search(pattern, f.read(READ_COUNT))
                 if not m:
-                    logging.error(StatementIBKR.tr("Can't find a FlexStatement in first {} bytes of {}".format(READ_COUNT,file)))
+                    logging.error(StatementIBKR.tr("Can't find a FlexStatement in first {} bytes of {}").format(READ_COUNT,file))
                     return []
                 start = int(m.group(1))
                 end = int(m.group(2))
