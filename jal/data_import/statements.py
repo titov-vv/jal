@@ -3,11 +3,11 @@ import importlib
 import os
 from collections import defaultdict
 
-from PySide6.QtCore import QObject, QFileInfo, QStandardPaths, Signal
+from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QFileDialog
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
-from jal.db.settings import JalSettings
+from jal.db.settings import JalSettings, FolderFor
 from jal.data_import.statement import Statement_ImportError, Statement_Capabilities
 
 
@@ -56,14 +56,12 @@ class Statements(QObject):
     # method is called directly from menu, so it contains QAction that was triggered
     def load(self, action):
         statement_loader = self.items[action.data()]
-        folder = JalSettings().getValue("RecentFolder_Statement")
-        if not folder: folder = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
-        if not folder: folder = "."
+        folder = JalSettings().getRecentFolder(FolderFor.Statement, '.')
         statement_files, active_filter = QFileDialog.getOpenFileNames(None, self.tr("Select statement files to import"),
                                                                       folder, statement_loader['filename_filter'])
         if not statement_files:
             return
-        JalSettings().setValue("RecentFolder_Statement", QFileInfo(statement_files[0]).absolutePath())
+        JalSettings().setRecentFolder(FolderFor.Statement, statement_files[0])
 
         module = statement_loader['module']
         class_instance = getattr(module, statement_loader['loader_class'])
