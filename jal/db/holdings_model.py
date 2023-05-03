@@ -310,6 +310,7 @@ class HoldingsModel(AbstractTreeModel):
             else:
                 self._root.getChild(i).data['share'] = None
         self.modelReset.emit()
+        self.configureView()
         self._view.expandAll()
 
     # Update node totals with sum of profit, value and adjusted profit and value of all children

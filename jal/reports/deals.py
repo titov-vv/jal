@@ -40,10 +40,10 @@ class DealsReportWindow(MdiWidget):
         self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
-        self.ReportAccountBtn.changed.connect(self.onAccountChange)
-        self.ReportRange.changed.connect(self.ReportTreeView.model().setDatesRange)
-        self.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
-        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ReportTreeView.model()))
+        self.ui.ReportAccountBtn.changed.connect(self.onAccountChange)
+        self.ui.ReportRange.changed.connect(self.ui.ReportTreeView.model().setDatesRange)
+        self.ui.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
+        self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
     @Slot()
     def onAccountChange(self):

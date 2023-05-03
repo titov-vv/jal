@@ -136,7 +136,6 @@ class ClosedTradesModel(AbstractTreeModel):
     def setAccount(self, account_id):
         self._account_id = account_id
         self.prepareData()
-        self.configureView()
 
     def prepareData(self):
         self._trades = JalAccount(self._account_id).closed_trades_list()
@@ -147,6 +146,7 @@ class ClosedTradesModel(AbstractTreeModel):
             leaf = self._root.getGroupLeaf(self._groups, new_item)
             leaf.appendChild(new_item)
         self.modelReset.emit()
+        self.configureView()
         self._view.expandAll()
 
     def configureView(self):
@@ -184,4 +184,3 @@ class ClosedTradesModel(AbstractTreeModel):
         self._begin = begin
         self._end = end
         self.prepareData()
-        self.configureView()

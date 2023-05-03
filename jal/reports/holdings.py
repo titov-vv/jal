@@ -33,48 +33,48 @@ class HoldingsReportWindow(MdiWidget):
         self.name = self.tr("Holdings")
 
         # Add available groupings
-        self.GroupCombo.addItem(self.tr("Currency - Account - Asset"), "currency_id;account_id;asset_id")
-        self.GroupCombo.addItem(self.tr("Asset - Account"), "asset_id;account_id")
+        self.ui.GroupCombo.addItem(self.tr("Currency - Account - Asset"), "currency_id;account_id;asset_id")
+        self.ui.GroupCombo.addItem(self.tr("Asset - Account"), "asset_id;account_id")
 
-        self.holdings_model = HoldingsModel(self.HoldingsTreeView)
-        self.HoldingsTreeView.setModel(self.holdings_model)
-        self.holdings_model.configureView()
-        self.HoldingsTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.holdings_model = HoldingsModel(self.ui.HoldingsTreeView)
+        self.ui.HoldingsTreeView.setModel(self.holdings_model)
+        # self.holdings_model.configureView()
+        self.ui.HoldingsTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.connect_signals_and_slots()
 
         # Setup holdings parameters
         current_time = QDateTime.currentDateTime()
         current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
-        self.HoldingsDate.setDateTime(current_time)
-        self.HoldingsCurrencyCombo.setIndex(JalAsset.get_base_currency())
+        self.ui.HoldingsDate.setDateTime(current_time)
+        self.ui.HoldingsCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
     def connect_signals_and_slots(self):
-        self.HoldingsDate.dateChanged.connect(self.HoldingsTreeView.model().setDate)
-        self.HoldingsCurrencyCombo.changed.connect(self.HoldingsTreeView.model().setCurrency)
-        self.HoldingsTreeView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
-        self.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
-        self.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.HoldingsTreeView.model()))
+        self.ui.HoldingsDate.dateChanged.connect(self.ui.HoldingsTreeView.model().setDate)
+        self.ui.HoldingsCurrencyCombo.changed.connect(self.ui.HoldingsTreeView.model().setCurrency)
+        self.ui.HoldingsTreeView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
+        self.ui.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
+        self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.HoldingsTreeView.model()))
 
     @Slot()
     def onGroupingChange(self, idx):
-        self.HoldingsTreeView.model().setGrouping(self.GroupCombo.itemData(idx))
+        self.ui.HoldingsTreeView.model().setGrouping(self.ui.GroupCombo.itemData(idx))
 
     @Slot()
     def onHoldingsContextMenu(self, pos):
-        index = self.HoldingsTreeView.indexAt(pos)
-        contextMenu = QMenu(self.HoldingsTreeView)
-        actionShowChart = QAction(icon=load_icon("chart.png"), text=self.tr("Show Price Chart"), parent=self.HoldingsTreeView)
+        index = self.ui.HoldingsTreeView.indexAt(pos)
+        contextMenu = QMenu(self.ui.HoldingsTreeView)
+        actionShowChart = QAction(icon=load_icon("chart.png"), text=self.tr("Show Price Chart"), parent=self.ui.HoldingsTreeView)
         actionShowChart.triggered.connect(partial(self.showPriceChart, index))
         contextMenu.addAction(actionShowChart)
         tax_submenu = contextMenu.addMenu(load_icon("tax.png"), self.tr("Estimate tax"))
-        actionEstimateTaxPt = QAction(text=self.tr("Portugal"), parent=self.HoldingsTreeView)
+        actionEstimateTaxPt = QAction(text=self.tr("Portugal"), parent=self.ui.HoldingsTreeView)
         actionEstimateTaxPt.triggered.connect(partial(self.estimateRussianTax, index, 'pt'))
         tax_submenu.addAction(actionEstimateTaxPt)
-        actionEstimateTaxRu = QAction(text=self.tr("Russia"), parent=self.HoldingsTreeView)
+        actionEstimateTaxRu = QAction(text=self.tr("Russia"), parent=self.ui.HoldingsTreeView)
         actionEstimateTaxRu.triggered.connect(partial(self.estimateRussianTax, index, 'ru'))
         tax_submenu.addAction(actionEstimateTaxRu)
-        contextMenu.popup(self.HoldingsTreeView.viewport().mapToGlobal(pos))
+        contextMenu.popup(self.ui.HoldingsTreeView.viewport().mapToGlobal(pos))
 
     @Slot()
     def showPriceChart(self, index):

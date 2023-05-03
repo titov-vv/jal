@@ -385,62 +385,62 @@
 <context>
     <name>ClosedTradesModel</name>
     <message>
-        <location filename="../reports/deals.py" line="142"/>
+        <location filename="../db/trades_model.py" line="106"/>
         <source>Asset</source>
         <translation>Ценная бумага</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="143"/>
+        <location filename="../db/trades_model.py" line="107"/>
         <source>Open Date/Time</source>
         <translation>Дата/Время открытия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="144"/>
+        <location filename="../db/trades_model.py" line="108"/>
         <source>Open Date</source>
         <translation>Дата открытия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="145"/>
+        <location filename="../db/trades_model.py" line="109"/>
         <source>Close Date/Time</source>
         <translation>Дата/время закрытия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="146"/>
+        <location filename="../db/trades_model.py" line="110"/>
         <source>Close Date</source>
         <translation>Дата закрытия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="147"/>
+        <location filename="../db/trades_model.py" line="111"/>
         <source>Open Price</source>
         <translation>Цена открытия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="148"/>
+        <location filename="../db/trades_model.py" line="112"/>
         <source>Close Price</source>
         <translation>Цена закрытия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="149"/>
+        <location filename="../db/trades_model.py" line="113"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="150"/>
+        <location filename="../db/trades_model.py" line="114"/>
         <source>Fee</source>
         <translation>Комиссия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="151"/>
+        <location filename="../db/trades_model.py" line="115"/>
         <source>P/L</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="152"/>
+        <location filename="../db/trades_model.py" line="116"/>
         <source>P/L, %</source>
         <translation>ПиУ, %</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="153"/>
+        <location filename="../db/trades_model.py" line="117"/>
         <source>Note</source>
         <translation>Примечание</translation>
     </message>
@@ -711,7 +711,7 @@
 <context>
     <name>DealsReport</name>
     <message>
-        <location filename="../reports/deals.py" line="295"/>
+        <location filename="../reports/deals.py" line="17"/>
         <source>Deals by Account</source>
         <translation>Сделки по счету</translation>
     </message>
@@ -733,36 +733,46 @@
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
+    <message>
+        <location filename="../ui/reports/deals_report.ui" line="99"/>
+        <source>Save...</source>
+        <translation type="unfinished">Сохранить...</translation>
+    </message>
 </context>
 <context>
     <name>DealsReportWindow</name>
     <message>
-        <location filename="../reports/deals.py" line="307"/>
+        <location filename="../reports/deals.py" line="30"/>
         <source>&lt;None&gt;</source>
         <translation>&lt;Пусто&gt;</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="308"/>
+        <location filename="../reports/deals.py" line="30"/>
+        <source>Deals</source>
+        <translation type="unfinished">Сделки</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="31"/>
         <source>Asset</source>
         <translation>Ценная бумага</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="309"/>
+        <location filename="../reports/deals.py" line="32"/>
         <source>Close</source>
         <translation>Закрытие</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="310"/>
+        <location filename="../reports/deals.py" line="33"/>
         <source>Asset - Open - Close</source>
         <translation>ЦБ - Открытие - Закрытие</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="311"/>
+        <location filename="../reports/deals.py" line="34"/>
         <source>Open - Close</source>
         <translation>Открытие - Закрытие</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="312"/>
+        <location filename="../reports/deals.py" line="35"/>
         <source>Close - Open</source>
         <translation>Закрытие - Открытие</translation>
     </message>
@@ -929,62 +939,62 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="52"/>
+        <location filename="../db/holdings_model.py" line="40"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="53"/>
+        <location filename="../db/holdings_model.py" line="41"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="54"/>
+        <location filename="../db/holdings_model.py" line="42"/>
         <source>Last</source>
         <translation>Цена закр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="55"/>
+        <location filename="../db/holdings_model.py" line="43"/>
         <source>Share, %</source>
         <translation>Доля, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="56"/>
+        <location filename="../db/holdings_model.py" line="44"/>
         <source>P/L, %</source>
         <translation>ПиУ, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="57"/>
+        <location filename="../db/holdings_model.py" line="45"/>
         <source>P/L</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="58"/>
+        <location filename="../db/holdings_model.py" line="46"/>
         <source>Value</source>
         <translation>Оценка</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="61"/>
+        <location filename="../db/holdings_model.py" line="49"/>
         <source>Value, </source>
         <translation>Оценка, </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="171"/>
+        <location filename="../db/holdings_model.py" line="123"/>
         <source>Last quote date: </source>
         <translation>Дата последней котировки: </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="50"/>
+        <location filename="../db/holdings_model.py" line="38"/>
         <source>Currency/Account/Asset</source>
         <translation>Валюта/Счёт/ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="51"/>
+        <location filename="../db/holdings_model.py" line="39"/>
         <source>Asset Name</source>
         <translation>Ценная бумага</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="134"/>
+        <location filename="../db/holdings_model.py" line="86"/>
         <source>Exp:</source>
         <translation>Эксп:</translation>
     </message>
@@ -1000,27 +1010,37 @@
 <context>
     <name>HoldingsReportWindow</name>
     <message>
-        <location filename="../reports/holdings.py" line="35"/>
+        <location filename="../reports/holdings.py" line="36"/>
         <source>Holdings</source>
         <translation>Портфель ЦБ</translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="58"/>
+        <location filename="../reports/holdings.py" line="36"/>
+        <source>Currency - Account - Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="37"/>
+        <source>Asset - Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="67"/>
         <source>Show Price Chart</source>
         <translation>Показать график цены</translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="61"/>
+        <location filename="../reports/holdings.py" line="70"/>
         <source>Estimate tax</source>
         <translation>Оценить налог</translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="62"/>
+        <location filename="../reports/holdings.py" line="71"/>
         <source>Portugal</source>
         <translation>Португалия</translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="65"/>
+        <location filename="../reports/holdings.py" line="74"/>
         <source>Russia</source>
         <translation>Россия</translation>
     </message>
@@ -1039,11 +1059,16 @@
     </message>
     <message>
         <location filename="../ui/reports/holdings_report.ui" line="82"/>
+        <source>Group by:</source>
+        <translation type="unfinished">Группировать по:</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/holdings_report.ui" line="92"/>
         <source>Common currency:</source>
         <translation>Валюта пересчёта:</translation>
     </message>
     <message>
-        <location filename="../ui/reports/holdings_report.ui" line="105"/>
+        <location filename="../ui/reports/holdings_report.ui" line="115"/>
         <source>Save...</source>
         <translation>Сохранить...</translation>
     </message>
@@ -3530,39 +3555,39 @@ Application will be terminated now</source>
         <translation>Сделки с крипто-валютами загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="240"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="241"/>
         <source>Unsuppported cash transaction </source>
         <translation>Неподдерживаемая денежная транзакция </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="248"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="249"/>
         <source>Unknown cash transaction type </source>
         <translation>Неизвестная денежная транзакция </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="267"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="268"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="313"/>
-        <location filename="../data_import/broker_statements/just2trade.py" line="328"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="314"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="329"/>
         <source>Can&apos;t parse Dividend description </source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="316"/>
-        <location filename="../data_import/broker_statements/just2trade.py" line="331"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="317"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="332"/>
         <source>Dividend description miss some data </source>
         <translation>В описании дивиденда отсутствуют данные </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="336"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="337"/>
         <source>Dividend for tax was not found </source>
         <translation>Дивиденд не найден для списания налога </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="363"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="364"/>
         <source>Import skipped of transaction: </source>
         <translation>Транзакция пропущена при импорте: </translation>
     </message>
@@ -4052,12 +4077,12 @@ Application will be terminated now</source>
         <translation>Выберите файлы отчётов для загрузки</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="75"/>
+        <location filename="../data_import/statements.py" line="73"/>
         <source> - module doesn&apos;t support multiple statements load.</source>
         <translation> - модуль не поддерживает загрузку нескольких отчётов одновременно.</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="88"/>
+        <location filename="../data_import/statements.py" line="86"/>
         <source>Import failed: </source>
         <translation>Ошибка импорта: </translation>
     </message>
