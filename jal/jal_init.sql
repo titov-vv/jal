@@ -675,6 +675,7 @@ INSERT INTO settings(id, name, value) VALUES (9, 'WindowState', '');
 INSERT INTO settings(id, name, value) VALUES (10, 'MessageOnce', '');
 INSERT INTO settings(id, name, value) VALUES (11, 'RecentFolder_Statement', '.');
 INSERT INTO settings(id, name, value) VALUES (12, 'RecentFolder_Report', '.');
+INSERT INTO settings(id, name, value) VALUES (13, 'CleanDB', 0);
 
 -- Initialize available languages
 INSERT INTO languages (id, language) VALUES (1, 'en');

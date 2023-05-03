@@ -10,4 +10,5 @@ But there are some problematic enviroments sometimes, like Windows with ARM (M1)
 JAL must run not from interactive python shell but, as any other python script, by passing a name of running program to python interpreter as an argument. It's shown in examples in Readme. 
 
 3. *How to start from begining, with clean database*?   
-There is no internal function to do this, but you may just delete JAL database (don't forget to make backup if needed!). Database file is named `jal/jal.sqlite`. If you delete it (while programm is closed, sure), next run JAL creates new, clean database.
+You may use menu _Data -> Clean All_ to start from scratch.  
+Or you may delete JAL database file manually (don't forget to make backup if needed!). Database file is named `jal/jal.sqlite`. If you delete it (while programm is closed, sure), next run JAL creates new, clean database.

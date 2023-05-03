@@ -115,6 +115,13 @@ class JalDB:
             error = self.run_sql_script(db_path + Setup.INIT_SCRIPT_PATH)
             if error.code != JalDBError.NoError:
                 return error
+        if self._read("SELECT value FROM settings WHERE name='CleanDB'") == 1:
+            db.close()
+            os.remove(get_dbfilename(db_path))
+            db.open()
+            error = self.run_sql_script(db_path + Setup.INIT_SCRIPT_PATH)
+            if error.code != JalDBError.NoError:
+                return error
         schema_version = self._read("SELECT value FROM settings WHERE name='SchemaVersion'")
         if schema_version < Setup.DB_REQUIRED_VERSION:
             db.close()
@@ -147,6 +154,11 @@ class JalDB:
         if not db.isOpen():
             logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
         return db
+
+    # Returns a name of current database file in use
+    @classmethod
+    def _db_path(cls) -> str:
+        return cls.connection().databaseName()
 
     # -------------------------------------------------------------------------------------------------------------------
     # Executes an SQL query from given sql_text

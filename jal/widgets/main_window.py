@@ -91,6 +91,7 @@ class MainWindow(QMainWindow):
         self.ui.actionBackup.triggered.connect(self.backup.create)
         self.ui.actionRestore.triggered.connect(self.backup.restore)
         self.ui.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
+        self.ui.actionCleanAll.triggered.connect(self.onCleanDB)
         self.ui.actionAccounts.triggered.connect(partial(self.onDataDialog, "accounts"))
         self.ui.actionAssets.triggered.connect(partial(self.onDataDialog, "assets"))
         self.ui.actionPeers.triggered.connect(partial(self.onDataDialog, "agents"))
@@ -159,10 +160,23 @@ class MainWindow(QMainWindow):
             QMessageBox().information(self, self.tr("Restart required"),
                                       self.tr("Language was changed to ") +
                                       QLocale.languageToString(QLocale(language_code).language()) + "\n" +
-                                      self.tr("You should restart application to apply changes\n"
-                                           "Application will be terminated now"),
+                                      self.tr("You should restart application to apply changes.\n"
+                                           "Application will be terminated now."),
                                       QMessageBox.Ok)
             self.close()
+
+    @Slot()
+    def onCleanDB(self, action):
+        if QMessageBox().warning(None, self.tr("Full clean-up"),
+                                 self.tr("All data will be deleted. The actions can't be undone.\nAre you sure?"),
+                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+            return
+        JalSettings().setValue("CleanDB", 1)
+        QMessageBox().information(self, self.tr("Restart required"),
+                                  self.tr("Database will be removed at next JAL start.\n"
+                                          "Application will be terminated now."),
+                                  QMessageBox.Ok)
+        self.close()
 
     # Create import menu for all known statements based on self.statements.items values
     def createStatementsImportMenu(self):
@@ -204,7 +218,8 @@ class MainWindow(QMainWindow):
         about_box.setAttribute(Qt.WA_DeleteOnClose)
         about_box.setWindowTitle(self.tr("About"))
         version = f"{__version__} (db{Setup.DB_REQUIRED_VERSION})"
-        title = "<h3>JAL</h3><p>Just Another Ledger, " + self.tr("version") + " " + version +"</p>"
+        title = "<h3>JAL</h3><p>Just Another Ledger, " + self.tr("version") + " " + version +"</p>" + \
+            "<p>DB file: " + JalSettings().DbPath() + "</p>"
         about_box.setText(title)
         about_text = "<p>" + self.tr("More information, manuals and problem reports are at ") + \
                      "<a href=https://github.com/titov-vv/jal>" + self.tr("github home page") + "</a></p><p>" + \
