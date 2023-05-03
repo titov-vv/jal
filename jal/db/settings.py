@@ -16,6 +16,9 @@ class JalSettings(JalDB):
     def __init__(self):
         super().__init__()
 
+    def DbPath(self):
+        return self._db_path()
+
     def getValue(self, key, default=None):
         value = self._read("SELECT value FROM settings WHERE name=:key", [(":key", key)])
         if value is None:

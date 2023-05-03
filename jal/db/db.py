@@ -155,6 +155,11 @@ class JalDB:
             logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
         return db
 
+    # Returns a name of current database file in use
+    @classmethod
+    def _db_path(cls) -> str:
+        return cls.connection().databaseName()
+
     # -------------------------------------------------------------------------------------------------------------------
     # Executes an SQL query from given sql_text
     # params is a list of tuples (":param", value) which are used to prepare SQL query

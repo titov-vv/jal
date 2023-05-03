@@ -218,7 +218,8 @@ class MainWindow(QMainWindow):
         about_box.setAttribute(Qt.WA_DeleteOnClose)
         about_box.setWindowTitle(self.tr("About"))
         version = f"{__version__} (db{Setup.DB_REQUIRED_VERSION})"
-        title = "<h3>JAL</h3><p>Just Another Ledger, " + self.tr("version") + " " + version +"</p>"
+        title = "<h3>JAL</h3><p>Just Another Ledger, " + self.tr("version") + " " + version +"</p>" + \
+            "<p>DB file: " + JalSettings().DbPath() + "</p>"
         about_box.setText(title)
         about_text = "<p>" + self.tr("More information, manuals and problem reports are at ") + \
                      "<a href=https://github.com/titov-vv/jal>" + self.tr("github home page") + "</a></p><p>" + \
