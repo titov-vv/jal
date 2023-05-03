@@ -74,6 +74,8 @@
      <string>&amp;Data</string>
     </property>
     <addaction name="separator"/>
+    <addaction name="action_Re_build_Ledger"/>
+    <addaction name="separator"/>
     <addaction name="actionAccounts"/>
     <addaction name="actionAssets"/>
     <addaction name="actionPeers"/>
@@ -86,7 +88,7 @@
     <addaction name="actionBackup"/>
     <addaction name="actionRestore"/>
     <addaction name="separator"/>
-    <addaction name="action_Re_build_Ledger"/>
+    <addaction name="actionCleanAll"/>
    </widget>
    <widget class="QMenu" name="menu_Export">
     <property name="title">
@@ -207,6 +209,11 @@
   <action name="actionBaseCurrency">
    <property name="text">
     <string>&amp;Base Currency</string>
+   </property>
+  </action>
+  <action name="actionCleanAll">
+   <property name="text">
+    <string>Clean All</string>
    </property>
   </action>
  </widget>
