@@ -67,9 +67,7 @@ class Statements(QObject):
 
         module = statement_loader['module']
         class_instance = getattr(module, statement_loader['loader_class'])
-        if type(statement_files) is str:
-            statement_files = [statement_files]
-        else:
+        if len(statement_files) > 1:
             if not Statement_Capabilities.MULTIPLE_LOAD in class_instance.capabilities():
                 logging.warning(statement_loader['name'] +
                                 self.tr(" - module doesn't support multiple statements load."))
