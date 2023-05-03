@@ -12,7 +12,7 @@ JAL_STATEMENT_CLASS = "StatementJ2T"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementJ2T(StatementXLS):
-    PeriodPattern = (1, 0, r"Отчет по счету клиента за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
+    PeriodPattern = (1, 0, r"Report by Client Accounts over a Period from (?P<S>\d\d\.\d\d\.\d\d\d\d) to (?P<E>\d\d\.\d\d\.\d\d\d\d)")
     AccountPattern = (5, 4, r"(?P<ACCOUNT>\S*)\\.*")
     HeaderCol = 1
     money_section = "ДС на конец периода"
@@ -23,10 +23,10 @@ class StatementJ2T(StatementXLS):
     }
     asset_section = "Открытые позиции на конец периода"
     asset_columns = {
-        "name": "Наименование инструмента",
+        "name": "Instrument description \(Название инструмента\)",
         "isin": "ISIN",
-        "symbol": "Symbol",
-        "currency": "Валюта инструмента"
+        "symbol": "Symbol \(Символ\)",
+        "currency": "Instrument сurrency \(валюта инструмента\)"
     }
 
     def __init__(self):
@@ -148,16 +148,16 @@ class StatementJ2T(StatementXLS):
     def _load_crypto_deals(self):
         cnt = 0
         columns = {
-            "number": "Номер сделки",
-            "timestamp": "Дата сделки",
-            "settlement": "Дата расчетов",
-            "account_currency": "Валюта счета",
+            "number": "Trade number \(Номер сделки\)",
+            "timestamp": "Trade date \(Дата сделки\)",
+            "settlement": "Settle date \(дата расчетов\)",
+            "account_currency": "Account currency \(Валюта счета\)",
             "asset_name": "Description",
-            "B/S": "Тип сделки",
-            "qty": "Кол-во",
-            "fee": "комиссия брокера в валюте счета",
-            "amount": "Итого в валюте счета",
-            "fee_ex": "Прочие комиссии в валюте счета"
+            "B/S": "Type of Transaction\(Тип сделки\)",
+            "qty": "Quantity \(Кол-во\)",
+            "fee": "Broker fees in account currency \(комиссия брокера в валюте счета\)",
+            "amount": "Net Value in account currency \(Итого в валюте счета\)",
+            "fee_ex": "Other fees in account currency \(прочие комиссии в валюте счета\)"
         }
 
         row, headers = self.find_section_start("Сделки c виртуальными \(крипто\) инструментами", columns,
@@ -219,7 +219,8 @@ class StatementJ2T(StatementXLS):
             'Внешние затраты::Комиссия внешнего депозитария': self.fee,
             'Перевод на ТП': self.transfer_in,
             'Списание c ТП': self.transfer_out,
-            'Корпоративные действия::Компенсации': self.skip_warning
+            'Корпоративные действия::Компенсации': self.skip_warning,
+            'Корректировка': self.skip_warning
         }
 
         start_row, headers = self.find_section_start("Движение денежных средств", columns)
