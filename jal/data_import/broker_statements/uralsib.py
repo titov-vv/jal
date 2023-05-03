@@ -11,9 +11,9 @@ JAL_STATEMENT_CLASS = "StatementUKFU"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementUKFU(StatementXLS):
-    Header = (2, 0, '  Брокер: ООО "УРАЛСИБ Брокер"')
-    PeriodPattern = (2, 2, r"  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
-    AccountPattern = (2, 7, None)
+    Header = (0, 0, '  Брокер: ООО "Твой Брокер"')
+    PeriodPattern = (0, 2, r"  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
+    AccountPattern = (2, 6, None)
     SummaryHeader = "СОСТОЯНИЕ ДЕНЕЖНЫХ СРЕДСТВ НА СЧЕТЕ"
     trade_columns = {
         "number": "Номер сделки",
@@ -45,9 +45,9 @@ class StatementUKFU(StatementXLS):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Uralsib Broker")
+        self.name = self.tr("Tvoy Broker (ex. Uralsib Broker)")
         self.icon_name = "uralsib.ico"
-        self.filename_filter = self.tr("Uralsib statement (*.zip)")
+        self.filename_filter = self.tr("Tvoy Broker statement (*.zip)")
         self.asset_withdrawal = []
 
     def _load_deals(self):

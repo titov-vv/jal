@@ -10,11 +10,12 @@ from jal.db.helpers import load_icon
 # --------------------------------------------------------------------------------------------------------------
 # Class to display and edit table with reference data (accounts, categories, tags...)
 # --------------------------------------------------------------------------------------------------------------
-class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
+class ReferenceDataDialog(QDialog):
     # tree_view - table will be displayed as hierarchical tree with help of 2 columns: 'id', 'pid' in sql table
     def __init__(self, parent=None):
-        QDialog.__init__(self)
-        self.setupUi(self)
+        super().__init__(parent)
+        self.ui = Ui_ReferenceDataDialog()
+        self.ui.setupUi(self)
         self._parent = parent
         self.model = None
         self._view = None
@@ -36,34 +37,34 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.custom_editor = False
         self.custom_context_menu = False
 
-        self.AddChildBtn.setVisible(False)
-        self.GroupLbl.setVisible(False)
-        self.GroupCombo.setVisible(False)
-        self.SearchFrame.setVisible(False)
+        self.ui.AddChildBtn.setVisible(False)
+        self.ui.GroupLbl.setVisible(False)
+        self.ui.GroupCombo.setVisible(False)
+        self.ui.SearchFrame.setVisible(False)
 
-        self.AddBtn.setIcon(load_icon("add.png"))
-        self.AddChildBtn.setIcon(load_icon("add_child.png"))
-        self.RemoveBtn.setIcon(load_icon("delete.png"))
-        self.CommitBtn.setIcon(load_icon("accept.png"))
-        self.RevertBtn.setIcon(load_icon("cancel.png"))
+        self.ui.AddBtn.setIcon(load_icon("add.png"))
+        self.ui.AddChildBtn.setIcon(load_icon("add_child.png"))
+        self.ui.RemoveBtn.setIcon(load_icon("delete.png"))
+        self.ui.CommitBtn.setIcon(load_icon("accept.png"))
+        self.ui.RevertBtn.setIcon(load_icon("cancel.png"))
 
-        self.SearchString.textChanged.connect(self.OnSearchChange)
-        self.GroupCombo.currentIndexChanged.connect(self.OnGroupChange)
-        self.Toggle.stateChanged.connect(self.OnToggleChange)
-        self.AddBtn.clicked.connect(self.OnAdd)
-        self.AddChildBtn.clicked.connect(self.OnChildAdd)
-        self.RemoveBtn.clicked.connect(self.OnRemove)
-        self.CommitBtn.clicked.connect(self.OnCommit)
-        self.RevertBtn.clicked.connect(self.OnRevert)
-        self.DataView.doubleClicked.connect(self.OnDoubleClicked)
-        self.DataView.clicked.connect(self.OnClicked)
-        self.TreeView.doubleClicked.connect(self.OnDoubleClicked)
-        self.TreeView.clicked.connect(self.OnClicked)
+        self.ui.SearchString.textChanged.connect(self.OnSearchChange)
+        self.ui.GroupCombo.currentIndexChanged.connect(self.OnGroupChange)
+        self.ui.Toggle.stateChanged.connect(self.OnToggleChange)
+        self.ui.AddBtn.clicked.connect(self.OnAdd)
+        self.ui.AddChildBtn.clicked.connect(self.OnChildAdd)
+        self.ui.RemoveBtn.clicked.connect(self.OnRemove)
+        self.ui.CommitBtn.clicked.connect(self.OnCommit)
+        self.ui.RevertBtn.clicked.connect(self.OnRevert)
+        self.ui.DataView.doubleClicked.connect(self.OnDoubleClicked)
+        self.ui.DataView.clicked.connect(self.OnClicked)
+        self.ui.TreeView.doubleClicked.connect(self.OnDoubleClicked)
+        self.ui.TreeView.clicked.connect(self.OnClicked)
 
     def _init_completed(self):
-        self.DataView.setVisible(not self.tree_view)
-        self.TreeView.setVisible(self.tree_view)
-        self._view = self.TreeView if self.tree_view else self.DataView
+        self.ui.DataView.setVisible(not self.tree_view)
+        self.ui.TreeView.setVisible(self.tree_view)
+        self._view = self.ui.TreeView if self.tree_view else self.ui.DataView
         self._view.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self._view.setContextMenuPolicy(Qt.CustomContextMenu)
         self._view.customContextMenuRequested.connect(self.onDataViewContextMenu)
@@ -84,20 +85,20 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             menu_title.setDefaultWidget(title_lbl)
             contextMenu.addAction(menu_title)
             contextMenu.addSeparator()
-            for i in range(self.GroupCombo.count()):
-                contextMenu.addAction(self.GroupCombo.itemText(i),
-                                      partial(self.updateItemType, index, self.GroupCombo.itemData(i)))
+            for i in range(self.ui.GroupCombo.count()):
+                contextMenu.addAction(self.ui.GroupCombo.itemText(i),
+                                      partial(self.updateItemType, index, self.ui.GroupCombo.itemData(i)))
         contextMenu.popup(self._view.viewport().mapToGlobal(pos))
 
     @Slot()
     def updateItemType(self, index, new_type):
         self.model.updateItemType(index, new_type)
-        self.CommitBtn.setEnabled(True)
-        self.RevertBtn.setEnabled(True)
+        self.ui.CommitBtn.setEnabled(True)
+        self.ui.RevertBtn.setEnabled(True)
 
     @Slot()
     def closeEvent(self, event):
-        if self.CommitBtn.isEnabled():    # There are uncommitted changed in a table
+        if self.ui.CommitBtn.isEnabled():    # There are uncommitted changed in a table
             if QMessageBox().warning(self, self.tr("Confirmation"),
                                      self.tr("You have uncommitted changes. Do you want to close?"),
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
@@ -134,8 +135,8 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     @Slot()
     def OnDataChanged(self):
-        self.CommitBtn.setEnabled(True)
-        self.RevertBtn.setEnabled(True)
+        self.ui.CommitBtn.setEnabled(True)
+        self.ui.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnAdd(self):
@@ -149,39 +150,39 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             idx = self._view.selectionModel().selection().indexes()
             current_index = idx[0] if idx else self.model.index(0, 0)
             self.model.addElement(current_index, in_group=self.group_id)
-            self.CommitBtn.setEnabled(True)
-            self.RevertBtn.setEnabled(True)
+            self.ui.CommitBtn.setEnabled(True)
+            self.ui.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnChildAdd(self):
         if self.tree_view:
-            idx = self.TreeView.selectionModel().selection().indexes()
+            idx = self.ui.TreeView.selectionModel().selection().indexes()
             current_index = idx[0] if idx else self.model.index(0, 0)
             self.model.addChildElement(current_index)
-            self.CommitBtn.setEnabled(True)
-            self.RevertBtn.setEnabled(True)
+            self.ui.CommitBtn.setEnabled(True)
+            self.ui.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnRemove(self):
         idx = self._view.selectionModel().selection().indexes()
         current_index = idx[0] if idx else self.model.index(0, 0)
         self.model.removeElement(current_index)
-        self.CommitBtn.setEnabled(True)
-        self.RevertBtn.setEnabled(True)
+        self.ui.CommitBtn.setEnabled(True)
+        self.ui.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnCommit(self):
         if not self.model.submitAll():
             return
         self.model.invalidate_cache()
-        self.CommitBtn.setEnabled(False)
-        self.RevertBtn.setEnabled(False)
+        self.ui.CommitBtn.setEnabled(False)
+        self.ui.RevertBtn.setEnabled(False)
 
     @Slot()
     def OnRevert(self):
         self.model.revertAll()
-        self.CommitBtn.setEnabled(False)
-        self.RevertBtn.setEnabled(False)
+        self.ui.CommitBtn.setEnabled(False)
+        self.ui.RevertBtn.setEnabled(False)
 
     def setFilterValue(self, filter_value):
         if self.filter_field is None:
@@ -228,7 +229,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     @Slot()
     def OnSearchChange(self):
-        self.search_text = self.SearchString.text()
+        self.search_text = self.ui.SearchString.text()
         self.setFilter()
 
     @Slot()
@@ -259,7 +260,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     @Slot()
     def OnGroupChange(self, list_id):
         self.OnRevert()  # Discard all possible changes
-        self.group_id = self.GroupCombo.itemData(list_id)
+        self.group_id = self.ui.GroupCombo.itemData(list_id)
         self.setFilter()
 
     @Slot()

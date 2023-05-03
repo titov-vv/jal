@@ -9,13 +9,14 @@ from jal.widgets.reference_selector import TagSelector
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Common base GUI dialog class for selector dialogs. Takes window title and label comment to describe selection
-class SelectReferenceDialog(QDialog, Ui_SelectReferenceDlg):
+class SelectReferenceDialog(QDialog):
     def __init__(self, title, description):
-        QDialog.__init__(self)
-        self.setupUi(self)
+        super().__init__(self)
+        self.ui = Ui_SelectReferenceDlg()
+        self.ui.setupUi(self)
         self.selected_id = 0
         self.setWindowTitle(title)
-        self.DescriptionLabel.setText(description)
+        self.ui.DescriptionLabel.setText(description)
         center_window(self)
 
     @Slot()
@@ -33,9 +34,9 @@ class SelectReferenceDialog(QDialog, Ui_SelectReferenceDlg):
 # Constructor takes description to show and default_peer for initial choice
 class SelectPeerDialog(SelectReferenceDialog):
     def __init__(self, description, default_peer=0):
-        SelectReferenceDialog.__init__(self, self.tr("Please select peer"), description)
-        self.PeerWidget = PeerSelector(self.SelectorFrame)
-        self.FrameLayout.addWidget(self.PeerWidget)
+        super().__init__(title=self.tr("Please select peer"), description=description)
+        self.PeerWidget = PeerSelector(self.ui.SelectorFrame)
+        self.ui.FrameLayout.addWidget(self.PeerWidget)
         self.PeerWidget.selected_id = self.selected_id = default_peer
 
     @Slot()
@@ -49,9 +50,9 @@ class SelectPeerDialog(SelectReferenceDialog):
 # Constructor takes description to show and default_category for initial choice
 class SelectCategoryDialog(SelectReferenceDialog):
     def __init__(self, description, default_category=0):
-        SelectReferenceDialog.__init__(self, self.tr("Please select category"), description)
-        self.CategoryWidget = CategorySelector(self.SelectorFrame)
-        self.FrameLayout.addWidget(self.CategoryWidget)
+        super().__init__(title=self.tr("Please select category"), description=description)
+        self.CategoryWidget = CategorySelector(self.ui.SelectorFrame)
+        self.ui.FrameLayout.addWidget(self.CategoryWidget)
         self.CategoryWidget.selected_id = self.selected_id = default_category
 
     @Slot()
@@ -65,9 +66,9 @@ class SelectCategoryDialog(SelectReferenceDialog):
 # Constructor takes description to show and default_tag for initial choice
 class SelectTagDialog(SelectReferenceDialog):
     def __init__(self, description, default_tag=0):
-        SelectReferenceDialog.__init__(self, self.tr("Please select tag"), description)
-        self.TagWidget = TagSelector(self.SelectorFrame)
-        self.FrameLayout.addWidget(self.TagWidget)
+        super().__init__(title=self.tr("Please select tag"), description=description)
+        self.TagWidget = TagSelector(self.ui.SelectorFrame)
+        self.ui.FrameLayout.addWidget(self.TagWidget)
         self.TagWidget.selected_id = self.selected_id = default_tag
 
     @Slot()

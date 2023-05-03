@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'income_spending_report.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.3
+## Created by: Qt User Interface Compiler version 6.5.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,9 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHBoxLayout,
-    QHeaderView, QLabel, QPushButton, QSizePolicy,
-    QSpacerItem, QTreeView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame,
+    QHBoxLayout, QHeaderView, QLabel, QPushButton,
+    QSizePolicy, QSpacerItem, QTreeView, QVBoxLayout,
+    QWidget)
 
 from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.date_range_selector import DateRangeSelector
@@ -44,6 +45,18 @@ class Ui_IncomeSpendingReportWidget(object):
         self.ReportRange.setProperty("ItemsList", u"QTD;YTD;this_year;last_year")
 
         self.horizontalLayout.addWidget(self.ReportRange)
+
+        self.PeriodLbl = QLabel(self.ReportParamsFrame)
+        self.PeriodLbl.setObjectName(u"PeriodLbl")
+
+        self.horizontalLayout.addWidget(self.PeriodLbl)
+
+        self.PeriodComboBox = QComboBox(self.ReportParamsFrame)
+        self.PeriodComboBox.addItem("")
+        self.PeriodComboBox.addItem("")
+        self.PeriodComboBox.setObjectName(u"PeriodComboBox")
+
+        self.horizontalLayout.addWidget(self.PeriodComboBox)
 
         self.CurrencyLbl = QLabel(self.ReportParamsFrame)
         self.CurrencyLbl.setObjectName(u"CurrencyLbl")
@@ -84,6 +97,10 @@ class Ui_IncomeSpendingReportWidget(object):
 
     def retranslateUi(self, IncomeSpendingReportWidget):
         IncomeSpendingReportWidget.setWindowTitle(QCoreApplication.translate("IncomeSpendingReportWidget", u"Income & Spending", None))
+        self.PeriodLbl.setText(QCoreApplication.translate("IncomeSpendingReportWidget", u"Periodicity:", None))
+        self.PeriodComboBox.setItemText(0, QCoreApplication.translate("IncomeSpendingReportWidget", u"Monthly", None))
+        self.PeriodComboBox.setItemText(1, QCoreApplication.translate("IncomeSpendingReportWidget", u"Weekly", None))
+
         self.CurrencyLbl.setText(QCoreApplication.translate("IncomeSpendingReportWidget", u"Currency:", None))
         self.SaveButton.setText(QCoreApplication.translate("IncomeSpendingReportWidget", u"Save...", None))
     # retranslateUi

@@ -42,6 +42,7 @@ class FOF:
     ASSET_WARRANT = "warrant"
     ASSET_RIGHTS = "right"
     ASSET_CRYPTO = "crypto"
+    ASSET_CFD = "cfd"
 
     ACTION_MERGER = "merger"
     ACTION_SPLIT = "split"
@@ -73,6 +74,10 @@ class FOF:
 class Statement_ImportError(Exception):
     pass
 
+# Possible statement module capabilities
+class Statement_Capabilities:
+    MULTIPLE_LOAD = 1
+
 
 # -----------------------------------------------------------------------------------------------------------------------
 class Statement(QObject):   # derived from QObject to have proper string translation
@@ -87,6 +92,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         FOF.ASSET_FUTURES: PredefinedAsset.Derivative,
         FOF.ASSET_OPTION: PredefinedAsset.Derivative,
         FOF.ASSET_WARRANT: PredefinedAsset.Derivative,
+        FOF.ASSET_CFD: PredefinedAsset.Derivative,
         FOF.ASSET_CRYPTO: PredefinedAsset.Crypto
     }
     _corp_actions = {
@@ -136,6 +142,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 logging.warning(self.tr("Debug information is saved in ") + dump_name)
             except Exception as e:
                 logging.error(self.tr("Failed to write statement dump into: ") + dump_name + ": " + str(e))
+
+    # Returns a specific capabilities that is supported by some statement modules
+    @staticmethod
+    def capabilities() -> set:
+        return set()
 
     # returns tuple (start_timestamp, end_timestamp)
     def period(self):
@@ -609,6 +620,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset_info['search_online'] == "MOEX":
                 search_data = {}
                 self._uppend_keys_from(search_data, asset_info, ['isin', 'reg_number'])
+                if 'symbol' in asset_info:
+                    search_data['name'] = asset_info['symbol']   # Search as by name as it is more flexible
                 symbol = QuoteDownloader.MOEX_find_secid(**search_data)
                 if not symbol and 'symbol' in asset_info:
                     symbol = asset_info['symbol']

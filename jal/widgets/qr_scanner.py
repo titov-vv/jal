@@ -21,7 +21,7 @@ class QRScanner(QWidget):
     decodedQR = Signal(str)
 
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        super().__init__(parent=parent)
         self.processing = False
         self.started = False
         self.rectangle = None

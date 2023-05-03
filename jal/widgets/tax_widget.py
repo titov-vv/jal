@@ -17,25 +17,26 @@ from jal.data_export.xlsx import XLSX
 from jal.data_export.dlsg import DLSG
 
 
-class TaxWidget(MdiWidget, Ui_TaxWidget):
-    def __init__(self):
-        MdiWidget.__init__(self)
-        self.setupUi(self)
+class TaxWidget(MdiWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_TaxWidget()
+        self.ui.setupUi(self)
 
-        self.Country.clear()
-        self.Country.addItems([TaxReport.countries[x]['name'] for x in TaxReport.countries])
-        self.Country.currentIndexChanged.connect(self.OnCountryChange)
-        self.Year.setValue(datetime.now().year - 1)   # Set previous year by default
-        self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
-        self.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
-        self.SaveButton.pressed.connect(self.SaveReport)
-        self.Country.setCurrentIndex(TaxReport.RUSSIA)
+        self.ui.Country.clear()
+        self.ui.Country.addItems([TaxReport.countries[x]['name'] for x in TaxReport.countries])
+        self.ui.Country.currentIndexChanged.connect(self.OnCountryChange)
+        self.ui.Year.setValue(datetime.now().year - 1)   # Set previous year by default
+        self.ui.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
+        self.ui.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
+        self.ui.SaveButton.pressed.connect(self.SaveReport)
+        self.ui.Country.setCurrentIndex(TaxReport.RUSSIA)
 
     def OnCountryChange(self, item_id):
         if item_id == TaxReport.PORTUGAL:
-            self.RussianSpecificFrame.setVisible(False)
+            self.ui.RussianSpecificFrame.setVisible(False)
         elif item_id == TaxReport.RUSSIA:
-            self.RussianSpecificFrame.setVisible(True)
+            self.ui.RussianSpecificFrame.setVisible(True)
         else:
             raise ValueError("Selected item has no country handler in code")
         # Refresh and adjust MDI-window size
@@ -54,11 +55,11 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
     @Slot()
     def OnFileBtn(self, type):
         if type == 'XLS':
-            selector = (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.XlsFileName)
+            selector = (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.ui.XlsFileName)
         elif type == 'DLSG':
             last_digit = self.year % 10
             selector = (self.tr("Save tax form to:"), self.tr(f"Tax form (*.dc{last_digit})"),
-                        f".dc{last_digit}", self.DlsgFileName)
+                        f".dc{last_digit}", self.ui.DlsgFileName)
         else:
             raise ValueError
         filename = QFileDialog.getSaveFileName(self, selector[0], ".", selector[1])
@@ -69,28 +70,28 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
                 selector[3].setText(filename[0])
 
     def getYear(self):
-        return self.Year.value()
+        return self.ui.Year.value()
 
     def getXlsFilename(self):
-        return self.XlsFileName.text()
+        return self.ui.XlsFileName.text()
 
     def getAccount(self):
-        return self.AccountWidget.selected_id
+        return self.ui.AccountWidget.selected_id
 
     def getDlsgState(self):
-        return self.DlsgGroup.isChecked()
+        return self.ui.DlsgGroup.isChecked()
 
     def getDslgFilename(self):
-        return self.DlsgFileName.text()
+        return self.ui.DlsgFileName.text()
 
     def getBrokerAsIncomeName(self):
-        return self.IncomeSourceBroker.isChecked()
+        return self.ui.IncomeSourceBroker.isChecked()
 
     def getDividendsOnly(self):
-        return self.DividendsOnly.isChecked()
+        return self.ui.DividendsOnly.isChecked()
 
     def getNoSettlement(self):
-        return self.NoSettlement.isChecked()
+        return self.ui.NoSettlement.isChecked()
 
     year = Property(int, fget=getYear)
     xls_filename = Property(str, fget=getXlsFilename)
@@ -107,7 +108,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             QMessageBox().warning(self, self.tr("Data are incomplete"),
                                   self.tr("You haven't selected an account for tax report"), QMessageBox.Ok)
             return
-        taxes = TaxReport.create_report(self.Country.currentIndex())
+        taxes = TaxReport.create_report(self.ui.Country.currentIndex())
 
         tax_report = taxes.prepare_tax_report(self.year, self.account, use_settlement=(not self.no_settelement))
         if not tax_report:
@@ -139,24 +140,25 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
                               f"\n{traceback.format_exc()}")
 
 
-class MoneyFlowWidget(MdiWidget, Ui_MoneyFlowWidget):
-    def __init__(self):
-        MdiWidget.__init__(self)
-        self.setupUi(self)
+class MoneyFlowWidget(MdiWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_MoneyFlowWidget()
+        self.ui.setupUi(self)
 
-        self.Year.setValue(datetime.now().year - 1)  # Set previous year by default
-        self.XlsSelectBtn.pressed.connect(self.OnFileBtn)
-        self.SaveButton.pressed.connect(self.SaveReport)
+        self.ui.Year.setValue(datetime.now().year - 1)  # Set previous year by default
+        self.ui.XlsSelectBtn.pressed.connect(self.OnFileBtn)
+        self.ui.SaveButton.pressed.connect(self.SaveReport)
 
     # Displays tax widget in a given MDI area.
     # It is implemented as a separate static method in order to prevent unexpected object deletion
     @staticmethod
     def showInMDI(parent_mdi):
-        parent_mdi.addSubWindow(MoneyFlowWidget(), maximized=False)
+        parent_mdi.addSubWindow(MoneyFlowWidget(parent_mdi), maximized=False)
 
     @Slot()
     def OnFileBtn(self):
-        selector = (self.tr("Save money flow report to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.XlsFileName)
+        selector = (self.tr("Save money flow report to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.ui.XlsFileName)
         filename = QFileDialog.getSaveFileName(self, selector[0], ".", selector[1])
         if filename[0]:
             if filename[1] == selector[1] and filename[0][-len(selector[2]):] != selector[2]:
@@ -165,10 +167,10 @@ class MoneyFlowWidget(MdiWidget, Ui_MoneyFlowWidget):
                 selector[3].setText(filename[0])
 
     def getYear(self):
-        return self.Year.value()
+        return self.ui.Year.value()
 
     def getXlsFilename(self):
-        return self.XlsFileName.text()
+        return self.ui.XlsFileName.text()
 
     year = Property(int, fget=getYear)
     xls_filename = Property(str, fget=getXlsFilename)

@@ -1,4 +1,5 @@
 from math import log10, floor, ceil
+from decimal import Decimal
 
 from PySide6.QtCore import Qt, QMargins, QDateTime, QDate
 from PySide6.QtWidgets import QWidget, QHBoxLayout
@@ -11,7 +12,7 @@ from jal.widgets.mdi import MdiWidget
 
 class ChartWidget(QWidget):
     def __init__(self, parent, quotes, trades, data_range, currency_name):
-        QWidget.__init__(self, parent)
+        super().__init__(parent=parent)
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
 
@@ -108,15 +109,15 @@ class ChartWindow(MdiWidget):
         else:
             self.range = [0, 0, 0, 0]
             return
-        # push range apart if we have too close points
+        # push range apart if we have very close points
         if min_price == max_price:
-            min_price = 0.95 * min_price
-            max_price = 1.05 * max_price
+            min_price = Decimal('0.95') * min_price
+            max_price = Decimal('1.05') * max_price
         if min_ts == max_ts:
             min_ts = 0.95 * min_ts
             max_ts = 1.05 * max_ts
         # Round min/max values to near "round" values in order to have 10 nice intervals
-        step = 10 ** floor(log10(max_price - min_price))
+        step = Decimal(10) ** Decimal(floor(Decimal.log10(max_price - min_price)))
         min_price = floor(min_price / step) * step
         max_price = ceil(max_price / step) * step
         # Add a gap at the beginning and end

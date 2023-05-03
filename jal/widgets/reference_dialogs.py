@@ -18,8 +18,8 @@ from jal.widgets.selection_dialog import SelectPeerDialog, SelectCategoryDialog,
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(AbstractReferenceListModel):
-    def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+    def __init__(self, table, parent_view, **kwargs):
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("type_id", ''),
                          ("name", self.tr("Name")),
@@ -61,11 +61,11 @@ class AccountListModel(AbstractReferenceListModel):
 
 
 class AccountListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.table = "accounts"
-        self.model = AccountListModel(self.table, self.DataView)
-        self.DataView.setModel(self.model)
+        self.model = AccountListModel(table=self.table, parent_view=self.ui.DataView)
+        self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
@@ -73,31 +73,31 @@ class AccountListDialog(ReferenceDataDialog):
     def setup_ui(self):
         self.search_field = "accounts.name"
         self.setWindowTitle(self.tr("Accounts"))
-        self.SearchFrame.setVisible(True)
-        self.Toggle.setVisible(True)
+        self.ui.SearchFrame.setVisible(True)
+        self.ui.Toggle.setVisible(True)
         self.toggle_field = "active"
-        self.Toggle.setText(self.tr("Show inactive"))
+        self.ui.Toggle.setText(self.tr("Show inactive"))
 
-        self.GroupLbl.setVisible(True)
-        self.GroupLbl.setText(self.tr("Account type:"))
-        self.GroupCombo.setVisible(True)
+        self.ui.GroupLbl.setVisible(True)
+        self.ui.GroupLbl.setText(self.tr("Account type:"))
+        self.ui.GroupCombo.setVisible(True)
         self.group_field = self.model.group_by
-        PredefindedAccountType().load2combo(self.GroupCombo)
+        PredefindedAccountType().load2combo(self.ui.GroupCombo)
         self.group_id = 1
 
     def locateItem(self, item_id):
         type_id = self.model.getGroupId(item_id)
         if type_id == 0:
             return
-        self.GroupCombo.setCurrentIndex(type_id-1)
+        self.ui.GroupCombo.setCurrentIndex(type_id-1)
         item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
-        self.DataView.setCurrentIndex(item_idx)
+        self.ui.DataView.setCurrentIndex(item_idx)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AssetListModel(AbstractReferenceListModel):
-    def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+    def __init__(self, table, parent_view, **kwargs):
+        super().__init__(table=table, parent_view=parent_view)
         pk = QSqlIndex()   # Manual primary key setup is required as we use underlying sql view instead of sql table
         pk.append(self.record().field("id"))
         self.setPrimaryKey(pk)
@@ -129,11 +129,11 @@ class AssetListModel(AbstractReferenceListModel):
 
 
 class AssetListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.table = "assets_ext"
-        self.model = AssetListModel(self.table, self.DataView)
-        self.DataView.setModel(self.model)
+        self.model = AssetListModel(self.table, self.ui.DataView)
+        self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
@@ -141,35 +141,35 @@ class AssetListDialog(ReferenceDataDialog):
     def setup_ui(self):
         self.search_field = "assets_ext.full_name"
         self.setWindowTitle(self.tr("Assets"))
-        self.SearchFrame.setVisible(True)
-        self.Toggle.setVisible(False)
+        self.ui.SearchFrame.setVisible(True)
+        self.ui.Toggle.setVisible(False)
 
         self.custom_editor = True
-        self.DataView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.ui.DataView.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        self.GroupLbl.setVisible(True)
-        self.GroupLbl.setText(self.tr("Asset type:"))
-        self.GroupCombo.setVisible(True)
+        self.ui.GroupLbl.setVisible(True)
+        self.ui.GroupLbl.setText(self.tr("Asset type:"))
+        self.ui.GroupCombo.setVisible(True)
         self.group_field = self.model.group_by
-        PredefinedAsset().load2combo(self.GroupCombo)
+        PredefinedAsset().load2combo(self.ui.GroupCombo)
         self.group_id = 1
 
     def locateItem(self, item_id):
         type_id = self.model.getGroupId(item_id)
         if type_id == 0:
             return
-        self.GroupCombo.setCurrentIndex(type_id-1)
+        self.ui.GroupCombo.setCurrentIndex(type_id-1)
         item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
-        self.DataView.setCurrentIndex(item_idx)
+        self.ui.DataView.setCurrentIndex(item_idx)
 
     def customEditor(self):
-        return AssetDialog()
+        return AssetDialog(self)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 class PeerTreeModel(SqlTreeModel):
-    def __init__(self, table, parent_view):
-        super().__init__(table, parent_view)
+    def __init__(self, table, parent_view, **kwargs):
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("name", self.tr("Name")),
                          ("location", self.tr("Location")),
                          ("actions_count", self.tr("Docs count"))]
@@ -199,11 +199,11 @@ class PeerTreeModel(SqlTreeModel):
 
 
 class PeerListDialog(ReferenceDataDialog):
-    def __init__(self, parent):
-        ReferenceDataDialog.__init__(self, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.table = "agents"
-        self.model = PeerTreeModel(self.table, self.TreeView)
-        self.TreeView.setModel(self.model)
+        self.model = PeerTreeModel(self.table, self.ui.TreeView)
+        self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
@@ -217,10 +217,10 @@ class PeerListDialog(ReferenceDataDialog):
     def setup_ui(self):
         self.search_field = "name"
         self.tree_view = True
-        self.AddChildBtn.setVisible(True)
-        self.SearchFrame.setVisible(True)
+        self.ui.AddChildBtn.setVisible(True)
+        self.ui.SearchFrame.setVisible(True)
         self.setWindowTitle(self.tr("Peers"))
-        self.Toggle.setVisible(False)
+        self.ui.Toggle.setVisible(False)
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
 
@@ -255,8 +255,8 @@ class PeerListDialog(ReferenceDataDialog):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CategoryTreeModel(SqlTreeModel):
-    def __init__(self, table, parent_view):
-        super().__init__(table, parent_view)
+    def __init__(self, table, parent_view, **kwargs):
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("name", self.tr("Name")),
                          ("often", self.tr("Often"))]
         self._sort_by = "name"
@@ -273,11 +273,11 @@ class CategoryTreeModel(SqlTreeModel):
 
 
 class CategoryListDialog(ReferenceDataDialog):
-    def __init__(self, parent):
-        ReferenceDataDialog.__init__(self, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.table = "categories"
-        self.model = CategoryTreeModel(self.table, self.TreeView)
-        self.TreeView.setModel(self.model)
+        self.model = CategoryTreeModel(self.table, self.ui.TreeView)
+        self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
@@ -291,10 +291,10 @@ class CategoryListDialog(ReferenceDataDialog):
     def setup_ui(self):
         self.search_field = "name"
         self.tree_view = True
-        self.AddChildBtn.setVisible(True)
-        self.SearchFrame.setVisible(True)
+        self.ui.AddChildBtn.setVisible(True)
+        self.ui.SearchFrame.setVisible(True)
         self.setWindowTitle(self.tr("Categories"))
-        self.Toggle.setVisible(False)
+        self.ui.Toggle.setVisible(False)
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
 
@@ -325,7 +325,7 @@ class CategoryListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class TagListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("tag", self.tr("Tag"))]
         self._default_name = "tag"
@@ -335,11 +335,11 @@ class TagListModel(AbstractReferenceListModel):
 
 
 class TagsListDialog(ReferenceDataDialog):
-    def __init__(self, parent):
-        ReferenceDataDialog.__init__(self, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.table = "tags"
-        self.model = TagListModel(self.table, self.DataView)
-        self.DataView.setModel(self.model)
+        self.model = TagListModel(self.table, self.ui.DataView)
+        self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
@@ -353,14 +353,14 @@ class TagsListDialog(ReferenceDataDialog):
     def setup_ui(self):
         self.search_field = "tag"
         self.setWindowTitle(self.tr("Tags"))
-        self.SearchFrame.setVisible(True)
-        self.Toggle.setVisible(False)
+        self.ui.SearchFrame.setVisible(True)
+        self.ui.Toggle.setVisible(False)
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
 
     def locateItem(self, item_id):
         item_idx = self.model.locateItem(item_id)
-        self.DataView.setCurrentIndex(item_idx)
+        self.ui.DataView.setCurrentIndex(item_idx)
 
     def customizeContextMenu(self, menu: QMenu, index):
         self._menu_tag_id = self.model.getId(index)
@@ -387,7 +387,7 @@ class TagsListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class QuotesListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("timestamp", self.tr("Date")),
                          ("asset_id", self.tr("Asset")),
@@ -417,26 +417,26 @@ class QuotesListModel(AbstractReferenceListModel):
 
 
 class QuotesListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.table = "quotes"
-        self.model = QuotesListModel(self.table, self.DataView)
-        self.DataView.setModel(self.model)
+        self.model = QuotesListModel(self.table, self.ui.DataView)
+        self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "asset_id-assets_ext-id-symbol"
-        self.SearchFrame.setVisible(True)
+        self.ui.SearchFrame.setVisible(True)
         self.setWindowTitle(self.tr("Quotes"))
-        self.Toggle.setVisible(False)
+        self.ui.Toggle.setVisible(False)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 class BaseCurrencyListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
+        super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
                          ("since_timestamp", self.tr("Date")),
                          ("currency_id", self.tr("Currency"))]
@@ -460,17 +460,17 @@ class BaseCurrencyListModel(AbstractReferenceListModel):
 
 
 class BaseCurrencyDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
+    def __init__(self, parent=None):
+        super().__init__(None)
         self.table = "base_currency"
-        self.model = BaseCurrencyListModel(self.table, self.DataView)
-        self.DataView.setModel(self.model)
+        self.model = BaseCurrencyListModel(self.table, self.ui.DataView)
+        self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
 
     def setup_ui(self):
         self.setWindowTitle(self.tr("Base currency"))
-        self.Toggle.setVisible(False)
+        self.ui.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------

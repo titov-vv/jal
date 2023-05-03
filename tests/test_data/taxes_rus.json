@@ -370,7 +370,7 @@
       {
          "action_date": 1604448000,
          "action_number": "",
-         "description": "Сплит TLT (US4642874329) 5 в 25",
+         "description": "Сплит TLT (US4642874329) 5 в 25 TLT (US4642874329)",
          "isin": "US4642874329",
          "operation": "   Корп. действие",
          "qty": 10.0,
@@ -428,7 +428,7 @@
       {
          "action_date": 1604448000,
          "action_number": "",
-         "description": "Сплит TLT (US4642874329) 5 в 25",
+         "description": "Сплит TLT (US4642874329) 5 в 25 TLT (US4642874329)",
          "isin": "US4642874329",
          "operation": "   Корп. действие",
          "qty": 10.0,

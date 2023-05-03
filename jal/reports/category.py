@@ -35,38 +35,39 @@ class CategoryReport(QObject):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class CategoryReportWindow(MdiWidget, Ui_CategoryReportWidget):
+class CategoryReportWindow(MdiWidget):
     def __init__(self, parent: Reports, settings: dict = None):
-        MdiWidget.__init__(self, parent.mdi_area())
-        self.setupUi(self)
+        super().__init__(parent.mdi_area())
+        self.ui = Ui_CategoryReportWidget()
+        self.ui.setupUi(self)
         self._parent = parent
 
-        self.category_model = CategoryOperationsModel(self.ReportTableView)
-        self.ReportTableView.setModel(self.category_model)
+        self.category_model = CategoryOperationsModel(self.ui.ReportTableView)
+        self.ui.ReportTableView.setModel(self.category_model)
         self.category_model.configureView()
 
         self.connect_signals_and_slots()
 
         if settings is not None:
-            self.ReportRange.setRange(settings['begin_ts'], settings['end_ts'])
-            self.ReportCategoryEdit.selected_id = settings['category_id']
+            self.ui.ReportRange.setRange(settings['begin_ts'], settings['end_ts'])
+            self.ui.ReportCategoryEdit.selected_id = settings['category_id']
             self.onCategoryChange()
 
     def connect_signals_and_slots(self):
-        self.ReportRange.changed.connect(self.ReportTableView.model().setDateRange)
-        self.ReportCategoryEdit.changed.connect(self.onCategoryChange)
-        self.ReportTableView.selectionModel().selectionChanged.connect(self.onOperationSelect)
+        self.ui.ReportRange.changed.connect(self.ui.ReportTableView.model().setDateRange)
+        self.ui.ReportCategoryEdit.changed.connect(self.onCategoryChange)
+        self.ui.ReportTableView.selectionModel().selectionChanged.connect(self.onOperationSelect)
 
     @Slot()
     def onCategoryChange(self):
-        self.ReportTableView.model().setCategory(self.ReportCategoryEdit.selected_id)
+        self.ui.ReportTableView.model().setCategory(self.ui.ReportCategoryEdit.selected_id)
 
     @Slot()
     def onOperationSelect(self, selected, _deselected):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
-            operation_type, operation_id = self.ReportTableView.model().get_operation(selected_row)
-            self.OperationDetails.show_operation(operation_type, operation_id)
+            operation_type, operation_id = self.ui.ReportTableView.model().get_operation(selected_row)
+            self.ui.OperationDetails.show_operation(operation_type, operation_id)
         else:
-            self.OperationDetails.show_operation(LedgerTransaction.NA, 0)
+            self.ui.OperationDetails.show_operation(LedgerTransaction.NA, 0)

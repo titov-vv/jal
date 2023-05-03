@@ -12,7 +12,7 @@ from jal.db.operations import LedgerTransaction
 # ----------------------------------------------------------------------------------------------------------------------
 class TradeWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
-        WidgetMapperDelegateBase.__init__(self, parent)
+        super().__init__(parent=parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'settlement': self.timestamp_delegate,
                           'asset_id': self.symbol_delegate,
@@ -24,7 +24,7 @@ class TradeWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class TradeWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        AbstractOperationDetails.__init__(self, parent)
+        super().__init__(parent=parent)
         self.name = self.tr("Buy / Sell")
         self.operation_type = LedgerTransaction.Trade
 

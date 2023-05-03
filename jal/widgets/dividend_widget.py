@@ -14,7 +14,7 @@ from jal.db.operations import LedgerTransaction, Dividend
 # ----------------------------------------------------------------------------------------------------------------------
 class DividendWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
-        WidgetMapperDelegateBase.__init__(self, parent)
+        super().__init__(parent=parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'ex_date': self.timestamp_delegate,
                           'asset_id': self.symbol_delegate,
@@ -25,7 +25,7 @@ class DividendWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class DividendWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        AbstractOperationDetails.__init__(self, parent)
+        super().__init__(parent=parent)
         self.name = self.tr("Dividend")
         self.operation_type = LedgerTransaction.Dividend
         self.combo_model = None

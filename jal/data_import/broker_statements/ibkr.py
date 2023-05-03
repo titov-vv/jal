@@ -12,7 +12,7 @@ from jal.widgets.helpers import ManipulateDate, ts2dt, ts2d
 from jal.db.helpers import format_decimal
 from jal.db.account import JalAccount
 from jal.db.operations import Dividend
-from jal.data_import.statement import FOF, Statement_ImportError
+from jal.data_import.statement import FOF, Statement_ImportError, Statement_Capabilities
 from jal.data_import.statement_xml import StatementXML
 
 JAL_STATEMENT_CLASS = "StatementIBKR"
@@ -42,7 +42,8 @@ class IBKR_AssetType:
         'OPT': FOF.ASSET_OPTION,
         'FUT': FOF.ASSET_FUTURES,
         'WAR': FOF.ASSET_WARRANT,
-        'RIGHT': FOF.ASSET_RIGHTS
+        'RIGHT': FOF.ASSET_RIGHTS,
+        'CFD': FOF.ASSET_CFD
     }
 
     def __init__(self, asset_type, subtype):
@@ -129,6 +130,7 @@ class StatementIBKR(StatementXML):
     ReversalCode = 'Re'
     ReversalSuffix = " - REVERSAL"
     CancelPrefix = "CANCEL "
+    NoAsset = -1
 
     def __init__(self):
         super().__init__()
@@ -257,11 +259,25 @@ class StatementIBKR(StatementXML):
                                             ('taxAmount', 'amount', float, None),
                                             ('description', 'description', str, None),
                                             ('taxDescription', 'tax_description', str, None)],
-                                 'loader': self.load_taxes}
+                                 'loader': self.load_taxes},
+            'CFDCharges': {'tag': 'CFDCharge',
+                           'level': '',
+                           'values': [('accountId', 'account', IBKR_Account, None),
+                                      ('symbol', 'asset', IBKR_Asset, self.NoAsset),
+                                      ('date', 'timestamp', datetime, None),
+                                      ('total', 'amount', float, None),
+                                      ('transactionID', 'number', str, ''),
+                                      ('activityDescription', 'description', str, None)],
+                           'loader': self.load_cfd_charges},
         }
 
-    def tr(self, text):
-        return QApplication.translate("IBKR", text)
+    @staticmethod
+    def tr(text):
+        return QApplication.translate("StatementIBKR", text)
+
+    @staticmethod
+    def capabilities() -> set:
+        return {Statement_Capabilities.MULTIPLE_LOAD}
 
     # Saves information from XML that is related with a given asset
     def save_debug_info(self, account, asset):
@@ -307,9 +323,6 @@ class StatementIBKR(StatementXML):
         if attr_name not in xml_element.attrib:
             return default_value
         asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
-        if asset_category not in [FOF.ASSET_STOCK, FOF.ASSET_BOND, FOF.ASSET_WARRANT]:
-            logging.error(self.tr("Corporate action isn't supported for asset type: ") + f"'{asset_category}'")
-            return default_value
         return IBKR_CorpActionType(xml_element.attrib[attr_name]).type
 
     def attr_currency(self, xml_element, attr_name, default_value):
@@ -714,7 +727,7 @@ class StatementIBKR(StatementXML):
         return 1
 
     def load_split(self, action, parts_b) -> int:
-        SplitPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)\)$"
+        SplitPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)*\)$"
 
         parts = re.match(SplitPattern, action['description'], re.IGNORECASE)
         if parts is None:
@@ -722,7 +735,7 @@ class StatementIBKR(StatementXML):
         split = parts.groupdict()
         if len(split) != SplitPattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Split description miss some data ") + f"'{action}'")
-        if parts['isin_old'] == parts['id']:  # Simple split without ISIN change
+        if parts['id'] is None or parts['isin_old'] == parts['id']:  # Simple split without ISIN change
             qty_delta = action['quantity']
             qty_old = qty_delta / (int(split['X']) / int(split['Y']) - 1)
             qty_new = qty_old + qty_delta
@@ -934,6 +947,27 @@ class StatementIBKR(StatementXML):
             cnt += 1
         logging.info(self.tr("Taxes loaded: ") + f"{cnt} ({len(taxes)})")
 
+    def load_cfd_charges(self, charges):
+        cnt = 0
+        charges_base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        for i, charge in enumerate(charges):
+            if charge['asset'] != self.NoAsset and not charge['description'].startswith('CFD BORROW FEE FOR'):
+                # FIXME if asset is present -> put this charge not in Income/Spending but in Asset Payments section
+                logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
+                continue
+            if charge['asset'] == self.NoAsset and not (
+                    charge['description'].startswith('LONG CFD INTEREST FOR') or
+                    charge['description'].startswith('SHORT CFD INTEREST FOR')):
+                logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
+                continue
+            charge['id'] = charges_base + i
+            charge['peer'] = 0
+            charge['lines'] = [{'amount': charge['amount'], 'category': -PredefinedCategory.Fees, 'description': charge['description']}]
+            self.drop_extra_fields(charge, ["amount", "asset", "description", "number"])
+            self._data[FOF.INCOME_SPENDING].append(charge)
+            cnt += 1
+        logging.info(self.tr("CFD charges loaded: ") + f"{cnt} ({len(charges)})")
+
     # Applies tax to matching dividend:
     # if tax < 0: apply it to dividend without tax
     # otherwise: it is a correction and there should be dividend with exactly the same tax that will be set to 0
@@ -1075,3 +1109,27 @@ class StatementIBKR(StatementXML):
         rights_id = [x['id'] for x in self._data[FOF.ASSETS] if x['type'] == FOF.ASSET_RIGHTS]
         for asset_id in rights_id:
             self.remove_asset(asset_id)
+
+    # -----------------------------------------------------------------------------------------------------------------------
+    @staticmethod
+    def order_statements(statementFiles) -> list:
+        READ_COUNT=1024
+        pattern = re.compile(r'<FlexStatement.*fromDate=\"([0-9]*)\"\stoDate=\"([0-9]*)\".*>')
+        files = []
+        for file in statementFiles:
+            with open(file) as f:
+                m = re.search(pattern, f.read(READ_COUNT))
+                if not m:
+                    logging.error(StatementIBKR.tr("Can't find a FlexStatement in first {} bytes of {}").format(READ_COUNT,file))
+                    return []
+                start = int(m.group(1))
+                end = int(m.group(2))
+                item = [start, end, file]
+                idx = 0
+                for i in files:
+                    if item[1] <= i[0]:
+                        break
+                    idx += 1
+                files.insert(idx, item)
+                f.close()
+        return [x[2] for x in files]

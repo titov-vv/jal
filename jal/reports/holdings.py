@@ -24,10 +24,11 @@ class HoldingsReport(QObject):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
+class HoldingsReportWindow(MdiWidget):
     def __init__(self, parent: Reports, settings: dict = None):
-        MdiWidget.__init__(self, parent.mdi_area())
-        self.setupUi(self)
+        super().__init__(parent.mdi_area())
+        self.ui = Ui_HoldingsWidget()
+        self.ui.setupUi(self)
         self._parent = parent
         self.name = self.tr("Holdings")
 

@@ -9,6 +9,7 @@ from jal.db.asset import JalAsset
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
 from jal.net.downloader import QuoteDownloader
+from jal.widgets.helpers import dt2ts
 
 JAL_STATEMENT_CLASS = "StatementOpenBroker"
 
@@ -332,7 +333,7 @@ class StatementOpenBroker(StatementXML):
 
     def load_bond_repayment(self, operation):
         # Asset name is stored as alternative symbol and in self.asset_withdrawal[]
-        bond_repayment_pattern = r"^.*Снятие ЦБ с учета\. Погашение облигаций - (?P<asset_name>.*)$"
+        bond_repayment_pattern = r"^Отчет депозитария.*от (?P<report_date>\d\d\.\d\d\.\d\d\d\d)\. Снятие ЦБ с учета\. Погашение облигаций - (?P<asset_name>.*)$"
         parts = re.match(bond_repayment_pattern, operation['description'], re.IGNORECASE)
         if parts is None:
             raise Statement_ImportError(
@@ -348,9 +349,11 @@ class StatementOpenBroker(StatementXML):
             ticker['symbol'] = repayment_note['asset_name']
             ticker['broker_symbol'] = True
             self._data[FOF.SYMBOLS].append(ticker)
+        report_date = dt2ts(datetime.strptime(repayment_note['report_date'], "%d.%m.%Y"))
         new_id = max([0] + [x['id'] for x in self.asset_withdrawal]) + 1
-        record = {"id": new_id, "timestamp": operation['timestamp'], "asset": operation['asset'],
-                  "symbol": ticker['symbol'], "quantity": operation['quantity'], "note": operation['description']}
+        record = {"id": new_id, "timestamp": operation['timestamp'], "report_date": report_date,
+                  "asset": operation['asset'], "symbol": ticker['symbol'],
+                  "quantity": operation['quantity'], "note": operation['description']}
         self.asset_withdrawal.append(record)
 
     def load_asset_transfer_out(self, transfer):
@@ -376,7 +379,9 @@ class StatementOpenBroker(StatementXML):
             'Возврат излишне удержанного налога': self.tax_refund,
             'Проценты по предоставленным займам ЦБ': None,   # Loan payments are loaded in self.load_loans
             'Удержан налог на прочий доход': self.cash_tax,
-            'Плата за остаток на счете': self.cash_interest
+            'Плата за остаток на счете': self.cash_interest,
+            'Удержан налог с дарения по договору дарения': self.cash_tax,  # FIXME - better to combine with next operation
+            'Поступили средства клиента': self.cash_interest
         }
 
         for cash in cash_operations:
@@ -470,7 +475,7 @@ class StatementOpenBroker(StatementXML):
         interest = parts.groupdict()
         if len(interest) != intrest_pattern.count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Interest description miss some data ") + f"'{description}'")
-        asset_id = self.asset_id({'symbol': interest['symbol']})
+        asset_id = self.asset_id({'symbol': interest['symbol'], 'search_online': 'MOEX'})
         if asset_id is None:
             raise Statement_ImportError(self.tr("Can't find asset for bond interest ")
                                         + f"'{interest['symbol']}'")
@@ -490,7 +495,8 @@ class StatementOpenBroker(StatementXML):
         if len(repayment) != repayment_pattern.count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Bond repayment description miss some data ")
                                         + f"'{description}'")
-        match = [x for x in self.asset_withdrawal if x['symbol'] == repayment['asset'] and x['timestamp'] == timestamp]
+        match = [x for x in self.asset_withdrawal if
+                 x['symbol'] == repayment['asset'] and (x['timestamp'] == timestamp or x['report_date'] == timestamp)]
         if not match:
             raise Statement_ImportError(self.tr("Can't find asset cancellation record for ")
                                         + f"'{description}'")

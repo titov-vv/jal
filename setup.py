@@ -37,7 +37,7 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python"
     ],
-    install_requires=["lxml", "pandas", "PySide6>=6.2.0,<6.5.0", "requests", "XlsxWriter", "jsonschema", "sqlparse"],
+    install_requires=["lxml", "pandas", "PySide6>=6.2.0", "requests", "XlsxWriter", "jsonschema", "sqlparse"],
     entry_points={
         'console_scripts': ['jal=jal.jal:main', ]
     },

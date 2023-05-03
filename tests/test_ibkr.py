@@ -192,6 +192,16 @@ def test_ibkr_warrants(tmp_path, project_root, data_path, prepare_db_taxes):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_cfd(tmp_path, project_root, data_path, prepare_db_taxes):
+    with open(data_path + 'ibkr_cfd.json', 'r', encoding='utf-8') as json_file:
+        statement = json.load(json_file)
+
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_cfd.xml')
+    assert IBKR._data == statement
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Warnings are expected for this test:
 # Payment was reversed by approximate description: 30/06/2022 20:20:00, 'BEP(BMG162581083) CASH DIVIDEND USD 0.0161 PER SHARE (Ordinary Dividend)': 12.15
 # Payment was reversed by approximate description: 30/06/2022 20:20:00, 'BEP(BMG162581083) CASH DIVIDEND USD 0.0161 PER SHARE (Bonus Dividend)': 0.65

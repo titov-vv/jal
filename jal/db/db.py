@@ -83,9 +83,10 @@ class JalDB:
 
     # By default, db objects don't cache data. But if and object may cache db data we need to track it so parameter
     # 'cached' to be set to True. Such objects should implement invalidate_cache(), class_cache() methods also.
-    def __init__(self, cached=None):
+    def __init__(self, cached=False, **kwargs):
         if cached:
             self._instances_with_cache.append(self)
+        super().__init__()
 
     def tr(self, text):
         return QApplication.translate("JalDB", text)
@@ -131,6 +132,10 @@ class JalDB:
     # Returns current version of sqlite library
     def get_engine_version(self):
         return self._read("SELECT sqlite_version()")
+
+    # Returns last inserted id
+    def last_insert_id(self):
+        return self._read("SELECT last_insert_rowid()")
 
     # ------------------------------------------------------------------------------------------------------------------
     # This function returns SQLite connection used by JAL or fails with RuntimeError exception
@@ -219,12 +224,12 @@ class JalDB:
 
     # ------------------------------------------------------------------------------------------------------------------
     def invalidate_cache(self):
-        cache_classes = set()   # a list of classes that were already invalidated and don't need extra action
+        processed_cache_classes = set()   # a list of classes that were already invalidated and don't need extra action
         for item in self._instances_with_cache:
-            if item.class_cache() and type(item) in cache_classes:
+            if item.class_cache() and type(item) in processed_cache_classes:
                 continue
             else:
-                cache_classes.add(type(item))
+                processed_cache_classes.add(type(item))
             item.invalidate_cache()
 
     # Method returns true if data are cached on a class level, not in every instance
@@ -371,9 +376,9 @@ class JalDB:
 
 # -------------------------------------------------------------------------------------------------------------------
 # Subclassing to hide db connection details
-class JalModel(QSqlTableModel):
+class JalModel(QSqlTableModel, JalDB):
     def __init__(self, parent, table_name):
-        super().__init__(parent=parent, db=JalDB.connection())
+        super().__init__(parent=parent, db=self.connection())
         self.setTable(table_name)
         self._table = table_name
 

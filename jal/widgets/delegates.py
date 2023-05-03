@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
-from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime
+from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime, QTimeZone
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
 from jal.widgets.reference_selector import AssetSelector, PeerSelector, CategorySelector, TagSelector
@@ -15,7 +15,7 @@ from jal.db.account import JalAccount
 # Separate delegate class is subclassed for every operation widget with own definition of self.delegates for columns
 class WidgetMapperDelegateBase(QStyledItemDelegate):
     def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
 
         self.timestamp_delegate = TimestampDelegate()
         self.decimal_delegate = FloatDelegate(2)
@@ -66,7 +66,7 @@ class DateTimeEditWithReset(QDateTimeEdit):
 # Delegate to convert timestamp from unix-time to QDateTime and display it according to the given format
 class TimestampDelegate(QStyledItemDelegate):
     def __init__(self, display_format='%d/%m/%Y %H:%M:%S', parent=None):
-        QStyledItemDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
         self._parent = parent
         self._format = display_format
 
@@ -90,7 +90,7 @@ class TimestampDelegate(QStyledItemDelegate):
         if timestamp == '':
             QStyledItemDelegate.setEditorData(self, editor, index)
         else:
-            editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, spec=Qt.UTC))
+            editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, QTimeZone(0)))
 
     def setModelData(self, editor, model, index):
         timestamp = editor.dateTime().toSecsSinceEpoch()
@@ -122,7 +122,7 @@ class FloatDelegate(QStyledItemDelegate):
 
     def __init__(self, tolerance=None, allow_tail=True, colors=False, percent=False, empty_zero=False, parent=None):
         self._parent = parent
-        QStyledItemDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
         try:
             self._tolerance = int(tolerance)
         except (ValueError, TypeError):
@@ -211,7 +211,7 @@ class SymbolDelegate(QStyledItemDelegate):
 class BoolDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         self._parent = parent
-        QStyledItemDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
 
     def displayText(self, value, locale):
         if value:
@@ -249,7 +249,7 @@ class BoolDelegate(QStyledItemDelegate):
 # So the purpose of this delegate is solely to draw dotted box around report cell
 class GridLinesDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
 
     def paint(self, painter, option, index):
         painter.save()
@@ -267,7 +267,7 @@ class GridLinesDelegate(QStyledItemDelegate):
 # Base class for lookup delegate that allows Asset, Peer, Category and Tag selection
 class LookupSelectorDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
         self._table = ''
         self._field = ''
         self._selector = None
@@ -296,7 +296,7 @@ class LookupSelectorDelegate(QStyledItemDelegate):
 
 class CategorySelectorDelegate(LookupSelectorDelegate):
     def __init__(self, parent=None):
-        LookupSelectorDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
         self._table = "categories"
         self._field = "name"
 
@@ -306,7 +306,7 @@ class CategorySelectorDelegate(LookupSelectorDelegate):
 
 class TagSelectorDelegate(LookupSelectorDelegate):
     def __init__(self, parent=None):
-        LookupSelectorDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
         self._table = "tags"
         self._field = "tag"
 
@@ -316,7 +316,7 @@ class TagSelectorDelegate(LookupSelectorDelegate):
 
 class PeerSelectorDelegate(LookupSelectorDelegate):
     def __init__(self, parent=None):
-        LookupSelectorDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
         self._table = "agents"
         self._field = "name"
 
@@ -326,7 +326,7 @@ class PeerSelectorDelegate(LookupSelectorDelegate):
 
 class AssetSelectorDelegate(LookupSelectorDelegate):
     def __init__(self, parent=None):
-        LookupSelectorDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
         self._table = "assets_ext"
         self._field = "symbol"
 

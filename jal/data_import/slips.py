@@ -64,7 +64,7 @@ class PandasLinesModel(QAbstractTableModel):
 
 class SlipLinesDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
 
     def paint(self, painter, option, index):
         painter.save()
@@ -110,7 +110,7 @@ class SlipLinesDelegate(QStyledItemDelegate):
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
+class ImportSlipDialog(QDialog):
     OPERATION_PURCHASE = 1
     OPERATION_RETURN = 2
 
@@ -118,12 +118,13 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setupUi(self)
+        self.ui = Ui_ImportSlipDlg()
+        self.ui.setupUi(self)
         self.initUi()
         self.model = None
         self.delegate = []
 
-        self.CameraGroup.setVisible(False)
+        self.ui.CameraGroup.setVisible(False)
 
         self.QR_data = ''
         self.slip_json = None
@@ -132,29 +133,29 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.slipsAPI = SlipsTaxAPI(self)
         self.tensor_flow_present = dependency_present(['tensorflow'])
 
-        self.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
-        self.GetQRfromClipboardBtn.clicked.connect(self.readClipboardQR)
-        self.GetQRfromCameraBtn.clicked.connect(self.readCameraQR)
-        self.StopCameraBtn.clicked.connect(self.closeCamera)
-        self.ScannerQR.decodedQR.connect(self.onCameraQR)
-        self.GetSlipBtn.clicked.connect(self.downloadSlipJSON)
-        self.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
-        self.AddOperationBtn.clicked.connect(self.addOperation)
-        self.ClearBtn.clicked.connect(self.clearSlipData)
-        self.AssignCategoryBtn.clicked.connect(self.recognizeCategories)
+        self.ui.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
+        self.ui.GetQRfromClipboardBtn.clicked.connect(self.readClipboardQR)
+        self.ui.GetQRfromCameraBtn.clicked.connect(self.readCameraQR)
+        self.ui.StopCameraBtn.clicked.connect(self.closeCamera)
+        self.ui.ScannerQR.decodedQR.connect(self.onCameraQR)
+        self.ui.GetSlipBtn.clicked.connect(self.downloadSlipJSON)
+        self.ui.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
+        self.ui.AddOperationBtn.clicked.connect(self.addOperation)
+        self.ui.ClearBtn.clicked.connect(self.clearSlipData)
+        self.ui.AssignCategoryBtn.clicked.connect(self.recognizeCategories)
 
-        self.AssignCategoryBtn.setEnabled(self.tensor_flow_present)
+        self.ui.AssignCategoryBtn.setEnabled(self.tensor_flow_present)
 
     def closeEvent(self, arg__1):
-        self.ScannerQR.stopScan()
+        self.ui.ScannerQR.stopScan()
         self.accept()
 
     def initUi(self):
-        self.SlipAmount.setText('')
-        self.FN.setText('')
-        self.FD.setText('')
-        self.FP.setText('')
-        self.SlipType.setCurrentIndex(0)
+        self.ui.SlipAmount.setText('')
+        self.ui.FN.setText('')
+        self.ui.FD.setText('')
+        self.ui.FP.setText('')
+        self.ui.SlipType.setCurrentIndex(0)
 
     #------------------------------------------------------------------------------------------
     # Loads graphics file and tries to read QR-code from it.
@@ -185,15 +186,15 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     @Slot()
     def readCameraQR(self):
         self.initUi()
-        self.CameraGroup.setVisible(True)
-        self.SlipDataGroup.setVisible(False)
-        self.ScannerQR.startScan()
+        self.ui.CameraGroup.setVisible(True)
+        self.ui.SlipDataGroup.setVisible(False)
+        self.ui.ScannerQR.startScan()
 
     @Slot()
     def closeCamera(self):
-        self.ScannerQR.stopScan()
-        self.CameraGroup.setVisible(False)
-        self.SlipDataGroup.setVisible(True)
+        self.ui.ScannerQR.stopScan()
+        self.ui.CameraGroup.setVisible(False)
+        self.ui.SlipDataGroup.setVisible(True)
 
     @Slot()
     def onCameraQR(self, decoded_qr):
@@ -213,24 +214,24 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                 datetime = QDateTime.fromString(params['t'][0], timestamp_pattern)
                 datetime.setTimeSpec(Qt.UTC)
                 if datetime.isValid():
-                    self.SlipTimstamp.setDateTime(datetime)
-            self.SlipAmount.setText(params['s'][0])
-            self.FN.setText(params['fn'][0])
-            self.FD.setText(params['i'][0])
-            self.FP.setText(params['fp'][0])
-            self.SlipType.setCurrentIndex(int(params['n'][0]) - 1)
+                    self.ui.SlipTimstamp.setDateTime(datetime)
+            self.ui.SlipAmount.setText(params['s'][0])
+            self.ui.FN.setText(params['fn'][0])
+            self.ui.FD.setText(params['i'][0])
+            self.ui.FP.setText(params['fp'][0])
+            self.ui.SlipType.setCurrentIndex(int(params['n'][0]) - 1)
         except KeyError:
             logging.warning(self.tr("QR available but pattern isn't recognized: " + self.QR_data))
             return
         self.downloadSlipJSON()
 
     def downloadSlipJSON(self):
-        timestamp = self.SlipTimstamp.dateTime().toSecsSinceEpoch()
+        timestamp = self.ui.SlipTimstamp.dateTime().toSecsSinceEpoch()
 
         attempt = 0
         while True:
-            result = self.slipsAPI.get_slip(timestamp, float(self.SlipAmount.text()), self.FN.text(),
-                                            self.FD.text(), self.FP.text(), self.SlipType.currentIndex() + 1)
+            result = self.slipsAPI.get_slip(timestamp, float(self.ui.SlipAmount.text()), self.ui.FN.text(),
+                                            self.ui.FD.text(), self.ui.FP.text(), self.ui.SlipType.currentIndex() + 1)
             if result != SlipsTaxAPI.Pending:
                 break
             if attempt > 5:
@@ -280,14 +281,14 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         # Get shop name
         shop_name = ''
         if 'user' in slip:
-            shop_name = self.SlipShopName.setText(slip['user'])
+            shop_name = self.ui.SlipShopName.setText(slip['user'])
         if (not shop_name) and ('userInn' in slip):
             shop_name = self.slipsAPI.get_shop_name_by_inn(slip['userInn'])
-        self.SlipShopName.setText(shop_name)
+        self.ui.SlipShopName.setText(shop_name)
 
-        peer_id = JalPeer.get_id_by_mapped_name(self.SlipShopName.text())
+        peer_id = JalPeer.get_id_by_mapped_name(self.ui.SlipShopName.text())
         if peer_id is not None:
-            self.PeerEdit.selected_id = peer_id
+            self.ui.PeerEdit.selected_id = peer_id
 
         try:
             self.slip_lines = pd.DataFrame(slip['items'])
@@ -298,7 +299,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         if 'dateTime' in slip:
             slip_datetime = QDateTime.fromSecsSinceEpoch(int(slip['dateTime']))
             slip_datetime.setTimeSpec(Qt.UTC)
-            self.SlipDateTime.setDateTime(slip_datetime)
+            self.ui.SlipDateTime.setDateTime(slip_datetime)
 
         # Convert price to roubles
         self.slip_lines['price'] = self.slip_lines['price'] / 100
@@ -320,30 +321,30 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.slip_lines = self.slip_lines[['name', 'category', 'confidence', 'tag', 'sum']]
 
         self.model = PandasLinesModel(self.slip_lines, self)
-        self.LinesTableView.setModel(self.model)
+        self.ui.LinesTableView.setModel(self.model)
 
-        self.delegate = SlipLinesDelegate(self.LinesTableView)
+        self.delegate = SlipLinesDelegate(self.ui.LinesTableView)
         for column in range(self.model.columnCount()):
             if column == 0:
-                self.LinesTableView.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
+                self.ui.LinesTableView.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
             elif column == 1:
-                self.LinesTableView.setColumnWidth(column, 200)
+                self.ui.LinesTableView.setColumnWidth(column, 200)
             elif column == 2:
-                self.LinesTableView.setColumnHidden(column, True)
+                self.ui.LinesTableView.setColumnHidden(column, True)
             else:
-                self.LinesTableView.setColumnWidth(column, 100)
-            self.LinesTableView.setItemDelegateForColumn(column, self.delegate)
-        font = self.LinesTableView.horizontalHeader().font()
+                self.ui.LinesTableView.setColumnWidth(column, 100)
+            self.ui.LinesTableView.setItemDelegateForColumn(column, self.delegate)
+        font = self.ui.LinesTableView.horizontalHeader().font()
         font.setBold(True)
-        self.LinesTableView.horizontalHeader().setFont(font)
-        self.LinesTableView.show()
+        self.ui.LinesTableView.horizontalHeader().setFont(font)
+        self.ui.LinesTableView.show()
         self.recognizeCategories()
 
     def addOperation(self):
-        if self.AccountEdit.selected_id == 0:
+        if self.ui.AccountEdit.selected_id == 0:
             logging.warning(self.tr("Not possible to import slip: no account set for import"))
             return
-        if self.PeerEdit.selected_id == 0:
+        if self.ui.PeerEdit.selected_id == 0:
             logging.warning(self.tr("Not possible to import slip: can't import: no peer set for import"))
             return
         if self.slip_lines[self.slip_lines['category'] == 0].shape[0] != 0:
@@ -360,20 +361,20 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             })
             JalCategory(row['category']).add_or_update_mapped_name(row['name'])
         operation = {
-            "timestamp": self.SlipDateTime.dateTime().toSecsSinceEpoch(),
-            "account_id": self.AccountEdit.selected_id,
-            "peer_id": self.PeerEdit.selected_id,
+            "timestamp": self.ui.SlipDateTime.dateTime().toSecsSinceEpoch(),
+            "account_id": self.ui.AccountEdit.selected_id,
+            "peer_id": self.ui.PeerEdit.selected_id,
             "lines": details
         }
         LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, operation)
-        JalPeer(self.PeerEdit.selected_id).add_or_update_mapped_name(self.SlipShopName.text(), )
+        JalPeer(self.ui.PeerEdit.selected_id).add_or_update_mapped_name(self.ui.SlipShopName.text(), )
         self.clearSlipData()
 
     def clearSlipData(self):
         self.QR_data = ''
         self.slip_json = None
         self.slip_lines = None
-        self.LinesTableView.setModel(None)
+        self.ui.LinesTableView.setModel(None)
 
         self.initUi()
 

@@ -1,6 +1,6 @@
 from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel, QModelIndex
-from PySide6.QtGui import QBrush, QFontDatabase, QFontMetrics
+from PySide6.QtGui import QBrush, QFontDatabase
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor
 from jal.db.ledger import Ledger
@@ -153,7 +153,7 @@ class OperationsModel(QAbstractTableModel):
 class ColoredAmountsDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         self._view = parent
-        QStyledItemDelegate.__init__(self, parent)
+        super().__init__(parent=parent)
 
     def paint(self, painter, option, index):
         painter.save()

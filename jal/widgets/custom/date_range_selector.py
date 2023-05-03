@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal, Slot, QDateTime, Property
+from PySide6.QtCore import Qt, Signal, Slot, Property, QDateTime, QTimeZone
 from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QLabel, QDateEdit
 from jal.widgets.helpers import ManipulateDate
 
@@ -9,8 +9,8 @@ ITEM_METHOD = 1
 class DateRangeSelector(QWidget):
     changed = Signal(int, int)   # emits signal when one or both dates were changed, "from" and "to" timestamps are sent
 
-    def __init__(self, parent):
-        QWidget.__init__(self, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.report_ranges = {
             'week': (self.tr("Week"), ManipulateDate.PreviousWeek),
             'month': (self.tr("Month"), ManipulateDate.PreviousMonth),
@@ -37,8 +37,10 @@ class DateRangeSelector(QWidget):
         self.from_label = QLabel(self.tr("From:"), parent=self)
         self.layout.addWidget(self.from_label)
 
+        button_space = self.height()
         self.from_date = QDateEdit()
         self.from_date.setDisplayFormat("dd/MM/yyyy")
+        self.from_date.setFixedWidth(self.from_date.fontMetrics().horizontalAdvance("00/00/0000") + button_space)
         self.from_date.setCalendarPopup(True)
         self.from_date.setTimeSpec(Qt.UTC)
         self.layout.addWidget(self.from_date)
@@ -48,12 +50,12 @@ class DateRangeSelector(QWidget):
 
         self.to_date = QDateEdit()
         self.to_date.setDisplayFormat("dd/MM/yyyy")
+        self.to_date.setFixedWidth(self.from_date.fontMetrics().horizontalAdvance("00/00/0000") + button_space)
         self.to_date.setCalendarPopup(True)
         self.to_date.setTimeSpec(Qt.UTC)
         self.layout.addWidget(self.to_date)
 
         self.setLayout(self.layout)
-
         self.setFocusProxy(self.range_combo)
 
         self.connect_signals_and_slots()
@@ -82,8 +84,8 @@ class DateRangeSelector(QWidget):
 
     def _update_range(self):
         self.changing_range = True
-        self.from_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._begin, spec=Qt.UTC))
-        self.to_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._end, spec=Qt.UTC))
+        self.from_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._begin, QTimeZone(0)))
+        self.to_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._end, QTimeZone(0)))
         self.changing_range = False
         self.changed.emit(self._begin, self._end)
 

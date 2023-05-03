@@ -13,7 +13,7 @@ from jal.db.operations import LedgerTransaction
 # ----------------------------------------------------------------------------------------------------------------------
 class TransferWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
-        WidgetMapperDelegateBase.__init__(self, parent)
+        super().__init__(parent=parent)
         self.delegates = {'withdrawal_timestamp': self.timestamp_delegate,
                           'withdrawal': self.decimal_delegate,
                           'deposit_timestamp': self.timestamp_delegate,
@@ -24,7 +24,7 @@ class TransferWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class TransferWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        AbstractOperationDetails.__init__(self, parent)
+        super().__init__(parent=parent)
         self.name = self.tr("Transfer")
         self.operation_type = LedgerTransaction.Transfer
 

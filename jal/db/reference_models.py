@@ -12,7 +12,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
     def completion_model(self):
         return self._completion_model
 
-    def __init__(self, table, parent_view):
+    def __init__(self, table, parent_view, **kwargs):
         self._view = parent_view
         self._table = table
         self._columns = []
@@ -25,7 +25,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
         self._hidden = []
         self._stretch = None
         self._default_values = {}   # To fill in default values for fields allowed to be NULL
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=self.connection())
+        super().__init__(parent=parent_view, db=self.connection())
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(self._table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
@@ -170,7 +170,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         return self._completion_model
 
     def __init__(self, table, parent_view):
-        super().__init__(parent_view)
+        super().__init__(parent=parent_view)
         self._table = table
         self._columns = []
         self._view = parent_view
