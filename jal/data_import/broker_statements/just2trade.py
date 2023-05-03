@@ -275,11 +275,11 @@ class StatementJ2T(StatementXLS):
         asset_id = JalAsset(data={'name': asset_name}, search=True, create=False).id()
         return -asset_id  # Negative value to indicate that asset was found in db
 
-    # This methods finds dividend with given parameters in already loaded JSON data
+    # This method finds dividend with given parameters in already loaded JSON data
     def _locate_dividend(self, asset_id, timestamp, ex_date):
         for dividend in self._data[FOF.ASSET_PAYMENTS]:
             if dividend['type'] == FOF.PAYMENT_DIVIDEND and dividend['timestamp'] == timestamp and \
-                    dividend['ex-date'] == ex_date and dividend['asset'] == asset_id:
+                    dividend['ex_date'] == ex_date and dividend['asset'] == asset_id:
                 return dividend
         return None
 
@@ -319,7 +319,7 @@ class StatementJ2T(StatementXLS):
         ex_date = int(datetime.strptime(dividend['date'], "%d/%m/%Y").replace(tzinfo=timezone.utc).timestamp())
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
-                   "ex-date": ex_date, "asset": asset_id, "amount": amount, "description": note}
+                   "ex_date": ex_date, "asset": asset_id, "amount": amount, "description": note}
         self._data[FOF.ASSET_PAYMENTS].append(payment)
 
     def tax(self, timestamp, amount, note):
