@@ -61,10 +61,7 @@ class Statements(QObject):
         if not folder: folder = "."
         statement_files, active_filter = QFileDialog.getOpenFileNames(None, self.tr("Select statement files to import"),
                                                                       folder, statement_loader['filename_filter'])
-        if not statement_files:
-            return
         JalSettings().setValue("RecentFolder_Statement", QFileInfo(statement_files[0]).absolutePath())
-
         module = statement_loader['module']
         class_instance = getattr(module, statement_loader['loader_class'])
         if len(statement_files) > 1:
