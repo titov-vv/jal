@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QFileDialog
 from PySide6.QtCore import QObject
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
+from jal.db.settings import JalSettings, FolderFor
 from jal.data_export.xlsx import XLSX
 
 
@@ -64,13 +65,15 @@ class Reports(QObject):
 
     # Save report content from the model to xls-file chosen by the user
     def save_report(self, name, model):
+        folder = JalSettings().getRecentFolder(FolderFor.Report, '.')
         filename, filter = QFileDialog.getSaveFileName(self._mdi, self.tr("Save report to:"),
-                                                       ".", self.tr("Excel files (*.xlsx)"))
+                                                       folder, self.tr("Excel files (*.xlsx)"))
         if filename:
             if filter == self.tr("Excel files (*.xlsx)") and filename[-5:] != '.xlsx':
                 filename = filename + '.xlsx'
         else:
             return
+        JalSettings().setRecentFolder(FolderFor.Report, filename)
         report = XLSX(filename)
         report.output_model(name, model)
         report.save()

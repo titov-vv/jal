@@ -11,6 +11,7 @@ from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
+from jal.db.settings import JalSettings, FolderFor
 from jal.data_export.taxes import TaxReport
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
@@ -62,12 +63,14 @@ class TaxWidget(MdiWidget):
                         f".dc{last_digit}", self.ui.DlsgFileName)
         else:
             raise ValueError
-        filename = QFileDialog.getSaveFileName(self, selector[0], ".", selector[1])
+        folder = JalSettings().getRecentFolder(FolderFor.Report, '.')
+        filename = QFileDialog.getSaveFileName(self, selector[0], folder, selector[1])
         if filename[0]:
             if filename[1] == selector[1] and filename[0][-len(selector[2]):] != selector[2]:
                 selector[3].setText(filename[0] + selector[2])
             else:
                 selector[3].setText(filename[0])
+            JalSettings().setRecentFolder(FolderFor.Report, filename[0])
 
     def getYear(self):
         return self.ui.Year.value()
@@ -159,12 +162,14 @@ class MoneyFlowWidget(MdiWidget):
     @Slot()
     def OnFileBtn(self):
         selector = (self.tr("Save money flow report to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.ui.XlsFileName)
-        filename = QFileDialog.getSaveFileName(self, selector[0], ".", selector[1])
+        folder = JalSettings().getRecentFolder(FolderFor.Report, '.')
+        filename = QFileDialog.getSaveFileName(self, selector[0], folder, selector[1])
         if filename[0]:
             if filename[1] == selector[1] and filename[0][-len(selector[2]):] != selector[2]:
                 selector[3].setText(filename[0] + selector[2])
             else:
                 selector[3].setText(filename[0])
+            JalSettings().setRecentFolder(FolderFor.Report, filename[0])
 
     def getYear(self):
         return self.ui.Year.value()

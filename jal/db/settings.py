@@ -1,7 +1,18 @@
 from jal.db.db import JalDB
+from PySide6.QtCore import QStandardPaths, QFileInfo
 
+
+class FolderFor:
+    Statement = 1
+    Report = 2
 
 class JalSettings(JalDB):
+    __RECENT_PREFIX = "RecentFolder_"
+    __folders = {
+        FolderFor.Statement: "Statement",
+        FolderFor.Report: "Report"
+    }
+
     def __init__(self):
         super().__init__()
 
@@ -26,3 +37,17 @@ class JalSettings(JalDB):
         lang_id = self._read("SELECT id FROM languages WHERE language = :language_code",
                              [(':language_code', language_code)])
         self.setValue('Language', lang_id)
+
+    def getRecentFolder(self, folder_type: int, default: str=''):
+        folder = self.getValue(self.__RECENT_PREFIX + self.__folders[folder_type])
+        if not folder: folder = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
+        if not folder: folder = default
+        return folder
+
+    def setRecentFolder(self, folder_type: int, folder: str):
+        file_info = QFileInfo(folder)
+        if file_info.isDir():
+            path = file_info.absoluteFilePath()
+        else:
+            path = file_info.absolutePath()
+        self.setValue(self.__RECENT_PREFIX + self.__folders[folder_type], path)
