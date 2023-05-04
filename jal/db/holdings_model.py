@@ -18,41 +18,41 @@ class AssetTreeItem(AbstractTreeItem):
     def __init__(self, data=None, parent=None, group=''):
         super().__init__(parent, group)
         if data is None:
-            self.data = {
+            self._data = {
                 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'expiry': 0, 'qty': Decimal('0'),
                 'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0')
             }
         else:
-            self.data = data.copy()
-        self.data['share'] = Decimal('0')
-        self.data['value'] = self.data['quote'] * self.data['qty']
-        self.data['value_a'] = self.data['quote_a'] * self.data['qty'] if self.data['quote_a'] else Decimal('0')
-        self.data['profit'] = self.data['quote'] * self.data['qty'] - self.data['value_i'] if not self.data['asset_is_currency'] else Decimal('0')
-        self.data['profit_rel'] = Decimal('100') * self.data['quote'] * self.data['qty'] / self.data['value_i'] - 1 if self.data['value_i'] != Decimal('0') else Decimal('0')
+            self._data = data.copy()
+        self._data['share'] = Decimal('0')
+        self._data['value'] = self._data['quote'] * self._data['qty']
+        self._data['value_a'] = self._data['quote_a'] * self._data['qty'] if self._data['quote_a'] else Decimal('0')
+        self._data['profit'] = self._data['quote'] * self._data['qty'] - self._data['value_i'] if not self._data['asset_is_currency'] else Decimal('0')
+        self._data['profit_rel'] = Decimal('100') * self._data['quote'] * self._data['qty'] / self._data['value_i'] - 1 if self._data['value_i'] != Decimal('0') else Decimal('0')
 
     def _calculateGroupTotals(self, child_data):
-        self.data['currency'] = child_data['currency']
-        self.data['account'] = child_data['account']
-        self.data['value'] += child_data['value']
-        self.data['value_a'] += child_data['value_a']
-        self.data['profit'] += child_data['profit']
-        self.data['profit_rel'] = Decimal('100') * self.data['profit'] / (self.data['value'] - self.data['profit']) if self.data['value'] != self.data['profit'] else Decimal('0')
+        self._data['currency'] = child_data['currency']
+        self._data['account'] = child_data['account']
+        self._data['value'] += child_data['value']
+        self._data['value_a'] += child_data['value_a']
+        self._data['profit'] += child_data['profit']
+        self._data['profit_rel'] = Decimal('100') * self._data['profit'] / (self._data['value'] - self._data['profit']) if self._data['value'] != self._data['profit'] else Decimal('0')
 
     def _afterParentGroupUpdate(self, group_data):
-        self.data['share'] = Decimal('100') * self.data['value_a'] / group_data['value_a'] if group_data['value_a'] else Decimal('0')
+        self._data['share'] = Decimal('100') * self._data['value_a'] / group_data['value_a'] if group_data['value_a'] else Decimal('0')
 
     def details(self):
-        return self.data
+        return self._data
 
     # assigns group value if this tree item is a group item
     def setGroupValue(self, value):
         if self._group:
-            self.data[self._group] = value
+            self._data[self._group] = value
 
     def getGroup(self):
         if self._group:
-            return self._group, self.data[self._group]
+            return self._group, self._data[self._group]
         else:
             return None
 
@@ -109,7 +109,7 @@ class HoldingsModel(AbstractTreeModel):
             if role == Qt.BackgroundRole:
                 return self.data_background(item, index.column(), self._view.isEnabled())
             if role == Qt.ToolTipRole:
-                return self.data_tooltip(item.data, index.column())
+                return self.data_tooltip(item.details(), index.column())
             if role == Qt.TextAlignmentRole:
                 if index.column() < 2:
                     return int(Qt.AlignLeft)
@@ -120,7 +120,7 @@ class HoldingsModel(AbstractTreeModel):
             print(e)
 
     def data_text(self, item, column):
-        data = item.data
+        data = item.details()
         if column == 0:
             if item.isGroup():
                 group, value = item.getGroup()
@@ -172,7 +172,7 @@ class HoldingsModel(AbstractTreeModel):
         return ''
 
     def data_font(self, item, column):
-        data = item.data
+        data = item.details()
         if item.isGroup():
             font = QFont()
             font.setBold(True)
@@ -197,7 +197,7 @@ class HoldingsModel(AbstractTreeModel):
                     return font
 
     def data_background(self, item, column, enabled=True):
-        data = item.data
+        data = item.details()
         factor = 100 if enabled else 125
         if item.isGroup():
             group, value = item.getGroup()
@@ -244,8 +244,8 @@ class HoldingsModel(AbstractTreeModel):
     def get_data_for_tax(self, index):
         if not index.isValid():
             return None
-        item = index.internalPointer()
-        return item.data['account_id'], item.data['asset_id'], item.data['currency_id'], item.data['qty']
+        data = index.internalPointer().details()
+        return data['account_id'], data['asset_id'], data['currency_id'], data['qty']
 
     def update(self):
         self.prepareData()
