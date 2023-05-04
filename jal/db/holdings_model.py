@@ -29,7 +29,7 @@ class AssetTreeItem(AbstractTreeItem):
         self._data['value'] = self._data['quote'] * self._data['qty']
         self._data['value_a'] = self._data['quote_a'] * self._data['qty'] if self._data['quote_a'] else Decimal('0')
         self._data['profit'] = self._data['quote'] * self._data['qty'] - self._data['value_i'] if not self._data['asset_is_currency'] else Decimal('0')
-        self._data['profit_rel'] = Decimal('100') * self._data['quote'] * self._data['qty'] / self._data['value_i'] - 1 if self._data['value_i'] != Decimal('0') else Decimal('0')
+        self._data['profit_rel'] = Decimal('100') * (self._data['quote'] * self._data['qty'] / self._data['value_i'] - 1) if self._data['value_i'] != Decimal('0') else Decimal('0')
 
     def _calculateGroupTotals(self, child_data):
         self._data['currency'] = child_data['currency']
