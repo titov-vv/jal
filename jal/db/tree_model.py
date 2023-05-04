@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -24,7 +25,7 @@ class AbstractTreeItem:
         if self._group:
             self.updateGroupDetails(child.details())
 
-    def getChild(self, id) -> AbstractTreeItem:
+    def getChild(self, id) -> Optional[AbstractTreeItem]:
         if id < 0 or id >= len(self._children):
             return None
         return self._children[id]
@@ -51,6 +52,7 @@ class AbstractTreeModel(QAbstractItemModel):
         super().__init__(parent_view)
         self._view = parent_view
         self._root = None
+        self._groups = []
         self._columns = []
 
     def index(self, row, column, parent=None):
@@ -112,13 +114,13 @@ class AbstractTreeModel(QAbstractItemModel):
         return None
 
     # defines report grouping by provided field list - 'group_field1;group_field2;...'
-    def setGrouping(self, group_list):
-        if group_list:
-            self._groups = group_list.split(';')
-        else:
-            self._groups = []
-        self.prepareData()
-        self.configureView()
+    # return True if grouping was actually changed and False otherwise
+    def setGrouping(self, group_list) -> bool:
+        new_groups = group_list.split(';') if group_list else []
+        if new_groups == self._groups:
+            return False
+        self._groups = new_groups
+        return True
 
     def prepareData(self):
         raise NotImplementedError("To be defined in descendant class")

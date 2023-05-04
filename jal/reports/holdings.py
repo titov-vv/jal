@@ -33,15 +33,13 @@ class HoldingsReportWindow(MdiWidget):
         self.name = self.tr("Holdings")
 
         # Add available groupings
+        self.ui.GroupCombo.addItem("None", "")
         self.ui.GroupCombo.addItem(self.tr("Currency - Account - Asset"), "currency_id;account_id;asset_id")
         self.ui.GroupCombo.addItem(self.tr("Asset - Account"), "asset_id;account_id")
 
         self.holdings_model = HoldingsModel(self.ui.HoldingsTreeView)
         self.ui.HoldingsTreeView.setModel(self.holdings_model)
-        # self.holdings_model.configureView()
         self.ui.HoldingsTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
-
-        self.connect_signals_and_slots()
 
         # Setup holdings parameters
         current_time = QDateTime.currentDateTime()
@@ -49,16 +47,20 @@ class HoldingsReportWindow(MdiWidget):
         self.ui.HoldingsDate.setDateTime(current_time)
         self.ui.HoldingsCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
+        self.connect_signals_and_slots()
+
     def connect_signals_and_slots(self):
-        self.ui.HoldingsDate.dateChanged.connect(self.ui.HoldingsTreeView.model().setDate)
-        self.ui.HoldingsCurrencyCombo.changed.connect(self.ui.HoldingsTreeView.model().setCurrency)
+        self.ui.HoldingsDate.dateChanged.connect(self.updateReport)
+        self.ui.HoldingsCurrencyCombo.changed.connect(self.updateReport)
         self.ui.HoldingsTreeView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
-        self.ui.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
+        self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.HoldingsTreeView.model()))
 
     @Slot()
-    def onGroupingChange(self, idx):
-        self.ui.HoldingsTreeView.model().setGrouping(self.ui.GroupCombo.itemData(idx))
+    def updateReport(self, _parameter):
+        self.ui.HoldingsTreeView.model().updateView(currency_id = self.ui.HoldingsCurrencyCombo.currentIndex(),
+                                                    date = self.ui.HoldingsDate.date(),
+                                                    grouping = self.ui.GroupCombo.currentData())
 
     @Slot()
     def onHoldingsContextMenu(self, pos):

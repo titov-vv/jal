@@ -95,7 +95,6 @@ class ClosedTradesModel(AbstractTreeModel):
         self._trades = []
         self._account_id = 0
         self._begin = self._end = 0
-        self._groups = []
         self._grid_delegate = None
         self._float_delegate = None
         self._float2_delegate = None

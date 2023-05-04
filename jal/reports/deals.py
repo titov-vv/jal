@@ -51,4 +51,5 @@ class DealsReportWindow(MdiWidget):
 
     @Slot()
     def onGroupingChange(self, idx):
+        # FIXME - prepareData() isn't called after this change - need to implement inside ClosedTradesModel
         self.ui.ReportTreeView.model().setGrouping(self.ui.GroupCombo.itemData(idx))

@@ -1,7 +1,8 @@
+from __future__ import annotations
 from datetime import datetime
 from decimal import Decimal
 
-from PySide6.QtCore import Qt, Slot, QDate
+from PySide6.QtCore import Qt, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefindedAccountType
@@ -18,18 +19,60 @@ class AssetTreeItem(AbstractTreeItem):
         super().__init__(parent, group)
         if data is None:
             self.data = {
-                'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
+                'level': 0, 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'expiry': 0, 'qty': Decimal('0'),
-                'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0')
+                'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
+                'share': Decimal('0'), 'profit': Decimal('0'), 'profit_rel': Decimal('0'), 'value': Decimal('0'), 'value_a': Decimal('0')
             }
         else:
             self.data = data.copy()
+            self.data['level'] = 0
+            self.data['share'] = Decimal('0')
+            self.data['profit'] = Decimal('0')
+            self.data['profit_rel'] = Decimal('0')
+            self.data['value'] = Decimal('0')
+            self.data['value_a'] = Decimal('0')
+
+    def _calculateGroupTotals(self, child_data):
+        self.data = {
+            'level': 0, 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
+            'asset_is_currency': False, 'asset': '', 'asset_name': '', 'expiry': 0, 'qty': Decimal('0'),
+            'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
+            'share': Decimal('0'), 'profit': Decimal('0'), 'profit_rel': Decimal('0'), 'value': Decimal('0'), 'value_a': Decimal('0')
+        }
+        self.data['currency_id'] = child_data['currency_id']
+        self.data['currency'] = child_data['currency']
+        self.data['account_id'] = child_data['account_id']
+        self.data['account'] = child_data['account']
+
+    def details(self):
+        return self.data
+
+    # assigns group value if this tree item is a group item
+    def setGroupValue(self, value):
+        if self._group:
+            self.data[self._group] = value
+
+    # returns an element of tree that will provide right group parent for 'item' with given 'group_fields'
+    def getGroupLeaf(self, group_fields: list, item: AssetTreeItem) -> AssetTreeItem:
+        if group_fields:
+            group_item = None
+            group_name = group_fields[0]
+            for child in self._children:
+                if child.details()[group_name] == item.details()[group_name]:
+                    group_item = child
+            if group_item is None:
+                group_item = AssetTreeItem(None, parent=self, group=group_name)
+                group_item.setGroupValue(item.details()[group_name])
+                self._children.append(group_item)
+            return group_item.getGroupLeaf(group_fields[1:], item)
+        else:
+            return self
 
 # ----------------------------------------------------------------------------------------------------------------------
 class HoldingsModel(AbstractTreeModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
-        self._groups = []
         self._grid_delegate = None
         self._currency = 0
         self._currency_name = ''
@@ -176,18 +219,18 @@ class HoldingsModel(AbstractTreeModel):
         font.setBold(True)
         self._view.header().setFont(font)
 
-    @Slot()
-    def setCurrency(self, currency_id):
+    def updateView(self, currency_id, date, grouping):
+        update = False
         if self._currency != currency_id:
             self._currency = currency_id
             self._currency_name = JalAsset(currency_id).symbol()
+            update = True
+        if self._date != date.endOfDay(Qt.UTC).toSecsSinceEpoch():
+            self._date = date.endOfDay(Qt.UTC).toSecsSinceEpoch()
+            update = True
+        if self.setGrouping(grouping) or update:
             self.prepareData()
-
-    @Slot()
-    def setDate(self, new_date):
-        if self._date != new_date.endOfDay(Qt.UTC).toSecsSinceEpoch():
-            self._date = new_date.endOfDay(Qt.UTC).toSecsSinceEpoch()
-            self.prepareData()
+            self.configureView()
 
     def get_data_for_tax(self, index):
         if not index.isValid():
@@ -200,6 +243,7 @@ class HoldingsModel(AbstractTreeModel):
 
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def prepareData(self):
+        print(f"Groups: {self._groups}")
         holdings = []
         accounts = JalAccount.get_all_accounts(account_type=PredefindedAccountType.Investment)
         for account in accounts:
@@ -251,64 +295,69 @@ class HoldingsModel(AbstractTreeModel):
         holdings = sorted(holdings, key=lambda x: (x['currency'], x['account'], x['asset_is_currency'], x['asset']))
 
         self._root = AssetTreeItem()
-        currency = 0
-        c_node = None
-        account = 0
-        a_node = None
-        for values in holdings:
-            values['level'] = 2
-            if values['currency_id'] != currency:
-                currency = values['currency_id']
-                c_node = AssetTreeItem(values, self._root)
-                c_node.data['level'] = 0
-                c_node.data['asset_name'] = ''
-                c_node.data['expiry'] = 0
-                c_node.data['qty'] = Decimal('0')
-                self._root.appendChild(c_node)
-            if values['account_id'] != account:
-                account = values['account_id']
-                a_node = AssetTreeItem(values, c_node)
-                a_node.data['level'] = 1
-                a_node.data['asset_name'] = ''
-                a_node.data['expiry'] = 0
-                a_node.data['qty'] = Decimal('0')
-                c_node.appendChild(a_node)
-            if values['quote']:
-                if values['asset_is_currency']:
-                    profit = Decimal('0')
-                else:
-                    profit = values['quote'] * values['qty'] - values['value_i']
-                if values['value_i'] != Decimal('0'):
-                    profit_relative = values['quote'] * values['qty'] / values['value_i'] - 1
-                else:
-                    profit_relative = Decimal('0')
-                value = values['quote'] * values['qty']
-                share = Decimal('100.0') * value / values['total']
-                value_adjusted = values['quote_a'] * values['qty'] if values['quote_a'] else Decimal('0')
-                values.update(dict(zip(self.calculated_names, [share, profit, profit_relative, value, value_adjusted])))
-            else:
-                values.update(dict(zip(self.calculated_names,
-                                       [Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0')])))
-            node = AssetTreeItem(values, a_node)
-            a_node.appendChild(node)
+        for position in holdings:
+            new_item = AssetTreeItem(position)
+            leaf = self._root.getGroupLeaf(self._groups, new_item)
+            leaf.appendChild(new_item)
 
-        # Update totals
-        for i in range(self._root.childrenCount()):          # Iterate through each currency
-            currency_child = self._root.getChild(i)
-            for j in range(currency_child.childrenCount()):  # Iterate through each account for given currency
-                self.add_node_totals(currency_child.getChild(j))
-            self.add_node_totals(currency_child)
-            for j in range(currency_child.childrenCount()):  # Calculate share of each account within currency
-                if currency_child.data['value']:
-                    currency_child.getChild(j).data['share'] = \
-                        Decimal('100') * currency_child.getChild(j).data['value'] / currency_child.data['value']
-        # Get full total of totals for all currencies adjusted to common currency
-        total = sum([self._root.getChild(i).data['value_a'] for i in range(self._root.childrenCount())])
-        for i in range(self._root.childrenCount()):  # Calculate share of each currency (adjusted to common currency)
-            if total != Decimal('0'):
-                self._root.getChild(i).data['share'] = Decimal('100') * self._root.getChild(i).data['value_a'] / total
-            else:
-                self._root.getChild(i).data['share'] = None
+        # currency = 0
+        # c_node = None
+        # account = 0
+        # a_node = None
+        # for values in holdings:
+        #     values['level'] = 2
+        #     if values['currency_id'] != currency:
+        #         currency = values['currency_id']
+        #         c_node = AssetTreeItem(values, self._root)
+        #         c_node.data['level'] = 0
+        #         c_node.data['asset_name'] = ''
+        #         c_node.data['expiry'] = 0
+        #         c_node.data['qty'] = Decimal('0')
+        #         self._root.appendChild(c_node)
+        #     if values['account_id'] != account:
+        #         account = values['account_id']
+        #         a_node = AssetTreeItem(values, c_node)
+        #         a_node.data['level'] = 1
+        #         a_node.data['asset_name'] = ''
+        #         a_node.data['expiry'] = 0
+        #         a_node.data['qty'] = Decimal('0')
+        #         c_node.appendChild(a_node)
+        #     if values['quote']:
+        #         if values['asset_is_currency']:
+        #             profit = Decimal('0')
+        #         else:
+        #             profit = values['quote'] * values['qty'] - values['value_i']
+        #         if values['value_i'] != Decimal('0'):
+        #             profit_relative = values['quote'] * values['qty'] / values['value_i'] - 1
+        #         else:
+        #             profit_relative = Decimal('0')
+        #         value = values['quote'] * values['qty']
+        #         share = Decimal('100.0') * value / values['total']
+        #         value_adjusted = values['quote_a'] * values['qty'] if values['quote_a'] else Decimal('0')
+        #         values.update(dict(zip(self.calculated_names, [share, profit, profit_relative, value, value_adjusted])))
+        #     else:
+        #         values.update(dict(zip(self.calculated_names,
+        #                                [Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0')])))
+        #     node = AssetTreeItem(values, a_node)
+        #     a_node.appendChild(node)
+        #
+        # # Update totals
+        # for i in range(self._root.childrenCount()):          # Iterate through each currency
+        #     currency_child = self._root.getChild(i)
+        #     for j in range(currency_child.childrenCount()):  # Iterate through each account for given currency
+        #         self.add_node_totals(currency_child.getChild(j))
+        #     self.add_node_totals(currency_child)
+        #     for j in range(currency_child.childrenCount()):  # Calculate share of each account within currency
+        #         if currency_child.data['value']:
+        #             currency_child.getChild(j).data['share'] = \
+        #                 Decimal('100') * currency_child.getChild(j).data['value'] / currency_child.data['value']
+        # # Get full total of totals for all currencies adjusted to common currency
+        # total = sum([self._root.getChild(i).data['value_a'] for i in range(self._root.childrenCount())])
+        # for i in range(self._root.childrenCount()):  # Calculate share of each currency (adjusted to common currency)
+        #     if total != Decimal('0'):
+        #         self._root.getChild(i).data['share'] = Decimal('100') * self._root.getChild(i).data['value_a'] / total
+        #     else:
+        #         self._root.getChild(i).data['share'] = None
         self.modelReset.emit()
         self.configureView()
         self._view.expandAll()
