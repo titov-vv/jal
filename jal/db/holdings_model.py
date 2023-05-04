@@ -297,6 +297,7 @@ class HoldingsModel(AbstractTreeModel):
                     "quote_a": rate
                 })
             holdings += account_holdings
+        holdings = sorted(holdings, key=lambda x: (x['currency'], x['account'], x['asset_is_currency'], x['asset']))
 
         self._root = AssetTreeItem()
         for position in holdings:

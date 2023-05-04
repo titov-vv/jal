@@ -56,6 +56,9 @@ class TradeTreeItem(AbstractTreeItem):
         self._data['p/l'] += child_data['p/l']
         self._data['p/l%'] = Decimal('100') * self._data['p/l'] / (self._data['open_price'] * self._data['qty'])
 
+    def _afterParentGroupUpdate(self, group_data):
+        pass
+
     def details(self):
         return self._data
 
@@ -132,9 +135,20 @@ class ClosedTradesModel(AbstractTreeModel):
             return item.details()[self._columns[index.column()]['field']]
         return None
 
-    def setAccount(self, account_id):
-        self._account_id = account_id
-        self.prepareData()
+    def updateView(self, account_id, dates, grouping):
+        update = False
+        if self._account_id != account_id:
+            self._account_id = account_id
+            update = True
+        if self._begin != dates[0]:
+            self._begin = dates[0]
+            update = True
+        if self._end != dates[1]:
+            self._end = dates[1]
+            update = True
+        if self.setGrouping(grouping) or update:
+            self.prepareData()
+            self.configureView()
 
     def prepareData(self):
         self._trades = JalAccount(self._account_id).closed_trades_list()
@@ -178,8 +192,3 @@ class ClosedTradesModel(AbstractTreeModel):
         self._profit_delegate = FloatDelegate(2, allow_tail=False, colors=True, parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("p/l"), self._profit_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("p/l%"), self._profit_delegate)
-
-    def setDatesRange(self, begin, end):
-        self._begin = begin
-        self._end = end
-        self.prepareData()

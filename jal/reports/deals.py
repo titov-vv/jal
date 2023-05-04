@@ -40,16 +40,13 @@ class DealsReportWindow(MdiWidget):
         self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
-        self.ui.ReportAccountBtn.changed.connect(self.onAccountChange)
-        self.ui.ReportRange.changed.connect(self.ui.ReportTreeView.model().setDatesRange)
-        self.ui.GroupCombo.currentIndexChanged.connect(self.onGroupingChange)
+        self.ui.ReportAccountBtn.changed.connect(self.updateReport)
+        self.ui.ReportRange.changed.connect(self.updateReport)
+        self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
     @Slot()
-    def onAccountChange(self):
-        self.ui.ReportTreeView.model().setAccount(self.ui.ReportAccountBtn.account_id)
-
-    @Slot()
-    def onGroupingChange(self, idx):
-        # FIXME - prepareData() isn't called after this change - need to implement inside ClosedTradesModel
-        self.ui.ReportTreeView.model().setGrouping(self.ui.GroupCombo.itemData(idx))
+    def updateReport(self):
+        self.ui.ReportTreeView.model().updateView(account_id=self.ui.ReportAccountBtn.account_id,
+                                                  dates=self.ui.ReportRange.getRange(),
+                                                  grouping=self.ui.GroupCombo.currentData())

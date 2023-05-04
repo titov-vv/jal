@@ -33,9 +33,9 @@ class HoldingsReportWindow(MdiWidget):
         self.name = self.tr("Holdings")
 
         # Add available groupings
-        self.ui.GroupCombo.addItem("None", "")
         self.ui.GroupCombo.addItem(self.tr("Currency - Account"), "currency_id;account_id")
         self.ui.GroupCombo.addItem(self.tr("Asset - Account"), "asset_id;account_id")
+        self.ui.GroupCombo.addItem("None", "")
 
         self.holdings_model = HoldingsModel(self.ui.HoldingsTreeView)
         self.ui.HoldingsTreeView.setModel(self.holdings_model)
@@ -48,6 +48,7 @@ class HoldingsReportWindow(MdiWidget):
         self.ui.HoldingsCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
         self.connect_signals_and_slots()
+        self.updateReport()
 
     def connect_signals_and_slots(self):
         self.ui.HoldingsDate.dateChanged.connect(self.updateReport)
@@ -57,7 +58,7 @@ class HoldingsReportWindow(MdiWidget):
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.HoldingsTreeView.model()))
 
     @Slot()
-    def updateReport(self, _parameter):
+    def updateReport(self):
         self.ui.HoldingsTreeView.model().updateView(currency_id = self.ui.HoldingsCurrencyCombo.currentIndex(),
                                                     date = self.ui.HoldingsDate.date(),
                                                     grouping = self.ui.GroupCombo.currentData())
