@@ -34,7 +34,7 @@ class HoldingsReportWindow(MdiWidget):
 
         # Add available groupings
         self.ui.GroupCombo.addItem("None", "")
-        self.ui.GroupCombo.addItem(self.tr("Currency - Account - Asset"), "currency_id;account_id;asset_id")
+        self.ui.GroupCombo.addItem(self.tr("Currency - Account"), "currency_id;account_id")
         self.ui.GroupCombo.addItem(self.tr("Asset - Account"), "asset_id;account_id")
 
         self.holdings_model = HoldingsModel(self.ui.HoldingsTreeView)

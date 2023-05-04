@@ -19,14 +19,13 @@ class AssetTreeItem(AbstractTreeItem):
         super().__init__(parent, group)
         if data is None:
             self.data = {
-                'level': 0, 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
+                'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'expiry': 0, 'qty': Decimal('0'),
                 'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
                 'share': Decimal('0'), 'profit': Decimal('0'), 'profit_rel': Decimal('0'), 'value': Decimal('0'), 'value_a': Decimal('0')
             }
         else:
             self.data = data.copy()
-            self.data['level'] = 0
             self.data['share'] = Decimal('0')
             self.data['profit'] = Decimal('0')
             self.data['profit_rel'] = Decimal('0')
@@ -35,7 +34,7 @@ class AssetTreeItem(AbstractTreeItem):
 
     def _calculateGroupTotals(self, child_data):
         self.data = {
-            'level': 0, 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
+            'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
             'asset_is_currency': False, 'asset': '', 'asset_name': '', 'expiry': 0, 'qty': Decimal('0'),
             'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
             'share': Decimal('0'), 'profit': Decimal('0'), 'profit_rel': Decimal('0'), 'value': Decimal('0'), 'value_a': Decimal('0')
@@ -52,6 +51,12 @@ class AssetTreeItem(AbstractTreeItem):
     def setGroupValue(self, value):
         if self._group:
             self.data[self._group] = value
+
+    def getGroup(self):
+        if self._group:
+            return self._group, self.data[self._group]
+        else:
+            return None
 
     # returns an element of tree that will provide right group parent for 'item' with given 'group_fields'
     def getGroupLeaf(self, group_fields: list, item: AssetTreeItem) -> AssetTreeItem:
@@ -96,30 +101,33 @@ class HoldingsModel(AbstractTreeModel):
         return value
 
     def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid():
+        try:
+            if not index.isValid():
+                return None
+            item = index.internalPointer()
+            if role == Qt.DisplayRole:
+                return self.data_text(item, index.column())
+            if role == Qt.FontRole:
+                return self.data_font(item, index.column())
+            if role == Qt.BackgroundRole:
+                return self.data_background(item, index.column(), self._view.isEnabled())
+            if role == Qt.ToolTipRole:
+                return self.data_tooltip(item.data, index.column())
+            if role == Qt.TextAlignmentRole:
+                if index.column() < 2:
+                    return int(Qt.AlignLeft)
+                else:
+                    return int(Qt.AlignRight)
             return None
-        item = index.internalPointer()
-        if role == Qt.DisplayRole:
-            return self.data_text(item.data, index.column())
-        if role == Qt.FontRole:
-            return self.data_font(item.data, index.column())
-        if role == Qt.BackgroundRole:
-            return self.data_background(item.data, index.column(), self._view.isEnabled())
-        if role == Qt.ToolTipRole:
-            return self.data_tooltip(item.data, index.column())
-        if role == Qt.TextAlignmentRole:
-            if index.column() < 2:
-                return int(Qt.AlignLeft)
-            else:
-                return int(Qt.AlignRight)
-        return None
+        except Exception as e:
+            print(e)
 
-    def data_text(self, data, column):
+    def data_text(self, item, column):
+        data = item.data
         if column == 0:
-            if data['level'] == 0:
-                return data['currency']
-            elif data['level'] == 1:
-                return data['account']
+            if item.isGroup():
+                group, value = item.getGroup()
+                return data[group.strip("_id")]
             else:
                 return data['asset']
         elif column == 1:
@@ -159,15 +167,16 @@ class HoldingsModel(AbstractTreeModel):
             assert False
 
     def data_tooltip(self, data, column):
-        if column >= 4 and column <= 8:
+        if 4 <= column <= 8:
             quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
             quote_age = int((datetime.utcnow() - quote_date).total_seconds() / 86400)
             if quote_age > 7:
                 return self.tr("Last quote date: ") + ts2d(int(data['quote_ts']))
         return ''
 
-    def data_font(self, data, column):
-        if data['level'] < 2:
+    def data_font(self, item, column):
+        data = item.data
+        if item.isGroup():
             font = QFont()
             font.setBold(True)
             return font
@@ -190,12 +199,15 @@ class HoldingsModel(AbstractTreeModel):
                     font.setItalic(True)
                     return font
 
-    def data_background(self, data, column, enabled=True):
+    def data_background(self, item, column, enabled=True):
+        data = item.data
         factor = 100 if enabled else 125
-        if data['level'] == 0:
-            return QBrush(CustomColor.LightPurple.lighter(factor))
-        if data['level'] == 1:
-            return QBrush(CustomColor.LightBlue.lighter(factor))
+        if item.isGroup():
+            group, value = item.getGroup()
+            if group == "currency_id":
+                return QBrush(CustomColor.LightPurple.lighter(factor))
+            if group == "account_id":
+                return QBrush(CustomColor.LightBlue.lighter(factor))
         if column == 6 and data['profit_rel']:
             if data['profit_rel'] >= 0:
                 return QBrush(CustomColor.LightGreen.lighter(factor))
@@ -243,7 +255,6 @@ class HoldingsModel(AbstractTreeModel):
 
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def prepareData(self):
-        print(f"Groups: {self._groups}")
         holdings = []
         accounts = JalAccount.get_all_accounts(account_type=PredefindedAccountType.Investment)
         for account in accounts:
