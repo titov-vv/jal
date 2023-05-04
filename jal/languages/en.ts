@@ -174,12 +174,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="97"/>
+        <location filename="../widgets/asset_dialog.py" line="99"/>
         <source>Asset submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="105"/>
+        <location filename="../widgets/asset_dialog.py" line="107"/>
         <source>Asset details submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -233,22 +233,22 @@
 <context>
     <name>AssetsListModel</name>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="19"/>
+        <location filename="../widgets/asset_dialog.py" line="21"/>
         <source>Asset name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="20"/>
+        <location filename="../widgets/asset_dialog.py" line="22"/>
         <source>ISIN</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="21"/>
+        <location filename="../widgets/asset_dialog.py" line="23"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="22"/>
+        <location filename="../widgets/asset_dialog.py" line="24"/>
         <source>Base asset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -385,62 +385,62 @@
 <context>
     <name>ClosedTradesModel</name>
     <message>
-        <location filename="../reports/deals.py" line="142"/>
+        <location filename="../db/trades_model.py" line="108"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="143"/>
+        <location filename="../db/trades_model.py" line="109"/>
         <source>Open Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="144"/>
+        <location filename="../db/trades_model.py" line="110"/>
         <source>Open Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="145"/>
+        <location filename="../db/trades_model.py" line="111"/>
         <source>Close Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="146"/>
+        <location filename="../db/trades_model.py" line="112"/>
         <source>Close Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="147"/>
+        <location filename="../db/trades_model.py" line="113"/>
         <source>Open Price</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="148"/>
+        <location filename="../db/trades_model.py" line="114"/>
         <source>Close Price</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="149"/>
+        <location filename="../db/trades_model.py" line="115"/>
         <source>Qty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="150"/>
+        <location filename="../db/trades_model.py" line="116"/>
         <source>Fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="151"/>
+        <location filename="../db/trades_model.py" line="117"/>
         <source>P/L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="152"/>
+        <location filename="../db/trades_model.py" line="118"/>
         <source>P/L, %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="153"/>
+        <location filename="../db/trades_model.py" line="119"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
@@ -604,12 +604,12 @@
 <context>
     <name>DB</name>
     <message>
-        <location filename="../db/db.py" line="290"/>
+        <location filename="../db/db.py" line="295"/>
         <source>Database format is outdated</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="291"/>
+        <location filename="../db/db.py" line="296"/>
         <source>Do you agree to upgrade your data to newer format?</source>
         <translation></translation>
     </message>
@@ -635,18 +635,23 @@
 <context>
     <name>DataDelegate</name>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="186"/>
+        <location filename="../widgets/asset_dialog.py" line="188"/>
         <source>reg.code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="187"/>
+        <location filename="../widgets/asset_dialog.py" line="189"/>
         <source>expiry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="188"/>
+        <location filename="../widgets/asset_dialog.py" line="190"/>
         <source>principal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="191"/>
+        <source>tag</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -711,7 +716,7 @@
 <context>
     <name>DealsReport</name>
     <message>
-        <location filename="../reports/deals.py" line="295"/>
+        <location filename="../reports/deals.py" line="17"/>
         <source>Deals by Account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -733,36 +738,46 @@
         <source>Account:</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../ui/reports/deals_report.ui" line="99"/>
+        <source>Save...</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DealsReportWindow</name>
     <message>
-        <location filename="../reports/deals.py" line="307"/>
+        <location filename="../reports/deals.py" line="30"/>
         <source>&lt;None&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="308"/>
+        <location filename="../reports/deals.py" line="30"/>
+        <source>Deals</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/deals.py" line="31"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="309"/>
+        <location filename="../reports/deals.py" line="32"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="310"/>
+        <location filename="../reports/deals.py" line="33"/>
         <source>Asset - Open - Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="311"/>
+        <location filename="../reports/deals.py" line="34"/>
         <source>Open - Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="312"/>
+        <location filename="../reports/deals.py" line="35"/>
         <source>Close - Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -916,12 +931,12 @@
 <context>
     <name>ExtraDataModel</name>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="276"/>
+        <location filename="../widgets/asset_dialog.py" line="291"/>
         <source>Property</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="277"/>
+        <location filename="../widgets/asset_dialog.py" line="292"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
@@ -929,62 +944,72 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="52"/>
+        <location filename="../db/holdings_model.py" line="89"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="53"/>
+        <location filename="../db/holdings_model.py" line="90"/>
         <source>Open</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="54"/>
+        <location filename="../db/holdings_model.py" line="91"/>
         <source>Last</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="55"/>
+        <location filename="../db/holdings_model.py" line="92"/>
         <source>Share, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="56"/>
+        <location filename="../db/holdings_model.py" line="93"/>
         <source>P/L, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="57"/>
+        <location filename="../db/holdings_model.py" line="94"/>
         <source>P/L</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="58"/>
+        <location filename="../db/holdings_model.py" line="95"/>
         <source>Value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="61"/>
+        <location filename="../db/holdings_model.py" line="98"/>
         <source>Value, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="171"/>
+        <location filename="../db/holdings_model.py" line="177"/>
         <source>Last quote date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="50"/>
+        <location filename="../db/holdings_model.py" line="281"/>
+        <source>N/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="303"/>
+        <source>Money</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="87"/>
         <source>Currency/Account/Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="51"/>
+        <location filename="../db/holdings_model.py" line="88"/>
         <source>Asset Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="134"/>
+        <location filename="../db/holdings_model.py" line="140"/>
         <source>Exp:</source>
         <translation></translation>
     </message>
@@ -1000,28 +1025,58 @@
 <context>
     <name>HoldingsReportWindow</name>
     <message>
-        <location filename="../reports/holdings.py" line="35"/>
+        <location filename="../reports/holdings.py" line="36"/>
         <source>Holdings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="58"/>
+        <location filename="../reports/holdings.py" line="36"/>
+        <source>Currency - Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="37"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="38"/>
+        <source>Country</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="39"/>
+        <source>Tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="72"/>
         <source>Show Price Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="61"/>
+        <location filename="../reports/holdings.py" line="75"/>
         <source>Estimate tax</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="62"/>
+        <location filename="../reports/holdings.py" line="76"/>
         <source>Portugal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="65"/>
+        <location filename="../reports/holdings.py" line="79"/>
         <source>Russia</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="83"/>
+        <source>Expand All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="86"/>
+        <source>Collapse All</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1039,11 +1094,16 @@
     </message>
     <message>
         <location filename="../ui/reports/holdings_report.ui" line="82"/>
+        <source>Group by:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/holdings_report.ui" line="92"/>
         <source>Common currency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/holdings_report.ui" line="105"/>
+        <location filename="../ui/reports/holdings_report.ui" line="115"/>
         <source>Save...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1582,27 +1642,27 @@
 <context>
     <name>JalAsset</name>
     <message>
-        <location filename="../db/asset.py" line="150"/>
+        <location filename="../db/asset.py" line="155"/>
         <source>There are no quote/rate for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="213"/>
+        <location filename="../db/asset.py" line="218"/>
         <source>Quotations were updated: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="248"/>
+        <location filename="../db/asset.py" line="256"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="268"/>
+        <location filename="../db/asset.py" line="276"/>
         <source>Country updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="278"/>
+        <location filename="../db/asset.py" line="286"/>
         <source>Reg.number updated for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1682,7 +1742,7 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/db.py" line="320"/>
+        <location filename="../db/db.py" line="325"/>
         <source>Operation already present in db and was skipped: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1993,22 +2053,22 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="224"/>
+        <location filename="../widgets/main_window.py" line="225"/>
         <source>github home page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="224"/>
+        <location filename="../widgets/main_window.py" line="225"/>
         <source>More information, manuals and problem reports are at </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="226"/>
+        <location filename="../widgets/main_window.py" line="227"/>
         <source>Questions, comments, help or donations:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="289"/>
+        <location filename="../widgets/main_window.py" line="290"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation></translation>
     </message>
@@ -4084,27 +4144,27 @@ Application will be terminated now.</source>
 <context>
     <name>SymbolsListModel</name>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="154"/>
+        <location filename="../widgets/asset_dialog.py" line="156"/>
         <source>Symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="155"/>
+        <location filename="../widgets/asset_dialog.py" line="157"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="156"/>
+        <location filename="../widgets/asset_dialog.py" line="158"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="157"/>
+        <location filename="../widgets/asset_dialog.py" line="159"/>
         <source>Quotes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/asset_dialog.py" line="158"/>
+        <location filename="../widgets/asset_dialog.py" line="160"/>
         <source>Act.</source>
         <translation type="unfinished"></translation>
     </message>
