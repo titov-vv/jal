@@ -9,6 +9,8 @@ from jal.constants import PredefinedAsset, AssetData
 from jal.db.helpers import load_icon, localize_decimal
 from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate
 from jal.db.reference_models import AbstractReferenceListModel
+from jal.db.tag import JalTag
+from jal.widgets.reference_selector import TagSelector
 
 
 class AssetsListModel(AbstractReferenceListModel):
@@ -185,7 +187,8 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
         self.types = {
             AssetData.RegistrationCode: (self.tr("reg.code"), "str"),
             AssetData.ExpiryDate: (self.tr("expiry"), "date"),
-            AssetData.PrincipalValue: (self.tr("principal"), "float")
+            AssetData.PrincipalValue: (self.tr("principal"), "float"),
+            AssetData.Tag: (self.tr("tag"), "tag")
         }
 
     def type(self, index):
@@ -200,6 +203,8 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
                 return datetime.utcfromtimestamp(int(value)).strftime("%d/%m/%Y")
             elif datatype == "float":
                 return f"{value:.2f}"
+            elif datatype == "tag":
+                return JalTag(int(value)).name()
             else:
                 assert False, "Unknown data type of asset data"
         except ValueError:
@@ -218,6 +223,8 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
                 editor = DateTimeEditWithReset(aParent)
                 editor.setTimeSpec(Qt.UTC)
                 editor.setDisplayFormat("dd/MM/yyyy")
+            elif self.types[type_idx][1] == "tag":
+                editor = TagSelector(aParent)
             else:
                 assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.createEditor()"
         else:
@@ -243,6 +250,12 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
                 except (ValueError, TypeError):
                     amount = Decimal('0')
                 editor.setText(localize_decimal(amount))
+            elif self.types[type_idx][1] == "tag":
+                try:
+                    tag_id = int(index.model().data(index, Qt.EditRole))
+                except (ValueError, TypeError):
+                    tag_id = 0
+                editor.selected_id = tag_id
             else:
                 assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.setEditorData()"
         else:
@@ -262,6 +275,8 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
             elif self.types[type_idx][1] == "float":
                 value = QLocale().toDouble(editor.text())[0]
                 model.setData(index, value)
+            elif self.types[type_idx][1] == "tag":
+                model.setData(index, str(editor.selected_id))
             else:
                 assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.setModelData()"
         else:

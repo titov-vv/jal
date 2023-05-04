@@ -119,6 +119,7 @@ class AssetData:
     RegistrationCode = 1
     ExpiryDate = 2
     PrincipalValue = 3
+    Tag = 4
 
 
 class PredefinedPeer:

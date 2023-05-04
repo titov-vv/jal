@@ -5,6 +5,7 @@ from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsse
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal, year_begin, year_end
 from jal.db.country import JalCountry
+from jal.db.tag import JalTag
 from jal.widgets.helpers import ts2d
 
 
@@ -45,6 +46,10 @@ class JalAsset(JalDB):
         self._expiry = self._data.get('data', {}).get(AssetData.ExpiryDate, '') if self._data is not None else ''
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '') if self._data is not None else ''
         self._principal = Decimal(self._principal) if self._principal else Decimal('0')
+        try:
+            self._tag = JalTag(int(self._data.get('data', {}).get(AssetData.Tag, 0)))
+        except (AttributeError, ValueError, TypeError):
+            self._tag = JalTag(0)
 
     def invalidate_cache(self):
         self._fetch_data()
@@ -220,6 +225,9 @@ class JalAsset(JalDB):
 
     def principal(self) -> Decimal:
         return self._principal
+
+    def tag(self) -> JalTag:
+        return self._tag
 
     # Updates relevant asset data fields with information provided in data dictionary
     def update_data(self, data: dict) -> None:
