@@ -77,6 +77,13 @@ class HoldingsReportWindow(MdiWidget):
         actionEstimateTaxRu = QAction(text=self.tr("Russia"), parent=self.ui.HoldingsTreeView)
         actionEstimateTaxRu.triggered.connect(partial(self.estimateRussianTax, index, 'ru'))
         tax_submenu.addAction(actionEstimateTaxRu)
+        contextMenu.addSeparator()
+        actionExpandAll = QAction(text=self.tr("Expand All"),parent=self.ui.HoldingsTreeView)
+        actionExpandAll.triggered.connect(self.ui.HoldingsTreeView.expandAll)
+        contextMenu.addAction(actionExpandAll)
+        actionCollapseAll = QAction(text=self.tr("Collapse All"), parent=self.ui.HoldingsTreeView)
+        actionCollapseAll.triggered.connect(self.ui.HoldingsTreeView.collapseAll)
+        contextMenu.addAction(actionCollapseAll)
         contextMenu.popup(self.ui.HoldingsTreeView.viewport().mapToGlobal(pos))
 
     @Slot()
