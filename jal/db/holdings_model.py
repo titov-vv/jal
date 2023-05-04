@@ -20,8 +20,9 @@ class AssetTreeItem(AbstractTreeItem):
         if data is None:
             self._data = {
                 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
-                'asset_is_currency': False, 'asset': '', 'asset_name': '', 'expiry': 0, 'qty': Decimal('0'),
-                'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0')
+                'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '', 'expiry': 0,
+                'qty': Decimal('0'), 'value_i': Decimal('0'),
+                'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0')
             }
         else:
             self._data = data.copy()
@@ -35,6 +36,7 @@ class AssetTreeItem(AbstractTreeItem):
         self._data['currency'] = child_data['currency']
         self._data['account'] = child_data['account']
         self._data['asset'] = child_data['asset']
+        self._data['country'] = child_data['country']
         self._data['value'] += child_data['value']
         self._data['value_a'] += child_data['value_a']
         self._data['profit'] += child_data['profit']
@@ -272,6 +274,8 @@ class HoldingsModel(AbstractTreeModel):
                     "asset_id": asset.id(),
                     "asset_is_currency": False,
                     "asset": asset.symbol(currency=account.currency()),
+                    "country_id": asset.country().id(),
+                    "country": asset.country().name(),
                     "asset_name": asset.name(),
                     "expiry": asset.expiry(),
                     "qty": asset_data['amount'],
@@ -292,6 +296,8 @@ class HoldingsModel(AbstractTreeModel):
                     "asset_is_currency": True,
                     "asset": JalAsset(account.currency()).symbol(),
                     "asset_name": JalAsset(account.currency()).name(),
+                    "country_id": JalAsset(account.currency()).country().id(),
+                    "country": JalAsset(account.currency()).country().name(),
                     "expiry": 0,
                     "qty": money,
                     "value_i": Decimal('0'),
