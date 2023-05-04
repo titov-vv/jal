@@ -21,16 +21,15 @@ class AssetTreeItem(AbstractTreeItem):
             self.data = {
                 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'expiry': 0, 'qty': Decimal('0'),
-                'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
-                'share': Decimal('0'), 'profit': Decimal('0'), 'profit_rel': Decimal('0'), 'value': Decimal('0'), 'value_a': Decimal('0')
+                'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'), 'total': Decimal('0')
             }
         else:
             self.data = data.copy()
-            self.data['share'] = Decimal('0')
-            self.data['profit'] = Decimal('0')
-            self.data['profit_rel'] = Decimal('0')
-            self.data['value'] = Decimal('0')
-            self.data['value_a'] = Decimal('0')
+        self.data['value'] = self.data['quote'] * self.data['qty']
+        self.data['value_a'] = self.data['quote_a'] * self.data['qty'] if self.data['quote_a'] else Decimal('0')
+        self.data['share'] = Decimal('100.0') * self.data['value'] / self.data['total'] if self.data['total'] else Decimal('0')
+        self.data['profit'] = self.data['quote'] * self.data['qty'] - self.data['value_i'] if not self.data['asset_is_currency'] else Decimal('0')
+        self.data['profit_rel'] = self.data['quote'] * self.data['qty'] / self.data['value_i'] - 1 if self.data['value_i'] != Decimal('0') else Decimal('0')
 
     def _calculateGroupTotals(self, child_data):
         self.data = {
