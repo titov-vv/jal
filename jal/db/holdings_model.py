@@ -19,7 +19,7 @@ class AssetTreeItem(AbstractTreeItem):
         super().__init__(parent, group)
         if data is None:
             self._data = {
-                'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
+                'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0, 'tag': '',
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '', 'expiry': 0,
                 'qty': Decimal('0'), 'value_i': Decimal('0'),
                 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0')
@@ -37,6 +37,7 @@ class AssetTreeItem(AbstractTreeItem):
         self._data['account'] = child_data['account']
         self._data['asset'] = child_data['asset']
         self._data['country'] = child_data['country']
+        self._data['tag'] = child_data['tag']
         self._data['value'] += child_data['value']
         self._data['value_a'] += child_data['value_a']
         self._data['profit'] += child_data['profit']
@@ -274,9 +275,10 @@ class HoldingsModel(AbstractTreeModel):
                     "asset_id": asset.id(),
                     "asset_is_currency": False,
                     "asset": asset.symbol(currency=account.currency()),
+                    "asset_name": asset.name(),
                     "country_id": asset.country().id(),
                     "country": asset.country().name(),
-                    "asset_name": asset.name(),
+                    "tag": asset.tag().name() if asset.tag().name() else self.tr("N/A"),
                     "expiry": asset.expiry(),
                     "qty": asset_data['amount'],
                     "value_i": asset_data['value'],
@@ -298,6 +300,7 @@ class HoldingsModel(AbstractTreeModel):
                     "asset_name": JalAsset(account.currency()).name(),
                     "country_id": JalAsset(account.currency()).country().id(),
                     "country": JalAsset(account.currency()).country().name(),
+                    "tag": self.tr("Money"),
                     "expiry": 0,
                     "qty": money,
                     "value_i": Decimal('0'),
