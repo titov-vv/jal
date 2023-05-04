@@ -22,7 +22,7 @@ class AbstractTreeItem:
     def appendChild(self, child: AbstractTreeItem):
         child.setParent(self)
         self._children.append(child)
-        if self._group:
+        if self.isGroup():
             self.updateGroupDetails(child.details())
 
     def getChild(self, id) -> Optional[AbstractTreeItem]:
@@ -33,15 +33,31 @@ class AbstractTreeItem:
     def details(self, **kwargs):
         raise NotImplementedError("To be defined in derived class")
 
+    # Update current group data after new child with child_data was added into the group
     def updateGroupDetails(self, child_data):
         self._calculateGroupTotals(child_data)
         if self._parent is not None:
             self._parent.updateGroupDetails(child_data)
+        self.updateChildrenData()
 
+    # Update group children data (usually after some changes in group data)
+    def updateChildrenData(self):
+        if self.isGroup():
+            for child in self._children:
+                child._afterParentGroupUpdate(self.details())
+                child.updateChildrenData()
+
+    # This method is called if current item is a group. It should update group data with new child_data
     def _calculateGroupTotals(self, child_data):
         raise NotImplementedError("To be defined in derived class")
 
+    # This method is called if parent group data were updated. It should update element data with new group_data
+    def _afterParentGroupUpdate(self, group_data):
+        raise NotImplementedError("To be defined in derived class")
+
     def isGroup(self) -> bool:
+        if self._parent is None:   # Root element is always a group
+            return True
         return self._group != ''
 
 

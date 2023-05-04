@@ -21,15 +21,15 @@ class AssetTreeItem(AbstractTreeItem):
             self.data = {
                 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'expiry': 0, 'qty': Decimal('0'),
-                'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'), 'total': Decimal('0')
+                'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0')
             }
         else:
             self.data = data.copy()
+        self.data['share'] = Decimal('0')
         self.data['value'] = self.data['quote'] * self.data['qty']
         self.data['value_a'] = self.data['quote_a'] * self.data['qty'] if self.data['quote_a'] else Decimal('0')
-        self.data['share'] = Decimal('100.0') * self.data['value'] / self.data['total'] if self.data['total'] else Decimal('0')
         self.data['profit'] = self.data['quote'] * self.data['qty'] - self.data['value_i'] if not self.data['asset_is_currency'] else Decimal('0')
-        self.data['profit_rel'] = self.data['quote'] * self.data['qty'] / self.data['value_i'] - 1 if self.data['value_i'] != Decimal('0') else Decimal('0')
+        self.data['profit_rel'] = Decimal('100') * self.data['quote'] * self.data['qty'] / self.data['value_i'] - 1 if self.data['value_i'] != Decimal('0') else Decimal('0')
 
     def _calculateGroupTotals(self, child_data):
         self.data['currency'] = child_data['currency']
@@ -37,7 +37,10 @@ class AssetTreeItem(AbstractTreeItem):
         self.data['value'] += child_data['value']
         self.data['value_a'] += child_data['value_a']
         self.data['profit'] += child_data['profit']
-        self.data['profit_rel'] = self.data['profit'] / (self.data['value'] - self.data['profit']) if self.data['value'] != self.data['profit'] else Decimal('0')
+        self.data['profit_rel'] = Decimal('100') * self.data['profit'] / (self.data['value'] - self.data['profit']) if self.data['value'] != self.data['profit'] else Decimal('0')
+
+    def _afterParentGroupUpdate(self, group_data):
+        self.data['share'] = Decimal('100') * self.data['value_a'] / group_data['value_a'] if group_data['value_a'] else Decimal('0')
 
     def details(self):
         return self.data
@@ -77,7 +80,6 @@ class HoldingsModel(AbstractTreeModel):
         self._currency = 0
         self._currency_name = ''
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
-        self.calculated_names = ['share', 'profit', 'profit_rel', 'value', 'value_a']
         self._columns = [{'name': self.tr("Currency/Account/Asset")},
                          {'name': self.tr("Asset Name")},
                          {'name': self.tr("Qty")},
@@ -151,7 +153,7 @@ class HoldingsModel(AbstractTreeModel):
         elif column == 5:
             return f"{data['share']:,.2f}" if data['share'] else '-.--'
         elif column == 6:
-            return f"{Decimal('100') * data['profit_rel']:,.2f}" if data['profit_rel'] else ''
+            return f"{data['profit_rel']:,.2f}" if data['profit_rel'] else ''
         elif column == 7:
             return f"{data['profit']:,.2f}" if data['profit'] else ''
         elif column == 8:
@@ -294,76 +296,13 @@ class HoldingsModel(AbstractTreeModel):
                     "quote_ts": QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
                     "quote_a": rate
                 })
-            account_total = sum(x['qty'] * x['quote'] for x in account_holdings)
-            for record in account_holdings:
-                record['total'] = account_total
             holdings += account_holdings
-        holdings = sorted(holdings, key=lambda x: (x['currency'], x['account'], x['asset_is_currency'], x['asset']))
 
         self._root = AssetTreeItem()
         for position in holdings:
             new_item = AssetTreeItem(position)
             leaf = self._root.getGroupLeaf(self._groups, new_item)
             leaf.appendChild(new_item)
-
-        # currency = 0
-        # c_node = None
-        # account = 0
-        # a_node = None
-        # for values in holdings:
-        #     values['level'] = 2
-        #     if values['currency_id'] != currency:
-        #         currency = values['currency_id']
-        #         c_node = AssetTreeItem(values, self._root)
-        #         c_node.data['level'] = 0
-        #         c_node.data['asset_name'] = ''
-        #         c_node.data['expiry'] = 0
-        #         c_node.data['qty'] = Decimal('0')
-        #         self._root.appendChild(c_node)
-        #     if values['account_id'] != account:
-        #         account = values['account_id']
-        #         a_node = AssetTreeItem(values, c_node)
-        #         a_node.data['level'] = 1
-        #         a_node.data['asset_name'] = ''
-        #         a_node.data['expiry'] = 0
-        #         a_node.data['qty'] = Decimal('0')
-        #         c_node.appendChild(a_node)
-        #     if values['quote']:
-        #         if values['asset_is_currency']:
-        #             profit = Decimal('0')
-        #         else:
-        #             profit = values['quote'] * values['qty'] - values['value_i']
-        #         if values['value_i'] != Decimal('0'):
-        #             profit_relative = values['quote'] * values['qty'] / values['value_i'] - 1
-        #         else:
-        #             profit_relative = Decimal('0')
-        #         value = values['quote'] * values['qty']
-        #         share = Decimal('100.0') * value / values['total']
-        #         value_adjusted = values['quote_a'] * values['qty'] if values['quote_a'] else Decimal('0')
-        #         values.update(dict(zip(self.calculated_names, [share, profit, profit_relative, value, value_adjusted])))
-        #     else:
-        #         values.update(dict(zip(self.calculated_names,
-        #                                [Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0')])))
-        #     node = AssetTreeItem(values, a_node)
-        #     a_node.appendChild(node)
-        #
-        # # Update totals
-        # for i in range(self._root.childrenCount()):          # Iterate through each currency
-        #     currency_child = self._root.getChild(i)
-        #     for j in range(currency_child.childrenCount()):  # Iterate through each account for given currency
-        #         self.add_node_totals(currency_child.getChild(j))
-        #     self.add_node_totals(currency_child)
-        #     for j in range(currency_child.childrenCount()):  # Calculate share of each account within currency
-        #         if currency_child.data['value']:
-        #             currency_child.getChild(j).data['share'] = \
-        #                 Decimal('100') * currency_child.getChild(j).data['value'] / currency_child.data['value']
-        # # Get full total of totals for all currencies adjusted to common currency
-        # total = sum([self._root.getChild(i).data['value_a'] for i in range(self._root.childrenCount())])
-        # for i in range(self._root.childrenCount()):  # Calculate share of each currency (adjusted to common currency)
-        #     if total != Decimal('0'):
-        #         self._root.getChild(i).data['share'] = Decimal('100') * self._root.getChild(i).data['value_a'] / total
-        #     else:
-        #         self._root.getChild(i).data['share'] = None
         self.modelReset.emit()
         self.configureView()
         self._view.expandAll()
