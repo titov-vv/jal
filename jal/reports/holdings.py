@@ -59,7 +59,7 @@ class HoldingsReportWindow(MdiWidget):
 
     @Slot()
     def updateReport(self):
-        self.ui.HoldingsTreeView.model().updateView(currency_id = self.ui.HoldingsCurrencyCombo.currentIndex(),
+        self.ui.HoldingsTreeView.model().updateView(currency_id = self.ui.HoldingsCurrencyCombo.selected_id,
                                                     date = self.ui.HoldingsDate.date(),
                                                     grouping = self.ui.GroupCombo.currentData())
 
