@@ -32,16 +32,12 @@ class AssetTreeItem(AbstractTreeItem):
         self.data['profit_rel'] = self.data['quote'] * self.data['qty'] / self.data['value_i'] - 1 if self.data['value_i'] != Decimal('0') else Decimal('0')
 
     def _calculateGroupTotals(self, child_data):
-        self.data = {
-            'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
-            'asset_is_currency': False, 'asset': '', 'asset_name': '', 'expiry': 0, 'qty': Decimal('0'),
-            'value_i': Decimal('0'), 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
-            'share': Decimal('0'), 'profit': Decimal('0'), 'profit_rel': Decimal('0'), 'value': Decimal('0'), 'value_a': Decimal('0')
-        }
-        self.data['currency_id'] = child_data['currency_id']
         self.data['currency'] = child_data['currency']
-        self.data['account_id'] = child_data['account_id']
         self.data['account'] = child_data['account']
+        self.data['value'] += child_data['value']
+        self.data['value_a'] += child_data['value_a']
+        self.data['profit'] += child_data['profit']
+        self.data['profit_rel'] = self.data['profit'] / (self.data['value'] - self.data['profit']) if self.data['value'] != self.data['profit'] else Decimal('0')
 
     def details(self):
         return self.data
@@ -371,11 +367,3 @@ class HoldingsModel(AbstractTreeModel):
         self.modelReset.emit()
         self.configureView()
         self._view.expandAll()
-
-    # Update node totals with sum of profit, value and adjusted profit and value of all children
-    def add_node_totals(self, node):
-        profit = sum([node.getChild(i).data['profit'] for i in range(node.childrenCount())])
-        value = sum([node.getChild(i).data['value'] for i in range(node.childrenCount())])
-        value_adjusted = sum([node.getChild(i).data['value_a'] for i in range(node.childrenCount())])
-        profit_relative = profit / (value - profit) if value != profit else 0
-        node.data.update(dict(zip(self.calculated_names, [Decimal('0'), profit, profit_relative, value, value_adjusted])))
