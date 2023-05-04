@@ -34,6 +34,7 @@ class AssetTreeItem(AbstractTreeItem):
     def _calculateGroupTotals(self, child_data):
         self._data['currency'] = child_data['currency']
         self._data['account'] = child_data['account']
+        self._data['asset'] = child_data['asset']
         self._data['value'] += child_data['value']
         self._data['value_a'] += child_data['value_a']
         self._data['profit'] += child_data['profit']
@@ -126,7 +127,9 @@ class HoldingsModel(AbstractTreeModel):
                 group, value = item.getGroup()
                 return data[group.strip("_id")]
             else:
-                return data['asset']
+                all_fields = ['currency', 'account', 'asset']
+                display_fields = [y for y in all_fields if y not in [x.strip("_id") for x in self._groups]]
+                return ': '.join([data[x] for x in display_fields])
         elif column == 1:
             expiry_text = ""
             if data['expiry']:
