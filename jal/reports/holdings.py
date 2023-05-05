@@ -2,7 +2,7 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QObject, QDateTime
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QMenu
+from PySide6.QtWidgets import QMenu, QDialog
 from jal.db.helpers import load_icon
 from jal.ui.reports.ui_holdings_report import Ui_HoldingsWidget
 from jal.reports.reports import Reports
@@ -11,6 +11,7 @@ from jal.db.holdings_model import HoldingsModel
 from jal.widgets.mdi import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
 from jal.widgets.price_chart import ChartWindow
+from jal.widgets.selection_dialog import SelectTagDialog
 
 JAL_REPORT_CLASS = "HoldingsReport"
 
@@ -73,17 +74,21 @@ class HoldingsReportWindow(MdiWidget):
         actionShowChart.triggered.connect(partial(self.showPriceChart, index))
         contextMenu.addAction(actionShowChart)
         tax_submenu = contextMenu.addMenu(load_icon("tax.png"), self.tr("Estimate tax"))
-        actionEstimateTaxPt = QAction(text=self.tr("Portugal"), parent=self.ui.HoldingsTreeView)
+        actionEstimateTaxPt = QAction(icon=load_icon("pt.png"), text=self.tr("Portugal"), parent=self.ui.HoldingsTreeView)
         actionEstimateTaxPt.triggered.connect(partial(self.estimateRussianTax, index, 'pt'))
         tax_submenu.addAction(actionEstimateTaxPt)
-        actionEstimateTaxRu = QAction(text=self.tr("Russia"), parent=self.ui.HoldingsTreeView)
+        actionEstimateTaxRu = QAction(icon=load_icon("ru.png"), text=self.tr("Russia"), parent=self.ui.HoldingsTreeView)
         actionEstimateTaxRu.triggered.connect(partial(self.estimateRussianTax, index, 'ru'))
         tax_submenu.addAction(actionEstimateTaxRu)
         contextMenu.addSeparator()
-        actionExpandAll = QAction(text=self.tr("Expand All"),parent=self.ui.HoldingsTreeView)
+        actionSetTag = QAction(icon=load_icon("tag.png"), text=self.tr("Set asset tag"), parent=self.ui.HoldingsTreeView)
+        actionSetTag.triggered.connect(partial(self.setTag, index))
+        contextMenu.addAction(actionSetTag)
+        contextMenu.addSeparator()
+        actionExpandAll = QAction(text=self.tr("Expand all"),parent=self.ui.HoldingsTreeView)
         actionExpandAll.triggered.connect(self.ui.HoldingsTreeView.expandAll)
         contextMenu.addAction(actionExpandAll)
-        actionCollapseAll = QAction(text=self.tr("Collapse All"), parent=self.ui.HoldingsTreeView)
+        actionCollapseAll = QAction(text=self.tr("Collapse all"), parent=self.ui.HoldingsTreeView)
         actionCollapseAll.triggered.connect(self.ui.HoldingsTreeView.collapseAll)
         contextMenu.addAction(actionCollapseAll)
         contextMenu.popup(self.ui.HoldingsTreeView.viewport().mapToGlobal(pos))
@@ -99,3 +104,14 @@ class HoldingsReportWindow(MdiWidget):
         model = index.model()
         account, asset, currency, asset_qty = model.get_data_for_tax(index)
         self._parent.mdi_area().addSubWindow(TaxEstimator(country_code, account, asset, asset_qty), size=(1000, 300))
+
+    @Slot()
+    def setTag(self, index):
+        model = index.model()
+        account, asset_id, currency, asset_qty = model.get_data_for_tax(index)
+        asset = JalAsset(asset_id)
+        dialog = SelectTagDialog(
+            parent=self, description=self.tr("Select tag for {} ({}): ").format(asset.symbol(currency),asset.name()))
+        if dialog.exec() != QDialog.Accepted:
+            return
+        asset.set_tag(dialog.selected_id)

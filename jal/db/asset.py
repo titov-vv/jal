@@ -229,6 +229,15 @@ class JalAsset(JalDB):
     def tag(self) -> JalTag:
         return self._tag
 
+    def set_tag(self, tag_id: int) -> None:
+        if self._tag.id() == tag_id:
+            return
+        _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                       "VALUES(:asset_id, :datatype, :expiry)",
+                       [(":asset_id", self._id), (":datatype", AssetData.Tag), (":expiry", str(tag_id))])
+        self._tag = JalTag(tag_id)
+        self._fetch_data()
+
     # Updates relevant asset data fields with information provided in data dictionary
     def update_data(self, data: dict) -> None:
         updaters = {
