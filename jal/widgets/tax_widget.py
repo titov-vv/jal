@@ -9,6 +9,7 @@ from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d
+from jal.db.helpers import load_icon
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings, FolderFor
@@ -25,7 +26,8 @@ class TaxWidget(MdiWidget):
         self.ui.setupUi(self)
 
         self.ui.Country.clear()
-        self.ui.Country.addItems([TaxReport.countries[x]['name'] for x in TaxReport.countries])
+        for x in TaxReport.countries:
+            self.ui.Country.addItem(load_icon(TaxReport.countries[x]['icon']), TaxReport.countries[x]['name'])
         self.ui.Country.currentIndexChanged.connect(self.OnCountryChange)
         self.ui.Year.setValue(datetime.now().year - 1)   # Set previous year by default
         self.ui.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
