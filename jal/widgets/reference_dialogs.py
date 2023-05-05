@@ -315,7 +315,8 @@ class CategoryListDialog(ReferenceDataDialog):
 
     @Slot()
     def replaceCategory(self):
-        dialog = SelectCategoryDialog(self.tr("Replace category '") + self._menu_category_name + self.tr("' with: "))
+        dialog = SelectCategoryDialog(parent=self,
+                                      description=self.tr("Replace category '") + self._menu_category_name + self.tr("' with: "))
         if dialog.exec() != QDialog.Accepted:
             return
         JalCategory(self._menu_category_id).replace_with(dialog.selected_id)
@@ -376,7 +377,8 @@ class TagsListDialog(ReferenceDataDialog):
 
     @Slot()
     def replaceTag(self):
-        dialog = SelectTagDialog(self.tr("Replace tag '") + self._menu_tag_name + self.tr("' with: "))
+        dialog = SelectTagDialog(parent=self,
+                                 description=self.tr("Replace tag '") + self._menu_tag_name + self.tr("' with: "))
         if dialog.exec() != QDialog.Accepted:
             return
         JalTag(self._menu_tag_id).replace_with(dialog.selected_id)

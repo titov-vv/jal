@@ -10,8 +10,8 @@ from jal.widgets.reference_selector import TagSelector
 #-----------------------------------------------------------------------------------------------------------------------
 # Common base GUI dialog class for selector dialogs. Takes window title and label comment to describe selection
 class SelectReferenceDialog(QDialog):
-    def __init__(self, title, description):
-        super().__init__(self)
+    def __init__(self, parent=None, title='', description=''):
+        super().__init__(parent=parent)
         self.ui = Ui_SelectReferenceDlg()
         self.ui.setupUi(self)
         self.selected_id = 0
@@ -49,8 +49,8 @@ class SelectPeerDialog(SelectReferenceDialog):
 # Dialog for category selection
 # Constructor takes description to show and default_category for initial choice
 class SelectCategoryDialog(SelectReferenceDialog):
-    def __init__(self, description, default_category=0):
-        super().__init__(title=self.tr("Please select category"), description=description)
+    def __init__(self, parent=None, description='', default_category=0):
+        super().__init__(parent, title=self.tr("Please select category"), description=description)
         self.CategoryWidget = CategorySelector(self.ui.SelectorFrame)
         self.ui.FrameLayout.addWidget(self.CategoryWidget)
         self.CategoryWidget.selected_id = self.selected_id = default_category
@@ -65,8 +65,8 @@ class SelectCategoryDialog(SelectReferenceDialog):
 # Dialog for tag selection
 # Constructor takes description to show and default_tag for initial choice
 class SelectTagDialog(SelectReferenceDialog):
-    def __init__(self, description, default_tag=0):
-        super().__init__(title=self.tr("Please select tag"), description=description)
+    def __init__(self, parent=None, description='', default_tag=0):
+        super().__init__(parent, title=self.tr("Please select tag"), description=description)
         self.TagWidget = TagSelector(self.ui.SelectorFrame)
         self.ui.FrameLayout.addWidget(self.TagWidget)
         self.TagWidget.selected_id = self.selected_id = default_tag
