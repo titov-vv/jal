@@ -7,7 +7,7 @@ from decimal import Decimal
 from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QDir, QLocale, QMetaObject
-from PySide6.QtGui import QIcon, QActionGroup, QAction
+from PySide6.QtGui import QActionGroup, QAction
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressBar, QMenu
 
 from jal import __version__
@@ -145,8 +145,7 @@ class MainWindow(QMainWindow):
         for language_file in langDirectory.entryList(['*.qm']):
             language_code = language_file.split('.')[0]
             language = QLocale.languageToString(QLocale(language_code).language())
-            language_icon = QIcon(langPath + language_code + '.png')
-            action = QAction(language_icon, language, self)
+            action = QAction(icon=load_icon(language_code + '.png'), text=language, parent=self)
             action.setCheckable(True)
             action.setData(language_code)
             self.ui.menuLanguage.addAction(action)
