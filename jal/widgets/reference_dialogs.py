@@ -324,14 +324,12 @@ class CategoryListDialog(ReferenceDataDialog):
         self.close()
 
 # ----------------------------------------------------------------------------------------------------------------------
-class TagListModel(AbstractReferenceListModel):
-    def __init__(self, table, parent_view):
+class TagTreeModel(SqlTreeModel):
+    def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
-        self._columns = [("id", ''),
-                         ("tag", self.tr("Tag"))]
+        self._columns = [("tag", self.tr("Tag"))]
         self._default_name = "tag"
         self._sort_by = "tag"
-        self._hidden = ["id"]
         self._stretch = "tag"
 
 
@@ -339,8 +337,8 @@ class TagsListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.table = "tags"
-        self.model = TagListModel(self.table, self.ui.DataView)
-        self.ui.DataView.setModel(self.model)
+        self.model = TagTreeModel(self.table, self.ui.TreeView)
+        self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
@@ -353,15 +351,16 @@ class TagsListDialog(ReferenceDataDialog):
 
     def setup_ui(self):
         self.search_field = "tag"
-        self.setWindowTitle(self.tr("Tags"))
+        self.tree_view = True
+        self.ui.AddChildBtn.setVisible(True)
         self.ui.SearchFrame.setVisible(True)
+        self.setWindowTitle(self.tr("Tags"))
         self.ui.Toggle.setVisible(False)
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
 
     def locateItem(self, item_id):
-        item_idx = self.model.locateItem(item_id)
-        self.ui.DataView.setCurrentIndex(item_idx)
+        self.model.locateItem(item_id)
 
     def customizeContextMenu(self, menu: QMenu, index):
         self._menu_tag_id = self.model.getId(index)
