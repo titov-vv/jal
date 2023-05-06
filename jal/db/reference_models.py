@@ -1,8 +1,8 @@
 import logging
-from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
+from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex, QMimeData, QByteArray, QDataStream, QIODevice
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QHeaderView, QMessageBox
+from PySide6.QtWidgets import QHeaderView, QMessageBox, QAbstractItemView
 from jal.db.db import JalDB, JalSqlError
 
 
@@ -164,6 +164,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
 # ----------------------------------------------------------------------------------------------------------------------
 class SqlTreeModel(QAbstractItemModel, JalDB):
     ROOT_PID = 0
+    DRAG_DROP_MIME_TYPE = "application/vnd.tree_item"
 
     @property
     def completion_model(self):
@@ -236,8 +237,8 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
 
     def flags(self, index):
         if not index.isValid():
-            return Qt.NoItemFlags
-        return Qt.ItemIsEditable | super().flags(index)
+            return Qt.ItemFlag.ItemIsDropEnabled
+        return Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsDropEnabled | Qt.ItemFlag.ItemIsDragEnabled | super().flags(index)
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
@@ -278,11 +279,54 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
                 return self._columns[section][1]
         return None
 
+    def supportedDragActions(self) -> Qt.DropAction:
+        return Qt.DropAction.CopyAction
+
+    def supportedDropActions(self) -> Qt.DropAction:
+        return Qt.DropAction.CopyAction
+
+    def mimeTypes(self) -> list:
+        return [self.DRAG_DROP_MIME_TYPE]
+
+    # This method encodes tree element 'id' field and returns it as QMimeData for Drag&Drop operation
+    def mimeData(self, indexes: list) -> QMimeData:
+        item_data = QMimeData()
+        encoded_data = QByteArray()
+        stream = QDataStream(encoded_data, QIODevice.WriteOnly)
+        for index in indexes:
+            stream.writeUInt64(index.internalId())
+        item_data.setData(self.DRAG_DROP_MIME_TYPE, encoded_data)
+        return item_data
+
+    def canDropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, column: int, parent: QModelIndex) -> bool:
+        if action != Qt.DropAction.CopyAction or not data.hasFormat(self.DRAG_DROP_MIME_TYPE):
+            return False
+        return True
+
+    def dropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, column: int, parent: QModelIndex) -> bool:
+        if not self.canDropMimeData(data, action, row, column, parent):
+            return False
+        encoded_data = data.data(self.DRAG_DROP_MIME_TYPE)
+        stream = QDataStream(encoded_data, QIODevice.ReadOnly)
+        item_id = stream.readUInt64()
+        if parent.isValid():
+            self._exec(f"UPDATE {self._table} SET pid=:pid WHERE id=:id",
+                       [(":id", item_id), (":pid", parent.internalId())])
+            return True
+        self._exec(f"UPDATE {self._table} SET pid=0 WHERE id=:id", [(":id", item_id)])
+        return True
+
     def configureView(self):
         self.setStretching()
         font = self._view.header().font()
         font.setBold(True)
         self._view.header().setFont(font)
+        self._view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self._view.setDragEnabled(True)
+        self._view.setAcceptDrops(True)
+        self._view.setDropIndicatorShown(True)
+        self._view.setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)
+        self._view.setDefaultDropAction(Qt.DropAction.CopyAction)
 
     def setStretching(self):
         if self._stretch:
