@@ -362,7 +362,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
 
         self.beginInsertRows(parent, row, row + count - 1)
         self.connection().transaction()
-        _ = self._exec(f"INSERT INTO {self._table}(pid, name) VALUES (:pid, '')", [(":pid", parent_id)])
+        _ = self._exec(f"INSERT INTO {self._table}(pid, {self._default_name}) VALUES (:pid, '')", [(":pid", parent_id)])
         self.endInsertRows()
         self.layoutChanged.emit()
         return True
