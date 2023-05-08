@@ -310,6 +310,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         encoded_data = data.data(self.DRAG_DROP_MIME_TYPE)
         stream = QDataStream(encoded_data, QIODevice.ReadOnly)
         item_id = stream.readUInt64()
+        self.connection().transaction()
         if parent.isValid():
             self._exec(f"UPDATE {self._table} SET pid=:pid WHERE id=:id",
                        [(":id", item_id), (":pid", parent.internalId())])
@@ -369,6 +370,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
     def removeRows(self, row, count, parent=None):
         if self._drag_and_drop:  # This is an automatically triggered action - keep the element but refresh the view
             self._drag_and_drop = False
+            self.dataChanged.emit(QModelIndex(), QModelIndex(), Qt.DisplayRole)  # the call is required to enable commit/rollback buttons in UI
             self.layoutChanged.emit()
             return True
         if parent is None:
