@@ -18,3 +18,5 @@ PRAGMA foreign_keys = 1;
 -- Set new DB schema version
 UPDATE settings SET value=46 WHERE name='SchemaVersion';
 COMMIT;
+-- Reduce file size
+VACUUM;
