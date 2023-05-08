@@ -279,7 +279,7 @@
 <context>
     <name>BaseCurrencyDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="473"/>
+        <location filename="../widgets/reference_dialogs.py" line="474"/>
         <source>Base currency</source>
         <translation type="unfinished"></translation>
     </message>
@@ -287,12 +287,12 @@
 <context>
     <name>BaseCurrencyListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="441"/>
+        <location filename="../widgets/reference_dialogs.py" line="442"/>
         <source>Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="442"/>
+        <location filename="../widgets/reference_dialogs.py" line="443"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
@@ -315,22 +315,22 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="318"/>
+        <location filename="../widgets/reference_dialogs.py" line="319"/>
         <source>Replace category &apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="318"/>
+        <location filename="../widgets/reference_dialogs.py" line="319"/>
         <source>&apos; with: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="322"/>
+        <location filename="../widgets/reference_dialogs.py" line="323"/>
         <source>Category &apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="322"/>
+        <location filename="../widgets/reference_dialogs.py" line="323"/>
         <source>&apos; was successfully replaced</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1017,7 +1017,7 @@
 <context>
     <name>HoldingsReport</name>
     <message>
-        <location filename="../reports/holdings.py" line="23"/>
+        <location filename="../reports/holdings.py" line="24"/>
         <source>Holdings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1025,58 +1025,68 @@
 <context>
     <name>HoldingsReportWindow</name>
     <message>
-        <location filename="../reports/holdings.py" line="36"/>
+        <location filename="../reports/holdings.py" line="37"/>
         <source>Holdings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="36"/>
+        <location filename="../reports/holdings.py" line="37"/>
         <source>Currency - Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="37"/>
+        <location filename="../reports/holdings.py" line="38"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="38"/>
+        <location filename="../reports/holdings.py" line="39"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="39"/>
+        <location filename="../reports/holdings.py" line="40"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="72"/>
+        <location filename="../reports/holdings.py" line="73"/>
         <source>Show Price Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="75"/>
+        <location filename="../reports/holdings.py" line="76"/>
         <source>Estimate tax</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="76"/>
+        <location filename="../reports/holdings.py" line="77"/>
         <source>Portugal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="79"/>
+        <location filename="../reports/holdings.py" line="80"/>
         <source>Russia</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="83"/>
-        <source>Expand All</source>
+        <location filename="../reports/holdings.py" line="84"/>
+        <source>Set asset tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="86"/>
-        <source>Collapse All</source>
+        <location filename="../reports/holdings.py" line="88"/>
+        <source>Expand all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="91"/>
+        <source>Collapse all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/holdings.py" line="114"/>
+        <source>Select tag for {} ({}): </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1652,17 +1662,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="256"/>
+        <location filename="../db/asset.py" line="265"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="276"/>
+        <location filename="../db/asset.py" line="285"/>
         <source>Country updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="286"/>
+        <location filename="../db/asset.py" line="295"/>
         <source>Reg.number updated for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1993,13 +2003,13 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="160"/>
-        <location filename="../widgets/main_window.py" line="175"/>
+        <location filename="../widgets/main_window.py" line="159"/>
+        <location filename="../widgets/main_window.py" line="174"/>
         <source>Restart required</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="162"/>
+        <location filename="../widgets/main_window.py" line="161"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
@@ -2020,55 +2030,55 @@ do you want to save it?</source>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="64"/>
-        <location filename="../widgets/main_window.py" line="219"/>
+        <location filename="../widgets/main_window.py" line="218"/>
         <source>About</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="164"/>
+        <location filename="../widgets/main_window.py" line="163"/>
         <source>You should restart application to apply changes.
 Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="170"/>
+        <location filename="../widgets/main_window.py" line="169"/>
         <source>Full clean-up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="171"/>
+        <location filename="../widgets/main_window.py" line="170"/>
         <source>All data will be deleted. The actions can&apos;t be undone.
 Are you sure?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="177"/>
+        <location filename="../widgets/main_window.py" line="176"/>
         <source>Database will be removed at next JAL start.
 Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="221"/>
+        <location filename="../widgets/main_window.py" line="220"/>
         <source>version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="225"/>
+        <location filename="../widgets/main_window.py" line="224"/>
         <source>github home page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="225"/>
+        <location filename="../widgets/main_window.py" line="224"/>
         <source>More information, manuals and problem reports are at </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="227"/>
+        <location filename="../widgets/main_window.py" line="226"/>
         <source>Questions, comments, help or donations:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="290"/>
+        <location filename="../widgets/main_window.py" line="289"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation></translation>
     </message>
@@ -2111,17 +2121,17 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="164"/>
+        <location filename="../widgets/tax_widget.py" line="166"/>
         <source>Excel files (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="164"/>
+        <location filename="../widgets/tax_widget.py" line="166"/>
         <source>Save money flow report to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="195"/>
+        <location filename="../widgets/tax_widget.py" line="197"/>
         <source>Money flow report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2708,7 +2718,7 @@ Application will be terminated now.</source>
 <context>
     <name>QuotesListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="432"/>
+        <location filename="../widgets/reference_dialogs.py" line="433"/>
         <source>Quotes</source>
         <translation></translation>
     </message>
@@ -2716,22 +2726,22 @@ Application will be terminated now.</source>
 <context>
     <name>QuotesListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="392"/>
+        <location filename="../widgets/reference_dialogs.py" line="393"/>
         <source>Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="393"/>
+        <location filename="../widgets/reference_dialogs.py" line="394"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="394"/>
+        <location filename="../widgets/reference_dialogs.py" line="395"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="395"/>
+        <location filename="../widgets/reference_dialogs.py" line="396"/>
         <source>Quote</source>
         <translation></translation>
     </message>
@@ -4170,14 +4180,6 @@ Application will be terminated now.</source>
     </message>
 </context>
 <context>
-    <name>TagListModel</name>
-    <message>
-        <location filename="../widgets/reference_dialogs.py" line="330"/>
-        <source>Tag</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
     <name>TagReport</name>
     <message>
         <location filename="../reports/tag.py" line="33"/>
@@ -4204,39 +4206,47 @@ Application will be terminated now.</source>
     </message>
 </context>
 <context>
+    <name>TagTreeModel</name>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="330"/>
+        <source>Tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TagsListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="348"/>
+        <location filename="../widgets/reference_dialogs.py" line="347"/>
         <source>Show operations with Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="349"/>
+        <location filename="../widgets/reference_dialogs.py" line="348"/>
         <source>Replace with...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="355"/>
+        <location filename="../widgets/reference_dialogs.py" line="357"/>
         <source>Tags</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="379"/>
+        <location filename="../widgets/reference_dialogs.py" line="380"/>
         <source>Replace tag &apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="379"/>
+        <location filename="../widgets/reference_dialogs.py" line="380"/>
         <source>&apos; with: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="383"/>
+        <location filename="../widgets/reference_dialogs.py" line="384"/>
         <source>Tag &apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="383"/>
+        <location filename="../widgets/reference_dialogs.py" line="384"/>
         <source>&apos; was successfully replaced</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4439,47 +4449,47 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="59"/>
+        <location filename="../widgets/tax_widget.py" line="61"/>
         <source>Save tax reports to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="59"/>
+        <location filename="../widgets/tax_widget.py" line="61"/>
         <source>Excel files (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="62"/>
+        <location filename="../widgets/tax_widget.py" line="64"/>
         <source>Save tax form to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="111"/>
+        <location filename="../widgets/tax_widget.py" line="113"/>
         <source>Data are incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="112"/>
+        <location filename="../widgets/tax_widget.py" line="114"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="118"/>
+        <location filename="../widgets/tax_widget.py" line="120"/>
         <source>Tax report is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="132"/>
+        <location filename="../widgets/tax_widget.py" line="134"/>
         <source>Tax report was saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="140"/>
+        <location filename="../widgets/tax_widget.py" line="142"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="142"/>
+        <location filename="../widgets/tax_widget.py" line="144"/>
         <source>Can&apos;t write tax form into file </source>
         <translation type="unfinished"></translation>
     </message>
