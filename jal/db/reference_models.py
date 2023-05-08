@@ -174,6 +174,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         super().__init__(parent=parent_view)
         self._table = table
         self._columns = []
+        self._drag_and_drop = False  # This is required to prevent deletion of initial element after drag&drop movement
         self._view = parent_view
         self._default_name = "name"
         self._stretch = None
@@ -280,10 +281,10 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         return None
 
     def supportedDragActions(self) -> Qt.DropAction:
-        return Qt.DropAction.CopyAction
+        return Qt.DropAction.MoveAction
 
     def supportedDropActions(self) -> Qt.DropAction:
-        return Qt.DropAction.CopyAction
+        return Qt.DropAction.MoveAction
 
     def mimeTypes(self) -> list:
         return [self.DRAG_DROP_MIME_TYPE]
@@ -299,7 +300,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         return item_data
 
     def canDropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, column: int, parent: QModelIndex) -> bool:
-        if action != Qt.DropAction.CopyAction or not data.hasFormat(self.DRAG_DROP_MIME_TYPE):
+        if action != Qt.DropAction.MoveAction or not data.hasFormat(self.DRAG_DROP_MIME_TYPE):
             return False
         return True
 
@@ -312,8 +313,9 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         if parent.isValid():
             self._exec(f"UPDATE {self._table} SET pid=:pid WHERE id=:id",
                        [(":id", item_id), (":pid", parent.internalId())])
-            return True
-        self._exec(f"UPDATE {self._table} SET pid=0 WHERE id=:id", [(":id", item_id)])
+        else:
+            self._exec(f"UPDATE {self._table} SET pid=0 WHERE id=:id", [(":id", item_id)])
+        self._drag_and_drop = True
         return True
 
     def configureView(self):
@@ -325,8 +327,8 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         self._view.setDragEnabled(True)
         self._view.setAcceptDrops(True)
         self._view.setDropIndicatorShown(True)
-        self._view.setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)
-        self._view.setDefaultDropAction(Qt.DropAction.CopyAction)
+        self._view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        self._view.setDefaultDropAction(Qt.DropAction.MoveAction)
 
     def setStretching(self):
         if self._stretch:
@@ -365,6 +367,10 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         return True
 
     def removeRows(self, row, count, parent=None):
+        if self._drag_and_drop:  # This is an automatically triggered action - keep the element but refresh the view
+            self._drag_and_drop = False
+            self.layoutChanged.emit()
+            return True
         if parent is None:
             return False
         if not parent.isValid():
