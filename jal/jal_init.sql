@@ -263,7 +263,7 @@ CREATE TABLE settings (
 );
 
 -- Table: tags
-DROP TABLE tags;
+DROP TABLE IF EXISTS tags;
 CREATE TABLE tags (
     id  INTEGER   PRIMARY KEY UNIQUE NOT NULL,
     pid INTEGER   NOT NULL DEFAULT (0),
