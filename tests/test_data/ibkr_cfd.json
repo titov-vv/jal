@@ -18,14 +18,17 @@
     {"id": 2, "asset": 3, "expiry": 2093212800}
   ],
   "trades": [
-    {"id": 1, "number": "200000523", "timestamp": 1645695065, "settlement": 1645833600, "account": 1, "asset": 2, "quantity": 1.0, "price": 901.4, "fee": 1.0}
+    {"id": 1, "number": "200000523", "timestamp": 1645695065, "settlement": 1645833600, "account": 1, "asset": 2, "quantity": 1.0, "price": 901.4, "fee": 1.0},
+    {"id": 2, "number": "211321719", "timestamp": 1657279312, "settlement": 1657584000, "account": 1, "asset": 3, "quantity": -37.0, "price": 60.074, "fee": 1.0},
+    {"id": 3, "number": "211326559", "timestamp": 1657283238, "settlement": 1657584000, "account": 1, "asset": 3, "quantity": -1.0, "price": 59.5, "fee": 1.0},
+    {"id": 4, "number": "211380318", "timestamp": 1657532255, "settlement": 1657670400, "account": 1, "asset": 3, "quantity": 38.0, "price": 58.035, "fee": 1.0}
   ],
   "corporate_actions": [
     {"id": 1, "type": "split", "account": 1, "timestamp": 1661372700, "number": "1031017435", "asset": 2, "quantity": -1.0,
      "outcome": [{"asset": 2, "quantity": -3.0, "share": 1.0}], "description": "TSLAn(131067756) SPLIT 3 FOR 1 (TSLAn, USD TSLA, )"}
   ],
  "asset_payments": [
-   {"id": 1, "type": "dividend", "account": 1, "timestamp": 1658866800, "number": "", "asset": 3, "amount": -4.6, "description": "MUn(120549262) PAYMENT IN LIEU OF DIVIDEND (ICFDUK Dividend)"}
+   {"id": 1, "type": "dividend", "account": 1, "timestamp": 1658866800, "ex_date": 1657238400, "number": "", "asset": 3, "amount": -4.37, "description": "MUn(120549262) PAYMENT IN LIEU OF DIVIDEND (ICFDUK Dividend)"}
  ],
  "income_spending": [
    {"id": 1, "timestamp": 1657152000, "account": 1, "peer": 0, "lines": [{"amount": -0.28, "category": -5, "description": "LONG CFD INTEREST FOR 07-JUL-2022"}]},
