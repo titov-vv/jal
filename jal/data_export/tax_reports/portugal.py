@@ -20,6 +20,7 @@ class TaxesPortugal(TaxReport):
     def prepare_dividends(self):
         dividends_report = []
         dividends = self.dividends_list()
+        dividends = [x for x in dividends if x.amount(self.account_currency.id()) > 0]  # Skip negative dividends
         for dividend in dividends:
             country = dividend.asset().country()
             note = ''
