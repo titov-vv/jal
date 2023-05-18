@@ -426,3 +426,51 @@ def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
     #         continue
     #     reports_xls.output_data(tax_report[section], templates[section], parameters)
     # reports_xls.save()
+
+
+# Tests IBKR report with CFD short trades and dividends withdrawn for tax report preparation
+def test_taxes_cfd_short_dividends(tmp_path, data_path, prepare_db_taxes):
+    with open(data_path + 'ibkr_cfd.json', 'r', encoding='utf-8') as json_file:
+        statement = json.load(json_file)
+    with open(data_path + 'taxes_cfd_rus.json', 'r', encoding='utf-8') as json_file:
+        report = json.load(json_file)
+
+    usd_rates = [
+        (d2t(220707), 62.9110), (d2t(220708), 63.1427), (d2t(220711), 61.2664), (d2t(220712), 61.3045),
+        (d2t(220713), 58.7643), (d2t(220726), 57.7821)
+    ]
+    create_quotes(2, 1, usd_rates)
+
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_cfd.xml')
+    assert IBKR._data == statement
+
+    IBKR.validate_format()
+    IBKR.match_db_ids()
+    IBKR.import_into_db()
+
+    ledger = Ledger()  # Build ledger to have FIFO deals table
+    ledger.rebuild(from_timestamp=0)
+
+    taxes = TaxesRussia()
+    tax_report = taxes.prepare_tax_report(2022, 2)  # Account '7654321F' will be here
+    json_decimal2float(tax_report)
+    assert tax_report == report
+
+    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
+    # templates = {
+    #     "Облигации": "tax_rus_bonds.json",
+    #     "Корп.события": "tax_rus_corporate_actions.json"
+    # }
+    # parameters = {
+    #     "period": "01.01.2021 - 31.12.2021",
+    #     "account": "TEST U7654321 (USD)",
+    #     "currency": "USD",
+    #     "broker_name": "IBKR",
+    #     "broker_iso_country": "840"
+    # }
+    # for section in tax_report:
+    #     if section not in templates:
+    #         continue
+    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
+    # reports_xls.save()
