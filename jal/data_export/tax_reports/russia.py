@@ -76,11 +76,10 @@ class TaxesRussia(TaxReport):
         return dividends_report
 
     # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_stocks_and_etf(self):
+    def prepare_trades_report(self, trades_list):
         deals_report = []
         ns = not self.use_settlement
-        trades = self.shares_trades_list()
-        for trade in trades:
+        for trade in trades_list:
             if ns:
                 os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
                 cs_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
@@ -109,7 +108,7 @@ class TaxesRussia(TaxReport):
             line = {
                 'report_template': "trade",
                 'symbol': trade.asset().symbol(self.account_currency.id()),
-                'isin': trade.asset().isin(),
+                'isin': trade.asset().isin(),  # May be not used in template (for derivatives as example)
                 'qty': trade.qty(),
                 'country_iso': self.account.country().iso_code(),  # this field is required for DLSG
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
@@ -144,6 +143,11 @@ class TaxesRussia(TaxReport):
             deals_report.append(line)
         self.insert_totals(deals_report, ["income_rub", "spending_rub", "profit_rub", "profit"])
         return deals_report
+
+    # -----------------------------------------------------------------------------------------------------------------------
+    def prepare_stocks_and_etf(self):
+        trades = self.shares_trades_list()
+        return self.prepare_trades_report(trades)
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_bonds(self):
@@ -244,75 +248,8 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self):
-        country = self.account.country()
-        derivatives_report = []
-        ns = not self.use_settlement
         trades = self.derivatives_trades_list()
-        for trade in trades:
-            o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
-            c_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
-            if self.use_settlement:
-                os_rate = self.account_currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
-                cs_rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
-            else:
-                os_rate = o_rate
-                cs_rate = c_rate
-            if trade.qty() >= Decimal('0'):  # Long trade
-                note = ''
-                income = round(trade.close_amount(no_settlement=ns), 2)
-                income_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2)
-                spending = round(trade.open_amount(no_settlement=ns), 2) + trade.fee()
-                spending_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2)
-            else:                            # Short trade
-                # Check were there any dividends during short position holding
-                short_dividend_rub = Decimal('0')
-                dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
-                dividends = [x for x in dividends if
-                             trade.open_operation().settlement() <= x.ex_date() <= trade.close_operation().settlement() and x.amount(self._currency_id) < Decimal('0')]
-                for dividend in dividends:
-                    short_dividend_rub -= dividend.amount(self._currency_id)  # amount is negative
-                note = f"Удержанный дивиденд: {short_dividend_rub:.2f} RUB" if short_dividend_rub > Decimal('0') else ''
-                income = round(trade.open_amount(no_settlement=ns), 2)
-                income_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2)
-                spending = round(trade.close_amount(no_settlement=ns), 2) + trade.fee() + short_dividend_rub
-                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2)
-            line = {
-                'report_template': "trade",
-                'symbol': trade.asset().symbol(self.account_currency.id()),
-                'qty': trade.qty(),
-                'country_iso': country.iso_code(),
-                'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
-                'o_number': trade.open_operation().number(),
-                'o_date': trade.open_operation().timestamp(),
-                'o_rate': o_rate,
-                'os_date': trade.open_operation().settlement(),
-                'os_rate': os_rate,
-                'o_price': trade.open_operation().price(),
-                'o_amount': round(trade.open_amount(no_settlement=ns), 2),
-                'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=ns), 2),
-                'o_fee': trade.open_fee(),
-                'o_fee_rub': round(trade.open_fee(self._currency_id), 2),
-                'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
-                'c_number': trade.close_operation().number(),
-                'c_date': trade.close_operation().timestamp(),
-                'c_rate': c_rate,
-                'cs_date': trade.close_operation().settlement(),
-                'cs_rate': cs_rate,
-                'c_price': trade.close_operation().price(),
-                'c_amount': round(trade.close_amount(no_settlement=ns), 2),
-                'c_amount_rub': round(trade.close_amount(self._currency_id, no_settlement=ns), 2),
-                'c_fee': trade.close_fee(),
-                'c_fee_rub': round(trade.close_fee(self._currency_id), 2),
-                'income': income,   # this field is required for DLSG
-                'income_rub': income_rub,
-                'spending_rub': spending_rub,
-                'profit': income - spending,
-                'profit_rub': income_rub - spending_rub,
-                's_dividend_note': note
-            }
-            derivatives_report.append(line)
-        self.insert_totals(derivatives_report, ["income_rub", "spending_rub", "profit_rub", "profit"])
-        return derivatives_report
+        return self.prepare_trades_report(trades)
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_crypto(self):
