@@ -79,6 +79,10 @@ class TaxesRussia(TaxReport):
     def prepare_trades_report(self, trades_list):
         deals_report = []
         ns = not self.use_settlement
+        # Prepare list of dividends withdrawn from account (due to short trades)
+        dividends_withdrawn = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
+        dividends_withdrawn = [x for x in dividends_withdrawn if self.year_begin <= x.timestamp() <= self.year_end]
+        dividends_withdrawn = [x for x in dividends_withdrawn if x.amount() < Decimal('0')]
         for trade in trades_list:
             if ns:
                 os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
@@ -94,17 +98,18 @@ class TaxesRussia(TaxReport):
                 spending_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2)
             else:                            # Short trade
                 # Check were there any dividends during short position holding
+                short_dividend = Decimal('0')
                 short_dividend_rub = Decimal('0')
-                dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
-                dividends = [x for x in dividends if
-                             trade.open_operation().settlement() <= x.ex_date() <= trade.close_operation().settlement() and x.amount(self._currency_id) < Decimal('0')]
-                for dividend in dividends:
+                div_list = [x for x in dividends_withdrawn if trade.open_operation().settlement() <= x.ex_date() <= trade.close_operation().settlement()]
+                for dividend in div_list:
+                    short_dividend -= dividend.amount()
                     short_dividend_rub -= dividend.amount(self._currency_id)  # amount is negative
-                note = f"Удержанный дивиденд: {short_dividend_rub:.2f} RUB" if short_dividend_rub > Decimal('0') else ''
+                dividends_withdrawn = [x for x in dividends_withdrawn if not x in div_list]
+                note = f"Удержан дивиденд: {short_dividend_rub:.2f} RUB ({short_dividend:.2f} {self.account_currency.symbol()})" if short_dividend_rub > Decimal('0') else ''
                 income = round(trade.open_amount(no_settlement=ns), 2)
                 income_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2)
-                spending = round(trade.close_amount(no_settlement=ns), 2) + trade.fee() + short_dividend_rub
-                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2)
+                spending = round(trade.close_amount(no_settlement=ns), 2) + trade.fee() + short_dividend
+                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) + short_dividend_rub
             line = {
                 'report_template': "trade",
                 'symbol': trade.asset().symbol(self.account_currency.id()),
