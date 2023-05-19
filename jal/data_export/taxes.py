@@ -129,3 +129,11 @@ class TaxReport:
                 x.open_operation().subtype() == Dividend.StockVesting))]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         return trades
+
+    def derivatives_trades_list(self) -> list:
+        trades = self.account.closed_trades_list()
+        trades = [x for x in trades if x.asset().type() == PredefinedAsset.Derivative]
+        trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
+        trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
+        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
+        return trades

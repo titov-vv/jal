@@ -247,11 +247,7 @@ class TaxesRussia(TaxReport):
         country = self.account.country()
         derivatives_report = []
         ns = not self.use_settlement
-        trades = self.account.closed_trades_list()
-        trades = [x for x in trades if x.asset().type() == PredefinedAsset.Derivative]
-        trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
-        trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
-        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
+        trades = self.derivatives_trades_list()
         for trade in trades:
             o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
             c_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
