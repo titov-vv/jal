@@ -19,9 +19,9 @@
   ],
   "trades": [
     {"id": 1, "number": "200000523", "timestamp": 1645695065, "settlement": 1645833600, "account": 1, "asset": 2, "quantity": -1.0, "price": 901.4, "fee": 1.0},
-    {"id": 2, "number": "211321719", "timestamp": 1657279312, "settlement": 1657584000, "account": 1, "asset": 3, "quantity": -37.0, "price": 60.074, "fee": 1.0},
-    {"id": 3, "number": "211326559", "timestamp": 1657283238, "settlement": 1657584000, "account": 1, "asset": 3, "quantity": -1.0, "price": 59.5, "fee": 1.0},
-    {"id": 4, "number": "211380318", "timestamp": 1657532255, "settlement": 1657670400, "account": 1, "asset": 3, "quantity": 38.0, "price": 58.035, "fee": 1.0}
+    {"id": 2, "number": "211321719", "timestamp": 1657106512, "settlement": 1657238400, "account": 1, "asset": 3, "quantity": -37.0, "price": 60.074, "fee": 1.0},
+    {"id": 3, "number": "211326559", "timestamp": 1657110438, "settlement": 1657238400, "account": 1, "asset": 3, "quantity": -1.0, "price": 59.5, "fee": 1.0},
+    {"id": 4, "number": "211380318", "timestamp": 1657186655, "settlement": 1657497600, "account": 1, "asset": 3, "quantity": 38.0, "price": 58.035, "fee": 1.0}
   ],
   "corporate_actions": [
     {"id": 1, "type": "split", "account": 1, "timestamp": 1661372700, "number": "1031017435", "asset": 2, "quantity": -1.0,
@@ -32,8 +32,8 @@
  ],
  "income_spending": [
    {"id": 1, "timestamp": 1657152000, "account": 1, "peer": 0, "lines": [{"amount": -0.28, "category": -5, "description": "LONG CFD INTEREST FOR 07-JUL-2022"}]},
-   {"id": 2, "timestamp": 1657238400, "account": 1, "peer": 0, "lines": [{"amount": -0.02, "category": -5, "description": "CFD BORROW FEE FOR MU for 08-JUL-2022"}]},
-   {"id": 3, "timestamp": 1657238400, "account": 1, "peer": 0, "lines": [{"amount": -0.06, "category": -5, "description": "SHORT CFD INTEREST FOR 08-JUL-2022"}]}
+   {"id": 2, "timestamp": 1657065600, "account": 1, "peer": 0, "lines": [{"amount": -0.02, "category": -5, "description": "CFD BORROW FEE FOR MU for 06-JUL-2022"}]},
+   {"id": 3, "timestamp": 1657065600, "account": 1, "peer": 0, "lines": [{"amount": -0.06, "category": -5, "description": "SHORT CFD INTEREST FOR 06-JUL-2022"}]}
  ],
  "transfers": []
 }

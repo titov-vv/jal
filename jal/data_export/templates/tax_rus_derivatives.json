@@ -24,29 +24,30 @@
     {"name": "Доход, RUB (код 1532)", "width": 12},
     {"name": "Расход, RUB (код 206)", "width": 12},
     {"name": "Финансовый результат, RUB", "width": 12},
-    {"name": "Финансовый результат, {parameters[currency]}", "width": 12}
+    {"name": "Финансовый результат, {parameters[currency]}", "width": 12},
+    {"name": "Примечания", "width": 12}
   ],
   "columns_numbered": true,
   "trade": {
     "rows": [
-      ["symbol", "qty", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_fee", "o_fee_rub", "income_rub", "spending_rub", "profit_rub", "profit"],
-      [null,     null,  "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_fee", "c_fee_rub", null,         null,           null,         null]
+      ["symbol", "qty", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_fee", "o_fee_rub", "income_rub", "spending_rub", "profit_rub", "profit", "s_dividend_note"],
+      [null,     null,  "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_fee", "c_fee_rub", null,         null,           null,         null,     null]
     ],
     "formats": [
-      ["T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2"],
-      [null, null, "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", null, null, null, null]
+      ["T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2", "T"],
+      [null, null, "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", null,  null,  null,  null,  null]
     ],
     "span": [
-      [{"h": 0, "v":  1}, {"h": 0, "v":  1}, null, null, null, null, null, null, null, null, null, null, null, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}],
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
+      [{"h": 0, "v":  1}, {"h": 0, "v":  1}, null, null, null, null, null, null, null, null, null, null, null, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
     ]
   },
   "totals": {
     "rows": [
-      [null, null, null, null, null, null, null, null, null, null, null, null, "ИТОГО", "income_rub", "spending_rub", "profit_rub", "profit"]
+      [null, null, null, null, null, null, null, null, null, null, null, null, "ИТОГО", "income_rub", "spending_rub", "profit_rub", "profit", null]
     ],
     "formats": [
-      [null, null, null, null, null, null, null, null, null, null, null, null, "F", "F", "F", "F", "F"]
+      [null, null, null, null, null, null, null, null, null, null, null, null, "F", "F", "F", "F", "F", null]
     ]
   },
   "footers": [
@@ -67,6 +68,7 @@
     "14 - Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 12)",
     "15 - Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме сделки покупки из столбца 12 + комиссии из столбца 14)",
     "16 - Финансовый результат сделки в рублях (= Столбец 15 - Столбец 16)",
-    "17 - Финансовый результат сделки в валюте счета"
+    "17 - Финансовый результат сделки в валюте счета",
+    "18 - Дополнительная информация"
   ]
 }
