@@ -100,7 +100,8 @@ class TaxesRussia(TaxReport):
                 # Check were there any dividends during short position holding
                 short_dividend = Decimal('0')
                 short_dividend_rub = Decimal('0')
-                div_list = [x for x in dividends_withdrawn if trade.open_operation().settlement() <= x.ex_date() <= trade.close_operation().settlement()]
+                div_list = [x for x in dividends_withdrawn if x.asset().id() == trade.asset().id()]
+                div_list = [x for x in div_list if trade.open_operation().settlement() <= x.ex_date() <= trade.close_operation().settlement()]
                 for dividend in div_list:
                     short_dividend -= dividend.amount()
                     short_dividend_rub -= dividend.amount(self._currency_id)  # amount is negative
