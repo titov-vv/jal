@@ -155,6 +155,8 @@
       "qty": -100.0,
       "report_template": "trade",
       "spending_rub": 50.18,
+      "isin": "",
+      "note": "",
       "symbol": "XOM   220121C00042500"
     },
     {
@@ -188,6 +190,8 @@
       "qty": -300.0,
       "report_template": "trade",
       "spending_rub": 1098607.81,
+      "isin": "",
+      "note": "",
       "symbol": "FANG  220121C00040000"
     },
     {

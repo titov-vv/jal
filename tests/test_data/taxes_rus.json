@@ -111,7 +111,7 @@
          "spending_rub":12071.19,
          "profit_rub":1282.61,
          "profit":21.43466555,
-         "s_dividend_note":""
+         "note":""
       },
       {
          "report_template": "trade",
@@ -144,7 +144,7 @@
          "profit": -21.771354114,
          "profit_rub": -1534.73,
          "qty": 4.0,
-         "s_dividend_note": "",
+         "note": "",
          "spending_rub": 4907.92,
          "symbol": "TEVA"
       },
@@ -179,7 +179,7 @@
          "profit": -2.986231466,
          "profit_rub": -217.2,
          "qty": 1.0,
-         "s_dividend_note": "",
+         "note": "",
          "spending_rub": 1060.5,
          "symbol": "TEVA"
       },
@@ -288,6 +288,8 @@
          "profit_rub": 9164.42,
          "qty": -1E+2,
          "spending_rub": 8896.82,
+         "isin": "",
+         "note": "",
          "symbol": "AAL   210115C00030000"
       },
       {

@@ -143,7 +143,7 @@ class TaxesRussia(TaxReport):
                 'spending_rub': spending_rub,
                 'profit': income - spending,
                 'profit_rub': income_rub - spending_rub,
-                's_dividend_note': note
+                'note': note
             }
             deals_report.append(line)
         self.insert_totals(deals_report, ["income_rub", "spending_rub", "profit_rub", "profit"])
