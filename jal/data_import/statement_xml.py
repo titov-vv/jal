@@ -15,7 +15,6 @@ class StatementXML(Statement):
 
     def __init__(self):
         super().__init__()
-        self.statement_name = ''
         self._statement = None
         self._sections = {}
         self._init_data()
@@ -112,7 +111,6 @@ class StatementXML(Statement):
                     return
                 self._sections[section]['loader'](section_data)
         self.strip_unused_data()
-        logging.info(self.statement_name + self.tr(" loaded successfully"))
 
     def validate_file_header_attributes(self, xml_data):
         return

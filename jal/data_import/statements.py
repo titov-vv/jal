@@ -77,9 +77,12 @@ class Statements(QObject):
             statement = class_instance()
             try:
                 statement.load(statement_file)
+                logging.info(self.tr("Statement file loaded successfully"))
                 statement.validate_format()
                 statement.match_db_ids()
+                logging.info(self.tr("Importing statement into database..."))
                 totals = statement.import_into_db()
+                logging.info(self.tr("Statement import completed successfully"))
             except Statement_ImportError as e:
                 logging.error(self.tr("Import failed: ") + str(e))
                 self.load_failed.emit()
