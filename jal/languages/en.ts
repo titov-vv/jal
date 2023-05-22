@@ -4088,37 +4088,32 @@ Application will be terminated now.</source>
 <context>
     <name>StatementXML</name>
     <message>
-        <location filename="../data_import/statement_xml.py" line="80"/>
+        <location filename="../data_import/statement_xml.py" line="79"/>
         <source>Unsupported date/time format: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="88"/>
+        <location filename="../data_import/statement_xml.py" line="87"/>
         <source>Can&apos;t parse XML file: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="92"/>
+        <location filename="../data_import/statement_xml.py" line="91"/>
         <source>No statement was found in file: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="97"/>
+        <location filename="../data_import/statement_xml.py" line="96"/>
         <source>Failed to find statement index: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="100"/>
+        <location filename="../data_import/statement_xml.py" line="99"/>
         <source>Unknown statement tag: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="115"/>
-        <source> loaded successfully</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/statement_xml.py" line="142"/>
+        <location filename="../data_import/statement_xml.py" line="140"/>
         <source>Failed to load attribute: </source>
         <translation></translation>
     </message>
@@ -4146,7 +4141,22 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="84"/>
+        <location filename="../data_import/statements.py" line="80"/>
+        <source>Statement file loaded successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="83"/>
+        <source>Importing statement into database...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="85"/>
+        <source>Statement import completed successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="87"/>
         <source>Import failed: </source>
         <translation type="unfinished"></translation>
     </message>

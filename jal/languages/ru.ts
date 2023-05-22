@@ -4094,37 +4094,32 @@ Application will be terminated now.</source>
 <context>
     <name>StatementXML</name>
     <message>
-        <location filename="../data_import/statement_xml.py" line="80"/>
+        <location filename="../data_import/statement_xml.py" line="79"/>
         <source>Unsupported date/time format: </source>
         <translation>Неподдерживаемый формат даты/времени: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="88"/>
+        <location filename="../data_import/statement_xml.py" line="87"/>
         <source>Can&apos;t parse XML file: </source>
         <translation>Неверный формат XML файла: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="92"/>
+        <location filename="../data_import/statement_xml.py" line="91"/>
         <source>No statement was found in file: </source>
         <translation>Отчёт брокера не найден в файле: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="97"/>
+        <location filename="../data_import/statement_xml.py" line="96"/>
         <source>Failed to find statement index: </source>
         <translation>Невозможно загрузить отчёт номер: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="100"/>
+        <location filename="../data_import/statement_xml.py" line="99"/>
         <source>Unknown statement tag: </source>
         <translation>Неизвестная метка отчёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="115"/>
-        <source> loaded successfully</source>
-        <translation> загружен успешно</translation>
-    </message>
-    <message>
-        <location filename="../data_import/statement_xml.py" line="142"/>
+        <location filename="../data_import/statement_xml.py" line="140"/>
         <source>Failed to load attribute: </source>
         <translation>Невозможно загрузить аттрибут: </translation>
     </message>
@@ -4152,7 +4147,22 @@ Application will be terminated now.</source>
         <translation> - модуль не поддерживает загрузку нескольких отчётов одновременно.</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="84"/>
+        <location filename="../data_import/statements.py" line="80"/>
+        <source>Statement file loaded successfully</source>
+        <translation>Файл отчёта брокера загружен успешно</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="83"/>
+        <source>Importing statement into database...</source>
+        <translation>Импорт отчёта брокера в базу данных...</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="85"/>
+        <source>Statement import completed successfully</source>
+        <translation>Импорт отчёта брокера успешно завершён</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="87"/>
         <source>Import failed: </source>
         <translation>Ошибка импорта: </translation>
     </message>
