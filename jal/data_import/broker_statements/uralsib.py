@@ -296,7 +296,8 @@ class StatementUKFU(StatementXLS):
             "Вариационная маржа": None,  # These are non-trade operations for derivatives
             "Заблокировано средств ГО": None,
             "Разблокировано средств ГО": None,
-            "Депозитарные сборы других депозитариев": self.fee
+            "Депозитарные сборы других депозитариев": self.fee,
+            "Депозитарные сборы собственного депозитария": self.fee
         }
 
         row, headers = self.find_section_start("ДВИЖЕНИЕ ДЕНЕЖНЫХ СРЕДСТВ ЗА ОТЧЕТНЫЙ ПЕРИОД",  columns)
