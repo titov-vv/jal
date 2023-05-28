@@ -19,11 +19,11 @@ class TaxesFlowRus:
         for asset_data in assets:
             assets_value += asset_data['amount'] * asset_data['asset'].quote(date, account.currency())[1]
         if assets_value != Decimal('0'):
-            values.append({'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
+            values.append({'account': account.id(), 'currency': JalAsset(account.currency()).symbol(),
                            'is_currency': False, 'value': assets_value})
         money = account.get_asset_amount(date, account.currency())
         if money != Decimal('0'):
-            values.append({'account': account.number(),'currency': JalAsset(account.currency()).symbol(),
+            values.append({'account': account.id(),'currency': JalAsset(account.currency()).symbol(),
                            'is_currency': True, 'value': money})
         return values
 
@@ -41,8 +41,8 @@ class TaxesFlowRus:
                 continue
             values_begin += self.get_account_values(account, self.year_begin)
             values_end += self.get_account_values(account, self.year_end)
-        values_begin = sorted(values_begin, key=lambda x: (x['account'], x['is_currency'], x['currency']))
-        values_end = sorted(values_end, key=lambda x: (x['account'], x['is_currency'], x['currency']))
+        values_begin = sorted(values_begin, key=lambda x: (JalAccount(account_id=x['account']).number(), x['is_currency'], x['currency']))
+        values_end = sorted(values_end, key=lambda x: (JalAccount(account_id=x['account']).number(), x['is_currency'], x['currency']))
         for item in values_begin:
             self.append_flow_values(item, "begin")
         for item in values_end:
@@ -61,16 +61,18 @@ class TaxesFlowRus:
             for flow in flows:
                 value = account.get_flow(self.year_begin, self.year_end, flow['type'], flow['direction'])
                 if value != Decimal('0'):
-                    values = {'account': account.number(), 'currency': JalAsset(account.currency()).symbol(),
+                    values = {'account': account.id(), 'currency': JalAsset(account.currency()).symbol(),
                               'is_currency': (flow['type'] == JalAccount.MONEY_FLOW), 'value': value}
                     self.append_flow_values(values, flow['direction'])
 
         report = []
-        for account in self.flows:
-            for currency in self.flows[account]:
-                record = self.flows[account][currency]
+        for account_id in self.flows:
+            for currency in self.flows[account_id]:
+                account = JalAccount(account_id=account_id)
+                record = self.flows[account_id][currency]
                 row = {'report_template': "account_lines",
-                       'account': account,
+                       'account': account.number(),
+                       'account_name': account.name(),
                        'currency': f"{currency} ({record['code']})",
                        'money': "Денежные средства",
                        'assets': "Финансовые активы"}
