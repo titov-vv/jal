@@ -189,7 +189,7 @@ class MoneyFlowWidget(MdiWidget):
 
         reports_xls = XLSX(self.xls_filename)
         parameters = {
-            "period": f"{ts2d(taxes_flow.year_begin)} - {(taxes_flow.year_end - 1)}"
+            "period": f"{ts2d(taxes_flow.year_begin)} - {ts2d(taxes_flow.year_end - 1)}"
         }
         reports_xls.output_data(flow_report, "tax_rus_flow.json", parameters)
         reports_xls.save()
