@@ -309,7 +309,12 @@ class HoldingsModel(AbstractTreeModel):
                     "quote_a": rate
                 })
             holdings += account_holdings
-        holdings = sorted(holdings, key=lambda x: (x['currency'], x['account'], x['asset_is_currency'], x['asset']))
+        sort_names = [x.removesuffix("_id") for x in self._groups]
+        if 'asset' in sort_names:
+            sort_names.insert(sort_names.index('asset'), 'asset_is_currency')  # Need to put currency at the end
+        else:
+            sort_names += ['asset_is_currency', 'asset']   # Sort by asset name for any kind of grouping
+        holdings = sorted(holdings, key=lambda x: tuple([x[key_name] for key_name in sort_names]))
 
         self._root = AssetTreeItem()
         for position in holdings:
