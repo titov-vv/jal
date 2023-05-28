@@ -20,12 +20,14 @@ class ChartWidget(QWidget):
         for point in quotes:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
             self.quotes_series.append(float(point['timestamp']), point['quote'])
 
+        self._trades = trades
         self.trade_series = QScatterSeries()
         for point in trades:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
             self.trade_series.append(float(point['timestamp']), point['price'])
         self.trade_series.setMarkerSize(5)
         self.trade_series.setBorderColor(CustomColor.LightRed)
         self.trade_series.setBrush(CustomColor.DarkRed)
+        self.trade_series.hovered.connect(self.MouseOverTrade)
 
         axisX = QDateTimeAxis()
         axisX.setTickCount(11)
@@ -59,6 +61,15 @@ class ChartWidget(QWidget):
         self.layout.addWidget(self.chartView)
         self.setLayout(self.layout)
 
+    def MouseOverTrade(self, point, state):
+        if state:
+            trade = [x for x in self._trades if float(x['timestamp']) == point.x() and float(x['price']) == point.y()]
+            qty = sum([x['qty'] for x in trade])
+            avg_price = sum([x['price']*x['qty'] for x in trade]) / qty
+            tip_text = f"B: {qty}@{avg_price}" if qty > 0 else f"S: {qty}@{avg_price}"
+            self.setToolTip(tip_text)
+        else:
+            self.setToolTip("")
 
 class ChartWindow(MdiWidget):
     def __init__(self, account_id, asset_id, currency_id, _asset_qty, parent=None):
