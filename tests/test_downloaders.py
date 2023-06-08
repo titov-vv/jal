@@ -3,13 +3,12 @@ from datetime import datetime
 from decimal import Decimal
 from pandas._testing import assert_frame_equal
 
-from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
 from tests.helpers import d2t, create_stocks, create_assets
 from jal.db.asset import JalAsset
 from jal.constants import PredefinedAsset
 from jal.net.helpers import isEnglish
 from jal.net.downloader import QuoteDownloader
-from jal.data_import.slips_tax import SlipsTaxAPI
+from data_import.shopping_slips.ru_fns_api import SlipsTaxAPI
 
 
 def test_English():
