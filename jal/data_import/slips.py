@@ -3,7 +3,7 @@ import json
 import logging
 import pandas as pd
 from urllib.parse import parse_qs
-from PySide6.QtCore import Qt, Slot, QDateTime, QAbstractTableModel
+from PySide6.QtCore import Qt, QObject, Signal, Slot, QDateTime, QAbstractTableModel
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView, QStyledItemDelegate
 from jal.widgets.reference_selector import CategorySelector, TagSelector
@@ -15,6 +15,43 @@ from jal.db.operations import LedgerTransaction
 from data_import.shopping_slips.ru_fns_api import SlipsTaxAPI
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
 from jal.data_import.category_recognizer import recognize_categories
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Base parent class for various API used by JAL for downloading information about purchases (slips)
+class SlipAPI(QObject):
+    slip_load_failed = Signal()
+    slip_load_ok = Signal()
+
+    def __init__(self):
+        super().__init__()
+
+    # Selects required API class based on QR data pattern
+    @staticmethod
+    def select_api(qr_text: str):
+        return None  # Slip QR pattern can't be matched with known API
+
+    # Provides a list of parameters required for slip query if manual input is in use
+    @staticmethod
+    def input_data_list() -> list:
+        raise NotImplementedError("SlipAPI.input_data_list() method should be implemented in child class")
+
+    # Method performs required actions to have active API session that may be used for queries
+    # Returns True after successful activation and False otherwise
+    def activate_session(self) -> bool:
+        raise NotImplementedError("SlipAPI.login() method should be implemented in child class")
+
+    # Request slip data via API
+    def query_slip(self):
+        raise NotImplementedError("SlipAPI.query_slip() method should be implemented in child class")
+
+    # Returns a list of purchased items (as dictionaries with name, price, amount, etc)
+    def slip_lines(self) -> list:
+        raise NotImplementedError("SlipAPI.slip_lines() method should be implemented in child class")
+
+    # Returns a shop name where purchase was done (if it is possible to get)
+    def shop_name(self) -> str:
+        raise NotImplementedError("SlipAPI.shop_name() method should be implemented in child class")
 
 
 #-----------------------------------------------------------------------------------------------------------------------
