@@ -8,7 +8,7 @@ from jal.db.asset import JalAsset
 from jal.constants import PredefinedAsset
 from jal.net.helpers import isEnglish
 from jal.net.downloader import QuoteDownloader
-from data_import.shopping_slips.ru_fns_api import SlipsTaxAPI
+from data_import.receipt_api.ru_fns import SlipsTaxAPI
 
 
 def test_English():

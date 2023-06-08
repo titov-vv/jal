@@ -12,14 +12,14 @@ from jal.widgets.helpers import dependency_present, decodeQR
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.operations import LedgerTransaction
-from data_import.shopping_slips.ru_fns_api import SlipsTaxAPI
+from data_import.receipt_api.ru_fns import SlipsTaxAPI
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
 from jal.data_import.category_recognizer import recognize_categories
 
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Base parent class for various API used by JAL for downloading information about purchases (slips)
-class SlipAPI(QObject):
+class ReceiptAPI(QObject):
     slip_load_failed = Signal()
     slip_load_ok = Signal()
 
