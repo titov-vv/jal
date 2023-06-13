@@ -131,6 +131,7 @@ class ImportSlipDialog(QDialog):
         self.slip_json = None
         self.slip_lines = None
 
+        self.receipt_api = None
         self.slipsAPI = SlipsTaxAPI(self)
         self.tensor_flow_present = dependency_present(['tensorflow'])
 
@@ -209,7 +210,11 @@ class ImportSlipDialog(QDialog):
     @Slot()
     def parseQRdata(self):
         logging.info(self.tr("QR: " + self.QR_data))
-        receipt_api = ReceiptAPIFactory().get_api_for_qr(self.QR_data)
+        try:
+            self.receipt_api = ReceiptAPIFactory().get_api_for_qr(self.QR_data)
+        except ValueError as e:
+            logging.warning(e)
+            return
         params = parse_qs(self.QR_data)
         try:
             for timestamp_pattern in self.timestamp_patterns:
@@ -228,6 +233,10 @@ class ImportSlipDialog(QDialog):
         self.downloadSlipJSON()
 
     def downloadSlipJSON(self):
+        if self.receipt_api is None:
+            return
+        self.receipt_api.activate_session()
+
         timestamp = self.ui.SlipTimstamp.dateTime().toSecsSinceEpoch()
 
         attempt = 0

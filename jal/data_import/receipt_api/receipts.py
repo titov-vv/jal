@@ -15,13 +15,13 @@ class ReceiptAPIFactory:
 
     # Selects required API class based on QR data pattern
     def get_api_for_qr(self, qr_text):
-        return self._get_api(self._detect_api_id(qr_text))
+        return self._get_api(self._detect_api_id(qr_text), qr=qr_text)
 
-    def _get_api(self, api_id):
+    def _get_api(self, api_id, qr):
         api = self._apis.get(api_id)
         if not api:
             raise ValueError(api_id)
-        return api()
+        return api(qr)
 
     def _detect_api_id(self, text):
         ru_fns_keys = ["i=", "n=", "s=", "t=", "fn=", "fp="]

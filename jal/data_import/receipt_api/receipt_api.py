@@ -1,15 +1,9 @@
-from abc import ABC, abstractmethod
 from PySide6.QtCore import QObject, Signal
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-# Meta class to resolve conflict
-class ReceiptAPIMeta(type(QObject), type(ABC)):
-    pass
-
-#-----------------------------------------------------------------------------------------------------------------------
 # Base parent class for various API used by JAL for downloading information about purchases (slips)
-class ReceiptAPI(metaclass=ReceiptAPIMeta):
+class ReceiptAPI(QObject):
     slip_load_failed = Signal()
     slip_load_ok = Signal()
 
@@ -18,27 +12,22 @@ class ReceiptAPI(metaclass=ReceiptAPIMeta):
 
     # Provides a list of parameters required for slip query if manual input is in use
     @staticmethod
-    @abstractmethod
     def input_data_list() -> list:
-        pass
+        raise NotImplementedError(f"input_data_list() shouldn't be called for ReceiptAPI class")
 
     # Method performs required actions to have active API session that may be used for queries
     # Returns True after successful activation and False otherwise
-    @abstractmethod
     def activate_session(self) -> bool:
-        pass
+        raise NotImplementedError(f"activate_session() method is not implemented in {type(self).__name__}")
 
     # Request slip data via API
-    @abstractmethod
     def query_slip(self):
-        pass
+        raise NotImplementedError(f"query_slip() method is not implemented in {type(self).__name__}")
 
     # Returns a list of purchased items (as dictionaries with name, price, amount, etc)
-    @abstractmethod
     def slip_lines(self) -> list:
-        pass
+        raise NotImplementedError(f"slip_lines() method is not implemented in {type(self).__name__}")
 
     # Returns a shop name where purchase was done (if it is possible to get)
-    @abstractmethod
     def shop_name(self) -> str:
-        pass
+        raise NotImplementedError(f"shop_name() method is not implemented in {type(self).__name__}")
