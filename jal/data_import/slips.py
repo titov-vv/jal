@@ -12,7 +12,7 @@ from jal.widgets.helpers import dependency_present, decodeQR
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.operations import LedgerTransaction
-from data_import.receipt_api.ru_fns import SlipsTaxAPI
+from data_import.receipt_api.ru_fns_old import SlipsTaxAPI
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
 from jal.data_import.category_recognizer import recognize_categories
 
