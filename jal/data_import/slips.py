@@ -10,7 +10,6 @@ from jal.widgets.helpers import dependency_present, decodeQR
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.operations import LedgerTransaction
-from data_import.receipt_api.ru_fns_old import SlipsTaxAPI
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
 from jal.data_import.category_recognizer import recognize_categories
 from jal.data_import.receipt_api.receipts import ReceiptAPIFactory
@@ -128,7 +127,6 @@ class ImportSlipDialog(QDialog):
         self.slip_lines = None
 
         self.receipt_api = None
-        self.slipsAPI = SlipsTaxAPI(self)
         self.tensor_flow_present = dependency_present(['tensorflow'])
 
         self.ui.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
@@ -259,13 +257,7 @@ class ImportSlipDialog(QDialog):
         else:
             logging.error(self.tr("Can't find 'operationType' tag in json 'ticket'"))
             return
-        # Get shop name
-        shop_name = ''
-        if 'user' in slip:
-            shop_name = self.ui.SlipShopName.setText(slip['user'])
-        if (not shop_name) and ('userInn' in slip):
-            shop_name = self.slipsAPI.get_shop_name_by_inn(slip['userInn'])
-        self.ui.SlipShopName.setText(shop_name)
+        self.ui.SlipShopName.setText(self.receipt_api.shop_name())
 
         peer_id = JalPeer.get_id_by_mapped_name(self.ui.SlipShopName.text())
         if peer_id is not None:

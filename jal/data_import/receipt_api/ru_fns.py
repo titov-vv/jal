@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QDialog
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.db.settings import JalSettings
+from jal.net.helpers import get_web_data, post_web_data
 from jal.ui.ui_login_fns_dlg import Ui_LoginFNSDialog
 
 
@@ -118,6 +119,58 @@ class ReceiptRuFNS(ReceiptAPI):
             self.slip_load_ok.emit()
         else:
             self.slip_load_failed.emit()
+
+    # Slip data might be in a root element or in ticket/document/receipt
+    # This method returns actual slip as result
+    def __slip_data(self) -> dict:
+        if 'ticket' in self.slip_json:
+            sub = self.slip_json['ticket']
+            if 'document' in sub:
+                sub = sub['document']
+                if 'receipt' in sub:
+                    slip = sub['receipt']
+                else:
+                    logging.error(self.tr("Can't find 'receipt' tag in json 'document' from FNS"))
+                    return {}
+            else:
+                logging.error(self.tr("Can't find 'document' tag in json 'ticket' from FNS"))
+                return {}
+        else:
+            slip = self.slip_json
+        return slip
+
+    # ----------------------------------------------------------------------------------------------------------------
+    # Gets company name by Russian INN
+    # Returns short or long name if fount and initial INN otherwise
+    def shop_name(self) -> str:
+        slip_data = self.__slip_data()
+        if 'user' in slip_data:
+            return slip_data['user']
+        if 'userInn' in slip_data:
+            inn = slip_data['userInn']
+        else:
+            return ''
+        if len(inn) != 10 and len(inn) != 12:
+            logging.warning(self.tr("Incorrect length of INN. Can't get company name."))
+            return inn
+        region_list = "77,78,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,"\
+                      "30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,"\
+                      "61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,79,83,86,87,89,91,92,99"
+        params = {'vyp3CaptchaToken': '', 'page': '', 'query': inn, 'region': region_list,
+                  'PreventChromeAutocomplete': ''}
+        token_data = json.loads(post_web_data('https://egrul.nalog.ru/', params))
+        if 't' not in token_data:
+            return inn
+        result = json.loads(get_web_data('https://egrul.nalog.ru/search-result/' + token_data['t']))
+        try:
+            return result['rows'][0]['c']   # Return short name if exists
+        except:
+            pass
+        try:
+            return result['rows'][0]['n']   # Return long name if exists
+        except:
+            logging.warning(self.tr("Can't get company name from: ") + result)
+            return inn
 
 
 #-----------------------------------------------------------------------------------------------------------------------

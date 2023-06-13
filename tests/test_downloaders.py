@@ -8,7 +8,7 @@ from jal.db.asset import JalAsset
 from jal.constants import PredefinedAsset
 from jal.net.helpers import isEnglish
 from jal.net.downloader import QuoteDownloader
-from data_import.receipt_api.ru_fns_old import SlipsTaxAPI
+from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 
 
 def test_English():
@@ -17,8 +17,9 @@ def test_English():
     assert isEnglish("asгfAF12!@#") == False
 
 def test_INN_resolution():
-    tax_API = SlipsTaxAPI()
-    name = tax_API.get_shop_name_by_inn('7707083893')
+    fns_api = ReceiptRuFNS(qr_text='t=20230101T0000&fn=0&fd=0&fp=0&i=0&n=0&s=0')
+    fns_api.slip_json['userInn'] = '7707083893'
+    name = fns_api.shop_name()
     assert name == 'ПАО СБЕРБАНК'
 
 def test_MOEX_details():
