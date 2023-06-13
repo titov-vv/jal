@@ -1,4 +1,4 @@
-from jal.data_import.slips import ReceiptAPI
+from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 
 
 #-----------------------------------------------------------------------------------------------------------------------
