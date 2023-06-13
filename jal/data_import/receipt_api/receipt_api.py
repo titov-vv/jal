@@ -1,4 +1,5 @@
 from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QApplication
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -9,6 +10,9 @@ class ReceiptAPI(QObject):
 
     def __init__(self):
         super().__init__()
+
+    def tr(self, text):
+        return QApplication.translate("ReceiptAPI", text)
 
     # Provides a list of parameters required for slip query if manual input is in use
     @staticmethod

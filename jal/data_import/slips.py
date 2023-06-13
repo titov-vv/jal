@@ -1,8 +1,6 @@
-import time
 import json
 import logging
 import pandas as pd
-from urllib.parse import parse_qs
 from PySide6.QtCore import Qt, Slot, QDateTime, QAbstractTableModel
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView, QStyledItemDelegate
@@ -115,8 +113,6 @@ class ImportSlipDialog(QDialog):
     OPERATION_PURCHASE = 1
     OPERATION_RETURN = 2
 
-    timestamp_patterns = ['yyyyMMddTHHmm', 'yyyyMMddTHHmmss', 'yyyy-MM-ddTHH:mm', 'yyyy-MM-ddTHH:mm:ss']
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_ImportSlipDlg()
@@ -215,45 +211,19 @@ class ImportSlipDialog(QDialog):
         except ValueError as e:
             logging.warning(e)
             return
-        params = parse_qs(self.QR_data)
-        try:
-            for timestamp_pattern in self.timestamp_patterns:
-                datetime = QDateTime.fromString(params['t'][0], timestamp_pattern)
-                datetime.setTimeSpec(Qt.UTC)
-                if datetime.isValid():
-                    self.ui.SlipTimstamp.setDateTime(datetime)
-            self.ui.SlipAmount.setText(params['s'][0])
-            self.ui.FN.setText(params['fn'][0])
-            self.ui.FD.setText(params['i'][0])
-            self.ui.FP.setText(params['fp'][0])
-            self.ui.SlipType.setCurrentIndex(int(params['n'][0]) - 1)
-        except KeyError:
-            logging.warning(self.tr("QR available but pattern isn't recognized: " + self.QR_data))
-            return
+        self.receipt_api.slip_load_ok.connect(self.slip_loaded)
         self.downloadSlipJSON()
 
     def downloadSlipJSON(self):
         if self.receipt_api is None:
             return
-        self.receipt_api.activate_session()
+        if not self.receipt_api.activate_session():
+            return
+        self.receipt_api.query_slip()
 
-        timestamp = self.ui.SlipTimstamp.dateTime().toSecsSinceEpoch()
-
-        attempt = 0
-        while True:
-            result = self.slipsAPI.get_slip(timestamp, float(self.ui.SlipAmount.text()), self.ui.FN.text(),
-                                            self.ui.FD.text(), self.ui.FP.text(), self.ui.SlipType.currentIndex() + 1)
-            if result != SlipsTaxAPI.Pending:
-                break
-            if attempt > 5:
-                logging.warning(self.tr("Max retry count exceeded."))
-                break
-            attempt += 1
-            time.sleep(0.5) # wait half a second before next attempt
-
-        if result == SlipsTaxAPI.Success:
-            self.slip_json = self.slipsAPI.slip_json
-            self.parseJSON()
+    def slip_loaded(self):
+        self.slip_json = self.receipt_api.slip_json
+        self.parseJSON()
 
     @Slot()
     def loadFileSlipJSON(self):
