@@ -41,7 +41,7 @@ class LogViewer(QPlainTextEdit):
 
     def _copy2clipboard(self):
         cursor = self.textCursor()
-        text = cursor.selectedText() if cursor.selectedText().toPlainText() else self.toPlainText()
+        text = cursor.selectedText() if cursor.selectedText() else self.toPlainText()
         QApplication.clipboard().setText(text)
 
     def startLogging(self):
