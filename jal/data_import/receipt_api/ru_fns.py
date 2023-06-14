@@ -102,7 +102,7 @@ class ReceiptRuFNS(ReceiptAPI):
             if response.status_code != 200:
                 logging.error(self.tr("Get ticket id failed: ") + f"{response.status_code}/{response.text} for {payload}")
                 return
-            logging.info(self.tr("Slip found: " + response.text))
+            logging.info(self.tr("Receipt found: " + response.text))
             json_content = json.loads(response.text)
             if json_content['status'] == 2:  # Valid slip status is 2, other statuses are not fully clear
                 break
@@ -112,9 +112,9 @@ class ReceiptRuFNS(ReceiptAPI):
             url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
             response = self.web_session.get(url)
             if response.status_code != 200:
-                logging.error(self.tr("Get ticket failed: ") + f"{response}/{response.text}")
+                logging.error(self.tr("Receipt load failed: ") + f"{response}/{response.text}")
                 self.slip_load_failed.emit()
-            logging.info(self.tr("Slip loaded: " + response.text))
+            logging.info(self.tr("Receipt was loaded: " + response.text))
             self.slip_json = json.loads(response.text)
             self.slip_load_ok.emit()
         else:

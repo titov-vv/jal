@@ -377,7 +377,7 @@
 <context>
     <name>ChartWindow</name>
     <message>
-        <location filename="../widgets/price_chart.py" line="85"/>
+        <location filename="../widgets/price_chart.py" line="96"/>
         <source>Price chart for </source>
         <translation>График цены для </translation>
     </message>
@@ -1139,79 +1139,69 @@
 <context>
     <name>ImportSlipDialog</name>
     <message>
-        <location filename="../data_import/slips.py" line="166"/>
+        <location filename="../data_import/slips.py" line="162"/>
         <source>Select file with QR code</source>
         <translation>Выберите файл с QR-кодом</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="250"/>
+        <location filename="../data_import/slips.py" line="229"/>
         <source>Select file with slip JSON data</source>
         <translation>Выберите файл с JSON-данными чека</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="345"/>
+        <location filename="../data_import/slips.py" line="318"/>
         <source>Not possible to import slip: no account set for import</source>
         <translation>Невозможно добавить чек: не указан счет для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="351"/>
+        <location filename="../data_import/slips.py" line="324"/>
         <source>Not possible to import slip: some categories are not set</source>
         <translation>Невозможно добавить чек: категории указаны не для всех строк</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="348"/>
+        <location filename="../data_import/slips.py" line="321"/>
         <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
         <translation>Невозможно добавить чек: не указан контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="173"/>
+        <location filename="../data_import/slips.py" line="169"/>
         <source>No QR codes were found in file</source>
         <translation>QR-код в файле не обнаружен</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="238"/>
-        <source>Max retry count exceeded.</source>
-        <translation>Превышено максимальное число попыток.</translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="266"/>
+        <location filename="../data_import/slips.py" line="245"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos;</source>
         <translation>JSON тэг &apos;receipt&apos; отсутствует внутри тэга &apos;document&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="269"/>
+        <location filename="../data_import/slips.py" line="248"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;document&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="279"/>
+        <location filename="../data_import/slips.py" line="258"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="311"/>
+        <location filename="../data_import/slips.py" line="284"/>
         <source>Unknown operation type </source>
         <translation>Неизвестный тип операции </translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="384"/>
+        <location filename="../data_import/slips.py" line="357"/>
         <source>Categories are not recognized: Tensorflow is not found</source>
         <translation>Категории не распознаны: Tensorlow не обнаружен</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="184"/>
+        <location filename="../data_import/slips.py" line="180"/>
         <source>No QR codes found in clipboard</source>
         <translation>QR код не обнаружен в буфере обмена</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="210"/>
+        <location filename="../data_import/slips.py" line="206"/>
         <source>QR: </source>
         <translation>QR: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="224"/>
-        <source>QR available but pattern isn&apos;t recognized: </source>
-        <translation>Невозможно распознать прочитанный QR-код: </translation>
     </message>
 </context>
 <context>
@@ -1891,37 +1881,37 @@ do you want to save it?</source>
 <context>
     <name>LoginFNS</name>
     <message>
-        <location filename="../data_import/slips_tax.py" line="75"/>
-        <location filename="../data_import/slips_tax.py" line="88"/>
-        <location filename="../data_import/slips_tax.py" line="107"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="213"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="226"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="245"/>
         <source>FNS login failed: </source>
-        <translation>Ошибка логина через ЛК ФНС: </translation>
+        <translation>ФНС логин неуспешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="77"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="215"/>
         <source>SMS was requested successfully</source>
-        <translation>SMS было запрошено успешно</translation>
+        <translation>SMS было успешно запрошено</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="90"/>
-        <location filename="../data_import/slips_tax.py" line="109"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="228"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="247"/>
         <source>FNS login successful: </source>
-        <translation>Успешный логин через ЛК ФНС: </translation>
+        <translation>ФНС логин выполнен успешно: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="121"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="259"/>
         <source>Get ESIA URL failed: </source>
-        <translation>Ошибка получения URL логина через Госуслуги: </translation>
+        <translation>Не удалось получить URL ЕСИА: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="134"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="272"/>
         <source>ESIA login failed: </source>
-        <translation>Ошибка логина через Госуслуги: </translation>
+        <translation>ЕСИА логин не успешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="136"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="274"/>
         <source>ESIA login successful: </source>
-        <translation>Успешный логин через Госуслуги: </translation>
+        <translation>ЕСИА логин выполнен успешно: </translation>
     </message>
 </context>
 <context>
@@ -1988,6 +1978,47 @@ do you want to save it?</source>
         <location filename="../ui/login_fns_dlg.ui" line="39"/>
         <source>SMS Login</source>
         <translation>SMS</translation>
+    </message>
+</context>
+<context>
+    <name>LoginLidlPlus</name>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="150"/>
+        <source>Login error</source>
+        <translation>Ошибка логина</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="150"/>
+        <source>No auth code in callback URI</source>
+        <translation>Код аутентификации отсутствует в callback URI</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="165"/>
+        <source>Lidl Plus login failed: </source>
+        <translation>Lidl Plus логин не успешен: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="167"/>
+        <source>Lidl Plus login successful: </source>
+        <translation>Lidl Plus логин выполнен успешно: </translation>
+    </message>
+</context>
+<context>
+    <name>LoginLidlPlusDialog</name>
+    <message>
+        <location filename="../ui/login_lidl_plus_dlg.ui" line="14"/>
+        <source>Authorization Lidl Plus</source>
+        <translation>Авторизация Lidl Plus</translation>
+    </message>
+    <message>
+        <location filename="../ui/login_lidl_plus_dlg.ui" line="42"/>
+        <source>about:blank</source>
+        <translation>about:blank</translation>
+    </message>
+    <message>
+        <location filename="../ui/login_lidl_plus_dlg.ui" line="84"/>
+        <source>Close</source>
+        <translation>Закрыть</translation>
     </message>
 </context>
 <context>
@@ -2290,22 +2321,22 @@ Application will be terminated now.</source>
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/slips.py" line="56"/>
+        <location filename="../data_import/slips.py" line="54"/>
         <source>Product name</source>
         <translation>Название продукта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="62"/>
+        <location filename="../data_import/slips.py" line="60"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="58"/>
+        <location filename="../data_import/slips.py" line="56"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="60"/>
+        <location filename="../data_import/slips.py" line="58"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
@@ -2796,6 +2827,170 @@ Application will be terminated now.</source>
     </message>
 </context>
 <context>
+    <name>ReceiptAPIFactory</name>
+    <message>
+        <location filename="../data_import/receipt_api/receipts.py" line="44"/>
+        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
+        <translation>Португальский QR распознан, но магазин не поддерживается, NIF: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/receipts.py" line="45"/>
+        <source>No API found for QR data: </source>
+        <translation>На найдено API для данного QR-кода: </translation>
+    </message>
+</context>
+<context>
+    <name>ReceiptEuLidlPlus</name>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="26"/>
+        <source>Lidl QR available but pattern isn&apos;t recognized: </source>
+        <translation>Lidl QR отсканирован, но не распознан: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="31"/>
+        <source>Input Lidl receipt additional data</source>
+        <translation>Введите дополнительные данные для чека Lidl</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="32"/>
+        <source>Sequence #:</source>
+        <translation>Порядковый номер:</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="34"/>
+        <source>Can&apos;t get Lidl receipt without sequence number</source>
+        <translation>Невозможно получить чек Lidl без порядкового номера</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="44"/>
+        <source>No Lidl Plus access token available</source>
+        <translation>Отсутствует токен доступе Lidl Plus</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="51"/>
+        <source>Unauthorized with reason: </source>
+        <translation>Неавторизован, причина: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="54"/>
+        <source>Lidl Plus API failed with: </source>
+        <translation>Запрос к Lidl Plus API завершился неуспешно: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="58"/>
+        <source>Refreshing Lidl Plus token...</source>
+        <translation>Обновление токена Lidl Plus...</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="66"/>
+        <source>Lidl Plus token was refreshed: </source>
+        <translation>Токен Lidl Plus был обновлён: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="76"/>
+        <source>Can&apos;t refresh Lidl Plus token, response: </source>
+        <translation>Невозможно обновить токет Lidl Plus, ответ: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="91"/>
+        <source>Receipt was loaded: </source>
+        <translation>Чек загружен: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="95"/>
+        <source>Receipt load failed: </source>
+        <translation>Ошибка загрузки чека: </translation>
+    </message>
+</context>
+<context>
+    <name>ReceiptRuFNS</name>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="34"/>
+        <source>FNS QR available but date/time pattern isn&apos;t recognized: </source>
+        <translation>ФНС QR отсканирован, но невозможно определить дату/время: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="41"/>
+        <source>FNS QR available but pattern isn&apos;t recognized: </source>
+        <translation>ФНС QR отсканирован, но не распознан: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="55"/>
+        <source>No FNS SessionId available</source>
+        <translation>Нет ФНС SessionId</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="62"/>
+        <source>Unauthorized with reason: </source>
+        <translation>Неавторизован, причина: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="65"/>
+        <source>FNS API failed with: </source>
+        <translation>Вызов ФНС API неуспешен: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="71"/>
+        <source>Refreshing FNS session...</source>
+        <translation>Обновление сессии ФНС...</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="78"/>
+        <source>FNS session refreshed: </source>
+        <translation>Сессия ФНС обновлена: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="87"/>
+        <source>Can&apos;t refresh FNS session, response: </source>
+        <translation>Невозможно обновить сессию ФНС, ответ: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="103"/>
+        <source>Get ticket id failed: </source>
+        <translation>Невозиожно получить ID чека: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="105"/>
+        <source>Receipt found: </source>
+        <translation>Чек найден: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="115"/>
+        <source>Receipt load failed: </source>
+        <translation>Неуспешная загрузка чека: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="117"/>
+        <source>Receipt was loaded: </source>
+        <translation>Чек загружен: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="109"/>
+        <source>Operation might be pending on server side. Trying again.</source>
+        <translation>Вероятно операция обрабатывается сервером. Попробуйте позже.</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="133"/>
+        <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos; from FNS</source>
+        <translation>На нейден тэг &apos;receipt&apos; внутри тега &apos;document&apos; данных от ФНС</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="136"/>
+        <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos; from FNS</source>
+        <translation>На нейден тэг &apos;document&apos; внутри тега &apos;ticket&apos; данных от ФНС</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="154"/>
+        <source>Incorrect length of INN. Can&apos;t get company name.</source>
+        <translation>Неверная длина ИНН. Невозможно загрузить наименвание компании.</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="172"/>
+        <source>Can&apos;t get company name from: </source>
+        <translation>Невозможно получить имя компании: </translation>
+    </message>
+</context>
+<context>
     <name>ReferenceDataDialog</name>
     <message>
         <location filename="../ui/reference_data_dlg.ui" line="14"/>
@@ -2963,9 +3158,9 @@ Application will be terminated now.</source>
 <context>
     <name>RequestInterceptor</name>
     <message>
-        <location filename="../data_import/slips_tax.py" line="34"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="302"/>
         <source>ESIA login completed</source>
-        <translation>Логин через Госуслуги завершён</translation>
+        <translation>ЕСИА логин успешен</translation>
     </message>
 </context>
 <context>
@@ -3058,74 +3253,6 @@ Application will be terminated now.</source>
         <location filename="../widgets/selection_dialog.py" line="69"/>
         <source>Please select tag</source>
         <translation>Выберите метку</translation>
-    </message>
-</context>
-<context>
-    <name>SlipsTaxAPI</name>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="177"/>
-        <source>No Russian Tax SessionId available</source>
-        <translation>Нет SessionId для загрузки чека с сайта ФНС</translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="263"/>
-        <source>Can&apos;t get company name from: </source>
-        <translation>Не удалось получить название огранизации из: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="192"/>
-        <source>Session refreshed: </source>
-        <translation>Сессия обновлена: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="201"/>
-        <source>Can&apos;t refresh session, response: </source>
-        <translation>Невозможно обвновить сессию, ответ: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="224"/>
-        <source>Get ticket id failed: </source>
-        <translation>Ошибка получения id чека: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="234"/>
-        <source>Get ticket failed: </source>
-        <translation>Ошибка получения чека: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="185"/>
-        <source>Refreshing session...</source>
-        <translation>Обновление сессии...</translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="219"/>
-        <source>Unauthorized with reason: </source>
-        <translation>Неавторизовано по причине: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="183"/>
-        <source>No valid session present</source>
-        <translation>Нет активной сессии для ФНС</translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="245"/>
-        <source>Incorrect length of INN. Can&apos;t get company name.</source>
-        <translation>Неверная длина ИНН. Невозможно получить наименование компании.</translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="226"/>
-        <source>Slip found: </source>
-        <translation>Чек найден: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="229"/>
-        <source>Operation might be pending on server side. Trying again.</source>
-        <translation>Операция обрабатывается на стороне сервера. Повторяю ещё раз.</translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips_tax.py" line="236"/>
-        <source>Slip loaded: </source>
-        <translation>Чек загружен: </translation>
     </message>
 </context>
 <context>
@@ -3988,57 +4115,57 @@ Application will be terminated now.</source>
         <translation>Отсутствуют ожидаемые данные в описании перевода ЦБ </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="311"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="312"/>
         <source>Unsuppported cash transaction </source>
         <translation>Неподдерживаемая денежная транзакция </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="322"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="323"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="330"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="331"/>
         <source>Can&apos;t parse money transfer description </source>
         <translation>Невозможно распознать описание денежного перевода </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="333"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="334"/>
         <source>Money transfer description miss some data </source>
         <translation>Отсутствуют ожидаемые данные в описании денежного перевода </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="368"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="369"/>
         <source>Can&apos;t parse dividend description </source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="386"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="387"/>
         <source>Failed to convert dividend tax </source>
         <translation>Ошибка при конвертации суммы налога </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="402"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="403"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation>Невозможно распознать описание купона </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="416"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="417"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation>Невозможно распознать описание погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="422"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="423"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation>Невозможно найти запись списания ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="425"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="426"/>
         <source>Multiple asset cancellation match for </source>
         <translation>Найдены несколько записей погашения ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="452"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="453"/>
         <source>Can&apos;t get header to find fees</source>
         <translation>Невозможно найти заголовок комиссий</translation>
     </message>

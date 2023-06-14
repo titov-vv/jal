@@ -63,7 +63,7 @@ class ReceiptEuLidlPlus(ReceiptAPI):
         payload = {"grant_type": "refresh_token", "refresh_token": refresh_token}
         response = self.web_session.post("https://accounts.lidl.com/connect/token", data=payload)
         if response.status_code == 200:
-            logging.info(self.tr("Lidl Plus session refreshed: ") + f"{response.text}")
+            logging.info(self.tr("Lidl Plus token was refreshed: ") + f"{response.text}")
             json_content = json.loads(response.text)
             assert json_content['token_type'] == "Bearer"
             self.access_token = json_content['access_token']
@@ -88,11 +88,11 @@ class ReceiptEuLidlPlus(ReceiptAPI):
         self.web_session.headers["Accept-Language"] = "PT"
         response = self.web_session.get(f"https://tickets.lidlplus.com/api/v2/PT/tickets/{ticket_id}")
         if response.status_code == 200:
-            logging.info(self.tr("Slip loaded: " + response.text))
+            logging.info(self.tr("Receipt was loaded: " + response.text))
             self.slip_json = json.loads(response.text)
             self.slip_load_ok.emit()
         else:
-            logging.error(self.tr("Get ticket id failed: ") + f"{response.status_code}/{response.text} for {ticket_id}")
+            logging.error(self.tr("Receipt load failed: ") + f"{response.status_code}/{response.text} for {ticket_id}")
             self.slip_json = {}
             self.slip_load_failed.emit()
 
@@ -147,7 +147,7 @@ class LoginLidlPlus(QDialog):
     @Slot()
     def processResponse(self, params: dict):
         if 'code' not in params:
-            QMessageBox().warning(None, self.tr("Login error"), self.tr("ERROR: no auth code in callback URI"), QMessageBox.Ok)
+            QMessageBox().warning(None, self.tr("Login error"), self.tr("No auth code in callback URI"), QMessageBox.Ok)
             return
         client_secret = JalSettings().getValue('EuLidlClientSecret')
         # Get Auth token and display it

@@ -74,7 +74,7 @@ class Ui_LoginLidlPlusDialog(object):
     # setupUi
 
     def retranslateUi(self, LoginLidlPlusDialog):
-        LoginLidlPlusDialog.setWindowTitle(QCoreApplication.translate("LoginLidlPlusDialog", u"Authorization FNS", None))
+        LoginLidlPlusDialog.setWindowTitle(QCoreApplication.translate("LoginLidlPlusDialog", u"Authorization Lidl Plus", None))
         self.CloseBtn.setText(QCoreApplication.translate("LoginLidlPlusDialog", u"Close", None))
     # retranslateUi
 
