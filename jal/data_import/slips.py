@@ -175,7 +175,7 @@ class ImportSlipDialog(QDialog):
     @Slot()
     def readCameraQR(self):
         self.initUi()
-        scanner = ScanDialog(self)
+        scanner = ScanDialog(self, self.tr("Please scan main QR code from the receipt"))
         if scanner.exec() == QDialog.Accepted:
             self.QR_data = scanner.data
             self.parseQRdata()

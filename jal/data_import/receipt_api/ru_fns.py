@@ -18,7 +18,7 @@ class ReceiptRuFNS(ReceiptAPI):
     MAX_ATTEMPTS = 5
     timestamp_patterns = ['yyyyMMddTHHmm', 'yyyyMMddTHHmmss', 'yyyy-MM-ddTHH:mm', 'yyyy-MM-ddTHH:mm:ss']
 
-    def __init__(self, qr_text=''):
+    def __init__(self, qr_text='', aux_data=''):
         super().__init__()
         self.session_id = ''
         self.slip_json = {}

@@ -17,7 +17,7 @@ from jal.ui.ui_login_lidl_plus_dlg import Ui_LoginLidlPlusDialog
 #-----------------------------------------------------------------------------------------------------------------------
 class ReceiptEuLidlPlus(ReceiptAPI):
     receipt_pattern = r"A:.*\*B:.*\*C:PT\*D:FS\*E:N\*F:(?P<date>\d{8})\*G:FS (?P<shop_id>\d{4})\d(?P<register_id>\d{2})..\/.*\*H:.{1,70}\*I1:PT\*.*"
-    def __init__(self, qr_text=''):
+    def __init__(self, qr_text='', aux_data=''):
         super().__init__()
         self.access_token = ''
         self.slip_json = {}
@@ -28,11 +28,13 @@ class ReceiptEuLidlPlus(ReceiptAPI):
         self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
         self.shop_id = parts['shop_id']
         self.register_id = parts['register_id']
-        # Lidl uses ITF barcode on their slips that contain all required data but pyzbar can't read it
-        self.seq_id, result = QInputDialog.getText(None, self.tr("Input Lidl receipt additional data"),
-                                                   self.tr("Sequence #:"))
-        if not result:
-            raise ValueError(self.tr("Can't get Lidl receipt without sequence number"))
+        if len(aux_data) == 28:  # Get receipt sequence number from aux data or from the user
+            self.seq_id = aux_data[7:13]
+        else:
+            self.seq_id, result = QInputDialog.getText(None, self.tr("Input Lidl receipt additional data"),
+                                                       self.tr("Sequence #:"))
+            if not result:
+                raise ValueError(self.tr("Can't get Lidl receipt without sequence number"))
         self.seq_id = int(self.seq_id.lstrip('0'))   # Get rid of any leading zeros and convert to int
         self.web_session = requests.Session()
         self.web_session.headers['User-Agent'] = "okhttp/4.10.0"

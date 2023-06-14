@@ -30,14 +30,15 @@ class ReceiptAPIFactory(QObject):
 
     # Selects required API class based on QR data pattern
     def get_api_for_qr(self, qr_text):
+        extra_data=''
         api_type = self._detect_api_id_by_qr(qr_text)
         if api_type == EU_LIDL_PLUS_API or api_type == PT_PINGO_DOCE_API:
-            scanner = ScanDialog(code_type=QRScanner.TYPE_ITF)
+            scanner = ScanDialog(code_type=QRScanner.TYPE_ITF,
+                                 message=self.tr("Please scan flat barcode from the receipt"))
             if scanner.exec() == QDialog.Accepted:
-                print(f"{scanner.data}")
-            assert False
+                extra_data = scanner.data
         api = self._apis.get(api_type)
-        return api(qr_text)
+        return api(qr_text=qr_text, aux_data=extra_data)
 
     def _detect_api_id_by_qr(self, qr_text):
         ru_fns_keys = ["i=", "n=", "s=", "t=", "fn=", "fp="]

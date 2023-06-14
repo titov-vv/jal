@@ -150,40 +150,36 @@ class QRScanner(QWidget):
 
 
 class ScanDialog(QDialog):
-    def __init__(self, parent=None, code_type=QRScanner.TYPE_QR):
+    def __init__(self, parent=None, code_type=QRScanner.TYPE_QR, message=''):
         super().__init__(parent)
         self.data = ''
         self.running = False
         self.resize(700, 450)
+        self.setWindowTitle(self.tr("Barcode scanner"))
         self.verticalLayout = QVBoxLayout(self)
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setContentsMargins(2, 2, 2, 2)
-        self.HintLabel = QLabel(self)
-        self.HintLabel.setAlignment(Qt.AlignCenter)
-        self.verticalLayout.addWidget(self.HintLabel)
+        self.hint_label = QLabel(message, parent=self)
+        self.hint_label.setAlignment(Qt.AlignCenter)
+        self.verticalLayout.addWidget(self.hint_label)
 
-        self.BarcodeScanner = QRScanner(self, code_type)
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.BarcodeScanner.sizePolicy().hasHeightForWidth())
-        self.BarcodeScanner.setSizePolicy(sizePolicy)
-        self.verticalLayout.addWidget(self.BarcodeScanner)
+        self.scanner = QRScanner(self, code_type)
+        self.scanner.decodedQR.connect(self.barcode_scanned)
+        scanner_size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        scanner_size_policy.setHeightForWidth(self.scanner.sizePolicy().hasHeightForWidth())
+        self.scanner.setSizePolicy(scanner_size_policy)
+        self.verticalLayout.addWidget(self.scanner)
         self.ButtonFrame = QFrame(self)
         self.horizontalLayout = QHBoxLayout(self.ButtonFrame)
         self.horizontalLayout.setSpacing(2)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.CloseButton = QPushButton(self.ButtonFrame)
-        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.CloseButton.sizePolicy().hasHeightForWidth())
-        self.CloseButton.setSizePolicy(sizePolicy1)
-        self.horizontalLayout.addWidget(self.CloseButton)
+        self.close_button = QPushButton(self.ButtonFrame, text=self.tr("Close"))
+        close_button_size_policy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        close_button_size_policy.setHeightForWidth(self.close_button.sizePolicy().hasHeightForWidth())
+        self.close_button.setSizePolicy(close_button_size_policy)
+        self.horizontalLayout.addWidget(self.close_button)
         self.verticalLayout.addWidget(self.ButtonFrame)
-        self.CloseButton.clicked.connect(self.close)
-
-        self.BarcodeScanner.decodedQR.connect(self.barcode_scanned)
+        self.close_button.clicked.connect(self.close)
 
     @Slot()
     def showEvent(self, event):
@@ -196,14 +192,14 @@ class ScanDialog(QDialog):
 
     @Slot()
     def closeEvent(self, event):
-        self.BarcodeScanner.stopScan()
+        self.scanner.stopScan()
 
     @Slot()
     def start_scan(self):
-        self.BarcodeScanner.startScan()
+        self.scanner.startScan()
 
     @Slot()
     def barcode_scanned(self, decoded_data):
-        self.BarcodeScanner.stopScan()
+        self.scanner.stopScan()
         self.data = decoded_data
         self.accept()
