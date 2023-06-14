@@ -660,7 +660,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 46);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 47);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 -- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1); -- Deprecated and ID shouldn't be re-used
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
@@ -674,6 +674,9 @@ INSERT INTO settings(id, name, value) VALUES (10, 'MessageOnce', '');
 INSERT INTO settings(id, name, value) VALUES (11, 'RecentFolder_Statement', '.');
 INSERT INTO settings(id, name, value) VALUES (12, 'RecentFolder_Report', '.');
 INSERT INTO settings(id, name, value) VALUES (13, 'CleanDB', 0);
+INSERT INTO settings(id, name, value) VALUES (14, 'EuLidlClientSecret', 'TGlkbFBsdXNOYXRpdmVDbGllbnQ6c2VjcmV0');
+INSERT INTO settings(id, name, value) VALUES (15, 'EuLidlAccessToken', '');
+INSERT INTO settings(id, name, value) VALUES (16, 'EuLidlRefreshToken', '');
 
 -- Initialize available languages
 INSERT INTO languages (id, language) VALUES (1, 'en');
