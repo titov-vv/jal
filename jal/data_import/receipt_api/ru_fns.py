@@ -4,7 +4,7 @@ import json
 import requests
 import time
 from urllib import parse
-from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime
+from PySide6.QtCore import Signal, Slot, QUrl, QDateTime
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
@@ -242,7 +242,7 @@ class LoginFNS(QDialog):
         payload = '{' + f'"client_secret":"{client_secret}","inn":"{inn}","password":"{password}"' + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/lkfl/auth', data=payload)
         if response.status_code != 200:
-            logging.error(self.tr("FNS login failed: ") + f"{response}/{response.text}")
+            logging.error(self.tr("FNS login failed: ") + f"{response.status_code}/{response.text}")
             return
         logging.info(self.tr("FNS login successful: ") + f"{response.text}")
         json_content = json.loads(response.text)
@@ -256,7 +256,7 @@ class LoginFNS(QDialog):
     def login_esia(self):
         response = self.web_session.get('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/esia/auth/url')
         if response.status_code != 200:
-            logging.error(self.tr("Get ESIA URL failed: ") + f"{response}/{response.text}")
+            logging.error(self.tr("Get ESIA URL failed: ") + f"{response.status_code}/{response.text}")
             return
         json_content = json.loads(response.text)
         auth_url = json_content['url']
@@ -269,7 +269,7 @@ class LoginFNS(QDialog):
                   + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/esia/auth', data=payload)
         if response.status_code != 200:
-            logging.error(self.tr("ESIA login failed: ") + f"{response}/{response.text}")
+            logging.error(self.tr("ESIA login failed: ") + f"{response.status_code}/{response.text}")
             return
         logging.info(self.tr("ESIA login successful: ") + f"{response.text}")
         json_content = json.loads(response.text)
