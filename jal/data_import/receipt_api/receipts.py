@@ -1,14 +1,17 @@
 import re
 from PySide6.QtCore import QObject
+from PySide6.QtWidgets import QDialog
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.receipt_api.eu_lidl_plus import ReceiptEuLidlPlus
 from jal.data_import.receipt_api.pt_pingo_doce import ReceiptPtPingoDoce
+from jal.widgets.qr_scanner import ScanDialog, QRScanner
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Possible values that may be used by factory
 RU_FNS_API = 'RU_FNS'
 EU_LIDL_PLUS_API = 'EU_LIDL_PLUS'
-PT_PINGO_DOCE_API = 'EU_PINGO_DOCE'
+PT_PINGO_DOCE_API = 'PT_PINGO_DOCE'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -27,7 +30,13 @@ class ReceiptAPIFactory(QObject):
 
     # Selects required API class based on QR data pattern
     def get_api_for_qr(self, qr_text):
-        api = self._apis.get(self._detect_api_id_by_qr(qr_text))
+        api_type = self._detect_api_id_by_qr(qr_text)
+        if api_type == EU_LIDL_PLUS_API or api_type == PT_PINGO_DOCE_API:
+            scanner = ScanDialog(code_type=QRScanner.TYPE_ITF)
+            if scanner.exec() == QDialog.Accepted:
+                print(f"{scanner.data}")
+            assert False
+        api = self._apis.get(api_type)
         return api(qr_text)
 
     def _detect_api_id_by_qr(self, qr_text):

@@ -259,74 +259,6 @@
         </layout>
        </widget>
       </item>
-      <item>
-       <widget class="QGroupBox" name="CameraGroup">
-        <property name="title">
-         <string>Camera</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <property name="spacing">
-          <number>2</number>
-         </property>
-         <property name="leftMargin">
-          <number>2</number>
-         </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>2</number>
-         </property>
-         <property name="bottomMargin">
-          <number>2</number>
-         </property>
-         <item>
-          <widget class="QRScanner" name="ScannerQR" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QFrame" name="CameraBtnFrame">
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Plain</enum>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
-            <property name="spacing">
-             <number>2</number>
-            </property>
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QPushButton" name="StopCameraBtn">
-              <property name="text">
-               <string>Stop camera</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
@@ -509,12 +441,6 @@
    <class>PeerSelector</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QRScanner</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/qr_scanner.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -28,6 +28,7 @@ class ReceiptEuLidlPlus(ReceiptAPI):
         self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
         self.shop_id = parts['shop_id']
         self.register_id = parts['register_id']
+        # Lidl uses ITF barcode on their slips that contain all required data but pyzbar can't read it
         self.seq_id, result = QInputDialog.getText(None, self.tr("Input Lidl receipt additional data"),
                                                    self.tr("Sequence #:"))
         if not result:

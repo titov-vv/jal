@@ -1139,67 +1139,67 @@
 <context>
     <name>ImportSlipDialog</name>
     <message>
-        <location filename="../data_import/slips.py" line="162"/>
+        <location filename="../data_import/slips.py" line="163"/>
         <source>Select file with QR code</source>
         <translation>Выберите файл с QR-кодом</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="229"/>
+        <location filename="../data_import/slips.py" line="231"/>
         <source>Select file with slip JSON data</source>
         <translation>Выберите файл с JSON-данными чека</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="318"/>
+        <location filename="../data_import/slips.py" line="320"/>
         <source>Not possible to import slip: no account set for import</source>
         <translation>Невозможно добавить чек: не указан счет для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="324"/>
+        <location filename="../data_import/slips.py" line="326"/>
         <source>Not possible to import slip: some categories are not set</source>
         <translation>Невозможно добавить чек: категории указаны не для всех строк</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="321"/>
+        <location filename="../data_import/slips.py" line="323"/>
         <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
         <translation>Невозможно добавить чек: не указан контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="169"/>
+        <location filename="../data_import/slips.py" line="170"/>
         <source>No QR codes were found in file</source>
         <translation>QR-код в файле не обнаружен</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="245"/>
+        <location filename="../data_import/slips.py" line="247"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos;</source>
         <translation>JSON тэг &apos;receipt&apos; отсутствует внутри тэга &apos;document&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="248"/>
+        <location filename="../data_import/slips.py" line="250"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;document&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="258"/>
+        <location filename="../data_import/slips.py" line="260"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="284"/>
+        <location filename="../data_import/slips.py" line="286"/>
         <source>Unknown operation type </source>
         <translation>Неизвестный тип операции </translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="357"/>
+        <location filename="../data_import/slips.py" line="359"/>
         <source>Categories are not recognized: Tensorflow is not found</source>
         <translation>Категории не распознаны: Tensorlow не обнаружен</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="180"/>
+        <location filename="../data_import/slips.py" line="181"/>
         <source>No QR codes found in clipboard</source>
         <translation>QR код не обнаружен в буфере обмена</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="206"/>
+        <location filename="../data_import/slips.py" line="208"/>
         <source>QR: </source>
         <translation>QR: </translation>
     </message>
@@ -1237,37 +1237,37 @@
         <translation>ФД:</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="342"/>
+        <location filename="../ui/slip_import_dlg.ui" line="274"/>
         <source>Slip</source>
         <translation>Чек</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="377"/>
+        <location filename="../ui/slip_import_dlg.ui" line="309"/>
         <source> ➜ </source>
         <translation> ➜ </translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="387"/>
+        <location filename="../ui/slip_import_dlg.ui" line="319"/>
         <source>Peer:</source>
         <translation>Контрагент:</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="401"/>
+        <location filename="../ui/slip_import_dlg.ui" line="333"/>
         <source>Lines:</source>
         <translation>Строки:</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="475"/>
+        <location filename="../ui/slip_import_dlg.ui" line="407"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="485"/>
+        <location filename="../ui/slip_import_dlg.ui" line="417"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="492"/>
+        <location filename="../ui/slip_import_dlg.ui" line="424"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
@@ -1283,7 +1283,7 @@
     </message>
     <message>
         <location filename="../ui/slip_import_dlg.ui" line="170"/>
-        <location filename="../ui/slip_import_dlg.ui" line="360"/>
+        <location filename="../ui/slip_import_dlg.ui" line="292"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
@@ -1308,27 +1308,17 @@
         <translation>Данные чека</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="265"/>
-        <source>Camera</source>
-        <translation>Камера</translation>
-    </message>
-    <message>
         <location filename="../ui/slip_import_dlg.ui" line="156"/>
         <source>Get slip from internet</source>
         <translation>Получить чек с сайта ФНС</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="320"/>
-        <source>Stop camera</source>
-        <translation>Закрыть камеру</translation>
-    </message>
-    <message>
-        <location filename="../ui/slip_import_dlg.ui" line="370"/>
+        <location filename="../ui/slip_import_dlg.ui" line="302"/>
         <source>Date / Time:</source>
         <translation>Дата / Время:</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="411"/>
+        <location filename="../ui/slip_import_dlg.ui" line="343"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
@@ -1348,12 +1338,12 @@
         <translation>Возврат</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="434"/>
+        <location filename="../ui/slip_import_dlg.ui" line="366"/>
         <source>Auto-assign categories</source>
         <translation>Авто-назначение категорий</translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="441"/>
+        <location filename="../ui/slip_import_dlg.ui" line="373"/>
         <source>Set Tag for all lines</source>
         <translation>Установить тэг для всех</translation>
     </message>
@@ -1983,22 +1973,22 @@ do you want to save it?</source>
 <context>
     <name>LoginLidlPlus</name>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="150"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="151"/>
         <source>Login error</source>
         <translation>Ошибка логина</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="150"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="151"/>
         <source>No auth code in callback URI</source>
         <translation>Код аутентификации отсутствует в callback URI</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="165"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="166"/>
         <source>Lidl Plus login failed: </source>
         <translation>Lidl Plus логин не успешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="167"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="168"/>
         <source>Lidl Plus login successful: </source>
         <translation>Lidl Plus логин выполнен успешно: </translation>
     </message>
@@ -2321,22 +2311,22 @@ Application will be terminated now.</source>
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/slips.py" line="54"/>
+        <location filename="../data_import/slips.py" line="55"/>
         <source>Product name</source>
         <translation>Название продукта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="60"/>
+        <location filename="../data_import/slips.py" line="61"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="56"/>
+        <location filename="../data_import/slips.py" line="57"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="58"/>
+        <location filename="../data_import/slips.py" line="59"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
@@ -2694,17 +2684,17 @@ Application will be terminated now.</source>
 <context>
     <name>QRScanner</name>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="49"/>
+        <location filename="../widgets/qr_scanner.py" line="53"/>
         <source>There are no cameras available</source>
         <translation>Нет доступных камер</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="52"/>
+        <location filename="../widgets/qr_scanner.py" line="56"/>
         <source>Package pyzbar not found for QR recognition.</source>
         <translation>Не обнаружен пакет pyzbar, необходимый для распознавания QR кодов.</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="123"/>
+        <location filename="../widgets/qr_scanner.py" line="127"/>
         <source>Camera error: </source>
         <translation>Ошибка камеры: </translation>
     </message>
@@ -2829,12 +2819,12 @@ Application will be terminated now.</source>
 <context>
     <name>ReceiptAPIFactory</name>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="44"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="53"/>
         <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
         <translation>Португальский QR распознан, но магазин не поддерживается, NIF: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="45"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="54"/>
         <source>No API found for QR data: </source>
         <translation>На найдено API для данного QR-кода: </translation>
     </message>
@@ -2847,57 +2837,57 @@ Application will be terminated now.</source>
         <translation>Lidl QR отсканирован, но не распознан: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="31"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="32"/>
         <source>Input Lidl receipt additional data</source>
         <translation>Введите дополнительные данные для чека Lidl</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="32"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="33"/>
         <source>Sequence #:</source>
         <translation>Порядковый номер:</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="34"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="35"/>
         <source>Can&apos;t get Lidl receipt without sequence number</source>
         <translation>Невозможно получить чек Lidl без порядкового номера</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="44"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="45"/>
         <source>No Lidl Plus access token available</source>
         <translation>Отсутствует токен доступе Lidl Plus</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="51"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="52"/>
         <source>Unauthorized with reason: </source>
         <translation>Неавторизован, причина: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="54"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="55"/>
         <source>Lidl Plus API failed with: </source>
         <translation>Запрос к Lidl Plus API завершился неуспешно: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="58"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="59"/>
         <source>Refreshing Lidl Plus token...</source>
         <translation>Обновление токена Lidl Plus...</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="66"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="67"/>
         <source>Lidl Plus token was refreshed: </source>
         <translation>Токен Lidl Plus был обновлён: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="76"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="77"/>
         <source>Can&apos;t refresh Lidl Plus token, response: </source>
         <translation>Невозможно обновить токет Lidl Plus, ответ: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="91"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="92"/>
         <source>Receipt was loaded: </source>
         <translation>Чек загружен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="95"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="96"/>
         <source>Receipt load failed: </source>
         <translation>Ошибка загрузки чека: </translation>
     </message>

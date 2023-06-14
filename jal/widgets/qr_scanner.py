@@ -1,7 +1,8 @@
 import logging
-from PySide6.QtCore import Qt, Signal, QRectF, QTimer
+from PySide6.QtCore import Qt, Slot, Signal, QRectF, QTimer, QMetaObject
 from PySide6.QtGui import QImage, QPen, QBrush
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView
+from PySide6.QtWidgets import QDialog, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QGraphicsScene, QGraphicsView, \
+    QLabel, QSizePolicy, QPushButton
 from jal.widgets.helpers import dependency_present, decodeQR
 try:
     from pyzbar import pyzbar
@@ -13,18 +14,21 @@ try:
 except ImportError:
     pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 class QRScanner(QWidget):
-    QR_SIZE = 0.75      # Size of rectangle for QR capture (used to display only currently)
+    TYPE_QR = 1
+    TYPE_ITF = 2
+    QR_SIZE = 0.75      # Size of rectangle for QR capture (used to display only currently) or ITF width
+    ITF_SIZE = 0.2      # Size of ITF height area for capture
     QR_SCAN_RATE = 100  # Delay in ms between QR captures
     decodedQR = Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, code_type=TYPE_QR):
         super().__init__(parent=parent)
         self.processing = False
         self.started = False
         self.rectangle = None
+        self.code_type = pyzbar.ZBarSymbol.I25 if code_type == self.TYPE_ITF else pyzbar.ZBarSymbol.QRCODE
 
         self.setMinimumHeight(405)
         self.layout = QVBoxLayout(self)
@@ -53,9 +57,9 @@ class QRScanner(QWidget):
             return ''
 
         self.processing = True   # disable any capture while camera is starting
-        self.camera = QCamera(QMediaDevices.defaultVideoInput())
+        self.camera = QCamera(QMediaDevices.defaultVideoInput(), parent=self)
         self.captureSession = QMediaCaptureSession(self)
-        self.imageCapture = QImageCapture(self.camera)
+        self.imageCapture = QImageCapture(self)
         self.captureSession.setCamera(self.camera)
         self.captureSession.setVideoOutput(self.viewfinder)
         self.captureSession.setImageCapture(self.imageCapture)
@@ -91,15 +95,18 @@ class QRScanner(QWidget):
         self.resizeEvent(None)
 
     # Take QImage or QRect (object with 'width' and 'height' properties and calculate position and size
-    # of the square with side of self.QR_SIZE from minimum of height or width
-    def calculate_center_square(self, img_rect) -> QRectF:
-        a = self.QR_SIZE * min(img_rect.height(), img_rect.width())   # Size of square side
-        x = (img_rect.width() - a) / 2         # Position of the square inside rectangle
-        y = (img_rect.height() - a) / 2
+    # of the square with side of self.QR_SIZE from minimum of height or width for QR code type
+    # or the rectangle of QR_SIZE x ITF_SIZE for ITF code type
+    def calculate_scan_area(self, img_rect) -> QRectF:
+        min_side = min(img_rect.height(), img_rect.width())
+        h = self.QR_SIZE * min_side    # Square side or code width
+        w = self.ITF_SIZE * min_side if self.code_type == pyzbar.ZBarSymbol.I25 else h  # Code height
+        x = (img_rect.width() - w) / 2         # Position of the square inside rectangle
+        y = (img_rect.height() - h) / 2
         if type(img_rect) != QImage:   # if we have a bounding rectangle, not an image
             x += img_rect.left()       # then we need to shift our square inside this rectangle
             y += img_rect.top()
-        return QRectF(x, y, a, a)
+        return QRectF(x, y, w, h)
 
     def resizeEvent(self, event):
         bounds = self.scene.itemsBoundingRect()
@@ -111,7 +118,7 @@ class QRScanner(QWidget):
         pen = QPen(Qt.green)
         pen.setWidth(0)
         pen.setStyle(Qt.DashLine)
-        self.rectangle = self.scene.addRect(self.calculate_center_square(bounds), pen)
+        self.rectangle = self.scene.addRect(self.calculate_scan_area(bounds), pen)
         self.view.centerOn(0, 0)
         self.view.raise_()
 
@@ -136,7 +143,67 @@ class QRScanner(QWidget):
         self.processing = False
 
     def decodeQR(self, qr_image: QImage):
-        cropped = qr_image.copy(self.calculate_center_square(qr_image).toRect())
-        qr_text = decodeQR(cropped)
+        cropped = qr_image.copy(self.calculate_scan_area(qr_image).toRect())
+        qr_text = decodeQR(cropped, code_type=self.code_type)
         if qr_text:
             self.decodedQR.emit(qr_text)
+
+
+class ScanDialog(QDialog):
+    def __init__(self, parent=None, code_type=QRScanner.TYPE_QR):
+        super().__init__(parent)
+        self.data = ''
+        self.running = False
+        self.resize(700, 450)
+        self.verticalLayout = QVBoxLayout(self)
+        self.verticalLayout.setSpacing(2)
+        self.verticalLayout.setContentsMargins(2, 2, 2, 2)
+        self.HintLabel = QLabel(self)
+        self.HintLabel.setAlignment(Qt.AlignCenter)
+        self.verticalLayout.addWidget(self.HintLabel)
+
+        self.BarcodeScanner = QRScanner(self, code_type)
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.BarcodeScanner.sizePolicy().hasHeightForWidth())
+        self.BarcodeScanner.setSizePolicy(sizePolicy)
+        self.verticalLayout.addWidget(self.BarcodeScanner)
+        self.ButtonFrame = QFrame(self)
+        self.horizontalLayout = QHBoxLayout(self.ButtonFrame)
+        self.horizontalLayout.setSpacing(2)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.CloseButton = QPushButton(self.ButtonFrame)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.CloseButton.sizePolicy().hasHeightForWidth())
+        self.CloseButton.setSizePolicy(sizePolicy1)
+        self.horizontalLayout.addWidget(self.CloseButton)
+        self.verticalLayout.addWidget(self.ButtonFrame)
+        self.CloseButton.clicked.connect(self.close)
+
+        self.BarcodeScanner.decodedQR.connect(self.barcode_scanned)
+
+    @Slot()
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self.running:
+            return
+        self.running = True
+        # Call slot via queued connection, so it's called from the UI thread after the window has been shown
+        QMetaObject().invokeMethod(self, "start_scan", Qt.ConnectionType.QueuedConnection)
+
+    @Slot()
+    def closeEvent(self, event):
+        self.BarcodeScanner.stopScan()
+
+    @Slot()
+    def start_scan(self):
+        self.BarcodeScanner.startScan()
+
+    @Slot()
+    def barcode_scanned(self, decoded_data):
+        self.BarcodeScanner.stopScan()
+        self.data = decoded_data
+        self.accept()

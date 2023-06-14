@@ -21,7 +21,6 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDateTimeEdit, QDialog,
     QSizePolicy, QSpacerItem, QTableView, QVBoxLayout,
     QWidget)
 
-from jal.widgets.qr_scanner import QRScanner
 from jal.widgets.reference_selector import (AccountSelector, PeerSelector)
 
 class Ui_ImportSlipDlg(object):
@@ -175,46 +174,14 @@ class Ui_ImportSlipDlg(object):
 
         self.horizontalLayout_3.addWidget(self.SlipDataGroup)
 
-        self.CameraGroup = QGroupBox(self.InputFrame)
-        self.CameraGroup.setObjectName(u"CameraGroup")
-        self.verticalLayout_2 = QVBoxLayout(self.CameraGroup)
-        self.verticalLayout_2.setSpacing(2)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout_2.setContentsMargins(2, 2, 2, 2)
-        self.ScannerQR = QRScanner(self.CameraGroup)
-        self.ScannerQR.setObjectName(u"ScannerQR")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.ScannerQR.sizePolicy().hasHeightForWidth())
-        self.ScannerQR.setSizePolicy(sizePolicy2)
-
-        self.verticalLayout_2.addWidget(self.ScannerQR)
-
-        self.CameraBtnFrame = QFrame(self.CameraGroup)
-        self.CameraBtnFrame.setObjectName(u"CameraBtnFrame")
-        self.CameraBtnFrame.setFrameShape(QFrame.NoFrame)
-        self.CameraBtnFrame.setFrameShadow(QFrame.Plain)
-        self.horizontalLayout_5 = QHBoxLayout(self.CameraBtnFrame)
-        self.horizontalLayout_5.setSpacing(2)
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.StopCameraBtn = QPushButton(self.CameraBtnFrame)
-        self.StopCameraBtn.setObjectName(u"StopCameraBtn")
-
-        self.horizontalLayout_5.addWidget(self.StopCameraBtn)
-
-
-        self.verticalLayout_2.addWidget(self.CameraBtnFrame)
-
-
-        self.horizontalLayout_3.addWidget(self.CameraGroup)
-
 
         self.verticalLayout.addWidget(self.InputFrame)
 
         self.SlipGroup = QGroupBox(ImportSlipDlg)
         self.SlipGroup.setObjectName(u"SlipGroup")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.SlipGroup.sizePolicy().hasHeightForWidth())
         self.SlipGroup.setSizePolicy(sizePolicy2)
         self.gridLayout = QGridLayout(self.SlipGroup)
@@ -343,8 +310,6 @@ class Ui_ImportSlipDlg(object):
         self.SlipType.setItemText(0, QCoreApplication.translate("ImportSlipDlg", u"Purchase", None))
         self.SlipType.setItemText(1, QCoreApplication.translate("ImportSlipDlg", u"Return", None))
 
-        self.CameraGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Camera", None))
-        self.StopCameraBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Stop camera", None))
         self.SlipGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Slip", None))
         self.SlipDateTime.setDisplayFormat(QCoreApplication.translate("ImportSlipDlg", u"dd/MM/yyyy hh:mm:ss", None))
         self.DateTimeLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Date / Time:", None))

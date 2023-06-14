@@ -10,6 +10,7 @@ from jal.widgets.helpers import dependency_present, decodeQR
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.operations import LedgerTransaction
+from jal.widgets.qr_scanner import ScanDialog
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
 from jal.data_import.category_recognizer import recognize_categories
 from jal.data_import.receipt_api.receipts import ReceiptAPIFactory
@@ -120,8 +121,6 @@ class ImportSlipDialog(QDialog):
         self.model = None
         self.delegate = []
 
-        self.ui.CameraGroup.setVisible(False)
-
         self.QR_data = ''
         self.slip_json = None
         self.slip_lines = None
@@ -132,8 +131,6 @@ class ImportSlipDialog(QDialog):
         self.ui.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
         self.ui.GetQRfromClipboardBtn.clicked.connect(self.readClipboardQR)
         self.ui.GetQRfromCameraBtn.clicked.connect(self.readCameraQR)
-        self.ui.StopCameraBtn.clicked.connect(self.closeCamera)
-        self.ui.ScannerQR.decodedQR.connect(self.onCameraQR)
         self.ui.GetSlipBtn.clicked.connect(self.downloadSlipJSON)
         self.ui.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
         self.ui.AddOperationBtn.clicked.connect(self.addOperation)
@@ -141,10 +138,6 @@ class ImportSlipDialog(QDialog):
         self.ui.AssignCategoryBtn.clicked.connect(self.recognizeCategories)
 
         self.ui.AssignCategoryBtn.setEnabled(self.tensor_flow_present)
-
-    def closeEvent(self, arg__1):
-        self.ui.ScannerQR.stopScan()
-        self.accept()
 
     def initUi(self):
         self.ui.SlipAmount.setText('')
@@ -182,21 +175,10 @@ class ImportSlipDialog(QDialog):
     @Slot()
     def readCameraQR(self):
         self.initUi()
-        self.ui.CameraGroup.setVisible(True)
-        self.ui.SlipDataGroup.setVisible(False)
-        self.ui.ScannerQR.startScan()
-
-    @Slot()
-    def closeCamera(self):
-        self.ui.ScannerQR.stopScan()
-        self.ui.CameraGroup.setVisible(False)
-        self.ui.SlipDataGroup.setVisible(True)
-
-    @Slot()
-    def onCameraQR(self, decoded_qr):
-        self.QR_data = decoded_qr
-        self.closeCamera()
-        self.parseQRdata()
+        scanner = ScanDialog(self)
+        if scanner.exec() == QDialog.Accepted:
+            self.QR_data = scanner.data
+            self.parseQRdata()
 
     #-----------------------------------------------------------------------------------------------
     # Check if text in self.QR_data matches with self.QR_pattern
