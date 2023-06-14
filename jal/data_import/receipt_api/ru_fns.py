@@ -84,7 +84,7 @@ class ReceiptRuFNS(ReceiptAPI):
             settings.setValue('RuTaxRefreshToken', new_refresh_token)
             return True
         else:
-            logging.error(self.tr("Can't refresh FNS session, response: ") + f"{response}/{response.text}")
+            logging.error(self.tr("Can't refresh FNS session, response: ") + f"{response.status_code}/{response.text}")
             JalSettings().setValue('RuTaxSessionId', '')
             self.session_id = ''
             return False
@@ -100,7 +100,7 @@ class ReceiptRuFNS(ReceiptAPI):
         for i in range(self.MAX_ATTEMPTS):
             response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/ticket', data=payload)
             if response.status_code != 200:
-                logging.error(self.tr("Get ticket id failed: ") + f"{response}/{response.text} for {payload}")
+                logging.error(self.tr("Get ticket id failed: ") + f"{response.status_code}/{response.text} for {payload}")
                 return
             logging.info(self.tr("Slip found: " + response.text))
             json_content = json.loads(response.text)

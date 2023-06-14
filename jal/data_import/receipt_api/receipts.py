@@ -32,7 +32,7 @@ class ReceiptAPIFactory(QObject):
 
     def _detect_api_id_by_qr(self, qr_text):
         ru_fns_keys = ["i=", "n=", "s=", "t=", "fn=", "fp="]
-        pt_at_pattern = r"A:(?P<NIF>.{1,9})\*.*B:.{1,30}\*.*C:PT\*D:FS\*E:N\*F:\d{8}\*G:.{1,30}\*H:.{1,70}\*I1:PT\*.*"
+        pt_at_pattern = r"A:(?P<NIF>.{1,9})\*B:.{1,30}\*C:PT\*D:FS\*E:N\*F:\d{8}\*G:.{1,30}\*H:.{1,70}\*I1:PT\*.*"
         if all([x in qr_text for x in ru_fns_keys]):
             return RU_FNS_API
         parts = re.match(pt_at_pattern, qr_text)
