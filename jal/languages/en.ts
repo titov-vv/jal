@@ -1139,67 +1139,72 @@
 <context>
     <name>ImportSlipDialog</name>
     <message>
-        <location filename="../data_import/slips.py" line="163"/>
+        <location filename="../data_import/slips.py" line="155"/>
         <source>Select file with QR code</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="170"/>
+        <location filename="../data_import/slips.py" line="162"/>
         <source>No QR codes were found in file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="231"/>
+        <location filename="../data_import/slips.py" line="178"/>
+        <source>Please scan main QR code from the receipt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/slips.py" line="211"/>
         <source>Select file with slip JSON data</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="320"/>
+        <location filename="../data_import/slips.py" line="300"/>
         <source>Not possible to import slip: no account set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="323"/>
+        <location filename="../data_import/slips.py" line="303"/>
         <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="326"/>
+        <location filename="../data_import/slips.py" line="306"/>
         <source>Not possible to import slip: some categories are not set</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="359"/>
+        <location filename="../data_import/slips.py" line="339"/>
         <source>Categories are not recognized: Tensorflow is not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="247"/>
+        <location filename="../data_import/slips.py" line="227"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="250"/>
+        <location filename="../data_import/slips.py" line="230"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="260"/>
+        <location filename="../data_import/slips.py" line="240"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="286"/>
+        <location filename="../data_import/slips.py" line="266"/>
         <source>Unknown operation type </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="181"/>
+        <location filename="../data_import/slips.py" line="173"/>
         <source>No QR codes found in clipboard</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="208"/>
+        <location filename="../data_import/slips.py" line="188"/>
         <source>QR: </source>
         <translation></translation>
     </message>
@@ -1970,22 +1975,22 @@ do you want to save it?</source>
 <context>
     <name>LoginLidlPlus</name>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="151"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="153"/>
         <source>Login error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="151"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="153"/>
         <source>No auth code in callback URI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="166"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="168"/>
         <source>Lidl Plus login failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="168"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="170"/>
         <source>Lidl Plus login successful: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2005,6 +2010,34 @@ do you want to save it?</source>
     <message>
         <location filename="../ui/login_lidl_plus_dlg.ui" line="84"/>
         <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LoginPingoDoceDialog</name>
+    <message>
+        <location filename="../ui/login_pingo_doce_dlg.ui" line="14"/>
+        <source>Authorization Pingo Doce</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/login_pingo_doce_dlg.ui" line="53"/>
+        <source>Phone number:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/login_pingo_doce_dlg.ui" line="63"/>
+        <source>+351---</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/login_pingo_doce_dlg.ui" line="91"/>
+        <source>Password:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/login_pingo_doce_dlg.ui" line="135"/>
+        <source>Login</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2688,7 +2721,7 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="127"/>
+        <location filename="../widgets/qr_scanner.py" line="130"/>
         <source>Camera error: </source>
         <translation></translation>
     </message>
@@ -2813,12 +2846,17 @@ Application will be terminated now.</source>
 <context>
     <name>ReceiptAPIFactory</name>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="53"/>
-        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
+        <location filename="../data_import/receipt_api/receipts.py" line="37"/>
+        <source>Please scan flat barcode from the receipt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="54"/>
+        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/receipts.py" line="55"/>
         <source>No API found for QR data: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2831,58 +2869,96 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="32"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="34"/>
         <source>Input Lidl receipt additional data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="33"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="35"/>
         <source>Sequence #:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="35"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="37"/>
         <source>Can&apos;t get Lidl receipt without sequence number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="45"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="47"/>
         <source>No Lidl Plus access token available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="52"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="54"/>
         <source>Unauthorized with reason: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="55"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="57"/>
         <source>Lidl Plus API failed with: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="59"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="61"/>
         <source>Refreshing Lidl Plus token...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="67"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="69"/>
         <source>Lidl Plus token was refreshed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="77"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="79"/>
         <source>Can&apos;t refresh Lidl Plus token, response: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="92"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="94"/>
         <source>Receipt was loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="96"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="98"/>
         <source>Receipt load failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ReceiptPtPingoDoce</name>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="21"/>
+        <source>Pingo Doce QR available but pattern isn&apos;t recognized: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="31"/>
+        <source>Input Pingo Doce receipt additional data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="32"/>
+        <source>Sequence #:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="34"/>
+        <source>Can&apos;t get Pingo Doce receipt without sequence number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="44"/>
+        <source>No Pingo Doce access token available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="51"/>
+        <source>Unauthorized with reason: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="54"/>
+        <source>Lidl Plus API failed with: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3162,6 +3238,19 @@ Application will be terminated now.</source>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="238"/>
         <source>Share, %</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ScanDialog</name>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="158"/>
+        <source>Barcode scanner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="176"/>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

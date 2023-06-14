@@ -1,8 +1,167 @@
+import re
+import json
+import logging
+import requests
+from PySide6.QtCore import QDateTime, QTime
+from PySide6.QtWidgets import QDialog, QInputDialog
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
+from jal.db.settings import JalSettings
+from jal.ui.ui_login_pingo_doce_dlg import Ui_LoginPingoDoceDialog
 
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ReceiptPtPingoDoce(ReceiptAPI):
-    receipt_pattern = r"A:.*\*B:.*\*C:PT\*D:FS\*E:N\*F:(?P<date>\d{8})\*G:FS (?P<shop_id>\d{4})\d(?P<register_id>\d{2})..\/.*\*H:.{1,70}\*I1:PT\*.*"
+    receipt_pattern = r"A:.*\*B:.*\*C:PT\*D:FS\*E:N\*F:(?P<date>\d{8})\*G:FS (?P<shop_id>\d{4})(?P<register_id>\d{3}).*\/.*\*H:.{1,70}\*I1:PT\*.*\*O:(?P<amount>\d{1,}\.\d\d)\*.*"
     def __init__(self, qr_text='', aux_data=''):
         super().__init__()
+        self.access_token = ''
+        self.user_profile = {}
+        self.receipts = []
+        self.slip_json = {}
+        parts = re.match(self.receipt_pattern, qr_text)
+        if parts is None:
+            raise ValueError(self.tr("Pingo Doce QR available but pattern isn't recognized: " + qr_text))
+        parts = parts.groupdict()
+        self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
+        self.shop_id = parts['shop_id']
+        self.register_id = parts['register_id']
+        self.total_amount = parts['amount']
+        if len(aux_data) == 30:  # Get receipt sequence number and time from aux data or from the user
+            self.seq_id = aux_data[0:6]
+            self.date_time.setTime(QTime.fromString(aux_data[14:18], "HHmm"))
+        else:
+            self.seq_id, result = QInputDialog.getText(None, self.tr("Input Pingo Doce receipt additional data"),
+                                                       self.tr("Sequence #:"))
+            if not result:
+                raise ValueError(self.tr("Can't get Pingo Doce receipt without sequence number"))
+        self.seq_id = int(self.seq_id.lstrip('0'))  # Get rid of any leading zeros and convert to int
+        self.web_session = requests.Session()
+        self.web_session.headers['User-Agent'] = "okhttp/4.10.0"
+        self.web_session.headers['Content-Type'] = 'application/json; charset=UTF-8'
+
+    def activate_session(self) -> bool:
+        self.access_token = JalSettings().getValue('PtPingoDoceAccessToken', default='')
+        self.user_profile = json.loads(JalSettings().getValue('PtPingoDoceUserProfile', default='{}'))
+        if not self.access_token:
+            self.__do_login()
+        if not self.access_token or not self.user_profile:
+            logging.warning(self.tr("No Pingo Doce access token available"))
+            return False
+        self.web_session.headers["Authorization"] = f"Bearer {self.access_token}"
+        self.web_session.headers["pdapp-storeId"] = "-1"
+        self.web_session.headers["pdapp-cardNumber"] = f"PDOM|{self.user_profile['ompdCard']}|{self.user_profile['householdId']}"
+        self.web_session.headers["pdapp-lcid"] = self.user_profile['loyaltyId']
+        self.web_session.headers["pdapp-hid"] = self.user_profile['householdId']
+        payload = '{"pmCard":"' + self.user_profile['ompdCard'] + '"}'
+        response = self.web_session.post("https://app-proxy.pingodoce.pt/api/v2/user/cardassociations/savings", data=payload)
+        if response.status_code == 401:
+            logging.info(self.tr("Unauthorized with reason: ") + f"{response.text}")
+            return self.__refresh_token()
+        elif response.status_code != 200:
+            logging.error(self.tr("Pingo Doce API failed with: ") + f"{response.status_code}/{response.text}")
+            return False
+        response = self.web_session.get("https://app-proxy.pingodoce.pt/api/v2/user/transactionsHistory/chart?filter=FILTER_BY_30_DAYS")
+        if response.status_code != 200:
+            logging.error(self.tr("Pingo Doce API filter failed with: ") + f"{response.status_code}/{response.text}")
+            return False
+        page = 1
+        while page>0:
+            logging.info(f"Loading {page} page of Pingo Doce receipts")
+            response = self.web_session.get(f"https://app-proxy.pingodoce.pt/api/v2/user/transactionsHistory?pageNumber={page}&pageSize=20")
+            if response.status_code != 200:
+                logging.error(self.tr("Pingo Doce API history failed: ") + f"{response.status_code}/{response.text}")
+                return False
+            receipts = json.loads(response.text)
+            if len(receipts) < 20:
+                page = -1   # stop loading
+            for receipt in receipts:
+                self.receipts.append({"id": receipt['transactionId'], "shop_id": receipt['storeId'], "date": receipt['transactionDate'], "amount": receipt['total']})
+        logging.info(f"Pingo Doce list of receipts loaded: {self.receipts}")
+        return True
+
+    def __refresh_token(self) -> bool:
+        logging.info(self.tr("Refreshing Pingo Doce token..."))
+        self.access_token = JalSettings().getValue('PtPingoDoceAccessToken', default='')
+        refresh_token = JalSettings().getValue('PtPingoDoceRefreshToken', default='')
+        self.web_session.headers["Authorization"] = f"Basic {self.access_token}"
+        payload = {"client_id": "pdappclient", "grant_type": "refresh_token", "refresh_token": refresh_token}
+        response = self.web_session.post("https://app-proxy.pingodoce.pt/connect/token", data=payload)
+        if response.status_code == 200:
+            logging.info(self.tr("Pingo Doce token was refreshed: ") + f"{response.text}")
+            json_content = json.loads(response.text)
+            assert json_content['token_type'] == "Bearer"
+            self.access_token = json_content['access_token']
+            new_refresh_token = json_content['refresh_token']
+            settings = JalSettings()
+            settings.setValue('PtPingoDoceAccessToken', self.access_token)
+            settings.setValue('PtPingoDoceRefreshToken', new_refresh_token)
+        else:
+            logging.error(self.tr("Can't refresh Lidl Plus token, response: ") + f"{response.status_code}/{response.text}")
+            JalSettings().setValue('PtPingoDoceAccessToken', '')
+            self.access_token = ''
+            return False
+        response = self.web_session.get("https://app-proxy.pingodoce.pt/api/v2/user/userprofiles")
+        if response.status_code != 200:
+            logging.error(self.tr("Can't get Pingo Doce profile, response: ") + f"{response.status_code}/{response.text}")
+        self.user_profile = json.loads(response.text)
+        settings.setValue('PtPingoDoceUserProfile', json.dumps(self.user_profile))
+        return True
+
+    def __do_login(self):
+        login_dialog = LoginPingoDoce()
+        if login_dialog.exec() == QDialog.Accepted:
+            self.access_token = JalSettings().getValue('PtPingoDoceAccessToken')
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+class LoginPingoDoce(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_LoginPingoDoceDialog()
+        self.ui.setupUi(self)
+        self.ui.LoginBtn.pressed.connect(self.do_login)
+        self.phone_number = ''
+        self.web_session = requests.Session()
+        self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'
+
+    def do_login(self):
+        self.phone_number = self.ui.PhoneNumberEdit.text().replace('-', '')[4:]  # Take phone number without country code
+        self.web_session.headers['Content-Type'] = 'application/json; charset=UTF-8'
+        payload = '{' + f'"phoneNumber":"{self.phone_number}"' + '}'
+        response = self.web_session.post("https://app-proxy.pingodoce.pt/api/v2/identity/sms/verifyNumber", data=payload)
+        if response.status_code != 200:
+            logging.error(self.tr("Pingo Doce phone verification failed: ") + f"{response.status_code}/{response.text}")
+            return
+        data = json.loads(response.text)
+        terms = {'version': '', 'type': '', 'privacyUrl': '', 'termsOfUseUrl': '', 'title': ''}
+        if data['status'] == 220:
+            if data['message'] != "Utilizador deve aceitar a última versão dos consentimentos":
+                logging.warning(f"Unusual message received: {data['message']}")
+            terms.update(data['consents'])
+        elif data['status'] == 200:
+            pass
+        else:
+            logging.error(self.tr("Pingo Doce unknown login status: ") + f"{data['status']} / {data['message']}")
+            return
+        login_data = '{"phoneNumber":"' + self.phone_number + '","password":"' + self.ui.PasswordEdit.text() \
+                     + '","consents":' + json.dumps(terms) + '}'
+        response = self.web_session.post("https://app-proxy.pingodoce.pt/api/v2/identity/onboarding/login",
+                                         data=login_data)
+        if response.status_code != 200:
+            logging.error(self.tr("Pingo Doce login failed: ") + f"{response.status_code}/{response.text}")
+            return
+        logging.info(self.tr("Pingo Doce login successful: ") + f"{response.text}")
+        json_content = json.loads(response.text)
+        try:
+            assert json_content['token']['token_type'] == "Bearer"
+            access_token = json_content['token']['access_token']
+            refresh_token = json_content['token']['refresh_token']
+            user_profile = json_content['profile']
+            settings = JalSettings()
+            settings.setValue('PtPingoDoceAccessToken', access_token)
+            settings.setValue('PtPingoDoceRefreshToken', refresh_token)
+            settings.setValue('PtPingoDoceUserProfile', json.dumps(user_profile))
+            self.accept()
+        except KeyError as e:
+            logging.error(self.tr("Pingo Doce login response failed with: ") + e)
+            return

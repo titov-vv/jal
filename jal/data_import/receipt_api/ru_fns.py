@@ -223,7 +223,7 @@ class LoginFNS(QDialog):
         payload = '{' + f'"client_secret":"{client_secret}","code":"{code}","phone":"{self.phone_number}"' + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/auth/phone/verify', data=payload)
         if response.status_code != 200:
-            logging.error(self.tr("FNS login failed: ") + f"{response}/{response.text}")
+            logging.error(self.tr("FNS login failed: ") + f"{response.status_code}/{response.text}")
             return
         logging.info(self.tr("FNS login successful: ") + f"{response.text}")
         json_content = json.loads(response.text)
