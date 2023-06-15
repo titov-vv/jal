@@ -4,7 +4,7 @@ import json
 import requests
 import time
 from urllib import parse
-from PySide6.QtCore import Signal, Slot, QUrl, QDateTime
+from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
@@ -115,20 +115,20 @@ class ReceiptRuFNS(ReceiptAPI):
                 logging.error(self.tr("Receipt load failed: ") + f"{response}/{response.text}")
                 self.slip_load_failed.emit()
             logging.info(self.tr("Receipt was loaded: " + response.text))
-            self.slip_json = json.loads(response.text)
+            self.slip_json = self.__slip_data(json.loads(response.text))
             self.slip_load_ok.emit()
         else:
             self.slip_load_failed.emit()
 
     # Slip data might be in a root element or in ticket/document/receipt
     # This method returns actual slip as result
-    def __slip_data(self) -> dict:
-        if 'ticket' in self.slip_json:
-            sub = self.slip_json['ticket']
+    def __slip_data(self, json_data) -> dict:
+        if 'ticket' in json_data:
+            sub = json_data['ticket']
             if 'document' in sub:
                 sub = sub['document']
                 if 'receipt' in sub:
-                    slip = sub['receipt']
+                    receipt = sub['receipt']
                 else:
                     logging.error(self.tr("Can't find 'receipt' tag in json 'document' from FNS"))
                     return {}
@@ -136,18 +136,17 @@ class ReceiptRuFNS(ReceiptAPI):
                 logging.error(self.tr("Can't find 'document' tag in json 'ticket' from FNS"))
                 return {}
         else:
-            slip = self.slip_json
-        return slip
+            receipt = json_data
+        return receipt
 
     # ----------------------------------------------------------------------------------------------------------------
     # Gets company name by Russian INN
     # Returns short or long name if fount and initial INN otherwise
     def shop_name(self) -> str:
-        slip_data = self.__slip_data()
-        if 'user' in slip_data:
-            return slip_data['user']
-        if 'userInn' in slip_data:
-            inn = slip_data['userInn']
+        if 'user' in self.slip_json:
+            return self.slip_json['user']
+        if 'userInn' in self.slip_json:
+            inn = self.slip_json['userInn']
         else:
             return ''
         if len(inn) != 10 and len(inn) != 12:
@@ -171,6 +170,32 @@ class ReceiptRuFNS(ReceiptAPI):
         except:
             logging.warning(self.tr("Can't get company name from: ") + result)
             return inn
+
+    def datetime(self) -> QDateTime:
+        if 'dateTime' in self.slip_json:
+            receipt_datetime = QDateTime.fromSecsSinceEpoch(int(self.slip_json['dateTime']))
+        else:
+            receipt_datetime = QDateTime()
+        receipt_datetime.setTimeSpec(Qt.UTC)
+        return receipt_datetime
+
+    def slip_lines(self) -> list:
+        PURCHASE = 1
+        RETURN = 2
+
+        if 'operationType' in self.slip_json:
+            operation = int(self.slip_json['operationType'])
+        else:
+            logging.error(self.tr("Can't find 'operationType' tag in json 'ticket'"))
+            return []
+        lines = self.slip_json['items']
+        for line in lines:
+            line['unit_price'] = line.pop('price') / 100
+            sign = -1 if operation == PURCHASE else +1
+            line['amount'] = sign * line.pop('sum') / 100
+            if line['quantity'] != 1:
+                line['name'] = f"{line['name']} ({line['quantity']:g} x {line['unit_price']:.2f})"
+        return lines
 
 
 #-----------------------------------------------------------------------------------------------------------------------

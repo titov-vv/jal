@@ -1,7 +1,7 @@
 import json
 import logging
 import pandas as pd
-from PySide6.QtCore import Qt, Slot, QDateTime, QAbstractTableModel
+from PySide6.QtCore import Qt, Slot, QAbstractTableModel
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView, QStyledItemDelegate
 from jal.widgets.reference_selector import CategorySelector, TagSelector
@@ -202,7 +202,6 @@ class ImportSlipDialog(QDialog):
         self.receipt_api.query_slip()
 
     def slip_loaded(self):
-        self.slip_json = self.receipt_api.slip_json
         self.parseJSON()
 
     @Slot()
@@ -216,64 +215,18 @@ class ImportSlipDialog(QDialog):
             self.parseJSON()
 
     def parseJSON(self):
-        # Slip data might be in a root element or in ticket/document/receipt
-        if 'ticket' in self.slip_json:
-            sub = self.slip_json['ticket']
-            if 'document' in sub:
-                sub = sub['document']
-                if 'receipt' in sub:
-                    slip = sub['receipt']
-                else:
-                    logging.error(self.tr("Can't find 'receipt' tag in json 'document'"))
-                    return
-            else:
-                logging.error(self.tr("Can't find 'document' tag in json 'ticket'"))
-                return
-        else:
-            slip = self.slip_json
-
-        # Get operation type
-        operation = 0
-        if 'operationType' in slip:
-            operation = int(slip['operationType'])
-        else:
-            logging.error(self.tr("Can't find 'operationType' tag in json 'ticket'"))
-            return
+        self.slip_lines = pd.DataFrame(self.receipt_api.slip_lines())
         self.ui.SlipShopName.setText(self.receipt_api.shop_name())
-
         peer_id = JalPeer.get_id_by_mapped_name(self.ui.SlipShopName.text())
         if peer_id is not None:
             self.ui.PeerEdit.selected_id = peer_id
-
-        try:
-            self.slip_lines = pd.DataFrame(slip['items'])
-        except:
-            return
-
-        # Get date from timestamp
-        if 'dateTime' in slip:
-            slip_datetime = QDateTime.fromSecsSinceEpoch(int(slip['dateTime']))
-            slip_datetime.setTimeSpec(Qt.UTC)
-            self.ui.SlipDateTime.setDateTime(slip_datetime)
-
-        # Convert price to roubles
-        self.slip_lines['price'] = self.slip_lines['price'] / 100
-        if operation == self.OPERATION_PURCHASE:
-            self.slip_lines['sum'] = -self.slip_lines['sum'] / 100
-        elif operation == self.OPERATION_RETURN:
-            self.slip_lines['sum'] = self.slip_lines['sum'] / 100
-        else:
-            logging.error(self.tr("Unknown operation type ") + f"{operation}")
-            return
-        # Use quantity if it differs from 1 unit value
-        self.slip_lines.loc[self.slip_lines['quantity'] != 1, 'name'] = \
-            self.slip_lines.agg('{0[name]} ({0[quantity]:g} x {0[price]:.2f})'.format, axis=1)
+        self.ui.SlipDateTime.setDateTime(self.receipt_api.datetime())
         # Assign empty category
         self.slip_lines['category'] = 0
         self.slip_lines['confidence'] = 1
         # Assign empty tags
         self.slip_lines['tag'] = None
-        self.slip_lines = self.slip_lines[['name', 'category', 'confidence', 'tag', 'sum']]
+        self.slip_lines = self.slip_lines[['name', 'category', 'confidence', 'tag', 'amount']]
 
         self.model = PandasLinesModel(self.slip_lines, self)
         self.ui.LinesTableView.setModel(self.model)
@@ -311,7 +264,7 @@ class ImportSlipDialog(QDialog):
             details.append({
                 "category_id": row['category'],
                 "tag_id": row['tag'],
-                "amount": row['sum'],
+                "amount": row['amount'],
                 "note": row['name']
             })
             JalCategory(row['category']).add_or_update_mapped_name(row['name'])

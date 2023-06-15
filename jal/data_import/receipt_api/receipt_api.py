@@ -1,4 +1,4 @@
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal, QDateTime
 from PySide6.QtWidgets import QApplication
 
 
@@ -35,3 +35,7 @@ class ReceiptAPI(QObject):
     # Returns a shop name where purchase was done (if it is possible to get)
     def shop_name(self) -> str:
         raise NotImplementedError(f"shop_name() method is not implemented in {type(self).__name__}")
+
+    # Returns data/time of the operation from the receipt
+    def datetime(self) -> QDateTime:
+        raise NotImplementedError(f"date_time() method is not implemented in {type(self).__name__}")
