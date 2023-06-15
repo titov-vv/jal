@@ -99,6 +99,27 @@ class ReceiptEuLidlPlus(ReceiptAPI):
             self.slip_json = {}
             self.slip_load_failed.emit()
 
+    def shop_name(self) -> str:
+        return "Lidl"
+
+    def datetime(self) -> QDateTime:
+        if 'date' in self.slip_json:
+            receipt_datetime = QDateTime.fromString(self.slip_json['date'], 'yyyy-MM-ddTHH:mm:ss')
+        else:
+            receipt_datetime = QDateTime()
+        receipt_datetime.setTimeSpec(Qt.UTC)
+        return receipt_datetime
+
+    def slip_lines(self) -> list:
+        lines = self.slip_json['itemsLine']
+        for line in lines:
+            line['quantity'] = float(line['quantity'].replace(',', '.'))
+            line['unit_price'] = float(line.pop('currentUnitPrice').replace(',', '.'))
+            line['amount'] = -float(line.pop('originalAmount').replace(',', '.'))
+            if line['quantity'] != 1:
+                line['name'] = f"{line['name']} ({line['quantity']:g} x {line['unit_price']:.2f})"
+        return lines
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 class LoginLidlPlus(QDialog):
