@@ -115,8 +115,8 @@ class QRScanner(QWidget):
         self.view.fitInView(bounds, Qt.KeepAspectRatio)
         if self.rectangle is not None:
             self.scene.removeItem(self.rectangle)
-        pen = QPen(Qt.green)
-        pen.setWidth(0)
+        pen = QPen(Qt.red) if self.code_type == pyzbar.ZBarSymbol.I25 else QPen(Qt.green)
+        pen.setWidth(1)
         pen.setStyle(Qt.DashLine)
         self.rectangle = self.scene.addRect(self.calculate_scan_area(bounds), pen)
         self.view.centerOn(0, 0)
