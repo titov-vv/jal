@@ -2,7 +2,7 @@ import re
 import json
 import logging
 import requests
-from PySide6.QtCore import QDateTime, QTime
+from PySide6.QtCore import Qt, QDateTime, QTime
 from PySide6.QtWidgets import QDialog, QInputDialog
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.db.settings import JalSettings
@@ -23,9 +23,9 @@ class ReceiptPtPingoDoce(ReceiptAPI):
             raise ValueError(self.tr("Pingo Doce QR available but pattern isn't recognized: " + qr_text))
         parts = parts.groupdict()
         self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
-        self.shop_id = parts['shop_id']
-        self.register_id = parts['register_id']
-        self.total_amount = parts['amount']
+        self.shop_id = int(parts['shop_id'].lstrip('0'))
+        self.register_id = parts['register_id'].lstrip('0')
+        self.total_amount = float(parts['amount'])
         if len(aux_data) == 30:  # Get receipt sequence number and time from aux data or from the user
             self.seq_id = aux_data[0:6]
             self.date_time.setTime(QTime.fromString(aux_data[14:18], "HHmm"))
@@ -75,7 +75,8 @@ class ReceiptPtPingoDoce(ReceiptAPI):
             if len(receipts) < 20:
                 page = -1   # stop loading
             for receipt in receipts:
-                self.receipts.append({"id": receipt['transactionId'], "shop_id": receipt['storeId'], "date": receipt['transactionDate'], "amount": receipt['total']})
+                self.receipts.append({"id": receipt['transactionId'], "shop_id": receipt['storeId'],
+                                      "date": receipt['transactionDate'], "amount": float(receipt['total'])})
         logging.info(f"Pingo Doce list of receipts loaded: {self.receipts}")
         return True
 
@@ -96,7 +97,7 @@ class ReceiptPtPingoDoce(ReceiptAPI):
             settings.setValue('PtPingoDoceAccessToken', self.access_token)
             settings.setValue('PtPingoDoceRefreshToken', new_refresh_token)
         else:
-            logging.error(self.tr("Can't refresh Lidl Plus token, response: ") + f"{response.status_code}/{response.text}")
+            logging.error(self.tr("Can't refresh Pingo Doce token, response: ") + f"{response.status_code}/{response.text}")
             JalSettings().setValue('PtPingoDoceAccessToken', '')
             self.access_token = ''
             return False
@@ -111,6 +112,45 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         login_dialog = LoginPingoDoce()
         if login_dialog.exec() == QDialog.Accepted:
             self.access_token = JalSettings().getValue('PtPingoDoceAccessToken')
+
+    def query_slip(self):
+        tickets = [x for x in self.receipts if x['shop_id'] == self.shop_id and
+                   x['amount'] == self.total_amount and x['date'] == self.date_time.toString('yyyy-MM-ddT00:00:00')]
+        if len(tickets) == 1:
+            response = self.web_session.get(f"https://app-proxy.pingodoce.pt/api/v2/user/transactionsHistory/details?id={tickets[0]['id']}")
+            if response.status_code == 200:
+                logging.info(self.tr("Receipt was loaded: " + response.text))
+                self.slip_json = json.loads(response.text)
+                self.slip_load_ok.emit()
+            else:
+                logging.error(self.tr("Receipt load failed: ") + f"{response.status_code}/{response.text} for {tickets[0]['id']}")
+                self.slip_json = {}
+                self.slip_load_failed.emit()
+        else:
+            if len(tickets) == 0:
+                logging.warning(self.tr("Receipt was not found in available list"))
+            else:
+                logging.warning(self.tr("Several similar receipts was found: ") + {tickets})
+            self.slip_json = {}
+            self.slip_load_failed.emit()
+
+    def shop_name(self) -> str:
+        return "Pingo Doce"
+
+    def datetime(self) -> QDateTime:
+        receipt_datetime = self.date_time
+        receipt_datetime.setTimeSpec(Qt.UTC)
+        return receipt_datetime
+
+    def slip_lines(self) -> list:
+        lines = self.slip_json['products']
+        for line in lines:
+            line['quantity'] = float(line.pop('purchaseQuantity').replace(',', '.'))
+            line['amount'] = -float(line.pop('purchasePrice').replace(',', '.'))
+            line['unit_price'] = abs(line['amount'] / line['quantity'])
+            if line['quantity'] != 1:
+                line['name'] = f"{line['name']} ({line['quantity']:g} x {line['unit_price']:.2f})"
+        return lines
 
 
 #-----------------------------------------------------------------------------------------------------------------------
