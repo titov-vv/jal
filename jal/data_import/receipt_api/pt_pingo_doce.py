@@ -56,7 +56,14 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         response = self.web_session.post("https://app-proxy.pingodoce.pt/api/v2/user/cardassociations/savings", data=payload)
         if response.status_code == 401:
             logging.info(self.tr("Unauthorized with reason: ") + f"{response.text}")
-            return self.__refresh_token()
+            if self.__refresh_token():
+                self.web_session.headers["Authorization"] = f"Bearer {self.access_token}"
+                self.web_session.headers["pdapp-storeId"] = "-1"
+                self.web_session.headers["pdapp-cardNumber"] = f"PDOM|{self.user_profile['ompdCard']}|{self.user_profile['householdId']}"
+                self.web_session.headers["pdapp-lcid"] = self.user_profile['loyaltyId']
+                self.web_session.headers["pdapp-hid"] = self.user_profile['householdId']
+            else:
+                return False
         elif response.status_code != 200:
             logging.error(self.tr("Pingo Doce API failed with: ") + f"{response.status_code}/{response.text}")
             return False
@@ -84,7 +91,9 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         logging.info(self.tr("Refreshing Pingo Doce token..."))
         self.access_token = JalSettings().getValue('PtPingoDoceAccessToken', default='')
         refresh_token = JalSettings().getValue('PtPingoDoceRefreshToken', default='')
-        self.web_session.headers["Authorization"] = f"Basic {self.access_token}"
+        self.web_session = requests.Session()   # Need to start a clean session here
+        self.web_session.headers['User-Agent'] = "okhttp/4.10.0"
+        self.web_session.headers["Authorization"] = f"Bearer {self.access_token}"
         payload = {"client_id": "pdappclient", "grant_type": "refresh_token", "refresh_token": refresh_token}
         response = self.web_session.post("https://app-proxy.pingodoce.pt/connect/token", data=payload)
         if response.status_code == 200:
@@ -104,6 +113,8 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         response = self.web_session.get("https://app-proxy.pingodoce.pt/api/v2/user/userprofiles")
         if response.status_code != 200:
             logging.error(self.tr("Can't get Pingo Doce profile, response: ") + f"{response.status_code}/{response.text}")
+            return False
+        logging.info(self.tr("Pingo Doce profile was loaded: ") + f"{response.text}")
         self.user_profile = json.loads(response.text)
         settings.setValue('PtPingoDoceUserProfile', json.dumps(self.user_profile))
         return True
