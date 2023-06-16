@@ -38,4 +38,4 @@ class ReceiptAPI(QObject):
 
     # Returns data/time of the operation from the receipt
     def datetime(self) -> QDateTime:
-        raise NotImplementedError(f"date_time() method is not implemented in {type(self).__name__}")
+        raise NotImplementedError(f"datetime() method is not implemented in {type(self).__name__}")

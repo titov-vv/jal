@@ -52,8 +52,8 @@ class Ui_JAL_MainWindow(object):
         self.PrepareTaxForms.setObjectName(u"PrepareTaxForms")
         self.actionTags = QAction(JAL_MainWindow)
         self.actionTags.setObjectName(u"actionTags")
-        self.actionImportSlipRU = QAction(JAL_MainWindow)
-        self.actionImportSlipRU.setObjectName(u"actionImportSlipRU")
+        self.actionImportShopReceipt = QAction(JAL_MainWindow)
+        self.actionImportShopReceipt.setObjectName(u"actionImportShopReceipt")
         self.actionQuotes = QAction(JAL_MainWindow)
         self.actionQuotes.setObjectName(u"actionQuotes")
         self.actionOperations = QAction(JAL_MainWindow)
@@ -134,7 +134,7 @@ class Ui_JAL_MainWindow(object):
         self.menu_Export.addAction(self.PrepareFlowReport)
         self.menuImport.addAction(self.action_LoadQuotes)
         self.menuImport.addAction(self.menuStatement.menuAction())
-        self.menuImport.addAction(self.actionImportSlipRU)
+        self.menuImport.addAction(self.actionImportShopReceipt)
 
         self.retranslateUi(JAL_MainWindow)
 
@@ -154,7 +154,7 @@ class Ui_JAL_MainWindow(object):
         self.actionRestore.setText(QCoreApplication.translate("JAL_MainWindow", u"&Restore...", None))
         self.PrepareTaxForms.setText(QCoreApplication.translate("JAL_MainWindow", u"Investment &tax report", None))
         self.actionTags.setText(QCoreApplication.translate("JAL_MainWindow", u"&Tags", None))
-        self.actionImportSlipRU.setText(QCoreApplication.translate("JAL_MainWindow", u"Slip [RU]...", None))
+        self.actionImportShopReceipt.setText(QCoreApplication.translate("JAL_MainWindow", u"&Receipt...", None))
         self.actionQuotes.setText(QCoreApplication.translate("JAL_MainWindow", u"&Quotes", None))
         self.actionOperations.setText(QCoreApplication.translate("JAL_MainWindow", u"&Operations", None))
         self.PrepareFlowReport.setText(QCoreApplication.translate("JAL_MainWindow", u"Foreign accounts &flow report", None))

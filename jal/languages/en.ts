@@ -1137,218 +1137,173 @@
     </message>
 </context>
 <context>
-    <name>ImportSlipDialog</name>
+    <name>ImportReceiptDialog</name>
     <message>
-        <location filename="../data_import/slips.py" line="155"/>
-        <source>Select file with QR code</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="162"/>
-        <source>No QR codes were found in file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="178"/>
+        <location filename="../data_import/shop_receipt.py" line="146"/>
         <source>Please scan main QR code from the receipt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="211"/>
+        <location filename="../data_import/shop_receipt.py" line="149"/>
+        <source>QR: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="171"/>
         <source>Select file with slip JSON data</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="300"/>
+        <location filename="../data_import/shop_receipt.py" line="214"/>
         <source>Not possible to import slip: no account set for import</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="303"/>
+        <location filename="../data_import/shop_receipt.py" line="217"/>
         <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="306"/>
+        <location filename="../data_import/shop_receipt.py" line="220"/>
         <source>Not possible to import slip: some categories are not set</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="339"/>
+        <location filename="../data_import/shop_receipt.py" line="252"/>
         <source>Categories are not recognized: Tensorflow is not found</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../data_import/slips.py" line="227"/>
-        <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos;</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="230"/>
-        <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos;</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="240"/>
-        <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="266"/>
-        <source>Unknown operation type </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="173"/>
-        <source>No QR codes found in clipboard</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="188"/>
-        <source>QR: </source>
-        <translation></translation>
-    </message>
 </context>
 <context>
-    <name>ImportSlipDlg</name>
+    <name>ImportShopReceiptDlg</name>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="14"/>
-        <source>Import Slip</source>
+        <location filename="../ui/receipt_import_dlg.ui" line="14"/>
+        <source>Import shop receipt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="71"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="71"/>
         <source>QR-code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="95"/>
-        <source>Get from camera</source>
+        <location filename="../ui/receipt_import_dlg.ui" line="95"/>
+        <source>Get receipt QR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="102"/>
-        <source>Load from file</source>
+        <location filename="../ui/receipt_import_dlg.ui" line="130"/>
+        <source>Receipt data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="109"/>
-        <source>Get from clipboard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/slip_import_dlg.ui" line="138"/>
-        <source>Slip data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/slip_import_dlg.ui" line="156"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="148"/>
         <source>Get slip from internet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="163"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="155"/>
         <source>Amount:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="170"/>
-        <location filename="../ui/slip_import_dlg.ui" line="292"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="162"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="281"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="180"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="172"/>
         <source>Date/Time:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="187"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="179"/>
         <source>FD:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="203"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="195"/>
         <source>FN:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="217"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="209"/>
         <source>Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="227"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="219"/>
         <source>Load slip from JSON file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="234"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="226"/>
         <source>FP:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="249"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="241"/>
         <source>Purchase</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="254"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="246"/>
         <source>Return</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="274"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="263"/>
         <source>Slip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="302"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="291"/>
         <source>Date / Time:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="309"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="298"/>
         <source> ➜ </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="319"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="308"/>
         <source>Peer:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="333"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="322"/>
         <source>Lines:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="343"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="332"/>
         <source>Account:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="366"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="355"/>
         <source>Auto-assign categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="373"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="362"/>
         <source>Set Tag for all lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="407"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="396"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="417"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="406"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/slip_import_dlg.ui" line="424"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="413"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1561,6 +1516,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../ui/main_window.ui" line="191"/>
+        <source>&amp;Receipt...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/main_window.ui" line="206"/>
         <source>Foreign accounts &amp;flow report</source>
         <translation type="unfinished"></translation>
@@ -1573,11 +1533,6 @@
     <message>
         <location filename="../ui/main_window.ui" line="186"/>
         <source>&amp;Tags</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/main_window.ui" line="191"/>
-        <source>Slip [RU]...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1873,35 +1828,35 @@ do you want to save it?</source>
 <context>
     <name>LoginFNS</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="213"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="226"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="245"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="239"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="252"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="271"/>
         <source>FNS login failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="215"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="241"/>
         <source>SMS was requested successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="228"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="247"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="254"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="273"/>
         <source>FNS login successful: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="259"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="285"/>
         <source>Get ESIA URL failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="272"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="298"/>
         <source>ESIA login failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="274"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="300"/>
         <source>ESIA login successful: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1975,22 +1930,22 @@ do you want to save it?</source>
 <context>
     <name>LoginLidlPlus</name>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="153"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="175"/>
         <source>Login error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="153"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="175"/>
         <source>No auth code in callback URI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="168"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="190"/>
         <source>Lidl Plus login failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="170"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="192"/>
         <source>Lidl Plus login successful: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2010,6 +1965,34 @@ do you want to save it?</source>
     <message>
         <location filename="../ui/login_lidl_plus_dlg.ui" line="84"/>
         <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LoginPingoDoce</name>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="184"/>
+        <source>Pingo Doce phone verification failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="195"/>
+        <source>Pingo Doce unknown login status: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="202"/>
+        <source>Pingo Doce login failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="204"/>
+        <source>Pingo Doce login successful: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="217"/>
+        <source>Pingo Doce login response failed with: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2338,24 +2321,24 @@ Application will be terminated now.</source>
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/slips.py" line="55"/>
+        <location filename="../data_import/shop_receipt.py" line="54"/>
         <source>Product name</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="57"/>
+        <location filename="../data_import/shop_receipt.py" line="56"/>
         <source>Category</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="61"/>
-        <source>Amount</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="59"/>
+        <location filename="../data_import/shop_receipt.py" line="58"/>
         <source>Tag</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="60"/>
+        <source>Amount</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2909,17 +2892,17 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="79"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="80"/>
         <source>Can&apos;t refresh Lidl Plus token, response: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="94"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="95"/>
         <source>Receipt was loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="98"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="99"/>
         <source>Receipt load failed: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2927,38 +2910,93 @@ Application will be terminated now.</source>
 <context>
     <name>ReceiptPtPingoDoce</name>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="21"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="23"/>
         <source>Pingo Doce QR available but pattern isn&apos;t recognized: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="31"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="33"/>
         <source>Input Pingo Doce receipt additional data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="32"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="34"/>
         <source>Sequence #:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="34"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="36"/>
         <source>Can&apos;t get Pingo Doce receipt without sequence number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="44"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="48"/>
         <source>No Pingo Doce access token available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="51"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="58"/>
         <source>Unauthorized with reason: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="54"/>
-        <source>Lidl Plus API failed with: </source>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="68"/>
+        <source>Pingo Doce API failed with: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="72"/>
+        <source>Pingo Doce API filter failed with: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="79"/>
+        <source>Pingo Doce API history failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="91"/>
+        <source>Refreshing Pingo Doce token...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="100"/>
+        <source>Pingo Doce token was refreshed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="109"/>
+        <source>Can&apos;t refresh Pingo Doce token, response: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="115"/>
+        <source>Can&apos;t get Pingo Doce profile, response: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="117"/>
+        <source>Pingo Doce profile was loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="133"/>
+        <source>Receipt was loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="137"/>
+        <source>Receipt load failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="142"/>
+        <source>Receipt was not found in available list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="144"/>
+        <source>Several similar receipts was found: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3000,42 +3038,47 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="87"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="88"/>
         <source>Can&apos;t refresh FNS session, response: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="103"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="104"/>
         <source>Get ticket id failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="105"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="106"/>
         <source>Receipt found: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="115"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="116"/>
         <source>Receipt load failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="117"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="118"/>
         <source>Receipt was loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="109"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="190"/>
+        <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="110"/>
         <source>Operation might be pending on server side. Trying again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="133"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="134"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos; from FNS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="136"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="137"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos; from FNS</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3218,7 +3261,7 @@ Application will be terminated now.</source>
 <context>
     <name>RequestInterceptor</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="302"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="328"/>
         <source>ESIA login completed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3244,13 +3287,38 @@ Application will be terminated now.</source>
 <context>
     <name>ScanDialog</name>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="158"/>
+        <location filename="../widgets/qr_scanner.py" line="160"/>
         <source>Barcode scanner</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="176"/>
+        <location filename="../widgets/qr_scanner.py" line="178"/>
+        <source>Load from file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="179"/>
+        <source>Get from clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="180"/>
         <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="219"/>
+        <source>Select file with QR code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="226"/>
+        <source>No QR codes were found in file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="236"/>
+        <source>No QR codes found in clipboard</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

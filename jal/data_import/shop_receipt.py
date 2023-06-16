@@ -2,16 +2,15 @@ import json
 import logging
 import pandas as pd
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel
-from PySide6.QtGui import QImage
-from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView, QStyledItemDelegate
+from PySide6.QtWidgets import QDialog, QFileDialog, QHeaderView, QStyledItemDelegate
 from jal.widgets.reference_selector import CategorySelector, TagSelector
 from jal.constants import CustomColor
-from jal.widgets.helpers import dependency_present, decodeQR
+from jal.widgets.helpers import dependency_present
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.operations import LedgerTransaction
 from jal.widgets.qr_scanner import ScanDialog
-from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
+from jal.ui.ui_receipt_import_dlg import Ui_ImportShopReceiptDlg
 from jal.data_import.category_recognizer import recognize_categories
 from jal.data_import.receipt_api.receipts import ReceiptAPIFactory
 
@@ -109,28 +108,22 @@ class SlipLinesDelegate(QStyledItemDelegate):
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-class ImportSlipDialog(QDialog):
-    OPERATION_PURCHASE = 1
-    OPERATION_RETURN = 2
-
+class ImportReceiptDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = Ui_ImportSlipDlg()
+        self.ui = Ui_ImportShopReceiptDlg()
         self.ui.setupUi(self)
         self.initUi()
         self.model = None
         self.delegate = []
 
-        self.QR_data = ''
         self.slip_json = None
         self.slip_lines = None
 
         self.receipt_api = None
         self.tensor_flow_present = dependency_present(['tensorflow'])
 
-        self.ui.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
-        self.ui.GetQRfromClipboardBtn.clicked.connect(self.readClipboardQR)
-        self.ui.GetQRfromCameraBtn.clicked.connect(self.readCameraQR)
+        self.ui.GetReceiptQR.clicked.connect(self.processReceiptQR)
         self.ui.GetSlipBtn.clicked.connect(self.downloadSlipJSON)
         self.ui.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
         self.ui.AddOperationBtn.clicked.connect(self.addOperation)
@@ -146,48 +139,16 @@ class ImportSlipDialog(QDialog):
         self.ui.FP.setText('')
         self.ui.SlipType.setCurrentIndex(0)
 
-    #------------------------------------------------------------------------------------------
-    # Loads graphics file and tries to read QR-code from it.
-    @Slot()
-    def loadFileQR(self):
-        self.initUi()
-        qr_file, _filter = \
-            QFileDialog.getOpenFileName(self, self.tr("Select file with QR code"),
-                                        ".", "JPEG images (*.jpg);;PNG images (*.png);;BMP images (*.bmp)")
-        if qr_file:
-            self.QR_data = decodeQR(QImage(qr_file))
-            if self.QR_data:
-                self.parseQRdata()
-            else:
-                logging.warning(self.tr("No QR codes were found in file"))
-
-    # ------------------------------------------------------------------------------------------
-    # Gets image from clipboard and tries to read QR-code from it.
-    @Slot()
-    def readClipboardQR(self):
-        self.initUi()
-        self.QR_data = decodeQR(QApplication.clipboard().image())
-        if self.QR_data:
-            self.parseQRdata()
-        else:
-            logging.warning(self.tr("No QR codes found in clipboard"))
-
-    @Slot()
-    def readCameraQR(self):
-        self.initUi()
-        scanner = ScanDialog(self, self.tr("Please scan main QR code from the receipt"))
-        if scanner.exec() == QDialog.Accepted:
-            self.QR_data = scanner.data
-            self.parseQRdata()
-
     #-----------------------------------------------------------------------------------------------
-    # Check if text in self.QR_data matches with self.QR_pattern
     # Then it downloads the slip if match found. Otherwise, shows warning message but allows to proceed
     @Slot()
-    def parseQRdata(self):
-        logging.info(self.tr("QR: " + self.QR_data))
+    def processReceiptQR(self):
+        scanner = ScanDialog(self, self.tr("Please scan main QR code from the receipt"))
+        if scanner.exec() != QDialog.Accepted:
+            return
+        logging.info(self.tr("QR: " + scanner.data))
         try:
-            self.receipt_api = ReceiptAPIFactory().get_api_for_qr(self.QR_data)
+            self.receipt_api = ReceiptAPIFactory().get_api_for_qr(scanner.data)
         except ValueError as e:
             logging.warning(e)
             return
@@ -279,7 +240,6 @@ class ImportSlipDialog(QDialog):
         self.clearSlipData()
 
     def clearSlipData(self):
-        self.QR_data = ''
         self.slip_json = None
         self.slip_lines = None
         self.ui.LinesTableView.setModel(None)

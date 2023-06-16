@@ -1,8 +1,8 @@
 import logging
 from PySide6.QtCore import Qt, Slot, Signal, QRectF, QTimer, QMetaObject
 from PySide6.QtGui import QImage, QPen, QBrush
-from PySide6.QtWidgets import QDialog, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QGraphicsScene, QGraphicsView, \
-    QLabel, QSizePolicy, QPushButton
+from PySide6.QtWidgets import QApplication, QDialog, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QSpacerItem, \
+    QGraphicsScene, QGraphicsView, QLabel, QSizePolicy, QPushButton, QFileDialog
 from jal.widgets.helpers import dependency_present, decodeQR
 try:
     from pyzbar import pyzbar
@@ -149,10 +149,12 @@ class QRScanner(QWidget):
             self.decodedQR.emit(qr_text)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class ScanDialog(QDialog):
     def __init__(self, parent=None, code_type=QRScanner.TYPE_QR, message=''):
         super().__init__(parent)
         self.data = ''
+        self.code_type = code_type
         self.running = False
         self.resize(700, 450)
         self.setWindowTitle(self.tr("Barcode scanner"))
@@ -163,7 +165,7 @@ class ScanDialog(QDialog):
         self.hint_label.setAlignment(Qt.AlignCenter)
         self.verticalLayout.addWidget(self.hint_label)
 
-        self.scanner = QRScanner(self, code_type)
+        self.scanner = QRScanner(self, self.code_type)
         self.scanner.decodedQR.connect(self.barcode_scanned)
         scanner_size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         scanner_size_policy.setHeightForWidth(self.scanner.sizePolicy().hasHeightForWidth())
@@ -173,12 +175,17 @@ class ScanDialog(QDialog):
         self.horizontalLayout = QHBoxLayout(self.ButtonFrame)
         self.horizontalLayout.setSpacing(2)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.readQR_button = QPushButton(self.ButtonFrame, text=self.tr("Load from file"))
+        self.pasteQR_button = QPushButton(self.ButtonFrame, text=self.tr("Get from clipboard"))
         self.close_button = QPushButton(self.ButtonFrame, text=self.tr("Close"))
-        close_button_size_policy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        close_button_size_policy.setHeightForWidth(self.close_button.sizePolicy().hasHeightForWidth())
-        self.close_button.setSizePolicy(close_button_size_policy)
+        self.h_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalLayout.addWidget(self.readQR_button)
+        self.horizontalLayout.addWidget(self.pasteQR_button)
+        self.horizontalLayout.addItem(self.h_spacer)
         self.horizontalLayout.addWidget(self.close_button)
         self.verticalLayout.addWidget(self.ButtonFrame)
+        self.readQR_button.clicked.connect(self.load_qr_image_file)
+        self.pasteQR_button.clicked.connect(self.paste_qr_image)
         self.close_button.clicked.connect(self.close)
 
     @Slot()
@@ -203,3 +210,27 @@ class ScanDialog(QDialog):
         self.scanner.stopScan()
         self.data = decoded_data
         self.accept()
+
+    #------------------------------------------------------------------------------------------
+    # Loads graphics file and tries to read QR-code from it.
+    @Slot()
+    def load_qr_image_file(self):
+        qr_file, _filter = \
+            QFileDialog.getOpenFileName(self, self.tr("Select file with QR code"),
+                                        ".", "JPEG images (*.jpg);;PNG images (*.png);;BMP images (*.bmp)")
+        if qr_file:
+            self.data = decodeQR(QImage(qr_file), code_type=self.code_type)
+            if self.data:
+                self.accept()
+            else:
+                logging.warning(self.tr("No QR codes were found in file"))
+
+    # ------------------------------------------------------------------------------------------
+    # Gets image from clipboard and tries to read QR-code from it.
+    @Slot()
+    def paste_qr_image(self):
+        self.data = decodeQR(QApplication.clipboard().image(), code_type=self.code_type)
+        if self.data:
+            self.accept()
+        else:
+            logging.warning(self.tr("No QR codes found in clipboard"))

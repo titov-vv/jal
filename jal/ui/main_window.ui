@@ -113,7 +113,7 @@
     </widget>
     <addaction name="action_LoadQuotes"/>
     <addaction name="menuStatement"/>
-    <addaction name="actionImportSlipRU"/>
+    <addaction name="actionImportShopReceipt"/>
    </widget>
    <widget class="QMenu" name="menuReports">
     <property name="title">
@@ -186,9 +186,9 @@
     <string>&amp;Tags</string>
    </property>
   </action>
-  <action name="actionImportSlipRU">
+  <action name="actionImportShopReceipt">
    <property name="text">
-    <string>Slip [RU]...</string>
+    <string>&amp;Receipt...</string>
    </property>
   </action>
   <action name="actionQuotes">

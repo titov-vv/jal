@@ -27,7 +27,7 @@ from jal.net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
 from jal.data_import.statements import Statements
 from jal.reports.reports import Reports
-from jal.data_import.slips import ImportSlipDialog
+from jal.data_import.shop_receipt import ImportReceiptDialog
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
         self.estimator = None
         self.price_chart = None
 
-        self.ui.actionImportSlipRU.setEnabled(dependency_present(['PySide6.QtMultimedia']))
+        self.ui.actionImportShopReceipt.setEnabled(dependency_present(['PySide6.QtMultimedia']))
 
         self.actionAbout = QAction(text=self.tr("About"), parent=self)
         self.ui.MainMenu.addAction(self.actionAbout)
@@ -87,7 +87,7 @@ class MainWindow(QMainWindow):
         self.statementGroup.triggered.connect(self.statements.load)
         self.reportsGroup.triggered.connect(self.reports.show)
         self.ui.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
-        self.ui.actionImportSlipRU.triggered.connect(self.importSlip)
+        self.ui.actionImportShopReceipt.triggered.connect(self.importShopReceipt)
         self.ui.actionBackup.triggered.connect(self.backup.create)
         self.ui.actionRestore.triggered.connect(self.backup.restore)
         self.ui.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
@@ -234,8 +234,8 @@ class MainWindow(QMainWindow):
         self.ui.MainMenu.setEnabled(not visible)
 
     @Slot()
-    def importSlip(self):
-        dialog = ImportSlipDialog(self)
+    def importShopReceipt(self):
+        dialog = ImportReceiptDialog(self)
         dialog.finished.connect(self.onSlipImportFinished)
         dialog.open()
 
