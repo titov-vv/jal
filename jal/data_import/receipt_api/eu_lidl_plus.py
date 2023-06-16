@@ -17,6 +17,12 @@ from jal.ui.ui_login_lidl_plus_dlg import Ui_LoginLidlPlusDialog
 #-----------------------------------------------------------------------------------------------------------------------
 class ReceiptEuLidlPlus(ReceiptAPI):
     receipt_pattern = r"A:.*\*B:.*\*C:PT\*D:FS\*E:N\*F:(?P<date>\d{8})\*G:FS (?P<shop_id>\d{4})\d(?P<register_id>\d{2})..\/.*\*H:.{1,70}\*I1:PT\*.*"
+    # aux data is in form 888MMMMSSSSSSCCDDMMYYXFFFFFF
+    # SSSSSS - receipt sequence number
+    # YY, MM, DD - year, month, day of the receipt
+    # CC cash register ID in the shop ID MMMM
+    # X - unknown 1 digit
+    # FFFFFF - FS part of fiscal data
     def __init__(self, qr_text='', aux_data=''):
         super().__init__()
         self.access_token = ''

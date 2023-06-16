@@ -12,6 +12,11 @@ from jal.ui.ui_login_pingo_doce_dlg import Ui_LoginPingoDoceDialog
 #-----------------------------------------------------------------------------------------------------------------------
 class ReceiptPtPingoDoce(ReceiptAPI):
     receipt_pattern = r"A:.*\*B:.*\*C:PT\*D:FS\*E:N\*F:(?P<date>\d{8})\*G:FS (?P<shop_id>\d{4})(?P<register_id>\d{3}).*\/.*\*H:.{1,70}\*I1:PT\*.*\*O:(?P<amount>\d{1,}\.\d\d)\*.*"
+    # aux data is in form SSSSSSYYYYMMDDhhmmNNNNCCCCMMMM
+    # SSSSSS - receipt sequence number
+    # YYYY, MM, DD, hh, mm - year, month, day and hour/minute of the receipt
+    # NNNN - unknown 4 digits
+    # CCCC cash register ID in the shop ID MMMM
     def __init__(self, qr_text='', aux_data=''):
         super().__init__()
         self.access_token = ''
