@@ -1150,22 +1150,22 @@
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="171"/>
-        <source>Select file with slip JSON data</source>
+        <source>Select file with receipt JSON data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="214"/>
-        <source>Not possible to import slip: no account set for import</source>
+        <source>Not possible to import receipt: no account set for import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="217"/>
-        <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
+        <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="220"/>
-        <source>Not possible to import slip: some categories are not set</source>
+        <source>Not possible to import receipt: some categories are not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

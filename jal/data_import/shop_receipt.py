@@ -168,7 +168,7 @@ class ImportReceiptDialog(QDialog):
     @Slot()
     def loadFileSlipJSON(self):
         json_file, _filter = \
-            QFileDialog.getOpenFileName(self, self.tr("Select file with slip JSON data"),
+            QFileDialog.getOpenFileName(self, self.tr("Select file with receipt JSON data"),
                                         ".", "JSON files (*.json)")
         if json_file:
             with open(json_file) as f:
@@ -211,13 +211,13 @@ class ImportReceiptDialog(QDialog):
 
     def addOperation(self):
         if self.ui.AccountEdit.selected_id == 0:
-            logging.warning(self.tr("Not possible to import slip: no account set for import"))
+            logging.warning(self.tr("Not possible to import receipt: no account set for import"))
             return
         if self.ui.PeerEdit.selected_id == 0:
-            logging.warning(self.tr("Not possible to import slip: can't import: no peer set for import"))
+            logging.warning(self.tr("Not possible to import receipt: can't import: no peer set for import"))
             return
         if self.slip_lines[self.slip_lines['category'] == 0].shape[0] != 0:
-            logging.warning(self.tr("Not possible to import slip: some categories are not set"))
+            logging.warning(self.tr("Not possible to import receipt: some categories are not set"))
             return
 
         details = []

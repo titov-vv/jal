@@ -1141,37 +1141,37 @@
     <message>
         <location filename="../data_import/shop_receipt.py" line="146"/>
         <source>Please scan main QR code from the receipt</source>
-        <translation type="unfinished"></translation>
+        <translation>Отсканируйте основной QR-код с чека</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="149"/>
         <source>QR: </source>
-        <translation type="unfinished"></translation>
+        <translation>QR: </translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="171"/>
-        <source>Select file with slip JSON data</source>
-        <translation type="unfinished"></translation>
+        <source>Select file with receipt JSON data</source>
+        <translation>Выберите файл с JSON данными чека</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="214"/>
-        <source>Not possible to import slip: no account set for import</source>
-        <translation type="unfinished"></translation>
+        <source>Not possible to import receipt: no account set for import</source>
+        <translation>Невозможно импортировать чек: не выбран счёт для импорта</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="217"/>
-        <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
-        <translation type="unfinished"></translation>
+        <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
+        <translation>Невозможно импортировать чек: не выбран контрагент для импорта</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="220"/>
-        <source>Not possible to import slip: some categories are not set</source>
-        <translation type="unfinished"></translation>
+        <source>Not possible to import receipt: some categories are not set</source>
+        <translation>Невозможно импортировать чек: некоторые категории не выбраны</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="252"/>
         <source>Categories are not recognized: Tensorflow is not found</source>
-        <translation type="unfinished"></translation>
+        <translation>Категории не распознаны: Tensorflow не найден</translation>
     </message>
 </context>
 <context>
@@ -1179,133 +1179,133 @@
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="14"/>
         <source>Import shop receipt</source>
-        <translation type="unfinished"></translation>
+        <translation>Импорт чека из магазина</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="71"/>
         <source>QR-code</source>
-        <translation type="unfinished"></translation>
+        <translation>QR-код</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="95"/>
         <source>Get receipt QR</source>
-        <translation type="unfinished"></translation>
+        <translation>Получить QR код чека</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="130"/>
         <source>Receipt data</source>
-        <translation type="unfinished"></translation>
+        <translation>Данные чека</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="148"/>
         <source>Get slip from internet</source>
-        <translation type="unfinished"></translation>
+        <translation>Получить чек из интернет</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="155"/>
         <source>Amount:</source>
-        <translation type="unfinished"></translation>
+        <translation>Сумма:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="162"/>
         <location filename="../ui/receipt_import_dlg.ui" line="281"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
-        <translation type="unfinished"></translation>
+        <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="172"/>
         <source>Date/Time:</source>
-        <translation type="unfinished"></translation>
+        <translation>Дата/Время:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="179"/>
         <source>FD:</source>
-        <translation type="unfinished"></translation>
+        <translation>ФД:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="195"/>
         <source>FN:</source>
-        <translation type="unfinished"></translation>
+        <translation>ФН:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="209"/>
         <source>Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="219"/>
         <source>Load slip from JSON file</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить чек из JSON-файла</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="226"/>
         <source>FP:</source>
-        <translation type="unfinished"></translation>
+        <translation>ФП:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="241"/>
         <source>Purchase</source>
-        <translation type="unfinished"></translation>
+        <translation>Покупка</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="246"/>
         <source>Return</source>
-        <translation type="unfinished"></translation>
+        <translation>Возврат</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="263"/>
         <source>Slip</source>
-        <translation type="unfinished"></translation>
+        <translation>Чек</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="291"/>
         <source>Date / Time:</source>
-        <translation type="unfinished"></translation>
+        <translation>Дата / Время:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="298"/>
         <source> ➜ </source>
-        <translation type="unfinished"></translation>
+        <translation> ➜ </translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="308"/>
         <source>Peer:</source>
-        <translation type="unfinished">Контрагент:</translation>
+        <translation>Контрагент:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="322"/>
         <source>Lines:</source>
-        <translation type="unfinished"></translation>
+        <translation>Позиции:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="332"/>
         <source>Account:</source>
-        <translation type="unfinished">Счет:</translation>
+        <translation>Счет:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="355"/>
         <source>Auto-assign categories</source>
-        <translation type="unfinished"></translation>
+        <translation>Авто-определение категорий</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="362"/>
         <source>Set Tag for all lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Установить тэг для всех позиций</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="396"/>
         <source>Clear</source>
-        <translation type="unfinished">Очистить</translation>
+        <translation>Очистить</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="406"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="413"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Закрыть</translation>
     </message>
 </context>
 <context>
@@ -1513,7 +1513,7 @@
     <message>
         <location filename="../ui/main_window.ui" line="191"/>
         <source>&amp;Receipt...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Чек...</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="206"/>
@@ -1976,27 +1976,27 @@ do you want to save it?</source>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="184"/>
         <source>Pingo Doce phone verification failed: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="195"/>
         <source>Pingo Doce unknown login status: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="202"/>
         <source>Pingo Doce login failed: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="204"/>
         <source>Pingo Doce login successful: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="217"/>
         <source>Pingo Doce login response failed with: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -2004,27 +2004,27 @@ do you want to save it?</source>
     <message>
         <location filename="../ui/login_pingo_doce_dlg.ui" line="14"/>
         <source>Authorization Pingo Doce</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui/login_pingo_doce_dlg.ui" line="53"/>
         <source>Phone number:</source>
-        <translation type="unfinished">Номер телефона:</translation>
+        <translation>Номер телефона:</translation>
     </message>
     <message>
         <location filename="../ui/login_pingo_doce_dlg.ui" line="63"/>
         <source>+351---</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui/login_pingo_doce_dlg.ui" line="91"/>
         <source>Password:</source>
-        <translation type="unfinished">Пароль:</translation>
+        <translation>Пароль:</translation>
     </message>
     <message>
         <location filename="../ui/login_pingo_doce_dlg.ui" line="135"/>
         <source>Login</source>
-        <translation type="unfinished">Логин</translation>
+        <translation>Логин</translation>
     </message>
 </context>
 <context>
@@ -2329,22 +2329,22 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/shop_receipt.py" line="54"/>
         <source>Product name</source>
-        <translation type="unfinished"></translation>
+        <translation>Название продукта</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="56"/>
         <source>Category</source>
-        <translation type="unfinished">Категория</translation>
+        <translation>Категория</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="58"/>
         <source>Tag</source>
-        <translation type="unfinished"></translation>
+        <translation>Тэг</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="60"/>
         <source>Amount</source>
-        <translation type="unfinished">Сумма</translation>
+        <translation>Сумма</translation>
     </message>
 </context>
 <context>
@@ -2837,7 +2837,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="37"/>
         <source>Please scan flat barcode from the receipt</source>
-        <translation type="unfinished"></translation>
+        <translation>Отсканируйте плоский штрих-код со чека</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="54"/>
@@ -2918,92 +2918,92 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="23"/>
         <source>Pingo Doce QR available but pattern isn&apos;t recognized: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="33"/>
         <source>Input Pingo Doce receipt additional data</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="34"/>
         <source>Sequence #:</source>
-        <translation type="unfinished">Порядковый номер:</translation>
+        <translation>Порядковый номер:</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="36"/>
         <source>Can&apos;t get Pingo Doce receipt without sequence number</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="48"/>
         <source>No Pingo Doce access token available</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="58"/>
         <source>Unauthorized with reason: </source>
-        <translation type="unfinished">Неавторизован, причина: </translation>
+        <translation>Неавторизован, причина: </translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="68"/>
         <source>Pingo Doce API failed with: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="72"/>
         <source>Pingo Doce API filter failed with: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="79"/>
         <source>Pingo Doce API history failed: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="91"/>
         <source>Refreshing Pingo Doce token...</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="100"/>
         <source>Pingo Doce token was refreshed: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="109"/>
         <source>Can&apos;t refresh Pingo Doce token, response: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="115"/>
         <source>Can&apos;t get Pingo Doce profile, response: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="117"/>
         <source>Pingo Doce profile was loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="133"/>
         <source>Receipt was loaded: </source>
-        <translation type="unfinished">Чек загружен: </translation>
+        <translation>Чек загружен: </translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="137"/>
         <source>Receipt load failed: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="142"/>
         <source>Receipt was not found in available list</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="144"/>
         <source>Several similar receipts was found: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -3071,7 +3071,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="190"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
-        <translation type="unfinished">JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
+        <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="110"/>
@@ -3295,37 +3295,37 @@ Application will be terminated now.</source>
     <message>
         <location filename="../widgets/qr_scanner.py" line="160"/>
         <source>Barcode scanner</source>
-        <translation type="unfinished"></translation>
+        <translation>Сканнер штрихкодов</translation>
     </message>
     <message>
         <location filename="../widgets/qr_scanner.py" line="178"/>
         <source>Load from file</source>
-        <translation type="unfinished">Загрузить из файла</translation>
+        <translation>Загрузить из файла</translation>
     </message>
     <message>
         <location filename="../widgets/qr_scanner.py" line="179"/>
         <source>Get from clipboard</source>
-        <translation type="unfinished">Получить из буфера</translation>
+        <translation>Получить из буфера</translation>
     </message>
     <message>
         <location filename="../widgets/qr_scanner.py" line="180"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location filename="../widgets/qr_scanner.py" line="219"/>
         <source>Select file with QR code</source>
-        <translation type="unfinished">Выберите файл с QR-кодом</translation>
+        <translation>Выберите файл с QR-кодом</translation>
     </message>
     <message>
         <location filename="../widgets/qr_scanner.py" line="226"/>
         <source>No QR codes were found in file</source>
-        <translation type="unfinished">QR-код в файле не обнаружен</translation>
+        <translation>QR-код в файле не обнаружен</translation>
     </message>
     <message>
         <location filename="../widgets/qr_scanner.py" line="236"/>
         <source>No QR codes found in clipboard</source>
-        <translation type="unfinished">QR код не обнаружен в буфере обмена</translation>
+        <translation>QR код не обнаружен в буфере обмена</translation>
     </message>
 </context>
 <context>
