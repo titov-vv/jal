@@ -143,7 +143,7 @@ class ImportReceiptDialog(QDialog):
     # Then it downloads the slip if match found. Otherwise, shows warning message but allows to proceed
     @Slot()
     def processReceiptQR(self):
-        scanner = ScanDialog(self, self.tr("Please scan main QR code from the receipt"))
+        scanner = ScanDialog(parent=self, message=self.tr("Please scan main QR code from the receipt"))
         if scanner.exec() != QDialog.Accepted:
             return
         logging.info(self.tr("QR: " + scanner.data))
