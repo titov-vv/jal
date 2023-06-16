@@ -82,6 +82,7 @@ class ReceiptRuFNS(ReceiptAPI):
             settings = JalSettings()
             settings.setValue('RuTaxSessionId', self.session_id)
             settings.setValue('RuTaxRefreshToken', new_refresh_token)
+            self.web_session.headers['sessionId'] = self.session_id
             return True
         else:
             logging.error(self.tr("Can't refresh FNS session, response: ") + f"{response.status_code}/{response.text}")
