@@ -52,12 +52,12 @@ class ReceiptEuLidlPlus(ReceiptAPI):
             return True
         if response.status_code == 401:
             logging.info(self.tr("Unauthorized with reason: ") + f"{response.text}")
-            return self.__refresh_session()
+            return self.__refresh_token()
         else:
             logging.error(self.tr("Lidl Plus API failed with: ") + f"{response.status_code}/{response.text}")
             return False
 
-    def __refresh_session(self) -> bool:
+    def __refresh_token(self) -> bool:
         logging.info(self.tr("Refreshing Lidl Plus token..."))
         client_secret = JalSettings().getValue('EuLidlClientSecret')
         refresh_token = JalSettings().getValue('EuLidlRefreshToken')
@@ -74,6 +74,7 @@ class ReceiptEuLidlPlus(ReceiptAPI):
             settings = JalSettings()
             settings.setValue('EuLidlAccessToken', self.access_token)
             settings.setValue('EuLidlRefreshToken', new_refresh_token)
+            self.web_session.headers["Authorization"] = f"Bearer {self.access_token}"
             return True
         else:
             logging.error(self.tr("Can't refresh Lidl Plus token, response: ") + f"{response.status_code}/{response.text}")
