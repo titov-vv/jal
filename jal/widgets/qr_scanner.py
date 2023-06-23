@@ -2,7 +2,7 @@ import logging
 from PySide6.QtCore import Qt, Slot, Signal, QRectF, QTimer, QMetaObject
 from PySide6.QtGui import QImage, QPen, QBrush
 from PySide6.QtWidgets import QApplication, QDialog, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QSpacerItem, \
-    QGraphicsScene, QGraphicsView, QLabel, QSizePolicy, QPushButton, QFileDialog
+    QGraphicsScene, QGraphicsView, QLabel, QSizePolicy, QPushButton, QFileDialog, QInputDialog
 from jal.widgets.helpers import dependency_present, decodeQR
 try:
     from pyzbar import pyzbar
@@ -175,17 +175,20 @@ class ScanDialog(QDialog):
         self.horizontalLayout = QHBoxLayout(self.ButtonFrame)
         self.horizontalLayout.setSpacing(2)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.readQR_button = QPushButton(self.ButtonFrame, text=self.tr("Load from file"))
-        self.pasteQR_button = QPushButton(self.ButtonFrame, text=self.tr("Get from clipboard"))
+        self.readQR_button = QPushButton(self.ButtonFrame, text=self.tr("Load image from file"))
+        self.pasteQR_button = QPushButton(self.ButtonFrame, text=self.tr("Get image from clipboard"))
+        self.enterText_button = QPushButton(self.ButtonFrame, text=self.tr("Input data manually"))
         self.close_button = QPushButton(self.ButtonFrame, text=self.tr("Close"))
         self.h_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.horizontalLayout.addWidget(self.readQR_button)
         self.horizontalLayout.addWidget(self.pasteQR_button)
+        self.horizontalLayout.addWidget(self.enterText_button)
         self.horizontalLayout.addItem(self.h_spacer)
         self.horizontalLayout.addWidget(self.close_button)
         self.verticalLayout.addWidget(self.ButtonFrame)
         self.readQR_button.clicked.connect(self.load_qr_image_file)
         self.pasteQR_button.clicked.connect(self.paste_qr_image)
+        self.enterText_button.clicked.connect(self.enter_qr_data)
         self.close_button.clicked.connect(self.close)
 
     @Slot()
@@ -234,3 +237,10 @@ class ScanDialog(QDialog):
             self.accept()
         else:
             logging.warning(self.tr("No QR codes found in clipboard"))
+
+    @Slot()
+    def enter_qr_data(self):
+        self.data, result = QInputDialog.getText(None, self.tr("Input code data manually"), self.tr("Data:"))
+        if not result:
+            return
+        self.accept()
