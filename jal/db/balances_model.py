@@ -3,7 +3,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import CustomColor, PredefindedAccountType
+from jal.constants import CustomColor, PredefinedAccountType
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
 from jal.widgets.delegates import FloatDelegate
@@ -54,7 +54,7 @@ class BalancesModel(QAbstractTableModel):
             if self._data[row]['level'] == 0:
                 return self._data[row]['account_name']
             else:
-                return PredefindedAccountType().get_name(self._data[row]['account_type'], default=self.tr("Total"))
+                return PredefinedAccountType().get_name(self._data[row]['account_type'], default=self.tr("Total"))
         elif column == 1:
             return self._data[row]['balance']
         elif column == 2:

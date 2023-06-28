@@ -3,7 +3,7 @@ from decimal import Decimal
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_quotes, \
     create_corporate_actions, create_stock_dividends, create_transfers
-from constants import BookAccount, PredefindedAccountType
+from constants import BookAccount, PredefinedAccountType
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -412,11 +412,11 @@ def test_fifo(prepare_db_fifo):
 def test_asset_transfer(prepare_db):
     peer = JalPeer(data={'name': 'Test Peer', 'parent': 0}, create=True)
     account1 = JalAccount(
-        data={'type': PredefindedAccountType.Investment, 'name': 'account.USD', 'number': 'U7654321', 'currency': 2,
+        data={'type': PredefinedAccountType.Investment, 'name': 'account.USD', 'number': 'U7654321', 'currency': 2,
               'active': 1, 'organization': 1, 'precision': 10},
         create=True)
     account2 = JalAccount(
-        data={'type': PredefindedAccountType.Investment, 'name': 'account.RUB', 'number': 'U7654321', 'currency': 1,
+        data={'type': PredefinedAccountType.Investment, 'name': 'account.RUB', 'number': 'U7654321', 'currency': 1,
               'active': 1, 'organization': 1, 'precision': 10},
         create=True)
 

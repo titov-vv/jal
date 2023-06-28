@@ -1933,22 +1933,22 @@ do you want to save it?</source>
 <context>
     <name>LoginLidlPlus</name>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="175"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="181"/>
         <source>Login error</source>
         <translation>Ошибка логина</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="175"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="181"/>
         <source>No auth code in callback URI</source>
         <translation>Код аутентификации отсутствует в callback URI</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="190"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="196"/>
         <source>Lidl Plus login failed: </source>
         <translation>Lidl Plus логин не успешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="192"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="198"/>
         <source>Lidl Plus login successful: </source>
         <translation>Lidl Plus логин выполнен успешно: </translation>
     </message>
@@ -1974,27 +1974,27 @@ do you want to save it?</source>
 <context>
     <name>LoginPingoDoce</name>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="184"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="189"/>
         <source>Pingo Doce phone verification failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="195"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="200"/>
         <source>Pingo Doce unknown login status: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="202"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="207"/>
         <source>Pingo Doce login failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="204"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="209"/>
         <source>Pingo Doce login successful: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="217"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="222"/>
         <source>Pingo Doce login response failed with: </source>
         <translation></translation>
     </message>
@@ -2435,39 +2435,39 @@ Application will be terminated now.</source>
     </message>
 </context>
 <context>
-    <name>PredefindedAccountType</name>
+    <name>PredefinedAccountType</name>
     <message>
-        <location filename="../constants.py" line="65"/>
+        <location filename="../constants.py" line="66"/>
         <source>Cash</source>
         <translation>Наличные</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="66"/>
+        <location filename="../constants.py" line="67"/>
         <source>Bank accounts</source>
         <translation>Счета в банке</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="67"/>
+        <location filename="../constants.py" line="68"/>
         <source>Cards</source>
         <translation>Карты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="68"/>
+        <location filename="../constants.py" line="69"/>
         <source>Investments</source>
         <translation>Инвестиции</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="69"/>
+        <location filename="../constants.py" line="70"/>
         <source>Savings</source>
         <translation>Сбережения</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="70"/>
+        <location filename="../constants.py" line="71"/>
         <source>Debts / Loans</source>
         <translation>Кредиты / Долги</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="74"/>
+        <location filename="../constants.py" line="76"/>
         <source>e-Wallets</source>
         <translation>e-Кошельки</translation>
     </message>
@@ -2475,42 +2475,42 @@ Application will be terminated now.</source>
 <context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="103"/>
+        <location filename="../constants.py" line="102"/>
         <source>Money</source>
         <translation>Валюты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="104"/>
+        <location filename="../constants.py" line="103"/>
         <source>Shares</source>
         <translation>Акции</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="105"/>
+        <location filename="../constants.py" line="104"/>
         <source>Bonds</source>
         <translation>Облигации</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="106"/>
+        <location filename="../constants.py" line="105"/>
         <source>ETFs</source>
         <translation>БПИФ</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="107"/>
+        <location filename="../constants.py" line="106"/>
         <source>Commodities</source>
         <translation>Товары</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="108"/>
+        <location filename="../constants.py" line="107"/>
         <source>Derivatives</source>
         <translation>Деривативы</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="109"/>
+        <location filename="../constants.py" line="108"/>
         <source>Forex</source>
         <translation>Форекс</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="110"/>
+        <location filename="../constants.py" line="109"/>
         <source>Funds</source>
         <translation>Фонды</translation>
     </message>
@@ -2853,62 +2853,62 @@ Application will be terminated now.</source>
 <context>
     <name>ReceiptEuLidlPlus</name>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="26"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="32"/>
         <source>Lidl QR available but pattern isn&apos;t recognized: </source>
         <translation>Lidl QR отсканирован, но не распознан: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="34"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="40"/>
         <source>Input Lidl receipt additional data</source>
         <translation>Введите дополнительные данные для чека Lidl</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="35"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="41"/>
         <source>Sequence #:</source>
         <translation>Порядковый номер:</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="37"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="43"/>
         <source>Can&apos;t get Lidl receipt without sequence number</source>
         <translation>Невозможно получить чек Lidl без порядкового номера</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="47"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="53"/>
         <source>No Lidl Plus access token available</source>
         <translation>Отсутствует токен доступе Lidl Plus</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="54"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="60"/>
         <source>Unauthorized with reason: </source>
         <translation>Неавторизован, причина: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="57"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="63"/>
         <source>Lidl Plus API failed with: </source>
         <translation>Запрос к Lidl Plus API завершился неуспешно: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="61"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="67"/>
         <source>Refreshing Lidl Plus token...</source>
         <translation>Обновление токена Lidl Plus...</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="69"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="75"/>
         <source>Lidl Plus token was refreshed: </source>
         <translation>Токен Lidl Plus был обновлён: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="80"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="86"/>
         <source>Can&apos;t refresh Lidl Plus token, response: </source>
         <translation>Невозможно обновить токет Lidl Plus, ответ: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="95"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="101"/>
         <source>Receipt was loaded: </source>
         <translation>Чек загружен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="99"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="105"/>
         <source>Receipt load failed: </source>
         <translation>Ошибка загрузки чека: </translation>
     </message>
@@ -2916,92 +2916,92 @@ Application will be terminated now.</source>
 <context>
     <name>ReceiptPtPingoDoce</name>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="23"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="28"/>
         <source>Pingo Doce QR available but pattern isn&apos;t recognized: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="33"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="38"/>
         <source>Input Pingo Doce receipt additional data</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="34"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="39"/>
         <source>Sequence #:</source>
         <translation>Порядковый номер:</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="36"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="41"/>
         <source>Can&apos;t get Pingo Doce receipt without sequence number</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="48"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="53"/>
         <source>No Pingo Doce access token available</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="58"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="63"/>
         <source>Unauthorized with reason: </source>
         <translation>Неавторизован, причина: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="68"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="73"/>
         <source>Pingo Doce API failed with: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="72"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="77"/>
         <source>Pingo Doce API filter failed with: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="79"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="84"/>
         <source>Pingo Doce API history failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="91"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="96"/>
         <source>Refreshing Pingo Doce token...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="100"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="105"/>
         <source>Pingo Doce token was refreshed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="109"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="114"/>
         <source>Can&apos;t refresh Pingo Doce token, response: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="115"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="120"/>
         <source>Can&apos;t get Pingo Doce profile, response: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="117"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="122"/>
         <source>Pingo Doce profile was loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="133"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="138"/>
         <source>Receipt was loaded: </source>
         <translation>Чек загружен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="137"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="142"/>
         <source>Receipt load failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="142"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="147"/>
         <source>Receipt was not found in available list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="144"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="149"/>
         <source>Several similar receipts was found: </source>
         <translation></translation>
     </message>
@@ -3299,33 +3299,48 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../widgets/qr_scanner.py" line="178"/>
-        <source>Load from file</source>
-        <translation>Загрузить из файла</translation>
+        <source>Load image from file</source>
+        <translation>Загрузить изображение из файла</translation>
     </message>
     <message>
         <location filename="../widgets/qr_scanner.py" line="179"/>
-        <source>Get from clipboard</source>
-        <translation>Получить из буфера</translation>
+        <source>Get image from clipboard</source>
+        <translation>Получить изображение из буфера</translation>
     </message>
     <message>
         <location filename="../widgets/qr_scanner.py" line="180"/>
+        <source>Input data manually</source>
+        <translation>Ввести данные вручную</translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="181"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="219"/>
+        <location filename="../widgets/qr_scanner.py" line="222"/>
         <source>Select file with QR code</source>
         <translation>Выберите файл с QR-кодом</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="226"/>
+        <location filename="../widgets/qr_scanner.py" line="229"/>
         <source>No QR codes were found in file</source>
         <translation>QR-код в файле не обнаружен</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="236"/>
+        <location filename="../widgets/qr_scanner.py" line="239"/>
         <source>No QR codes found in clipboard</source>
         <translation>QR код не обнаружен в буфере обмена</translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="243"/>
+        <source>Input code data manually</source>
+        <translation>Введите данные кода вручную</translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="243"/>
+        <source>Data:</source>
+        <translation>Данные:</translation>
     </message>
 </context>
 <context>

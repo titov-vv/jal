@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QAction
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog, QMessageBox
-from jal.constants import PredefindedAccountType, PredefinedAsset
+from jal.constants import PredefinedAccountType, PredefinedAsset
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
@@ -82,7 +82,7 @@ class AccountListDialog(ReferenceDataDialog):
         self.ui.GroupLbl.setText(self.tr("Account type:"))
         self.ui.GroupCombo.setVisible(True)
         self.group_field = self.model.group_by
-        PredefindedAccountType().load2combo(self.ui.GroupCombo)
+        PredefinedAccountType().load2combo(self.ui.GroupCombo)
         self.group_id = 1
 
     def locateItem(self, item_id):

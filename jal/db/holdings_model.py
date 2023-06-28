@@ -5,7 +5,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import CustomColor, PredefindedAccountType
+from jal.constants import CustomColor, PredefinedAccountType
 from jal.db.helpers import localize_decimal
 from jal.db.tree_model import AbstractTreeItem, AbstractTreeModel
 from jal.db.account import JalAccount
@@ -259,7 +259,7 @@ class HoldingsModel(AbstractTreeModel):
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def prepareData(self):
         holdings = []
-        accounts = JalAccount.get_all_accounts(account_type=PredefindedAccountType.Investment)
+        accounts = JalAccount.get_all_accounts(account_type=PredefinedAccountType.Investment)
         for account in accounts:
             account_holdings = []
             assets = account.assets_list(self._date)

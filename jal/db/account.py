@@ -4,7 +4,7 @@ from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 import jal.db.operations
 import jal.db.closed_trade
-from jal.constants import Setup, BookAccount, PredefindedAccountType, PredefinedAsset
+from jal.constants import Setup, BookAccount, PredefinedAccountType, PredefinedAsset
 from jal.db.country import JalCountry
 
 
@@ -26,7 +26,7 @@ class JalAccount(JalDB):
                 if similar_id:
                     self._id = self.__copy_similar_account(similar_id, data)
                 else:   # Create new account record
-                    if data['type'] == PredefindedAccountType.Investment and data['organization'] is None:
+                    if data['type'] == PredefinedAccountType.Investment and data['organization'] is None:
                         data['organization'] = JalPeer(
                             data={'name': self.tr("Bank for account #" + str(data['number']))},
                             search=True, create=True).id()

@@ -1,6 +1,6 @@
-from PySide6.QtCore import Property
+from PySide6.QtCore import Property, QObject
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QApplication, QComboBox
+from PySide6.QtWidgets import QComboBox
 
 
 class Setup:
@@ -39,9 +39,9 @@ class PredefinedList:
     def __init(self):
         self._names = {}
 
-    def get_name(self, id, default=''):
+    def get_name(self, name_id, default=''):
         try:
-            return self._names[id]
+            return self._names[name_id]
         except KeyError:
             return default
 
@@ -51,7 +51,7 @@ class PredefinedList:
             combobox.addItem(self._names[item], userData=item)
 
 
-class PredefindedAccountType(PredefinedList):
+class PredefinedAccountType(PredefinedList, QObject):
     Cash = 1
     Bank = 2
     Card = 3
@@ -61,6 +61,7 @@ class PredefindedAccountType(PredefinedList):
     eWallet = 7
 
     def __init__(self):
+        super().__init__()
         self._names = {
             self.Cash: self.tr("Cash"),
             self.Bank: self.tr("Bank accounts"),
@@ -70,9 +71,6 @@ class PredefindedAccountType(PredefinedList):
             self.Loans: self.tr("Debts / Loans"),
             self.eWallet: self.tr("e-Wallets")
         }
-
-    def tr(self, text):
-        return QApplication.translate("AccountType", text)
 
 
 class PredefinedCategory:
@@ -87,7 +85,7 @@ class PredefinedCategory:
     Profit = 9
 
 
-class PredefinedAsset(PredefinedList):
+class PredefinedAsset(PredefinedList, QObject):
     Money = 1
     Stock = 2
     Bond = 3
@@ -99,6 +97,7 @@ class PredefinedAsset(PredefinedList):
     Crypto = 9
 
     def __init__(self):
+        super().__init__()
         self._names = {
             self.Money: self.tr("Money"),
             self.Stock: self.tr("Shares"),
@@ -110,9 +109,6 @@ class PredefinedAsset(PredefinedList):
             self.Fund: self.tr("Funds"),
             self.Crypto: self.tr("Crypto-currency")
         }
-
-    def tr(self, text):
-        return QApplication.translate("AssetType", text)
 
 
 class AssetData:
@@ -156,10 +152,10 @@ class AssetTypeComboBox(QComboBox):
         super().__init__(parent=parent)
         PredefinedAsset().load2combo(self)
 
-    def getKey(self):
+    def get_key(self):
         return self.currentData()
 
-    def setKey(self, value):
+    def set_key(self, value):
         self.setCurrentIndex(self.findData(value))
 
-    key = Property(int, getKey, setKey, user=True)
+    key = Property(int, get_key, set_key, user=True)
