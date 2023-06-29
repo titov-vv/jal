@@ -250,6 +250,10 @@ class LedgerTransaction(JalDB):
     def reconciled(self) -> bool:
         return self._reconciled
 
+    # If possible assigns given tag to the operation (or all its components)
+    def assign_tag(self, tag_id: int):
+        pass
+
     def processLedger(self, ledger):
         raise NotImplementedError(f"processLedger() method is not defined in {type(self).__name__} class")
 
@@ -348,6 +352,11 @@ class IncomeSpending(LedgerTransaction):
 
     def amount(self) -> Decimal:
         return self._amount
+
+    # it assigns tag to all operation details
+    def assign_tag(self, tag_id: int):
+        self._exec("UPDATE action_details SET tag_id=:tag_id WHERE pid=:pid",
+                   [(":tag_id", tag_id), (":pid", self._oid)])
 
     def processLedger(self, ledger):
         if len(self._details) == 0:

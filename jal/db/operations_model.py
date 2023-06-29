@@ -141,11 +141,18 @@ class OperationsModel(QAbstractTableModel):
         self._data = Ledger.get_operations_sequence(self._begin, self._end, self._account)
         self.modelReset.emit()
 
-    def deleteRows(self, rows):
+    def delete_rows(self, rows):
         for row in rows:
             if (row >= 0) and (row < len(self._data)):
                 LedgerTransaction.get_operation(self._data[row]['op_type'], self._data[row]['id'],
                                                 display_type=self._data[row]['subtype']).delete()
+        self.prepareData()
+
+    def assign_tag_to_rows(self, rows, tag_id):
+        for row in rows:
+            if (row >= 0) and (row < len(self._data)):
+                LedgerTransaction.get_operation(self._data[row]['op_type'], self._data[row]['id'],
+                                                display_type=self._data[row]['subtype']).assign_tag(tag_id)
         self.prepareData()
 
 
