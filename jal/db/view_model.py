@@ -38,10 +38,3 @@ class JalViewModel(JalModel):
             font.setStrikeOut(True)
             return font
         return super().data(index, role)
-
-    def configureView(self):
-        self._view.setColumnHidden(0, True)
-        self._view.setColumnHidden(1, True)
-        self._view.setColumnWidth(3, 100)
-        self._view.setColumnWidth(4, 100)
-        self._view.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
