@@ -18,6 +18,7 @@ JAL_REPORT_CLASS = "IncomeSpendingReport"
 
 MONTHLY = 12
 WEEKLY = 53
+CATEGORY_ROLE = Qt.UserRole
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -283,7 +284,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                 return int(Qt.AlignLeft)
             else:
                 return int(Qt.AlignRight)
-        if role == Qt.UserRole:  # return category id for given index
+        if role == CATEGORY_ROLE:  # return category id for given index
             if index.column() != 0:
                 year, period = self._root.column2calendar(index.column())
                 return item.details(year, period)
@@ -423,5 +424,5 @@ class IncomeSpendingReportWindow(MdiWidget):
 
     @Slot()
     def showDetailsReport(self):
-        details = self.income_spending_model.data(self.current_index, Qt.UserRole)
+        details = self.income_spending_model.data(self.current_index, CATEGORY_ROLE)
         self._parent.show_report("CategoryReportWindow", details)
