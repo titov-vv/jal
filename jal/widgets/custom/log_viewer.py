@@ -4,7 +4,7 @@ from jal.constants import CustomColor
 from jal.db.helpers import load_icon
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
-from PySide6.QtGui import QBrush, QAction
+from PySide6.QtGui import QBrush
 
 
 # Adapter class to have custom log handler that may be passed to logger.addHandler/logger.removeHandler methods and
