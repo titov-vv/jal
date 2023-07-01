@@ -15,6 +15,7 @@ from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.asset import JalAsset
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
 
+DATA_SOURCE_ROLE = Qt.UserRole
 
 # ===================================================================================================================
 # UI dialog class
@@ -30,7 +31,7 @@ class QuotesUpdateDialog(QDialog):
         for source in sources:
             if source != MarketDataFeed.NA:
                 item = QListWidgetItem(sources[source], self.ui.SourcesList)
-                item.setData(Qt.UserRole, source)
+                item.setData(DATA_SOURCE_ROLE, source)
                 item.setCheckState(Qt.Checked)
                 self.ui.SourcesList.addItem(item)
 
@@ -51,7 +52,7 @@ class QuotesUpdateDialog(QDialog):
         for item_index in range(self.ui.SourcesList.count()):
             item = self.ui.SourcesList.item(item_index)
             if item.checkState() == Qt.Checked:
-                checked.append(item.data(Qt.UserRole))
+                checked.append(item.data(DATA_SOURCE_ROLE))
         return checked
 
 
