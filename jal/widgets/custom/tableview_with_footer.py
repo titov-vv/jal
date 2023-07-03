@@ -3,7 +3,11 @@ from PySide6.QtWidgets import QTableView, QHeaderView
 from PySide6.QtGui import QResizeEvent, QPainter
 from jal.constants import DataRole
 
-
+# ----------------------------------------------------------------------------------------------------------------------
+# File implements TableViewWithFooter class that is a descendant of QTableView class with footer.
+# Underlying model should support footerData(section, role) method in order to provide data for the footer.
+# The footer is implemented as FooterView class that is derived from QHeaderView.
+# ----------------------------------------------------------------------------------------------------------------------
 class FooterView(QHeaderView):
     def __init__(self, parent: QTableView):
         super().__init__(Qt.Horizontal, parent)
