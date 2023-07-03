@@ -11,11 +11,10 @@ from PySide6.QtCore import Qt, QObject, Signal, QDate
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
-from jal.constants import MarketDataFeed, PredefinedAsset
+from jal.constants import MarketDataFeed, PredefinedAsset, DataRole
 from jal.db.asset import JalAsset
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
 
-DATA_SOURCE_ROLE = Qt.UserRole
 
 # ===================================================================================================================
 # UI dialog class
@@ -31,7 +30,7 @@ class QuotesUpdateDialog(QDialog):
         for source in sources:
             if source != MarketDataFeed.NA:
                 item = QListWidgetItem(sources[source], self.ui.SourcesList)
-                item.setData(DATA_SOURCE_ROLE, source)
+                item.setData(DataRole.DATA_SOURCE_ROLE, source)
                 item.setCheckState(Qt.Checked)
                 self.ui.SourcesList.addItem(item)
 
@@ -52,7 +51,7 @@ class QuotesUpdateDialog(QDialog):
         for item_index in range(self.ui.SourcesList.count()):
             item = self.ui.SourcesList.item(item_index)
             if item.checkState() == Qt.Checked:
-                checked.append(item.data(DATA_SOURCE_ROLE))
+                checked.append(item.data(DataRole.DATA_SOURCE_ROLE))
         return checked
 
 

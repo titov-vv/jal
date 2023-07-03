@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QHeaderView
 from PySide6.QtGui import QFont
 from jal.db.db import JalModel
+from jal.constants import DataRole
 
 
 class JalViewModel(JalModel):
@@ -14,6 +14,9 @@ class JalViewModel(JalModel):
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._columns[section]
+        return None
+
+    def footerData(self, section, role=DataRole.FOOTER_DATA):
         return None
 
     def removeRow(self, row, parent=None):

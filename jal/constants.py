@@ -1,4 +1,4 @@
-from PySide6.QtCore import Property, QObject
+from PySide6.QtCore import Qt, Property, QObject
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QComboBox
 
@@ -33,6 +33,14 @@ class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Assets = 4
     Liabilities = 5
     Transfers = 6
+
+
+class DataRole:   # It is used by customer data models to provide extra data from data() method
+    CATEGORY_ROLE = Qt.UserRole
+    DATA_SOURCE_ROLE = Qt.UserRole + 1
+    FOOTER_DATA = Qt.UserRole + 2
+    FOOTER_ALIGNMENT = Qt.UserRole + 3
+    FOOTER_FONT = Qt.UserRole + 4
 
 
 class PredefinedList:

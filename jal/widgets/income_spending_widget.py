@@ -1,16 +1,19 @@
 import logging
 from datetime import datetime
 from dateutil import tz
+from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QLabel, QLineEdit, QDateTimeEdit, QPushButton, QTableView, QHeaderView
-from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QLabel, QLineEdit, QDateTimeEdit, QPushButton, QHeaderView
 from PySide6.QtSql import QSqlTableModel
+from PySide6.QtGui import QFont
+from jal.constants import DataRole
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
+from widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.db.view_model import JalViewModel
-from jal.db.helpers import load_icon
+from jal.db.helpers import load_icon, localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
@@ -62,7 +65,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.del_button.setToolTip(self.tr("Remove detail"))
         self.copy_button = QPushButton(load_icon("copy.png"), '', self)
         self.copy_button.setToolTip(self.tr("Copy detail"))
-        self.details_table = QTableView(self)
+        self.details_table = TableViewWithFooter(self)
         self.details_table.horizontalHeader().setFont(self.bold_font)
         self.details_table.setAlternatingRowColors(True)
         self.details_table.verticalHeader().setVisible(False)
@@ -250,6 +253,32 @@ class DetailsModel(JalViewModel):
             return self._columns[section] + ', ' + self.alt_currency_name
         else:
             return super().headerData(section, orientation, role)
+
+    def footerData(self, section, role=DataRole.FOOTER_DATA):
+        if role == DataRole.FOOTER_DATA:
+            if section == 6:
+                return self.tr("Total")
+            elif section == 4 or section == 5:
+                total = Decimal('0')
+                for row in range(self.rowCount()):
+                    try:
+                        value = Decimal(self.index(row, section).data())
+                    except:
+                        value = Decimal('0')
+                    total += value
+                return localize_decimal(total, precision=2)
+            else:
+                return ''
+        elif role == DataRole.FOOTER_FONT:
+            font = QFont()
+            font.setBold(True)
+            return font
+        elif role == DataRole.FOOTER_ALIGNMENT:
+            if section == 6:
+                return Qt.AlignLeft | Qt.AlignVCenter
+            else:
+                return Qt.AlignRight | Qt.AlignVCenter
+        return None
 
     def configureView(self):
         self._view.setColumnHidden(0, True)

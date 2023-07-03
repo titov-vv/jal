@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QMenu
 from jal.reports.reports import Reports
 from jal.db.asset import JalAsset
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
-from jal.constants import CustomColor
+from jal.constants import CustomColor, DataRole
 from jal.db.helpers import load_icon
 from jal.db.category import JalCategory
 from jal.widgets.helpers import is_signal_connected, month_list, month_start_ts, month_end_ts, \
@@ -18,7 +18,6 @@ JAL_REPORT_CLASS = "IncomeSpendingReport"
 
 MONTHLY = 12
 WEEKLY = 53
-CATEGORY_ROLE = Qt.UserRole
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -284,7 +283,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                 return int(Qt.AlignLeft)
             else:
                 return int(Qt.AlignRight)
-        if role == CATEGORY_ROLE:  # return category id for given index
+        if role == DataRole.CATEGORY_ROLE:  # return category id for given index
             if index.column() != 0:
                 year, period = self._root.column2calendar(index.column())
                 return item.details(year, period)
@@ -424,5 +423,5 @@ class IncomeSpendingReportWindow(MdiWidget):
 
     @Slot()
     def showDetailsReport(self):
-        details = self.income_spending_model.data(self.current_index, CATEGORY_ROLE)
+        details = self.income_spending_model.data(self.current_index, DataRole.CATEGORY_ROLE)
         self._parent.show_report("CategoryReportWindow", details)
