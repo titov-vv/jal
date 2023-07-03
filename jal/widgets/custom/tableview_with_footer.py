@@ -12,6 +12,7 @@ class FooterView(QHeaderView):
 
     def setModel(self, model: QAbstractItemModel) -> None:
         self._model = model
+        self._model.dataChanged.connect(self.on_model_update)
         super().setModel(model)
 
     def paintSection(self, painter: QPainter, rect: QRect, idx: int) -> None:
@@ -34,6 +35,9 @@ class FooterView(QHeaderView):
 
     def on_header_move(self, _section: int, old: int, new: int) -> None:
         self.moveSection(old, new)
+
+    def on_model_update(self, top_left, bottom_right, _role) -> None:
+        self.headerDataChanged(Qt.Horizontal, top_left.column(), bottom_right.column())
 
 
 class TableViewWithFooter(QTableView):
