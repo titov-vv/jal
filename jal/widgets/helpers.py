@@ -132,12 +132,14 @@ def week_list(begin: int, end: int) -> list:
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Function takes an image and searches for QR in it. Content of first found QR is returned. Otherwise - empty string.
-def decodeQR(qr_image: QImage, code_type=pyzbar.ZBarSymbol.QRCODE) -> str:
+def decodeQR(qr_image: QImage, code_type=None) -> str:
     if qr_image.isNull():
         return ''
     if not dependency_present(['pyzbar']):
         logging.warning("Package pyzbar not found for QR recognition.")
         return ''
+    if code_type is None:
+        code_type = pyzbar.ZBarSymbol.QRCODE
     qr_image.convertTo(QImage.Format_Grayscale8)
     # bytesPerXXX is more accurate than width and height
     data = (qr_image.bits().tobytes(), qr_image.bytesPerLine(), int(qr_image.sizeInBytes()/qr_image.bytesPerLine()))
