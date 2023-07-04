@@ -11,7 +11,7 @@ from jal.constants import DataRole
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
-from widgets.custom.tableview_with_footer import TableViewWithFooter
+from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import load_icon, localize_decimal
 from jal.db.operations import LedgerTransaction

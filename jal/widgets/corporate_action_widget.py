@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox, QHead
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
 from jal.constants import DataRole
-from widgets.custom.tableview_with_footer import TableViewWithFooter
+from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
