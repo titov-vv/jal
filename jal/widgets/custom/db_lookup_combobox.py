@@ -15,6 +15,8 @@ class DbLookupComboBox(QComboBox):
         self._selected_id = -1
 
     def getKey(self):
+        if self._model is None:
+            return 0
         return self._model.get_value(self._key_field, self._field, self.currentText())
 
     def setKey(self, selected_id):
