@@ -1,3 +1,4 @@
+# Here reference goes from PYSIDE_DESIGNER_PLUGINS directory
 from custom.db_lookup_combobox import DbLookupComboBox
 
 from PySide6.QtGui import QIcon
@@ -29,7 +30,7 @@ DOM_XML = """
 """
 
 
-class DDbLookupComboBoxPlugin(QDesignerCustomWidgetInterface):
+class DbLookupComboBoxPlugin(QDesignerCustomWidgetInterface):
     def __init__(self):
         super().__init__()
         self._initialized = False
