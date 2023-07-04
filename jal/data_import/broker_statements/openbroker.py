@@ -532,11 +532,14 @@ class StatementOpenBroker(StatementXML):
         self._data[FOF.SYMBOLS] = [x for x in self._data[FOF.SYMBOLS] if "broker_symbol" not in x]
 
     # Broker report contains vague asset names in dividends
-    # This method tries to locate the best match in available assets
-    def find_most_probable_asset(self, asset_name):
+    # This method tries to locate the best match in available assets and return asset_id if match is found
+    def find_most_probable_asset(self, asset_name) -> int:
         match = difflib.get_close_matches(asset_name, [x['symbol'] for x in self._data[FOF.SYMBOLS]], 1)
         if match:
             asset = [x for x in self._data[FOF.SYMBOLS] if x['symbol'] == match[0]]
             return asset[0]['asset']
-        else:
-            raise Statement_ImportError(self.tr("Can't match asset for ") + f"'{asset_name}'")
+        match = difflib.get_close_matches(asset_name, [x['name'] for x in self._data[FOF.ASSETS]], 1)
+        if match:
+            asset = [x for x in self._data[FOF.ASSETS] if x['name'] == match[0]]
+            return asset[0]['id']
+        raise Statement_ImportError(self.tr("Can't match asset for ") + f"'{asset_name}'")
