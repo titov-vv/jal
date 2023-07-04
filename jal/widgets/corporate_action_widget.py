@@ -7,7 +7,6 @@ from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox, QHeaderView, QPushButton
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
-from jal.constants import DataRole
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
@@ -239,8 +238,8 @@ class ResultsModel(JalViewModel):
         super().__init__(parent_view, table_name)
         self._columns = ["id", "action_id", self.tr("Asset"), self.tr("Qty"), self.tr("Share, %")]
 
-    def footerData(self, section, role=DataRole.FOOTER_DATA):
-        if role == DataRole.FOOTER_DATA:
+    def footerData(self, section, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
             if section == 2:
                 return self.tr("Total")
             elif section == 4:
@@ -254,11 +253,11 @@ class ResultsModel(JalViewModel):
                 return localize_decimal(total, precision=2, percent=True)
             else:
                 return ''
-        elif role == DataRole.FOOTER_FONT:
+        elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)
             return font
-        elif role == DataRole.FOOTER_ALIGNMENT:
+        elif role == Qt.TextAlignmentRole:
             if section == 2:
                 return Qt.AlignLeft | Qt.AlignVCenter
             else:

@@ -7,7 +7,6 @@ from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QLabel, QLineEdit, QDateTimeEdit, QPushButton, QHeaderView
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
-from jal.constants import DataRole
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
@@ -254,8 +253,8 @@ class DetailsModel(JalViewModel):
         else:
             return super().headerData(section, orientation, role)
 
-    def footerData(self, section, role=DataRole.FOOTER_DATA):
-        if role == DataRole.FOOTER_DATA:
+    def footerData(self, section, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
             if section == 6:
                 return self.tr("Total")
             elif section == 4 or section == 5:
@@ -269,11 +268,11 @@ class DetailsModel(JalViewModel):
                 return localize_decimal(total, precision=2)
             else:
                 return ''
-        elif role == DataRole.FOOTER_FONT:
+        elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)
             return font
-        elif role == DataRole.FOOTER_ALIGNMENT:
+        elif role == Qt.TextAlignmentRole:
             if section == 6:
                 return Qt.AlignLeft | Qt.AlignVCenter
             else:

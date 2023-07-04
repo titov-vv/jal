@@ -1,7 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from jal.db.db import JalModel
-from jal.constants import DataRole
 
 
 class JalViewModel(JalModel):
@@ -16,7 +15,7 @@ class JalViewModel(JalModel):
             return self._columns[section]
         return None
 
-    def footerData(self, section, role=DataRole.FOOTER_DATA):
+    def footerData(self, section, role=Qt.DisplayRole):
         return None
 
     def removeRow(self, row, parent=None):

@@ -1,7 +1,6 @@
 from PySide6.QtCore import Qt, QAbstractItemModel, QRect
 from PySide6.QtWidgets import QTableView, QHeaderView
 from PySide6.QtGui import QResizeEvent, QPainter
-from jal.constants import DataRole
 
 # ----------------------------------------------------------------------------------------------------------------------
 # File implements TableViewWithFooter class that is a descendant of QTableView class with footer.
@@ -20,9 +19,9 @@ class FooterView(QHeaderView):
         super().setModel(model)
 
     def paintSection(self, painter: QPainter, rect: QRect, idx: int) -> None:
-        text = self._model.footerData(idx, role=DataRole.FOOTER_DATA)
-        font = self._model.footerData(idx, role=DataRole.FOOTER_FONT)
-        alignment = self._model.footerData(idx, role=DataRole.FOOTER_ALIGNMENT)
+        text = self._model.footerData(idx, role=Qt.DisplayRole)
+        font = self._model.footerData(idx, role=Qt.FontRole)
+        alignment = self._model.footerData(idx, role=Qt.TextAlignmentRole)
         alignment = Qt.AlignCenter | Qt.AlignVCenter if alignment is None else alignment
         painter.save()
         super().paintSection(painter, rect, idx)
