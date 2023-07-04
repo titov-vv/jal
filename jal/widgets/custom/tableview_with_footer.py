@@ -32,7 +32,7 @@ class FooterView(QHeaderView):
         painter.fillRect(inner_rect, bg_color)  # Empty the area
         if font is not None:
             painter.setFont(font)
-        painter.drawText(inner_rect, alignment, text)
+        painter.drawText(inner_rect, alignment, f" {text} ")
 
     def on_header_resize(self, section: int, _old_size: int, new_size: int) -> None:
         self.resizeSection(section, new_size)
