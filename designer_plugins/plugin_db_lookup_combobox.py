@@ -1,4 +1,5 @@
-from custom.tableview_with_footer import TableViewWithFooter
+# Here reference goes from PYSIDE_DESIGNER_PLUGINS directory
+from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
 
 from PySide6.QtGui import QIcon
 from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
@@ -6,27 +7,36 @@ from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
 
 DOM_XML = """
 <ui language='c++'>
-    <widget class='TableViewWithFooter' name='tableViewWithFooter'>
+    <widget class='DbLookupComboBox' name='dbLookupCombobox'>
         <property name='geometry'>
             <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>400</width>
-                <height>300</height>
+                <width>300</width>
+                <height>32</height>
             </rect>
+        </property>
+        <property name='db_table'>
+            <string notr="true" />
+        </property>
+        <property name='key_field'>
+            <string notr="true" />
+        </property>
+        <property name='db_field'>
+            <string notr="true" />
         </property>
     </widget>
 </ui>
 """
 
 
-class TableViewWithFooterPlugin(QDesignerCustomWidgetInterface):
+class DbLookupComboBoxPlugin(QDesignerCustomWidgetInterface):
     def __init__(self):
         super().__init__()
         self._initialized = False
 
     def createWidget(self, parent):
-        t = TableViewWithFooter(parent)
+        t = DbLookupComboBox(parent)
         return t
 
     def domXml(self):
@@ -39,7 +49,7 @@ class TableViewWithFooterPlugin(QDesignerCustomWidgetInterface):
         return QIcon()
 
     def includeFile(self):
-        return 'jal/widgets/custom/tableview_with_footer.h'
+        return 'jal/widgets/custom/db_lookup_combobox.h'
 
     def initialize(self, form_editor):
         if self._initialized:
@@ -53,10 +63,10 @@ class TableViewWithFooterPlugin(QDesignerCustomWidgetInterface):
         return self._initialized
 
     def name(self):
-        return 'TableViewWithFooter'
+        return 'DbLookupComboBox'
 
     def toolTip(self):
-        return 'QTableView that has a footer'
+        return 'ComboBox to select available values from database lookup table'
 
     def whatsThis(self):
         return self.toolTip()

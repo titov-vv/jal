@@ -1,5 +1,5 @@
 # Here reference goes from PYSIDE_DESIGNER_PLUGINS directory
-from custom.db_lookup_combobox import DbLookupComboBox
+from jal.widgets.custom.date_range_selector import DateRangeSelector
 
 from PySide6.QtGui import QIcon
 from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
@@ -7,7 +7,7 @@ from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
 
 DOM_XML = """
 <ui language='c++'>
-    <widget class='DbLookupComboBox' name='dbLookupCombobox'>
+    <widget class='DateRangeSelector' name='dateRangeSelector'>
         <property name='geometry'>
             <rect>
                 <x>0</x>
@@ -16,27 +16,18 @@ DOM_XML = """
                 <height>32</height>
             </rect>
         </property>
-        <property name='db_table'>
-            <string notr="true" />
-        </property>
-        <property name='key_field'>
-            <string notr="true" />
-        </property>
-        <property name='db_field'>
-            <string notr="true" />
-        </property>
     </widget>
 </ui>
 """
 
 
-class DbLookupComboBoxPlugin(QDesignerCustomWidgetInterface):
+class DateRangeSelectorPlugin(QDesignerCustomWidgetInterface):
     def __init__(self):
         super().__init__()
         self._initialized = False
 
     def createWidget(self, parent):
-        t = DbLookupComboBox(parent)
+        t = DateRangeSelector(parent)
         return t
 
     def domXml(self):
@@ -49,7 +40,7 @@ class DbLookupComboBoxPlugin(QDesignerCustomWidgetInterface):
         return QIcon()
 
     def includeFile(self):
-        return 'jal/widgets/custom/db_lookup_combobox.h'
+        return 'jal/widgets/custom/date_range_selector.h'
 
     def initialize(self, form_editor):
         if self._initialized:
@@ -63,10 +54,10 @@ class DbLookupComboBoxPlugin(QDesignerCustomWidgetInterface):
         return self._initialized
 
     def name(self):
-        return 'DbLookupComboBox'
+        return 'DateRangeSelector'
 
     def toolTip(self):
-        return 'ComboBox to select available values from database lookup table'
+        return 'Widget that allows selection of dates interval'
 
     def whatsThis(self):
         return self.toolTip()

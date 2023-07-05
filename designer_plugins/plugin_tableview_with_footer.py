@@ -1,5 +1,4 @@
-# Here reference goes from PYSIDE_DESIGNER_PLUGINS directory
-from custom.log_viewer import LogViewer
+from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 
 from PySide6.QtGui import QIcon
 from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
@@ -7,13 +6,13 @@ from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
 
 DOM_XML = """
 <ui language='c++'>
-    <widget class='LogViewer' name='logViewer'>
+    <widget class='TableViewWithFooter' name='tableViewWithFooter'>
         <property name='geometry'>
             <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>300</width>
-                <height>200</height>
+                <width>400</width>
+                <height>300</height>
             </rect>
         </property>
     </widget>
@@ -21,13 +20,13 @@ DOM_XML = """
 """
 
 
-class LogViewerPlugin(QDesignerCustomWidgetInterface):
+class TableViewWithFooterPlugin(QDesignerCustomWidgetInterface):
     def __init__(self):
         super().__init__()
         self._initialized = False
 
     def createWidget(self, parent):
-        t = LogViewer(parent)
+        t = TableViewWithFooter(parent)
         return t
 
     def domXml(self):
@@ -40,7 +39,7 @@ class LogViewerPlugin(QDesignerCustomWidgetInterface):
         return QIcon()
 
     def includeFile(self):
-        return 'jal/widgets/custom/log_viewer.h'
+        return 'jal/widgets/custom/tableview_with_footer.h'
 
     def initialize(self, form_editor):
         if self._initialized:
@@ -54,10 +53,10 @@ class LogViewerPlugin(QDesignerCustomWidgetInterface):
         return self._initialized
 
     def name(self):
-        return 'LogViewer'
+        return 'TableViewWithFooter'
 
     def toolTip(self):
-        return 'Widget to display python logger messages in UI'
+        return 'QTableView that has a footer'
 
     def whatsThis(self):
         return self.toolTip()
