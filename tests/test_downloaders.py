@@ -26,13 +26,13 @@ def test_INN_resolution():
 def test_MOEX_details():
     assert QuoteDownloader.MOEX_find_secid(reg_number='') == ''
     assert QuoteDownloader.MOEX_find_secid(isin='TEST') == ''
-    assert QuoteDownloader.MOEX_find_secid(reg_number='2770') == 'RU000A1013V9'
+    assert QuoteDownloader.MOEX_find_secid(reg_number='0252-74113866') == 'RU000A0ERGA7'
     assert QuoteDownloader.MOEX_find_secid(reg_number='1-01-00010-A') == 'AFLT'
     assert QuoteDownloader.MOEX_find_secid(isin='IE00B8XB7377') == 'FXGD'
     assert QuoteDownloader.MOEX_find_secid(isin='JE00B6T5S470') == 'POLY'
     assert QuoteDownloader.MOEX_find_secid(isin='RU000A1038V6') == 'SU26238RMFS4'
     assert QuoteDownloader.MOEX_find_secid(isin='IE00B8XB7377', reg_number='CEOGCS') == 'FXGD'
-    assert QuoteDownloader.MOEX_find_secid(name='ФПК Гарант-Инвест БО 002Р-04') == 'RU000A103WX4'
+    assert QuoteDownloader.MOEX_find_secid(name='МЕТАЛЛОИНВЕСТ 028') == 'RU000A105A04'
 
     assert QuoteDownloader.MOEX_info() == {}
     assert QuoteDownloader.MOEX_info(special=True) == {}
@@ -62,10 +62,10 @@ def test_MOEX_details():
                                                                                'market': 'forts',
                                                                                'board': 'RFUD',
                                                                                'type': PredefinedAsset.Derivative}
-    assert QuoteDownloader.MOEX_info(symbol='', reg_number='2770') == {'symbol': 'ЗПИФ ПНК',
-                                                                      'isin': 'RU000A1013V9',
-                                                                      'name': 'ЗПИФ Фонд ПНК-Рентал',
-                                                                      'reg_number': '2770',
+    assert QuoteDownloader.MOEX_info(symbol='', reg_number='0252-74113866') == {'symbol': 'ПИФСбер-КН',
+                                                                      'isin': 'RU000A0ERGA7',
+                                                                      'name': 'ПИФСбербанк Комм.недвижимость',
+                                                                      'reg_number': '0252-74113866',
                                                                       'type': PredefinedAsset.ETF}
     assert QuoteDownloader.MOEX_info(isin='IE00B8XB7377', reg_number='IE00B8XB7377', symbol='FXGD ETF') == {'symbol': 'FXGD',
                                                                                                            'isin': 'IE00B8XB7377',
