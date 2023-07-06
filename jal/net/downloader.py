@@ -434,8 +434,7 @@ class QuoteDownloader(QObject):
             return None
         data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
         data['Close'] = data['Close'].apply(Decimal)
-        data = data.drop(columns=['Open', 'High', 'Low', 'Number of Shares', 'Number of Trades',
-                                  'Turnover', 'Number of Trades', 'vwap'])
+        data = data.drop(columns=['Open', 'High', 'Low', 'Last', 'Number of Shares', 'Number of Trades', 'Turnover', 'vwap'])
         data.dropna(inplace=True)
         close = data.set_index("Date")
         close.sort_index(inplace=True)

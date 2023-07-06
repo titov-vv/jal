@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from pandas._testing import assert_frame_equal
 
+from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
 from tests.helpers import d2t, create_stocks, create_assets
 from jal.db.asset import JalAsset
 from jal.constants import PredefinedAsset
@@ -216,12 +217,12 @@ def test_LSE_downloader(prepare_db):
 
 def test_Euronext_downloader(prepare_db):
     create_assets([('NOK', 'Nokia', 'FI0009000681', 3, PredefinedAsset.Stock, 0)])   # ID = 4
-    quotes = pd.DataFrame({'Close': [Decimal('3.4945'), Decimal('3.50'), Decimal('3.4995')],
-                           'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
+    quotes = pd.DataFrame({'Close': [Decimal('4.483'), Decimal('4.481'), Decimal('4.5115')],
+                           'Date': [datetime(2023, 4, 12), datetime(2023, 4, 13), datetime(2023, 4, 14)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Euronext_DataReader(JalAsset(4), 3, 1618272000, 1618444800)
+    quotes_downloaded = downloader.Euronext_DataReader(JalAsset(4), 3, d2t(230412), d2t(230414))
     assert_frame_equal(quotes, quotes_downloaded)
 
 
