@@ -19,18 +19,23 @@ class FooterView(QHeaderView):
         super().setModel(model)
 
     def paintSection(self, painter: QPainter, rect: QRect, idx: int) -> None:
-        text = self._model.footerData(idx, role=Qt.DisplayRole)
-        font = self._model.footerData(idx, role=Qt.FontRole)
-        alignment = self._model.footerData(idx, role=Qt.TextAlignmentRole)
-        alignment = Qt.AlignCenter | Qt.AlignVCenter if alignment is None else alignment
+        # First make standard painting by parent QHeaderView class method
         painter.save()
         super().paintSection(painter, rect, idx)
         painter.restore()
+        # Clean footer content (by default QHeaderView puts sections names there
         inner_rect = rect.adjusted(self.lineWidth(), self.lineWidth(), -self.lineWidth(), -self.lineWidth())
         bg_color = self.palette().color(self.backgroundRole())
-        painter.fillRect(inner_rect, bg_color)  # Empty the area
+        painter.fillRect(inner_rect, bg_color)
+        # Get data from model and write text with given font and position
+        text = self._model.footerData(idx, role=Qt.DisplayRole)
+        if text is None:
+            return
+        font = self._model.footerData(idx, role=Qt.FontRole)
         if font is not None:
             painter.setFont(font)
+        alignment = self._model.footerData(idx, role=Qt.TextAlignmentRole)
+        alignment = Qt.AlignCenter | Qt.AlignVCenter if alignment is None else alignment
         painter.drawText(inner_rect, alignment, f" {text} ")
 
     def on_header_resize(self, section: int, _old_size: int, new_size: int) -> None:
