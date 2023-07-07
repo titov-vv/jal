@@ -178,7 +178,12 @@ class IncomeSpendingWidget(AbstractOperationDetails):
             if pid is None:  # we just have saved new action record and need last inserted id
                 pid = self.model.last_insert_id()
             for row in range(self.details_model.rowCount()):
+                # Set PID for all child records
                 self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("pid")), pid)
+                # Set proper NULL values for all child records
+                tag_id = self.details_model.record(row).value(self.details_model.fieldIndex('tag_id'))
+                if not tag_id or Decimal(tag_id) == Decimal('0'):
+                    self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("tag_id")), None)
             if not self.details_model.submitAll():
                 raise RuntimeError(self.tr("Operation details submit failed: ") + self.details_model.lastError().text())
         except Exception as e:
