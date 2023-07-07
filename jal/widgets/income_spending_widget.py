@@ -182,7 +182,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
                 self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("pid")), pid)
                 # Set proper NULL values for all child records
                 tag_id = self.details_model.record(row).value(self.details_model.fieldIndex('tag_id'))
-                if not tag_id or Decimal(tag_id) == Decimal('0'):
+                if not tag_id or int(tag_id) == 0:
                     self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("tag_id")), None)
             if not self.details_model.submitAll():
                 raise RuntimeError(self.tr("Operation details submit failed: ") + self.details_model.lastError().text())
