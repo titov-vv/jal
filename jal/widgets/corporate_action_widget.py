@@ -251,8 +251,6 @@ class ResultsModel(JalViewModel):
                         value = Decimal('0')
                     total += value
                 return localize_decimal(total, precision=2, percent=True)
-            else:
-                return ''
         elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)

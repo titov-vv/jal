@@ -266,8 +266,6 @@ class DetailsModel(JalViewModel):
                         value = Decimal('0')
                     total += value
                 return localize_decimal(total, precision=2)
-            else:
-                return ''
         elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)
