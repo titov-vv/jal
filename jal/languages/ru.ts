@@ -4505,14 +4505,22 @@ Application will be terminated now.</source>
     </message>
 </context>
 <context>
+    <name>TagOperationsModel</name>
+    <message>
+        <location filename="../reports/tag.py" line="29"/>
+        <source>Total with tag </source>
+        <translation>Итого с меткой </translation>
+    </message>
+</context>
+<context>
     <name>TagReport</name>
     <message>
-        <location filename="../reports/tag.py" line="33"/>
+        <location filename="../reports/tag.py" line="93"/>
         <source>Operations</source>
         <translation>Операции</translation>
     </message>
     <message>
-        <location filename="../reports/tag.py" line="34"/>
+        <location filename="../reports/tag.py" line="94"/>
         <source>by Tag</source>
         <translation>по Метке</translation>
     </message>
@@ -4525,9 +4533,14 @@ Application will be terminated now.</source>
         <translation>Отчет по метке</translation>
     </message>
     <message>
-        <location filename="../ui/reports/tag_report.ui" line="85"/>
+        <location filename="../ui/reports/tag_report.ui" line="91"/>
         <source>Tag:</source>
         <translation>Метка:</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/tag_report.ui" line="98"/>
+        <source>Common currency:</source>
+        <translation>Валюта пересчёта:</translation>
     </message>
 </context>
 <context>

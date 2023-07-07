@@ -17,9 +17,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLayout,
     QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QSplitter, QTableView, QVBoxLayout, QWidget)
+    QSplitter, QVBoxLayout, QWidget)
 
+from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.date_range_selector import DateRangeSelector
+from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.operations_tabs import JalOperationsTabs
 from jal.widgets.reference_selector import TagSelector
 
@@ -27,7 +29,7 @@ class Ui_TagReportWidget(object):
     def setupUi(self, TagReportWidget):
         if not TagReportWidget.objectName():
             TagReportWidget.setObjectName(u"TagReportWidget")
-        TagReportWidget.resize(636, 345)
+        TagReportWidget.resize(727, 345)
         self.verticalLayout = QVBoxLayout(TagReportWidget)
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -45,9 +47,10 @@ class Ui_TagReportWidget(object):
         self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.ReportTagEdit = TagSelector(self.ReportParamsFrame)
+        self.ReportTagEdit.setObjectName(u"ReportTagEdit")
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.ReportTagEdit, 0, 2, 1, 1)
 
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
@@ -55,15 +58,24 @@ class Ui_TagReportWidget(object):
 
         self.gridLayout.addWidget(self.ReportRange, 0, 0, 1, 1)
 
+        self.TotalCurrencyCombo = CurrencyComboBox(self.ReportParamsFrame)
+        self.TotalCurrencyCombo.setObjectName(u"TotalCurrencyCombo")
+
+        self.gridLayout.addWidget(self.TotalCurrencyCombo, 0, 4, 1, 1)
+
+        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 5, 1, 1)
+
         self.ReportTagLbl = QLabel(self.ReportParamsFrame)
         self.ReportTagLbl.setObjectName(u"ReportTagLbl")
 
         self.gridLayout.addWidget(self.ReportTagLbl, 0, 1, 1, 1)
 
-        self.ReportTagEdit = TagSelector(self.ReportParamsFrame)
-        self.ReportTagEdit.setObjectName(u"ReportTagEdit")
+        self.TotalCurrencyLbl = QLabel(self.ReportParamsFrame)
+        self.TotalCurrencyLbl.setObjectName(u"TotalCurrencyLbl")
 
-        self.gridLayout.addWidget(self.ReportTagEdit, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.TotalCurrencyLbl, 0, 3, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -71,7 +83,7 @@ class Ui_TagReportWidget(object):
         self.splitter = QSplitter(TagReportWidget)
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Vertical)
-        self.ReportTableView = QTableView(self.splitter)
+        self.ReportTableView = TableViewWithFooter(self.splitter)
         self.ReportTableView.setObjectName(u"ReportTableView")
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy1.setHorizontalStretch(0)
@@ -108,5 +120,6 @@ class Ui_TagReportWidget(object):
     def retranslateUi(self, TagReportWidget):
         TagReportWidget.setWindowTitle(QCoreApplication.translate("TagReportWidget", u"Report by tag", None))
         self.ReportTagLbl.setText(QCoreApplication.translate("TagReportWidget", u"Tag:", None))
+        self.TotalCurrencyLbl.setText(QCoreApplication.translate("TagReportWidget", u"Common currency:", None))
     # retranslateUi
 
