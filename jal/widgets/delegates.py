@@ -291,7 +291,10 @@ class LookupSelectorDelegate(QStyledItemDelegate):
         editor.selected_id = index.data()
 
     def setModelData(self, editor, model, index):
-        model.setData(index, editor.selected_id)
+        if editor.selected_id:  # Check if lookup index is valid or 0
+            model.setData(index, editor.selected_id)
+        else:
+            model.setData(index, None)  # replace invalid index with NULL value
 
 
 class CategorySelectorDelegate(LookupSelectorDelegate):
