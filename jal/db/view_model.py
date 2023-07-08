@@ -6,6 +6,7 @@ from jal.db.db import JalModel
 class JalViewModel(JalModel):
     def __init__(self, parent_view, table_name):
         super().__init__(parent_view, table_name)
+        self._key_field = 'id'  # this is assumed to be an auto-increment field that us used to track rows existence
         self._columns = []
         self.deleted = []
         self._view = parent_view
@@ -19,7 +20,8 @@ class JalViewModel(JalModel):
         return None
 
     def removeRow(self, row, parent=None):
-        self.deleted.append(row)
+        if self.record(row).value(self._key_field):  # New rows have 0 in index key field - we may not track this rows
+            self.deleted.append(row)                 # as Qt will remove them completely on its own
         super().removeRow(row)
 
     def submitAll(self):
