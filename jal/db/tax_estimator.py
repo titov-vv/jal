@@ -10,7 +10,7 @@ from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
 from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import ts2d, center_window
+from jal.widgets.helpers import ts2d
 from jal.widgets.delegates import FloatDelegate
 
 
