@@ -68,7 +68,7 @@
          </sizepolicy>
         </property>
         <property name="title">
-         <string>QR-code</string>
+         <string>Get receipt by scanning QR-code</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -90,9 +90,9 @@
           <number>2</number>
          </property>
          <item>
-          <widget class="QPushButton" name="GetReceiptQR">
+          <widget class="QPushButton" name="ScanReceiptQR">
            <property name="text">
-            <string>Get receipt QR</string>
+            <string>Scan receipt QR</string>
            </property>
           </widget>
          </item>
@@ -118,7 +118,7 @@
    <item>
     <widget class="QGroupBox" name="SlipDataGroup">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -127,7 +127,7 @@
       </sizepolicy>
      </property>
      <property name="title">
-      <string>Receipt data</string>
+      <string>Get receipt by manual data entry</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <property name="leftMargin">
@@ -142,111 +142,64 @@
       <property name="bottomMargin">
        <number>2</number>
       </property>
-      <item row="7" column="1">
-       <widget class="QPushButton" name="GetSlipBtn">
-        <property name="text">
-         <string>Get slip from internet</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="AmountLbl">
-        <property name="text">
-         <string>Amount:</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
-       <widget class="QDateTimeEdit" name="SlipTimstamp">
-        <property name="displayFormat">
-         <string>dd/MM/yyyy hh:mm:ss</string>
+       <widget class="QComboBox" name="ReceiptAPICombo"/>
+      </item>
+      <item row="1" column="0">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
-        <property name="timeSpec">
-         <enum>Qt::UTC</enum>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QPushButton" name="DownloadReceiptBtn">
+        <property name="text">
+         <string>Download receipt</string>
         </property>
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="TimestampLbl">
+       <widget class="QLabel" name="ReceiptAPILabel">
         <property name="text">
-         <string>Date/Time:</string>
+         <string>Receipt type:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="FDlbl">
-        <property name="text">
-         <string>FD:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QLineEdit" name="SlipAmount"/>
-      </item>
-      <item row="2" column="3">
-       <widget class="QLineEdit" name="FP"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="FD"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="FNlbl">
-        <property name="text">
-         <string>FN:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="DummyLbl">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="2">
-       <widget class="QLabel" name="SlipTypeLbl">
-        <property name="text">
-         <string>Type:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="FN"/>
-      </item>
-      <item row="7" column="3">
-       <widget class="QPushButton" name="LoadJSONfromFileBtn">
-        <property name="text">
-         <string>Load slip from JSON file</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QLabel" name="FPlbl">
-        <property name="text">
-         <string>FP:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0" colspan="4">
-       <widget class="Line" name="line">
+      <item row="0" column="2">
+       <spacer name="horizontalSpacer_3">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
-       </widget>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
-      <item row="4" column="3">
-       <widget class="QComboBox" name="SlipType">
-        <item>
-         <property name="text">
-          <string>Purchase</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Return</string>
-         </property>
-        </item>
-       </widget>
+      <item row="2" column="2">
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="1" column="1" colspan="2">
+       <widget class="QTableView" name="ReceiptParametersList"/>
       </item>
      </layout>
     </widget>

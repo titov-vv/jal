@@ -57,10 +57,10 @@ class Ui_ImportShopReceiptDlg(object):
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
-        self.GetReceiptQR = QPushButton(self.QRGroup)
-        self.GetReceiptQR.setObjectName(u"GetReceiptQR")
+        self.ScanReceiptQR = QPushButton(self.QRGroup)
+        self.ScanReceiptQR.setObjectName(u"ScanReceiptQR")
 
-        self.horizontalLayout.addWidget(self.GetReceiptQR)
+        self.horizontalLayout.addWidget(self.ScanReceiptQR)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -74,96 +74,43 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.SlipDataGroup = QGroupBox(ImportShopReceiptDlg)
         self.SlipDataGroup.setObjectName(u"SlipDataGroup")
-        self.SlipDataGroup.setEnabled(False)
+        self.SlipDataGroup.setEnabled(True)
         sizePolicy1.setHeightForWidth(self.SlipDataGroup.sizePolicy().hasHeightForWidth())
         self.SlipDataGroup.setSizePolicy(sizePolicy1)
         self.gridLayout_2 = QGridLayout(self.SlipDataGroup)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setContentsMargins(2, 2, 2, 2)
-        self.GetSlipBtn = QPushButton(self.SlipDataGroup)
-        self.GetSlipBtn.setObjectName(u"GetSlipBtn")
+        self.ReceiptAPICombo = QComboBox(self.SlipDataGroup)
+        self.ReceiptAPICombo.setObjectName(u"ReceiptAPICombo")
 
-        self.gridLayout_2.addWidget(self.GetSlipBtn, 7, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.ReceiptAPICombo, 0, 1, 1, 1)
 
-        self.AmountLbl = QLabel(self.SlipDataGroup)
-        self.AmountLbl.setObjectName(u"AmountLbl")
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.gridLayout_2.addWidget(self.AmountLbl, 0, 2, 1, 1)
+        self.gridLayout_2.addItem(self.verticalSpacer, 1, 0, 1, 1)
 
-        self.SlipTimstamp = QDateTimeEdit(self.SlipDataGroup)
-        self.SlipTimstamp.setObjectName(u"SlipTimstamp")
-        self.SlipTimstamp.setTimeSpec(Qt.UTC)
+        self.DownloadReceiptBtn = QPushButton(self.SlipDataGroup)
+        self.DownloadReceiptBtn.setObjectName(u"DownloadReceiptBtn")
 
-        self.gridLayout_2.addWidget(self.SlipTimstamp, 0, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.DownloadReceiptBtn, 2, 0, 1, 2)
 
-        self.TimestampLbl = QLabel(self.SlipDataGroup)
-        self.TimestampLbl.setObjectName(u"TimestampLbl")
+        self.ReceiptAPILabel = QLabel(self.SlipDataGroup)
+        self.ReceiptAPILabel.setObjectName(u"ReceiptAPILabel")
 
-        self.gridLayout_2.addWidget(self.TimestampLbl, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.ReceiptAPILabel, 0, 0, 1, 1)
 
-        self.FDlbl = QLabel(self.SlipDataGroup)
-        self.FDlbl.setObjectName(u"FDlbl")
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout_2.addWidget(self.FDlbl, 2, 0, 1, 1)
+        self.gridLayout_2.addItem(self.horizontalSpacer_3, 0, 2, 1, 1)
 
-        self.SlipAmount = QLineEdit(self.SlipDataGroup)
-        self.SlipAmount.setObjectName(u"SlipAmount")
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout_2.addWidget(self.SlipAmount, 0, 3, 1, 1)
+        self.gridLayout_2.addItem(self.horizontalSpacer_4, 2, 2, 1, 1)
 
-        self.FP = QLineEdit(self.SlipDataGroup)
-        self.FP.setObjectName(u"FP")
+        self.ReceiptParametersList = QTableView(self.SlipDataGroup)
+        self.ReceiptParametersList.setObjectName(u"ReceiptParametersList")
 
-        self.gridLayout_2.addWidget(self.FP, 2, 3, 1, 1)
-
-        self.FD = QLineEdit(self.SlipDataGroup)
-        self.FD.setObjectName(u"FD")
-
-        self.gridLayout_2.addWidget(self.FD, 2, 1, 1, 1)
-
-        self.FNlbl = QLabel(self.SlipDataGroup)
-        self.FNlbl.setObjectName(u"FNlbl")
-
-        self.gridLayout_2.addWidget(self.FNlbl, 4, 0, 1, 1)
-
-        self.DummyLbl = QLabel(self.SlipDataGroup)
-        self.DummyLbl.setObjectName(u"DummyLbl")
-
-        self.gridLayout_2.addWidget(self.DummyLbl, 7, 0, 1, 1)
-
-        self.SlipTypeLbl = QLabel(self.SlipDataGroup)
-        self.SlipTypeLbl.setObjectName(u"SlipTypeLbl")
-
-        self.gridLayout_2.addWidget(self.SlipTypeLbl, 4, 2, 1, 1)
-
-        self.FN = QLineEdit(self.SlipDataGroup)
-        self.FN.setObjectName(u"FN")
-
-        self.gridLayout_2.addWidget(self.FN, 4, 1, 1, 1)
-
-        self.LoadJSONfromFileBtn = QPushButton(self.SlipDataGroup)
-        self.LoadJSONfromFileBtn.setObjectName(u"LoadJSONfromFileBtn")
-
-        self.gridLayout_2.addWidget(self.LoadJSONfromFileBtn, 7, 3, 1, 1)
-
-        self.FPlbl = QLabel(self.SlipDataGroup)
-        self.FPlbl.setObjectName(u"FPlbl")
-
-        self.gridLayout_2.addWidget(self.FPlbl, 2, 2, 1, 1)
-
-        self.line = QFrame(self.SlipDataGroup)
-        self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.HLine)
-        self.line.setFrameShadow(QFrame.Sunken)
-
-        self.gridLayout_2.addWidget(self.line, 5, 0, 1, 4)
-
-        self.SlipType = QComboBox(self.SlipDataGroup)
-        self.SlipType.addItem("")
-        self.SlipType.addItem("")
-        self.SlipType.setObjectName(u"SlipType")
-
-        self.gridLayout_2.addWidget(self.SlipType, 4, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.ReceiptParametersList, 1, 1, 1, 2)
 
 
         self.verticalLayout.addWidget(self.SlipDataGroup)
@@ -283,22 +230,11 @@ class Ui_ImportShopReceiptDlg(object):
 
     def retranslateUi(self, ImportShopReceiptDlg):
         ImportShopReceiptDlg.setWindowTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Import shop receipt", None))
-        self.QRGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"QR-code", None))
-        self.GetReceiptQR.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt QR", None))
-        self.SlipDataGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Receipt data", None))
-        self.GetSlipBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Get slip from internet", None))
-        self.AmountLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Amount:", None))
-        self.SlipTimstamp.setDisplayFormat(QCoreApplication.translate("ImportShopReceiptDlg", u"dd/MM/yyyy hh:mm:ss", None))
-        self.TimestampLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Date/Time:", None))
-        self.FDlbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"FD:", None))
-        self.FNlbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"FN:", None))
-        self.DummyLbl.setText("")
-        self.SlipTypeLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Type:", None))
-        self.LoadJSONfromFileBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Load slip from JSON file", None))
-        self.FPlbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"FP:", None))
-        self.SlipType.setItemText(0, QCoreApplication.translate("ImportShopReceiptDlg", u"Purchase", None))
-        self.SlipType.setItemText(1, QCoreApplication.translate("ImportShopReceiptDlg", u"Return", None))
-
+        self.QRGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt by scanning QR-code", None))
+        self.ScanReceiptQR.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Scan receipt QR", None))
+        self.SlipDataGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt by manual data entry", None))
+        self.DownloadReceiptBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Download receipt", None))
+        self.ReceiptAPILabel.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Receipt type:", None))
         self.SlipGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Slip", None))
         self.SlipDateTime.setDisplayFormat(QCoreApplication.translate("ImportShopReceiptDlg", u"dd/MM/yyyy hh:mm:ss", None))
         self.DateTimeLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Date / Time:", None))

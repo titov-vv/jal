@@ -785,27 +785,27 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="246"/>
+        <location filename="../widgets/income_spending_widget.py" line="247"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="246"/>
+        <location filename="../widgets/income_spending_widget.py" line="247"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="247"/>
+        <location filename="../widgets/income_spending_widget.py" line="248"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="248"/>
+        <location filename="../widgets/income_spending_widget.py" line="249"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="260"/>
+        <location filename="../widgets/income_spending_widget.py" line="261"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -1144,37 +1144,32 @@
 <context>
     <name>ImportReceiptDialog</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="146"/>
+        <location filename="../data_import/shop_receipt.py" line="191"/>
         <source>Please scan main QR code from the receipt</source>
         <translation>Отсканируйте основной QR-код с чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="149"/>
+        <location filename="../data_import/shop_receipt.py" line="194"/>
         <source>QR: </source>
         <translation>QR: </translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="171"/>
-        <source>Select file with receipt JSON data</source>
-        <translation>Выберите файл с JSON данными чека</translation>
-    </message>
-    <message>
-        <location filename="../data_import/shop_receipt.py" line="214"/>
+        <location filename="../data_import/shop_receipt.py" line="249"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation>Невозможно импортировать чек: не выбран счёт для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="217"/>
+        <location filename="../data_import/shop_receipt.py" line="252"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation>Невозможно импортировать чек: не выбран контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="220"/>
+        <location filename="../data_import/shop_receipt.py" line="255"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation>Невозможно импортировать чек: некоторые категории не выбраны</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="252"/>
+        <location filename="../data_import/shop_receipt.py" line="285"/>
         <source>Categories are not recognized: Tensorflow is not found</source>
         <translation>Категории не распознаны: Tensorflow не найден</translation>
     </message>
@@ -1187,128 +1182,87 @@
         <translation>Импорт чека из магазина</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="71"/>
-        <source>QR-code</source>
-        <translation>QR-код</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="95"/>
-        <source>Get receipt QR</source>
-        <translation>Получить QR код чека</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="130"/>
-        <source>Receipt data</source>
-        <translation>Данные чека</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="148"/>
-        <source>Get slip from internet</source>
-        <translation>Получить чек из интернет</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="155"/>
-        <source>Amount:</source>
-        <translation>Сумма:</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="162"/>
-        <location filename="../ui/receipt_import_dlg.ui" line="281"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="234"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="172"/>
-        <source>Date/Time:</source>
-        <translation>Дата/Время:</translation>
+        <location filename="../ui/receipt_import_dlg.ui" line="164"/>
+        <source>Download receipt</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="179"/>
-        <source>FD:</source>
-        <translation>ФД:</translation>
+        <location filename="../ui/receipt_import_dlg.ui" line="71"/>
+        <source>Get receipt by scanning QR-code</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="195"/>
-        <source>FN:</source>
-        <translation>ФН:</translation>
+        <location filename="../ui/receipt_import_dlg.ui" line="95"/>
+        <source>Scan receipt QR</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="209"/>
-        <source>Type:</source>
-        <translation>Тип:</translation>
+        <location filename="../ui/receipt_import_dlg.ui" line="130"/>
+        <source>Get receipt by manual data entry</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="219"/>
-        <source>Load slip from JSON file</source>
-        <translation>Загрузить чек из JSON-файла</translation>
+        <location filename="../ui/receipt_import_dlg.ui" line="171"/>
+        <source>Receipt type:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="226"/>
-        <source>FP:</source>
-        <translation>ФП:</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="241"/>
-        <source>Purchase</source>
-        <translation>Покупка</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="246"/>
-        <source>Return</source>
-        <translation>Возврат</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="263"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="216"/>
         <source>Slip</source>
         <translation>Чек</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="291"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="244"/>
         <source>Date / Time:</source>
         <translation>Дата / Время:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="298"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="251"/>
         <source> ➜ </source>
         <translation> ➜ </translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="308"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="261"/>
         <source>Peer:</source>
         <translation>Контрагент:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="322"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="275"/>
         <source>Lines:</source>
         <translation>Позиции:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="332"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="285"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="355"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="308"/>
         <source>Auto-assign categories</source>
         <translation>Авто-определение категорий</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="362"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="315"/>
         <source>Set Tag for all lines</source>
         <translation>Установить тэг для всех позиций</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="396"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="349"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="406"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="359"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="413"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="366"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
@@ -1453,7 +1407,7 @@
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="183"/>
+        <location filename="../widgets/income_spending_widget.py" line="184"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>
@@ -1836,35 +1790,35 @@ do you want to save it?</source>
 <context>
     <name>LoginFNS</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="239"/>
         <location filename="../data_import/receipt_api/ru_fns.py" line="252"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="271"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="265"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="284"/>
         <source>FNS login failed: </source>
         <translation>ФНС логин неуспешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="241"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="254"/>
         <source>SMS was requested successfully</source>
         <translation>SMS было успешно запрошено</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="254"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="273"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="267"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="286"/>
         <source>FNS login successful: </source>
         <translation>ФНС логин выполнен успешно: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="285"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="298"/>
         <source>Get ESIA URL failed: </source>
         <translation>Не удалось получить URL ЕСИА: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="298"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="311"/>
         <source>ESIA login failed: </source>
         <translation>ЕСИА логин не успешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="300"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="313"/>
         <source>ESIA login successful: </source>
         <translation>ЕСИА логин выполнен успешно: </translation>
     </message>
@@ -1938,22 +1892,22 @@ do you want to save it?</source>
 <context>
     <name>LoginLidlPlus</name>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="181"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="192"/>
         <source>Login error</source>
         <translation>Ошибка логина</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="181"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="192"/>
         <source>No auth code in callback URI</source>
         <translation>Код аутентификации отсутствует в callback URI</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="196"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="207"/>
         <source>Lidl Plus login failed: </source>
         <translation>Lidl Plus логин не успешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="198"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="209"/>
         <source>Lidl Plus login successful: </source>
         <translation>Lidl Plus логин выполнен успешно: </translation>
     </message>
@@ -1979,27 +1933,27 @@ do you want to save it?</source>
 <context>
     <name>LoginPingoDoce</name>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="189"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="201"/>
         <source>Pingo Doce phone verification failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="200"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="212"/>
         <source>Pingo Doce unknown login status: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="207"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="219"/>
         <source>Pingo Doce login failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="209"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="221"/>
         <source>Pingo Doce login successful: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="222"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="234"/>
         <source>Pingo Doce login response failed with: </source>
         <translation></translation>
     </message>
@@ -2850,17 +2804,32 @@ Application will be terminated now.</source>
 <context>
     <name>ReceiptAPIFactory</name>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="37"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="27"/>
+        <source>Russian receipt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/receipts.py" line="28"/>
+        <source>European Lidl receipt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/receipts.py" line="31"/>
+        <source>Portuguese Pingo Doce receipt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/receipts.py" line="46"/>
         <source>Please scan flat barcode from the receipt</source>
         <translation>Отсканируйте плоский штрих-код со чека</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="54"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="63"/>
         <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
         <translation>Португальский QR распознан, но магазин не поддерживается, NIF: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="55"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="64"/>
         <source>No API found for QR data: </source>
         <translation>На найдено API для данного QR-кода: </translation>
     </message>
@@ -2868,62 +2837,62 @@ Application will be terminated now.</source>
 <context>
     <name>ReceiptEuLidlPlus</name>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="32"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="33"/>
         <source>Lidl QR available but pattern isn&apos;t recognized: </source>
         <translation>Lidl QR отсканирован, но не распознан: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="40"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="41"/>
         <source>Input Lidl receipt additional data</source>
         <translation>Введите дополнительные данные для чека Lidl</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="41"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="42"/>
         <source>Sequence #:</source>
         <translation>Порядковый номер:</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="43"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="44"/>
         <source>Can&apos;t get Lidl receipt without sequence number</source>
         <translation>Невозможно получить чек Lidl без порядкового номера</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="53"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="64"/>
         <source>No Lidl Plus access token available</source>
         <translation>Отсутствует токен доступе Lidl Plus</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="60"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="71"/>
         <source>Unauthorized with reason: </source>
         <translation>Неавторизован, причина: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="63"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="74"/>
         <source>Lidl Plus API failed with: </source>
         <translation>Запрос к Lidl Plus API завершился неуспешно: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="67"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="78"/>
         <source>Refreshing Lidl Plus token...</source>
         <translation>Обновление токена Lidl Plus...</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="75"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="86"/>
         <source>Lidl Plus token was refreshed: </source>
         <translation>Токен Lidl Plus был обновлён: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="86"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="97"/>
         <source>Can&apos;t refresh Lidl Plus token, response: </source>
         <translation>Невозможно обновить токет Lidl Plus, ответ: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="101"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="112"/>
         <source>Receipt was loaded: </source>
         <translation>Чек загружен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="105"/>
+        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="116"/>
         <source>Receipt load failed: </source>
         <translation>Ошибка загрузки чека: </translation>
     </message>
@@ -2931,92 +2900,92 @@ Application will be terminated now.</source>
 <context>
     <name>ReceiptPtPingoDoce</name>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="28"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="29"/>
         <source>Pingo Doce QR available but pattern isn&apos;t recognized: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="38"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="39"/>
         <source>Input Pingo Doce receipt additional data</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="39"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="40"/>
         <source>Sequence #:</source>
         <translation>Порядковый номер:</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="41"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="42"/>
         <source>Can&apos;t get Pingo Doce receipt without sequence number</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="53"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="65"/>
         <source>No Pingo Doce access token available</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="63"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="75"/>
         <source>Unauthorized with reason: </source>
         <translation>Неавторизован, причина: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="73"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="85"/>
         <source>Pingo Doce API failed with: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="77"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="89"/>
         <source>Pingo Doce API filter failed with: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="84"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="96"/>
         <source>Pingo Doce API history failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="96"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="108"/>
         <source>Refreshing Pingo Doce token...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="105"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="117"/>
         <source>Pingo Doce token was refreshed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="114"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="126"/>
         <source>Can&apos;t refresh Pingo Doce token, response: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="120"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="132"/>
         <source>Can&apos;t get Pingo Doce profile, response: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="122"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="134"/>
         <source>Pingo Doce profile was loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="138"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="150"/>
         <source>Receipt was loaded: </source>
         <translation>Чек загружен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="142"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="154"/>
         <source>Receipt load failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="147"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="159"/>
         <source>Receipt was not found in available list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="149"/>
+        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="161"/>
         <source>Several similar receipts was found: </source>
         <translation></translation>
     </message>
@@ -3024,92 +2993,92 @@ Application will be terminated now.</source>
 <context>
     <name>ReceiptRuFNS</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="34"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="35"/>
         <source>FNS QR available but date/time pattern isn&apos;t recognized: </source>
         <translation>ФНС QR отсканирован, но невозможно определить дату/время: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="41"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="42"/>
         <source>FNS QR available but pattern isn&apos;t recognized: </source>
         <translation>ФНС QR отсканирован, но не распознан: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="55"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="68"/>
         <source>No FNS SessionId available</source>
         <translation>Нет ФНС SessionId</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="62"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="75"/>
         <source>Unauthorized with reason: </source>
         <translation>Неавторизован, причина: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="65"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="78"/>
         <source>FNS API failed with: </source>
         <translation>Вызов ФНС API неуспешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="71"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="84"/>
         <source>Refreshing FNS session...</source>
         <translation>Обновление сессии ФНС...</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="78"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="91"/>
         <source>FNS session refreshed: </source>
         <translation>Сессия ФНС обновлена: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="88"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="101"/>
         <source>Can&apos;t refresh FNS session, response: </source>
         <translation>Невозможно обновить сессию ФНС, ответ: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="104"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="117"/>
         <source>Get ticket id failed: </source>
         <translation>Невозиожно получить ID чека: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="106"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="119"/>
         <source>Receipt found: </source>
         <translation>Чек найден: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="116"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="129"/>
         <source>Receipt load failed: </source>
         <translation>Неуспешная загрузка чека: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="118"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="131"/>
         <source>Receipt was loaded: </source>
         <translation>Чек загружен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="190"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="203"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="110"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="123"/>
         <source>Operation might be pending on server side. Trying again.</source>
         <translation>Вероятно операция обрабатывается сервером. Попробуйте позже.</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="134"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="147"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos; from FNS</source>
         <translation>На нейден тэг &apos;receipt&apos; внутри тега &apos;document&apos; данных от ФНС</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="137"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="150"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos; from FNS</source>
         <translation>На нейден тэг &apos;document&apos; внутри тега &apos;ticket&apos; данных от ФНС</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="154"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="167"/>
         <source>Incorrect length of INN. Can&apos;t get company name.</source>
         <translation>Неверная длина ИНН. Невозможно загрузить наименвание компании.</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="172"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="185"/>
         <source>Can&apos;t get company name from: </source>
         <translation>Невозможно получить имя компании: </translation>
     </message>
@@ -3282,7 +3251,7 @@ Application will be terminated now.</source>
 <context>
     <name>RequestInterceptor</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="328"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="341"/>
         <source>ESIA login completed</source>
         <translation>ЕСИА логин успешен</translation>
     </message>

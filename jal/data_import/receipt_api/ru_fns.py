@@ -4,6 +4,7 @@ import json
 import requests
 import time
 from urllib import parse
+from datetime import datetime
 from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
@@ -46,6 +47,18 @@ class ReceiptRuFNS(ReceiptAPI):
         self.web_session.headers['Content-Type'] = 'application/json; charset=UTF-8'
         self.web_session.headers['Accept-Encoding'] = 'gzip'
         self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'
+
+    @staticmethod
+    def parameters_list() -> dict:
+        parameters = {
+            "Дата/время": datetime,
+            "ФН": int,
+            "ФД": int,
+            "ФП": int,
+            "Сумма": float,
+            "Тип": {1: "Покупка", 2: "Возврат"}
+        }
+        return parameters
 
     def activate_session(self) -> bool:
         self.session_id = JalSettings().getValue('RuTaxSessionId', default='')

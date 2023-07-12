@@ -4,6 +4,7 @@ import logging
 import requests
 import requests_oauthlib
 from urllib import parse
+from datetime import date
 from oauthlib.oauth2 import MobileApplicationClient
 from PySide6.QtCore import Qt, Slot, Signal, QMetaObject, QDateTime, QUrl
 from PySide6.QtWidgets import QDialog, QInputDialog, QMessageBox
@@ -44,6 +45,16 @@ class ReceiptEuLidlPlus(ReceiptAPI):
         self.seq_id = int(self.seq_id.lstrip('0'))   # Get rid of any leading zeros and convert to int
         self.web_session = requests.Session()
         self.web_session.headers['User-Agent'] = "okhttp/4.10.0"
+
+    @staticmethod
+    def parameters_list() -> dict:
+        parameters = {
+            "Date": date,
+            "Shop #": int,
+            "Register #": int,
+            "Sequence #": int
+        }
+        return parameters
 
     def activate_session(self) -> bool:
         self.access_token = JalSettings().getValue('EuLidlAccessToken', default='')

@@ -1,8 +1,7 @@
-import json
 import logging
 import pandas as pd
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel
-from PySide6.QtWidgets import QDialog, QFileDialog, QHeaderView, QStyledItemDelegate
+from PySide6.QtWidgets import QDialog, QHeaderView, QStyledItemDelegate
 from jal.widgets.reference_selector import CategorySelector, TagSelector
 from jal.constants import CustomColor
 from jal.widgets.helpers import dependency_present
@@ -113,7 +112,6 @@ class ImportReceiptDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_ImportShopReceiptDlg()
         self.ui.setupUi(self)
-        self.initUi()
         self.model = None
         self.delegate = []
 
@@ -122,22 +120,24 @@ class ImportReceiptDialog(QDialog):
 
         self.receipt_api = None
         self.tensor_flow_present = dependency_present(['tensorflow'])
+        self.ui.ReceiptAPICombo.clear()
+        for idx, name in ReceiptAPIFactory().supported_names.items():
+            self.ui.ReceiptAPICombo.addItem(name, idx)
 
-        self.ui.GetReceiptQR.clicked.connect(self.processReceiptQR)
-        self.ui.GetSlipBtn.clicked.connect(self.downloadSlipJSON)
-        self.ui.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
+        self.ui.ScanReceiptQR.clicked.connect(self.processReceiptQR)
+        self.ui.DownloadReceiptBtn.clicked.connect(self.downloadSlipJSON)
         self.ui.AddOperationBtn.clicked.connect(self.addOperation)
         self.ui.ClearBtn.clicked.connect(self.clearSlipData)
         self.ui.AssignCategoryBtn.clicked.connect(self.recognizeCategories)
+        self.ui.ReceiptAPICombo.currentIndexChanged.connect(self.change_api)
 
         self.ui.AssignCategoryBtn.setEnabled(self.tensor_flow_present)
 
-    def initUi(self):
-        self.ui.SlipAmount.setText('')
-        self.ui.FN.setText('')
-        self.ui.FD.setText('')
-        self.ui.FP.setText('')
-        self.ui.SlipType.setCurrentIndex(0)
+    # -----------------------------------------------------------------------------------------------
+    @Slot()
+    def change_api(self, _index):
+        api_type = self.ui.ReceiptAPICombo.currentData()
+        print(ReceiptAPIFactory().get_api_parameters(api_type))
 
     #-----------------------------------------------------------------------------------------------
     # Then it downloads the slip if match found. Otherwise, shows warning message but allows to proceed
@@ -164,16 +164,6 @@ class ImportReceiptDialog(QDialog):
 
     def slip_loaded(self):
         self.parseJSON()
-
-    @Slot()
-    def loadFileSlipJSON(self):
-        json_file, _filter = \
-            QFileDialog.getOpenFileName(self, self.tr("Select file with receipt JSON data"),
-                                        ".", "JSON files (*.json)")
-        if json_file:
-            with open(json_file) as f:
-                self.slip_json = json.load(f)
-            self.parseJSON()
 
     def parseJSON(self):
         self.slip_lines = pd.DataFrame(self.receipt_api.slip_lines())
@@ -243,8 +233,6 @@ class ImportReceiptDialog(QDialog):
         self.slip_json = None
         self.slip_lines = None
         self.ui.LinesTableView.setModel(None)
-
-        self.initUi()
 
     @Slot()
     def recognizeCategories(self):

@@ -23,10 +23,19 @@ class ReceiptAPIFactory(QObject):
             EU_LIDL_PLUS_API: ReceiptEuLidlPlus,
             PT_PINGO_DOCE_API: ReceiptPtPingoDoce
         }
+        self.supported_names = {
+            RU_FNS_API: self.tr("Russian receipt"),
+            EU_LIDL_PLUS_API: self.tr("European Lidl receipt"),
+            PT_PINGO_DOCE_API: self.tr("Portuguese Pingo Doce receipt")
+        }
         self._pt_nifs = {
             '503340855': EU_LIDL_PLUS_API,
             '500829993': PT_PINGO_DOCE_API
         }
+
+    def get_api_parameters(self, api_type):
+        api = self._apis.get(api_type)
+        return api.parameters_list()
 
     # Selects required API class based on QR data pattern
     def get_api_for_qr(self, qr_text):

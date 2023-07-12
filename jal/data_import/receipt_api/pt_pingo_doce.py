@@ -2,6 +2,7 @@ import re
 import json
 import logging
 import requests
+from datetime import datetime
 from PySide6.QtCore import Qt, QDateTime, QTime
 from PySide6.QtWidgets import QDialog, QInputDialog
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
@@ -43,6 +44,17 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         self.web_session = requests.Session()
         self.web_session.headers['User-Agent'] = "okhttp/4.10.0"
         self.web_session.headers['Content-Type'] = 'application/json; charset=UTF-8'
+
+    @staticmethod
+    def parameters_list() -> dict:
+        parameters = {
+            "Date/Time": datetime,
+            "Shop #": int,
+            "Register #": int,
+            "Sequence #": int,
+            "Total": float
+        }
+        return parameters
 
     def activate_session(self) -> bool:
         self.access_token = JalSettings().getValue('PtPingoDoceAccessToken', default='')
