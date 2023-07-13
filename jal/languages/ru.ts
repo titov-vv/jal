@@ -1184,7 +1184,7 @@
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="216"/>
         <source>Operation data</source>
-        <translation type="unfinished"></translation>
+        <translation>Данные операции</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="234"/>
@@ -1194,27 +1194,27 @@
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="158"/>
         <source>Download receipt</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить чек</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="71"/>
         <source>Get receipt by scanning QR-code</source>
-        <translation type="unfinished"></translation>
+        <translation>Получить чек, отсканировав QR-код</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="95"/>
         <source>Scan receipt QR</source>
-        <translation type="unfinished"></translation>
+        <translation>Сканировать QR-код</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="130"/>
         <source>Get receipt by manual data entry</source>
-        <translation type="unfinished"></translation>
+        <translation>Получить чек, введя данные вручную</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="151"/>
         <source>Receipt type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип чека:</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="244"/>
@@ -2321,7 +2321,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/shop_receipt.py" line="144"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Значение</translation>
     </message>
 </context>
 <context>
@@ -2814,17 +2814,17 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="27"/>
         <source>Russian receipt</source>
-        <translation type="unfinished"></translation>
+        <translation>Российский чек</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="28"/>
         <source>European Lidl receipt</source>
-        <translation type="unfinished"></translation>
+        <translation>Европейский чек Lidl</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="31"/>
         <source>Portuguese Pingo Doce receipt</source>
-        <translation type="unfinished"></translation>
+        <translation>Португальский чек Pingo Doce</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="46"/>
