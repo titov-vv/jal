@@ -33,8 +33,8 @@ class ReceiptEuLidlPlus(ReceiptAPI):
                 raise ValueError(self.tr("Lidl QR available but pattern isn't recognized: " + qr_text))
             parts = parts.groupdict()
             self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
-            self.shop_id = parts['shop_id']
-            self.register_id = parts['register_id']
+            self.shop_id = int(parts['shop_id'])
+            self.register_id = int(parts['register_id'])
             if len(aux_data) == 28:  # Get receipt sequence number from aux data or from the user
                 self.seq_id = aux_data[7:13]
             else:
@@ -110,7 +110,7 @@ class ReceiptEuLidlPlus(ReceiptAPI):
             self.access_token = JalSettings().getValue('EuLidlAccessToken')
 
     def query_slip(self):
-        ticket_id = f"2500{self.shop_id}{self.register_id}{self.date_time.toString('yyyyMMdd')}{self.seq_id:05d}"
+        ticket_id = f"2500{self.shop_id:04d}{self.register_id:02d}{self.date_time.toString('yyyyMMdd')}{self.seq_id:05d}"
         self.web_session.headers["Accept-Language"] = "PT"
         response = self.web_session.get(f"https://tickets.lidlplus.com/api/v2/PT/tickets/{ticket_id}")
         if response.status_code == 200:
