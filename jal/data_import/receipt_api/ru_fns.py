@@ -19,27 +19,35 @@ class ReceiptRuFNS(ReceiptAPI):
     MAX_ATTEMPTS = 5
     timestamp_patterns = ['yyyyMMddTHHmm', 'yyyyMMddTHHmmss', 'yyyy-MM-ddTHH:mm', 'yyyy-MM-ddTHH:mm:ss']
 
-    def __init__(self, qr_text='', aux_data=''):
+    def __init__(self, qr_text='', aux_data='', params=None):
         super().__init__()
         self.session_id = ''
         self.slip_json = {}
-        try:
-            params = parse.parse_qs(qr_text)
-            self.date_time = ''
-            for timestamp_pattern in self.timestamp_patterns:
-                datetime_value = QDateTime.fromString(params['t'][0], timestamp_pattern)
-                if datetime_value.isValid():
-                    self.date_time = datetime_value.toString("yyyyMMddThhmmss")
-                    break
-            if not self.date_time:
-                raise ValueError(self.tr("FNS QR available but date/time pattern isn't recognized: " + qr_text))
-            self.amount = float(params['s'][0])
-            self.fn = params['fn'][0]
-            self.fd = params['i'][0]
-            self.fp = params['fp'][0]
-            self.op_type = params['n'][0]
-        except Exception:
-            raise ValueError(self.tr("FNS QR available but pattern isn't recognized: " + qr_text))
+        if params is None:
+            try:
+                params = parse.parse_qs(qr_text)
+                self.date_time = ''
+                for timestamp_pattern in self.timestamp_patterns:
+                    datetime_value = QDateTime.fromString(params['t'][0], timestamp_pattern)
+                    if datetime_value.isValid():
+                        self.date_time = datetime_value.toString("yyyyMMddThhmmss")
+                        break
+                if not self.date_time:
+                    raise ValueError(self.tr("FNS QR available but date/time pattern isn't recognized: " + qr_text))
+                self.amount = float(params['s'][0])
+                self.fn = params['fn'][0]
+                self.fd = params['i'][0]
+                self.fp = params['fp'][0]
+                self.op_type = params['n'][0]
+            except Exception:
+                raise ValueError(self.tr("FNS QR available but pattern isn't recognized: " + qr_text))
+        else:
+            self.date_time = params['Дата/время'].toString("yyyyMMddThhmmss")
+            self.fn = params['ФН']
+            self.fd = params['ФД']
+            self.fp = params['ФП']
+            self.amount = float(params['Сумма'])
+            self.op_type = params['Тип']
         self.web_session = requests.Session()
         self.web_session.headers['ClientVersion'] = '2.9.0'
         self.web_session.headers['Device-Id'] = str(uuid.uuid1())

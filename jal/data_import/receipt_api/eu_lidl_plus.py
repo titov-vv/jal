@@ -23,25 +23,31 @@ class ReceiptEuLidlPlus(ReceiptAPI):
     # CC cash register ID in the shop ID MMMM
     # X - unknown 1 digit
     # FFFFFF - FS part of fiscal data
-    def __init__(self, qr_text='', aux_data=''):
+    def __init__(self, qr_text='', aux_data='', params=None):
         super().__init__()
         self.access_token = ''
         self.slip_json = {}
-        parts = re.match(self.receipt_pattern, qr_text)
-        if parts is None:
-            raise ValueError(self.tr("Lidl QR available but pattern isn't recognized: " + qr_text))
-        parts = parts.groupdict()
-        self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
-        self.shop_id = parts['shop_id']
-        self.register_id = parts['register_id']
-        if len(aux_data) == 28:  # Get receipt sequence number from aux data or from the user
-            self.seq_id = aux_data[7:13]
+        if params is None:
+            parts = re.match(self.receipt_pattern, qr_text)
+            if parts is None:
+                raise ValueError(self.tr("Lidl QR available but pattern isn't recognized: " + qr_text))
+            parts = parts.groupdict()
+            self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
+            self.shop_id = parts['shop_id']
+            self.register_id = parts['register_id']
+            if len(aux_data) == 28:  # Get receipt sequence number from aux data or from the user
+                self.seq_id = aux_data[7:13]
+            else:
+                self.seq_id, result = QInputDialog.getText(None, self.tr("Input Lidl receipt additional data"),
+                                                           self.tr("Sequence #:"))
+                if not result:
+                    raise ValueError(self.tr("Can't get Lidl receipt without sequence number"))
+            self.seq_id = int(self.seq_id.lstrip('0'))   # Get rid of any leading zeros and convert to int
         else:
-            self.seq_id, result = QInputDialog.getText(None, self.tr("Input Lidl receipt additional data"),
-                                                       self.tr("Sequence #:"))
-            if not result:
-                raise ValueError(self.tr("Can't get Lidl receipt without sequence number"))
-        self.seq_id = int(self.seq_id.lstrip('0'))   # Get rid of any leading zeros and convert to int
+            self.date_time = params['Date']
+            self.shop_id = params['Shop #']
+            self.register_id = params['Register #']
+            self.seq_id = params['Sequence #']
         self.web_session = requests.Session()
         self.web_session.headers['User-Agent'] = "okhttp/4.10.0"
 

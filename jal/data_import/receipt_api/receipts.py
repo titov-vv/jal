@@ -62,3 +62,7 @@ class ReceiptAPIFactory(QObject):
             except KeyError:
                 raise ValueError(self.tr("Portuguese QR recognized but shop isn't supported, NIF: " + f"{NIF}"))
         raise ValueError(self.tr("No API found for QR data: " + f"'{qr_text}'"))
+
+    def get_api_with_params(self, api_type, params):
+        api = self._apis.get(api_type)
+        return api(params=params)

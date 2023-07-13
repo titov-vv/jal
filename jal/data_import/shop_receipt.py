@@ -221,6 +221,9 @@ class ParamsModel(QAbstractTableModel):
             return list(self._params)[row]
         return None
 
+    def params(self) -> dict:
+        return dict(zip(self._params, self._values))
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ImportReceiptDialog(QDialog):
@@ -235,22 +238,25 @@ class ImportReceiptDialog(QDialog):
         self.slip_lines = None
         self.receipt_api = None
         self.tensor_flow_present = dependency_present(['tensorflow'])
-        self.ui.ReceiptAPICombo.clear()
-        for idx, name in ReceiptAPIFactory().supported_names.items():
-            self.ui.ReceiptAPICombo.addItem(name, idx)
 
         self.ui.ScanReceiptQR.clicked.connect(self.processReceiptQR)
-        self.ui.DownloadReceiptBtn.clicked.connect(self.downloadSlipJSON)
+        self.ui.DownloadReceiptBtn.clicked.connect(self.processReceiptParams)
         self.ui.AddOperationBtn.clicked.connect(self.addOperation)
         self.ui.ClearBtn.clicked.connect(self.clearSlipData)
         self.ui.AssignCategoryBtn.clicked.connect(self.recognizeCategories)
         self.ui.ReceiptAPICombo.currentIndexChanged.connect(self.change_api)
 
+        self.ui.ReceiptAPICombo.clear()
+        for idx, name in ReceiptAPIFactory().supported_names.items():
+            self.ui.ReceiptAPICombo.addItem(name, idx)
+
         self.ui.AssignCategoryBtn.setEnabled(self.tensor_flow_present)
 
     # -----------------------------------------------------------------------------------------------
     @Slot()
-    def change_api(self, _index):
+    def change_api(self, index):
+        if index < 0:
+            return
         api_type = self.ui.ReceiptAPICombo.currentData()
         self.params_model = ParamsModel(ReceiptAPIFactory().get_api_parameters(api_type))
         self.ui.ReceiptParametersList.setModel(self.params_model)
@@ -266,6 +272,17 @@ class ImportReceiptDialog(QDialog):
         logging.info(self.tr("QR: " + scanner.data))
         try:
             self.receipt_api = ReceiptAPIFactory().get_api_for_qr(scanner.data)
+        except ValueError as e:
+            logging.warning(e)
+            return
+        self.receipt_api.slip_load_ok.connect(self.slip_loaded)
+        self.downloadSlipJSON()
+
+    @Slot()
+    def processReceiptParams(self):
+        api_type = self.ui.ReceiptAPICombo.currentData()
+        try:
+            self.receipt_api = ReceiptAPIFactory().get_api_with_params(api_type, self.params_model.params())
         except ValueError as e:
             logging.warning(e)
             return
