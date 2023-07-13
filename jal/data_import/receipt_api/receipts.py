@@ -41,7 +41,7 @@ class ReceiptAPIFactory(QObject):
     def get_api_for_qr(self, qr_text):
         extra_data=''
         api_type = self._detect_api_id_by_qr(qr_text)
-        if api_type == EU_LIDL_PLUS_API or api_type == PT_PINGO_DOCE_API:
+        if api_type == EU_LIDL_PLUS_API:
             scanner = ScanDialog(code_type=QRScanner.TYPE_ITF,
                                  message=self.tr("Please scan flat barcode from the receipt"))
             if scanner.exec() == QDialog.Accepted:

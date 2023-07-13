@@ -3,8 +3,8 @@ import json
 import logging
 import requests
 from decimal import Decimal
-from PySide6.QtCore import Qt, QDateTime, QTime, QTimeZone
-from PySide6.QtWidgets import QDialog, QInputDialog
+from PySide6.QtCore import Qt, QDateTime, QTimeZone
+from PySide6.QtWidgets import QDialog
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.db.settings import JalSettings
 from jal.ui.ui_login_pingo_doce_dlg import Ui_LoginPingoDoceDialog
@@ -20,6 +20,7 @@ class ReceiptPtPingoDoce(ReceiptAPI):
     # CCCC cash register ID in the shop ID MMMM
     def __init__(self, qr_text='', aux_data='', params=None):
         super().__init__()
+        self.aux_data = aux_data
         self.access_token = ''
         self.user_profile = {}
         self.receipts = []
@@ -31,22 +32,10 @@ class ReceiptPtPingoDoce(ReceiptAPI):
             parts = parts.groupdict()
             self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
             self.shop_id = int(parts['shop_id'].lstrip('0'))
-            self.register_id = parts['register_id'].lstrip('0')
             self.total_amount = float(parts['amount'])
-            if len(aux_data) == 30:  # Get receipt sequence number and time from aux data or from the user
-                self.seq_id = aux_data[0:6]
-                self.date_time.setTime(QTime.fromString(aux_data[14:18], "HHmm"))
-            else:
-                self.seq_id, result = QInputDialog.getText(None, self.tr("Input Pingo Doce receipt additional data"),
-                                                           self.tr("Sequence #:"))
-                if not result:
-                    raise ValueError(self.tr("Can't get Pingo Doce receipt without sequence number"))
-            self.seq_id = int(self.seq_id.lstrip('0'))  # Get rid of any leading zeros and convert to int
         else:
             self.date_time = params['Date/Time']
             self.shop_id = params['Shop #']
-            self.register_id = params['Register #']
-            self.seq_id = params['Sequence #']
             self.total_amount = float(params['Total'])
         self.web_session = requests.Session()
         self.web_session.headers['User-Agent'] = "okhttp/4.10.0"
@@ -57,8 +46,6 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         parameters = {
             "Date/Time": QDateTime.currentDateTime(QTimeZone.UTC),
             "Shop #": 0,
-            "Register #": 0,
-            "Sequence #": 0,
             "Total": Decimal('0')
         }
         return parameters
@@ -103,8 +90,7 @@ class ReceiptPtPingoDoce(ReceiptAPI):
                 logging.error(self.tr("Pingo Doce API history failed: ") + f"{response.status_code}/{response.text}")
                 return False
             receipts = json.loads(response.text)
-            if len(receipts) < 20:
-                page = -1   # stop loading
+            page = -1 if len(receipts) < 20 else page + 1  # Go to next page or stop loading
             for receipt in receipts:
                 self.receipts.append({"id": receipt['transactionId'], "shop_id": receipt['storeId'],
                                       "date": receipt['transactionDate'], "amount": float(receipt['total'])})
