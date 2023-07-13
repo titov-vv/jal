@@ -1,10 +1,13 @@
 import logging
 import pandas as pd
-from PySide6.QtCore import Qt, Slot, QAbstractTableModel
-from PySide6.QtWidgets import QDialog, QHeaderView, QStyledItemDelegate
+from decimal import Decimal
+from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDateTime, QDate, QTime, QLocale
+from PySide6.QtWidgets import QDialog, QHeaderView, QStyledItemDelegate, QLineEdit, QComboBox
 from jal.widgets.reference_selector import CategorySelector, TagSelector
+from jal.widgets.delegates import DateTimeEditWithReset
 from jal.constants import CustomColor
 from jal.widgets.helpers import dependency_present
+from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.operations import LedgerTransaction
@@ -14,6 +17,7 @@ from jal.data_import.category_recognizer import recognize_categories
 from jal.data_import.receipt_api.receipts import ReceiptAPIFactory
 
 
+DEFAULT_DATA_ROLE = Qt.UserRole + 1
 #-----------------------------------------------------------------------------------------------------------------------
 # Custom model to display and edit slip lines
 class PandasLinesModel(QAbstractTableModel):
@@ -106,12 +110,75 @@ class SlipLinesDelegate(QStyledItemDelegate):
             model.setData(index, editor.selected_id)
 
 #-----------------------------------------------------------------------------------------------------------------------
+# Delegate class that shows parameter editor according to its type
+class ParameterDelegate(QStyledItemDelegate):    # Code doubles with pieces from delegates.py
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+    def createEditor(self, aParent, option, index):
+        default_data = index.model().data(index, DEFAULT_DATA_ROLE)
+        data_type = type(default_data)
+        if data_type == str or data_type == int or data_type == Decimal:
+            editor = QLineEdit(aParent)
+        elif data_type == QDateTime or data_type == QDate:
+            editor = DateTimeEditWithReset(aParent)
+            editor.setTimeSpec(Qt.UTC)
+            if data_type == QDate:
+                editor.setDisplayFormat("dd/MM/yyyy")
+            else:
+                editor.setDisplayFormat("dd/MM/yyyy hh:mm")
+        elif data_type == dict:
+            editor = QComboBox(aParent)
+            for idx in default_data:
+                editor.addItem(default_data[idx], userData=idx)
+        else:
+            assert False, f"Delegate ParameterDelegate.createEditor() called for unsupported type {data_type}"
+        return editor
+
+    def setEditorData(self, editor, index):
+        default_data = index.model().data(index, DEFAULT_DATA_ROLE)
+        data_type = type(default_data)
+        if data_type == str or data_type == int:
+            editor.setText(str(index.model().data(index, Qt.EditRole)))
+        elif data_type == Decimal:
+            editor.setText(localize_decimal(index.model().data(index, Qt.EditRole)))
+        elif data_type == QDateTime:
+            editor.setDateTime(index.model().data(index, Qt.EditRole))
+        elif data_type == QDate:
+            editor.setDateTime(QDateTime(index.model().data(index, Qt.EditRole), QTime()))
+        elif data_type == dict:
+            editor.setCurrentIndex(editor.findData(index.model().data(index, Qt.EditRole)))
+        else:
+            assert False, f"Delegate ParameterDelegate.setEditorData() called for unsupported type {data_type}"
+        return editor
+
+    def setModelData(self, editor, model, index):
+        default_data = index.model().data(index, DEFAULT_DATA_ROLE)
+        data_type = type(default_data)
+        if data_type == str:
+            model.setData(index, editor.text())
+        elif data_type == int:
+            model.setData(index, QLocale().toInt(editor.text())[0])
+        elif data_type == QDate:
+            model.setData(index, editor.date())
+        elif data_type == QDateTime:
+            model.setData(index, editor.dateTime())
+        elif data_type == Decimal:
+            number_text = delocalize_decimal(editor.text())
+            value = Decimal(number_text) if number_text else Decimal('0')
+            model.setData(index, value)
+        elif data_type == dict:
+            model.setData(index, editor.currentData())
+        else:
+            assert False, f"Delegate ParameterDelegate.setModelData() called for unsupported type {data_type}"
+
+#-----------------------------------------------------------------------------------------------------------------------
 # Custom model to display and edit slip lines
 class ParamsModel(QAbstractTableModel):
     def __init__(self, params_list: dict, parent=None):
         super().__init__(parent)
         self._params = params_list
-        self._values = [None] * len(self._params)
+        self._values = [(lambda x : x if type(x) != dict else next(iter(x)))(y) for y in self._params.values()]
 
     def flags(self, index):
         if not index.isValid():
@@ -126,8 +193,19 @@ class ParamsModel(QAbstractTableModel):
 
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid():
+            value = self._values[index.row()]
+            default_value = list(self._params.values())[index.row()]
             if role == Qt.DisplayRole:
-                return self._values[index.row()]
+                if type(default_value) == Decimal:
+                    return str(value)
+                elif type(default_value) == dict:
+                    return default_value[value]
+                else:
+                    return value
+            elif role == Qt.EditRole:
+                return value
+            elif role == DEFAULT_DATA_ROLE:
+                return default_value
         return None
 
     def setData(self, index, value, role=Qt.EditRole):
@@ -153,10 +231,8 @@ class ImportReceiptDialog(QDialog):
         self.model = None
         self.delegate = []
         self.params_model = None
-
-        self.slip_json = None
+        self._parameter_delegate = ParameterDelegate(self.ui.ReceiptParametersList)
         self.slip_lines = None
-
         self.receipt_api = None
         self.tensor_flow_present = dependency_present(['tensorflow'])
         self.ui.ReceiptAPICombo.clear()
@@ -178,6 +254,7 @@ class ImportReceiptDialog(QDialog):
         api_type = self.ui.ReceiptAPICombo.currentData()
         self.params_model = ParamsModel(ReceiptAPIFactory().get_api_parameters(api_type))
         self.ui.ReceiptParametersList.setModel(self.params_model)
+        self.ui.ReceiptParametersList.setItemDelegateForColumn(0, self._parameter_delegate)
 
     #-----------------------------------------------------------------------------------------------
     # Then it downloads the slip if match found. Otherwise, shows warning message but allows to proceed
@@ -270,7 +347,6 @@ class ImportReceiptDialog(QDialog):
         self.clearSlipData()
 
     def clearSlipData(self):
-        self.slip_json = None
         self.slip_lines = None
         self.ui.LinesTableView.setModel(None)
 

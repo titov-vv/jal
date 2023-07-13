@@ -4,9 +4,8 @@ import logging
 import requests
 import requests_oauthlib
 from urllib import parse
-from datetime import date
 from oauthlib.oauth2 import MobileApplicationClient
-from PySide6.QtCore import Qt, Slot, Signal, QMetaObject, QDateTime, QUrl
+from PySide6.QtCore import Qt, Slot, Signal, QMetaObject, QDateTime, QTimeZone, QUrl
 from PySide6.QtWidgets import QDialog, QInputDialog, QMessageBox
 from PySide6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage, QWebEngineUrlScheme, \
     QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
@@ -49,10 +48,10 @@ class ReceiptEuLidlPlus(ReceiptAPI):
     @staticmethod
     def parameters_list() -> dict:
         parameters = {
-            "Date": date,
-            "Shop #": int,
-            "Register #": int,
-            "Sequence #": int
+            "Date": QDateTime.currentDateTime(QTimeZone.UTC).date(),
+            "Shop #": 0,
+            "Register #": 0,
+            "Sequence #": 0
         }
         return parameters
 

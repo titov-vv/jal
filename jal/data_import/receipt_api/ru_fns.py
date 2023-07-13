@@ -4,8 +4,8 @@ import json
 import requests
 import time
 from urllib import parse
-from datetime import datetime
-from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime
+from decimal import Decimal
+from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime, QTimeZone
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
@@ -51,11 +51,11 @@ class ReceiptRuFNS(ReceiptAPI):
     @staticmethod
     def parameters_list() -> dict:
         parameters = {
-            "Дата/время": datetime,
-            "ФН": int,
-            "ФД": int,
-            "ФП": int,
-            "Сумма": float,
+            "Дата/время": QDateTime.currentDateTime(QTimeZone.UTC),
+            "ФН": '',
+            "ФД": '',
+            "ФП": '',
+            "Сумма": Decimal('0'),
             "Тип": {1: "Покупка", 2: "Возврат"}
         }
         return parameters

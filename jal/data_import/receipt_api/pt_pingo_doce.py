@@ -2,8 +2,8 @@ import re
 import json
 import logging
 import requests
-from datetime import datetime
-from PySide6.QtCore import Qt, QDateTime, QTime
+from decimal import Decimal
+from PySide6.QtCore import Qt, QDateTime, QTime, QTimeZone
 from PySide6.QtWidgets import QDialog, QInputDialog
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.db.settings import JalSettings
@@ -48,11 +48,11 @@ class ReceiptPtPingoDoce(ReceiptAPI):
     @staticmethod
     def parameters_list() -> dict:
         parameters = {
-            "Date/Time": datetime,
-            "Shop #": int,
-            "Register #": int,
-            "Sequence #": int,
-            "Total": float
+            "Date/Time": QDateTime.currentDateTime(QTimeZone.UTC),
+            "Shop #": 0,
+            "Register #": 0,
+            "Sequence #": 0,
+            "Total": Decimal('0')
         }
         return parameters
 
