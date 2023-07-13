@@ -29,7 +29,7 @@ class PandasLinesModel(QAbstractTableModel):
     def rowCount(self, parent=None):
         return self._data.shape[0]
 
-    def columnCount(self, parnet=None):
+    def columnCount(self, parent=None):
         return self._data.shape[1]
 
     def data(self, index, role=Qt.DisplayRole):
@@ -105,6 +105,44 @@ class SlipLinesDelegate(QStyledItemDelegate):
         if index.column() == 3:
             model.setData(index, editor.selected_id)
 
+#-----------------------------------------------------------------------------------------------------------------------
+# Custom model to display and edit slip lines
+class ParamsModel(QAbstractTableModel):
+    def __init__(self, params_list: dict, parent=None):
+        super().__init__(parent)
+        self._params = params_list
+        self._values = [None] * len(self._params)
+
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemIsEnabled
+        return super().flags(index) | Qt.ItemIsEditable
+
+    def rowCount(self, parent=None):
+        return len(self._params)
+
+    def columnCount(self, parent=None):
+        return 1
+
+    def data(self, index, role=Qt.DisplayRole):
+        if index.isValid():
+            if role == Qt.DisplayRole:
+                return self._values[index.row()]
+        return None
+
+    def setData(self, index, value, role=Qt.EditRole):
+        if index.isValid():
+            if role == Qt.EditRole:
+                self._values[index.row()] = value
+                self.dataChanged.emit(index, index)
+                return True
+        return False
+
+    def headerData(self, row, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return list(self._params)[row]
+        return None
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ImportReceiptDialog(QDialog):
@@ -114,6 +152,7 @@ class ImportReceiptDialog(QDialog):
         self.ui.setupUi(self)
         self.model = None
         self.delegate = []
+        self.params_model = None
 
         self.slip_json = None
         self.slip_lines = None
@@ -137,7 +176,8 @@ class ImportReceiptDialog(QDialog):
     @Slot()
     def change_api(self, _index):
         api_type = self.ui.ReceiptAPICombo.currentData()
-        print(ReceiptAPIFactory().get_api_parameters(api_type))
+        self.params_model = ParamsModel(ReceiptAPIFactory().get_api_parameters(api_type))
+        self.ui.ReceiptParametersList.setModel(self.params_model)
 
     #-----------------------------------------------------------------------------------------------
     # Then it downloads the slip if match found. Otherwise, shows warning message but allows to proceed

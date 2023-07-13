@@ -41,10 +41,10 @@ class Ui_ImportShopReceiptDlg(object):
         self.InputFrame.setSizePolicy(sizePolicy)
         self.InputFrame.setFrameShape(QFrame.NoFrame)
         self.InputFrame.setFrameShadow(QFrame.Plain)
-        self.verticalLayout_2 = QVBoxLayout(self.InputFrame)
-        self.verticalLayout_2.setSpacing(2)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2 = QHBoxLayout(self.InputFrame)
+        self.horizontalLayout_2.setSpacing(2)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.QRGroup = QGroupBox(self.InputFrame)
         self.QRGroup.setObjectName(u"QRGroup")
         sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -67,7 +67,7 @@ class Ui_ImportShopReceiptDlg(object):
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
 
-        self.verticalLayout_2.addWidget(self.QRGroup)
+        self.horizontalLayout_2.addWidget(self.QRGroup)
 
 
         self.verticalLayout.addWidget(self.InputFrame)
@@ -85,95 +85,95 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.gridLayout_2.addWidget(self.ReceiptAPICombo, 0, 1, 1, 1)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.ReceiptAPILabel = QLabel(self.SlipDataGroup)
+        self.ReceiptAPILabel.setObjectName(u"ReceiptAPILabel")
 
-        self.gridLayout_2.addItem(self.verticalSpacer, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.ReceiptAPILabel, 0, 0, 1, 1)
 
         self.DownloadReceiptBtn = QPushButton(self.SlipDataGroup)
         self.DownloadReceiptBtn.setObjectName(u"DownloadReceiptBtn")
 
         self.gridLayout_2.addWidget(self.DownloadReceiptBtn, 2, 0, 1, 2)
 
-        self.ReceiptAPILabel = QLabel(self.SlipDataGroup)
-        self.ReceiptAPILabel.setObjectName(u"ReceiptAPILabel")
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.gridLayout_2.addWidget(self.ReceiptAPILabel, 0, 0, 1, 1)
+        self.gridLayout_2.addItem(self.verticalSpacer, 1, 0, 1, 1)
 
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout_2.addItem(self.horizontalSpacer_3, 0, 2, 1, 1)
-
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_2.addItem(self.horizontalSpacer_4, 2, 2, 1, 1)
+        self.gridLayout_2.addItem(self.horizontalSpacer_2, 0, 3, 1, 1)
 
         self.ReceiptParametersList = QTableView(self.SlipDataGroup)
         self.ReceiptParametersList.setObjectName(u"ReceiptParametersList")
+        self.ReceiptParametersList.horizontalHeader().setVisible(False)
+        self.ReceiptParametersList.horizontalHeader().setStretchLastSection(True)
+        self.ReceiptParametersList.verticalHeader().setMinimumSectionSize(20)
+        self.ReceiptParametersList.verticalHeader().setDefaultSectionSize(20)
 
-        self.gridLayout_2.addWidget(self.ReceiptParametersList, 1, 1, 1, 2)
+        self.gridLayout_2.addWidget(self.ReceiptParametersList, 0, 2, 3, 1)
 
 
         self.verticalLayout.addWidget(self.SlipDataGroup)
 
-        self.SlipGroup = QGroupBox(ImportShopReceiptDlg)
-        self.SlipGroup.setObjectName(u"SlipGroup")
+        self.ReceiptGroup = QGroupBox(ImportShopReceiptDlg)
+        self.ReceiptGroup.setObjectName(u"ReceiptGroup")
         sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.SlipGroup.sizePolicy().hasHeightForWidth())
-        self.SlipGroup.setSizePolicy(sizePolicy2)
-        self.gridLayout = QGridLayout(self.SlipGroup)
+        sizePolicy2.setHeightForWidth(self.ReceiptGroup.sizePolicy().hasHeightForWidth())
+        self.ReceiptGroup.setSizePolicy(sizePolicy2)
+        self.gridLayout = QGridLayout(self.ReceiptGroup)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.SlipDateTime = QDateTimeEdit(self.SlipGroup)
+        self.SlipDateTime = QDateTimeEdit(self.ReceiptGroup)
         self.SlipDateTime.setObjectName(u"SlipDateTime")
         self.SlipDateTime.setTimeSpec(Qt.UTC)
 
         self.gridLayout.addWidget(self.SlipDateTime, 2, 1, 1, 1)
 
-        self.DateTimeLbl = QLabel(self.SlipGroup)
+        self.DateTimeLbl = QLabel(self.ReceiptGroup)
         self.DateTimeLbl.setObjectName(u"DateTimeLbl")
 
         self.gridLayout.addWidget(self.DateTimeLbl, 1, 1, 1, 1)
 
-        self.CorrespondenceLbl = QLabel(self.SlipGroup)
+        self.CorrespondenceLbl = QLabel(self.ReceiptGroup)
         self.CorrespondenceLbl.setObjectName(u"CorrespondenceLbl")
 
         self.gridLayout.addWidget(self.CorrespondenceLbl, 3, 2, 1, 1)
 
-        self.PeerEdit = PeerSelector(self.SlipGroup)
+        self.PeerEdit = PeerSelector(self.ReceiptGroup)
         self.PeerEdit.setObjectName(u"PeerEdit")
 
         self.gridLayout.addWidget(self.PeerEdit, 3, 3, 1, 1)
 
-        self.PeerLbl = QLabel(self.SlipGroup)
+        self.PeerLbl = QLabel(self.ReceiptGroup)
         self.PeerLbl.setObjectName(u"PeerLbl")
 
         self.gridLayout.addWidget(self.PeerLbl, 3, 0, 1, 1)
 
-        self.SlipShopName = QLineEdit(self.SlipGroup)
+        self.SlipShopName = QLineEdit(self.ReceiptGroup)
         self.SlipShopName.setObjectName(u"SlipShopName")
         self.SlipShopName.setEnabled(False)
 
         self.gridLayout.addWidget(self.SlipShopName, 3, 1, 1, 1)
 
-        self.LinesLbl = QLabel(self.SlipGroup)
+        self.LinesLbl = QLabel(self.ReceiptGroup)
         self.LinesLbl.setObjectName(u"LinesLbl")
         self.LinesLbl.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
 
         self.gridLayout.addWidget(self.LinesLbl, 4, 0, 1, 1)
 
-        self.AccountLbl = QLabel(self.SlipGroup)
+        self.AccountLbl = QLabel(self.ReceiptGroup)
         self.AccountLbl.setObjectName(u"AccountLbl")
 
         self.gridLayout.addWidget(self.AccountLbl, 1, 3, 1, 1)
 
-        self.AccountEdit = AccountSelector(self.SlipGroup)
+        self.AccountEdit = AccountSelector(self.ReceiptGroup)
         self.AccountEdit.setObjectName(u"AccountEdit")
 
         self.gridLayout.addWidget(self.AccountEdit, 2, 3, 1, 1)
 
-        self.LinesTableView = QTableView(self.SlipGroup)
+        self.LinesTableView = QTableView(self.ReceiptGroup)
         self.LinesTableView.setObjectName(u"LinesTableView")
         self.LinesTableView.verticalHeader().setVisible(False)
         self.LinesTableView.verticalHeader().setMinimumSectionSize(20)
@@ -181,18 +181,18 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.gridLayout.addWidget(self.LinesTableView, 4, 1, 1, 4)
 
-        self.AssignCategoryBtn = QPushButton(self.SlipGroup)
+        self.AssignCategoryBtn = QPushButton(self.ReceiptGroup)
         self.AssignCategoryBtn.setObjectName(u"AssignCategoryBtn")
 
         self.gridLayout.addWidget(self.AssignCategoryBtn, 2, 4, 1, 1)
 
-        self.AssignTagBtn = QPushButton(self.SlipGroup)
+        self.AssignTagBtn = QPushButton(self.ReceiptGroup)
         self.AssignTagBtn.setObjectName(u"AssignTagBtn")
 
         self.gridLayout.addWidget(self.AssignTagBtn, 3, 4, 1, 1)
 
 
-        self.verticalLayout.addWidget(self.SlipGroup)
+        self.verticalLayout.addWidget(self.ReceiptGroup)
 
         self.DialogButtonsFrame = QFrame(ImportShopReceiptDlg)
         self.DialogButtonsFrame.setObjectName(u"DialogButtonsFrame")
@@ -233,9 +233,9 @@ class Ui_ImportShopReceiptDlg(object):
         self.QRGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt by scanning QR-code", None))
         self.ScanReceiptQR.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Scan receipt QR", None))
         self.SlipDataGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt by manual data entry", None))
-        self.DownloadReceiptBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Download receipt", None))
         self.ReceiptAPILabel.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Receipt type:", None))
-        self.SlipGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Slip", None))
+        self.DownloadReceiptBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Download receipt", None))
+        self.ReceiptGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Operation data", None))
         self.SlipDateTime.setDisplayFormat(QCoreApplication.translate("ImportShopReceiptDlg", u"dd/MM/yyyy hh:mm:ss", None))
         self.DateTimeLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Date / Time:", None))
         self.CorrespondenceLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u" \u279c ", None))

@@ -43,7 +43,7 @@
      <property name="frameShadow">
       <enum>QFrame::Plain</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="spacing">
        <number>2</number>
       </property>
@@ -145,6 +145,20 @@
       <item row="0" column="1">
        <widget class="QComboBox" name="ReceiptAPICombo"/>
       </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="ReceiptAPILabel">
+        <property name="text">
+         <string>Receipt type:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QPushButton" name="DownloadReceiptBtn">
+        <property name="text">
+         <string>Download receipt</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="0">
        <spacer name="verticalSpacer">
         <property name="orientation">
@@ -158,22 +172,8 @@
         </property>
        </spacer>
       </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QPushButton" name="DownloadReceiptBtn">
-        <property name="text">
-         <string>Download receipt</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="ReceiptAPILabel">
-        <property name="text">
-         <string>Receipt type:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <spacer name="horizontalSpacer_3">
+      <item row="0" column="3">
+       <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -185,27 +185,27 @@
         </property>
        </spacer>
       </item>
-      <item row="2" column="2">
-       <spacer name="horizontalSpacer_4">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QTableView" name="ReceiptParametersList"/>
+      <item row="0" column="2" rowspan="3">
+       <widget class="QTableView" name="ReceiptParametersList">
+        <attribute name="horizontalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="horizontalHeaderStretchLastSection">
+         <bool>true</bool>
+        </attribute>
+        <attribute name="verticalHeaderMinimumSectionSize">
+         <number>20</number>
+        </attribute>
+        <attribute name="verticalHeaderDefaultSectionSize">
+         <number>20</number>
+        </attribute>
+       </widget>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="SlipGroup">
+    <widget class="QGroupBox" name="ReceiptGroup">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -213,7 +213,7 @@
       </sizepolicy>
      </property>
      <property name="title">
-      <string>Slip</string>
+      <string>Operation data</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <property name="leftMargin">

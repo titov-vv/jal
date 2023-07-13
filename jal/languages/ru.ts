@@ -1144,32 +1144,32 @@
 <context>
     <name>ImportReceiptDialog</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="191"/>
+        <location filename="../data_import/shop_receipt.py" line="188"/>
         <source>Please scan main QR code from the receipt</source>
         <translation>Отсканируйте основной QR-код с чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="194"/>
+        <location filename="../data_import/shop_receipt.py" line="191"/>
         <source>QR: </source>
         <translation>QR: </translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="249"/>
+        <location filename="../data_import/shop_receipt.py" line="246"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation>Невозможно импортировать чек: не выбран счёт для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="252"/>
+        <location filename="../data_import/shop_receipt.py" line="249"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation>Невозможно импортировать чек: не выбран контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="255"/>
+        <location filename="../data_import/shop_receipt.py" line="252"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation>Невозможно импортировать чек: некоторые категории не выбраны</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="285"/>
+        <location filename="../data_import/shop_receipt.py" line="282"/>
         <source>Categories are not recognized: Tensorflow is not found</source>
         <translation>Категории не распознаны: Tensorflow не найден</translation>
     </message>
@@ -1182,12 +1182,17 @@
         <translation>Импорт чека из магазина</translation>
     </message>
     <message>
+        <location filename="../ui/receipt_import_dlg.ui" line="216"/>
+        <source>Operation data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/receipt_import_dlg.ui" line="234"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="164"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="158"/>
         <source>Download receipt</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1207,14 +1212,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="171"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="151"/>
         <source>Receipt type:</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="216"/>
-        <source>Slip</source>
-        <translation>Чек</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="244"/>
@@ -2296,24 +2296,32 @@ Application will be terminated now.</source>
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="54"/>
+        <location filename="../data_import/shop_receipt.py" line="53"/>
         <source>Product name</source>
         <translation>Название продукта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="56"/>
+        <location filename="../data_import/shop_receipt.py" line="55"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="58"/>
+        <location filename="../data_import/shop_receipt.py" line="57"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="60"/>
+        <location filename="../data_import/shop_receipt.py" line="59"/>
         <source>Amount</source>
         <translation>Сумма</translation>
+    </message>
+</context>
+<context>
+    <name>ParamsModel</name>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="144"/>
+        <source>Value</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
