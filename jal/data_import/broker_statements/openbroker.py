@@ -113,8 +113,8 @@ class StatementOpenBroker(StatementXML):
                     'level': '2',   # Take only money
                     'values': [('asset_name', 'asset', OpenBroker_Asset, None),
                                ('opening_position_plan', 'cash_begin', float, 0),
-                               ('closing_position_plan', 'cash_end_settled', float, 0),
-                               ('closing_position_fact', 'cash_end', float, 0)],
+                               ('closing_position_plan', 'cash_end', float, 0),           # -- this is planned
+                               ('closing_position_fact', 'cash_end_settled', float, 0)],  # -- this is now
                     'loader': self.load_balances
                 },
             'spot_main_deals_conclusion':    # Deals list
