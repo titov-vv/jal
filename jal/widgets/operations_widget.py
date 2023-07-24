@@ -78,13 +78,13 @@ class OperationsWidget(MdiWidget):
         self.actionReconcile.triggered.connect(self.reconcile_at_current_operation)
         self.ui.BalanceDate.dateChanged.connect(self.ui.BalancesTableView.model().setDate)
         self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTableView.model().setCurrency)
-        self.ui.BalancesTableView.doubleClicked.connect(self.on_balance_double_click)
+        self.ui.BalancesTableView.doubleClicked.connect(self.balance_double_click)
         self.ui.ShowInactiveCheckBox.stateChanged.connect(self.ui.BalancesTableView.model().toggleActive)
         self.ui.DateRange.changed.connect(self.operations_model.setDateRange)
         self.ui.ChooseAccountBtn.changed.connect(self.operations_model.setAccount)
         self.ui.SearchString.editingFinished.connect(self.update_operations_filter)
-        self.ui.OperationsTableView.selectionModel().selectionChanged.connect(self.on_operation_selection_change)
-        self.ui.OperationsTableView.customContextMenuRequested.connect(self.on_operation_context_menu)
+        self.ui.OperationsTableView.selectionModel().selectionChanged.connect(self.operation_selection_change)
+        self.ui.OperationsTableView.customContextMenuRequested.connect(self.operation_context_menu)
         self.ui.DeleteOperationBtn.clicked.connect(self.delete_operation)
         self.actionDelete.triggered.connect(self.delete_operation)
         self.ui.CopyOperationBtn.clicked.connect(self.ui.OperationsTabs.copy_operation)
@@ -113,11 +113,11 @@ class OperationsWidget(MdiWidget):
         self.ui.OperationsTableView.model().setFilterKeyColumn(-1)
 
     @Slot()
-    def on_balance_double_click(self, index):
+    def balance_double_click(self, index):
         self.ui.ChooseAccountBtn.account_id = index.model().getAccountId(index.row())
 
     @Slot()
-    def on_operation_selection_change(self, selected, _deselected):
+    def operation_selection_change(self, selected, _deselected):
         op_type = LedgerTransaction.NA
         op_id = 0
         if len(self.ui.OperationsTableView.selectionModel().selectedRows()) == 1:
@@ -128,7 +128,7 @@ class OperationsWidget(MdiWidget):
         self.ui.OperationsTabs.show_operation(op_type, op_id)
 
     @Slot()
-    def on_operation_context_menu(self, pos):
+    def operation_context_menu(self, pos):
         self.current_index = self.ui.OperationsTableView.indexAt(pos)
         if len(self.ui.OperationsTableView.selectionModel().selectedRows()) != 1:
             self.actionReconcile.setEnabled(False)
