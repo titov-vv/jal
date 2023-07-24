@@ -295,4 +295,6 @@ class DetailsModel(JalViewModel):
             self.alt_currency_name = currency_name
             self.headerDataChanged.emit(Qt.Horizontal, 5, 5)
         else:
+            for row in range(self.rowCount()):
+                self.setData(self.index(row, self.fieldIndex("amount_alt")), '0')  # Reset all alternative amounts
             self._view.setColumnHidden(5, True)
