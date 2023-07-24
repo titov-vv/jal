@@ -96,9 +96,9 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.layout.addWidget(self.details_table, 4, 0, 1, 12)
         self.layout.addItem(self.horizontalSpacer, 1, 9, 1, 1)
 
-        self.add_button.clicked.connect(self.addChild)
-        self.copy_button.clicked.connect(self.copyChild)
-        self.del_button.clicked.connect(self.delChild)
+        self.add_button.clicked.connect(self.add_child)
+        self.copy_button.clicked.connect(self.copy_child)
+        self.del_button.clicked.connect(self.delete_child)
 
         super()._init_db("actions")
         self.model.beforeInsert.connect(self.before_record_insert)
@@ -113,7 +113,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.account_widget.changed.connect(self.mapper.submit)
         self.peer_widget.changed.connect(self.mapper.submit)
         self.a_currency.changed.connect(self.mapper.submit)
-        self.a_currency.name_updated.connect(self.details_model.setAltCurrency)
+        self.a_currency.name_updated.connect(self.details_model.set_alternative_currency)
 
         self.mapper.addMapping(self.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.account_widget, self.model.fieldIndex("account_id"))
@@ -128,14 +128,14 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
         self.model.select()
         self.details_model.select()
-        self.details_model.configureView()
+        self.details_model.configure_view()
 
-    def setId(self, id):
-        super().setId(id)
-        self.details_model.setFilter(f"action_details.pid = {id}")
+    def set_id(self, oid):
+        super().set_id(oid)
+        self.details_model.setFilter(f"action_details.pid = {oid}")
 
     @Slot()
-    def addChild(self):
+    def add_child(self):
         new_record = self.details_model.record()
         new_record.setNull("tag_id")
         new_record.setValue("amount", '0')
@@ -145,7 +145,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
             return
 
     @Slot()
-    def copyChild(self):
+    def copy_child(self):
         idx = self.details_table.selectionModel().selection().indexes()
         src_record = self.details_model.record(idx[0].row())
         new_record = self.details_model.record()
@@ -162,7 +162,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
             return
 
     @Slot()
-    def delChild(self):
+    def delete_child(self):
         selection = self.details_table.selectionModel().selection().indexes()
         for idx in selection:
             self.details_model.removeRow(idx.row())
@@ -278,7 +278,7 @@ class DetailsModel(JalViewModel):
                 return Qt.AlignRight | Qt.AlignVCenter
         return None
 
-    def configureView(self):
+    def configure_view(self):
         self._view.setColumnHidden(0, True)
         self._view.setColumnHidden(1, True)
         self._view.setColumnHidden(5, True)
@@ -289,7 +289,7 @@ class DetailsModel(JalViewModel):
         self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
         self._view.horizontalHeader().moveSection(6, 0)
 
-    def setAltCurrency(self, currency_name):
+    def set_alternative_currency(self, currency_name):
         if currency_name:
             self._view.setColumnHidden(5, False)
             self.alt_currency_name = currency_name

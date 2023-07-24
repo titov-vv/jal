@@ -159,7 +159,6 @@ class OptionalCurrencyComboBox(QWidget):
         return self._id if self._id else None
 
     def setId(self, new_value):
-        print(f"OLD: {self._id} -> NEW: {new_value}")
         if self._id == new_value:
             return
         self._id = new_value

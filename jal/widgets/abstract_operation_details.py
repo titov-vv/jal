@@ -52,8 +52,8 @@ class AbstractOperationDetails(QWidget):
         self.commit_button.clicked.connect(self.saveChanges)
         self.revert_button.clicked.connect(self.revertChanges)
 
-    def setId(self, id):
-        self.model.setFilter(f"id={id}")
+    def set_id(self, oid):
+        self.model.setFilter(f"id={oid}")
         self.mapper.setCurrentModelIndex(self.model.index(0, 0))
 
     @Slot()

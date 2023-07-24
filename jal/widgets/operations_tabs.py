@@ -51,7 +51,7 @@ class JalOperationsTabs(QStackedWidget):
         self._check_for_changes()
         self.setCurrentIndex(op_type)
         if op_type != LedgerTransaction.NA:
-            self.widgets[op_type].setId(operation_id)
+            self.widgets[op_type].set_id(operation_id)
 
     def new_operation(self, op_type, account_id):
         self._check_for_changes()

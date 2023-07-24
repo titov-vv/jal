@@ -147,9 +147,9 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.results_model.select()
         self.results_model.configureView()
 
-    def setId(self, id):
-        super().setId(id)
-        self.results_model.setFilter(f"action_results.action_id = {id}")
+    def set_id(self, oid):
+        super().set_id(oid)
+        self.results_model.setFilter(f"action_results.action_id = {oid}")
 
     @Slot()
     def addResult(self):
