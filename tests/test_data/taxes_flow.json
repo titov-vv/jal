@@ -4,6 +4,7 @@
     "account": "U7654321",
     "currency": "USD (840)",
     "money": "Денежные средства",
+    "account_name": "Inv. Account",
     "assets": "Финансовые активы",
     "money_begin": -0.278304,
     "money_in": 3.336480999999999767169356346,
