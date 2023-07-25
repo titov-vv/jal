@@ -84,6 +84,7 @@ class OperationsWidget(MdiWidget):
         self.ui.ChooseAccountBtn.changed.connect(self.operations_model.setAccount)
         self.ui.SearchString.editingFinished.connect(self.update_operations_filter)
         self.ui.OperationsTableView.selectionModel().selectionChanged.connect(self.operation_selection_change)
+        self.operations_model.modelReset.connect(partial(self.operation_selection_change, None, None))  # Use the same slot with NULL-parameters to clean operation view
         self.ui.OperationsTableView.customContextMenuRequested.connect(self.operation_context_menu)
         self.ui.DeleteOperationBtn.clicked.connect(self.delete_operation)
         self.actionDelete.triggered.connect(self.delete_operation)
