@@ -148,8 +148,8 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.results_model.configureView()
 
     def set_id(self, oid):
+        self.results_model.setFilter(f"action_results.action_id = {oid}")  # First we need to select right children
         super().set_id(oid)
-        self.results_model.setFilter(f"action_results.action_id = {oid}")
 
     @Slot()
     def addResult(self):

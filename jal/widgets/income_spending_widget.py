@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil import tz
 from decimal import Decimal
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, QByteArray
 from PySide6.QtWidgets import QLabel, QLineEdit, QDateTimeEdit, QPushButton, QHeaderView
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
@@ -118,7 +118,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.account_widget, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.peer_widget, self.model.fieldIndex("peer_id"))
-        self.mapper.addMapping(self.a_currency, self.model.fieldIndex("alt_currency_id"))
+        self.mapper.addMapping(self.a_currency, self.model.fieldIndex("alt_currency_id"), QByteArray("currency_id_str"))
         self.mapper.addMapping(self.note, self.model.fieldIndex("note"))
 
         self.details_table.setItemDelegateForColumn(2, self.category_delegate)
@@ -131,8 +131,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.details_model.configure_view()
 
     def set_id(self, oid):
+        self.details_model.setFilter(f"action_details.pid = {oid}")  # First we need to select right children
         super().set_id(oid)
-        self.details_model.setFilter(f"action_details.pid = {oid}")
 
     @Slot()
     def add_child(self):
@@ -233,7 +233,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         return new_record
 
     def before_record_insert(self, record):
-        if record.value("alt_currency_id") == 0:
+        if record.value("alt_currency_id") == 0 or record.value("alt_currency_id") == '':
             record.setNull("alt_currency_id")
 
     def before_record_update(self, _row, record):

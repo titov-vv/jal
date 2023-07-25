@@ -26,10 +26,10 @@ class AccountButton(QPushButton):
         self.dialog = AccountListDialog()
         self.setText(self.dialog.SelectedName)
 
-    def getId(self):
+    def get_id(self):
         return self.p_account_id
 
-    def setId(self, account_id):
+    def set_id(self, account_id):
         self.p_account_id = account_id
         if self.p_account_id:
             self.setText(JalAccount(account_id).name())
@@ -37,7 +37,7 @@ class AccountButton(QPushButton):
             self.setText(self.tr("ANY"))
         self.changed.emit(self.p_account_id)
 
-    account_id = Property(int, getId, setId, notify=changed)
+    account_id = Property(int, get_id, set_id, notify=changed)
 
     def ChooseAccount(self):
         ref_point = self.mapToGlobal(self.geometry().bottomLeft())
@@ -103,10 +103,10 @@ class CurrencyComboBox(QComboBox):
         self.setModel(self.model)
         self.setModelColumn(self.model.fieldIndex("symbol"))
 
-    def getId(self):
+    def get_id(self):
         return self.p_selected_id
 
-    def setId(self, new_id):
+    def set_id(self, new_id):
         if self.p_selected_id == new_id:
             return
         self.p_selected_id = new_id
@@ -115,7 +115,7 @@ class CurrencyComboBox(QComboBox):
             return
         self.setCurrentIndex(self.findText(name))
 
-    selected_id = Property(int, getId, setId, notify=changed, user=True)
+    selected_id = Property(int, get_id, set_id, notify=changed, user=True)
 
     def setIndex(self, index):
         if index is not None:
@@ -155,10 +155,10 @@ class OptionalCurrencyComboBox(QWidget):
     def setText(self, text):
         self.null_flag.setText(text)
 
-    def getId(self):
+    def get_id(self) -> int:
         return self._id if self._id else None
 
-    def setId(self, new_value):
+    def set_id(self, new_value: int):
         if self._id == new_value:
             return
         self._id = new_value
@@ -166,7 +166,17 @@ class OptionalCurrencyComboBox(QWidget):
         name = JalAsset(self._id).symbol()
         self.name_updated.emit('' if name is None else name)
 
-    currency_id = Property(int, getId, setId, notify=changed, user=True)
+    currency_id = Property(int, get_id, set_id, notify=changed, user=True)
+    
+    def get_str_id(self) -> str:
+        string_id = '' if self.get_id() is None else str(self.get_id())
+        return string_id
+
+    def set_str_id(self, string_id: str):
+        new_id = int(string_id) if string_id else 0
+        self.set_id(new_id)
+    
+    currency_id_str = Property(str, get_str_id, set_str_id, notify=changed)  # workaround for QTBUG-115144
 
     def updateView(self):
         has_value = True if self._id else False
