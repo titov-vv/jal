@@ -1986,12 +1986,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="290"/>
+        <location filename="../net/downloader.py" line="296"/>
         <source>Unsupported MOEX security type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="339"/>
+        <location filename="../net/downloader.py" line="345"/>
         <source>Multiple MOEX assets found for: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2082,43 +2082,48 @@ Application will be terminated now.</source>
 <context>
     <name>MarketDataFeed</name>
     <message>
-        <location filename="../constants.py" line="141"/>
+        <location filename="../constants.py" line="142"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="142"/>
+        <location filename="../constants.py" line="143"/>
         <source>Central banks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="143"/>
+        <location filename="../constants.py" line="144"/>
         <source>MOEX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="144"/>
+        <location filename="../constants.py" line="145"/>
         <source>NYSE/Nasdaq</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="145"/>
+        <location filename="../constants.py" line="146"/>
         <source>Euronext</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="146"/>
+        <location filename="../constants.py" line="147"/>
         <source>TMX TSX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="147"/>
+        <location filename="../constants.py" line="148"/>
         <source>LSE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="152"/>
+        <location filename="../constants.py" line="149"/>
         <source>Frankfurt Borse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="154"/>
+        <source>Victoria Seguros</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2178,7 +2183,7 @@ Application will be terminated now.</source>
 <context>
     <name>Net</name>
     <message>
-        <location filename="../net/helpers.py" line="58"/>
+        <location filename="../net/helpers.py" line="61"/>
         <source> failed: </source>
         <translation></translation>
     </message>
@@ -2724,44 +2729,64 @@ Application will be terminated now.</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="81"/>
+        <location filename="../net/downloader.py" line="86"/>
         <source>Download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="117"/>
+        <location filename="../net/downloader.py" line="122"/>
         <source>No rates were downloaded for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="144"/>
+        <location filename="../net/downloader.py" line="150"/>
         <source>No quotes were downloaded for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="171"/>
+        <location filename="../net/downloader.py" line="177"/>
         <source>There are no CBR data for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="422"/>
+        <location filename="../net/downloader.py" line="428"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="425"/>
+        <location filename="../net/downloader.py" line="431"/>
         <source>Euronext quotes header not found in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="428"/>
+        <location filename="../net/downloader.py" line="434"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="466"/>
+        <location filename="../net/downloader.py" line="472"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="488"/>
+        <source>Package pypdf not found for PDF parsing.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="497"/>
+        <source>Unexpected number of pages in Victoria Seguros document: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="524"/>
+        <source>Can&apos;t parse date from Victoria Seguros file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="539"/>
+        <source>Can&apos;t find quote for Victoria Seguros fund: </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

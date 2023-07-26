@@ -1989,12 +1989,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="290"/>
+        <location filename="../net/downloader.py" line="296"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="339"/>
+        <location filename="../net/downloader.py" line="345"/>
         <source>Multiple MOEX assets found for: </source>
         <translation>Найдено несколько ЦБ на MOEX для: </translation>
     </message>
@@ -2088,44 +2088,49 @@ Application will be terminated now.</source>
 <context>
     <name>MarketDataFeed</name>
     <message>
-        <location filename="../constants.py" line="141"/>
+        <location filename="../constants.py" line="142"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="142"/>
+        <location filename="../constants.py" line="143"/>
         <source>Central banks</source>
         <translation>Центральные банки</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="143"/>
+        <location filename="../constants.py" line="144"/>
         <source>MOEX</source>
         <translation>МосБиржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="144"/>
+        <location filename="../constants.py" line="145"/>
         <source>NYSE/Nasdaq</source>
         <translation>NYSE/Nasdaq</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="145"/>
+        <location filename="../constants.py" line="146"/>
         <source>Euronext</source>
         <translation>Euronext</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="146"/>
+        <location filename="../constants.py" line="147"/>
         <source>TMX TSX</source>
         <translation>TMX TSX</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="147"/>
+        <location filename="../constants.py" line="148"/>
         <source>LSE</source>
         <translation>LSE</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="152"/>
+        <location filename="../constants.py" line="149"/>
         <source>Frankfurt Borse</source>
         <translation>Франкфунтская биржа</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="154"/>
+        <source>Victoria Seguros</source>
+        <translation>Victoria Seguros</translation>
     </message>
 </context>
 <context>
@@ -2184,7 +2189,7 @@ Application will be terminated now.</source>
 <context>
     <name>Net</name>
     <message>
-        <location filename="../net/helpers.py" line="58"/>
+        <location filename="../net/helpers.py" line="61"/>
         <source> failed: </source>
         <translation> неуспешный запрос: </translation>
     </message>
@@ -2730,44 +2735,64 @@ Application will be terminated now.</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="81"/>
+        <location filename="../net/downloader.py" line="86"/>
         <source>Download completed</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="117"/>
+        <location filename="../net/downloader.py" line="122"/>
         <source>No rates were downloaded for </source>
         <translation>Не загружены курсы для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="144"/>
+        <location filename="../net/downloader.py" line="150"/>
         <source>No quotes were downloaded for </source>
         <translation>Не загружены котировки для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="171"/>
+        <location filename="../net/downloader.py" line="177"/>
         <source>There are no CBR data for: </source>
         <translation>Нет данных ЦБ РФ для: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="422"/>
+        <location filename="../net/downloader.py" line="428"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="425"/>
+        <location filename="../net/downloader.py" line="431"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="428"/>
+        <location filename="../net/downloader.py" line="434"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="466"/>
+        <location filename="../net/downloader.py" line="472"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="488"/>
+        <source>Package pypdf not found for PDF parsing.</source>
+        <translation>Не обнаружен пакет pypdf, необходимый для чтения PDF файлов.</translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="497"/>
+        <source>Unexpected number of pages in Victoria Seguros document: </source>
+        <translation>Неожиданное количество страниц в документе Victoria Seguros: </translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="524"/>
+        <source>Can&apos;t parse date from Victoria Seguros file</source>
+        <translation>Невозможно получить дату из файла Victoria Seguros</translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="539"/>
+        <source>Can&apos;t find quote for Victoria Seguros fund: </source>
+        <translation>Не удалось найти котировку для фонда Victoria Seguros: </translation>
     </message>
 </context>
 <context>

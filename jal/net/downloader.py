@@ -494,7 +494,7 @@ class QuoteDownloader(QObject):
             return None
         pdf = PdfReader(BytesIO(pdf_data))
         if len(pdf.pages) != 1:
-            logging.warning(self.tr("Unexpected nubmer of pages in Victoria Seguros document: ") + len(pdf.pages))
+            logging.warning(self.tr("Unexpected number of pages in Victoria Seguros document: ") + len(pdf.pages))
             return None
         # Get text from downloaded PDF-file together with font type and font size of each text fragment
         parts = []
