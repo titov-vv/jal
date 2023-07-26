@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
-from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
+from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView, QComboBox
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime, QTimeZone
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
@@ -242,6 +242,33 @@ class BoolDelegate(QStyledItemDelegate):
             else:
                 model.setData(index, 1)
         return True
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# This delegate is used to present user with a lookup combobox for selection from predefined constant values
+# Constructor parameter 'constant_class' indicates which constant set to be used
+# (it should be a descendant of PredefinedList class)
+class ConstantLookupDelegate(QStyledItemDelegate):
+    def __init__(self, constant_class, parent=None):
+        self._parent = parent
+        super().__init__(parent=parent)
+        self.constants = constant_class()
+
+    def displayText(self, value, locale):
+        return self.constants.get_name(value)
+
+    def createEditor(self, aParent, option, index):
+        combobox = QComboBox(aParent)
+        self.constants.load2combo(combobox)
+        return combobox
+
+    def setEditorData(self, editor, index):
+        idx = editor.findData(index.model().data(index, Qt.EditRole))
+        if idx != -1:
+            editor.setCurrentIndex(idx)
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.currentData())
 
 
 # ----------------------------------------------------------------------------------------------------------------------

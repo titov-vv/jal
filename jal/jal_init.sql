@@ -62,7 +62,7 @@ CREATE TABLE asset_tickers (
     symbol       TEXT    NOT NULL,
     currency_id  INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
     description  TEXT    NOT NULL DEFAULT (''),
-    quote_source INTEGER REFERENCES data_sources (id) ON DELETE SET NULL ON UPDATE CASCADE DEFAULT (-1),
+    quote_source INTEGER DEFAULT ( -1) NOT NULL,
     active       INTEGER NOT NULL DEFAULT (1)
 );
 -- Index to prevent duplicates
@@ -141,14 +141,6 @@ CREATE TABLE country_names (
     name        TEXT    NOT NULL
 );
 CREATE UNIQUE INDEX country_name_by_language ON country_names (country_id, language_id);
-
--- Table: data_sources
-DROP TABLE IF EXISTS data_sources;
-CREATE TABLE data_sources (
-    id   INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    name TEXT (32) NOT NULL
-);
-
 
 -- Table: dividends
 DROP TABLE IF EXISTS dividends;
@@ -660,7 +652,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 47);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 48);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 -- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1); -- Deprecated and ID shouldn't be re-used
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
@@ -685,17 +677,7 @@ INSERT INTO settings(id, name, value) VALUES (19, 'PtPingoDoceUserProfile', '{}'
 INSERT INTO languages (id, language) VALUES (1, 'en');
 INSERT INTO languages (id, language) VALUES (2, 'ru');
 
--- Initialize sources of quotation data
-INSERT INTO data_sources (id, name) VALUES (-1, 'None');
-INSERT INTO data_sources (id, name) VALUES (0, 'Central banks');
-INSERT INTO data_sources (id, name) VALUES (1, 'MOEX');
-INSERT INTO data_sources (id, name) VALUES (2, 'NYSE/Nasdaq');
-INSERT INTO data_sources (id, name) VALUES (3, 'Euronext');
-INSERT INTO data_sources (id, name) VALUES (4, 'TMX TSX');
-INSERT INTO data_sources (id, name) VALUES (5, 'LSE');
-INSERT INTO data_sources (id, name) VALUES (6, 'Frankfurt Borse');
-
--- Initialize predefinded categories
+-- Initialize predefined categories
 INSERT INTO categories (id, pid, name, often, special) VALUES (1, 0, 'Income', 0, 1);
 INSERT INTO categories (id, pid, name, often, special) VALUES (2, 0, 'Spending', 0, 1);
 INSERT INTO categories (id, pid, name, often, special) VALUES (3, 0, 'Profits', 0, 1);

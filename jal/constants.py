@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Property, QObject
+from PySide6.QtCore import Property, QObject
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QComboBox
 
@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QComboBox
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 47
+    DB_REQUIRED_VERSION = 48
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'
@@ -39,11 +39,14 @@ class PredefinedList:
     def __init(self):
         self._names = {}
 
-    def get_name(self, name_id, default=''):
+    def get_name(self, name_id, default='') -> str:
         try:
             return self._names[name_id]
         except KeyError:
             return default
+
+    def get_all_names(self) -> dict:
+        return self._names
 
     def load2combo(self, combobox):
         combobox.clear()
@@ -122,7 +125,7 @@ class PredefinedPeer:
     Financial = 1
 
 
-class MarketDataFeed:
+class MarketDataFeed(PredefinedList, QObject):
     NA = -1
     FX = 0
     RU = 1
@@ -131,6 +134,19 @@ class MarketDataFeed:
     CA = 4
     GB = 5
     FRA = 6
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.NA: self.tr("None"),
+            self.FX: self.tr("Central banks"),
+            self.RU: self.tr("MOEX"),
+            self.US: self.tr("NYSE/Nasdaq"),
+            self.EU: self.tr("Euronext"),
+            self.CA: self.tr("TMX TSX"),
+            self.GB: self.tr("LSE"),
+            self.FRA: self.tr("Frankfurt Borse")
+        }
 
 
 class CustomColor:

@@ -3,13 +3,13 @@ from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QAction
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog, QMessageBox
-from jal.constants import PredefinedAccountType, PredefinedAsset
+from jal.constants import PredefinedAccountType, PredefinedAsset, MarketDataFeed
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate, \
-    AssetSelectorDelegate
+    AssetSelectorDelegate, ConstantLookupDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
@@ -115,17 +115,17 @@ class AssetListModel(AbstractReferenceListModel):
         self._hidden = ["id", "type_id"]
         self._stretch = "full_name"
         self._lookup_delegate = None
-        self._timestamp_delegate = None
+        self._constant_lookup_delegate = None
         self._default_values = {'isin': '', 'country_id': 0, 'quote_source': -1}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries_ext", "id", "name"))
-        self.setRelation(self.fieldIndex("quote_source"), QSqlRelation("data_sources", "id", "name"))
 
     def configureView(self):
         super().configureView()
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
+        self._constant_lookup_delegate = ConstantLookupDelegate(MarketDataFeed, self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._lookup_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._constant_lookup_delegate)
 
 
 class AssetListDialog(ReferenceDataDialog):

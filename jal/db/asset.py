@@ -195,12 +195,7 @@ class JalAsset(JalDB):
     # Returns a dict (ID-Name) of all available data sources
     @classmethod
     def get_sources_list(cls) -> dict:
-        sources = {}
-        query = cls._exec("SELECT id, name FROM data_sources")
-        while query.next():
-            source_id, name = cls._read_record(query, cast=[int, str])
-            sources[source_id] = name
-        return sources
+        return MarketDataFeed().get_all_names()
 
     # Set quotations for given currency_id. Quotations is a list of {'timestamp':int, 'quote':Decimal} values
     def set_quotes(self, quotations: list, currency_id: int) -> None:

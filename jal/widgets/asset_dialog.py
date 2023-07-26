@@ -5,9 +5,9 @@ from PySide6.QtCore import Qt, Property, QDateTime, QTimeZone, QLocale
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit
 from jal.ui.ui_asset_dlg import Ui_AssetDialog
-from jal.constants import PredefinedAsset, AssetData
+from jal.constants import PredefinedAsset, AssetData, MarketDataFeed
 from jal.db.helpers import load_icon, localize_decimal
-from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate
+from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantLookupDelegate
 from jal.db.reference_models import AbstractReferenceListModel
 from jal.db.tag import JalTag
 from jal.widgets.reference_selector import TagSelector
@@ -164,15 +164,16 @@ class SymbolsListModel(AbstractReferenceListModel):
         self._stretch = "description"
         self._lookup_delegate = None
         self._bool_delegate = None
+        self._constant_lookup_delegate = None
         self._default_values = {'description': '', 'currency_id': 1, 'quote_source': -1, 'active': 1}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
-        self.setRelation(self.fieldIndex("quote_source"), QSqlRelation("data_sources", "id", "name"))
 
     def configureView(self):
         super().configureView()
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
+        self._constant_lookup_delegate = ConstantLookupDelegate(MarketDataFeed, self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._lookup_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._constant_lookup_delegate)
         self._bool_delegate = BoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
 
