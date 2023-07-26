@@ -134,6 +134,7 @@ class MarketDataFeed(PredefinedList, QObject):
     CA = 4
     GB = 5
     FRA = 6
+    SMA_VICTORIA = 7
 
     def __init__(self):
         super().__init__()
@@ -145,7 +146,8 @@ class MarketDataFeed(PredefinedList, QObject):
             self.EU: self.tr("Euronext"),
             self.CA: self.tr("TMX TSX"),
             self.GB: self.tr("LSE"),
-            self.FRA: self.tr("Frankfurt Borse")
+            self.FRA: self.tr("Frankfurt Borse"),
+            self.SMA_VICTORIA: self.tr("Victoria Seguros")
         }
 
 

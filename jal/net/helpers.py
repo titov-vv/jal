@@ -28,7 +28,7 @@ def isEnglish(text):
 
 # ===================================================================================================================
 # Retrieve URL from web with given method and params
-def request_url(method, url, params=None, json_params=None, headers=None):
+def request_url(method, url, params=None, json_params=None, headers=None, binary=False):
     session = requests.Session()
     session.headers['User-Agent'] = make_user_agent(url=url)
     if headers is not None:
@@ -52,7 +52,10 @@ def request_url(method, url, params=None, json_params=None, headers=None):
         logging.error(f"URL {url}\nConnection error: {e}")
         return ''
     if response.status_code == 200:
-        return response.text
+        if binary:
+            return response.content
+        else:
+            return response.text
     else:
         logging.error(f"URL: {url}" + QApplication.translate('Net', " failed: ")
                       + f"{response.status_code}: {response.text}")
@@ -61,11 +64,11 @@ def request_url(method, url, params=None, json_params=None, headers=None):
 
 # ===================================================================================================================
 # Function download URL and return it content as string or empty string if site returns error
-def get_web_data(url, headers=None):
-    return request_url("GET", url, headers=headers)
+def get_web_data(url, headers=None, binary=False):
+    return request_url("GET", url, headers=headers, binary=binary)
 
 
 # ===================================================================================================================
 # Function download URL and return it content as string or empty string if site returns error
-def post_web_data(url, params=None, json_params=None, headers=None):
-    return request_url("POST", url, params=params, json_params=json_params, headers=headers)
+def post_web_data(url, params=None, json_params=None, headers=None, binary=False):
+    return request_url("POST", url, params=params, json_params=json_params, headers=headers, binary=binary)

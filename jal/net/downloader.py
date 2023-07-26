@@ -2,10 +2,11 @@ import logging
 import xml.etree.ElementTree as xml_tree
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from io import StringIO
+from io import StringIO, BytesIO
 
 import pandas as pd
 from pandas.errors import ParserError
+import re
 import json
 from PySide6.QtCore import Qt, QObject, Signal, QDate
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
@@ -14,7 +15,11 @@ from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.asset import JalAsset
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
-
+from jal.widgets.helpers import dependency_present
+try:
+    from pypdf import PdfReader
+except ImportError:
+    pass  # PDF files won't be downloaded without dependency
 
 DATA_SOURCE_ROLE = Qt.UserRole + 1
 
@@ -126,7 +131,8 @@ class QuoteDownloader(QObject):
             MarketDataFeed.US: self.Yahoo_Downloader,
             MarketDataFeed.CA: self.TMX_Downloader,
             MarketDataFeed.GB: self.YahooLSE_Downloader,
-            MarketDataFeed.FRA: self.YahooFRA_Downloader
+            MarketDataFeed.FRA: self.YahooFRA_Downloader,
+            MarketDataFeed.SMA_VICTORIA: self.Victoria_Downloader
         }
         assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)  # append assets list
         for asset_data in assets:
@@ -473,4 +479,65 @@ class QuoteDownloader(QObject):
         data.dropna(inplace=True)
         close = data.set_index("Date")
         close.sort_index(inplace=True)
+        return close
+
+    def Victoria_Downloader(self, asset, _currency_id, _start_timestamp, _end_timestamp):
+        months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro',
+                   'novembro', 'dezembro']
+        if not dependency_present(['pypdf']):
+            logging.warning(self.tr("Package pypdf not found for PDF parsing."))
+            return None
+        # Download PDF-file with current quotes
+        url = "https://www.victoria-seguros.pt/cdu-services/UNIDADES_PARTICIPACAO_VIDA_OPC1_UP"
+        pdf_data = get_web_data(url, binary=True)
+        if not pdf_data:
+            return None
+        pdf = PdfReader(BytesIO(pdf_data))
+        if len(pdf.pages) != 1:
+            logging.warning(self.tr("Unexpected nubmer of pages in Victoria Seguros document: ") + len(pdf.pages))
+            return None
+        # Get text from downloaded PDF-file together with font type and font size of each text fragment
+        parts = []
+        def visitor_body(text, cm, tm, font_dict, font_size):
+            if text:
+                parts.append({'size': font_size, 'font': font_dict['/Name'], 'text': text})
+        pdf.pages[0].extract_text(visitor_text=visitor_body)
+        # Combine text fragments into lines according to line breaks and font changes
+        lines = []
+        line = ''
+        font = ''
+        for part in parts:
+            if part['text'] == '\n':
+                lines.append(line)
+                line = ''
+                continue
+            if part['font'] != font:
+                font = part['font']
+                if line:
+                    lines.append(line)
+                line = part['text']
+                continue
+            line += part['text']
+        # Get quote date
+        match = re.match(r"(\d\d) de (\w+) de (\d\d\d\d)", lines[-1])
+        if match is None:
+            logging.warning(self.tr("Can't parse date from Victoria Seguros file"))
+            return None
+        day, month, year = match.groups()
+        quote_date = datetime(int(year), months.index(month) + 1, int(day))
+        # Get quotation lines from the file
+        quotes = []
+        for line in lines:
+            match = re.match("(.*) EUR (\d+,\d+)", line)
+            if match is None:
+                continue
+            fund_name, price = match.groups()
+            quotes.append({'name': fund_name, 'price': Decimal(price.replace(',', '.'))})
+        # Filter asset price
+        asset_quotes = [x for x in quotes if x['name'] == asset.name()]
+        if len(asset_quotes) != 1:
+            logging.warning(self.tr("Can't find quote for Victoria Seguros fund: ") + asset.name())
+            return None
+        data = pd.DataFrame([{'Date': quote_date, 'Close': asset_quotes[0]['price']}])
+        close = data.set_index("Date")
         return close
