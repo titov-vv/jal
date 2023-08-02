@@ -519,7 +519,7 @@ class QuoteDownloader(QObject):
                 continue
             line += part['text']
         # Get quote date
-        match = re.match(r"(\d\d) de (\w+) de (\d\d\d\d)", lines[-1])
+        match = re.match(r"(\d\d?) de (\w+) de (\d\d\d\d)", lines[-1])
         if match is None:
             logging.warning(self.tr("Can't parse date from Victoria Seguros file"))
             return None
