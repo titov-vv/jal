@@ -633,7 +633,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 asset_info['note'] = "MOEX"
                 return self.asset_id(asset_info)  # Call itself once again to cross-check downloaded data
         if asset is None:
-            if 'should_exist' in asset_info and asset_info['should_exist']:
+            if asset_info.get('should_exist', False):
                 raise Statement_ImportError(self.tr("Can't locate asset in statement data: ") + f"'{asset_info}'")
             asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
             asset = {"id": asset_id}

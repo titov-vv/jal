@@ -40,7 +40,8 @@ class StatementTvoyBroker(StatementXLS):
     asset_columns = {
         "name": "Наименование ЦБ",
         "isin": "ISIN",
-        "reg_number": "Номер гос. регистрации / CFI код"
+        "reg_number": "Номер гос. регистрации / CFI код",
+        "issuer": "Эмитент"
     }
 
     def __init__(self):
@@ -49,6 +50,26 @@ class StatementTvoyBroker(StatementXLS):
         self.icon_name = "tvoy.png"
         self.filename_filter = self.tr("Tvoy Broker statement (*.zip)")
         self.asset_withdrawal = []
+
+    def _load_assets(self):
+        cnt = 0
+        row, headers = self.find_section_start(self.asset_section, self.asset_columns)
+        if row < 0:
+            return False
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row].startswith('Итого') or self._statement[self.HeaderCol][row] == '':
+                break
+            currency_code = self.currency_id('RUB')   #FIXME - need to take account currency from headers
+            asset_id = self.asset_id({'isin': self._statement[headers['isin']][row],
+                                      'symbol': self._statement[headers['name']][row],
+                                      'reg_number': self._statement[headers['reg_number']][row],
+                                      'currency': currency_code, 'search_online': "MOEX"})
+            asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_id)
+            asset['issuer'] = self._statement[headers['issuer']][row]
+            asset['broker_name'] = self._statement[headers['name']][row]
+            cnt += 1
+            row += 1
+        logging.info(self.tr("Securities loaded: ") + f"{cnt}")
 
     def _load_deals(self):
         self.load_stock_deals()
@@ -65,7 +86,6 @@ class StatementTvoyBroker(StatementXLS):
             "number": "Номер сделки",
             "date": "Дата сделки",
             "time": "Время сделки",
-            "isin": "ISIN",
             "B/S": "Вид сделки",
             "price": "Цена одной ЦБ",
             "currency": "Валюта цены",
@@ -91,14 +111,15 @@ class StatementTvoyBroker(StatementXLS):
             try:
                 deal_number = int(self._statement[self.HeaderCol][row])
             except ValueError:
+                match = re.match(r"^(.*\S) {2}(\S.*\S)  ?(.*)?$", self._statement[self.HeaderCol][row])
+                if not match is None:
+                    issuer, asset_name, reg_number = match.groups()
+                    assets = [x for x in self._data[FOF.ASSETS] if x.get('broker_name') == asset_name and x.get('issuer') == issuer]
+                    if len(assets) != 1:
+                        raise Statement_ImportError(self.tr("No match for ") + f"'{issuer}'/'{asset_name}'")
+                    asset_id = assets[0]['id']
                 row += 1
                 continue
-            try:
-                code = self.currency_id(self.currency_substitutions[self._statement[headers['currency']][row]])
-            except KeyError:
-                code = self.currency_id(self._statement[headers['currency']][row])
-            asset_id = self.asset_id({'isin': self._statement[headers['isin']][row],
-                                      'currency': code, 'search_online': "MOEX"})
             if self._statement[headers['B/S']][row] == 'Покупка':
                 qty = self._statement[headers['qty']][row]
                 bond_interest = -self._statement[headers['accrued_int']][row]
@@ -208,8 +229,9 @@ class StatementTvoyBroker(StatementXLS):
             "number": "№ операции",
             "date": "Дата",
             "type": "Тип операции",
-            "asset": "Наименование ЦБ",
+            "asset_name": "Наименование ЦБ",
             "reg_number": r"Номер гос\. регистрации",
+            "issuer": "Эмитент",
             "qty": "Количество ЦБ",
             "note": "Комментарий"
         }
@@ -229,15 +251,20 @@ class StatementTvoyBroker(StatementXLS):
                 break
             operation = self._statement[headers['type']][row]
             if operation not in operations:
-                raise Statement_ImportError(self.tr("Unsuppported asset operation ") + f"'{operation}'")
+                raise Statement_ImportError(self.tr("Unsupported asset operation ") + f"'{operation}'")
             number = self._statement[headers['number']][row]
             timestamp = int(datetime.strptime(self._statement[headers['date']][row],
                                               "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-            asset = self.asset_id({'reg_number': self._statement[headers['reg_number']][row], 'search_online': "MOEX"})
+            asset_name = self._statement[headers['asset_name']][row]
+            issuer = self._statement[headers['issuer']][row]
+            assets = [x for x in self._data[FOF.ASSETS] if x.get('broker_name') == asset_name and x.get('issuer') == issuer]
+            if len(assets) != 1:
+                raise Statement_ImportError(self.tr("No match for ") + f"'{issuer}'/'{asset_name}'")
+            asset_id = assets[0]['id']
             qty = self._statement[headers['qty']][row]
             description = self._statement[headers['note']][row]
             if operations[operation] is not None:
-                operations[operation](timestamp, number, asset, qty, description)
+                operations[operation](timestamp, number, asset_id, qty, description)
             cnt += 1
             row += 1
         logging.info(self.tr("Asset operations loaded: ") + f"{cnt}")
