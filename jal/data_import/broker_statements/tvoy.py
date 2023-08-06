@@ -2,15 +2,15 @@ import logging
 import re
 from datetime import datetime, timezone
 
-from jal.constants import Setup, PredefinedCategory
+from jal.constants import PredefinedCategory
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
 
-JAL_STATEMENT_CLASS = "StatementUKFU"
+JAL_STATEMENT_CLASS = "StatementTvoyBroker"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class StatementUKFU(StatementXLS):
+class StatementTvoyBroker(StatementXLS):
     Header = (0, 0, '  Брокер: ООО "Твой Брокер"')
     PeriodPattern = (0, 2, r"  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
     AccountPattern = (2, 6, None)
@@ -45,8 +45,8 @@ class StatementUKFU(StatementXLS):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Tvoy Broker (ex. Uralsib Broker)")
-        self.icon_name = "uralsib.ico"
+        self.name = self.tr("Tvoy Broker")
+        self.icon_name = "tvoy.png"
         self.filename_filter = self.tr("Tvoy Broker statement (*.zip)")
         self.asset_withdrawal = []
 

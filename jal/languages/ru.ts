@@ -4271,105 +4271,105 @@ Application will be terminated now.</source>
     </message>
 </context>
 <context>
-    <name>StatementUKFU</name>
+    <name>StatementTvoyBroker</name>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="49"/>
-        <source>Tvoy Broker (ex. Uralsib Broker)</source>
-        <translation>Твой брокер (ex. брокер Уралсиб)</translation>
+        <location filename="../data_import/broker_statements/tvoy.py" line="49"/>
+        <source>Tvoy Broker</source>
+        <translation>Твой Брокер</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="51"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="51"/>
         <source>Tvoy Broker statement (*.zip)</source>
         <translation>Отчёт Твой брокер (*.zip)</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="110"/>
-        <location filename="../data_import/broker_statements/uralsib.py" line="183"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="110"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="183"/>
         <source>Unknown trade type: </source>
         <translation>Неизвестный тип сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="135"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="135"/>
         <source>Trades loaded: </source>
         <translation>Сделок загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="203"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="203"/>
         <source>Futures trades loaded: </source>
         <translation>Сделок с фьючерсами загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="232"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="232"/>
         <source>Unsuppported asset operation </source>
         <translation>Неподдерживаемая операция с ЦБ </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="243"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="243"/>
         <source>Asset operations loaded: </source>
         <translation>Операции с ЦБ загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="254"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="254"/>
         <source>Can&apos;t parse asset transfer description </source>
         <translation>Невозможно распознать описание перевода ЦБ </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="257"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="257"/>
         <source>Asset transfer description miss some data </source>
         <translation>Отсутствуют ожидаемые данные в описании перевода ЦБ </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="312"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="312"/>
         <source>Unsuppported cash transaction </source>
         <translation>Неподдерживаемая денежная транзакция </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="323"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="323"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="331"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="331"/>
         <source>Can&apos;t parse money transfer description </source>
         <translation>Невозможно распознать описание денежного перевода </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="334"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="334"/>
         <source>Money transfer description miss some data </source>
         <translation>Отсутствуют ожидаемые данные в описании денежного перевода </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="369"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="369"/>
         <source>Can&apos;t parse dividend description </source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="387"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="387"/>
         <source>Failed to convert dividend tax </source>
         <translation>Ошибка при конвертации суммы налога </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="403"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="403"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation>Невозможно распознать описание купона </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="417"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="417"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation>Невозможно распознать описание погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="423"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="423"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation>Невозможно найти запись списания ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="426"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="426"/>
         <source>Multiple asset cancellation match for </source>
         <translation>Найдены несколько записей погашения ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="453"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="453"/>
         <source>Can&apos;t get header to find fees</source>
         <translation>Невозможно найти заголовок комиссий</translation>
     </message>

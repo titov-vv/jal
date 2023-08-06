@@ -4265,107 +4265,107 @@ Application will be terminated now.</source>
     </message>
 </context>
 <context>
-    <name>StatementUKFU</name>
+    <name>StatementTvoyBroker</name>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="49"/>
-        <source>Tvoy Broker (ex. Uralsib Broker)</source>
+        <location filename="../data_import/broker_statements/tvoy.py" line="49"/>
+        <source>Tvoy Broker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="51"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="51"/>
         <source>Tvoy Broker statement (*.zip)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="110"/>
-        <location filename="../data_import/broker_statements/uralsib.py" line="183"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="110"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="183"/>
         <source>Unknown trade type: </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="135"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="135"/>
         <source>Trades loaded: </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="203"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="203"/>
         <source>Futures trades loaded: </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="232"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="232"/>
         <source>Unsuppported asset operation </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="243"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="243"/>
         <source>Asset operations loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="254"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="254"/>
         <source>Can&apos;t parse asset transfer description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="257"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="257"/>
         <source>Asset transfer description miss some data </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="312"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="312"/>
         <source>Unsuppported cash transaction </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="323"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="323"/>
         <source>Cash operations loaded: </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="331"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="331"/>
         <source>Can&apos;t parse money transfer description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="334"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="334"/>
         <source>Money transfer description miss some data </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="369"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="369"/>
         <source>Can&apos;t parse dividend description </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="387"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="387"/>
         <source>Failed to convert dividend tax </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="403"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="403"/>
         <source>Can&apos;t parse bond interest description </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="417"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="417"/>
         <source>Can&apos;t parse bond repayment description </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="423"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="423"/>
         <source>Can&apos;t find asset cancellation record for </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="426"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="426"/>
         <source>Multiple asset cancellation match for </source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="453"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="453"/>
         <source>Can&apos;t get header to find fees</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

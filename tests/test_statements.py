@@ -2,7 +2,7 @@ import json
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr, prepare_db_xls
 from data_import.broker_statements.ibkr import StatementIBKR
-from data_import.broker_statements.uralsib import StatementUKFU
+from data_import.broker_statements.tvoy import StatementTvoyBroker
 from data_import.broker_statements.kit import StatementKIT
 from data_import.broker_statements.psb import StatementPSB
 from data_import.broker_statements.openbroker import StatementOpenBroker
@@ -35,7 +35,7 @@ def test_statement_uralsib(tmp_path, project_root, data_path, prepare_db_xls):
     with open(data_path + 'ukfu.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
 
-    UKFU = StatementUKFU()
+    UKFU = StatementTvoyBroker()
     UKFU.load(data_path + 'ukfu.zip')
     assert UKFU._data == statement
 
