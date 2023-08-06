@@ -63,7 +63,7 @@ class StatementTvoyBroker(StatementXLS):
             asset_id = self.asset_id({'isin': self._statement[headers['isin']][row],
                                       'symbol': self._statement[headers['name']][row],
                                       'reg_number': self._statement[headers['reg_number']][row],
-                                      'currency': currency_code, 'search_online': "MOEX"})
+                                      'currency': currency_code, 'search_offline': True, 'search_online': "MOEX"})
             asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_id)
             asset['issuer'] = self._statement[headers['issuer']][row]
             asset['broker_name'] = self._statement[headers['name']][row]

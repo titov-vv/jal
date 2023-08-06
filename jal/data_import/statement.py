@@ -616,6 +616,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 asset = self._find_in_list(self._data[FOF.ASSETS], 'id', symbol['asset'])
                 if 'isin' in asset and 'isin' in asset_info and asset['isin'] != asset_info['isin']:
                     asset = None
+        if asset_info.get('search_offline', False):   # If allowed fetch asset data from database
+            db_asset = JalAsset(data=asset_info, search=True, create=False)
+            if db_asset.id():
+                asset = {'id': -db_asset.id(), 'type': db_asset.type(), 'name': db_asset.name(), 'isin': db_asset.isin()}
+                self._data[FOF.ASSETS].append(asset)
+                symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
+                symbol = {"id": symbol_id, "asset": -db_asset.id(), 'symbol': db_asset.symbol(asset_info['currency']), 'currency': asset_info['currency']}
+                self._data[FOF.SYMBOLS].append(symbol)
+                return asset['id']
         if asset is None and 'search_online' in asset_info:
             if asset_info['search_online'] == "MOEX":
                 search_data = {}
