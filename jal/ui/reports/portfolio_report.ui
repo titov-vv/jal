@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>HoldingsWidget</class>
- <widget class="QWidget" name="HoldingsWidget">
+ <class>PortfolioWidget</class>
+ <widget class="QWidget" name="PortfolioWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Holdings</string>
+   <string>Asset Portfolio</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -30,7 +30,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="HoldingsParamsFrame">
+    <widget class="QFrame" name="PortfolioParamsFrame">
      <property name="frameShape">
       <enum>QFrame::Panel</enum>
      </property>
@@ -54,7 +54,7 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="QDateEdit" name="HoldingsDate">
+       <widget class="QDateEdit" name="PortfolioDate">
         <property name="dateTime">
          <datetime>
           <hour>0</hour>
@@ -87,14 +87,14 @@
        <widget class="QComboBox" name="GroupCombo"/>
       </item>
       <item>
-       <widget class="QLabel" name="HoldingsCurrencyLbl">
+       <widget class="QLabel" name="PortfolioCurrencyLbl">
         <property name="text">
          <string>Common currency:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="CurrencyComboBox" name="HoldingsCurrencyCombo"/>
+       <widget class="CurrencyComboBox" name="PortfolioCurrencyCombo"/>
       </item>
       <item>
        <spacer name="horizontalSpacer">
@@ -120,7 +120,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTreeView" name="HoldingsTreeView">
+    <widget class="QTreeView" name="PortfolioTreeView">
      <property name="frameShape">
       <enum>QFrame::Panel</enum>
      </property>

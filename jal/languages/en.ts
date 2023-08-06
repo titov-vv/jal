@@ -231,6 +231,14 @@
     </message>
 </context>
 <context>
+    <name>AssetPortfolioReport</name>
+    <message>
+        <location filename="../reports/portfolio.py" line="24"/>
+        <source>Asset portfolio</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AssetsListModel</name>
     <message>
         <location filename="../widgets/asset_dialog.py" line="21"/>
@@ -1017,110 +1025,6 @@
         <location filename="../db/holdings_model.py" line="140"/>
         <source>Exp:</source>
         <translation></translation>
-    </message>
-</context>
-<context>
-    <name>HoldingsReport</name>
-    <message>
-        <location filename="../reports/holdings.py" line="24"/>
-        <source>Holdings</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>HoldingsReportWindow</name>
-    <message>
-        <location filename="../reports/holdings.py" line="37"/>
-        <source>Holdings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="37"/>
-        <source>Currency - Account</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="38"/>
-        <source>Asset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="39"/>
-        <source>Country</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="40"/>
-        <source>Tag</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="73"/>
-        <source>Show Price Chart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="76"/>
-        <source>Estimate tax</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="77"/>
-        <source>Portugal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="80"/>
-        <source>Russia</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="84"/>
-        <source>Set asset tag</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="88"/>
-        <source>Expand all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="91"/>
-        <source>Collapse all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="114"/>
-        <source>Select tag for {} ({}): </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>HoldingsWidget</name>
-    <message>
-        <location filename="../ui/reports/holdings_report.ui" line="14"/>
-        <source>Holdings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/holdings_report.ui" line="69"/>
-        <source>dd/MM/yyyy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/holdings_report.ui" line="82"/>
-        <source>Group by:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/holdings_report.ui" line="92"/>
-        <source>Common currency:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/holdings_report.ui" line="115"/>
-        <source>Save...</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2443,6 +2347,102 @@ Application will be terminated now.</source>
         <location filename="../widgets/reference_dialogs.py" line="175"/>
         <source>Docs count</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>PortfolioReportWindow</name>
+    <message>
+        <location filename="../reports/portfolio.py" line="37"/>
+        <source>Asset Portfolio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="37"/>
+        <source>Currency - Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="38"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="39"/>
+        <source>Country</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="40"/>
+        <source>Tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="73"/>
+        <source>Show Price Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="76"/>
+        <source>Estimate tax</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="77"/>
+        <source>Portugal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="80"/>
+        <source>Russia</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="84"/>
+        <source>Set asset tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="88"/>
+        <source>Expand all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="91"/>
+        <source>Collapse all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="114"/>
+        <source>Select tag for {} ({}): </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PortfolioWidget</name>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="14"/>
+        <source>Asset Portfolio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="69"/>
+        <source>dd/MM/yyyy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="82"/>
+        <source>Group by:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="92"/>
+        <source>Common currency:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="115"/>
+        <source>Save...</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

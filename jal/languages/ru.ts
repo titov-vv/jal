@@ -231,6 +231,14 @@
     </message>
 </context>
 <context>
+    <name>AssetPortfolioReport</name>
+    <message>
+        <location filename="../reports/portfolio.py" line="24"/>
+        <source>Asset portfolio</source>
+        <translation>Портфель ЦБ</translation>
+    </message>
+</context>
+<context>
     <name>AssetsListModel</name>
     <message>
         <location filename="../widgets/asset_dialog.py" line="21"/>
@@ -1017,110 +1025,6 @@
         <location filename="../db/holdings_model.py" line="140"/>
         <source>Exp:</source>
         <translation>Эксп:</translation>
-    </message>
-</context>
-<context>
-    <name>HoldingsReport</name>
-    <message>
-        <location filename="../reports/holdings.py" line="24"/>
-        <source>Holdings</source>
-        <translation>Портфель ЦБ</translation>
-    </message>
-</context>
-<context>
-    <name>HoldingsReportWindow</name>
-    <message>
-        <location filename="../reports/holdings.py" line="37"/>
-        <source>Holdings</source>
-        <translation>Портфель ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="37"/>
-        <source>Currency - Account</source>
-        <translation>Валюта - Счёт</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="38"/>
-        <source>Asset</source>
-        <translation>ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="39"/>
-        <source>Country</source>
-        <translation>Страна</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="40"/>
-        <source>Tag</source>
-        <translation>Тэг</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="73"/>
-        <source>Show Price Chart</source>
-        <translation>Показать график цены</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="76"/>
-        <source>Estimate tax</source>
-        <translation>Оценить налог</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="77"/>
-        <source>Portugal</source>
-        <translation>Португалия</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="80"/>
-        <source>Russia</source>
-        <translation>Россия</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="84"/>
-        <source>Set asset tag</source>
-        <translation>Задать метку ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="88"/>
-        <source>Expand all</source>
-        <translation>Развернуть все</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="91"/>
-        <source>Collapse all</source>
-        <translation>Свернуть все</translation>
-    </message>
-    <message>
-        <location filename="../reports/holdings.py" line="114"/>
-        <source>Select tag for {} ({}): </source>
-        <translation>Выбрать метку для {} ){}): </translation>
-    </message>
-</context>
-<context>
-    <name>HoldingsWidget</name>
-    <message>
-        <location filename="../ui/reports/holdings_report.ui" line="14"/>
-        <source>Holdings</source>
-        <translation>Портфель ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/holdings_report.ui" line="69"/>
-        <source>dd/MM/yyyy</source>
-        <translation>dd/MM/yyyy</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/holdings_report.ui" line="82"/>
-        <source>Group by:</source>
-        <translation>Группировать по:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/holdings_report.ui" line="92"/>
-        <source>Common currency:</source>
-        <translation>Валюта пересчёта:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/holdings_report.ui" line="115"/>
-        <source>Save...</source>
-        <translation>Сохранить...</translation>
     </message>
 </context>
 <context>
@@ -2449,6 +2353,102 @@ Application will be terminated now.</source>
         <location filename="../widgets/reference_dialogs.py" line="175"/>
         <source>Docs count</source>
         <translation>Кол-во док.</translation>
+    </message>
+</context>
+<context>
+    <name>PortfolioReportWindow</name>
+    <message>
+        <location filename="../reports/portfolio.py" line="37"/>
+        <source>Asset Portfolio</source>
+        <translation>Портфель ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="37"/>
+        <source>Currency - Account</source>
+        <translation>Валюта - Счёт</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="38"/>
+        <source>Asset</source>
+        <translation>ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="39"/>
+        <source>Country</source>
+        <translation>Страна</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="40"/>
+        <source>Tag</source>
+        <translation>Метка</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="73"/>
+        <source>Show Price Chart</source>
+        <translation>Показать график цены</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="76"/>
+        <source>Estimate tax</source>
+        <translation>Оценить налог</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="77"/>
+        <source>Portugal</source>
+        <translation>Португалия</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="80"/>
+        <source>Russia</source>
+        <translation>Россия</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="84"/>
+        <source>Set asset tag</source>
+        <translation>Установить метку ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="88"/>
+        <source>Expand all</source>
+        <translation>Развернуть все</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="91"/>
+        <source>Collapse all</source>
+        <translation>Свернуть все</translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="114"/>
+        <source>Select tag for {} ({}): </source>
+        <translation>Выбрать метку для {} ({}): </translation>
+    </message>
+</context>
+<context>
+    <name>PortfolioWidget</name>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="14"/>
+        <source>Asset Portfolio</source>
+        <translation>Портфель ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="69"/>
+        <source>dd/MM/yyyy</source>
+        <translation>dd/MM/yyyy</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="82"/>
+        <source>Group by:</source>
+        <translation>Группировать по:</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="92"/>
+        <source>Common currency:</source>
+        <translation>Валюта пересчёта:</translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="115"/>
+        <source>Save...</source>
+        <translation>Сохранить...</translation>
     </message>
 </context>
 <context>

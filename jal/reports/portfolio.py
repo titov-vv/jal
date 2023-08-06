@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, Slot, QObject, QDateTime
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog
 from jal.db.helpers import load_icon
-from jal.ui.reports.ui_holdings_report import Ui_HoldingsWidget
+from jal.ui.reports.ui_portfolio_report import Ui_PortfolioWidget
 from jal.reports.reports import Reports
 from jal.db.asset import JalAsset
 from jal.db.holdings_model import HoldingsModel
@@ -13,25 +13,25 @@ from jal.db.tax_estimator import TaxEstimator
 from jal.widgets.price_chart import ChartWindow
 from jal.widgets.selection_dialog import SelectTagDialog
 
-JAL_REPORT_CLASS = "HoldingsReport"
+JAL_REPORT_CLASS = "AssetPortfolioReport"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class HoldingsReport(QObject):
+class AssetPortfolioReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Holdings")
-        self.window_class = "HoldingsReportWindow"
+        self.name = self.tr("Asset portfolio")
+        self.window_class = "PortfolioReportWindow"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class HoldingsReportWindow(MdiWidget):
+class PortfolioReportWindow(MdiWidget):
     def __init__(self, parent: Reports, settings: dict = None):
         super().__init__(parent.mdi_area())
-        self.ui = Ui_HoldingsWidget()
+        self.ui = Ui_PortfolioWidget()
         self.ui.setupUi(self)
         self._parent = parent
-        self.name = self.tr("Holdings")
+        self.name = self.tr("Asset Portfolio")
 
         # Add available groupings
         self.ui.GroupCombo.addItem(self.tr("Currency - Account"), "currency_id;account_id")
@@ -40,58 +40,58 @@ class HoldingsReportWindow(MdiWidget):
         self.ui.GroupCombo.addItem(self.tr("Tag"), "tag")
         self.ui.GroupCombo.addItem("None", "")
 
-        self.holdings_model = HoldingsModel(self.ui.HoldingsTreeView)
-        self.ui.HoldingsTreeView.setModel(self.holdings_model)
-        self.ui.HoldingsTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.holdings_model = HoldingsModel(self.ui.PortfolioTreeView)
+        self.ui.PortfolioTreeView.setModel(self.holdings_model)
+        self.ui.PortfolioTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         # Setup holdings parameters
         current_time = QDateTime.currentDateTime()
         current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
-        self.ui.HoldingsDate.setDateTime(current_time)
-        self.ui.HoldingsCurrencyCombo.setIndex(JalAsset.get_base_currency())
+        self.ui.PortfolioDate.setDateTime(current_time)
+        self.ui.PortfolioCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
         self.connect_signals_and_slots()
         self.updateReport()
 
     def connect_signals_and_slots(self):
-        self.ui.HoldingsDate.dateChanged.connect(self.updateReport)
-        self.ui.HoldingsCurrencyCombo.changed.connect(self.updateReport)
-        self.ui.HoldingsTreeView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
+        self.ui.PortfolioDate.dateChanged.connect(self.updateReport)
+        self.ui.PortfolioCurrencyCombo.changed.connect(self.updateReport)
+        self.ui.PortfolioTreeView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
         self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
-        self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.HoldingsTreeView.model()))
+        self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.PortfolioTreeView.model()))
 
     @Slot()
     def updateReport(self):
-        self.ui.HoldingsTreeView.model().updateView(currency_id = self.ui.HoldingsCurrencyCombo.selected_id,
-                                                    date = self.ui.HoldingsDate.date(),
-                                                    grouping = self.ui.GroupCombo.currentData())
+        self.ui.PortfolioTreeView.model().updateView(currency_id = self.ui.PortfolioCurrencyCombo.selected_id,
+                                                     date = self.ui.PortfolioDate.date(),
+                                                     grouping = self.ui.GroupCombo.currentData())
 
     @Slot()
     def onHoldingsContextMenu(self, pos):
-        index = self.ui.HoldingsTreeView.indexAt(pos)
-        contextMenu = QMenu(self.ui.HoldingsTreeView)
-        actionShowChart = QAction(icon=load_icon("chart.png"), text=self.tr("Show Price Chart"), parent=self.ui.HoldingsTreeView)
+        index = self.ui.PortfolioTreeView.indexAt(pos)
+        contextMenu = QMenu(self.ui.PortfolioTreeView)
+        actionShowChart = QAction(icon=load_icon("chart.png"), text=self.tr("Show Price Chart"), parent=self.ui.PortfolioTreeView)
         actionShowChart.triggered.connect(partial(self.showPriceChart, index))
         contextMenu.addAction(actionShowChart)
         tax_submenu = contextMenu.addMenu(load_icon("tax.png"), self.tr("Estimate tax"))
-        actionEstimateTaxPt = QAction(icon=load_icon("pt.png"), text=self.tr("Portugal"), parent=self.ui.HoldingsTreeView)
+        actionEstimateTaxPt = QAction(icon=load_icon("pt.png"), text=self.tr("Portugal"), parent=self.ui.PortfolioTreeView)
         actionEstimateTaxPt.triggered.connect(partial(self.estimateRussianTax, index, 'pt'))
         tax_submenu.addAction(actionEstimateTaxPt)
-        actionEstimateTaxRu = QAction(icon=load_icon("ru.png"), text=self.tr("Russia"), parent=self.ui.HoldingsTreeView)
+        actionEstimateTaxRu = QAction(icon=load_icon("ru.png"), text=self.tr("Russia"), parent=self.ui.PortfolioTreeView)
         actionEstimateTaxRu.triggered.connect(partial(self.estimateRussianTax, index, 'ru'))
         tax_submenu.addAction(actionEstimateTaxRu)
         contextMenu.addSeparator()
-        actionSetTag = QAction(icon=load_icon("tag.png"), text=self.tr("Set asset tag"), parent=self.ui.HoldingsTreeView)
+        actionSetTag = QAction(icon=load_icon("tag.png"), text=self.tr("Set asset tag"), parent=self.ui.PortfolioTreeView)
         actionSetTag.triggered.connect(partial(self.setTag, index))
         contextMenu.addAction(actionSetTag)
         contextMenu.addSeparator()
-        actionExpandAll = QAction(text=self.tr("Expand all"),parent=self.ui.HoldingsTreeView)
-        actionExpandAll.triggered.connect(self.ui.HoldingsTreeView.expandAll)
+        actionExpandAll = QAction(text=self.tr("Expand all"),parent=self.ui.PortfolioTreeView)
+        actionExpandAll.triggered.connect(self.ui.PortfolioTreeView.expandAll)
         contextMenu.addAction(actionExpandAll)
-        actionCollapseAll = QAction(text=self.tr("Collapse all"), parent=self.ui.HoldingsTreeView)
-        actionCollapseAll.triggered.connect(self.ui.HoldingsTreeView.collapseAll)
+        actionCollapseAll = QAction(text=self.tr("Collapse all"), parent=self.ui.PortfolioTreeView)
+        actionCollapseAll.triggered.connect(self.ui.PortfolioTreeView.collapseAll)
         contextMenu.addAction(actionCollapseAll)
-        contextMenu.popup(self.ui.HoldingsTreeView.viewport().mapToGlobal(pos))
+        contextMenu.popup(self.ui.PortfolioTreeView.viewport().mapToGlobal(pos))
 
     @Slot()
     def showPriceChart(self, index):
