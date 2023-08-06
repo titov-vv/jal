@@ -4273,105 +4273,111 @@ Application will be terminated now.</source>
 <context>
     <name>StatementTvoyBroker</name>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="49"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="50"/>
         <source>Tvoy Broker</source>
         <translation>Твой Брокер</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="51"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="52"/>
         <source>Tvoy Broker statement (*.zip)</source>
         <translation>Отчёт Твой брокер (*.zip)</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="110"/>
-        <location filename="../data_import/broker_statements/tvoy.py" line="183"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="72"/>
+        <source>Securities loaded: </source>
+        <translation>ЦБ загружены: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/tvoy.py" line="120"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="263"/>
+        <source>No match for </source>
+        <translation>Нет найдено совпадение для </translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/tvoy.py" line="132"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="205"/>
         <source>Unknown trade type: </source>
         <translation>Неизвестный тип сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="135"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="157"/>
         <source>Trades loaded: </source>
         <translation>Сделок загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="203"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="225"/>
         <source>Futures trades loaded: </source>
         <translation>Сделок с фьючерсами загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="232"/>
-        <source>Unsuppported asset operation </source>
-        <translation>Неподдерживаемая операция с ЦБ </translation>
+        <location filename="../data_import/broker_statements/tvoy.py" line="255"/>
+        <source>Unsupported asset operation </source>
+        <translation>Неподдерживаемый тип операции с ЦБ </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="243"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="271"/>
         <source>Asset operations loaded: </source>
         <translation>Операции с ЦБ загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="254"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="282"/>
         <source>Can&apos;t parse asset transfer description </source>
         <translation>Невозможно распознать описание перевода ЦБ </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="257"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="285"/>
         <source>Asset transfer description miss some data </source>
         <translation>Отсутствуют ожидаемые данные в описании перевода ЦБ </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="312"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="340"/>
         <source>Unsuppported cash transaction </source>
         <translation>Неподдерживаемая денежная транзакция </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="323"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="351"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="331"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="359"/>
         <source>Can&apos;t parse money transfer description </source>
         <translation>Невозможно распознать описание денежного перевода </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="334"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="362"/>
         <source>Money transfer description miss some data </source>
         <translation>Отсутствуют ожидаемые данные в описании денежного перевода </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="369"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="397"/>
         <source>Can&apos;t parse dividend description </source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="387"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="415"/>
         <source>Failed to convert dividend tax </source>
         <translation>Ошибка при конвертации суммы налога </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="403"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="431"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation>Невозможно распознать описание купона </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="417"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="445"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation>Невозможно распознать описание погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="423"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="451"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation>Невозможно найти запись списания ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="426"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="454"/>
         <source>Multiple asset cancellation match for </source>
         <translation>Найдены несколько записей погашения ЦБ для </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="453"/>
-        <source>Can&apos;t get header to find fees</source>
-        <translation>Невозможно найти заголовок комиссий</translation>
     </message>
 </context>
 <context>

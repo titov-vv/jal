@@ -4267,104 +4267,110 @@ Application will be terminated now.</source>
 <context>
     <name>StatementTvoyBroker</name>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="49"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="50"/>
         <source>Tvoy Broker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="51"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="52"/>
         <source>Tvoy Broker statement (*.zip)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="110"/>
-        <location filename="../data_import/broker_statements/tvoy.py" line="183"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="72"/>
+        <source>Securities loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/tvoy.py" line="120"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="263"/>
+        <source>No match for </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/tvoy.py" line="132"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="205"/>
         <source>Unknown trade type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="135"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="157"/>
         <source>Trades loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="203"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="225"/>
         <source>Futures trades loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="232"/>
-        <source>Unsuppported asset operation </source>
+        <location filename="../data_import/broker_statements/tvoy.py" line="255"/>
+        <source>Unsupported asset operation </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="243"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="271"/>
         <source>Asset operations loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="254"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="282"/>
         <source>Can&apos;t parse asset transfer description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="257"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="285"/>
         <source>Asset transfer description miss some data </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="312"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="340"/>
         <source>Unsuppported cash transaction </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="323"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="351"/>
         <source>Cash operations loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="331"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="359"/>
         <source>Can&apos;t parse money transfer description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="334"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="362"/>
         <source>Money transfer description miss some data </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="369"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="397"/>
         <source>Can&apos;t parse dividend description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="387"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="415"/>
         <source>Failed to convert dividend tax </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="403"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="431"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="417"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="445"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="423"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="451"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="426"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="454"/>
         <source>Multiple asset cancellation match for </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="453"/>
-        <source>Can&apos;t get header to find fees</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
