@@ -78,7 +78,6 @@ class StatementTvoyBroker(StatementXLS):
 
     def _load_cash_transactions(self):
         self.load_cash_transactions()
-        self.load_broker_fee()
 
     def load_stock_deals(self):
         cnt = 0
@@ -93,7 +92,8 @@ class StatementTvoyBroker(StatementXLS):
             "amount": "Сумма сделки",
             "accrued_int": "НКД",
             "settlement": "Дата поставки, плановая",
-            "fee_ex": "Комиссия ТС"
+            "fee_ex": "Комиссия ТС, всего",
+            "fee_broker": "Комиссия брокера, всего"
         }
 
         row, headers = self.find_section_start("СДЕЛКИ С ЦЕННЫМИ БУМАГАМИ", columns,
@@ -101,6 +101,7 @@ class StatementTvoyBroker(StatementXLS):
                                                header_height=2)
         if row < 0:
             return
+        asset_id = 0
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row] == '' and self._statement[self.HeaderCol][row + 1] == '':
                 break
@@ -133,7 +134,7 @@ class StatementTvoyBroker(StatementXLS):
 
             price = self._statement[headers['price']][row]
             currency = self._statement[headers['currency']][row]
-            fee = self._statement[headers['fee_ex']][row]
+            fee = self._statement[headers['fee_ex']][row] + self._statement[headers['fee_broker']][row]
             amount = self._statement[headers['amount']][row]
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                 price = abs(amount / qty)
@@ -473,33 +474,3 @@ class StatementTvoyBroker(StatementXLS):
         fee = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
                "lines": [{"amount": amount, "category": -PredefinedCategory.Fees, "description": description}]}
         self._data[FOF.INCOME_SPENDING].append(fee)
-
-    def load_broker_fee(self):
-        header_row = self.find_row(self.SummaryHeader) + 1
-        if header_row < 0:
-            logging.warning(self.tr("Can't get header to find fees"))
-            return
-        header_found = False
-        for i, row in self._statement.iterrows():
-            if (not header_found) and (row[self.HeaderCol] == "Уплаченная комиссия, в том числе"):
-                header_found = True  # Start of broker fees list
-                continue
-            if header_found:
-                if row[self.HeaderCol] != "":     # End of broker fee list
-                    break
-                for col in range(6, self._statement.shape[1]):
-                    if not self._statement[col][header_row]:
-                        break
-                    try:
-                        fee = float(row[col])
-                    except (ValueError, TypeError):
-                        continue
-                    if fee == 0:
-                        continue
-                    if row[1] == 'комиссия торговой системы':  # Exchange fee is part of trades
-                        continue
-                    account_id = self._find_account_id(self._account_number, self._statement[col][header_row])
-                    new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
-                    fee = {"id": new_id, "timestamp": self._data[FOF.PERIOD][1], "account": account_id, "peer": 0,
-                           "lines": [{"amount": fee, "category": -PredefinedCategory.Fees, "description": row[1]}]}
-                    self._data[FOF.INCOME_SPENDING].append(fee)
