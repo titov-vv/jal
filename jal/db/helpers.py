@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timezone, timedelta
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import QLocale
 from PySide6.QtGui import QIcon
 from jal.constants import Setup
@@ -46,7 +46,10 @@ def delocalize_decimal(value: str, percent: bool = False) -> str:
     number_text = value.replace(' ', '')
     number_text = number_text.replace(QLocale().groupSeparator(), '')
     number_text = number_text.replace(QLocale().decimalPoint(), '.')
-    number = Decimal(number_text) if number_text else Decimal('0')
+    try:
+        number = Decimal(number_text)
+    except InvalidOperation:
+        number = Decimal('0')
     if percent:
         number /= Decimal('100')
     return str(number)
