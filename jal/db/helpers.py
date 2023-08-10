@@ -42,7 +42,7 @@ def localize_decimal(value: Decimal, precision: int = None, percent: bool = Fals
 
 # Make number not locale-specific - i.e. replace decimal separator with '.' and remove any thousand separators
 # Divide value by 100 if 'percent' is True
-def delocalize_decimal(value: str, percent: bool = False) -> str:
+def delocalize_decimal(value: str, percent: bool = False) -> Decimal:
     number_text = value.replace(' ', '')
     number_text = number_text.replace(QLocale().groupSeparator(), '')
     number_text = number_text.replace(QLocale().decimalPoint(), '.')
@@ -52,7 +52,7 @@ def delocalize_decimal(value: str, percent: bool = False) -> str:
         number = Decimal('0')
     if percent:
         number /= Decimal('100')
-    return str(number)
+    return number
 
 
 # -------------------------------------------------------------------------------------------------------------------

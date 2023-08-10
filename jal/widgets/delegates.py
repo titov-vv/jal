@@ -169,11 +169,7 @@ class FloatDelegate(QStyledItemDelegate):
         editor.setText(localize_decimal(amount, self._tolerance, self._percent))
 
     def setModelData(self, editor, model, index):
-        number_text = delocalize_decimal(editor.text())
-        value = Decimal(number_text) if number_text else Decimal('0')
-        if self._percent:
-            value /= Decimal('100')
-        model.setData(index, str(value))
+        model.setData(index, str(delocalize_decimal(editor.text(), percent=self._percent)))
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)

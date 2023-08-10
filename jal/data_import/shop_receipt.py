@@ -164,9 +164,7 @@ class ParameterDelegate(QStyledItemDelegate):    # Code doubles with pieces from
         elif data_type == QDateTime:
             model.setData(index, editor.dateTime())
         elif data_type == Decimal:
-            number_text = delocalize_decimal(editor.text())
-            value = Decimal(number_text) if number_text else Decimal('0')
-            model.setData(index, value)
+            model.setData(index, delocalize_decimal(editor.text()))
         elif data_type == dict:
             model.setData(index, editor.currentData())
         else:
