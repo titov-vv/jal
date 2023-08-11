@@ -1,17 +1,21 @@
 from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QToolButton, QCompleter
+from PySide6.QtGui import QPalette
 import jal.widgets.reference_dialogs as ui_dialogs
 from jal.db.helpers import load_icon
+from jal.constants import CustomColor
 
 
 #-----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceSelector(QWidget):
     changed = Signal()
 
-    def __init__(self, parent=None):
+    # If validate==True then widget will be highlighted for invalid values
+    def __init__(self, parent=None, validate=True):
         super().__init__(parent=parent)
         self.completer = None
         self.p_selected_id = 0
+        self._validate = validate
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -32,6 +36,7 @@ class AbstractReferenceSelector(QWidget):
         self.setLayout(self.layout)
 
         self.setFocusProxy(self.name)
+        self._update_view()
 
         self.button.clicked.connect(self.on_button_clicked)
         self.clean_button.clicked.connect(self.on_clean_button_clicked)
@@ -55,6 +60,7 @@ class AbstractReferenceSelector(QWidget):
         self.name.setText(self.dialog.model.getFieldValue(selected_id, self.selector_field))
         if self.details_field:
             self.details.setText(self.dialog.model.getFieldValue(selected_id, self.details_field))
+        self._update_view()
 
     selected_id = Property(int, getId, setId, notify=changed, user=True)
 
@@ -78,48 +84,59 @@ class AbstractReferenceSelector(QWidget):
         self.selected_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
         self.changed.emit()
 
+    # Highlights input field with red color if widget has invalid value
+    def _update_view(self):
+        if not self._validate:
+            return
+        if not self.p_selected_id:
+            p = QPalette()
+            p.setColor(QPalette.Base, CustomColor.LightRed)
+        else:
+            p = self.style().standardPalette()
+        self.name.setPalette(p)
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountSelector(AbstractReferenceSelector):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, validate=True):
         self.table = "accounts"
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.AccountListDialog()
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, validate=validate)
 
 
 class AssetSelector(AbstractReferenceSelector):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, validate=True):
         self.table = "assets_ext"
         self.selector_field = "symbol"
         self.details_field = "full_name"
         self.dialog = ui_dialogs.AssetListDialog()
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, validate=validate)
 
 
 class PeerSelector(AbstractReferenceSelector):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, validate=True):
         self.table = "agents"
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.PeerListDialog(parent)
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, validate=validate)
 
 
 class CategorySelector(AbstractReferenceSelector):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, validate=True):
         self.table = "categories"
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.CategoryListDialog(parent)
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, validate=validate)
 
 
 class TagSelector(AbstractReferenceSelector):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, validate=True):
         self.table = "tags"
         self.selector_field = "tag"
         self.details_field = None
         self.dialog = ui_dialogs.TagsListDialog(parent)
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, validate=validate)

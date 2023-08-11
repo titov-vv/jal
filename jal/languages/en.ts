@@ -793,27 +793,27 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="254"/>
+        <location filename="../widgets/income_spending_widget.py" line="260"/>
         <source>Category</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="254"/>
+        <location filename="../widgets/income_spending_widget.py" line="260"/>
         <source>Tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="255"/>
+        <location filename="../widgets/income_spending_widget.py" line="261"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="256"/>
+        <location filename="../widgets/income_spending_widget.py" line="262"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="268"/>
+        <location filename="../widgets/income_spending_widget.py" line="274"/>
         <source>Total</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1306,22 +1306,28 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="175"/>
+        <location filename="../widgets/income_spending_widget.py" line="176"/>
+        <location filename="../widgets/income_spending_widget.py" line="181"/>
         <source>Incomplete data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../widgets/income_spending_widget.py" line="176"/>
+        <source>Operation contains no details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/income_spending_widget.py" line="182"/>
         <source>Category isn&apos;t set for &apos;{}&apos; (Amount: {})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="184"/>
+        <location filename="../widgets/income_spending_widget.py" line="190"/>
         <source>Operation submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="191"/>
+        <location filename="../widgets/income_spending_widget.py" line="197"/>
         <source>Operation details submit failed: </source>
         <translation></translation>
     </message>

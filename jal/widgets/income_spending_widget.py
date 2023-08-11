@@ -6,7 +6,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QByteArray
 from PySide6.QtWidgets import QMessageBox, QLabel, QLineEdit, QDateTimeEdit, QPushButton, QHeaderView
 from PySide6.QtSql import QSqlTableModel
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QPalette
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
@@ -169,6 +169,12 @@ class IncomeSpendingWidget(AbstractOperationDetails):
             self.onDataChange(idx, idx, None)
 
     def _validated(self):
+        fields = db_row2dict(self.model, 0)
+        if not fields['account_id'] or not fields['peer_id']:
+            return False
+        if not self.details_model.rowCount():
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Operation contains no details"), QMessageBox.Ok)
+            return False
         for row in range(self.details_model.rowCount()):
             fields = db_row2dict(self.details_model, row)
             if fields['category_id'] is None or fields['category_id'] == 0:

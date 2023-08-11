@@ -793,27 +793,27 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="254"/>
+        <location filename="../widgets/income_spending_widget.py" line="260"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="254"/>
+        <location filename="../widgets/income_spending_widget.py" line="260"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="255"/>
+        <location filename="../widgets/income_spending_widget.py" line="261"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="256"/>
+        <location filename="../widgets/income_spending_widget.py" line="262"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="268"/>
+        <location filename="../widgets/income_spending_widget.py" line="274"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -1306,22 +1306,28 @@
         <translation>Невозможно добавить новую запись: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="175"/>
+        <location filename="../widgets/income_spending_widget.py" line="176"/>
+        <location filename="../widgets/income_spending_widget.py" line="181"/>
         <source>Incomplete data</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
         <location filename="../widgets/income_spending_widget.py" line="176"/>
+        <source>Operation contains no details</source>
+        <translation>Операция не содержит детальных записей</translation>
+    </message>
+    <message>
+        <location filename="../widgets/income_spending_widget.py" line="182"/>
         <source>Category isn&apos;t set for &apos;{}&apos; (Amount: {})</source>
         <translation>Не задана категория для &apos;{}&apos; (Сумма: {})</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="184"/>
+        <location filename="../widgets/income_spending_widget.py" line="190"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="191"/>
+        <location filename="../widgets/income_spending_widget.py" line="197"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>

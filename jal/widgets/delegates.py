@@ -327,7 +327,7 @@ class CategorySelectorDelegate(LookupSelectorDelegate):
         self._field = "name"
 
     def createSelector(self, parent) -> None:
-        self._selector = CategorySelector(parent)
+        self._selector = CategorySelector(parent, validate=False)
 
 
 class TagSelectorDelegate(LookupSelectorDelegate):
@@ -337,7 +337,7 @@ class TagSelectorDelegate(LookupSelectorDelegate):
         self._field = "tag"
 
     def createSelector(self, parent) -> None:
-        self._selector = TagSelector(parent)
+        self._selector = TagSelector(parent, validate=False)
 
 
 class PeerSelectorDelegate(LookupSelectorDelegate):
@@ -347,7 +347,7 @@ class PeerSelectorDelegate(LookupSelectorDelegate):
         self._field = "name"
 
     def createSelector(self, parent) -> None:
-        self._selector = PeerSelector(parent)
+        self._selector = PeerSelector(parent, validate=False)
 
 
 class AssetSelectorDelegate(LookupSelectorDelegate):
@@ -357,4 +357,4 @@ class AssetSelectorDelegate(LookupSelectorDelegate):
         self._field = "symbol"
 
     def createSelector(self, parent) -> None:
-        self._selector = AssetSelector(parent)
+        self._selector = AssetSelector(parent, validate=False)
