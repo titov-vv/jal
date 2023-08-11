@@ -167,8 +167,7 @@ class CorporateActionWidget(AbstractOperationDetails):
             self.results_model.removeRow(idx.row())
             self.onDataChange(idx, idx, None)
 
-    @Slot()
-    def saveChanges(self):
+    def _save(self):
         self.model.database().transaction()
         try:
             if not self.model.submitAll():

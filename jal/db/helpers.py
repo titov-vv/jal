@@ -65,6 +65,11 @@ def get_app_path() -> str:
 def get_dbfilename(app_path):
     return app_path + Setup.DB_PATH
 
+# -------------------------------------------------------------------------------------------------------------------
+# Return a row from the model in form of {"field_name": value} dictionary
+def db_row2dict(model, row) -> dict:
+    record = model.record(row)
+    return {record.field(x).name(): record.value(x) for x in range(record.count())}
 
 # -------------------------------------------------------------------------------------------------------------------
 # returns QIcon loaded from the file with icon_name located in folder Setup.ICONS_PATH

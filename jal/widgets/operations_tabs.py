@@ -38,7 +38,7 @@ class JalOperationsTabs(QStackedWidget):
             if key == LedgerTransaction.NA:
                 continue
             if widget.modified:
-                reply = QMessageBox().warning(None, self.tr("You have unsaved changes"),
+                reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
                                               widget.name +
                                               self.tr(" has uncommitted changes,\ndo you want to save it?"),
                                               QMessageBox.Yes, QMessageBox.No)

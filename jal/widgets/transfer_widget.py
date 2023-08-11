@@ -145,8 +145,7 @@ class TransferWidget(AbstractOperationDetails):
 
         self.model.select()
 
-    @Slot()
-    def saveChanges(self):
+    def _validated(self):
         record = self.model.record(0)
         # Set related fields NULL if we don't have fee. This is required for correct transfer processing
         fee_amount = record.value(self.model.fieldIndex("fee"))
@@ -155,7 +154,7 @@ class TransferWidget(AbstractOperationDetails):
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee")), None)
         if record.value(self.model.fieldIndex("asset")) == 0:   # Store None if asset isn't selected
             self.model.setData(self.model.index(0, self.model.fieldIndex("asset")), None)
-        super().saveChanges()
+        return True
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)

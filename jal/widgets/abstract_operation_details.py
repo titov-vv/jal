@@ -64,6 +64,13 @@ class AbstractOperationDetails(QWidget):
 
     @Slot()
     def saveChanges(self):
+        if self._validated():
+            self._save()
+
+    def _validated(self):   # May be used in descendant classes
+        return True
+
+    def _save(self):
         if not self.model.submitAll():
             logging.fatal(self.tr("Operation submit failed: ") + self.model.lastError().text())
             return False

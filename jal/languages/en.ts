@@ -4,7 +4,7 @@
 <context>
     <name>AbstractOperationDetails</name>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="68"/>
+        <location filename="../widgets/abstract_operation_details.py" line="75"/>
         <source>Operation submit failed: </source>
         <translation></translation>
     </message>
@@ -19,7 +19,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="85"/>
+        <location filename="../widgets/abstract_operation_details.py" line="92"/>
         <source>Unsaved changes were reverted to create new operation</source>
         <translation></translation>
     </message>
@@ -599,12 +599,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="175"/>
+        <location filename="../widgets/corporate_action_widget.py" line="174"/>
         <source>Operation submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="182"/>
+        <location filename="../widgets/corporate_action_widget.py" line="181"/>
         <source>Operation details submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -793,27 +793,27 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="247"/>
+        <location filename="../widgets/income_spending_widget.py" line="254"/>
         <source>Category</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="247"/>
+        <location filename="../widgets/income_spending_widget.py" line="254"/>
         <source>Tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="248"/>
+        <location filename="../widgets/income_spending_widget.py" line="255"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="249"/>
+        <location filename="../widgets/income_spending_widget.py" line="256"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="261"/>
+        <location filename="../widgets/income_spending_widget.py" line="268"/>
         <source>Total</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1048,32 +1048,32 @@
 <context>
     <name>ImportReceiptDialog</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="269"/>
+        <location filename="../data_import/shop_receipt.py" line="267"/>
         <source>Please scan main QR code from the receipt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="272"/>
+        <location filename="../data_import/shop_receipt.py" line="270"/>
         <source>QR: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="338"/>
+        <location filename="../data_import/shop_receipt.py" line="336"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="341"/>
+        <location filename="../data_import/shop_receipt.py" line="339"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="344"/>
+        <location filename="../data_import/shop_receipt.py" line="342"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="373"/>
+        <location filename="../data_import/shop_receipt.py" line="371"/>
         <source>Categories are not recognized: Tensorflow is not found</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1306,12 +1306,22 @@
         <translation></translation>
     </message>
     <message>
+        <location filename="../widgets/income_spending_widget.py" line="175"/>
+        <source>Incomplete data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../widgets/income_spending_widget.py" line="176"/>
+        <source>Category isn&apos;t set for &apos;{}&apos; (Amount: {})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/income_spending_widget.py" line="184"/>
         <source>Operation submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="184"/>
+        <location filename="../widgets/income_spending_widget.py" line="191"/>
         <source>Operation details submit failed: </source>
         <translation></translation>
     </message>
@@ -3306,22 +3316,22 @@ Application will be terminated now.</source>
 <context>
     <name>ResultsModel</name>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="239"/>
+        <location filename="../widgets/corporate_action_widget.py" line="238"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="239"/>
+        <location filename="../widgets/corporate_action_widget.py" line="238"/>
         <source>Qty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="241"/>
+        <location filename="../widgets/corporate_action_widget.py" line="240"/>
         <source>Share, %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="245"/>
+        <location filename="../widgets/corporate_action_widget.py" line="244"/>
         <source>Total</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3608,7 +3618,7 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="637"/>
+        <location filename="../data_import/statement.py" line="646"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation type="unfinished"></translation>
     </message>

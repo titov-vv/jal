@@ -4,7 +4,7 @@ from dateutil import tz
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot, QByteArray
-from PySide6.QtWidgets import QLabel, QLineEdit, QDateTimeEdit, QPushButton, QHeaderView
+from PySide6.QtWidgets import QMessageBox, QLabel, QLineEdit, QDateTimeEdit, QPushButton, QHeaderView
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
@@ -12,7 +12,7 @@ from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.db.view_model import JalViewModel
-from jal.db.helpers import load_icon, localize_decimal
+from jal.db.helpers import load_icon, localize_decimal, db_row2dict
 from jal.db.operations import LedgerTransaction
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
@@ -168,8 +168,16 @@ class IncomeSpendingWidget(AbstractOperationDetails):
             self.details_model.removeRow(idx.row())
             self.onDataChange(idx, idx, None)
 
-    @Slot()
-    def saveChanges(self):
+    def _validated(self):
+        for row in range(self.details_model.rowCount()):
+            fields = db_row2dict(self.details_model, row)
+            if fields['category_id'] is None or fields['category_id'] == 0:
+                QMessageBox().warning(self, self.tr("Incomplete data"),
+                                      self.tr("Category isn't set for '{}' (Amount: {})".format(fields['note'], fields['amount'])), QMessageBox.Ok)
+                return False
+        return True
+
+    def _save(self):
         self.model.database().transaction()
         try:
             if not self.model.submitAll():
@@ -177,8 +185,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
             pid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
             if pid is None:  # we just have saved new action record and need last inserted id
                 pid = self.model.last_insert_id()
-            for row in range(self.details_model.rowCount()):
-                # Set PID for all child records
+            for row in range(self.details_model.rowCount()):   # Set PID for all child records
                 self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("pid")), pid)
             if not self.details_model.submitAll():
                 raise RuntimeError(self.tr("Operation details submit failed: ") + self.details_model.lastError().text())
