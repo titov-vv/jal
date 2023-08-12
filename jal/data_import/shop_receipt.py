@@ -96,10 +96,10 @@ class SlipLinesDelegate(QStyledItemDelegate):
 
     def createEditor(self, aParent, option, index):
         if index.column() == 1:
-            category_selector = CategorySelector(aParent)
+            category_selector = CategorySelector(aParent, validate=False)
             return category_selector
         if index.column() == 3:
-            tag_selector = TagSelector(aParent)
+            tag_selector = TagSelector(aParent, validate=False)
             return tag_selector
 
     def setModelData(self, editor, model, index):
