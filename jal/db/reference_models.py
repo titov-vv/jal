@@ -265,6 +265,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         _ = self._exec(f"UPDATE {self._table} SET {self._columns[col][0]}=:value WHERE id=:id",
                        [(":id", item_id), (":value", value)])
         self.dataChanged.emit(index, index, Qt.DisplayRole | Qt.EditRole)
+        self.layoutChanged.emit()   # Emit unconditionally as item order may be changed after editing
         return True
 
     def fieldIndex(self, field):
