@@ -383,7 +383,8 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
 
         self.beginRemoveRows(parent, row, row + count - 1)
         self.connection().transaction()
-        query = self._exec(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT :row_c OFFSET :row_n",
+        order_by = f"ORDER BY {self._sort_by}" if self._sort_by is not None else ''  # FIXME - this line repeats several times over the class - refactor
+        query = self._exec(f"SELECT id FROM {self._table} WHERE pid=:pid {order_by} LIMIT :row_c OFFSET :row_n",
                            [(":pid", parent_id), (":row_c", count), (":row_n", row)])
         while query.next():
             self.deleteWithChilderen(query.value(0))
