@@ -245,7 +245,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         if not index.isValid():
             return None
         item_id = index.internalId()
-        if role == Qt.DisplayRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             col = index.column()
             if (col >= 0) and (col < len(self._columns)):
                 return self._read(f"SELECT {self._columns[col][0]} FROM {self._table} WHERE id=:id",

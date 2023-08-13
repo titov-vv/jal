@@ -182,7 +182,7 @@ class PeerTreeModel(SqlTreeModel):
         if not index.isValid():
             return None
         item_id = index.internalId()
-        if role == Qt.DisplayRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             if index.column() == self.fieldIndex("actions_count"):
                 return JalPeer(item_id).number_of_documents()
             else:
