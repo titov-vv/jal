@@ -6,7 +6,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QByteArray
 from PySide6.QtWidgets import QMessageBox, QLabel, QLineEdit, QDateTimeEdit, QPushButton, QHeaderView
 from PySide6.QtSql import QSqlTableModel
-from PySide6.QtGui import QFont, QPalette
+from PySide6.QtGui import QFont
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox

@@ -127,9 +127,9 @@ class MainWindow(QMainWindow):
             JalSettings().setValue('MessageOnce', '')   # Delete message if it was shown
         # Ask for database rebuild if flag is set
         if JalSettings().getValue('RebuildDB', 0) == 1:
-            if QMessageBox().warning(self, self.tr("Confirmation"), self.tr("Ledger isn't complete. Rebuild it now?"),
+            if QMessageBox().warning(self, self.tr("Confirmation"), self.tr("Database data may be inconsistent after recent update. Rebuild it now?"),
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
-                self.ledger.rebuild()
+                self.ledger.rebuild(from_timestamp=0)
 
     @Slot()
     def closeEvent(self, event):

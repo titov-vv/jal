@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
-from jal.constants import BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset
+from jal.constants import BookAccount, CustomColor, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
@@ -767,14 +767,14 @@ class Transfer(LedgerTransaction):
                                 [(":oid", self._oid)], named=True)
         self._withdrawal_account = jal.db.account.JalAccount(self._data['withdrawal_account'])
         self._withdrawal_account_name = self._withdrawal_account.name()
-        self._withdrawal_timestamp = self._data['withdrawal_timestamp']
+        self._withdrawal_timestamp = int(self._data['withdrawal_timestamp'])
         self._withdrawal = Decimal(self._data['withdrawal'])
         self._withdrawal_currency = JalAsset(self._withdrawal_account.currency()).symbol()
         self._deposit_account = jal.db.account.JalAccount(self._data['deposit_account'])
         self._deposit_account_name = self._deposit_account.name()
         self._deposit = Decimal(self._data['deposit'])
         self._deposit_currency = JalAsset(self._deposit_account.currency()).symbol()
-        self._deposit_timestamp = self._data['deposit_timestamp']
+        self._deposit_timestamp = int(self._data['deposit_timestamp'])
         self._fee_account = jal.db.account.JalAccount(self._data['fee_account'])
         self._fee_currency = JalAsset(self._fee_account.currency()).symbol()
         self._fee_account_name = self._fee_account.name()
@@ -900,10 +900,13 @@ class Transfer(LedgerTransaction):
                 ledger.appendTransaction(self, BookAccount.Money, -(self._withdrawal - credit_taken))
                 ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal)
         elif self._display_type == Transfer.Fee:
+            if not self._fee_account.organization():
+                raise LedgerError(self.tr("Can't collect fee from the account '{}' ({}) as organization isn't set for it. Date: {}").format(
+                    self._fee_account.name(), self._fee_account.number(), ts2dt(self._withdrawal_timestamp)))
             credit_taken = ledger.takeCredit(self, self._fee_account.id(), self._fee)
             ledger.appendTransaction(self, BookAccount.Money, -(self._fee - credit_taken))
             ledger.appendTransaction(self, BookAccount.Costs, self._fee,
-                                    category=PredefinedCategory.Fees, peer=PredefinedPeer.Financial)
+                                     category=PredefinedCategory.Fees, peer=self._fee_account.organization())
         elif self._display_type == Transfer.Incoming:
             if self._asset.id():
                 self.processAssetTransfer(ledger)

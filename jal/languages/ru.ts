@@ -456,57 +456,57 @@
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="1000"/>
+        <location filename="../db/operations.py" line="1003"/>
         <source>UNDEFINED</source>
         <translation>НЕОПРЕДЕЛЕНО</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1001"/>
+        <location filename="../db/operations.py" line="1004"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1002"/>
+        <location filename="../db/operations.py" line="1005"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1003"/>
+        <location filename="../db/operations.py" line="1006"/>
         <source>Spin-off</source>
         <translation>Выделение компании (спин-офф)</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1004"/>
+        <location filename="../db/operations.py" line="1007"/>
         <source>Merger</source>
         <translation>Реорганизация компании</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1007"/>
+        <location filename="../db/operations.py" line="1010"/>
         <source>Delisting</source>
         <translation>Делистинг</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1109"/>
+        <location filename="../db/operations.py" line="1112"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation>ЦБ не является частью результатов корпоративного события: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1128"/>
+        <location filename="../db/operations.py" line="1131"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation>Не задан тип корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1133"/>
+        <location filename="../db/operations.py" line="1136"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количетво ценных бумаг недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1137"/>
+        <location filename="../db/operations.py" line="1140"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation>Неподерживаемый случай: Корпоративное событие покрывает не всю открытую позицию. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1146"/>
+        <location filename="../db/operations.py" line="1149"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation>Результаты корпоративного события не распределяют 100% стоимости изначального актива. </translation>
     </message>
@@ -1933,11 +1933,6 @@ do you want to save it?</source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="130"/>
-        <source>Ledger isn&apos;t complete. Rebuild it now?</source>
-        <translation>Итоги транзакций неактуальны. Пересчитать сейчас?</translation>
-    </message>
-    <message>
         <location filename="../widgets/main_window.py" line="126"/>
         <source>Info</source>
         <translation>Информация</translation>
@@ -1952,6 +1947,11 @@ do you want to save it?</source>
         <location filename="../widgets/main_window.py" line="218"/>
         <source>About</source>
         <translation>О программе</translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="130"/>
+        <source>Database data may be inconsistent after recent update. Rebuild it now?</source>
+        <translation>База данных может содержать неверные итоги после недавнего апдейта. Пересчитать сейчас?</translation>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="163"/>
@@ -2008,47 +2008,47 @@ Application will be terminated now.</source>
 <context>
     <name>MarketDataFeed</name>
     <message>
-        <location filename="../constants.py" line="142"/>
+        <location filename="../constants.py" line="138"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="143"/>
+        <location filename="../constants.py" line="139"/>
         <source>Central banks</source>
         <translation>Центральные банки</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="144"/>
+        <location filename="../constants.py" line="140"/>
         <source>MOEX</source>
         <translation>МосБиржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="145"/>
+        <location filename="../constants.py" line="141"/>
         <source>NYSE/Nasdaq</source>
         <translation>NYSE/Nasdaq</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="146"/>
+        <location filename="../constants.py" line="142"/>
         <source>Euronext</source>
         <translation>Euronext</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="147"/>
+        <location filename="../constants.py" line="143"/>
         <source>TMX TSX</source>
         <translation>TMX TSX</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="148"/>
+        <location filename="../constants.py" line="144"/>
         <source>LSE</source>
         <translation>LSE</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="149"/>
+        <location filename="../constants.py" line="145"/>
         <source>Frankfurt Borse</source>
         <translation>Франкфунтская биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="154"/>
+        <location filename="../constants.py" line="150"/>
         <source>Victoria Seguros</source>
         <translation>Victoria Seguros</translation>
     </message>
@@ -4945,17 +4945,22 @@ Application will be terminated now.</source>
         <translation>Ошибка. Курс равен нулю</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="923"/>
+        <location filename="../db/operations.py" line="904"/>
+        <source>Can&apos;t collect fee from the account &apos;{}&apos; ({}) as organization isn&apos;t set for it. Date: {}</source>
+        <translation>Невозможно удержать комиссию со счёта &apos;{}&apos; ({}), т.к. для него не указана организация. Дата: {}</translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="926"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation>Количество актива недостаточно для обработки перевода. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="928"/>
+        <location filename="../db/operations.py" line="931"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation>Обработанное количество меньше, чем количество в трансфере. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="943"/>
+        <location filename="../db/operations.py" line="946"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation>Списание актива не найдено для трансфера.</translation>
     </message>
@@ -4963,56 +4968,66 @@ Application will be terminated now.</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="29"/>
+        <location filename="../widgets/transfer_widget.py" line="31"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="47"/>
-        <location filename="../widgets/transfer_widget.py" line="50"/>
+        <location filename="../widgets/transfer_widget.py" line="49"/>
+        <location filename="../widgets/transfer_widget.py" line="52"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="48"/>
+        <location filename="../widgets/transfer_widget.py" line="50"/>
         <source>From</source>
         <translation>С</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="49"/>
-        <location filename="../widgets/transfer_widget.py" line="52"/>
+        <location filename="../widgets/transfer_widget.py" line="51"/>
+        <location filename="../widgets/transfer_widget.py" line="54"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="51"/>
+        <location filename="../widgets/transfer_widget.py" line="53"/>
         <source>To</source>
         <translation>На</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="53"/>
+        <location filename="../widgets/transfer_widget.py" line="55"/>
         <source>Fee from</source>
         <translation>Коммиссия с</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="54"/>
+        <location filename="../widgets/transfer_widget.py" line="56"/>
         <source>Fee amount</source>
         <translation>Размер комиссии</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="55"/>
+        <location filename="../widgets/transfer_widget.py" line="57"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="56"/>
+        <location filename="../widgets/transfer_widget.py" line="58"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="57"/>
+        <location filename="../widgets/transfer_widget.py" line="59"/>
         <source>#</source>
         <translation>№</translation>
+    </message>
+    <message>
+        <location filename="../widgets/transfer_widget.py" line="158"/>
+        <source>Incomplete data</source>
+        <translation>Неполные данные</translation>
+    </message>
+    <message>
+        <location filename="../widgets/transfer_widget.py" line="158"/>
+        <source>Can&apos;t collect fee from an account without organization assigned</source>
+        <translation>Невозможно удержать комиссию со счёта без привязанной организации</translation>
     </message>
 </context>
 <context>

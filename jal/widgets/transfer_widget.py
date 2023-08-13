@@ -3,11 +3,13 @@ from dateutil import tz
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QPushButton
+from PySide6.QtWidgets import QMessageBox, QLabel, QDateTimeEdit, QLineEdit, QPushButton
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.operations import LedgerTransaction
+from jal.db.helpers import db_row2dict
+from jal.db.account import JalAccount
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -146,13 +148,16 @@ class TransferWidget(AbstractOperationDetails):
         self.model.select()
 
     def _validated(self):
-        record = self.model.record(0)
+        fields = db_row2dict(self.model, 0)
         # Set related fields NULL if we don't have fee. This is required for correct transfer processing
-        fee_amount = record.value(self.model.fieldIndex("fee"))
-        if not fee_amount or Decimal(fee_amount) == Decimal('0'):
+        if not fields['fee'] or Decimal(fields['fee']) == Decimal('0'):
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee_account")), None)
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee")), None)
-        if record.value(self.model.fieldIndex("asset")) == 0:   # Store None if asset isn't selected
+        else:
+            if not JalAccount(fields['fee_account']).organization():
+                QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Can't collect fee from an account without organization assigned"), QMessageBox.Ok)
+                return False
+        if fields['asset'] == 0:   # Store None if asset isn't selected
             self.model.setData(self.model.index(0, self.model.fieldIndex("asset")), None)
         return True
 

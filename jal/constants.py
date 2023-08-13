@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QComboBox
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 48
+    DB_REQUIRED_VERSION = 49
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'
@@ -119,10 +119,6 @@ class AssetData:
     ExpiryDate = 2
     PrincipalValue = 3
     Tag = 4
-
-
-class PredefinedPeer:
-    Financial = 1
 
 
 class MarketDataFeed(PredefinedList, QObject):

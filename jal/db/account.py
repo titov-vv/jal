@@ -46,7 +46,8 @@ class JalAccount(JalDB):
         self._number = self._data['number'] if self._data is not None else None
         self._currency_id = self._data['currency_id'] if self._data is not None else None
         self._active = self._data['active'] if self._data is not None else None
-        self._organization_id = self._data['organization_id'] if self._data is not None else None
+        self._organization_id = self._data['organization_id'] if self._data is not None else ''
+        self._organization_id = int(self._organization_id) if self._organization_id else 0
         self._country = JalCountry(self._data['country_id']) if self._data is not None else JalCountry(0)
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
         self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
