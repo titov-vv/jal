@@ -22,7 +22,8 @@
   ],
   "assets_data": [
     {"id": 1, "asset": 3, "reg_number": "1-01-00010-A", "principal": 1.0},
-    {"id": 2, "asset": 5, "reg_number": "4B020702673B", "principal": 1000.0, "expiry": 1624492800}
+    {"id": 2, "asset": 5, "reg_number": "4B020702673B", "principal": 1000.0, "expiry": 1624492800},
+    {"id": 3, "asset": 6, "principal":  0.03}
   ],
   "trades": [
     {"id": 1, "number": "3312348787", "timestamp": 1615647620, "settlement": 1615766400, "account": 1, "asset": 4, "quantity": 10, "price": 987.65, "fee": 6.9},
