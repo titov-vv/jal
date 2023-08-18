@@ -32,12 +32,12 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_uralsib(tmp_path, project_root, data_path, prepare_db_xls):
-    with open(data_path + 'ukfu.json', 'r', encoding='utf-8') as json_file:
+    with open(data_path + 'tvoy.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
 
-    UKFU = StatementTvoyBroker()
-    UKFU.load(data_path + 'ukfu.zip')
-    assert UKFU._data == statement
+    Tvoy = StatementTvoyBroker()
+    Tvoy.load(data_path + 'tvoy.zip')
+    assert Tvoy._data == statement
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -71,6 +71,8 @@ def test_statement_just2trade(tmp_path, project_root, data_path, prepare_db_xls)
     J2T.load(data_path + 'j2t.xlsx')
     assert J2T._data == statement
 
+
+# ----------------------------------------------------------------------------------------------------------------------
 def test_statement_open_portfolio(tmp_path, project_root, data_path, prepare_db_xls):
     with open(data_path + 'pof_converted.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)

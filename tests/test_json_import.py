@@ -277,7 +277,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
 def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
     statement = Statement()
-    statement.load(data_path + 'ukfu.json')
+    statement.load(data_path + 'tvoy.json')
     statement.validate_format()
     statement.match_db_ids()
     statement.import_into_db()

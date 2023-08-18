@@ -64,6 +64,7 @@ class StatementXLS(Statement):
         self._load_assets()
         self._load_deals()
         self._load_cash_transactions()
+        self._strip_unused_data()
 
         logging.info(self.tr("Statement loaded successfully: ") + f"{self.StatementName}")
 
@@ -248,3 +249,6 @@ class StatementXLS(Statement):
 
     def _load_cash_transactions(self):
         raise NotImplementedError("load_cash_transactions() method is not defined in subclass of StatementXLS")
+
+    def _strip_unused_data(self):
+        pass

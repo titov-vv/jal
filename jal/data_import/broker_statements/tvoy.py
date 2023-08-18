@@ -92,8 +92,8 @@ class StatementTvoyBroker(StatementXLS):
             "amount": "Сумма сделки",
             "accrued_int": "НКД",
             "settlement": "Дата поставки, плановая",
-            "fee_ex": "Комиссия ТС, всего",
-            "fee_broker": "Комиссия брокера, всего"
+            "fee_ex": "Комиссия ТС",
+            "fee_broker": "Комиссия брокера"
         }
 
         row, headers = self.find_section_start("СДЕЛКИ С ЦЕННЫМИ БУМАГАМИ", columns,
@@ -474,3 +474,7 @@ class StatementTvoyBroker(StatementXLS):
         fee = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
                "lines": [{"amount": amount, "category": -PredefinedCategory.Fees, "description": description}]}
         self._data[FOF.INCOME_SPENDING].append(fee)
+
+    def _strip_unused_data(self):
+        for asset in self._data[FOF.ASSETS]:
+            self.drop_extra_fields(asset, ['issuer', 'broker_name'])

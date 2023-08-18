@@ -141,12 +141,6 @@ class StatementXML(Statement):
             tag_dictionary[key_name] = attr_value
         return tag_dictionary
 
-    # Removes all keys listed in extra_keys_list from operation_dict
-    def drop_extra_fields(self, operation_dict, extra_keys_list):
-        for key in extra_keys_list:
-            if key in operation_dict:
-                del operation_dict[key]
-
     # Drop any unused data that shouldn't be in output json
     def strip_unused_data(self):
         pass

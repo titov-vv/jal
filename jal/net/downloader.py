@@ -318,14 +318,14 @@ class QuoteDownloader(QObject):
     def MOEX_find_secid(**kwargs) -> str:
         secid = ''
         data = []
-        if 'reg_number' in kwargs:
+        if kwargs.get('reg_number', ''):
             url = f"https://iss.moex.com/iss/securities.json?q={kwargs['reg_number']}&iss.meta=off&limit=10"
             asset_data = json.loads(get_web_data(url))
             securities = asset_data['securities']
             columns = securities['columns']
             data = [x for x in securities['data'] if
                     x[columns.index('regnumber')] == kwargs['reg_number'] or x[columns.index('regnumber')] is None]
-        if not data and 'isin' in kwargs:
+        if not data and kwargs.get('isin', ''):
             url = f"https://iss.moex.com/iss/securities.json?q={kwargs['isin']}&iss.meta=off&limit=10"
             asset_data = json.loads(get_web_data(url))
             securities = asset_data['securities']

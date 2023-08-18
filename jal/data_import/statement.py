@@ -619,7 +619,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         if asset_info.get('search_offline', False):   # If allowed fetch asset data from database
             db_asset = JalAsset(data=asset_info, search=True, create=False)
             if db_asset.id():
-                asset = {'id': -db_asset.id(), 'type': db_asset.type(), 'name': db_asset.name(), 'isin': db_asset.isin()}
+                asset = {'id': -db_asset.id(), 'type': FOF.convert_predefined_asset_type(db_asset.type()), 'name': db_asset.name(), 'isin': db_asset.isin()}
                 self._data[FOF.ASSETS].append(asset)
                 symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
                 symbol = {"id": symbol_id, "asset": -db_asset.id(), 'symbol': db_asset.symbol(asset_info['currency']), 'currency': asset_info['currency']}
@@ -705,3 +705,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def remove_asset(self, asset_id):
         self._delete_with_id("asset", asset_id)
         self._data[FOF.ASSETS] = [x for x in self._data[FOF.ASSETS] if x['id'] != asset_id]
+
+    # Removes all keys listed in extra_keys_list from operation_dict
+    def drop_extra_fields(self, operation_dict, extra_keys_list):
+        for key in extra_keys_list:
+            if key in operation_dict:
+                del operation_dict[key]
