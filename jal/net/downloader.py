@@ -332,7 +332,7 @@ class QuoteDownloader(QObject):
             columns = securities['columns']
             data = securities['data']  # take the whole list if we search by isin
         if not data and 'name' in kwargs:
-            url = f"https://iss.moex.com/iss/securities.json?q={kwargs['name']}&iss.meta=off&limit=10"
+            url = f"https://iss.moex.com/iss/securities.json?q={kwargs['name']}&iss.meta=off&limit=20"
             asset_data = json.loads(get_web_data(url))
             securities = asset_data['securities']
             columns = securities['columns']
