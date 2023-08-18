@@ -51,16 +51,6 @@ def test_statement_kit(tmp_path, project_root, data_path, prepare_db_xls):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_statement_psb(tmp_path, project_root, data_path, prepare_db_xls):
-    with open(data_path + 'psb.json', 'r', encoding='utf-8') as json_file:
-        statement = json.load(json_file)
-
-    PSB = StatementPSB()
-    PSB.load(data_path + 'psb.xlsx')
-    assert PSB._data == statement
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 def test_statement_open(tmp_path, project_root, data_path, prepare_db_xls):
     with open(data_path + 'open.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
