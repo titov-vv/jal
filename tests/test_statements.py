@@ -33,7 +33,6 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
 def test_statement_uralsib(tmp_path, project_root, data_path, prepare_db_moex):
     with open(data_path + 'tvoy.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
-
     Tvoy = StatementTvoyBroker()
     Tvoy.load(data_path + 'tvoy.zip')
     assert Tvoy._data == statement
@@ -43,7 +42,6 @@ def test_statement_uralsib(tmp_path, project_root, data_path, prepare_db_moex):
 def test_statement_kit(tmp_path, project_root, data_path, prepare_db_moex):
     with open(data_path + 'kit.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
-
     KIT = StatementKIT()
     KIT.load(data_path + 'kit.xlsx')
     assert KIT._data == statement
@@ -53,7 +51,6 @@ def test_statement_kit(tmp_path, project_root, data_path, prepare_db_moex):
 def test_statement_open(tmp_path, project_root, data_path, prepare_db_moex):
     with open(data_path + 'open.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
-
     OpenBroker = StatementOpenBroker()
     OpenBroker.load(data_path + 'open.xml')
     assert OpenBroker._data == statement
@@ -65,7 +62,6 @@ def test_statement_just2trade(tmp_path, project_root, data_path, prepare_db_moex
 
     with open(data_path + 'j2t.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
-
     J2T = StatementJ2T()
     J2T.load(data_path + 'j2t.xlsx')
     assert J2T._data == statement
@@ -75,7 +71,6 @@ def test_statement_just2trade(tmp_path, project_root, data_path, prepare_db_moex
 def test_statement_open_portfolio(tmp_path, project_root, data_path, prepare_db_moex):
     with open(data_path + 'pof_converted.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
-
     OpenPortfolio = StatementOpenPortfolio()
     OpenPortfolio.load(data_path + 'pof.json')
     assert OpenPortfolio._data == statement
