@@ -1,5 +1,5 @@
 {
-  "period": [1614729600, 1615420799],
+  "period": [1640995200, 1672531199],
   "accounts": [
     {"id": 1, "currency": 1, "number": "JT222222", "cash_begin": 0, "cash_end": 0, "cash_end_settled": 20290.14}
   ],
@@ -50,6 +50,6 @@
   "corporate_actions": [],
   "asset_payments": [
     {"id": 1, "type": "dividend", "account": 1, "timestamp": 1615248000, "ex_date": 1611878400, "asset": 7, "amount": 9.75, "tax": 1.46, "description": "Дивиденды; Инструмент PFIZER Inc; Дата отсечки 29/01/2021"},
-    {"id": 2, "type": "dividend", "account": 1, "timestamp": 1615334400, "ex_date": 1614038400, "asset": -5, "amount": 4.04, "tax": 0.61, "description": "Дивиденды; Начисление дивидендов полученных по счету \"JT222222\"\". Инструмент JOHNSON & JOHNSON; Дата отсечки 23/02/2021"}
+    {"id": 2, "type": "dividend", "account": 1, "timestamp": 1615334400, "ex_date": 1614038400, "asset": -9, "amount": 4.04, "tax": 0.61, "description": "Дивиденды; Начисление дивидендов полученных по счету \"JT222222\"\". Инструмент JOHNSON & JOHNSON; Дата отсечки 23/02/2021"}
   ]
 }

@@ -13,13 +13,13 @@ JAL_STATEMENT_CLASS = "StatementJ2T"
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementJ2T(StatementXLS):
     PeriodPattern = (1, 0, r"Report by Client Accounts over a Period from (?P<S>\d\d\.\d\d\.\d\d\d\d) to (?P<E>\d\d\.\d\d\.\d\d\d\d)")
-    AccountPattern = (5, 4, r"(?P<ACCOUNT>\S*)\\.*")
+    AccountPattern = (5, 6, r"(?P<ACCOUNT>\S*)")
     HeaderCol = 1
-    money_section = "ДС на конец периода"
+    money_section = "Средства, доступные на конец периода"
     money_columns = {
-        "settled_end": "Сумма",
-        "bonus": "Бонус",
-        "currency": "Валюта"
+        "settled_end": "Value \(Сумма\)",
+        "bonus": "Bonus \(Сумма\)",
+        "currency": "Account currency \(Валюта счета\)"
     }
     asset_section = "Открытые позиции на конец периода"
     asset_columns = {
@@ -88,18 +88,18 @@ class StatementJ2T(StatementXLS):
         columns = {
             "number": "Номер сделки",
             "timestamp": "Дата сделки",
-            "settlement": "Дата расчетов",
-            "asset_name": "Наименование",
+            "settlement": "дата расчетов",
+            "asset_name": "Описание",
             "isin": "ISIN",
             "asset": "Symbol",
             "B/S": "Тип сделки",
             "qty": "Кол-во",
-            "fee": "Комиссия брокера в валюте счета",
+            "fee": "комиссия брокера в валюте счета",
             "amount": "Итого в валюте счета",
-            "fee_ex": "Прочие комиссии в валюте счета"
+            "fee_ex": "прочие комиссии в валюте счета"
         }
 
-        row, headers = self.find_section_start("Сделки с Акциями, Паями, Депозитарными расписками ", columns,
+        row, headers = self.find_section_start("Сделки с Акциями, Паями, Депозитарными расписками", columns,
                                                header_height=3)
         if row < 0:
             return
@@ -107,9 +107,7 @@ class StatementJ2T(StatementXLS):
             if self._statement[self.HeaderCol][row] == '':
                 break
             try:
-                ts_string = self._statement[headers['timestamp']][row]
-                timestamp = int(datetime.strptime(ts_string,
-                                                  "%d.%m.%Y %H:%M:%S, %Z%z").replace(tzinfo=timezone.utc).timestamp())
+                timestamp = int(self._statement[headers['timestamp']][row].replace(tzinfo=timezone.utc).timestamp())
             except ValueError:  # Skip 'Итого' and similar lines
                 row += 1
                 continue
@@ -118,9 +116,9 @@ class StatementJ2T(StatementXLS):
                                       'symbol': self._statement[headers['asset']][row],
                                       'name': self._statement[headers['asset_name']][row],
                                       'currency': self.currency_id('USD')})  # FIXME - replace hardcoded 'USD'
-            if self._statement[headers['B/S']][row] == 'Купля':
+            if self._statement[headers['B/S']][row].startswith('Купля'):
                 qty = self._statement[headers['qty']][row]
-            elif self._statement[headers['B/S']][row] == 'Продажа':
+            elif self._statement[headers['B/S']][row].startswith('Продажа'):
                 qty = -self._statement[headers['qty']][row]
             else:
                 row += 1
