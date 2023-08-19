@@ -175,22 +175,22 @@ def test_MOEX_downloader(prepare_db_moex):
     assert bond2.reg_number() == '4B020901978B001P'
     assert bond2.expiry() == str(d2t(211130))
     assert bond2.principal() == Decimal('1000')
-
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(8), 1, 1639353600, 1639440000, update_symbol=False)
-    assert_frame_equal(etf_quotes, quotes_downloaded)
-
+    # Test of quotes download for PNK Rental Fund
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(9), 1, 1639353600, 1639440000, update_symbol=False)
+    assert_frame_equal(etf_quotes, quotes_downloaded)
+    # Test of non-existing asset download
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(10), 1, 1639353600, 1639440000, update_symbol=False)
     assert quotes_downloaded is None
 
 
 def test_MOEX_downloader_USD(prepare_db_moex):
     create_assets([('FXGD', 'FinEx Gold ETF', 'IE00B8XB7377', 2, PredefinedAsset.ETF, 0)])   # ID = 8
-    JalAsset(8).add_symbol('FXGD', 1, 'FinEx Gold ETF - RUB')
+    JalAsset(9).add_symbol('FXGD', 1, 'FinEx Gold ETF - RUB')
     usd_quotes = pd.DataFrame({'Close': [Decimal('12.02'), Decimal('11.90')],
                                'Date': [datetime(2021, 12, 13), datetime(2021, 12, 14)]})
     usd_quotes = usd_quotes.set_index('Date')
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(8), 2, 1639353600, 1639440000, update_symbol=False)
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(9), 2, 1639353600, 1639440000, update_symbol=False)
     assert_frame_equal(usd_quotes, quotes_downloaded)
 
 
