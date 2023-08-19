@@ -8,7 +8,7 @@
   "assets": [
     {"id": 1, "type": "money", "name":  ""},
     {"id": 2, "type": "money", "name":  ""},
-    {"id": -4, "type": "stock", "name": "АО Аэрофлот", "isin": "RU0009062285"},
+    {"id": -8, "type": "stock", "name": "АО Аэрофлот", "isin": "RU0009062285"},
     {"id": 3, "type": "etf", "name": "FinEx Gold ETF USD", "isin": "IE00B8XB7377"},
     {"id": 4, "type": "bond", "name": "АО \"Тинькофф Банк\" БО-07", "isin": "RU000A0JWM31"},
     {"id": 5, "type": "stock", "name": "ГДР ЕвроМедЦентр GEMC", "isin": "US91085A2033"},
@@ -21,7 +21,7 @@
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "RUB"},
     {"id": 2, "asset": 2, "symbol": "USD"},
-    {"id": 3, "asset": -4, "symbol": "AFLT", "currency": 1},
+    {"id": 3, "asset": -8, "symbol": "AFLT", "currency": 1},
     {"id": 4, "asset": 3, "symbol": "FXGD", "currency": 1, "note": "MOEX"},
     {"id": 5, "asset": 4, "symbol": "ТинькоффБ7", "currency": 1, "note": "MOEX"},
     {"id": 6, "asset": 5, "symbol": "GEMC", "currency": 1, "note": "MOEX"},
