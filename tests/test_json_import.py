@@ -189,7 +189,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [4, 4, 1600374600, 1, '123456.78', 1600374600, 2, '123456.78', '', '', '13778635822', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
         [5, 4, 1605744000, 1, '1234.0', 1605744000, 1, '1234.0', '', '', '14333901913', '', 'DISBURSEMENT INITIATED BY John Doe'],
         [6, 4, 1663372800, 1, '100.0', 1663372800, 1, '100.0', '', '', '1234567890', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
-        [7, 4, 1663372800, 1, '100.0', 1663372800, 1, '100.0', '', '', '1234567891', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS']
+        [7, 4, 1663372800, 1, '100.0', 1663372800, 1, '100.0', '', '', '1234567891', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
+        [8, 4, 1685702720, 3, '7.0', 1685702720, 1, '7.0', '', '', '24055511103', 8, 'INTERNAL TRANSFER (--)']
     ]
 
     # validate trades

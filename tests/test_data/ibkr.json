@@ -168,7 +168,8 @@
     {"id": 4, "account": [0, 1, 0], "number": "13778635822", "asset": [1, 1], "timestamp": 1600374600, "withdrawal": 123456.78, "deposit": 123456.78, "fee": 0.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS"},
     {"id": 5, "account": [2, 0, 0], "number": "14333901913", "asset": [2, 2], "timestamp": 1605744000, "withdrawal": 1234.0, "deposit": 1234.0, "fee": 0.0, "description": "DISBURSEMENT INITIATED BY John Doe"},
     {"id": 6, "account": [0, 2, 0], "number": "1234567890", "asset": [2, 2], "timestamp": 1663372800, "withdrawal": 100.0, "deposit": 100.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS", "fee": 0.0},
-    {"id": 7, "account": [0, 2, 0], "number": "1234567891", "asset": [2, 2], "timestamp": 1663372800, "withdrawal": 100.0, "deposit": 100.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS", "fee": 0.0}
+    {"id": 7, "account": [0, 2, 0], "number": "1234567891", "asset": [2, 2], "timestamp": 1663372800, "withdrawal": 100.0, "deposit": 100.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS", "fee": 0.0},
+    {"id": 8, "account": [3, 2, 0], "number": "24055511103", "asset": [4 ,4], "timestamp": 1685702720, "withdrawal": 7.0, "deposit": 7.0, "description": "INTERNAL TRANSFER (--)", "fee": 0.0}
   ],
   "corporate_actions": [
     {"id": 1, "type": "split", "account": 2, "timestamp": 1618345500, "number": "16074977038", "asset": 4, "quantity": 217.0,

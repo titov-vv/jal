@@ -269,6 +269,18 @@ class StatementIBKR(StatementXML):
                                       ('transactionID', 'number', str, ''),
                                       ('activityDescription', 'description', str, None)],
                            'loader': self.load_cfd_charges},
+            'Transfers': {'tag': 'Transfer',
+                          'level': '',
+                          'values': [('accountId', 'account', IBKR_Account, None),
+                                     ('symbol', 'asset', IBKR_Asset, self.NoAsset),
+                                     ('account', 'account2', IBKR_Account, 0),
+                                     ('dateTime', 'timestamp', datetime, None),
+                                     ('quantity', 'quantity', float, None),
+                                     ('type', 'description', str, None),
+                                     ('direction', 'direction', str, None),
+                                     ('company', 'company', str, None),
+                                     ('transactionID', 'number', str, '')],
+                          'loader': self.load_asset_transfers}
         }
 
     @staticmethod
@@ -484,6 +496,23 @@ class StatementIBKR(StatementXML):
             transfer['fee'] = -transfer['fee'] if transfer['fee'] != 0 else 0.0  # otherwise we may have negative 0.0
             transfer['description'] = transfer['exchange']
             self.drop_extra_fields(transfer, ["type", "settlement", "price", "multiplier", "exchange", "notes"])
+            self._data[FOF.TRANSFERS].append(transfer)
+            cnt += 1
+        return cnt
+
+    def load_asset_transfers(self, transfers):
+        transfer_base = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        cnt = 0
+        for i, transfer in enumerate(transfers):
+            transfer['id'] = transfer_base + i
+            if transfer['direction'] != "IN":
+                raise Statement_ImportError(self.tr("Outgoing asset transfer not implemented yet"))
+            transfer['account'] = [transfer['account2'], transfer['account'], 0]
+            transfer['asset'] = [transfer['asset'], transfer['asset']]
+            transfer['withdrawal'] = transfer['deposit'] = transfer.pop('quantity')
+            transfer['description'] = transfer['description'] + f" TRANSFER ({transfer.pop('company')})"
+            transfer['fee'] = 0.0
+            self.drop_extra_fields(transfer, ["direction", "account2"])
             self._data[FOF.TRANSFERS].append(transfer)
             cnt += 1
         return cnt

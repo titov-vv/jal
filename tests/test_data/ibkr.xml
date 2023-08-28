@@ -161,6 +161,9 @@
 <StockGrantActivities>
 <StockGrantActivity accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="AMZN" description="AMAZON.COM INC" conid="3691937" securityID="US0231351067" securityIDType="ISIN" cusip="023135106" isin="US0231351067" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" reportDate="20210507" activityDescription="Stock Award Grant for Cash Deposit" awardDate="20210507" vestingDate="20220506" quantity="2.0" price="678.0" value="678.0" serialNumber="" deliveryType="" commodityType="" fineness="0.0" weight="0.0 ()" />
 </StockGrantActivities>
+<Transfers>
+<Transfer accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="AMZN" description="AMAZON.COM INC" conid="3691937" securityID="US0231351067" securityIDType="ISIN" cusip="023135106" isin="US0231351067" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" reportDate="20230602" date="20230602" dateTime="20230602;104520" type="INTERNAL" direction="IN" company="--" account="TEST_ACC" accountName="" quantity="7" transferPrice="0" positionAmount="1234.56" positionAmountInBase="1234.56" pnlAmount="0" pnlAmountInBase="0" fxPnl="0" cashTransfer="0" code="" clientReference="" transactionID="24055511103" />
+</Transfers>
 </FlexStatement>
 </FlexStatements>
 </FlexQueryResponse>
