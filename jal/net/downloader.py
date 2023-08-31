@@ -499,8 +499,9 @@ class QuoteDownloader(QObject):
         # Get text from downloaded PDF-file together with font type and font size of each text fragment
         parts = []
         def visitor_body(text, cm, tm, font_dict, font_size):
+            font = {} if font_dict is None else font_dict
             if text:
-                parts.append({'size': font_size, 'font': font_dict['/Name'], 'text': text})
+                parts.append({'size': font_size, 'font': font['/BaseFont'], 'text': text})
         pdf.pages[0].extract_text(visitor_text=visitor_body)
         # Combine text fragments into lines according to line breaks and font changes
         lines = []
