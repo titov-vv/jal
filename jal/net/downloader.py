@@ -529,7 +529,7 @@ class QuoteDownloader(QObject):
         # Get quotation lines from the file
         quotes = []
         for line in lines:
-            match = re.match("(.*) EUR (\d+,\d+)", line)
+            match = re.match("(.*) EUR (\d+[,.]\d+)", line)
             if match is None:
                 continue
             fund_name, price = match.groups()
