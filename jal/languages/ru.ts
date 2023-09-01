@@ -2801,12 +2801,12 @@ Application will be terminated now.</source>
         <translation>Неожиданное количество страниц в документе Victoria Seguros: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="524"/>
+        <location filename="../net/downloader.py" line="525"/>
         <source>Can&apos;t parse date from Victoria Seguros file</source>
         <translation>Невозможно получить дату из файла Victoria Seguros</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="539"/>
+        <location filename="../net/downloader.py" line="540"/>
         <source>Can&apos;t find quote for Victoria Seguros fund: </source>
         <translation>Не удалось найти котировку для фонда Victoria Seguros: </translation>
     </message>
@@ -3683,93 +3683,93 @@ Application will be terminated now.</source>
 <context>
     <name>StatementIBKR</name>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="356"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="368"/>
         <source>Asset type isn&apos;t supported: </source>
         <translation>Тип ЦБ не поддерживается: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="378"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="390"/>
         <source>Can&apos;t get currencies for currency exchange: </source>
         <translation>Невозможно определить валюты для операции обмена валют: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="385"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="397"/>
         <source>Can&apos;t get account currency for account: </source>
         <translation>Невоможно определить валюту для счёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="414"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="426"/>
         <source>Load IB Flex-statement for account </source>
         <translation>Загрузка отчёта IB для счёта </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="442"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="454"/>
         <source>Securities loaded: </source>
         <translation>ЦБ загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="451"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="463"/>
         <source>Trades loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="493"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="522"/>
         <source>Option assignment</source>
         <translation>Исполнение проданного опциона</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="494"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="523"/>
         <source>Option exercise</source>
         <translation>Исполнение купленного опциона</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="495"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="524"/>
         <source>Option expiration</source>
         <translation>Экспирация опциона</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="496"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="497"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="525"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="526"/>
         <source>Option assignment/exercise</source>
         <translation>Исполнение/экспирация опциона</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="506"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="535"/>
         <source>Option E&amp;A&amp;E action isn&apos;t implemented: </source>
         <translation>Действие не поддерживается для опционов: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="514"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="543"/>
         <source>Original trade not found for Option E&amp;A&amp;E operation: </source>
         <translation>Не найдена сделка для исполнения/экспирации опциона: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="516"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="545"/>
         <source>Options E&amp;A&amp;E loaded: </source>
         <translation>Действия с опционами загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="557"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="586"/>
         <source>Corporate action type is not supported: </source>
         <translation>Тип корпоративного действия не поддерживается: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="558"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="587"/>
         <source>Corporate actions loaded: </source>
         <translation>Корпоративные действия загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="612"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="641"/>
         <source>Can&apos;t parse Merger description </source>
         <translation>Невозможно распознать описание Объединения компаний </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="616"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="645"/>
         <source>Merger description miss some data </source>
         <translation>Недостаточно данных об Объединении компаний </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="570"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="599"/>
         <source>Can&apos;t find paired record for </source>
         <translation>Невозможно найти парную запись для </translation>
     </message>
@@ -3784,151 +3784,156 @@ Application will be terminated now.</source>
         <translation>IBKR flex-отчёт (*.xml)</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="307"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="319"/>
         <source>Interactive Brokers report type not found</source>
         <translation>Тип отчёта Interactive Brokers не определён</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="309"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="321"/>
         <source>You try to import Trade confimation report, not Activity report</source>
         <translation>Вы пытаетесь загрузить отчёт о подтверждённых сделках вместо отчёта по Активности</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="311"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="323"/>
         <source>Unknown Interactive Brokers report type: </source>
         <translation>Неизвестный тип отчёта Interactive Brokers: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="588"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="509"/>
+        <source>Outgoing asset transfer not implemented yet</source>
+        <translation>Исходящий перевод ЦБ ещё не реализован</translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/ibkr.py" line="617"/>
         <source>Can&apos;t process cancelled corporate action</source>
         <translation>Невозможно обработать отменённое корпоративное действие</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="664"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="693"/>
         <source>Multiple merger records already exist at </source>
         <translation>Неоднозначное совпадение событий реорганизации </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="672"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="701"/>
         <source>Can&apos;t parse Spin-off description </source>
         <translation>Невозможно распознать описание Выделения компании </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="675"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="700"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="704"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="729"/>
         <source>Spin-off description miss some data </source>
         <translation>Недостаточно данных для Выделения компании </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="678"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="707"/>
         <source>Spin-off initial asset not found </source>
         <translation>Исходная ЦБ для выделения компании не найдена </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="681"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="710"/>
         <source>Spin-off rounding error is too big </source>
         <translation>Ошибка округления Spin-off слишком большая </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="697"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="726"/>
         <source>Can&apos;t parse Symbol Change description </source>
         <translation>Невозможно распознать описание Смены символа </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="718"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="747"/>
         <source>Can&apos;t parse Stock Dividend description </source>
         <translation>Невозможно распознать описание Дивиденда акциями </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="734"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="763"/>
         <source>Can&apos;t parse Split description </source>
         <translation>Невозможно распознать описание Сплита </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="737"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="766"/>
         <source>Split description miss some data </source>
         <translation>Недостаточно данных для Сплита </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="795"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="824"/>
         <source>Stock vestings loaded: </source>
         <translation>Зачисление акций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="859"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="888"/>
         <source>Cash transactions loaded: </source>
         <translation>Денежные транзакции загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="880"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="909"/>
         <source>Payment was reversed by approximate description: </source>
         <translation>Платёж был отменён по примерному совпадению описания: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="887"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="916"/>
         <source>Payment was reversed with different reported date: </source>
         <translation>Платёж был отменён, но с несовпадающей датой отчёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="889"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="918"/>
         <source>Can&apos;t find match for reversal: </source>
         <translation>Невозможно найти платёж для отмены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="893"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="922"/>
         <source>Payment was reversed: </source>
         <translation>Платёж был отменён: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="948"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="977"/>
         <source>Taxes loaded: </source>
         <translation>Налоги загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="956"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="961"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="985"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="990"/>
         <source>Unknown CFD charge description: </source>
         <translation>Описание комиссии CFD не распознано: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="969"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="998"/>
         <source>CFD charges loaded: </source>
         <translation>Комиссии CFD заружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="979"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1055"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1069"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1008"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1084"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1098"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation>*** НЕОБХОДИМА РУЧНАЯ ПРОВЕРКА ***</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="980"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1009"/>
         <source>Unhandled tax country pattern found: </source>
         <translation>Неподдерживаемый формат страны налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="991"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1020"/>
         <source>Dividend not found for withholding tax: </source>
         <translation>Дивиденд не найден для удержанного налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="994"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1023"/>
         <source>Tax adjustment for dividend: </source>
         <translation>Корректировка налога для дивиденда: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1056"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1085"/>
         <source>Unhandled tax pattern found: </source>
         <translation>Неподдерживаемый формат описания налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1070"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1099"/>
         <source>Unhandled dividend pattern found: </source>
         <translation>Неподдерживаемый формат описания дивиденда: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1123"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1152"/>
         <source>Can&apos;t find a FlexStatement in first {} bytes of {}</source>
         <translation>Тэг FlexStatement не найден в первых {} байтах {}</translation>
     </message>
@@ -3956,55 +3961,55 @@ Application will be terminated now.</source>
         <translation>ЦБ загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="127"/>
-        <location filename="../data_import/broker_statements/just2trade.py" line="183"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="125"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="181"/>
         <source>Unknown trade type: </source>
         <translation>Неизвестный тип сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="146"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="144"/>
         <source>Stock trades loaded: </source>
         <translation>Сделки с акциями загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="200"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="198"/>
         <source>Crypto trades loaded: </source>
         <translation>Сделки с крипто-валютами загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="241"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="239"/>
         <source>Unsuppported cash transaction </source>
         <translation>Неподдерживаемая денежная транзакция </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="249"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="247"/>
         <source>Unknown cash transaction type </source>
         <translation>Неизвестная денежная транзакция </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="268"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="266"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="314"/>
-        <location filename="../data_import/broker_statements/just2trade.py" line="329"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="312"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="327"/>
         <source>Can&apos;t parse Dividend description </source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="317"/>
-        <location filename="../data_import/broker_statements/just2trade.py" line="332"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="315"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="330"/>
         <source>Dividend description miss some data </source>
         <translation>В описании дивиденда отсутствуют данные </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="337"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="335"/>
         <source>Dividend for tax was not found </source>
         <translation>Дивиденд не найден для списания налога </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="364"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="362"/>
         <source>Import skipped of transaction: </source>
         <translation>Транзакция пропущена при импорте: </translation>
     </message>
@@ -4404,42 +4409,42 @@ Application will be terminated now.</source>
         <translation>Архив содержит несколько файлов</translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="68"/>
+        <location filename="../data_import/statement_xls.py" line="69"/>
         <source>Statement loaded successfully: </source>
         <translation>Отчёт загружен успешно: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="103"/>
+        <location filename="../data_import/statement_xls.py" line="104"/>
         <source>Column not found in section </source>
         <translation>Столбец не найден в секции </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="117"/>
+        <location filename="../data_import/statement_xls.py" line="118"/>
         <source>Can&apos;t find expected report header: </source>
         <translation>Не удалось найти ожидаемый заголовок отчёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="123"/>
+        <location filename="../data_import/statement_xls.py" line="124"/>
         <source>Can&apos;t read report period</source>
         <translation>Невозможно определить период отчёта</translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="148"/>
+        <location filename="../data_import/statement_xls.py" line="149"/>
         <source>Can&apos;t get currencies from summary section of statement</source>
         <translation>Не удалось определить валюты из общей секции отчёта</translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="200"/>
+        <location filename="../data_import/statement_xls.py" line="201"/>
         <source>Cash balances loaded: </source>
         <translation>ДС загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="240"/>
+        <location filename="../data_import/statement_xls.py" line="241"/>
         <source>Multiple accounts found: </source>
         <translation>Несколько счетов найдено: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="226"/>
+        <location filename="../data_import/statement_xls.py" line="227"/>
         <source>Securities loaded: </source>
         <translation>ЦБ загружены: </translation>
     </message>
