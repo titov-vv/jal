@@ -16,9 +16,9 @@ class TradeWidgetDelegate(WidgetMapperDelegateBase):
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'settlement': self.timestamp_delegate,
                           'asset_id': self.symbol_delegate,
-                          'qty': self.decimal_delegate,
-                          'price': self.decimal_delegate,
-                          'fee': self.decimal_delegate}
+                          'qty': self.decimal_long_delegate,
+                          'price': self.decimal_long_delegate,
+                          'fee': self.decimal_long_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------

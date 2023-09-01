@@ -18,6 +18,7 @@ class WidgetMapperDelegateBase(QStyledItemDelegate):
         super().__init__(parent=parent)
 
         self.timestamp_delegate = TimestampDelegate()
+        self.decimal_long_delegate = FloatDelegate(2, allow_tail=True)
         self.decimal_delegate = FloatDelegate(2)
         self.symbol_delegate = SymbolDelegate()
         self.default = QStyledItemDelegate()
@@ -166,7 +167,12 @@ class FloatDelegate(QStyledItemDelegate):
             amount = Decimal(index.model().data(index, Qt.EditRole))
         except (InvalidOperation, TypeError):   # Set to zero if we have None in database
             amount = Decimal('0')
-        editor.setText(localize_decimal(amount, self._tolerance, self._percent))
+        formatted_text = localize_decimal(amount, precision=self._tolerance, percent=self._percent)
+        if self._allow_tail:
+            full_text = localize_decimal(amount, percent=self._percent)
+            if len(full_text) > len(formatted_text):
+                formatted_text = full_text
+        editor.setText(formatted_text)
 
     def setModelData(self, editor, model, index):
         model.setData(index, str(delocalize_decimal(editor.text(), percent=self._percent)))
