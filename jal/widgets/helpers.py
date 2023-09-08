@@ -223,5 +223,5 @@ class ManipulateDate:
 
     @staticmethod
     def AllDates(day=datetime.today()):
-        end = day.replace(day=1, month=1)
+        end = day + timedelta(days=1)
         return 0, ManipulateDate.toTimestamp(end)
