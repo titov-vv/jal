@@ -393,8 +393,8 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def Yahoo_Downloader(self, asset, _currency_id, start_timestamp, end_timestamp, suffix=''):
-        url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset.symbol()+suffix}?" \
+    def Yahoo_Downloader(self, asset, currency_id, start_timestamp, end_timestamp, suffix=''):
+        url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset.symbol(currency_id)+suffix}?" \
               f"period1={start_timestamp}&period2={end_timestamp}&interval=1d&events=history"
         file = StringIO(get_web_data(url))
         try:

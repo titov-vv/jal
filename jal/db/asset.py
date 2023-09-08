@@ -152,7 +152,7 @@ class JalAsset(JalDB):
                 return timestamp, rate
             else:
                 logging.warning(self.tr("There are no quote/rate for ") +
-                                f"{self.symbol()} ({JalAsset(currency_id).symbol()}) {ts2d(timestamp)}")
+                                f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) {ts2d(timestamp)}")
                 return 0, Decimal('0')
         return int(quote[0]), Decimal(quote[1])
 
