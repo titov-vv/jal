@@ -1,7 +1,7 @@
 from __future__ import annotations
 from decimal import Decimal
 from PySide6.QtCore import Qt
-from jal.db.tree_model import AbstractTreeItem, AbstractTreeModel
+from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2d
@@ -92,7 +92,7 @@ class TradeTreeItem(AbstractTreeItem):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class ClosedTradesModel(AbstractTreeModel):
+class ClosedTradesModel(ReportTreeModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._trades = []
@@ -118,6 +118,7 @@ class ClosedTradesModel(AbstractTreeModel):
             {'name': self.tr("P/L, %"), 'field': 'p/l%'},
             {'name': self.tr("Note"), 'field': 'note'}
         ]
+        self._configured = False
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
@@ -148,7 +149,6 @@ class ClosedTradesModel(AbstractTreeModel):
             update = True
         if self.setGrouping(grouping) or update:
             self.prepareData()
-            self.configureView()
 
     def prepareData(self):
         self._trades = JalAccount(self._account_id).closed_trades_list()
@@ -158,9 +158,7 @@ class ClosedTradesModel(AbstractTreeModel):
             new_item = TradeTreeItem(trade)
             leaf = self._root.getGroupLeaf(self._groups, new_item)
             leaf.appendChild(new_item)
-        self.modelReset.emit()
-        self.configureView()
-        self._view.expandAll()
+        super().prepareData()
 
     def configureView(self):
         self._view.setSortingEnabled(True)
@@ -169,9 +167,6 @@ class ClosedTradesModel(AbstractTreeModel):
                 self._view.setColumnWidth(column, 300)
             else:
                 self._view.setColumnWidth(column, 100)
-        font = self._view.header().font()
-        font.setBold(True)
-        self._view.header().setFont(font)
         self._view.setColumnHidden(self.fieldIndex('open_date'), True)
         self._view.setColumnHidden(self.fieldIndex('close_date'), True)
         self._view.setColumnWidth(self.fieldIndex('open_ts'), self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
@@ -192,3 +187,4 @@ class ClosedTradesModel(AbstractTreeModel):
         self._profit_delegate = FloatDelegate(2, allow_tail=False, colors=True, parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("p/l"), self._profit_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("p/l%"), self._profit_delegate)
+        super().configureView()

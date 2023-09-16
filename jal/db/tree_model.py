@@ -63,13 +63,14 @@ class AbstractTreeItem:
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Base class to provide a common functionality of a tree model
-class AbstractTreeModel(QAbstractItemModel):
+class ReportTreeModel(QAbstractItemModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._view = parent_view
         self._root = None
         self._groups = []
         self._columns = []
+        self._view_configured = False
 
     def index(self, row, column, parent=None):
         if not parent.isValid():
@@ -139,7 +140,13 @@ class AbstractTreeModel(QAbstractItemModel):
         return True
 
     def prepareData(self):
-        raise NotImplementedError("To be defined in descendant class")
+        self.modelReset.emit()
+        if not self._view_configured:
+            self.configureView()
+        self._view.expandAll()
 
     def configureView(self):
-        raise NotImplementedError("To be defined in descendant class")
+        font = self._view.header().font()
+        font.setBold(True)
+        self._view.header().setFont(font)
+        self._view_configured = True

@@ -7,7 +7,7 @@ from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefinedAccountType
 from jal.db.helpers import localize_decimal
-from jal.db.tree_model import AbstractTreeItem, AbstractTreeModel
+from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.widgets.delegates import GridLinesDelegate
@@ -77,7 +77,7 @@ class AssetTreeItem(AbstractTreeItem):
             return self
 
 # ----------------------------------------------------------------------------------------------------------------------
-class HoldingsModel(AbstractTreeModel):
+class HoldingsModel(ReportTreeModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._grid_delegate = None
@@ -230,9 +230,7 @@ class HoldingsModel(AbstractTreeModel):
         self._grid_delegate = GridLinesDelegate(self._view)
         for i in range(len(self._columns)):
             self._view.setItemDelegateForColumn(i, self._grid_delegate)
-        font = self._view.header().font()
-        font.setBold(True)
-        self._view.header().setFont(font)
+        super().configureView()
 
     def updateView(self, currency_id, date, grouping):
         update = False
@@ -245,16 +243,12 @@ class HoldingsModel(AbstractTreeModel):
             update = True
         if self.setGrouping(grouping) or update:
             self.prepareData()
-            self.configureView()
 
     def get_data_for_tax(self, index):
         if not index.isValid():
             return None
         data = index.internalPointer().details()
         return data['account_id'], data['asset_id'], data['currency_id'], data['qty']
-
-    def update(self):
-        self.prepareData()
 
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def prepareData(self):
@@ -321,6 +315,4 @@ class HoldingsModel(AbstractTreeModel):
             new_item = AssetTreeItem(position)
             leaf = self._root.getGroupLeaf(self._groups, new_item)
             leaf.appendChild(new_item)
-        self.modelReset.emit()
-        self.configureView()
-        self._view.expandAll()
+        super().prepareData()
