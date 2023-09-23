@@ -421,7 +421,8 @@ class QuoteDownloader(QObject):
         params = {'format': 'csv', 'decimal_separator': '.', 'date_form': 'd/m/Y', 'op': '', 'adjusted': '',
                   'base100': '', 'startdate': datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d'),
                   'enddate': datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')}
-        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-XPAR"
+        suffix = "ETFP" if asset.type() == PredefinedAsset.ETF else "XPAR"  # Dates don't work for ETFP due to glitch on their site
+        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-{suffix}"
         quotes = post_web_data(url, params=params)
         quotes_text = quotes.replace(u'\ufeff', '').splitlines()    # Remove BOM from the beginning
         if len(quotes_text) < 4:
@@ -435,12 +436,13 @@ class QuoteDownloader(QObject):
             return None
         file = StringIO(quotes)
         try:
-            data = pd.read_csv(file, header=3, sep=';', dtype={'Date': str, 'Close': str})
+            data = pd.read_csv(file, header=3, sep=';', dtype={'Date': str, 'Close': str}, index_col=False)
         except ParserError:
             return None
         data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
         data['Close'] = data['Close'].apply(Decimal)
-        data = data.drop(columns=['Open', 'High', 'Low', 'Last', 'Number of Shares', 'Number of Trades', 'Turnover', 'vwap'])
+        data = data.drop(columns=['Open', 'High', 'Low', 'Last', 'Number of Shares', 'Number of Trades', 'Turnover', 'vwap'],
+                         errors='ignore')  # Ignore errors as some columns might be missing
         data.dropna(inplace=True)
         close = data.set_index("Date")
         close.sort_index(inplace=True)
