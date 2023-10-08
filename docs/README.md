@@ -1,71 +1,63 @@
-# JAL 
-Just Another Ledger is a project for personal finance tracking.
+# JAL (Just Another Ledger)
+**Track and manage your personal finances seamlessly.**
 
 [![image](http://img.shields.io/pypi/v/jal.svg)](https://pypi.python.org/pypi/jal/)
 
 *[English](https://github.com/titov-vv/jal/blob/master/docs/README.md), [Русский](https://github.com/titov-vv/jal/blob/master/docs/README.ru.md)*
 
-It was designed to keep records of personal incomes/spendings and investments with up-to-date information about account's balances and portfolio value.
+## 📌 Overview
+JAL is tailored for those who want a clear insight into their personal incomes, expenditures, investments, and up-to-date information on account balances and portfolio values.
 
-### Support, Feedback
-If you want to ask a question, report a bug, provide help or support an author - you may use email [jal@gmx.ru](mailto:jal@gmx.ru?subject=%5BJAL%5D%20Help) or [Telegram](https://t.me/jal_support) ([Issues](https://github.com/titov-vv/jal/issues) on GitHub are always welcome also).
+## ⭐️ Features
+### Multiple Accounts Management
+- Support for various currencies with user-selected base currency totals.
+### Transaction Types
+- Generic income/spending with multi-category split.
+- Asset and money transfers, including currency conversion.
+- Trading operations: Buy/Sell securities (stocks, ETFs, options, and more).
+- Dividends for stocks and bond interest payments.
+- Corporate actions for stocks.
+### Reports
+- Monthly income/expenditure by category.
+- Investment profit/loss.
+- Closed deals summary.
+### Price Updates
+- Stock/ETF prices updated for major global exchanges.
+- Currency exchange rates from European and Russian central banks.
+### Broker Statement Imports
+- Supports various Russian and international brokers.
+### Tax Reports
+- Assistance for tax declaration in Russia and Portugal.
+### Experimental Features
+- Category recognition for goods in electronic slips using TensorFlow.
 
-### Thanks!
-I would like to a mention people who helped me in 2022 and 2023 as I got more donations, help and feedback from users this year. 
-And while I can't name every one of them I would like to confirm my appreciation for this help. They did the project better!
-
-### [FAQ](https://github.com/titov-vv/jal/blob/master/docs/FAQ.md)
-
-### [Description of error messages](https://github.com/titov-vv/jal/blob/master/docs/error_description.md)
-
-### Main features
-- Multiple accounts with different currencies (with totals in base currency by user choice)
-- 5 types of transactions: 
-    1. Generic income/spending operations that may be split into several categories
-    2. Asset and money transfers between accounts (with currency conversion if required)
-    3. Buy/Sell operation for securities (jal supports stocks, ETFs, options, partial support of bonds and futures)
-    4. Dividend for stocks and Interest payments for bonds
-    5. Corporate actions for stocks (Split, Symbol change, Merger, Spin-Off, Stock dividend)
-- Basic reports:
-    1. monthly incomes/spendings split by category
-    2. profit/loss report for investments accounts
-    3. closed deals report 
-- Stock/ETF prices are updated for NYSE, Nasdaq, LSE, Frankfurt (Yahoo), Euronext, TSX and MOEX exchanges traded stocks
-- Currency exchange rates may be taken from European and/or Russian central banks.
-- Broker statement import:
-    1. Russian: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
-    2. International: Interactive Brokers Flex statement (xml), Just2Trade (xls).
-- Investments report for tax declaration preparation for Russia (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md)) and Portugal (*draft*).  
-Russian tax estimation for open positions.
-- *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and `pyzbar` package installation for QR recognition.  
-You may authorize via SMS, FNS personal account or ESIA/Gosuslugi. QR code may be scanned from camera, clipboard image or image file on disk.
-- *experimental* Category recognition for goods in electronic slip with help of `tensorflow`
-
-### Installation
-
-*jal* was created to be portable and cross-platform. Thus, you have several ways to install and run the program:
-- You may get file archive from [the GitHub repository](https://github.com/titov-vv/jal), unpack it into suitable directory on your PC and use `run.py` to start application.
-In order to succeed this way you need to have at least Python 3.8.1 and satisfy all dependencies listed in `requirements.txt`. Let's say some words about installing python on windows-based computers, as this application becomes poplular for non-programming people. The best place to download python distro is official site, sure. Important, in installer dialogues to check boxes for installing `pip` and `Add python to environment variables`. Don't forget to reboot windows to be sure, that changes applies correctly.
-
-- You may use installation package with `pip install jal` command. It will take care about dependencies automatically and will install `jal` entry point<sup>*</sup> to run the program. For windows-users the best and easiest way is to start windows command prompt (cmd) and run command mentioned above in it. If python set up correctly and installation succeeded you may just type `jal` to run application.
-Alternatively you may use `python -m jal.jal` if you can't run application with `jal` entry point.
-- You may mix two methods together - download source files from github and then use `setup.py` for preferred way of installation.
+## 📥 Installation
+JAL offers cross-platform compatibility and portability. Here's how to get started:
+1. **From GitHub Repository**:
+   - Clone repository locally with `git https://github.com/titov-vv/jal.git`
+   - Ensure you have Python 3.8.1 or later and meet all dependencies in `requirements.txt`.
+   - Tips for Python installation on Windows: Ensure `pip` installation and add Python to environment variables. Reboot to apply changes.
+   - Use `run.py` to launch the application.
+2. **Using pip**:
+   - Install using `pip install jal`.
+   - Launch with the `jal` command or alternatively `python -m jal.jal`.
+3. **Hybrid Installation**:
+   - Download source files and use `setup.py` for tailored installation.
+  
 
 Database will be initialized automatically with minimal required set of data, and you will be able to start use the program.
 
-<sup>*</sup> - entry point location is platform dependable. E.g. on Linux it might be in `~/.local/run`, on Windows - `Scripts` directory of your python installation or `Appdata/Roaming/Python/.../Scripts/` in user profile path.
-
-### Upgrades
+## ❗️ Upgrades
 If you installed *jal* via *pip* then you may upgrade it to newer version with help of command `pip install jal -U`
 
-### Tax report for investment account
+## 📈 Tax report for investment account
 
 Tax report can be prepared based on data from any broker if operations are present in JAL. Tax reports are supported for Russia and Portugal.    
 You can import operations from broker statement with help of menu *Import->Statement*.  
 Step-by-step example (in russian language) of Russian tax report preparation for Interactive Brokers can be found on [this page](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md). 
 Use contacts from beginning of this page if you need support regarding statements or reports.
 
-### Screenshots
+## Screenshots
 Qt have a better look on Linux out of the box. Here is main program window:  
 ![Main Window on Linux](https://github.com/titov-vv/jal/blob/master/docs/img/main_linux.png?raw=true)
 
@@ -90,6 +82,18 @@ Profit/Loss for investment account *(Assets value to be fixed, Returns include d
 ![Profit/Loss report](https://github.com/titov-vv/jal/blob/master/docs/img/report_profit_loss.png?raw=true)
 List of all closed deals for investment account  
 ![Deals report](https://github.com/titov-vv/jal/blob/master/docs/img/report_deals.png?raw=true)
+
+## 📞 Support, Feedback
+If you want to ask a question, report a bug, provide help or support an author - you may use email [jal@gmx.ru](mailto:jal@gmx.ru?subject=%5BJAL%5D%20Help) or [Telegram](https://t.me/jal_support) ([Issues](https://github.com/titov-vv/jal/issues) on GitHub are always welcome also).
+
+## ❤️ Acknowledgements
+I would like to a mention people who helped me in 2022 and 2023 as I got more donations, help and feedback from users this year. 
+And while I can't name every one of them I would like to confirm my appreciation for this help. They did the project better!
+
+## [FAQ](https://github.com/titov-vv/jal/blob/master/docs/FAQ.md)
+
+## [Description of error messages](https://github.com/titov-vv/jal/blob/master/docs/error_description.md)
+
 
  ---
 
