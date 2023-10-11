@@ -18,6 +18,7 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 - Dividends for stocks and bond interest payments.
 - Corporate actions for stocks.
 ### Reports
+- Portfolio asset allocation for a given date.
 - Monthly income/expenditure by category.
 - Investment profit/loss.
 - Closed deals summary.
@@ -28,7 +29,9 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 - Supports various Russian and international brokers.
 ### Tax Reports
 - Assistance for tax declaration in Russia and Portugal.
+- Tax burden estimation for a given asset in the portfolio.
 ### Experimental Features
+- Electronic slips download for russian and some european shops. 
 - Category recognition for goods in electronic slips using TensorFlow.
 
 ## 📥 Installation
@@ -36,7 +39,7 @@ JAL offers cross-platform compatibility and portability. Here's how to get start
 1. **From GitHub Repository**:
    - Clone repository locally with `git https://github.com/titov-vv/jal.git`
    - Ensure you have Python 3.8.1 or later and meet all dependencies in `requirements.txt`.
-   - Tips for Python installation on Windows: Ensure `pip` installation and add Python to environment variables. Reboot to apply changes.
+   - Tips Windows users: Ensure Python installation from ![the official site](https://www.python.org/) and turn on options `pip installation` and `add Python to environment variables` during the installation. Reboot to apply changes.
    - Use `run.py` to launch the application.
 2. **Using pip**:
    - Install using `pip install jal`.
@@ -47,11 +50,12 @@ JAL offers cross-platform compatibility and portability. Here's how to get start
 
 Database will be initialized automatically with minimal required set of data, and you will be able to start use the program.
 
+You may choose program language in menu *Languages*.
+
 ## ❗️ Upgrades
 If you installed *jal* via *pip* then you may upgrade it to newer version with help of command `pip install jal -U`
 
 ## 📈 Tax report for investment account
-
 Tax report can be prepared based on data from any broker if operations are present in JAL. Tax reports are supported for Russia and Portugal.    
 You can import operations from broker statement with help of menu *Import->Statement*.  
 Step-by-step example (in russian language) of Russian tax report preparation for Interactive Brokers can be found on [this page](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md). 
