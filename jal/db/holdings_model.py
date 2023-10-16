@@ -82,6 +82,7 @@ class HoldingsModel(ReportTreeModel):
         super().__init__(parent_view)
         self._grid_delegate = None
         self._currency = 0
+        self._only_active_accounts = True
         self._currency_name = ''
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
         self._columns = [{'name': self.tr("Currency/Account/Asset")},
@@ -232,7 +233,7 @@ class HoldingsModel(ReportTreeModel):
             self._view.setItemDelegateForColumn(i, self._grid_delegate)
         super().configureView()
 
-    def updateView(self, currency_id, date, grouping):
+    def updateView(self, currency_id, date, grouping, show_inactive):
         update = False
         if self._currency != currency_id:
             self._currency = currency_id
@@ -240,6 +241,9 @@ class HoldingsModel(ReportTreeModel):
             update = True
         if self._date != date.endOfDay(Qt.UTC).toSecsSinceEpoch():
             self._date = date.endOfDay(Qt.UTC).toSecsSinceEpoch()
+            update = True
+        if self._only_active_accounts == show_inactive:  # The logic is reversed inside the report
+            self._only_active_accounts = not self._only_active_accounts
             update = True
         if self.setGrouping(grouping) or update:
             self.prepareData()
@@ -253,7 +257,8 @@ class HoldingsModel(ReportTreeModel):
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def prepareData(self):
         holdings = []
-        accounts = JalAccount.get_all_accounts(account_type=PredefinedAccountType.Investment)
+        accounts = JalAccount.get_all_accounts(account_type=PredefinedAccountType.Investment,
+                                               active_only=self._only_active_accounts)
         for account in accounts:
             account_holdings = []
             assets = account.assets_list(self._date)

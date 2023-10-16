@@ -58,13 +58,15 @@ class PortfolioReportWindow(MdiWidget):
         self.ui.PortfolioCurrencyCombo.changed.connect(self.updateReport)
         self.ui.PortfolioTreeView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
         self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
+        self.ui.ShowInactiveAccounts.toggled.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.PortfolioTreeView.model()))
 
     @Slot()
     def updateReport(self):
         self.ui.PortfolioTreeView.model().updateView(currency_id = self.ui.PortfolioCurrencyCombo.selected_id,
                                                      date = self.ui.PortfolioDate.date(),
-                                                     grouping = self.ui.GroupCombo.currentData())
+                                                     grouping = self.ui.GroupCombo.currentData(),
+                                                     show_inactive = self.ui.ShowInactiveAccounts.isChecked())
 
     @Slot()
     def onHoldingsContextMenu(self, pos):

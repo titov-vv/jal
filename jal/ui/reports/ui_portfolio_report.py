@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'portfolio_report.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.2
+## Created by: Qt User Interface Compiler version 6.6.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QDateEdit, QFrame,
-    QHBoxLayout, QHeaderView, QLabel, QPushButton,
-    QSizePolicy, QSpacerItem, QTreeView, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
+    QFrame, QHBoxLayout, QHeaderView, QLabel,
+    QPushButton, QSizePolicy, QSpacerItem, QTreeView,
+    QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import CurrencyComboBox
 
@@ -67,6 +67,11 @@ class Ui_PortfolioWidget(object):
 
         self.horizontalLayout_8.addWidget(self.PortfolioCurrencyCombo)
 
+        self.ShowInactiveAccounts = QCheckBox(self.PortfolioParamsFrame)
+        self.ShowInactiveAccounts.setObjectName(u"ShowInactiveAccounts")
+
+        self.horizontalLayout_8.addWidget(self.ShowInactiveAccounts)
+
         self.horizontalSpacer = QSpacerItem(1411, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_8.addItem(self.horizontalSpacer)
@@ -99,6 +104,7 @@ class Ui_PortfolioWidget(object):
         self.PortfolioDate.setDisplayFormat(QCoreApplication.translate("PortfolioWidget", u"dd/MM/yyyy", None))
         self.GroupLbl.setText(QCoreApplication.translate("PortfolioWidget", u"Group by:", None))
         self.PortfolioCurrencyLbl.setText(QCoreApplication.translate("PortfolioWidget", u"Common currency:", None))
+        self.ShowInactiveAccounts.setText(QCoreApplication.translate("PortfolioWidget", u"Show &Inactive accounts", None))
         self.SaveButton.setText(QCoreApplication.translate("PortfolioWidget", u"Save...", None))
     # retranslateUi
 

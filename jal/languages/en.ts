@@ -487,7 +487,7 @@
     </message>
     <message>
         <location filename="../db/operations.py" line="1112"/>
-        <source>Asset isn&apos;t a part of corporate action results: </source>
+        <source>Asset isn&apos;t a part of corporate action results: {asset.name()}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1002,12 +1002,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="281"/>
+        <location filename="../db/holdings_model.py" line="275"/>
         <source>N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="303"/>
+        <location filename="../db/holdings_model.py" line="297"/>
         <source>Money</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2428,7 +2428,17 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="114"/>
+        <location filename="../reports/portfolio.py" line="105"/>
+        <source>Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="105"/>
+        <source>Tax estimation is possible for today only. Please correct date of the report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="117"/>
         <source>Select tag for {} ({}): </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2456,7 +2466,12 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/portfolio_report.ui" line="115"/>
+        <location filename="../ui/reports/portfolio_report.ui" line="102"/>
+        <source>Show &amp;Inactive accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="122"/>
         <source>Save...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2761,46 +2776,46 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../net/downloader.py" line="177"/>
-        <source>There are no CBR data for: </source>
+        <source>There are no CBR data for: {currency.symbol()}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="428"/>
+        <location filename="../net/downloader.py" line="429"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="431"/>
+        <location filename="../net/downloader.py" line="432"/>
         <source>Euronext quotes header not found in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="434"/>
+        <location filename="../net/downloader.py" line="435"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="472"/>
+        <location filename="../net/downloader.py" line="474"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="488"/>
+        <location filename="../net/downloader.py" line="490"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="497"/>
+        <location filename="../net/downloader.py" line="499"/>
         <source>Unexpected number of pages in Victoria Seguros document: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="525"/>
+        <location filename="../net/downloader.py" line="527"/>
         <source>Can&apos;t parse date from Victoria Seguros file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="540"/>
+        <location filename="../net/downloader.py" line="542"/>
         <source>Can&apos;t find quote for Victoria Seguros fund: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2903,12 +2918,12 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="63"/>
-        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
+        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: {NIF}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="64"/>
-        <source>No API found for QR data: </source>
+        <source>No API found for QR data: &apos;{qr_text}&apos;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4842,6 +4857,11 @@ Application will be terminated now.</source>
     <message>
         <location filename="../widgets/tax_widget.py" line="64"/>
         <source>Save tax form to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="64"/>
+        <source>Tax form (*.dc{last_digit})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

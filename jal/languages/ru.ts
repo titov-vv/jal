@@ -487,8 +487,8 @@
     </message>
     <message>
         <location filename="../db/operations.py" line="1112"/>
-        <source>Asset isn&apos;t a part of corporate action results: </source>
-        <translation>ЦБ не является частью результатов корпоративного события: </translation>
+        <source>Asset isn&apos;t a part of corporate action results: {asset.name()}</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="1131"/>
@@ -1002,12 +1002,12 @@
         <translation>Дата последней котировки: </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="281"/>
+        <location filename="../db/holdings_model.py" line="275"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="303"/>
+        <location filename="../db/holdings_model.py" line="297"/>
         <source>Money</source>
         <translation>Деньги</translation>
     </message>
@@ -2434,7 +2434,17 @@ Application will be terminated now.</source>
         <translation>Свернуть все</translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="114"/>
+        <location filename="../reports/portfolio.py" line="105"/>
+        <source>Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="105"/>
+        <source>Tax estimation is possible for today only. Please correct date of the report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="117"/>
         <source>Select tag for {} ({}): </source>
         <translation>Выбрать метку для {} ({}): </translation>
     </message>
@@ -2462,7 +2472,12 @@ Application will be terminated now.</source>
         <translation>Валюта пересчёта:</translation>
     </message>
     <message>
-        <location filename="../ui/reports/portfolio_report.ui" line="115"/>
+        <location filename="../ui/reports/portfolio_report.ui" line="102"/>
+        <source>Show &amp;Inactive accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_report.ui" line="122"/>
         <source>Save...</source>
         <translation>Сохранить...</translation>
     </message>
@@ -2767,46 +2782,46 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../net/downloader.py" line="177"/>
-        <source>There are no CBR data for: </source>
-        <translation>Нет данных ЦБ РФ для: </translation>
+        <source>There are no CBR data for: {currency.symbol()}</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="428"/>
+        <location filename="../net/downloader.py" line="429"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="431"/>
+        <location filename="../net/downloader.py" line="432"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="434"/>
+        <location filename="../net/downloader.py" line="435"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="472"/>
+        <location filename="../net/downloader.py" line="474"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="488"/>
+        <location filename="../net/downloader.py" line="490"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation>Не обнаружен пакет pypdf, необходимый для чтения PDF файлов.</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="497"/>
+        <location filename="../net/downloader.py" line="499"/>
         <source>Unexpected number of pages in Victoria Seguros document: </source>
         <translation>Неожиданное количество страниц в документе Victoria Seguros: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="525"/>
+        <location filename="../net/downloader.py" line="527"/>
         <source>Can&apos;t parse date from Victoria Seguros file</source>
         <translation>Невозможно получить дату из файла Victoria Seguros</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="540"/>
+        <location filename="../net/downloader.py" line="542"/>
         <source>Can&apos;t find quote for Victoria Seguros fund: </source>
         <translation>Не удалось найти котировку для фонда Victoria Seguros: </translation>
     </message>
@@ -2909,13 +2924,13 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="63"/>
-        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
-        <translation>Португальский QR распознан, но магазин не поддерживается, NIF: </translation>
+        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: {NIF}</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="64"/>
-        <source>No API found for QR data: </source>
-        <translation>На найдено API для данного QR-кода: </translation>
+        <source>No API found for QR data: &apos;{qr_text}&apos;</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4849,6 +4864,11 @@ Application will be terminated now.</source>
         <location filename="../widgets/tax_widget.py" line="64"/>
         <source>Save tax form to:</source>
         <translation>Сохранить 3-НДФЛ в:</translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="64"/>
+        <source>Tax form (*.dc{last_digit})</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="113"/>
