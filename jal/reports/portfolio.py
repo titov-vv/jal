@@ -1,8 +1,8 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QObject, QDateTime
+from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QDate
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QMenu, QDialog
+from PySide6.QtWidgets import QMenu, QDialog, QMessageBox
 from jal.db.helpers import load_icon
 from jal.ui.reports.ui_portfolio_report import Ui_PortfolioWidget
 from jal.reports.reports import Reports
@@ -101,6 +101,9 @@ class PortfolioReportWindow(MdiWidget):
 
     @Slot()
     def estimateRussianTax(self, index, country_code):
+        if self.ui.PortfolioDate.date() != QDate().currentDate():
+            QMessageBox().warning(self, self.tr("Warning"), self.tr("Tax estimation is possible for today only. Please correct date of the report"), QMessageBox.Ok)
+            return
         model = index.model()
         account, asset, currency, asset_qty = model.get_data_for_tax(index)
         self._parent.mdi_area().addSubWindow(TaxEstimator(country_code, account, asset, asset_qty), size=(1000, 300))
