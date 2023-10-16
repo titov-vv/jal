@@ -102,7 +102,7 @@ class ChartWindow(MdiWidget):
         asset = JalAsset(self.asset_id)
         self.currency_name = JalAsset(account.currency()).symbol()
         positions = account.open_trades_list(asset)
-        start_time = min([x['operation'].timestamp() for x in positions] + [0]) - 2592000  # Shift back by 30 days
+        start_time = 0 if not positions else min([x['operation'].timestamp() for x in positions]) - 2592000  # Shift back by 30 days
         quotes = asset.quotes(start_time, QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(), self.currency_id)
         for quote in quotes:
             self.quotes.append({'timestamp': quote[0] * 1000, 'quote': quote[1]})  # timestamp to ms
