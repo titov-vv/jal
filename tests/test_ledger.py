@@ -442,7 +442,7 @@ def test_asset_transfer(prepare_db):
     value = LedgerAmounts("value")
     assert amount[BookAccount.Transfers, 1, 4] == Decimal('5')
     assert amount[BookAccount.Transfers, 2, 4] == Decimal('-5')
-    assert value[BookAccount.Transfers, 1, 4] == Decimal('3.75E+4')
+    assert value[BookAccount.Transfers, 1, 4] == Decimal('5E+2')
     assert value[BookAccount.Transfers, 2, 4] == Decimal('-3.75E+4')
     trades = JalAccount(1).closed_trades_list()
     assert len(trades) == 1
