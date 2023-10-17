@@ -930,14 +930,14 @@ class Transfer(LedgerTransaction):
                 raise LedgerError(self.tr("Processed asset amount is less than transfer amount. Date: ")
                                   + f"{ts2dt(self._withdrawal_timestamp)}, "
                                   + f"Processed amount: {asset_amount}, Operation: {self.dump()}")
-            base = JalAsset.get_base_currency(self._withdrawal_timestamp)
-            _, currency_rate = JalAsset(self._withdrawal_account.currency()).quote(self._withdrawal_timestamp, base)
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                      asset_id=self._asset.id(), value=-processed_value)
             ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal,
-                                     asset_id=self._asset.id(), value=processed_value*currency_rate)
+                                     asset_id=self._asset.id(), value=processed_value) #*currency_rate)
         elif self._display_type == Transfer.Incoming:
-            # get value of withdrawn asset
+            _, currency_rate = JalAsset(self._withdrawal_account.currency()).quote(self._deposit_timestamp,
+                                                                                   self._deposit_account.currency())
+            # get initial value of withdrawn asset
             value = self._read("SELECT value FROM ledger "
                                "WHERE book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
                                [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype),
@@ -945,10 +945,8 @@ class Transfer(LedgerTransaction):
             if not value:
                 raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
             else:
-                value = Decimal(value)
-            base = JalAsset.get_base_currency(self._withdrawal_timestamp)
-            _, currency_rate = JalAsset(self._deposit_account.currency()).quote(self._deposit_timestamp, base)
-            price = value * currency_rate / self._deposit
+                converted_value = Decimal(value) * currency_rate  # convert initial value into currency of new account
+            price = converted_value / self._deposit
             _ = self._exec(
                 "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
@@ -956,9 +954,9 @@ class Transfer(LedgerTransaction):
                  (":account_id", self._deposit_account.id()), (":asset_id", self._asset.id()),
                  (":price", format_decimal(price)), (":remaining_qty", format_decimal(self._deposit))])
             ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit,
-                                     asset_id=self._asset.id(), value=-value)
+                                     asset_id=self._asset.id(), value=-converted_value)
             ledger.appendTransaction(self, BookAccount.Assets, self._deposit,
-                                     asset_id=self._asset.id(), value=value*currency_rate)
+                                     asset_id=self._asset.id(), value=converted_value)
         else:
             assert False, "Unknown transfer type for asset transfer"
 

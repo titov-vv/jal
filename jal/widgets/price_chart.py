@@ -1,4 +1,4 @@
-from math import log10, floor, ceil
+from math import floor, ceil
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, QMargins, QDateTime, QDate
