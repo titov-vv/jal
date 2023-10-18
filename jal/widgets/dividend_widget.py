@@ -3,7 +3,7 @@ from dateutil import tz
 
 from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray, QDate
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComboBox
-from jal.ui.widgets.ui_abstract_operation import Ui_AbstractOperation
+from jal.ui.widgets.ui_dividend_operation import Ui_DividendOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
@@ -26,7 +26,7 @@ class DividendWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class DividendWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        super().__init__(parent=parent, ui_class=Ui_AbstractOperation)
+        super().__init__(parent=parent, ui_class=Ui_DividendOperation)
         self.name = self.tr("Dividend")
         self.operation_type = LedgerTransaction.Dividend
         self.combo_model = None
@@ -42,7 +42,7 @@ class DividendWidget(AbstractOperationDetails):
         self.tax_label = QLabel(self)
         self.note_label = QLabel(self)
 
-        self.main_label.setText(self.name)
+        self.ui.main_label.setText(self.name)
         self.date_label.setText(self.tr("Date/Time"))
         self.ex_date_label.setText(self.tr("Ex-Date"))
         self.type_label.setText(self.tr("Type"))
@@ -79,38 +79,38 @@ class DividendWidget(AbstractOperationDetails):
         self.number = QLineEdit(self)
         self.note = QLineEdit(self)
 
-        self.layout.addWidget(self.date_label, 1, 0, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.account_label, 2, 0, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.symbol_label, 3, 0, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.note_label, 4, 0, 1, 1, Qt.AlignLeft)
+        self.ui.layout.addWidget(self.date_label, 1, 0, 1, 1, Qt.AlignLeft)
+        self.ui.layout.addWidget(self.account_label, 2, 0, 1, 1, Qt.AlignLeft)
+        self.ui.layout.addWidget(self.symbol_label, 3, 0, 1, 1, Qt.AlignLeft)
+        self.ui.layout.addWidget(self.note_label, 4, 0, 1, 1, Qt.AlignLeft)
 
-        self.layout.addWidget(self.timestamp_editor, 1, 1, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.account_widget, 2, 1, 1, 4)
-        self.layout.addWidget(self.asset_widget, 3, 1, 1, 4)
-        self.layout.addWidget(self.note, 4, 1, 1, 8)
+        self.ui.layout.addWidget(self.timestamp_editor, 1, 1, 1, 1, Qt.AlignLeft)
+        self.ui.layout.addWidget(self.account_widget, 2, 1, 1, 4)
+        self.ui.layout.addWidget(self.asset_widget, 3, 1, 1, 4)
+        self.ui.layout.addWidget(self.note, 4, 1, 1, 8)
 
-        self.layout.addWidget(self.ex_date_label, 1, 2, 1, 1, Qt.AlignRight)
-        self.layout.addWidget(self.ex_date_editor, 1, 3, 1, 1, Qt.AlignLeft)
+        self.ui.layout.addWidget(self.ex_date_label, 1, 2, 1, 1, Qt.AlignRight)
+        self.ui.layout.addWidget(self.ex_date_editor, 1, 3, 1, 1, Qt.AlignLeft)
 
-        self.layout.addWidget(self.type_label, 1, 5, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.amount_label, 2, 5, 1, 1, Qt.AlignRight)
-        self.layout.addWidget(self.tax_label, 3, 5, 1, 1, Qt.AlignRight)
+        self.ui.layout.addWidget(self.type_label, 1, 5, 1, 1, Qt.AlignLeft)
+        self.ui.layout.addWidget(self.amount_label, 2, 5, 1, 1, Qt.AlignRight)
+        self.ui.layout.addWidget(self.tax_label, 3, 5, 1, 1, Qt.AlignRight)
 
-        self.layout.addWidget(self.type, 1, 6, 1, 1)
-        self.layout.addWidget(self.dividend_edit, 2, 6, 1, 1)
-        self.layout.addWidget(self.tax_edit, 3, 6, 1, 1)
+        self.ui.layout.addWidget(self.type, 1, 6, 1, 1)
+        self.ui.layout.addWidget(self.dividend_edit, 2, 6, 1, 1)
+        self.ui.layout.addWidget(self.tax_edit, 3, 6, 1, 1)
 
-        self.layout.addWidget(self.number_label, 1, 7, 1, 1, Qt.AlignRight)
-        self.layout.addWidget(self.price_label, 2, 7, 1, 1, Qt.AlignRight)
+        self.ui.layout.addWidget(self.number_label, 1, 7, 1, 1, Qt.AlignRight)
+        self.ui.layout.addWidget(self.price_label, 2, 7, 1, 1, Qt.AlignRight)
 
-        self.layout.addWidget(self.number, 1, 8, 1, 1)
-        self.layout.addWidget(self.price_edit, 2, 8, 1, 1)
+        self.ui.layout.addWidget(self.number, 1, 8, 1, 1)
+        self.ui.layout.addWidget(self.price_edit, 2, 8, 1, 1)
 
-        self.layout.addWidget(self.commit_button, 0, 9, 1, 1)
-        self.layout.addWidget(self.revert_button, 0, 10, 1, 1)
+        # self.ui.layout.addWidget(self.commit_button, 0, 9, 1, 1)
+        # self.ui.layout.addWidget(self.revert_button, 0, 10, 1, 1)
 
-        self.layout.addItem(self.verticalSpacer, 5, 0, 1, 1)
-        self.layout.addItem(self.horizontalSpacer, 1, 8, 1, 1)
+        # self.ui.layout.addItem(self.verticalSpacer, 5, 0, 1, 1)
+        # self.ui.layout.addItem(self.horizontalSpacer, 1, 8, 1, 1)
 
         super()._init_db("dividends")
         self.combo_model = QStringListModel([self.tr("N/A"),

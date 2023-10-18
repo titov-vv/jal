@@ -537,97 +537,97 @@
 <context>
     <name>CorporateActionWidget</name>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="33"/>
+        <location filename="../widgets/corporate_action_widget.py" line="34"/>
         <source>Corporate Action</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="52"/>
+        <location filename="../widgets/corporate_action_widget.py" line="53"/>
         <source>Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="53"/>
+        <location filename="../widgets/corporate_action_widget.py" line="54"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="54"/>
+        <location filename="../widgets/corporate_action_widget.py" line="55"/>
         <source>Type</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="55"/>
+        <location filename="../widgets/corporate_action_widget.py" line="56"/>
         <source>#</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="56"/>
+        <location filename="../widgets/corporate_action_widget.py" line="57"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="57"/>
+        <location filename="../widgets/corporate_action_widget.py" line="58"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="58"/>
+        <location filename="../widgets/corporate_action_widget.py" line="59"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="73"/>
+        <location filename="../widgets/corporate_action_widget.py" line="74"/>
         <source>Add asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="75"/>
+        <location filename="../widgets/corporate_action_widget.py" line="76"/>
         <source>Remove asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="116"/>
+        <location filename="../widgets/corporate_action_widget.py" line="117"/>
         <source>N/A</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="117"/>
+        <location filename="../widgets/corporate_action_widget.py" line="118"/>
         <source>Merger</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="118"/>
+        <location filename="../widgets/corporate_action_widget.py" line="119"/>
         <source>Spin-Off</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="119"/>
+        <location filename="../widgets/corporate_action_widget.py" line="120"/>
         <source>Symbol change</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="120"/>
+        <location filename="../widgets/corporate_action_widget.py" line="121"/>
         <source>Split</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="121"/>
+        <location filename="../widgets/corporate_action_widget.py" line="122"/>
         <source>Delisting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="160"/>
+        <location filename="../widgets/corporate_action_widget.py" line="161"/>
         <source>Failed to add new record: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="174"/>
+        <location filename="../widgets/corporate_action_widget.py" line="175"/>
         <source>Operation submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="181"/>
+        <location filename="../widgets/corporate_action_widget.py" line="182"/>
         <source>Operation details submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -816,27 +816,27 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="260"/>
+        <location filename="../widgets/income_spending_widget.py" line="261"/>
         <source>Category</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="260"/>
+        <location filename="../widgets/income_spending_widget.py" line="261"/>
         <source>Tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="261"/>
+        <location filename="../widgets/income_spending_widget.py" line="262"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="262"/>
+        <location filename="../widgets/income_spending_widget.py" line="263"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="274"/>
+        <location filename="../widgets/income_spending_widget.py" line="275"/>
         <source>Total</source>
         <translation type="unfinished"></translation>
     </message>
@@ -877,89 +877,89 @@
 <context>
     <name>DividendWidget</name>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="30"/>
-        <location filename="../widgets/dividend_widget.py" line="51"/>
-        <location filename="../widgets/dividend_widget.py" line="116"/>
+        <location filename="../widgets/dividend_widget.py" line="31"/>
+        <location filename="../widgets/dividend_widget.py" line="52"/>
+        <location filename="../widgets/dividend_widget.py" line="117"/>
         <source>Dividend</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="45"/>
+        <location filename="../widgets/dividend_widget.py" line="46"/>
         <source>Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="48"/>
+        <location filename="../widgets/dividend_widget.py" line="49"/>
         <source>#</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="49"/>
+        <location filename="../widgets/dividend_widget.py" line="50"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="50"/>
+        <location filename="../widgets/dividend_widget.py" line="51"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="52"/>
+        <location filename="../widgets/dividend_widget.py" line="53"/>
         <source>Price</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="53"/>
+        <location filename="../widgets/dividend_widget.py" line="54"/>
         <source>Tax</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="54"/>
+        <location filename="../widgets/dividend_widget.py" line="55"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="67"/>
+        <location filename="../widgets/dividend_widget.py" line="68"/>
         <source>unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="118"/>
+        <location filename="../widgets/dividend_widget.py" line="119"/>
         <source>Stock Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="119"/>
+        <location filename="../widgets/dividend_widget.py" line="120"/>
         <source>Stock Vesting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="164"/>
+        <location filename="../widgets/dividend_widget.py" line="165"/>
         <source>No quote</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="167"/>
+        <location filename="../widgets/dividend_widget.py" line="168"/>
         <source>You should set quote via Data-&gt;Quotes menu for Date/Time of the dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="46"/>
+        <location filename="../widgets/dividend_widget.py" line="47"/>
         <source>Ex-Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="47"/>
+        <location filename="../widgets/dividend_widget.py" line="48"/>
         <source>Type</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="115"/>
+        <location filename="../widgets/dividend_widget.py" line="116"/>
         <source>N/A</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="117"/>
+        <location filename="../widgets/dividend_widget.py" line="118"/>
         <source>Bond Interest</source>
         <translation></translation>
     </message>
@@ -1273,84 +1273,84 @@
 <context>
     <name>IncomeSpendingWidget</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="32"/>
+        <location filename="../widgets/income_spending_widget.py" line="33"/>
         <source>Income / Spending</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="45"/>
+        <location filename="../widgets/income_spending_widget.py" line="46"/>
         <source>Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="46"/>
+        <location filename="../widgets/income_spending_widget.py" line="47"/>
         <source>Details</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="47"/>
+        <location filename="../widgets/income_spending_widget.py" line="48"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="48"/>
+        <location filename="../widgets/income_spending_widget.py" line="49"/>
         <source>Peer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="49"/>
+        <location filename="../widgets/income_spending_widget.py" line="50"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="59"/>
+        <location filename="../widgets/income_spending_widget.py" line="60"/>
         <source>Paid in foreign currency:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="62"/>
+        <location filename="../widgets/income_spending_widget.py" line="63"/>
         <source>Add detail</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="64"/>
+        <location filename="../widgets/income_spending_widget.py" line="65"/>
         <source>Remove detail</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="66"/>
+        <location filename="../widgets/income_spending_widget.py" line="67"/>
         <source>Copy detail</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="144"/>
-        <location filename="../widgets/income_spending_widget.py" line="161"/>
+        <location filename="../widgets/income_spending_widget.py" line="145"/>
+        <location filename="../widgets/income_spending_widget.py" line="162"/>
         <source>Failed to add new record: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="176"/>
-        <location filename="../widgets/income_spending_widget.py" line="181"/>
+        <location filename="../widgets/income_spending_widget.py" line="177"/>
+        <location filename="../widgets/income_spending_widget.py" line="182"/>
         <source>Incomplete data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="176"/>
+        <location filename="../widgets/income_spending_widget.py" line="177"/>
         <source>Operation contains no details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="182"/>
+        <location filename="../widgets/income_spending_widget.py" line="183"/>
         <source>Category isn&apos;t set for &apos;{}&apos; (Amount: {})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="190"/>
+        <location filename="../widgets/income_spending_widget.py" line="191"/>
         <source>Operation submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="197"/>
+        <location filename="../widgets/income_spending_widget.py" line="198"/>
         <source>Operation details submit failed: </source>
         <translation></translation>
     </message>
@@ -3360,22 +3360,22 @@ Application will be terminated now.</source>
 <context>
     <name>ResultsModel</name>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="238"/>
+        <location filename="../widgets/corporate_action_widget.py" line="239"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="238"/>
+        <location filename="../widgets/corporate_action_widget.py" line="239"/>
         <source>Qty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="240"/>
+        <location filename="../widgets/corporate_action_widget.py" line="241"/>
         <source>Share, %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="244"/>
+        <location filename="../widgets/corporate_action_widget.py" line="245"/>
         <source>Total</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4929,52 +4929,52 @@ Application will be terminated now.</source>
 <context>
     <name>TradeWidget</name>
     <message>
-        <location filename="../widgets/trade_widget.py" line="29"/>
+        <location filename="../widgets/trade_widget.py" line="30"/>
         <source>Buy / Sell</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="42"/>
+        <location filename="../widgets/trade_widget.py" line="43"/>
         <source>Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="43"/>
+        <location filename="../widgets/trade_widget.py" line="44"/>
         <source>Settlement</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="44"/>
+        <location filename="../widgets/trade_widget.py" line="45"/>
         <source>#</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="45"/>
+        <location filename="../widgets/trade_widget.py" line="46"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="46"/>
+        <location filename="../widgets/trade_widget.py" line="47"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="47"/>
+        <location filename="../widgets/trade_widget.py" line="48"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="48"/>
+        <location filename="../widgets/trade_widget.py" line="49"/>
         <source>Price</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="49"/>
+        <location filename="../widgets/trade_widget.py" line="50"/>
         <source>Fee</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="50"/>
+        <location filename="../widgets/trade_widget.py" line="51"/>
         <source>Note</source>
         <translation></translation>
     </message>
@@ -5010,64 +5010,64 @@ Application will be terminated now.</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="31"/>
+        <location filename="../widgets/transfer_widget.py" line="32"/>
         <source>Transfer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="49"/>
-        <location filename="../widgets/transfer_widget.py" line="52"/>
+        <location filename="../widgets/transfer_widget.py" line="50"/>
+        <location filename="../widgets/transfer_widget.py" line="53"/>
         <source>Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="50"/>
+        <location filename="../widgets/transfer_widget.py" line="51"/>
         <source>From</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="51"/>
-        <location filename="../widgets/transfer_widget.py" line="54"/>
+        <location filename="../widgets/transfer_widget.py" line="52"/>
+        <location filename="../widgets/transfer_widget.py" line="55"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="53"/>
+        <location filename="../widgets/transfer_widget.py" line="54"/>
         <source>To</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="55"/>
+        <location filename="../widgets/transfer_widget.py" line="56"/>
         <source>Fee from</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="56"/>
+        <location filename="../widgets/transfer_widget.py" line="57"/>
         <source>Fee amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="57"/>
+        <location filename="../widgets/transfer_widget.py" line="58"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="58"/>
+        <location filename="../widgets/transfer_widget.py" line="59"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="59"/>
+        <location filename="../widgets/transfer_widget.py" line="60"/>
         <source>#</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="158"/>
+        <location filename="../widgets/transfer_widget.py" line="159"/>
         <source>Incomplete data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="158"/>
+        <location filename="../widgets/transfer_widget.py" line="159"/>
         <source>Can&apos;t collect fee from an account without organization assigned</source>
         <translation type="unfinished"></translation>
     </message>

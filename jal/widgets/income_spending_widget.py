@@ -42,7 +42,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.peer_label = QLabel(self)
         self.note_label = QLabel(self)
 
-        self.main_label.setText(self.name)
+        self.ui.main_label.setText(self.name)
         self.date_label.setText(self.tr("Date/Time"))
         self.details_label.setText(self.tr("Details"))
         self.account_label.setText(self.tr("Account"))
@@ -72,30 +72,30 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.details_table.verticalHeader().setMinimumSectionSize(20)
         self.details_table.verticalHeader().setDefaultSectionSize(20)
 
-        self.layout.addWidget(self.date_label, 1, 0, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.details_label, 2, 0, 1, 1, Qt.AlignLeft)
+        self.ui.layout.addWidget(self.date_label, 1, 0, 1, 1, Qt.AlignLeft)
+        self.ui.layout.addWidget(self.details_label, 2, 0, 1, 1, Qt.AlignLeft)
 
-        self.layout.addWidget(self.timestamp_editor, 1, 1, 1, 4)
-        self.layout.addWidget(self.add_button, 2, 1, 1, 1)
-        self.layout.addWidget(self.copy_button, 2, 2, 1, 1)
-        self.layout.addWidget(self.del_button, 2, 3, 1, 1)
+        self.ui.layout.addWidget(self.timestamp_editor, 1, 1, 1, 4)
+        self.ui.layout.addWidget(self.add_button, 2, 1, 1, 1)
+        self.ui.layout.addWidget(self.copy_button, 2, 2, 1, 1)
+        self.ui.layout.addWidget(self.del_button, 2, 3, 1, 1)
 
-        self.layout.addWidget(self.account_label, 1, 5, 1, 1, Qt.AlignRight)
-        self.layout.addWidget(self.peer_label, 2, 5, 1, 1, Qt.AlignRight)
+        self.ui.layout.addWidget(self.account_label, 1, 5, 1, 1, Qt.AlignRight)
+        self.ui.layout.addWidget(self.peer_label, 2, 5, 1, 1, Qt.AlignRight)
 
-        self.layout.addWidget(self.account_widget, 1, 6, 1, 1)
-        self.layout.addWidget(self.peer_widget, 2, 6, 1, 1)
+        self.ui.layout.addWidget(self.account_widget, 1, 6, 1, 1)
+        self.ui.layout.addWidget(self.peer_widget, 2, 6, 1, 1)
 
-        self.layout.addWidget(self.note_label, 2, 7, 1, 1, Qt.AlignRight)
+        self.ui.layout.addWidget(self.note_label, 2, 7, 1, 1, Qt.AlignRight)
 
-        self.layout.addWidget(self.a_currency, 1, 8, 1, 1)
-        self.layout.addWidget(self.note, 2, 8, 1, 1)
+        self.ui.layout.addWidget(self.a_currency, 1, 8, 1, 1)
+        self.ui.layout.addWidget(self.note, 2, 8, 1, 1)
 
-        self.layout.addWidget(self.commit_button, 0, 10, 1, 1)
-        self.layout.addWidget(self.revert_button, 0, 11, 1, 1)
+        # self.ui.layout.addWidget(self.commit_button, 0, 10, 1, 1)
+        # self.ui.layout.addWidget(self.revert_button, 0, 11, 1, 1)
 
-        self.layout.addWidget(self.details_table, 4, 0, 1, 12)
-        self.layout.addItem(self.horizontalSpacer, 1, 9, 1, 1)
+        self.ui.layout.addWidget(self.details_table, 4, 0, 1, 12)
+        # self.ui.layout.addItem(self.horizontalSpacer, 1, 9, 1, 1)
 
         self.add_button.clicked.connect(self.add_child)
         self.copy_button.clicked.connect(self.copy_child)

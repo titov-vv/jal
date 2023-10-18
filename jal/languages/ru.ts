@@ -537,97 +537,97 @@
 <context>
     <name>CorporateActionWidget</name>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="33"/>
+        <location filename="../widgets/corporate_action_widget.py" line="34"/>
         <source>Corporate Action</source>
         <translation>Корпоративное действие</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="52"/>
+        <location filename="../widgets/corporate_action_widget.py" line="53"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="53"/>
+        <location filename="../widgets/corporate_action_widget.py" line="54"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="54"/>
+        <location filename="../widgets/corporate_action_widget.py" line="55"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="55"/>
+        <location filename="../widgets/corporate_action_widget.py" line="56"/>
         <source>#</source>
         <translation>№</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="56"/>
+        <location filename="../widgets/corporate_action_widget.py" line="57"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="57"/>
+        <location filename="../widgets/corporate_action_widget.py" line="58"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="58"/>
+        <location filename="../widgets/corporate_action_widget.py" line="59"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="73"/>
+        <location filename="../widgets/corporate_action_widget.py" line="74"/>
         <source>Add asset</source>
         <translation>Добавить актив</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="75"/>
+        <location filename="../widgets/corporate_action_widget.py" line="76"/>
         <source>Remove asset</source>
         <translation>Удалить актив</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="116"/>
+        <location filename="../widgets/corporate_action_widget.py" line="117"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="117"/>
+        <location filename="../widgets/corporate_action_widget.py" line="118"/>
         <source>Merger</source>
         <translation>Объединение компании</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="118"/>
+        <location filename="../widgets/corporate_action_widget.py" line="119"/>
         <source>Spin-Off</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="119"/>
+        <location filename="../widgets/corporate_action_widget.py" line="120"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="120"/>
+        <location filename="../widgets/corporate_action_widget.py" line="121"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="121"/>
+        <location filename="../widgets/corporate_action_widget.py" line="122"/>
         <source>Delisting</source>
         <translation>Делистинг</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="160"/>
+        <location filename="../widgets/corporate_action_widget.py" line="161"/>
         <source>Failed to add new record: </source>
         <translation>Невозможно добавить новую запись: </translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="174"/>
+        <location filename="../widgets/corporate_action_widget.py" line="175"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="181"/>
+        <location filename="../widgets/corporate_action_widget.py" line="182"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>
@@ -816,27 +816,27 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="260"/>
+        <location filename="../widgets/income_spending_widget.py" line="261"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="260"/>
+        <location filename="../widgets/income_spending_widget.py" line="261"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="261"/>
+        <location filename="../widgets/income_spending_widget.py" line="262"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="262"/>
+        <location filename="../widgets/income_spending_widget.py" line="263"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="274"/>
+        <location filename="../widgets/income_spending_widget.py" line="275"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -877,89 +877,89 @@
 <context>
     <name>DividendWidget</name>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="30"/>
-        <location filename="../widgets/dividend_widget.py" line="51"/>
-        <location filename="../widgets/dividend_widget.py" line="116"/>
+        <location filename="../widgets/dividend_widget.py" line="31"/>
+        <location filename="../widgets/dividend_widget.py" line="52"/>
+        <location filename="../widgets/dividend_widget.py" line="117"/>
         <source>Dividend</source>
         <translation>Дивиденд</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="45"/>
+        <location filename="../widgets/dividend_widget.py" line="46"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="48"/>
+        <location filename="../widgets/dividend_widget.py" line="49"/>
         <source>#</source>
         <translation>№</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="49"/>
+        <location filename="../widgets/dividend_widget.py" line="50"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="50"/>
+        <location filename="../widgets/dividend_widget.py" line="51"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="52"/>
+        <location filename="../widgets/dividend_widget.py" line="53"/>
         <source>Price</source>
         <translation>Цена</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="53"/>
+        <location filename="../widgets/dividend_widget.py" line="54"/>
         <source>Tax</source>
         <translation>Налог</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="54"/>
+        <location filename="../widgets/dividend_widget.py" line="55"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="67"/>
+        <location filename="../widgets/dividend_widget.py" line="68"/>
         <source>unknown</source>
         <translation>неизвестно</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="118"/>
+        <location filename="../widgets/dividend_widget.py" line="119"/>
         <source>Stock Dividend</source>
         <translation>Дивиденд акциями</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="119"/>
+        <location filename="../widgets/dividend_widget.py" line="120"/>
         <source>Stock Vesting</source>
         <translation>Передача акций</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="164"/>
+        <location filename="../widgets/dividend_widget.py" line="165"/>
         <source>No quote</source>
         <translation>Нет котировки</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="167"/>
+        <location filename="../widgets/dividend_widget.py" line="168"/>
         <source>You should set quote via Data-&gt;Quotes menu for Date/Time of the dividend</source>
         <translation>Нужно установить котировку бумаги для Даты/Времени дивиденда через меню Данные-&gt;Котировки</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="46"/>
+        <location filename="../widgets/dividend_widget.py" line="47"/>
         <source>Ex-Date</source>
         <translation>Отсечка</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="47"/>
+        <location filename="../widgets/dividend_widget.py" line="48"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="115"/>
+        <location filename="../widgets/dividend_widget.py" line="116"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="117"/>
+        <location filename="../widgets/dividend_widget.py" line="118"/>
         <source>Bond Interest</source>
         <translation>Купон</translation>
     </message>
@@ -1273,84 +1273,84 @@
 <context>
     <name>IncomeSpendingWidget</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="32"/>
+        <location filename="../widgets/income_spending_widget.py" line="33"/>
         <source>Income / Spending</source>
         <translation>Доход / Расход</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="45"/>
+        <location filename="../widgets/income_spending_widget.py" line="46"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="46"/>
+        <location filename="../widgets/income_spending_widget.py" line="47"/>
         <source>Details</source>
         <translation>Детали</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="47"/>
+        <location filename="../widgets/income_spending_widget.py" line="48"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="48"/>
+        <location filename="../widgets/income_spending_widget.py" line="49"/>
         <source>Peer</source>
         <translation>Контрагент</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="49"/>
+        <location filename="../widgets/income_spending_widget.py" line="50"/>
         <source>Note</source>
         <translation>Примечание</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="59"/>
+        <location filename="../widgets/income_spending_widget.py" line="60"/>
         <source>Paid in foreign currency:</source>
         <translation>Оплата в валюте:</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="62"/>
+        <location filename="../widgets/income_spending_widget.py" line="63"/>
         <source>Add detail</source>
         <translation>Добавить детальную запись</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="64"/>
+        <location filename="../widgets/income_spending_widget.py" line="65"/>
         <source>Remove detail</source>
         <translation>Удалить детальную запись</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="66"/>
+        <location filename="../widgets/income_spending_widget.py" line="67"/>
         <source>Copy detail</source>
         <translation>Скопировать детальную запись</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="144"/>
-        <location filename="../widgets/income_spending_widget.py" line="161"/>
+        <location filename="../widgets/income_spending_widget.py" line="145"/>
+        <location filename="../widgets/income_spending_widget.py" line="162"/>
         <source>Failed to add new record: </source>
         <translation>Невозможно добавить новую запись: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="176"/>
-        <location filename="../widgets/income_spending_widget.py" line="181"/>
+        <location filename="../widgets/income_spending_widget.py" line="177"/>
+        <location filename="../widgets/income_spending_widget.py" line="182"/>
         <source>Incomplete data</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="176"/>
+        <location filename="../widgets/income_spending_widget.py" line="177"/>
         <source>Operation contains no details</source>
         <translation>Операция не содержит детальных записей</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="182"/>
+        <location filename="../widgets/income_spending_widget.py" line="183"/>
         <source>Category isn&apos;t set for &apos;{}&apos; (Amount: {})</source>
         <translation>Не задана категория для &apos;{}&apos; (Сумма: {})</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="190"/>
+        <location filename="../widgets/income_spending_widget.py" line="191"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="197"/>
+        <location filename="../widgets/income_spending_widget.py" line="198"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>
@@ -3366,22 +3366,22 @@ Application will be terminated now.</source>
 <context>
     <name>ResultsModel</name>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="238"/>
+        <location filename="../widgets/corporate_action_widget.py" line="239"/>
         <source>Asset</source>
         <translation>Актив</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="238"/>
+        <location filename="../widgets/corporate_action_widget.py" line="239"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="240"/>
+        <location filename="../widgets/corporate_action_widget.py" line="241"/>
         <source>Share, %</source>
         <translation>Доля, %</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="244"/>
+        <location filename="../widgets/corporate_action_widget.py" line="245"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -4935,52 +4935,52 @@ Application will be terminated now.</source>
 <context>
     <name>TradeWidget</name>
     <message>
-        <location filename="../widgets/trade_widget.py" line="29"/>
+        <location filename="../widgets/trade_widget.py" line="30"/>
         <source>Buy / Sell</source>
         <translation>Покупка / Продажа</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="42"/>
+        <location filename="../widgets/trade_widget.py" line="43"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="43"/>
+        <location filename="../widgets/trade_widget.py" line="44"/>
         <source>Settlement</source>
         <translation>Дата расчетов</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="44"/>
+        <location filename="../widgets/trade_widget.py" line="45"/>
         <source>#</source>
         <translation>№</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="45"/>
+        <location filename="../widgets/trade_widget.py" line="46"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="46"/>
+        <location filename="../widgets/trade_widget.py" line="47"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="47"/>
+        <location filename="../widgets/trade_widget.py" line="48"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="48"/>
+        <location filename="../widgets/trade_widget.py" line="49"/>
         <source>Price</source>
         <translation>Цена</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="49"/>
+        <location filename="../widgets/trade_widget.py" line="50"/>
         <source>Fee</source>
         <translation>Комиссия</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="50"/>
+        <location filename="../widgets/trade_widget.py" line="51"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
@@ -5016,64 +5016,64 @@ Application will be terminated now.</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="31"/>
+        <location filename="../widgets/transfer_widget.py" line="32"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="49"/>
-        <location filename="../widgets/transfer_widget.py" line="52"/>
+        <location filename="../widgets/transfer_widget.py" line="50"/>
+        <location filename="../widgets/transfer_widget.py" line="53"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="50"/>
+        <location filename="../widgets/transfer_widget.py" line="51"/>
         <source>From</source>
         <translation>С</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="51"/>
-        <location filename="../widgets/transfer_widget.py" line="54"/>
+        <location filename="../widgets/transfer_widget.py" line="52"/>
+        <location filename="../widgets/transfer_widget.py" line="55"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="53"/>
+        <location filename="../widgets/transfer_widget.py" line="54"/>
         <source>To</source>
         <translation>На</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="55"/>
+        <location filename="../widgets/transfer_widget.py" line="56"/>
         <source>Fee from</source>
         <translation>Коммиссия с</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="56"/>
+        <location filename="../widgets/transfer_widget.py" line="57"/>
         <source>Fee amount</source>
         <translation>Размер комиссии</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="57"/>
+        <location filename="../widgets/transfer_widget.py" line="58"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="58"/>
+        <location filename="../widgets/transfer_widget.py" line="59"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="59"/>
+        <location filename="../widgets/transfer_widget.py" line="60"/>
         <source>#</source>
         <translation>№</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="158"/>
+        <location filename="../widgets/transfer_widget.py" line="159"/>
         <source>Incomplete data</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="158"/>
+        <location filename="../widgets/transfer_widget.py" line="159"/>
         <source>Can&apos;t collect fee from an account without organization assigned</source>
         <translation>Невозможно удержать комиссию со счёта без привязанной организации</translation>
     </message>

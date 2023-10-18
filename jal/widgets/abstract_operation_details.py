@@ -26,21 +26,8 @@ class AbstractOperationDetails(QWidget):
         self.bold_font = QFont()
         self.bold_font.setBold(True)
 
-        self.layout = self.ui.layout
-        self.main_label = self.ui.main_label
-
         self.ui.commit_button.setIcon(load_icon("accept.png"))
         self.ui.revert_button.setIcon(load_icon("cancel.png"))
-
-        self.commit_button = QPushButton(load_icon("accept.png"), '', self)
-        self.commit_button.setToolTip(self.tr("Commit changes"))
-        self.commit_button.setEnabled(False)
-        self.revert_button = QPushButton(load_icon("cancel.png"), '', self)
-        self.revert_button.setToolTip(self.tr("Cancel changes"))
-        self.revert_button.setEnabled(False)
-
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
     def _init_db(self, table_name):
         self.table_name = table_name
