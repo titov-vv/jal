@@ -27,22 +27,12 @@
 <context>
     <name>AbstractOperationDetails</name>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="78"/>
+        <location filename="../widgets/abstract_operation_details.py" line="67"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="36"/>
-        <source>Commit changes</source>
-        <translation>Сохранить изменения</translation>
-    </message>
-    <message>
-        <location filename="../widgets/abstract_operation_details.py" line="39"/>
-        <source>Cancel changes</source>
-        <translation>Отменить изменения</translation>
-    </message>
-    <message>
-        <location filename="../widgets/abstract_operation_details.py" line="95"/>
+        <location filename="../widgets/abstract_operation_details.py" line="84"/>
         <source>Unsaved changes were reverted to create new operation</source>
         <translation>Несохранённые изменения были отменены перед созданием новой операции</translation>
     </message>
@@ -875,91 +865,123 @@
     </message>
 </context>
 <context>
+    <name>DividendOperation</name>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="35"/>
+        <source>Tax</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="49"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="79"/>
+        <source>dd/MM/yyyy hh:mm:ss</source>
+        <translation type="unfinished">dd/MM/yyyy hh:mm:ss</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="92"/>
+        <source>Price</source>
+        <translation type="unfinished">Цена</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="105"/>
+        <source>Cancel changes</source>
+        <translation type="unfinished">Отменить изменения</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="118"/>
+        <source>Commit changes</source>
+        <translation type="unfinished">Сохранить изменения</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="141"/>
+        <source>Type</source>
+        <translation type="unfinished">Тип</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="160"/>
+        <source>#</source>
+        <translation type="unfinished">№</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="167"/>
+        <source>Ex-Date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="201"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="218"/>
+        <source>Date/Time</source>
+        <translation type="unfinished">Дата/Время</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="225"/>
+        <source>Account</source>
+        <translation type="unfinished">Счет</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="153"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="238"/>
+        <source>Dividend</source>
+        <translation type="unfinished">Дивиденд</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="174"/>
+        <source>unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dividend_operation.ui" line="191"/>
+        <source>dd/MM/yyyy</source>
+        <translation type="unfinished">dd/MM/yyyy</translation>
+    </message>
+</context>
+<context>
     <name>DividendWidget</name>
     <message>
         <location filename="../widgets/dividend_widget.py" line="31"/>
-        <location filename="../widgets/dividend_widget.py" line="52"/>
-        <location filename="../widgets/dividend_widget.py" line="117"/>
         <source>Dividend</source>
         <translation>Дивиденд</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="46"/>
-        <source>Date/Time</source>
-        <translation>Дата/Время</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="49"/>
-        <source>#</source>
-        <translation>№</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="50"/>
-        <source>Account</source>
-        <translation>Счет</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="51"/>
-        <source>Asset</source>
-        <translation>ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="53"/>
-        <source>Price</source>
-        <translation>Цена</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="54"/>
-        <source>Tax</source>
-        <translation>Налог</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="55"/>
-        <source>Note</source>
-        <translation>Описание</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="68"/>
-        <source>unknown</source>
-        <translation>неизвестно</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="119"/>
+        <location filename="../widgets/dividend_widget.py" line="33"/>
         <source>Stock Dividend</source>
         <translation>Дивиденд акциями</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="120"/>
+        <location filename="../widgets/dividend_widget.py" line="34"/>
         <source>Stock Vesting</source>
         <translation>Передача акций</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="165"/>
+        <location filename="../widgets/dividend_widget.py" line="81"/>
         <source>No quote</source>
         <translation>Нет котировки</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="168"/>
+        <location filename="../widgets/dividend_widget.py" line="84"/>
         <source>You should set quote via Data-&gt;Quotes menu for Date/Time of the dividend</source>
         <translation>Нужно установить котировку бумаги для Даты/Времени дивиденда через меню Данные-&gt;Котировки</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="47"/>
-        <source>Ex-Date</source>
-        <translation>Отсечка</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="48"/>
-        <source>Type</source>
-        <translation>Тип</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="116"/>
+        <location filename="../widgets/dividend_widget.py" line="30"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="118"/>
+        <location filename="../widgets/dividend_widget.py" line="32"/>
         <source>Bond Interest</source>
         <translation>Купон</translation>
     </message>
