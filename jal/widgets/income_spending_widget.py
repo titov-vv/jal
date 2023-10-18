@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt, Slot, QByteArray
 from PySide6.QtWidgets import QMessageBox, QLabel, QLineEdit, QDateTimeEdit, QPushButton, QHeaderView
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
+from jal.ui.widgets.ui_abstract_operation import Ui_AbstractOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
@@ -27,7 +28,7 @@ class IncomeSpendingWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpendingWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, ui_class=Ui_AbstractOperation)
         self.name = self.tr("Income / Spending")
         self.operation_type = LedgerTransaction.IncomeSpending
 
@@ -201,8 +202,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
             return
         self.model.database().commit()
         self.modified = False
-        self.commit_button.setEnabled(False)
-        self.revert_button.setEnabled(False)
+        self.ui.commit_button.setEnabled(False)
+        self.ui.revert_button.setEnabled(False)
         self.dbUpdated.emit()
 
     @Slot()
@@ -210,8 +211,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.model.revertAll()
         self.details_model.revertAll()
         self.modified = False
-        self.commit_button.setEnabled(False)
-        self.revert_button.setEnabled(False)
+        self.ui.commit_button.setEnabled(False)
+        self.ui.revert_button.setEnabled(False)
 
     def createNew(self, account_id=0):
         super().createNew(account_id)

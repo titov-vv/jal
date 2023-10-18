@@ -1,7 +1,7 @@
 import logging
 from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QDataWidgetMapper
+from PySide6.QtWidgets import QWidget, QPushButton, QSpacerItem, QSizePolicy, QDataWidgetMapper
 from PySide6.QtSql import QSqlTableModel
 from jal.db.helpers import load_icon
 from jal.db.db import JalModel
@@ -10,8 +10,12 @@ from jal.db.db import JalModel
 class AbstractOperationDetails(QWidget):
     dbUpdated = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, ui_class=None):
         super().__init__(parent)
+        assert ui_class is not None, "Can't create operation class without UI provided"
+        self.ui = ui_class()
+        self.ui.setupUi(self)
+
         self.model = None
         self.table_name = ''
         self.mapper = None
@@ -19,15 +23,14 @@ class AbstractOperationDetails(QWidget):
         self.name = "N/A"
         self.operation_type = None
 
-        self.layout = QGridLayout(self)
-        self.layout.setContentsMargins(2, 2, 2, 2)
-
         self.bold_font = QFont()
         self.bold_font.setBold(True)
 
-        self.main_label = QLabel(self)
-        self.main_label.setFont(self.bold_font)
-        self.layout.addWidget(self.main_label, 0, 0, 1, 1, Qt.AlignLeft)
+        self.layout = self.ui.layout
+        self.main_label = self.ui.main_label
+
+        self.ui.commit_button.setIcon(load_icon("accept.png"))
+        self.ui.revert_button.setIcon(load_icon("cancel.png"))
 
         self.commit_button = QPushButton(load_icon("accept.png"), '', self)
         self.commit_button.setToolTip(self.tr("Commit changes"))
@@ -49,8 +52,8 @@ class AbstractOperationDetails(QWidget):
         self.mapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
 
         self.model.dataChanged.connect(self.onDataChange)
-        self.commit_button.clicked.connect(self.saveChanges)
-        self.revert_button.clicked.connect(self.revertChanges)
+        self.ui.commit_button.clicked.connect(self.saveChanges)
+        self.ui.revert_button.clicked.connect(self.revertChanges)
 
     def set_id(self, oid):
         self.model.setFilter(f"id={oid}")
@@ -59,8 +62,8 @@ class AbstractOperationDetails(QWidget):
     @Slot()
     def onDataChange(self, _index_start, _index_stop, _role):
         self.modified = True
-        self.commit_button.setEnabled(True)
-        self.revert_button.setEnabled(True)
+        self.ui.commit_button.setEnabled(True)
+        self.ui.revert_button.setEnabled(True)
 
     @Slot()
     def saveChanges(self):
@@ -75,16 +78,16 @@ class AbstractOperationDetails(QWidget):
             logging.fatal(self.tr("Operation submit failed: ") + self.model.lastError().text())
             return False
         self.modified = False
-        self.commit_button.setEnabled(False)
-        self.revert_button.setEnabled(False)
+        self.ui.commit_button.setEnabled(False)
+        self.ui.revert_button.setEnabled(False)
         self.dbUpdated.emit()
 
     @Slot()
     def revertChanges(self):
         self.model.revertAll()
         self.modified = False
-        self.commit_button.setEnabled(False)
-        self.revert_button.setEnabled(False)
+        self.ui.commit_button.setEnabled(False)
+        self.ui.revert_button.setEnabled(False)
 
     def createNew(self, account_id=0):
         if self.modified:

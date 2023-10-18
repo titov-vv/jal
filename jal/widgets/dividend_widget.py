@@ -3,6 +3,7 @@ from dateutil import tz
 
 from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray, QDate
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComboBox
+from jal.ui.widgets.ui_abstract_operation import Ui_AbstractOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
@@ -25,7 +26,7 @@ class DividendWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class DividendWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, ui_class=Ui_AbstractOperation)
         self.name = self.tr("Dividend")
         self.operation_type = LedgerTransaction.Dividend
         self.combo_model = None

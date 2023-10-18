@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox, QHeaderView, QPushButton
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
+from jal.ui.widgets.ui_abstract_operation import Ui_AbstractOperation
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
@@ -28,7 +29,7 @@ class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class CorporateActionWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, ui_class=Ui_AbstractOperation)
         self.name = self.tr("Corporate Action")
         self.operation_type = LedgerTransaction.CorporateAction
         self.combo_model = None
@@ -184,8 +185,8 @@ class CorporateActionWidget(AbstractOperationDetails):
             logging.fatal(e)
             return
         self.modified = False
-        self.commit_button.setEnabled(False)
-        self.revert_button.setEnabled(False)
+        self.ui.commit_button.setEnabled(False)
+        self.ui.revert_button.setEnabled(False)
         self.dbUpdated.emit()
 
     @Slot()
@@ -193,8 +194,8 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.model.revertAll()
         self.results_model.revertAll()
         self.modified = False
-        self.commit_button.setEnabled(False)
-        self.revert_button.setEnabled(False)
+        self.ui.commit_button.setEnabled(False)
+        self.ui.revert_button.setEnabled(False)
 
     def createNew(self, account_id=0):
         super().createNew(account_id)
