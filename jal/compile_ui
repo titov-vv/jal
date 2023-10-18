@@ -15,6 +15,7 @@
 /usr/lib/qt6/uic -g python -o ./ui/ui_login_pingo_doce_dlg.py ./ui/login_pingo_doce_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/widgets/ui_abstract_operation.py ./ui/widgets/abstract_operation.ui
 /usr/lib/qt6/uic -g python -o ./ui/widgets/ui_dividend_operation.py ./ui/widgets/dividend_operation.ui
+/usr/lib/qt6/uic -g python -o ./ui/widgets/ui_trade_operation.py ./ui/widgets/trade_operation.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_portfolio_report.py ./ui/reports/portfolio_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_tax_estimation.py ./ui/reports/tax_estimation.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_income_spending_report.py ./ui/reports/income_spending_report.ui

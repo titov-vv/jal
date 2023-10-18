@@ -4955,56 +4955,81 @@ Application will be terminated now.</source>
     </message>
 </context>
 <context>
-    <name>TradeWidget</name>
+    <name>TradeOperation</name>
     <message>
-        <location filename="../widgets/trade_widget.py" line="30"/>
-        <source>Buy / Sell</source>
-        <translation>Покупка / Продажа</translation>
+        <location filename="../ui/widgets/trade_operation.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="43"/>
-        <source>Date/Time</source>
-        <translation>Дата/Время</translation>
+        <location filename="../ui/widgets/trade_operation.ui" line="59"/>
+        <source>Commit changes</source>
+        <translation type="unfinished">Сохранить изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="44"/>
-        <source>Settlement</source>
-        <translation>Дата расчетов</translation>
+        <location filename="../ui/widgets/trade_operation.ui" line="75"/>
+        <source>Cancel changes</source>
+        <translation type="unfinished">Отменить изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="45"/>
-        <source>#</source>
-        <translation>№</translation>
-    </message>
-    <message>
-        <location filename="../widgets/trade_widget.py" line="46"/>
-        <source>Account</source>
-        <translation>Счет</translation>
-    </message>
-    <message>
-        <location filename="../widgets/trade_widget.py" line="47"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="85"/>
         <source>Asset</source>
-        <translation>ЦБ</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="48"/>
-        <source>Qty</source>
-        <translation>Кол-во</translation>
+        <location filename="../ui/widgets/trade_operation.ui" line="102"/>
+        <source>Date/Time</source>
+        <translation type="unfinished">Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="49"/>
-        <source>Price</source>
-        <translation>Цена</translation>
+        <location filename="../ui/widgets/trade_operation.ui" line="116"/>
+        <source>dd/MM/yyyy hh:mm:ss</source>
+        <translation type="unfinished">dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="50"/>
-        <source>Fee</source>
-        <translation>Комиссия</translation>
+        <location filename="../ui/widgets/trade_operation.ui" line="134"/>
+        <source>Buy / Sell</source>
+        <translation type="unfinished">Покупка / Продажа</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="51"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="148"/>
         <source>Note</source>
-        <translation>Описание</translation>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="162"/>
+        <source>Settlement</source>
+        <translation type="unfinished">Дата расчетов</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="192"/>
+        <source>Account</source>
+        <translation type="unfinished">Счет</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="39"/>
+        <source>dd/MM/yyyy</source>
+        <translation type="unfinished">dd/MM/yyyy</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="155"/>
+        <source>#</source>
+        <translation type="unfinished">№</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="141"/>
+        <source>Qty</source>
+        <translation type="unfinished">Кол-во</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="169"/>
+        <source>Price</source>
+        <translation type="unfinished">Цена</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="32"/>
+        <source>Fee</source>
+        <translation type="unfinished">Комиссия</translation>
     </message>
 </context>
 <context>

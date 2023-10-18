@@ -1,11 +1,8 @@
 from datetime import datetime
 from dateutil import tz
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit
-from jal.ui.widgets.ui_abstract_operation import Ui_AbstractOperation
+from jal.ui.widgets.ui_trade_operation import Ui_TradeOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
-from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.operations import LedgerTransaction
 
@@ -25,96 +22,26 @@ class TradeWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class TradeWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        super().__init__(parent=parent, ui_class=Ui_AbstractOperation)
-        self.name = self.tr("Buy / Sell")
+        super().__init__(parent=parent, ui_class=Ui_TradeOperation)
         self.operation_type = LedgerTransaction.Trade
-
-        self.date_label = QLabel(self)
-        self.settlement_label = QLabel()
-        self.number_label = QLabel(self)
-        self.account_label = QLabel(self)
-        self.symbol_label = QLabel(self)
-        self.qty_label = QLabel(self)
-        self.price_label = QLabel(self)
-        self.fee_label = QLabel(self)
-        self.comment_label = QLabel(self)
-
-        self.ui.main_label.setText(self.name)
-        self.date_label.setText(self.tr("Date/Time"))
-        self.settlement_label.setText(self.tr("Settlement"))
-        self.number_label.setText(self.tr("#"))
-        self.account_label.setText(self.tr("Account"))
-        self.symbol_label.setText(self.tr("Asset"))
-        self.qty_label.setText(self.tr("Qty"))
-        self.price_label.setText(self.tr("Price"))
-        self.fee_label.setText(self.tr("Fee"))
-        self.comment_label.setText(self.tr("Note"))
-
-        self.timestamp_editor = QDateTimeEdit(self)
-        self.timestamp_editor.setCalendarPopup(True)
-        self.timestamp_editor.setTimeSpec(Qt.UTC)
-        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.timestamp_editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
-        self.settlement_editor = QDateEdit(self)
-        self.settlement_editor.setCalendarPopup(True)
-        self.settlement_editor.setTimeSpec(Qt.UTC)
-        self.settlement_editor.setFixedWidth(self.settlement_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
-        self.settlement_editor.setDisplayFormat("dd/MM/yyyy")
-        self.account_widget = AccountSelector(self)
-        self.asset_widget = AssetSelector(self)
-        self.qty_edit = QLineEdit(self)
-        self.qty_edit.setAlignment(Qt.AlignRight)
-        self.price_edit = QLineEdit(self)
-        self.price_edit.setAlignment(Qt.AlignRight)
-        self.fee_edit = QLineEdit(self)
-        self.fee_edit.setAlignment(Qt.AlignRight)
-        self.number = QLineEdit(self)
-        self.comment = QLineEdit(self)
-
-        self.ui.layout.addWidget(self.date_label, 1, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.account_label, 2, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.symbol_label, 3, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.comment_label, 4, 0, 1, 1, Qt.AlignLeft)
-
-        self.ui.layout.addWidget(self.timestamp_editor, 1, 1, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.account_widget, 2, 1, 1, 4)
-        self.ui.layout.addWidget(self.asset_widget, 3, 1, 1, 4)
-        self.ui.layout.addWidget(self.comment, 4, 1, 1, 4)
-
-        self.ui.layout.addWidget(self.settlement_label, 1, 2, 1, 1, Qt.AlignRight)
-        self.ui.layout.addWidget(self.settlement_editor, 1, 3, 1, 1, Qt.AlignLeft)
-
-        self.ui.layout.addWidget(self.number_label, 1, 5, 1, 1, Qt.AlignRight)
-        self.ui.layout.addWidget(self.qty_label, 2, 5, 1, 1, Qt.AlignRight)
-        self.ui.layout.addWidget(self.price_label, 3, 5, 1, 1, Qt.AlignRight)
-        self.ui.layout.addWidget(self.fee_label, 4, 5, 1, 1, Qt.AlignRight)
-
-        self.ui.layout.addWidget(self.number, 1, 6, 1, 1)
-        self.ui.layout.addWidget(self.qty_edit, 2, 6, 1, 1)
-        self.ui.layout.addWidget(self.price_edit, 3, 6, 1, 1)
-        self.ui.layout.addWidget(self.fee_edit, 4, 6, 1, 1)
-
-        # self.ui.layout.addWidget(self.commit_button, 0, 8, 1, 1)
-        # self.ui.layout.addWidget(self.revert_button, 0, 9, 1, 1)
-
-        # self.ui.layout.addItem(self.verticalSpacer, 6, 6, 1, 1)
-        # self.ui.layout.addItem(self.horizontalSpacer, 1, 6, 1, 1)
-
         super()._init_db("trades")
+        self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
+        self.ui.settlement_editor.setFixedWidth(self.ui.settlement_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
+
         self.mapper.setItemDelegate(TradeWidgetDelegate(self.mapper))
 
-        self.account_widget.changed.connect(self.mapper.submit)
-        self.asset_widget.changed.connect(self.mapper.submit)
+        self.ui.account_widget.changed.connect(self.mapper.submit)
+        self.ui.asset_widget.changed.connect(self.mapper.submit)
 
-        self.mapper.addMapping(self.timestamp_editor, self.model.fieldIndex("timestamp"))
-        self.mapper.addMapping(self.settlement_editor, self.model.fieldIndex("settlement"))
-        self.mapper.addMapping(self.account_widget, self.model.fieldIndex("account_id"))
-        self.mapper.addMapping(self.asset_widget, self.model.fieldIndex("asset_id"))
-        self.mapper.addMapping(self.number, self.model.fieldIndex("number"))
-        self.mapper.addMapping(self.qty_edit, self.model.fieldIndex("qty"))
-        self.mapper.addMapping(self.price_edit, self.model.fieldIndex("price"))
-        self.mapper.addMapping(self.fee_edit, self.model.fieldIndex("fee"))
-        self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
+        self.mapper.addMapping(self.ui.timestamp_editor, self.model.fieldIndex("timestamp"))
+        self.mapper.addMapping(self.ui.settlement_editor, self.model.fieldIndex("settlement"))
+        self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
+        self.mapper.addMapping(self.ui.asset_widget, self.model.fieldIndex("asset_id"))
+        self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
+        self.mapper.addMapping(self.ui.qty_edit, self.model.fieldIndex("qty"))
+        self.mapper.addMapping(self.ui.price_edit, self.model.fieldIndex("price"))
+        self.mapper.addMapping(self.ui.fee_edit, self.model.fieldIndex("fee"))
+        self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
 
         self.model.select()
 
