@@ -4,14 +4,11 @@ from dateutil import tz
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot, QByteArray
-from PySide6.QtWidgets import QMessageBox, QLabel, QLineEdit, QDateTimeEdit, QPushButton, QHeaderView
+from PySide6.QtWidgets import QMessageBox, QHeaderView
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
-from jal.ui.widgets.ui_abstract_operation import Ui_AbstractOperation
+from jal.ui.widgets.ui_income_spending_operation import Ui_IncomeSpendingOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
-from jal.widgets.reference_selector import AccountSelector, PeerSelector
-from jal.widgets.account_select import OptionalCurrencyComboBox
-from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import load_icon, localize_decimal, db_row2dict
 from jal.db.operations import LedgerTransaction
@@ -28,104 +25,49 @@ class IncomeSpendingWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpendingWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        super().__init__(parent=parent, ui_class=Ui_AbstractOperation)
-        self.name = self.tr("Income / Spending")
+        super().__init__(parent=parent, ui_class=Ui_IncomeSpendingOperation)
         self.operation_type = LedgerTransaction.IncomeSpending
+        super()._init_db("actions")
 
         self.category_delegate = CategorySelectorDelegate()
         self.tag_delegate = TagSelectorDelegate()
         self.float_delegate = FloatDelegate(2)
 
-        self.date_label = QLabel(self)
-        self.details_label = QLabel(self)
-        self.account_label = QLabel(self)
-        self.peer_label = QLabel(self)
-        self.note_label = QLabel(self)
+        self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
+        self.ui.a_currency.setText(self.tr("Paid in foreign currency:"))
+        self.ui.details_table.horizontalHeader().setFont(self.bold_font)
+        self.ui.add_button.setIcon(load_icon("add.png"))
+        self.ui.del_button.setIcon(load_icon("remove.png"))
+        self.ui.copy_button.setIcon(load_icon("copy.png"))
 
-        self.ui.main_label.setText(self.name)
-        self.date_label.setText(self.tr("Date/Time"))
-        self.details_label.setText(self.tr("Details"))
-        self.account_label.setText(self.tr("Account"))
-        self.peer_label.setText(self.tr("Peer"))
-        self.note_label.setText(self.tr("Note"))
-
-        self.timestamp_editor = QDateTimeEdit(self)
-        self.timestamp_editor.setCalendarPopup(True)
-        self.timestamp_editor.setTimeSpec(Qt.UTC)
-        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.timestamp_editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
-        self.account_widget = AccountSelector(self)
-        self.peer_widget = PeerSelector(self)
-        self.a_currency = OptionalCurrencyComboBox(self)
-        self.a_currency.setText(self.tr("Paid in foreign currency:"))
-        self.note = QLineEdit(self)
-        self.add_button = QPushButton(load_icon("add.png"), '', self)
-        self.add_button.setToolTip(self.tr("Add detail"))
-        self.del_button = QPushButton(load_icon("remove.png"), '', self)
-        self.del_button.setToolTip(self.tr("Remove detail"))
-        self.copy_button = QPushButton(load_icon("copy.png"), '', self)
-        self.copy_button.setToolTip(self.tr("Copy detail"))
-        self.details_table = TableViewWithFooter(self)
-        self.details_table.horizontalHeader().setFont(self.bold_font)
-        self.details_table.setAlternatingRowColors(True)
-        self.details_table.verticalHeader().setVisible(False)
-        self.details_table.verticalHeader().setMinimumSectionSize(20)
-        self.details_table.verticalHeader().setDefaultSectionSize(20)
-
-        self.ui.layout.addWidget(self.date_label, 1, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.details_label, 2, 0, 1, 1, Qt.AlignLeft)
-
-        self.ui.layout.addWidget(self.timestamp_editor, 1, 1, 1, 4)
-        self.ui.layout.addWidget(self.add_button, 2, 1, 1, 1)
-        self.ui.layout.addWidget(self.copy_button, 2, 2, 1, 1)
-        self.ui.layout.addWidget(self.del_button, 2, 3, 1, 1)
-
-        self.ui.layout.addWidget(self.account_label, 1, 5, 1, 1, Qt.AlignRight)
-        self.ui.layout.addWidget(self.peer_label, 2, 5, 1, 1, Qt.AlignRight)
-
-        self.ui.layout.addWidget(self.account_widget, 1, 6, 1, 1)
-        self.ui.layout.addWidget(self.peer_widget, 2, 6, 1, 1)
-
-        self.ui.layout.addWidget(self.note_label, 2, 7, 1, 1, Qt.AlignRight)
-
-        self.ui.layout.addWidget(self.a_currency, 1, 8, 1, 1)
-        self.ui.layout.addWidget(self.note, 2, 8, 1, 1)
-
-        # self.ui.layout.addWidget(self.commit_button, 0, 10, 1, 1)
-        # self.ui.layout.addWidget(self.revert_button, 0, 11, 1, 1)
-
-        self.ui.layout.addWidget(self.details_table, 4, 0, 1, 12)
-        # self.ui.layout.addItem(self.horizontalSpacer, 1, 9, 1, 1)
-
-        self.add_button.clicked.connect(self.add_child)
-        self.copy_button.clicked.connect(self.copy_child)
-        self.del_button.clicked.connect(self.delete_child)
-
-        super()._init_db("actions")
+        self.ui.add_button.clicked.connect(self.add_child)
+        self.ui.copy_button.clicked.connect(self.copy_child)
+        self.ui.del_button.clicked.connect(self.delete_child)
         self.model.beforeInsert.connect(self.before_record_insert)
         self.model.beforeUpdate.connect(self.before_record_update)
+
         self.mapper.setItemDelegate(IncomeSpendingWidgetDelegate(self.mapper))
 
-        self.details_model = DetailsModel(self.details_table, "action_details")
+        self.details_model = DetailsModel(self.ui.details_table, "action_details")
         self.details_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.details_table.setModel(self.details_model)
+        self.ui.details_table.setModel(self.details_model)
         self.details_model.dataChanged.connect(self.onDataChange)
 
-        self.account_widget.changed.connect(self.mapper.submit)
-        self.peer_widget.changed.connect(self.mapper.submit)
-        self.a_currency.changed.connect(self.mapper.submit)
-        self.a_currency.name_updated.connect(self.details_model.set_alternative_currency)
+        self.ui.account_widget.changed.connect(self.mapper.submit)
+        self.ui.peer_widget.changed.connect(self.mapper.submit)
+        self.ui.a_currency.changed.connect(self.mapper.submit)
+        self.ui.a_currency.name_updated.connect(self.details_model.set_alternative_currency)
 
-        self.mapper.addMapping(self.timestamp_editor, self.model.fieldIndex("timestamp"))
-        self.mapper.addMapping(self.account_widget, self.model.fieldIndex("account_id"))
-        self.mapper.addMapping(self.peer_widget, self.model.fieldIndex("peer_id"))
-        self.mapper.addMapping(self.a_currency, self.model.fieldIndex("alt_currency_id"), QByteArray("currency_id_str"))
-        self.mapper.addMapping(self.note, self.model.fieldIndex("note"))
+        self.mapper.addMapping(self.ui.timestamp_editor, self.model.fieldIndex("timestamp"))
+        self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
+        self.mapper.addMapping(self.ui.peer_widget, self.model.fieldIndex("peer_id"))
+        self.mapper.addMapping(self.ui.a_currency, self.model.fieldIndex("alt_currency_id"), QByteArray("currency_id_str"))
+        self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
 
-        self.details_table.setItemDelegateForColumn(2, self.category_delegate)
-        self.details_table.setItemDelegateForColumn(3, self.tag_delegate)
-        self.details_table.setItemDelegateForColumn(4, self.float_delegate)
-        self.details_table.setItemDelegateForColumn(5, self.float_delegate)
+        self.ui.details_table.setItemDelegateForColumn(2, self.category_delegate)
+        self.ui.details_table.setItemDelegateForColumn(3, self.tag_delegate)
+        self.ui.details_table.setItemDelegateForColumn(4, self.float_delegate)
+        self.ui.details_table.setItemDelegateForColumn(5, self.float_delegate)
 
         self.model.select()
         self.details_model.select()
@@ -147,7 +89,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
     @Slot()
     def copy_child(self):
-        idx = self.details_table.selectionModel().selection().indexes()
+        idx = self.ui.details_table.selectionModel().selection().indexes()
         src_record = self.details_model.record(idx[0].row())
         new_record = self.details_model.record()
         new_record.setValue("category_id", src_record.value("category_id"))
@@ -164,7 +106,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
     @Slot()
     def delete_child(self):
-        selection = self.details_table.selectionModel().selection().indexes()
+        selection = self.ui.details_table.selectionModel().selection().indexes()
         for idx in selection:
             self.details_model.removeRow(idx.row())
             self.onDataChange(idx, idx, None)

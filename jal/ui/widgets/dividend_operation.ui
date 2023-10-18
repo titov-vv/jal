@@ -182,7 +182,7 @@
      </property>
      <property name="maximumTime">
       <time>
-       <hour>22</hour>
+       <hour>23</hour>
        <minute>59</minute>
        <second>59</second>
       </time>

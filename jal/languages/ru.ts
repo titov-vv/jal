@@ -806,27 +806,27 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="261"/>
+        <location filename="../widgets/income_spending_widget.py" line="205"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="261"/>
+        <location filename="../widgets/income_spending_widget.py" line="205"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="262"/>
+        <location filename="../widgets/income_spending_widget.py" line="206"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="263"/>
+        <location filename="../widgets/income_spending_widget.py" line="207"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="275"/>
+        <location filename="../widgets/income_spending_widget.py" line="219"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -1230,6 +1230,74 @@
     </message>
 </context>
 <context>
+    <name>IncomeSpendingOperation</name>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="35"/>
+        <source>Account</source>
+        <translation type="unfinished">Счет</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="42"/>
+        <source>Date/Time</source>
+        <translation type="unfinished">Дата/Время</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="62"/>
+        <source>Add detail</source>
+        <translation type="unfinished">Добавить детальную запись</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="72"/>
+        <source>Remove detail</source>
+        <translation type="unfinished">Удалить детальную запись</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="95"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="115"/>
+        <source>Peer</source>
+        <translation type="unfinished">Контрагент</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="140"/>
+        <source>Income / Spending</source>
+        <translation type="unfinished">Доход / Расход</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="160"/>
+        <source>Cancel changes</source>
+        <translation type="unfinished">Отменить изменения</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="82"/>
+        <source>Copy detail</source>
+        <translation type="unfinished">Скопировать детальную запись</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="122"/>
+        <source>dd/MM/yyyy hh:mm:ss</source>
+        <translation type="unfinished">dd/MM/yyyy hh:mm:ss</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="147"/>
+        <source>Details</source>
+        <translation type="unfinished">Детали</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="105"/>
+        <source>Commit changes</source>
+        <translation type="unfinished">Сохранить изменения</translation>
+    </message>
+</context>
+<context>
     <name>IncomeSpendingReport</name>
     <message>
         <location filename="../reports/income_spending.py" line="378"/>
@@ -1295,84 +1363,39 @@
 <context>
     <name>IncomeSpendingWidget</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="33"/>
-        <source>Income / Spending</source>
-        <translation>Доход / Расход</translation>
-    </message>
-    <message>
-        <location filename="../widgets/income_spending_widget.py" line="46"/>
-        <source>Date/Time</source>
-        <translation>Дата/Время</translation>
-    </message>
-    <message>
-        <location filename="../widgets/income_spending_widget.py" line="47"/>
-        <source>Details</source>
-        <translation>Детали</translation>
-    </message>
-    <message>
-        <location filename="../widgets/income_spending_widget.py" line="48"/>
-        <source>Account</source>
-        <translation>Счет</translation>
-    </message>
-    <message>
-        <location filename="../widgets/income_spending_widget.py" line="49"/>
-        <source>Peer</source>
-        <translation>Контрагент</translation>
-    </message>
-    <message>
-        <location filename="../widgets/income_spending_widget.py" line="50"/>
-        <source>Note</source>
-        <translation>Примечание</translation>
-    </message>
-    <message>
-        <location filename="../widgets/income_spending_widget.py" line="60"/>
+        <location filename="../widgets/income_spending_widget.py" line="36"/>
         <source>Paid in foreign currency:</source>
         <translation>Оплата в валюте:</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="63"/>
-        <source>Add detail</source>
-        <translation>Добавить детальную запись</translation>
-    </message>
-    <message>
-        <location filename="../widgets/income_spending_widget.py" line="65"/>
-        <source>Remove detail</source>
-        <translation>Удалить детальную запись</translation>
-    </message>
-    <message>
-        <location filename="../widgets/income_spending_widget.py" line="67"/>
-        <source>Copy detail</source>
-        <translation>Скопировать детальную запись</translation>
-    </message>
-    <message>
-        <location filename="../widgets/income_spending_widget.py" line="145"/>
-        <location filename="../widgets/income_spending_widget.py" line="162"/>
+        <location filename="../widgets/income_spending_widget.py" line="89"/>
+        <location filename="../widgets/income_spending_widget.py" line="106"/>
         <source>Failed to add new record: </source>
         <translation>Невозможно добавить новую запись: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="177"/>
-        <location filename="../widgets/income_spending_widget.py" line="182"/>
+        <location filename="../widgets/income_spending_widget.py" line="121"/>
+        <location filename="../widgets/income_spending_widget.py" line="126"/>
         <source>Incomplete data</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="177"/>
+        <location filename="../widgets/income_spending_widget.py" line="121"/>
         <source>Operation contains no details</source>
         <translation>Операция не содержит детальных записей</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="183"/>
+        <location filename="../widgets/income_spending_widget.py" line="127"/>
         <source>Category isn&apos;t set for &apos;{}&apos; (Amount: {})</source>
         <translation>Не задана категория для &apos;{}&apos; (Сумма: {})</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="191"/>
+        <location filename="../widgets/income_spending_widget.py" line="135"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="198"/>
+        <location filename="../widgets/income_spending_widget.py" line="142"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>
