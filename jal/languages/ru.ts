@@ -509,17 +509,72 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/corporate_action_operation.ui" line="38"/>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="32"/>
+        <source>Add asset</source>
+        <translation type="unfinished">Добавить актив</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="42"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="52"/>
+        <source>Account</source>
+        <translation type="unfinished">Счет</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="59"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="79"/>
+        <source>Qty</source>
+        <translation type="unfinished">Кол-во</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="98"/>
+        <source>Date/Time</source>
+        <translation type="unfinished">Дата/Время</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="105"/>
+        <source>dd/MM/yyyy hh:mm:ss</source>
+        <translation type="unfinished">dd/MM/yyyy hh:mm:ss</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="118"/>
+        <source> - </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="125"/>
+        <source>Type</source>
+        <translation type="unfinished">Тип</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="150"/>
         <source>Cancel changes</source>
         <translation type="unfinished">Отменить изменения</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/corporate_action_operation.ui" line="51"/>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="176"/>
+        <source>Remove asset</source>
+        <translation type="unfinished">Удалить актив</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="186"/>
+        <source>#</source>
+        <translation type="unfinished">№</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="69"/>
         <source>Commit changes</source>
         <translation type="unfinished">Сохранить изменения</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/corporate_action_operation.ui" line="79"/>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="91"/>
         <source>Corporate Action</source>
         <translation type="unfinished">Корпоративное действие</translation>
     </message>
@@ -527,97 +582,47 @@
 <context>
     <name>CorporateActionWidget</name>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="34"/>
-        <source>Corporate Action</source>
-        <translation>Корпоративное действие</translation>
+        <location filename="../widgets/corporate_action_widget.py" line="48"/>
+        <source>N/A</source>
+        <translation type="unfinished">N/A</translation>
+    </message>
+    <message>
+        <location filename="../widgets/corporate_action_widget.py" line="49"/>
+        <source>Merger</source>
+        <translation type="unfinished">Реорганизация компании</translation>
+    </message>
+    <message>
+        <location filename="../widgets/corporate_action_widget.py" line="50"/>
+        <source>Spin-Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/corporate_action_widget.py" line="51"/>
+        <source>Symbol change</source>
+        <translation type="unfinished">Смена символа</translation>
+    </message>
+    <message>
+        <location filename="../widgets/corporate_action_widget.py" line="52"/>
+        <source>Split</source>
+        <translation type="unfinished">Сплит</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="53"/>
-        <source>Date/Time</source>
-        <translation>Дата/Время</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="54"/>
-        <source>Account</source>
-        <translation>Счет</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="55"/>
-        <source>Type</source>
-        <translation>Тип</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="56"/>
-        <source>#</source>
-        <translation>№</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="57"/>
-        <source>Asset</source>
-        <translation>ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="58"/>
-        <source>Qty</source>
-        <translation>Кол-во</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="59"/>
-        <source>Note</source>
-        <translation>Описание</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="74"/>
-        <source>Add asset</source>
-        <translation>Добавить актив</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="76"/>
-        <source>Remove asset</source>
-        <translation>Удалить актив</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="117"/>
-        <source>N/A</source>
-        <translation>N/A</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="118"/>
-        <source>Merger</source>
-        <translation>Объединение компании</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="119"/>
-        <source>Spin-Off</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="120"/>
-        <source>Symbol change</source>
-        <translation>Смена символа</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="121"/>
-        <source>Split</source>
-        <translation>Сплит</translation>
-    </message>
-    <message>
-        <location filename="../widgets/corporate_action_widget.py" line="122"/>
         <source>Delisting</source>
-        <translation>Делистинг</translation>
+        <translation type="unfinished">Делистинг</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="161"/>
+        <location filename="../widgets/corporate_action_widget.py" line="92"/>
         <source>Failed to add new record: </source>
         <translation>Невозможно добавить новую запись: </translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="175"/>
+        <location filename="../widgets/corporate_action_widget.py" line="106"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="182"/>
+        <location filename="../widgets/corporate_action_widget.py" line="113"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>
@@ -3411,22 +3416,22 @@ Application will be terminated now.</source>
 <context>
     <name>ResultsModel</name>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="239"/>
+        <location filename="../widgets/corporate_action_widget.py" line="170"/>
         <source>Asset</source>
         <translation>Актив</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="239"/>
+        <location filename="../widgets/corporate_action_widget.py" line="170"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="241"/>
+        <location filename="../widgets/corporate_action_widget.py" line="172"/>
         <source>Share, %</source>
         <translation>Доля, %</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="245"/>
+        <location filename="../widgets/corporate_action_widget.py" line="176"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -5173,17 +5178,17 @@ Application will be terminated now.</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="32"/>
+        <location filename="../widgets/transfer_widget.py" line="31"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="75"/>
+        <location filename="../widgets/transfer_widget.py" line="73"/>
         <source>Incomplete data</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="75"/>
+        <location filename="../widgets/transfer_widget.py" line="73"/>
         <source>Can&apos;t collect fee from an account without organization assigned</source>
         <translation>Невозможно удержать комиссию со счёта без привязанной организации</translation>
     </message>

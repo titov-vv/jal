@@ -4,13 +4,11 @@ from dateutil import tz
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
-from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox, QHeaderView, QPushButton
+from PySide6.QtWidgets import QHeaderView
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
 from jal.ui.widgets.ui_corporate_action_operation import Ui_CorporateActionOperation
-from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
-from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import load_icon, localize_decimal
@@ -30,7 +28,6 @@ class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
 class CorporateActionWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         super().__init__(parent=parent, ui_class=Ui_CorporateActionOperation)
-        self.name = self.tr("Corporate Action")
         self.operation_type = LedgerTransaction.CorporateAction
         self.combo_model = None
 
@@ -38,80 +35,14 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.float_delegate = FloatDelegate(2)
         self.percent_delegate = FloatDelegate(2, percent=True)
 
-        self.date_label = QLabel(self)
-        self.account_label = QLabel(self)
-        self.type_label = QLabel(self)
-        self.number_label = QLabel(self)
-        self.before_label = QLabel(self)
-        self.asset_label = QLabel(self)
-        self.qty_label = QLabel(self)
-        self.after_label = QLabel(self)
-        self.comment_label = QLabel(self)
-        self.arrow = QLabel(self)
+        self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
+        self.ui.add_button.setIcon(load_icon("add.png"))
+        self.ui.del_button.setIcon(load_icon("remove.png"))
+        self.ui.results_table.horizontalHeader().setFont(self.bold_font)
+        self.ui.arrow.setText(" 🡆 ")  # it crashes if added via Qt-Designer
 
-        self.ui.main_label.setText(self.name)
-        self.date_label.setText(self.tr("Date/Time"))
-        self.account_label.setText(self.tr("Account"))
-        self.type_label.setText(self.tr("Type"))
-        self.number_label.setText(self.tr("#"))
-        self.asset_label.setText(self.tr("Asset"))
-        self.qty_label.setText(self.tr("Qty"))
-        self.comment_label.setText(self.tr("Note"))
-        self.arrow.setText(" 🡆 ")
-
-        self.timestamp_editor = QDateTimeEdit(self)
-        self.timestamp_editor.setCalendarPopup(True)
-        self.timestamp_editor.setTimeSpec(Qt.UTC)
-        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.timestamp_editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
-        self.type = QComboBox(self)
-        self.account_widget = AccountSelector(self)
-        self.asset_widget = AssetSelector(self)
-        self.qty_edit = QLineEdit(self)
-        self.number = QLineEdit(self)
-        self.comment = QLineEdit(self)
-        self.add_button = QPushButton(load_icon("add.png"), '', self)
-        self.add_button.setToolTip(self.tr("Add asset"))
-        self.del_button = QPushButton(load_icon("remove.png"), '', self)
-        self.del_button.setToolTip(self.tr("Remove asset"))
-        self.results_table = TableViewWithFooter(self)
-        self.results_table.horizontalHeader().setFont(self.bold_font)
-        self.results_table.setAlternatingRowColors(True)
-        self.results_table.verticalHeader().setVisible(False)
-        self.results_table.verticalHeader().setMinimumSectionSize(20)
-        self.results_table.verticalHeader().setDefaultSectionSize(20)
-
-        self.ui.layout.addWidget(self.date_label, 1, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.type_label, 2, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.number_label, 3, 0, 1, 1, Qt.AlignRight)
-        self.ui.layout.addWidget(self.comment_label, 4, 0, 1, 6, Qt.AlignLeft)
-
-        self.ui.layout.addWidget(self.timestamp_editor, 1, 1, 1, 1)
-        self.ui.layout.addWidget(self.type, 2, 1, 1, 1)
-        self.ui.layout.addWidget(self.number, 3, 1, 1, 1)
-        self.ui.layout.addWidget(self.comment, 4, 1, 1, 3)
-
-        self.ui.layout.addWidget(self.account_label, 1, 2, 1, 1, Qt.AlignRight)
-        self.ui.layout.addWidget(self.asset_label, 2, 2, 1, 1, Qt.AlignRight)
-        self.ui.layout.addWidget(self.qty_label, 3, 2, 1, 1, Qt.AlignRight)
-
-        self.ui.layout.addWidget(self.account_widget, 1, 3, 1, 1)
-        self.ui.layout.addWidget(self.asset_widget, 2, 3, 1, 1)
-        self.ui.layout.addWidget(self.qty_edit, 3, 3, 1, 1)
-
-        self.ui.layout.addWidget(self.arrow, 2, 4, 2, 1)
-        self.ui.layout.addWidget(self.results_table, 2, 5, 3, 4)
-
-        # self.ui.layout.addWidget(self.commit_button, 0, 7, 1, 1)
-        # self.ui.layout.addWidget(self.revert_button, 0, 8, 1, 1)
-        self.ui.layout.addWidget(self.add_button, 1, 7, 1, 1)
-        self.ui.layout.addWidget(self.del_button, 1, 8, 1, 1)
-
-        # self.ui.layout.addItem(self.verticalSpacer, 7, 5, 1, 1)
-        # self.ui.layout.addItem(self.horizontalSpacer, 1, 6, 1, 1)
-
-        self.add_button.clicked.connect(self.addResult)
-        self.del_button.clicked.connect(self.delResult)
+        self.ui.add_button.clicked.connect(self.addResult)
+        self.ui.del_button.clicked.connect(self.delResult)
 
         super()._init_db("asset_actions")
         self.combo_model = QStringListModel([self.tr("N/A"),
@@ -120,29 +51,29 @@ class CorporateActionWidget(AbstractOperationDetails):
                                              self.tr("Symbol change"),
                                              self.tr("Split"),
                                              self.tr("Delisting")])
-        self.type.setModel(self.combo_model)
+        self.ui.type.setModel(self.combo_model)
 
         self.mapper.setItemDelegate(CorporateActionWidgetDelegate(self.mapper))
 
-        self.results_model = ResultsModel(self.results_table, "action_results")
+        self.results_model = ResultsModel(self.ui.results_table, "action_results")
         self.results_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.results_table.setModel(self.results_model)
+        self.ui.results_table.setModel(self.results_model)
+
         self.results_model.dataChanged.connect(self.onDataChange)
+        self.ui.account_widget.changed.connect(self.mapper.submit)
+        self.ui.asset_widget.changed.connect(self.mapper.submit)
 
-        self.account_widget.changed.connect(self.mapper.submit)
-        self.asset_widget.changed.connect(self.mapper.submit)
+        self.mapper.addMapping(self.ui.timestamp_editor, self.model.fieldIndex("timestamp"))
+        self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
+        self.mapper.addMapping(self.ui.asset_widget, self.model.fieldIndex("asset_id"))
+        self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
+        self.mapper.addMapping(self.ui.qty_edit, self.model.fieldIndex("qty"))
+        self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
+        self.mapper.addMapping(self.ui.type, self.model.fieldIndex("type"), QByteArray().setRawData("currentIndex", 12))
 
-        self.mapper.addMapping(self.timestamp_editor, self.model.fieldIndex("timestamp"))
-        self.mapper.addMapping(self.account_widget, self.model.fieldIndex("account_id"))
-        self.mapper.addMapping(self.asset_widget, self.model.fieldIndex("asset_id"))
-        self.mapper.addMapping(self.number, self.model.fieldIndex("number"))
-        self.mapper.addMapping(self.qty_edit, self.model.fieldIndex("qty"))
-        self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
-        self.mapper.addMapping(self.type, self.model.fieldIndex("type"), QByteArray().setRawData("currentIndex", 12))
-
-        self.results_table.setItemDelegateForColumn(2, self.asset_delegate)
-        self.results_table.setItemDelegateForColumn(3, self.float_delegate)
-        self.results_table.setItemDelegateForColumn(4, self.percent_delegate)
+        self.ui.results_table.setItemDelegateForColumn(2, self.asset_delegate)
+        self.ui.results_table.setItemDelegateForColumn(3, self.float_delegate)
+        self.ui.results_table.setItemDelegateForColumn(4, self.percent_delegate)
 
         self.model.select()
         self.results_model.select()
@@ -163,7 +94,7 @@ class CorporateActionWidget(AbstractOperationDetails):
 
     @Slot()
     def delResult(self):
-        selection = self.results_table.selectionModel().selection().indexes()
+        selection = self.ui.results_table.selectionModel().selection().indexes()
         for idx in selection:
             self.results_model.removeRow(idx.row())
             self.onDataChange(idx, idx, None)
