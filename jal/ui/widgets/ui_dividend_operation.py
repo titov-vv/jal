@@ -37,11 +37,13 @@ class Ui_DividendOperation(object):
 
         self.date_label = QLabel(DividendOperation)
         self.date_label.setObjectName(u"date_label")
+        self.date_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.layout.addWidget(self.date_label, 1, 0, 1, 1)
 
         self.number_label = QLabel(DividendOperation)
         self.number_label.setObjectName(u"number_label")
+        self.number_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.layout.addWidget(self.number_label, 1, 7, 1, 1)
 
@@ -60,11 +62,13 @@ class Ui_DividendOperation(object):
 
         self.type_label = QLabel(DividendOperation)
         self.type_label.setObjectName(u"type_label")
+        self.type_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.layout.addWidget(self.type_label, 1, 5, 1, 1)
 
         self.tax_label = QLabel(DividendOperation)
         self.tax_label.setObjectName(u"tax_label")
+        self.tax_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.layout.addWidget(self.tax_label, 3, 5, 1, 1)
 
@@ -75,6 +79,7 @@ class Ui_DividendOperation(object):
 
         self.symbol_label = QLabel(DividendOperation)
         self.symbol_label.setObjectName(u"symbol_label")
+        self.symbol_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.layout.addWidget(self.symbol_label, 3, 0, 1, 1)
 
@@ -125,11 +130,13 @@ class Ui_DividendOperation(object):
 
         self.note_label = QLabel(DividendOperation)
         self.note_label.setObjectName(u"note_label")
+        self.note_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.layout.addWidget(self.note_label, 4, 0, 1, 1)
 
         self.account_label = QLabel(DividendOperation)
         self.account_label.setObjectName(u"account_label")
+        self.account_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.layout.addWidget(self.account_label, 2, 0, 1, 1)
 
@@ -147,6 +154,7 @@ class Ui_DividendOperation(object):
 
         self.amount_label = QLabel(DividendOperation)
         self.amount_label.setObjectName(u"amount_label")
+        self.amount_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.layout.addWidget(self.amount_label, 2, 5, 1, 1)
 

@@ -34,12 +34,18 @@
      <property name="text">
       <string>Date/Time</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
     </widget>
    </item>
    <item row="1" column="7">
     <widget class="QLabel" name="number_label">
      <property name="text">
       <string>#</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -71,12 +77,18 @@
      <property name="text">
       <string>Type</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
     </widget>
    </item>
    <item row="3" column="5">
     <widget class="QLabel" name="tax_label">
      <property name="text">
       <string>Tax</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -87,6 +99,9 @@
     <widget class="QLabel" name="symbol_label">
      <property name="text">
       <string>Asset</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -180,12 +195,18 @@
      <property name="text">
       <string>Note</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
     </widget>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="account_label">
      <property name="text">
       <string>Account</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -216,6 +237,9 @@
     <widget class="QLabel" name="amount_label">
      <property name="text">
       <string>Dividend</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
