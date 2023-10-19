@@ -411,7 +411,10 @@ class Dividend(LedgerTransaction):
                                 "AND l.book_account = :book_assets WHERE d.id=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
         self._subtype = self._data['type']
-        self._label, self._label_color = labels[self._subtype]
+        try:
+            self._label, self._label_color = labels[self._subtype]
+        except KeyError:
+            assert False, "Unknown dividend type"
         self._timestamp = self._data['timestamp']
         self._ex_date = self._data['ex_date'] if self._data['ex_date'] else 0
         self._account = jal.db.account.JalAccount(self._data['account_id'])
