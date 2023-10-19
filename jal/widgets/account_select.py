@@ -62,6 +62,10 @@ class AccountCurrencyLabel(QLabel):
         self._account_id = 0
         self.setText(self.EMPTY)
 
+    def get_id(self) -> str:
+        string_id = '' if self._account_id == 0 else str(self._account_id)
+        return string_id
+
     def set_id(self, account_id: str):
         self._account_id = int(account_id) if account_id else 0
         if self._account_id:
@@ -69,7 +73,7 @@ class AccountCurrencyLabel(QLabel):
         else:
             self.setText(self.EMPTY)
 
-    account_id = Property(str, fset=set_id, user=True)   # Property has string value as workaround for QTBUG-115144
+    account_id = Property(str, fget=get_id, fset=set_id, user=True)   # Property has string value as workaround for QTBUG-115144
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Dialog for account selection
