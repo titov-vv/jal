@@ -67,6 +67,10 @@ class AbstractReferenceSelector(QWidget):
     def setFilterValue(self, filter_value):
         self.dialog.setFilterValue(filter_value)
 
+    def setValidation(self, validate):
+        self._validate = validate
+        self._update_view()
+
     def on_button_clicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
@@ -86,9 +90,7 @@ class AbstractReferenceSelector(QWidget):
 
     # Highlights input field with red color if widget has invalid value
     def _update_view(self):
-        if not self._validate:
-            return
-        if not self.p_selected_id:
+        if self._validate and not self.p_selected_id:
             p = QPalette()
             p.setColor(QPalette.Base, CustomColor.LightRed)
         else:

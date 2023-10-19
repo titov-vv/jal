@@ -22,7 +22,7 @@ class Ui_CorporateActionOperation(object):
     def setupUi(self, CorporateActionOperation):
         if not CorporateActionOperation.objectName():
             CorporateActionOperation.setObjectName(u"CorporateActionOperation")
-        CorporateActionOperation.resize(550, 189)
+        CorporateActionOperation.resize(969, 244)
         self.layout = QGridLayout(CorporateActionOperation)
         self.layout.setObjectName(u"layout")
         self.layout.setContentsMargins(2, 2, 2, 2)

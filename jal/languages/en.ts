@@ -5085,17 +5085,81 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="38"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="32"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="74"/>
+        <source>Amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="53"/>
+        <source>From</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="60"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="225"/>
+        <source>Date/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="67"/>
+        <source>Fee from</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="94"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="156"/>
+        <source>dd/MM/yyyy hh:mm:ss</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="122"/>
+        <source>#</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="136"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="192"/>
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="199"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="215"/>
         <source>Cancel changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="51"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="232"/>
+        <source>Fee amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="146"/>
+        <source> ➜ </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="46"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="252"/>
+        <source>➜</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="172"/>
         <source>Commit changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="79"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="115"/>
         <source>Transfer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5108,59 +5172,12 @@ Application will be terminated now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="50"/>
-        <location filename="../widgets/transfer_widget.py" line="53"/>
-        <source>Date/Time</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/transfer_widget.py" line="51"/>
-        <source>From</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/transfer_widget.py" line="52"/>
-        <location filename="../widgets/transfer_widget.py" line="55"/>
-        <source>Amount</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/transfer_widget.py" line="54"/>
-        <source>To</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/transfer_widget.py" line="56"/>
-        <source>Fee from</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/transfer_widget.py" line="57"/>
-        <source>Fee amount</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/transfer_widget.py" line="58"/>
-        <source>Note</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/transfer_widget.py" line="59"/>
-        <source>Asset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/transfer_widget.py" line="60"/>
-        <source>#</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/transfer_widget.py" line="159"/>
+        <location filename="../widgets/transfer_widget.py" line="75"/>
         <source>Incomplete data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="159"/>
+        <location filename="../widgets/transfer_widget.py" line="75"/>
         <source>Can&apos;t collect fee from an account without organization assigned</source>
         <translation type="unfinished"></translation>
     </message>

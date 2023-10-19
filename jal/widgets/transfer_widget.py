@@ -3,10 +3,9 @@ from dateutil import tz
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QMessageBox, QLabel, QDateTimeEdit, QLineEdit, QPushButton
+from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_transfer_operation import Ui_TransferOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
-from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.operations import LedgerTransaction
 from jal.db.helpers import db_row2dict
@@ -31,120 +30,35 @@ class TransferWidget(AbstractOperationDetails):
         self.name = self.tr("Transfer")
         self.operation_type = LedgerTransaction.Transfer
 
-        self.from_date_label = QLabel(self)
-        self.from_account_label = QLabel(self)
-        self.from_amount_label = QLabel(self)
-        self.to_date_label = QLabel(self)
-        self.to_account_label = QLabel(self)
-        self.to_amount_label = QLabel(self)
-        self.fee_account_label = QLabel(self)
-        self.fee_amount_label = QLabel(self)
-        self.comment_label = QLabel(self)
-        self.asset_label = QLabel(self)
-        self.number_label = QLabel(self)
-        self.arrow_account = QLabel(self)
-        self.copy_date_btn = QPushButton(self)
-        self.copy_amount_btn = QPushButton(self)
+        self.ui.copy_date_btn.setFixedWidth(self.ui.copy_date_btn.fontMetrics().horizontalAdvance("XXXX"))
+        self.ui.copy_amount_btn.setFixedWidth(self.ui.copy_amount_btn.fontMetrics().horizontalAdvance("XXXX"))
+        self.ui.withdrawal_timestamp.setFixedWidth(self.ui.withdrawal_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
+        self.ui.deposit_timestamp.setFixedWidth(self.ui.deposit_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
+        self.ui.fee_account_widget.setValidation(False)
+        self.ui.asset_widget.setValidation(False)
 
-        self.ui.main_label.setText(self.name)
-        self.from_date_label.setText(self.tr("Date/Time"))
-        self.from_account_label.setText(self.tr("From"))
-        self.from_amount_label.setText(self.tr("Amount"))
-        self.to_date_label.setText(self.tr("Date/Time"))
-        self.to_account_label.setText(self.tr("To"))
-        self.to_amount_label.setText(self.tr("Amount"))
-        self.fee_account_label.setText(self.tr("Fee from"))
-        self.fee_amount_label.setText(self.tr("Fee amount"))
-        self.comment_label.setText(self.tr("Note"))
-        self.asset_label.setText(self.tr("Asset"))
-        self.number_label.setText(self.tr("#"))
-        self.arrow_account.setText(" ➜ ")
-        self.copy_date_btn.setText("➜")
-        self.copy_date_btn.setFixedWidth(self.copy_date_btn.fontMetrics().horizontalAdvance("XXXX"))
-        self.copy_amount_btn.setText("➜")
-        self.copy_amount_btn.setFixedWidth(self.copy_amount_btn.fontMetrics().horizontalAdvance("XXXX"))
-
-        self.withdrawal_timestamp = QDateTimeEdit(self)
-        self.withdrawal_timestamp.setCalendarPopup(True)
-        self.withdrawal_timestamp.setTimeSpec(Qt.UTC)
-        self.withdrawal_timestamp.setFixedWidth(self.withdrawal_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.withdrawal_timestamp.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
-        self.deposit_timestamp = QDateTimeEdit(self)
-        self.deposit_timestamp.setCalendarPopup(True)
-        self.deposit_timestamp.setTimeSpec(Qt.UTC)
-        self.deposit_timestamp.setFixedWidth(self.deposit_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.deposit_timestamp.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
-        self.from_account_widget = AccountSelector(self)
-        self.to_account_widget = AccountSelector(self)
-        self.fee_account_widget = AccountSelector(self, validate=False)
-        self.withdrawal = QLineEdit(self)
-        self.withdrawal.setAlignment(Qt.AlignRight)
-        self.deposit = QLineEdit(self)
-        self.deposit.setAlignment(Qt.AlignRight)
-        self.fee = QLineEdit(self)
-        self.fee.setAlignment(Qt.AlignRight)
-        self.asset_widget = AssetSelector(self, validate=False)
-        self.number = QLineEdit(self)
-        self.comment = QLineEdit(self)
-
-        self.ui.layout.addWidget(self.from_date_label, 1, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.from_account_label, 2, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.from_amount_label, 3, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.number_label, 5, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.comment_label, 6, 0, 1, 1, Qt.AlignLeft)
-        
-        self.ui.layout.addWidget(self.withdrawal_timestamp, 1, 1, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.from_account_widget, 2, 1, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.withdrawal, 3, 1, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.number, 5, 1, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.comment, 6, 1, 1, 4)
-
-        self.ui.layout.addWidget(self.copy_date_btn, 1, 2, 1, 1)
-        self.ui.layout.addWidget(self.arrow_account, 2, 2, 1, 1, Qt.AlignCenter)
-        self.ui.layout.addWidget(self.copy_amount_btn, 3, 2, 1, 1)
-
-        self.ui.layout.addWidget(self.to_date_label, 1, 3, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.to_account_label, 2, 3, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.to_amount_label, 3, 3, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.fee_account_label, 4, 0, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.fee_amount_label, 4, 3, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.asset_label, 5, 3, 1, 1, Qt.AlignLeft)
-
-        self.ui.layout.addWidget(self.deposit_timestamp, 1, 4, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.to_account_widget, 2, 4, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.deposit, 3, 4, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.fee_account_widget, 4, 1, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.fee, 4, 4, 1, 1, Qt.AlignLeft)
-        self.ui.layout.addWidget(self.asset_widget, 5, 4, 1, 1)
-
-        # self.ui.layout.addWidget(self.commit_button, 0, 6, 1, 1)
-        # self.ui.layout.addWidget(self.revert_button, 0, 7, 1, 1)
-
-        # self.ui.layout.addItem(self.verticalSpacer, 7, 0, 1, 1)
-        # self.ui.layout.addItem(self.horizontalSpacer, 1, 5, 1, 1)
-
-        self.copy_date_btn.clicked.connect(self.onCopyDate)
-        self.copy_amount_btn.clicked.connect(self.onCopyAmount)
+        self.ui.copy_date_btn.clicked.connect(self.onCopyDate)
+        self.ui.copy_amount_btn.clicked.connect(self.onCopyAmount)
 
         super()._init_db("transfers")
         self.mapper.setItemDelegate(TransferWidgetDelegate(self.mapper))
 
-        self.from_account_widget.changed.connect(self.mapper.submit)
-        self.to_account_widget.changed.connect(self.mapper.submit)
-        self.fee_account_widget.changed.connect(self.mapper.submit)
-        self.asset_widget.changed.connect(self.mapper.submit)
+        self.ui.from_account_widget.changed.connect(self.mapper.submit)
+        self.ui.to_account_widget.changed.connect(self.mapper.submit)
+        self.ui.fee_account_widget.changed.connect(self.mapper.submit)
+        self.ui.asset_widget.changed.connect(self.mapper.submit)
 
-        self.mapper.addMapping(self.withdrawal_timestamp, self.model.fieldIndex("withdrawal_timestamp"))
-        self.mapper.addMapping(self.from_account_widget, self.model.fieldIndex("withdrawal_account"))
-        self.mapper.addMapping(self.withdrawal, self.model.fieldIndex("withdrawal"))
-        self.mapper.addMapping(self.deposit_timestamp, self.model.fieldIndex("deposit_timestamp"))
-        self.mapper.addMapping(self.to_account_widget, self.model.fieldIndex("deposit_account"))
-        self.mapper.addMapping(self.deposit, self.model.fieldIndex("deposit"))
-        self.mapper.addMapping(self.fee_account_widget, self.model.fieldIndex("fee_account"))
-        self.mapper.addMapping(self.fee, self.model.fieldIndex("fee"))
-        self.mapper.addMapping(self.asset_widget, self.model.fieldIndex("asset"))
-        self.mapper.addMapping(self.number, self.model.fieldIndex("number"))
-        self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
+        self.mapper.addMapping(self.ui.withdrawal_timestamp, self.model.fieldIndex("withdrawal_timestamp"))
+        self.mapper.addMapping(self.ui.from_account_widget, self.model.fieldIndex("withdrawal_account"))
+        self.mapper.addMapping(self.ui.withdrawal, self.model.fieldIndex("withdrawal"))
+        self.mapper.addMapping(self.ui.deposit_timestamp, self.model.fieldIndex("deposit_timestamp"))
+        self.mapper.addMapping(self.ui.to_account_widget, self.model.fieldIndex("deposit_account"))
+        self.mapper.addMapping(self.ui.deposit, self.model.fieldIndex("deposit"))
+        self.mapper.addMapping(self.ui.fee_account_widget, self.model.fieldIndex("fee_account"))
+        self.mapper.addMapping(self.ui.fee, self.model.fieldIndex("fee"))
+        self.mapper.addMapping(self.ui.asset_widget, self.model.fieldIndex("asset"))
+        self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
+        self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
 
         self.model.select()
 
@@ -186,10 +100,10 @@ class TransferWidget(AbstractOperationDetails):
 
     @Slot()
     def onCopyDate(self):
-        self.deposit_timestamp.setDateTime(self.withdrawal_timestamp.dateTime())
+        self.ui.deposit_timestamp.setDateTime(self.ui.withdrawal_timestamp.dateTime())
         # mapper.submit() isn't needed here as 'changed' signal of 'deposit_timestamp' is linked with it
 
     @Slot()
     def onCopyAmount(self):
-        self.deposit.setText(self.withdrawal.text())
+        self.ui.deposit.setText(self.ui.withdrawal.text())
         self.mapper.submit()
