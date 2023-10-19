@@ -62,20 +62,14 @@ class AccountCurrencyLabel(QLabel):
         self._account_id = 0
         self.setText(self.EMPTY)
 
-    def get_id(self) -> str:
-        return str(self._account_id)
-
     def set_id(self, account_id: str):
-        try:
-            self._account_id = int(account_id)
-        except ValueError:
-            self._account_id = 0
+        self._account_id = int(account_id) if account_id else 0
         if self._account_id:
             self.setText(JalAsset(JalAccount(self._account_id).currency()).symbol())
         else:
             self.setText(self.EMPTY)
 
-    account_id = Property(str, get_id, set_id, user=True)   # Property has string value to be notified about NULL values by Qt.
+    account_id = Property(str, fset=set_id, user=True)   # Property has string value as workaround for QTBUG-115144
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Dialog for account selection
