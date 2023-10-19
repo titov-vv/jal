@@ -1,5 +1,5 @@
 import logging
-from PySide6.QtCore import Qt, Slot, Signal
+from PySide6.QtCore import Slot, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QDataWidgetMapper
 from PySide6.QtSql import QSqlTableModel

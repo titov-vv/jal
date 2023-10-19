@@ -2,7 +2,7 @@ from datetime import datetime
 from dateutil import tz
 from decimal import Decimal
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_transfer_operation import Ui_TransferOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
