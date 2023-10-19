@@ -2,12 +2,13 @@ from datetime import datetime
 from dateutil import tz
 
 from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray, QDate
-from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComboBox
+from PySide6.QtWidgets import QMessageBox, QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComboBox
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.helpers import db_row2dict
 from jal.db.operations import LedgerTransaction, Dividend
 
 
@@ -165,6 +166,13 @@ class DividendWidget(AbstractOperationDetails):
                 self.price_edit.setStyleSheet("color: red")
                 self.price_edit.setToolTip(
                     self.tr("You should set quote via Data->Quotes menu for Date/Time of the dividend"))
+
+    def _validated(self):
+        fields = db_row2dict(self.model, 0)
+        if not fields['type']:
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Please set a type of the dividend."), QMessageBox.Ok)
+            return False
+        return True
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
