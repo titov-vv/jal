@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QMessageBox, QLabel, QDateTimeEdit, QLineEdit, QPushButton
-from jal.ui.widgets.ui_abstract_operation import Ui_AbstractOperation
+from jal.ui.widgets.ui_transfer_operation import Ui_TransferOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
@@ -27,7 +27,7 @@ class TransferWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class TransferWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        super().__init__(parent=parent, ui_class=Ui_AbstractOperation)
+        super().__init__(parent=parent, ui_class=Ui_TransferOperation)
         self.name = self.tr("Transfer")
         self.operation_type = LedgerTransaction.Transfer
 

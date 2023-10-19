@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'abstract_operation.ui'
+## Form generated from reading UI file 'transfer_operation.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.0
 ##
@@ -18,22 +18,22 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QGridLayout, QLabel, QPushButton,
     QSizePolicy, QSpacerItem, QWidget)
 
-class Ui_AbstractOperation(object):
-    def setupUi(self, AbstractOperation):
-        if not AbstractOperation.objectName():
-            AbstractOperation.setObjectName(u"AbstractOperation")
-        AbstractOperation.resize(550, 189)
-        self.layout = QGridLayout(AbstractOperation)
+class Ui_TransferOperation(object):
+    def setupUi(self, TransferOperation):
+        if not TransferOperation.objectName():
+            TransferOperation.setObjectName(u"TransferOperation")
+        TransferOperation.resize(550, 189)
+        self.layout = QGridLayout(TransferOperation)
         self.layout.setObjectName(u"layout")
         self.layout.setContentsMargins(2, 2, 2, 2)
-        self.revert_button = QPushButton(AbstractOperation)
+        self.revert_button = QPushButton(TransferOperation)
         self.revert_button.setObjectName(u"revert_button")
         self.revert_button.setEnabled(False)
         self.revert_button.setAcceptDrops(False)
 
         self.layout.addWidget(self.revert_button, 0, 3, 1, 1)
 
-        self.commit_button = QPushButton(AbstractOperation)
+        self.commit_button = QPushButton(TransferOperation)
         self.commit_button.setObjectName(u"commit_button")
         self.commit_button.setEnabled(False)
 
@@ -43,7 +43,7 @@ class Ui_AbstractOperation(object):
 
         self.layout.addItem(self.horizontal_spacer, 0, 1, 1, 1)
 
-        self.main_label = QLabel(AbstractOperation)
+        self.main_label = QLabel(TransferOperation)
         self.main_label.setObjectName(u"main_label")
         font = QFont()
         font.setBold(True)
@@ -56,21 +56,21 @@ class Ui_AbstractOperation(object):
         self.layout.addItem(self.vertical_spacer, 1, 0, 1, 1)
 
 
-        self.retranslateUi(AbstractOperation)
+        self.retranslateUi(TransferOperation)
 
-        QMetaObject.connectSlotsByName(AbstractOperation)
+        QMetaObject.connectSlotsByName(TransferOperation)
     # setupUi
 
-    def retranslateUi(self, AbstractOperation):
-        AbstractOperation.setWindowTitle(QCoreApplication.translate("AbstractOperation", u"Form", None))
+    def retranslateUi(self, TransferOperation):
+        TransferOperation.setWindowTitle(QCoreApplication.translate("TransferOperation", u"Form", None))
 #if QT_CONFIG(tooltip)
-        self.revert_button.setToolTip(QCoreApplication.translate("AbstractOperation", u"Cancel changes", None))
+        self.revert_button.setToolTip(QCoreApplication.translate("TransferOperation", u"Cancel changes", None))
 #endif // QT_CONFIG(tooltip)
         self.revert_button.setText("")
 #if QT_CONFIG(tooltip)
-        self.commit_button.setToolTip(QCoreApplication.translate("AbstractOperation", u"Commit changes", None))
+        self.commit_button.setToolTip(QCoreApplication.translate("TransferOperation", u"Commit changes", None))
 #endif // QT_CONFIG(tooltip)
         self.commit_button.setText("")
-        self.main_label.setText(QCoreApplication.translate("AbstractOperation", u"Operation Label", None))
+        self.main_label.setText(QCoreApplication.translate("TransferOperation", u"Transfer", None))
     # retranslateUi
 

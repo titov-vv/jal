@@ -2,29 +2,6 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US" sourcelanguage="en_US">
 <context>
-    <name>AbstractOperation</name>
-    <message>
-        <location filename="../ui/widgets/abstract_operation.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/abstract_operation.ui" line="38"/>
-        <source>Cancel changes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/abstract_operation.ui" line="51"/>
-        <source>Commit changes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/abstract_operation.ui" line="79"/>
-        <source>Operation Label</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>AbstractOperationDetails</name>
     <message>
         <location filename="../widgets/abstract_operation_details.py" line="67"/>
@@ -525,6 +502,29 @@
     </message>
 </context>
 <context>
+    <name>CorporateActionOperation</name>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="38"/>
+        <source>Cancel changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="51"/>
+        <source>Commit changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="79"/>
+        <source>Corporate Action</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CorporateActionWidget</name>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="34"/>
@@ -806,27 +806,27 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="205"/>
+        <location filename="../widgets/income_spending_widget.py" line="203"/>
         <source>Category</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="205"/>
+        <location filename="../widgets/income_spending_widget.py" line="203"/>
         <source>Tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="206"/>
+        <location filename="../widgets/income_spending_widget.py" line="204"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="207"/>
+        <location filename="../widgets/income_spending_widget.py" line="205"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="219"/>
+        <location filename="../widgets/income_spending_widget.py" line="217"/>
         <source>Total</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1363,39 +1363,39 @@
 <context>
     <name>IncomeSpendingWidget</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="36"/>
+        <location filename="../widgets/income_spending_widget.py" line="37"/>
         <source>Paid in foreign currency:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="89"/>
-        <location filename="../widgets/income_spending_widget.py" line="106"/>
+        <location filename="../widgets/income_spending_widget.py" line="87"/>
+        <location filename="../widgets/income_spending_widget.py" line="104"/>
         <source>Failed to add new record: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="121"/>
-        <location filename="../widgets/income_spending_widget.py" line="126"/>
+        <location filename="../widgets/income_spending_widget.py" line="119"/>
+        <location filename="../widgets/income_spending_widget.py" line="124"/>
         <source>Incomplete data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="121"/>
+        <location filename="../widgets/income_spending_widget.py" line="119"/>
         <source>Operation contains no details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="127"/>
+        <location filename="../widgets/income_spending_widget.py" line="125"/>
         <source>Category isn&apos;t set for &apos;{}&apos; (Amount: {})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="135"/>
+        <location filename="../widgets/income_spending_widget.py" line="133"/>
         <source>Operation submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="142"/>
+        <location filename="../widgets/income_spending_widget.py" line="140"/>
         <source>Operation details submit failed: </source>
         <translation></translation>
     </message>
@@ -5074,6 +5074,29 @@ Application will be terminated now.</source>
     <message>
         <location filename="../db/operations.py" line="946"/>
         <source>Asset withdrawal not found for transfer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TransferOperation</name>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="38"/>
+        <source>Cancel changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="51"/>
+        <source>Commit changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="79"/>
+        <source>Transfer</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox, QHeaderView, QPushButton
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
-from jal.ui.widgets.ui_abstract_operation import Ui_AbstractOperation
+from jal.ui.widgets.ui_corporate_action_operation import Ui_CorporateActionOperation
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
@@ -29,7 +29,7 @@ class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
 # ----------------------------------------------------------------------------------------------------------------------
 class CorporateActionWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        super().__init__(parent=parent, ui_class=Ui_AbstractOperation)
+        super().__init__(parent=parent, ui_class=Ui_CorporateActionOperation)
         self.name = self.tr("Corporate Action")
         self.operation_type = LedgerTransaction.CorporateAction
         self.combo_model = None

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>AbstractOperation</class>
- <widget class="QWidget" name="AbstractOperation">
+ <class>TransferOperation</class>
+ <widget class="QWidget" name="TransferOperation">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -76,7 +76,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Operation Label</string>
+      <string>Transfer</string>
      </property>
     </widget>
    </item>
