@@ -26,20 +26,17 @@
    <property name="bottomMargin">
     <number>2</number>
    </property>
-   <item row="4" column="5">
-    <widget class="QLabel" name="fee_label">
+   <item row="1" column="5">
+    <widget class="QLabel" name="number_label">
      <property name="text">
-      <string>Fee</string>
+      <string>#</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="3">
-    <widget class="QDateEdit" name="settlement_editor">
-     <property name="displayFormat">
-      <string>dd/MM/yyyy</string>
-     </property>
-     <property name="calendarPopup">
-      <bool>true</bool>
+   <item row="3" column="6">
+    <widget class="QLineEdit" name="price_edit">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -50,20 +47,34 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="7">
-    <widget class="QPushButton" name="commit_button">
-     <property name="enabled">
-      <bool>false</bool>
+   <item row="1" column="1">
+    <widget class="QDateTimeEdit" name="timestamp_editor">
+     <property name="displayFormat">
+      <string>dd/MM/yyyy hh:mm:ss</string>
      </property>
-     <property name="toolTip">
-      <string>Commit changes</string>
+     <property name="calendarPopup">
+      <bool>true</bool>
      </property>
-     <property name="text">
-      <string/>
+     <property name="timeSpec">
+      <enum>Qt::UTC</enum>
      </property>
     </widget>
    </item>
-   <item row="0" column="8">
+   <item row="2" column="5">
+    <widget class="QLabel" name="qty_label">
+     <property name="text">
+      <string>Qty</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="date_label">
+     <property name="text">
+      <string>Date/Time</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="9">
     <widget class="QPushButton" name="revert_button">
      <property name="enabled">
       <bool>false</bool>
@@ -86,42 +97,15 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="6">
-    <widget class="QLineEdit" name="qty_edit">
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="6">
-    <widget class="QLineEdit" name="number"/>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="date_label">
+   <item row="3" column="5">
+    <widget class="QLabel" name="price_label">
      <property name="text">
-      <string>Date/Time</string>
+      <string>Price</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="6">
-    <widget class="QLineEdit" name="price_edit">
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QDateTimeEdit" name="timestamp_editor">
-     <property name="displayFormat">
-      <string>dd/MM/yyyy hh:mm:ss</string>
-     </property>
-     <property name="calendarPopup">
-      <bool>true</bool>
-     </property>
-     <property name="timeSpec">
-      <enum>Qt::UTC</enum>
-     </property>
-    </widget>
+   <item row="3" column="1" colspan="4">
+    <widget class="AssetSelector" name="asset_widget" native="true"/>
    </item>
    <item row="0" column="0">
     <widget class="QLabel" name="main_label">
@@ -135,10 +119,23 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="5">
-    <widget class="QLabel" name="qty_label">
+   <item row="0" column="8">
+    <widget class="QPushButton" name="commit_button">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Commit changes</string>
+     </property>
      <property name="text">
-      <string>Qty</string>
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="account_label">
+     <property name="text">
+      <string>Account</string>
      </property>
     </widget>
    </item>
@@ -149,24 +146,20 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="5">
-    <widget class="QLabel" name="number_label">
-     <property name="text">
-      <string>#</string>
+   <item row="1" column="3">
+    <widget class="QDateEdit" name="settlement_editor">
+     <property name="displayFormat">
+      <string>dd/MM/yyyy</string>
+     </property>
+     <property name="calendarPopup">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="1" column="2">
-    <widget class="QLabel" name="settlement_label">
+   <item row="4" column="5">
+    <widget class="QLabel" name="fee_label">
      <property name="text">
-      <string>Settlement</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="5">
-    <widget class="QLabel" name="price_label">
-     <property name="text">
-      <string>Price</string>
+      <string>Fee</string>
      </property>
     </widget>
    </item>
@@ -183,21 +176,42 @@
      </property>
     </spacer>
    </item>
-   <item row="3" column="1" colspan="4">
-    <widget class="AssetSelector" name="asset_widget" native="true"/>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="account_label">
-     <property name="text">
-      <string>Account</string>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="1" colspan="4">
     <widget class="AccountSelector" name="account_widget" native="true"/>
    </item>
    <item row="4" column="1" colspan="4">
     <widget class="QLineEdit" name="note"/>
+   </item>
+   <item row="1" column="6">
+    <widget class="QLineEdit" name="number"/>
+   </item>
+   <item row="2" column="6">
+    <widget class="QLineEdit" name="qty_edit">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QLabel" name="settlement_label">
+     <property name="text">
+      <string>Settlement</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="7">
+    <widget class="AccountCurrencyLabel" name="currency_price">
+     <property name="text">
+      <string>CUR</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="7">
+    <widget class="AccountCurrencyLabel" name="currency_fee">
+     <property name="text">
+      <string>CUR</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -213,6 +227,11 @@
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AccountCurrencyLabel</class>
+   <extends>QLabel</extends>
+   <header>jal/widgets/account_select.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

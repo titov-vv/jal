@@ -36,6 +36,8 @@ class TradeWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.ui.settlement_editor, self.model.fieldIndex("settlement"))
         self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
+        self.mapper.addMapping(self.ui.currency_price, self.model.fieldIndex("account_id"))
+        self.mapper.addMapping(self.ui.currency_fee, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.ui.asset_widget, self.model.fieldIndex("asset_id"))
         self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.ui.qty_edit, self.model.fieldIndex("qty"))

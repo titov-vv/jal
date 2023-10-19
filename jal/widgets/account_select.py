@@ -62,17 +62,20 @@ class AccountCurrencyLabel(QLabel):
         self._account_id = 0
         self.setText(self.EMPTY)
 
-    def get_id(self):
-        return self._account_id
+    def get_id(self) -> str:
+        return str(self._account_id)
 
-    def set_id(self, account_id):
-        self._account_id = account_id
+    def set_id(self, account_id: str):
+        try:
+            self._account_id = int(account_id)
+        except ValueError:
+            self._account_id = 0
         if self._account_id:
             self.setText(JalAsset(JalAccount(self._account_id).currency()).symbol())
         else:
             self.setText(self.EMPTY)
 
-    account_id = Property(int, get_id, set_id, user=True)
+    account_id = Property(str, get_id, set_id, user=True)   # Property has string value to be notified about NULL values by Qt.
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Dialog for account selection

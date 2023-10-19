@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (QApplication, QDateTimeEdit, QGridLayout, QHeader
     QLabel, QLineEdit, QPushButton, QSizePolicy,
     QSpacerItem, QWidget)
 
-from jal.widgets.account_select import OptionalCurrencyComboBox
+from jal.widgets.account_select import (AccountCurrencyLabel, OptionalCurrencyComboBox)
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.reference_selector import (AccountSelector, PeerSelector)
 
@@ -136,6 +136,11 @@ class Ui_IncomeSpendingOperation(object):
 
         self.layout.addWidget(self.a_currency, 1, 7, 1, 1)
 
+        self.currency = AccountCurrencyLabel(IncomeSpendingOperation)
+        self.currency.setObjectName(u"currency")
+
+        self.layout.addWidget(self.currency, 1, 6, 1, 1)
+
 
         self.retranslateUi(IncomeSpendingOperation)
 
@@ -171,5 +176,6 @@ class Ui_IncomeSpendingOperation(object):
         self.revert_button.setToolTip(QCoreApplication.translate("IncomeSpendingOperation", u"Cancel changes", None))
 #endif // QT_CONFIG(tooltip)
         self.revert_button.setText("")
+        self.currency.setText(QCoreApplication.translate("IncomeSpendingOperation", u"CUR", None))
     # retranslateUi
 

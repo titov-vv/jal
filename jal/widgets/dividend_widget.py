@@ -35,6 +35,8 @@ class DividendWidget(AbstractOperationDetails):
         self.ui.type.setModel(self.combo_model)
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.ex_date_editor.setFixedWidth(self.ui.ex_date_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
+        self.ui.price_label.setVisible(False)
+        self.ui.price_edit.setVisible(False)
 
         self.mapper.setItemDelegate(DividendWidgetDelegate(self.mapper))
 
@@ -46,6 +48,7 @@ class DividendWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.ui.ex_date_editor, self.model.fieldIndex("ex_date"))
         self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
+        self.mapper.addMapping(self.ui.currency, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.ui.asset_widget, self.model.fieldIndex("asset_id"))
         self.mapper.addMapping(self.ui.type, self.model.fieldIndex("type"), QByteArray().setRawData("currentIndex", 12))
         self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))

@@ -199,6 +199,13 @@
    <item row="1" column="7">
     <widget class="OptionalCurrencyComboBox" name="a_currency" native="true"/>
    </item>
+   <item row="1" column="6">
+    <widget class="AccountCurrencyLabel" name="currency">
+     <property name="text">
+      <string>CUR</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -224,6 +231,11 @@
    <extends>QWidget</extends>
    <header>jal/widgets/account_select.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AccountCurrencyLabel</class>
+   <extends>QLabel</extends>
+   <header>jal/widgets/account_select.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

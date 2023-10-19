@@ -60,6 +60,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
         self.mapper.addMapping(self.ui.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
+        self.mapper.addMapping(self.ui.currency, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.ui.peer_widget, self.model.fieldIndex("peer_id"))
         self.mapper.addMapping(self.ui.a_currency, self.model.fieldIndex("alt_currency_id"), QByteArray("currency_id_str"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
