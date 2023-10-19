@@ -1,5 +1,5 @@
 from PySide6.QtCore import Signal, Slot, Property
-from PySide6.QtWidgets import QDialog, QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox, QMessageBox
+from PySide6.QtWidgets import QDialog, QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox, QMessageBox, QLabel
 from jal.db.db import JalModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -50,6 +50,29 @@ class AccountButton(QPushButton):
     def ClearAccount(self):
         self.account_id = 0
 
+
+#-----------------------------------------------------------------------------------------------------------------------
+# This class displays a symbol of account currency in a label.
+# The account is set using 'account_id' property that may be mapped to the database column
+class AccountCurrencyLabel(QLabel):
+    EMPTY = "---"
+
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+        self._account_id = 0
+        self.setText(self.EMPTY)
+
+    def get_id(self):
+        return self._account_id
+
+    def set_id(self, account_id):
+        self._account_id = account_id
+        if self._account_id:
+            self.setText(JalAsset(JalAccount(self._account_id).currency()).symbol())
+        else:
+            self.setText(self.EMPTY)
+
+    account_id = Property(int, get_id, set_id, user=True)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Dialog for account selection
