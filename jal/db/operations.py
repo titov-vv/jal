@@ -1112,7 +1112,7 @@ class CorporateAction(LedgerTransaction):
                        [(":share", format_decimal(share)), (":action_id", self._oid), (":asset_id", asset.id())])
             out[0]['value_share'] = format_decimal(share)
         else:
-            raise  LedgerError(self.tr("Asset isn't a part of corporate action results: " + f"{asset.name()}"))
+            raise  LedgerError(self.tr("Asset isn't a part of corporate action results: ") + f"{asset.name()}")
 
     # Returns a list {"timestamp", "amount", "note"} that represents payments out of corporate actions to given account
     # in given account currency
