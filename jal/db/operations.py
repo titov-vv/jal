@@ -936,7 +936,7 @@ class Transfer(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                      asset_id=self._asset.id(), value=-processed_value)
             ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal,
-                                     asset_id=self._asset.id(), value=processed_value) #*currency_rate)
+                                     asset_id=self._asset.id(), value=processed_value)
         elif self._display_type == Transfer.Incoming:
             _, currency_rate = JalAsset(self._withdrawal_account.currency()).quote(self._deposit_timestamp,
                                                                                    self._deposit_account.currency())
@@ -962,6 +962,7 @@ class Transfer(LedgerTransaction):
                                      asset_id=self._asset.id(), value=converted_value)
         else:
             assert False, "Unknown transfer type for asset transfer"
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CorporateAction(LedgerTransaction):
