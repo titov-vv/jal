@@ -922,24 +922,23 @@ class Transfer(LedgerTransaction):
             assert False, "Unknown transfer type"
 
     def processAssetTransfer(self, ledger):
+        asset_amount = self._withdrawal
         if self._display_type == Transfer.Outgoing:   # Withdraw asset from source account
             asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account.id(), self._asset.id())
-            if asset_amount < self._withdrawal:
+            if asset_amount < asset_amount:
                 raise LedgerError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
                                   + f"{ts2dt(self._withdrawal_timestamp)}, "
                                   + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
-            processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._withdrawal, None)
-            if processed_qty < self._withdrawal:
+            processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), asset_amount, None)
+            if processed_qty < asset_amount:
                 raise LedgerError(self.tr("Processed asset amount is less than transfer amount. Date: ")
                                   + f"{ts2dt(self._withdrawal_timestamp)}, "
                                   + f"Processed amount: {asset_amount}, Operation: {self.dump()}")
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                      asset_id=self._asset.id(), value=-processed_value)
-            ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal,
+            ledger.appendTransaction(self, BookAccount.Transfers, asset_amount,
                                      asset_id=self._asset.id(), value=processed_value)
         elif self._display_type == Transfer.Incoming:
-            _, currency_rate = JalAsset(self._withdrawal_account.currency()).quote(self._deposit_timestamp,
-                                                                                   self._deposit_account.currency())
             # get initial value of withdrawn asset
             value = self._read("SELECT value FROM ledger "
                                "WHERE book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
@@ -947,19 +946,21 @@ class Transfer(LedgerTransaction):
                                 (":id", self._oid)], check_unique=True)
             if not value:
                 raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
+            if self._withdrawal_account.currency() == self._deposit_account.currency():
+                transferred_value = Decimal(value)
             else:
-                converted_value = Decimal(value) * currency_rate  # convert initial value into currency of new account
-            price = converted_value / self._deposit
+                transferred_value = self._deposit
+            price = transferred_value / asset_amount
             _ = self._exec(
                 "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                 [(":timestamp", self._deposit_timestamp), (":type", self._otype), (":operation_id", self._oid),
                  (":account_id", self._deposit_account.id()), (":asset_id", self._asset.id()),
-                 (":price", format_decimal(price)), (":remaining_qty", format_decimal(self._deposit))])
-            ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit,
-                                     asset_id=self._asset.id(), value=-converted_value)
-            ledger.appendTransaction(self, BookAccount.Assets, self._deposit,
-                                     asset_id=self._asset.id(), value=converted_value)
+                 (":price", format_decimal(price)), (":remaining_qty", format_decimal(asset_amount))])
+            ledger.appendTransaction(self, BookAccount.Transfers, -asset_amount,
+                                     asset_id=self._asset.id(), value=-transferred_value)
+            ledger.appendTransaction(self, BookAccount.Assets, asset_amount,
+                                     asset_id=self._asset.id(), value=transferred_value)
         else:
             assert False, "Unknown transfer type for asset transfer"
 
