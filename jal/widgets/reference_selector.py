@@ -50,10 +50,10 @@ class AbstractReferenceSelector(QWidget):
         self.name.setCompleter(self.completer)
         self.completer.activated[QModelIndex].connect(self.on_completion)
 
-    def getId(self):
+    def get_id(self):
         return self.p_selected_id
 
-    def setId(self, selected_id):
+    def set_id(self, selected_id):
         if self.p_selected_id == selected_id:
             return
         self.p_selected_id = selected_id
@@ -62,7 +62,17 @@ class AbstractReferenceSelector(QWidget):
             self.details.setText(self.dialog.model.getFieldValue(selected_id, self.details_field))
         self._update_view()
 
-    selected_id = Property(int, getId, setId, notify=changed, user=True)
+    selected_id = Property(int, get_id, set_id, notify=changed, user=True)
+
+    def get_str_id(self) -> str:
+        string_id = '' if self.get_id() is None else str(self.get_id())
+        return string_id
+
+    def set_str_id(self, string_id: str):
+        new_id = int(string_id) if string_id else 0
+        self.set_id(new_id)
+
+    selected_id_str = Property(str, get_str_id, set_str_id, notify=changed)  # workaround for QTBUG-115144
 
     def setFilterValue(self, filter_value):
         self.dialog.setFilterValue(filter_value)
@@ -81,6 +91,7 @@ class AbstractReferenceSelector(QWidget):
 
     def on_clean_button_clicked(self):
         self.selected_id = 0
+        self.changed.emit()
 
     @Slot(QModelIndex)
     def on_completion(self, index):
