@@ -446,57 +446,57 @@
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="1004"/>
+        <location filename="../db/operations.py" line="1006"/>
         <source>UNDEFINED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1005"/>
+        <location filename="../db/operations.py" line="1007"/>
         <source>Symbol change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1006"/>
+        <location filename="../db/operations.py" line="1008"/>
         <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1007"/>
+        <location filename="../db/operations.py" line="1009"/>
         <source>Spin-off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1008"/>
+        <location filename="../db/operations.py" line="1010"/>
         <source>Merger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1011"/>
+        <location filename="../db/operations.py" line="1013"/>
         <source>Delisting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1113"/>
-        <source>Asset isn&apos;t a part of corporate action results: {asset.name()}</source>
+        <location filename="../db/operations.py" line="1115"/>
+        <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1132"/>
+        <location filename="../db/operations.py" line="1134"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1137"/>
+        <location filename="../db/operations.py" line="1139"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1141"/>
+        <location filename="../db/operations.py" line="1143"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1150"/>
+        <location filename="../db/operations.py" line="1152"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2869,7 +2869,7 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../net/downloader.py" line="177"/>
-        <source>There are no CBR data for: {currency.symbol()}</source>
+        <source>There are no CBR data for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3011,12 +3011,12 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="63"/>
-        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: {NIF}</source>
+        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="64"/>
-        <source>No API found for QR data: &apos;{qr_text}&apos;</source>
+        <source>No API found for QR data: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5093,17 +5093,17 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="929"/>
+        <location filename="../db/operations.py" line="930"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="934"/>
+        <location filename="../db/operations.py" line="935"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="949"/>
+        <location filename="../db/operations.py" line="948"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation type="unfinished"></translation>
     </message>

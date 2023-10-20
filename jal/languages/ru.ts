@@ -446,57 +446,57 @@
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="1004"/>
+        <location filename="../db/operations.py" line="1006"/>
         <source>UNDEFINED</source>
         <translation>НЕОПРЕДЕЛЕНО</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1005"/>
+        <location filename="../db/operations.py" line="1007"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1006"/>
+        <location filename="../db/operations.py" line="1008"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1007"/>
+        <location filename="../db/operations.py" line="1009"/>
         <source>Spin-off</source>
         <translation>Выделение компании (спин-офф)</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1008"/>
+        <location filename="../db/operations.py" line="1010"/>
         <source>Merger</source>
         <translation>Реорганизация компании</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1011"/>
+        <location filename="../db/operations.py" line="1013"/>
         <source>Delisting</source>
         <translation>Делистинг</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1113"/>
-        <source>Asset isn&apos;t a part of corporate action results: {asset.name()}</source>
-        <translation type="unfinished"></translation>
+        <location filename="../db/operations.py" line="1115"/>
+        <source>Asset isn&apos;t a part of corporate action results: </source>
+        <translation>ЦБ не является результатом корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1132"/>
+        <location filename="../db/operations.py" line="1134"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation>Не задан тип корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1137"/>
+        <location filename="../db/operations.py" line="1139"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количетво ценных бумаг недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1141"/>
+        <location filename="../db/operations.py" line="1143"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation>Неподерживаемый случай: Корпоративное событие покрывает не всю открытую позицию. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1150"/>
+        <location filename="../db/operations.py" line="1152"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation>Результаты корпоративного события не распределяют 100% стоимости изначального актива. </translation>
     </message>
@@ -506,77 +506,77 @@
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Форма</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="32"/>
         <source>Add asset</source>
-        <translation type="unfinished">Добавить актив</translation>
+        <translation>Добавить актив</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="42"/>
         <source>Asset</source>
-        <translation type="unfinished"></translation>
+        <translation>ЦБ</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="52"/>
         <source>Account</source>
-        <translation type="unfinished">Счет</translation>
+        <translation>Счет</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="59"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
+        <translation>Примечание</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="79"/>
         <source>Qty</source>
-        <translation type="unfinished">Кол-во</translation>
+        <translation>Кол-во</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="98"/>
         <source>Date/Time</source>
-        <translation type="unfinished">Дата/Время</translation>
+        <translation>Дата/Время</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="105"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
-        <translation type="unfinished">dd/MM/yyyy hh:mm:ss</translation>
+        <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="118"/>
         <source> - </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="125"/>
         <source>Type</source>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="150"/>
         <source>Cancel changes</source>
-        <translation type="unfinished">Отменить изменения</translation>
+        <translation>Отменить изменения</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="176"/>
         <source>Remove asset</source>
-        <translation type="unfinished">Удалить актив</translation>
+        <translation>Удалить актив</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="186"/>
         <source>#</source>
-        <translation type="unfinished">№</translation>
+        <translation>№</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="69"/>
         <source>Commit changes</source>
-        <translation type="unfinished">Сохранить изменения</translation>
+        <translation>Сохранить изменения</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="91"/>
         <source>Corporate Action</source>
-        <translation type="unfinished">Корпоративное действие</translation>
+        <translation>Корпоративное действие</translation>
     </message>
 </context>
 <context>
@@ -584,32 +584,32 @@
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="48"/>
         <source>N/A</source>
-        <translation type="unfinished">N/A</translation>
+        <translation>N/A</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="49"/>
         <source>Merger</source>
-        <translation type="unfinished">Реорганизация компании</translation>
+        <translation>Реорганизация компании</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="50"/>
         <source>Spin-Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Спин-Офф</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="51"/>
         <source>Symbol change</source>
-        <translation type="unfinished">Смена символа</translation>
+        <translation>Смена символа</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="52"/>
         <source>Split</source>
-        <translation type="unfinished">Сплит</translation>
+        <translation>Сплит</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="53"/>
         <source>Delisting</source>
-        <translation type="unfinished">Делистинг</translation>
+        <translation>Делистинг</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="92"/>
@@ -874,88 +874,88 @@
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Форма</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="88"/>
         <source>Tax</source>
-        <translation type="unfinished"></translation>
+        <translation>Налог</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="136"/>
         <source>CUR</source>
-        <translation type="unfinished"></translation>
+        <translation>ВАЛ</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="196"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
+        <translation>Примечание</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="259"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
-        <translation type="unfinished">dd/MM/yyyy hh:mm:ss</translation>
+        <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="272"/>
         <source>Price</source>
-        <translation type="unfinished">Цена</translation>
+        <translation>Цена</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="229"/>
         <source>Cancel changes</source>
-        <translation type="unfinished">Отменить изменения</translation>
+        <translation>Отменить изменения</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="58"/>
         <source>Commit changes</source>
-        <translation type="unfinished">Сохранить изменения</translation>
+        <translation>Сохранить изменения</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="78"/>
         <source>Type</source>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="45"/>
         <source>#</source>
-        <translation type="unfinished">№</translation>
+        <translation>№</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="216"/>
         <source>Ex-Date</source>
-        <translation type="unfinished"></translation>
+        <translation>Отсечка</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="101"/>
         <source>Asset</source>
-        <translation type="unfinished"></translation>
+        <translation>ЦБ</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="35"/>
         <source>Date/Time</source>
-        <translation type="unfinished">Дата/Время</translation>
+        <translation>Дата/Время</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="206"/>
         <source>Account</source>
-        <translation type="unfinished">Счет</translation>
+        <translation>Счет</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="129"/>
         <location filename="../ui/widgets/dividend_operation.ui" line="239"/>
         <source>Dividend</source>
-        <translation type="unfinished">Дивиденд</translation>
+        <translation>Дивиденд</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="163"/>
         <source>unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>неизвестно</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dividend_operation.ui" line="180"/>
         <source>dd/MM/yyyy</source>
-        <translation type="unfinished">dd/MM/yyyy</translation>
+        <translation>dd/MM/yyyy</translation>
     </message>
 </context>
 <context>
@@ -988,12 +988,12 @@
     <message>
         <location filename="../widgets/dividend_widget.py" line="94"/>
         <source>Incomplete data</source>
-        <translation type="unfinished">Неполные данные</translation>
+        <translation>Неполные данные</translation>
     </message>
     <message>
         <location filename="../widgets/dividend_widget.py" line="94"/>
         <source>Please set a type of the dividend.</source>
-        <translation type="unfinished"></translation>
+        <translation>Пожалуйста укажите тип дивиденда.</translation>
     </message>
     <message>
         <location filename="../widgets/dividend_widget.py" line="32"/>
@@ -1254,72 +1254,72 @@
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Форма</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="35"/>
         <source>Account</source>
-        <translation type="unfinished">Счет</translation>
+        <translation>Счет</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="42"/>
         <source>Date/Time</source>
-        <translation type="unfinished">Дата/Время</translation>
+        <translation>Дата/Время</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="62"/>
         <source>Add detail</source>
-        <translation type="unfinished">Добавить детальную запись</translation>
+        <translation>Добавить детальную запись</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="72"/>
         <source>Remove detail</source>
-        <translation type="unfinished">Удалить детальную запись</translation>
+        <translation>Удалить детальную запись</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="95"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
+        <translation>Примечание</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="115"/>
         <source>Peer</source>
-        <translation type="unfinished">Контрагент</translation>
+        <translation>Контрагент</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="140"/>
         <source>Income / Spending</source>
-        <translation type="unfinished">Доход / Расход</translation>
+        <translation>Доход / Расход</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="160"/>
         <source>Cancel changes</source>
-        <translation type="unfinished">Отменить изменения</translation>
+        <translation>Отменить изменения</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="205"/>
         <source>CUR</source>
-        <translation type="unfinished"></translation>
+        <translation>ВАЛ</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="82"/>
         <source>Copy detail</source>
-        <translation type="unfinished">Скопировать детальную запись</translation>
+        <translation>Скопировать детальную запись</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="122"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
-        <translation type="unfinished">dd/MM/yyyy hh:mm:ss</translation>
+        <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="147"/>
         <source>Details</source>
-        <translation type="unfinished">Детали</translation>
+        <translation>Детали</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="105"/>
         <source>Commit changes</source>
-        <translation type="unfinished">Сохранить изменения</translation>
+        <translation>Сохранить изменения</translation>
     </message>
 </context>
 <context>
@@ -2529,12 +2529,12 @@ Application will be terminated now.</source>
     <message>
         <location filename="../reports/portfolio.py" line="107"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Предупреждение</translation>
     </message>
     <message>
         <location filename="../reports/portfolio.py" line="107"/>
         <source>Tax estimation is possible for today only. Please correct date of the report</source>
-        <translation type="unfinished"></translation>
+        <translation>Оценка налога возможна только на сегодняшний день. Пожалуйста измените дату отчёта</translation>
     </message>
     <message>
         <location filename="../reports/portfolio.py" line="119"/>
@@ -2567,7 +2567,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../ui/reports/portfolio_report.ui" line="102"/>
         <source>Show &amp;Inactive accounts</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать &amp;неактивные счета</translation>
     </message>
     <message>
         <location filename="../ui/reports/portfolio_report.ui" line="122"/>
@@ -2875,8 +2875,8 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../net/downloader.py" line="177"/>
-        <source>There are no CBR data for: {currency.symbol()}</source>
-        <translation type="unfinished"></translation>
+        <source>There are no CBR data for: </source>
+        <translation>Нет данных ЦБ РФ для: </translation>
     </message>
     <message>
         <location filename="../net/downloader.py" line="429"/>
@@ -3017,13 +3017,13 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="63"/>
-        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: {NIF}</source>
-        <translation type="unfinished"></translation>
+        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
+        <translation>Португальский QR-код распознан, но магазин не поддерживается, NIF: </translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="64"/>
-        <source>No API found for QR data: &apos;{qr_text}&apos;</source>
-        <translation type="unfinished"></translation>
+        <source>No API found for QR data: </source>
+        <translation>На найдено API для QR-кода: </translation>
     </message>
 </context>
 <context>
@@ -4961,7 +4961,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../widgets/tax_widget.py" line="64"/>
         <source>Tax form (*.dc{last_digit})</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="113"/>
@@ -5007,83 +5007,83 @@ Application will be terminated now.</source>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Форма</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="52"/>
         <source>Commit changes</source>
-        <translation type="unfinished">Сохранить изменения</translation>
+        <translation>Сохранить изменения</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="176"/>
         <source>Cancel changes</source>
-        <translation type="unfinished">Отменить изменения</translation>
+        <translation>Отменить изменения</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="83"/>
         <source>Asset</source>
-        <translation type="unfinished"></translation>
+        <translation>ЦБ</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="76"/>
         <source>Date/Time</source>
-        <translation type="unfinished">Дата/Время</translation>
+        <translation>Дата/Время</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="196"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
-        <translation type="unfinished">dd/MM/yyyy hh:mm:ss</translation>
+        <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="95"/>
         <source>Buy / Sell</source>
-        <translation type="unfinished">Покупка / Продажа</translation>
+        <translation>Покупка / Продажа</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="122"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
+        <translation>Примечание</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="102"/>
         <source>Settlement</source>
-        <translation type="unfinished">Дата расчетов</translation>
+        <translation>Дата расчетов</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="69"/>
         <location filename="../ui/widgets/trade_operation.ui" line="156"/>
         <source>CUR</source>
-        <translation type="unfinished"></translation>
+        <translation>ВАЛ</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="129"/>
         <source>Account</source>
-        <translation type="unfinished">Счет</translation>
+        <translation>Счет</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="186"/>
         <source>#</source>
-        <translation type="unfinished">№</translation>
+        <translation>№</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="209"/>
         <source>dd/MM/yyyy</source>
-        <translation type="unfinished">dd/MM/yyyy</translation>
+        <translation>dd/MM/yyyy</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="146"/>
         <source>Qty</source>
-        <translation type="unfinished">Кол-во</translation>
+        <translation>Кол-во</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="32"/>
         <source>Price</source>
-        <translation type="unfinished">Цена</translation>
+        <translation>Цена</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="136"/>
         <source>Fee</source>
-        <translation type="unfinished">Комиссия</translation>
+        <translation>Комиссия</translation>
     </message>
 </context>
 <context>
@@ -5099,17 +5099,17 @@ Application will be terminated now.</source>
         <translation>Невозможно удержать комиссию со счёта &apos;{}&apos; ({}), т.к. для него не указана организация. Дата: {}</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="929"/>
+        <location filename="../db/operations.py" line="930"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation>Количество актива недостаточно для обработки перевода. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="934"/>
+        <location filename="../db/operations.py" line="935"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation>Обработанное количество меньше, чем количество в трансфере. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="949"/>
+        <location filename="../db/operations.py" line="948"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation>Списание актива не найдено для трансфера.</translation>
     </message>
@@ -5119,97 +5119,97 @@ Application will be terminated now.</source>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Форма</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="235"/>
         <source>Amount</source>
-        <translation type="unfinished">Сумма</translation>
+        <translation>Сумма</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="46"/>
         <source>From</source>
-        <translation type="unfinished">С</translation>
+        <translation>С</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="252"/>
         <source>Asset transfer</source>
-        <translation type="unfinished"></translation>
+        <translation>Перевод ЦБ</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="69"/>
         <location filename="../ui/widgets/transfer_operation.ui" line="166"/>
         <source>Copy value</source>
-        <translation type="unfinished"></translation>
+        <translation>Скопировать значение</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="72"/>
         <location filename="../ui/widgets/transfer_operation.ui" line="169"/>
         <source>↓</source>
-        <translation type="unfinished"></translation>
+        <translation>↓</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="212"/>
         <source>Date/Time</source>
-        <translation type="unfinished">Дата/Время</translation>
+        <translation>Дата/Время</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="280"/>
         <source>(asset value in new currency)</source>
-        <translation type="unfinished"></translation>
+        <translation>(стоимость бумаг в новой валюте)</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="79"/>
         <location filename="../ui/widgets/transfer_operation.ui" line="176"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
-        <translation type="unfinished">dd/MM/yyyy hh:mm:ss</translation>
+        <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="259"/>
         <source>Account</source>
-        <translation type="unfinished">Счет</translation>
+        <translation>Счет</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="32"/>
         <location filename="../ui/widgets/transfer_operation.ui" line="39"/>
         <location filename="../ui/widgets/transfer_operation.ui" line="242"/>
         <source>CUR</source>
-        <translation type="unfinished"></translation>
+        <translation>ВАЛ</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="104"/>
         <source>#</source>
-        <translation type="unfinished">№</translation>
+        <translation>№</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="59"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
+        <translation>Примечание</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="202"/>
         <source>To</source>
-        <translation type="unfinished">На</translation>
+        <translation>На</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="195"/>
         <source>Include &amp;fee</source>
-        <translation type="unfinished"></translation>
+        <translation>Включая &amp;комиссию</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="225"/>
         <source>Cancel changes</source>
-        <translation type="unfinished">Отменить изменения</translation>
+        <translation>Отменить изменения</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="156"/>
         <source>Commit changes</source>
-        <translation type="unfinished">Сохранить изменения</translation>
+        <translation>Сохранить изменения</translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="97"/>
         <source>Transfer</source>
-        <translation type="unfinished">Перевод</translation>
+        <translation>Перевод</translation>
     </message>
 </context>
 <context>
