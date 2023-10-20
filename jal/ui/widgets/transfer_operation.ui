@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>968</width>
-    <height>236</height>
+    <height>283</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,24 +26,17 @@
    <property name="bottomMargin">
     <number>2</number>
    </property>
-   <item row="3" column="5">
-    <widget class="QLabel" name="to_amount_label">
+   <item row="3" column="7">
+    <widget class="AccountCurrencyLabel" name="to_currency">
      <property name="text">
-      <string>Amount</string>
+      <string>CUR</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="6">
-    <widget class="QLineEdit" name="fee">
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="4">
-    <widget class="QPushButton" name="copy_amount_btn">
+   <item row="2" column="7">
+    <widget class="AccountCurrencyLabel" name="from_currency">
      <property name="text">
-      <string>➜</string>
+      <string>CUR</string>
      </property>
     </widget>
    </item>
@@ -52,47 +45,36 @@
      <property name="text">
       <string>From</string>
      </property>
-    </widget>
-   </item>
-   <item row="1" column="5">
-    <widget class="QLabel" name="to_date_label">
-     <property name="text">
-      <string>Date/Time</string>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="fee_account_label">
-     <property name="text">
-      <string>Fee from</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="from_amount_label">
-     <property name="text">
-      <string>Amount</string>
-     </property>
-    </widget>
+   <item row="3" column="4">
+    <widget class="AccountSelector" name="to_account_widget" native="true"/>
    </item>
    <item row="7" column="0">
-    <spacer name="vertical_spacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+    <widget class="QLabel" name="note_label">
+     <property name="text">
+      <string>Note</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
-    </spacer>
+    </widget>
    </item>
-   <item row="5" column="2">
-    <widget class="QLineEdit" name="number"/>
+   <item row="1" column="6">
+    <widget class="QPushButton" name="copy_amount_btn">
+     <property name="toolTip">
+      <string>Copy value</string>
+     </property>
+     <property name="text">
+      <string>↓</string>
+     </property>
+    </widget>
    </item>
-   <item row="1" column="2" colspan="2">
-    <widget class="QDateTimeEdit" name="withdrawal_timestamp">
+   <item row="3" column="2" colspan="2">
+    <widget class="QDateTimeEdit" name="deposit_timestamp">
      <property name="displayFormat">
       <string>dd/MM/yyyy hh:mm:ss</string>
      </property>
@@ -116,48 +98,56 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="1" column="7">
     <widget class="QLabel" name="number_label">
      <property name="text">
       <string>#</string>
      </property>
-    </widget>
-   </item>
-   <item row="3" column="3">
-    <widget class="AccountCurrencyLabel" name="from_currency">
-     <property name="text">
-      <string>CUR</string>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="3" column="2">
+   <item row="1" column="10">
+    <spacer name="horizontal_spacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="5" column="4">
+    <widget class="AccountSelector" name="fee_account_widget" native="true"/>
+   </item>
+   <item row="8" column="0">
+    <spacer name="vertical_spacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="5" colspan="2">
     <widget class="QLineEdit" name="withdrawal">
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="note_label">
-     <property name="text">
-      <string>Note</string>
-     </property>
-    </widget>
+   <item row="7" column="2" colspan="8">
+    <widget class="QLineEdit" name="note"/>
    </item>
-   <item row="2" column="2" colspan="2">
-    <widget class="AccountSelector" name="from_account_widget" native="true"/>
-   </item>
-   <item row="2" column="4">
-    <widget class="QLabel" name="arrow_account">
-     <property name="text">
-      <string> ➜ </string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="9">
+   <item row="0" column="11">
     <widget class="QPushButton" name="commit_button">
      <property name="enabled">
       <bool>false</bool>
@@ -170,31 +160,60 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="2" colspan="2">
-    <widget class="AccountSelector" name="fee_account_widget" native="true"/>
+   <item row="1" column="3">
+    <widget class="QPushButton" name="copy_date_btn">
+     <property name="toolTip">
+      <string>Copy value</string>
+     </property>
+     <property name="text">
+      <string>↓</string>
+     </property>
+    </widget>
    </item>
-   <item row="3" column="6">
-    <widget class="QLineEdit" name="deposit">
+   <item row="2" column="2" colspan="2">
+    <widget class="QDateTimeEdit" name="withdrawal_timestamp">
+     <property name="displayFormat">
+      <string>dd/MM/yyyy hh:mm:ss</string>
+     </property>
+     <property name="calendarPopup">
+      <bool>true</bool>
+     </property>
+     <property name="timeSpec">
+      <enum>Qt::UTC</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="9">
+    <widget class="QLineEdit" name="number"/>
+   </item>
+   <item row="2" column="4">
+    <widget class="AccountSelector" name="from_account_widget" native="true"/>
+   </item>
+   <item row="5" column="2" colspan="2" alignment="Qt::AlignRight">
+    <widget class="QCheckBox" name="fee_check">
+     <property name="text">
+      <string>Include &amp;fee</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="to_account_label">
+     <property name="text">
+      <string>To</string>
+     </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="2" column="5">
-    <widget class="QLabel" name="to_account_label">
+   <item row="1" column="2">
+    <widget class="QLabel" name="date_label">
      <property name="text">
-      <string>To</string>
+      <string>Date/Time</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="5">
-    <widget class="QLabel" name="asset_label">
-     <property name="text">
-      <string>Asset</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="10">
+   <item row="0" column="12">
     <widget class="QPushButton" name="revert_button">
      <property name="enabled">
       <bool>false</bool>
@@ -210,75 +229,57 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="from_date_label">
+   <item row="1" column="5">
+    <widget class="QLabel" name="amount_label">
      <property name="text">
-      <string>Date/Time</string>
+      <string>Amount</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="5">
-    <widget class="QLabel" name="fee_amount_label">
-     <property name="text">
-      <string>Fee amount</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="8">
-    <spacer name="horizontal_spacer">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="1" column="4">
-    <widget class="QPushButton" name="copy_date_btn">
-     <property name="text">
-      <string>➜</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="7">
-    <widget class="AccountCurrencyLabel" name="to_currency">
-     <property name="text">
-      <string>CUR</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="6" colspan="2">
-    <widget class="AccountSelector" name="to_account_widget" native="true"/>
-   </item>
-   <item row="1" column="6" colspan="2">
-    <widget class="QDateTimeEdit" name="deposit_timestamp">
-     <property name="displayFormat">
-      <string>dd/MM/yyyy hh:mm:ss</string>
-     </property>
-     <property name="calendarPopup">
-      <bool>true</bool>
-     </property>
-     <property name="timeSpec">
-      <enum>Qt::UTC</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="7">
+   <item row="5" column="7">
     <widget class="AccountCurrencyLabel" name="fee_currency">
      <property name="text">
       <string>CUR</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="6" colspan="2">
+   <item row="2" column="9">
     <widget class="AssetSelector" name="asset_widget" native="true"/>
    </item>
-   <item row="6" column="2" colspan="6">
-    <widget class="QLineEdit" name="note"/>
+   <item row="5" column="9">
+    <widget class="QCheckBox" name="asset_check">
+     <property name="text">
+      <string>Asset transfer</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="4">
+    <widget class="QLabel" name="account_label">
+     <property name="text">
+      <string>Account</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="5" colspan="2">
+    <widget class="QLineEdit" name="fee">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="5" colspan="2">
+    <widget class="QLineEdit" name="deposit">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="9">
+    <widget class="QLabel" name="value_label">
+     <property name="text">
+      <string>(asset value in new currency)</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

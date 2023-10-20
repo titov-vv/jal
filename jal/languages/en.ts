@@ -446,57 +446,57 @@
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="1001"/>
+        <location filename="../db/operations.py" line="1004"/>
         <source>UNDEFINED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1002"/>
+        <location filename="../db/operations.py" line="1005"/>
         <source>Symbol change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1003"/>
+        <location filename="../db/operations.py" line="1006"/>
         <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1004"/>
+        <location filename="../db/operations.py" line="1007"/>
         <source>Spin-off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1005"/>
+        <location filename="../db/operations.py" line="1008"/>
         <source>Merger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1008"/>
+        <location filename="../db/operations.py" line="1011"/>
         <source>Delisting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1110"/>
+        <location filename="../db/operations.py" line="1113"/>
         <source>Asset isn&apos;t a part of corporate action results: {asset.name()}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1129"/>
+        <location filename="../db/operations.py" line="1132"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1134"/>
+        <location filename="../db/operations.py" line="1137"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1138"/>
+        <location filename="../db/operations.py" line="1141"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1147"/>
+        <location filename="../db/operations.py" line="1150"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
     </message>
@@ -839,32 +839,32 @@
 <context>
     <name>Dividend</name>
     <message>
-        <location filename="../db/operations.py" line="485"/>
+        <location filename="../db/operations.py" line="488"/>
         <source>No price data for stock dividend/vesting: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="506"/>
+        <location filename="../db/operations.py" line="509"/>
         <source>Tax: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="549"/>
+        <location filename="../db/operations.py" line="552"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="558"/>
+        <location filename="../db/operations.py" line="561"/>
         <source>Unsupported dividend type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="580"/>
+        <location filename="../db/operations.py" line="583"/>
         <source>Not supported action: stock dividend or vesting closes short trade.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="466"/>
+        <location filename="../db/operations.py" line="469"/>
         <source>No stock quote for stock dividend or vesting.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -877,57 +877,57 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="79"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="88"/>
         <source>Tax</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="121"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="136"/>
         <source>CUR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="181"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="196"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="235"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="259"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="248"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="272"/>
         <source>Price</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="208"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="229"/>
         <source>Cancel changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="52"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="58"/>
         <source>Commit changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="72"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="78"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="42"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="45"/>
         <source>#</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="195"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="216"/>
         <source>Ex-Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="89"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="101"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -937,23 +937,23 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="188"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="206"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="114"/>
-        <location filename="../ui/widgets/dividend_operation.ui" line="218"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="129"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="239"/>
         <source>Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="148"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="163"/>
         <source>unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="165"/>
+        <location filename="../ui/widgets/dividend_operation.ui" line="180"/>
         <source>dd/MM/yyyy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -961,37 +961,47 @@
 <context>
     <name>DividendWidget</name>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="31"/>
+        <location filename="../widgets/dividend_widget.py" line="33"/>
         <source>Dividend</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="33"/>
+        <location filename="../widgets/dividend_widget.py" line="35"/>
         <source>Stock Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="34"/>
+        <location filename="../widgets/dividend_widget.py" line="36"/>
         <source>Stock Vesting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="84"/>
+        <location filename="../widgets/dividend_widget.py" line="86"/>
         <source>No quote</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="87"/>
+        <location filename="../widgets/dividend_widget.py" line="89"/>
         <source>You should set quote via Data-&gt;Quotes menu for Date/Time of the dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="30"/>
+        <location filename="../widgets/dividend_widget.py" line="94"/>
+        <source>Incomplete data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/dividend_widget.py" line="94"/>
+        <source>Please set a type of the dividend.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/dividend_widget.py" line="32"/>
         <source>N/A</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="32"/>
+        <location filename="../widgets/dividend_widget.py" line="34"/>
         <source>Bond Interest</source>
         <translation></translation>
     </message>
@@ -2333,7 +2343,7 @@ Application will be terminated now.</source>
 <context>
     <name>OptionalCurrencyComboBox</name>
     <message>
-        <location filename="../widgets/account_select.py" line="170"/>
+        <location filename="../widgets/account_select.py" line="168"/>
         <source>Currency</source>
         <translation></translation>
     </message>
@@ -3496,18 +3506,18 @@ Application will be terminated now.</source>
 <context>
     <name>SelectAccountDialog</name>
     <message>
-        <location filename="../widgets/account_select.py" line="103"/>
-        <location filename="../widgets/account_select.py" line="108"/>
+        <location filename="../widgets/account_select.py" line="101"/>
+        <location filename="../widgets/account_select.py" line="106"/>
         <source>No selection</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/account_select.py" line="103"/>
+        <location filename="../widgets/account_select.py" line="101"/>
         <source>Invalid account selected</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/account_select.py" line="108"/>
+        <location filename="../widgets/account_select.py" line="106"/>
         <source>Please select different account</source>
         <translation></translation>
     </message>
@@ -4981,7 +4991,7 @@ Application will be terminated now.</source>
 <context>
     <name>Trade</name>
     <message>
-        <location filename="../db/operations.py" line="698"/>
+        <location filename="../db/operations.py" line="701"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4994,78 +5004,78 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="128"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="52"/>
         <source>Commit changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="86"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="176"/>
         <source>Cancel changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="96"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="83"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="73"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="76"/>
         <source>Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="53"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="196"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="118"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="95"/>
         <source>Buy / Sell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="145"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="122"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="198"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="102"/>
         <source>Settlement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="205"/>
-        <location filename="../ui/widgets/trade_operation.ui" line="212"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="69"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="156"/>
         <source>CUR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="138"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="129"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="152"/>
-        <source>dd/MM/yyyy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="32"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="186"/>
         <source>#</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="66"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="209"/>
+        <source>dd/MM/yyyy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="146"/>
         <source>Qty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="103"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="32"/>
         <source>Price</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="162"/>
+        <location filename="../ui/widgets/trade_operation.ui" line="136"/>
         <source>Fee</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5073,27 +5083,27 @@ Application will be terminated now.</source>
 <context>
     <name>Transfer</name>
     <message>
-        <location filename="../db/operations.py" line="845"/>
+        <location filename="../db/operations.py" line="848"/>
         <source>Error. Zero rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="904"/>
+        <location filename="../db/operations.py" line="907"/>
         <source>Can&apos;t collect fee from the account &apos;{}&apos; ({}) as organization isn&apos;t set for it. Date: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="926"/>
+        <location filename="../db/operations.py" line="929"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="931"/>
+        <location filename="../db/operations.py" line="934"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="946"/>
+        <location filename="../db/operations.py" line="949"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5106,88 +5116,92 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="32"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="74"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="235"/>
         <source>Amount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="53"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="46"/>
         <source>From</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="60"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="216"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="252"/>
+        <source>Asset transfer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="69"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="166"/>
+        <source>Copy value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="72"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="169"/>
+        <source>↓</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="212"/>
         <source>Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="67"/>
-        <source>Fee from</source>
+        <location filename="../ui/widgets/transfer_operation.ui" line="280"/>
+        <source>(asset value in new currency)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="97"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="260"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="79"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="176"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="129"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="250"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="273"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="259"/>
+        <source>Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="32"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="39"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="242"/>
         <source>CUR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="122"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="104"/>
         <source>#</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="143"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="59"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="186"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="202"/>
         <source>To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="193"/>
-        <source>Asset</source>
+        <location filename="../ui/widgets/transfer_operation.ui" line="195"/>
+        <source>Include &amp;fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="206"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="225"/>
         <source>Cancel changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="223"/>
-        <source>Fee amount</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="153"/>
-        <source> ➜ </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="46"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="243"/>
-        <source>➜</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="166"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="156"/>
         <source>Commit changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="115"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="97"/>
         <source>Transfer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5200,12 +5214,12 @@ Application will be terminated now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="76"/>
+        <location filename="../widgets/transfer_widget.py" line="79"/>
         <source>Incomplete data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="76"/>
+        <location filename="../widgets/transfer_widget.py" line="79"/>
         <source>Can&apos;t collect fee from an account without organization assigned</source>
         <translation type="unfinished"></translation>
     </message>
