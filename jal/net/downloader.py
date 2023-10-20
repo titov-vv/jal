@@ -174,7 +174,7 @@ class QuoteDownloader(QObject):
         try:
             code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency.symbol(), "CBR_code"].values[0]).strip()
         except IndexError:
-            logging.debug(self.tr("There are no CBR data for: " + f"{currency.symbol()}"))
+            logging.debug(self.tr("There are no CBR data for: ") + f"{currency.symbol()}")
             return None
         url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
         xml_root = xml_tree.fromstring(get_web_data(url))
