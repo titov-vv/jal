@@ -427,7 +427,8 @@ def test_asset_transfer(prepare_db):
     create_stocks([('A.USD', 'A SHARE')], currency_id=2)   # id = 4
     JalAsset(4).add_symbol('A.RUB', 1, '')
 
-    create_trades(1, [(d2t(220201), d2t(220203), 4, 5.0, 100.0, 1.0)])
+    create_trades(1, [(d2t(220201), d2t(220203), 4, 2.0, 100.0, 1.0)])
+    create_trades(1, [(d2t(220205), d2t(220207), 4, 3.0, 100.0, 1.0)])
     create_trades(2, [(d2t(220211), d2t(220213), 4, -5.0, 8000.0, 5.0)])
 
     create_transfers([(d2t(220207), 1, 5.0, 2, 37500.0, 4)])   # Move A from account.USD to account.RUB with new cost basis of 37500 RUB
@@ -443,22 +444,22 @@ def test_asset_transfer(prepare_db):
     assert value[BookAccount.Transfers, 1, 4] == Decimal('5E+2')
     assert value[BookAccount.Transfers, 2, 4] == Decimal('-3.75E+4')
     trades = JalAccount(1).closed_trades_list()
-    assert len(trades) == 1
-    assert sum([x.profit() for x in trades]) == Decimal('-1')
+    assert len(trades) == 2
+    assert sum([x.profit() for x in trades]) == Decimal('-2')   # sum of open trades fee
     trades = JalAccount(2).closed_trades_list()
     assert len(trades) == 1
     assert sum([x.profit() for x in trades]) == Decimal('2495')
 
     # Modify closing deal quantity
-    LedgerTransaction.get_operation(LedgerTransaction.Trade, 2).update_price(Decimal('7700'))
+    LedgerTransaction.get_operation(LedgerTransaction.Trade, 3).update_price(Decimal('7700'))
 
     # Build ledger from given date
     ledger = Ledger()
     ledger.rebuild()
 
     trades = JalAccount(1).closed_trades_list()
-    assert len(trades) == 1
-    assert sum([x.profit() for x in trades]) == Decimal('-1')
+    assert len(trades) == 2
+    assert sum([x.profit() for x in trades]) == Decimal('-2')
     trades = JalAccount(2).closed_trades_list()
     assert len(trades) == 1
     assert sum([x.profit() for x in trades]) == Decimal('995')
