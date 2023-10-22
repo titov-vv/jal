@@ -82,6 +82,10 @@ class TransferWidget(AbstractOperationDetails):
             self.model.setData(self.model.index(0, self.model.fieldIndex("asset")), None)
         return True
 
+    def revertChanges(self):
+        super().revertChanges()
+        self.on_record_change(0)
+
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
         new_record.setValue("withdrawal_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
