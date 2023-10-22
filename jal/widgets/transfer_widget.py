@@ -71,11 +71,11 @@ class TransferWidget(AbstractOperationDetails):
     def _validated(self):
         fields = db_row2dict(self.model, 0)
         # Set related fields NULL if we don't have fee. This is required for correct transfer processing
-        if not fields['fee'] or Decimal(fields['fee']) == Decimal('0'):
+        if not fields['fee_account'] or not fields['fee'] or Decimal(fields['fee']) == Decimal('0'):
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee_account")), None)
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee")), None)
         else:
-            if not JalAccount(fields['fee_account']).organization():
+            if not JalAccount(int(fields['fee_account'])).organization():
                 QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Can't collect fee from an account without organization assigned"), QMessageBox.Ok)
                 return False
         if fields['asset'] == 0:   # Store None if asset isn't selected
