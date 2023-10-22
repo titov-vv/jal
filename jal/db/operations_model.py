@@ -74,11 +74,11 @@ class OperationsModel(QAbstractTableModel):
             return operation.label()
         elif column == 1:
             date_time = ts2dt(operation.timestamp())
-            if operation.number():
+            if operation.number()  and operation.type() != LedgerTransaction.Transfer:  # Transfer is 1-liner
                 date_time += f"\n# {operation.number()}"
             return date_time
         elif column == 2:
-            if operation.asset_name():
+            if operation.asset_name() and operation.type() != LedgerTransaction.Transfer:
                 return operation.account_name() + "\n" + operation.asset_name()
             else:
                 return operation.account_name()

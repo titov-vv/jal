@@ -239,6 +239,6 @@ class Ui_TransferOperation(object):
         self.fee_currency.setText(QCoreApplication.translate("TransferOperation", u"CUR", None))
         self.asset_check.setText(QCoreApplication.translate("TransferOperation", u"Asset transfer", None))
         self.account_label.setText(QCoreApplication.translate("TransferOperation", u"Account", None))
-        self.value_label.setText(QCoreApplication.translate("TransferOperation", u"(asset value in new currency)", None))
+        self.value_label.setText(QCoreApplication.translate("TransferOperation", u"(asset cost basis in new currency)", None))
     # retranslateUi
 

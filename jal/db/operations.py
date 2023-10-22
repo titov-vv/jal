@@ -830,29 +830,33 @@ class Transfer(LedgerTransaction):
             assert False, "Unknown transfer type"
 
     def description(self) -> str:
-        try:
-            rate = self._withdrawal / self._deposit
-        except ZeroDivisionError:
-            rate = Decimal('0')
-        if self._withdrawal_currency != self._deposit_currency:
-            if rate != Decimal('0'):
-                if rate > Decimal('1.0'):
-                    return self._note + f" [1 {self._deposit_currency} = {rate:.4f} {self._withdrawal_currency}]"
-                elif rate < Decimal('1.0'):
-                    rate = Decimal('1.0') / rate
-                    return self._note + f" [{rate:.4f} {self._deposit_currency} = 1 {self._withdrawal_currency}]"
-                else:
-                    return self._note
-            else:
-                return self._note + " " + self.tr("Error. Zero rate")
+        if self._asset.id():
+            if self._display_type == Transfer.Incoming and self._withdrawal_currency != self._deposit_currency:
+                return self._note + " [" + self.tr("Cost basis:") + f" @{self._deposit:.2f} {self._deposit_currency}]"
         else:
-            return self._note
+            try:
+                rate = self._withdrawal / self._deposit
+            except ZeroDivisionError:
+                rate = Decimal('0')
+            if self._withdrawal_currency != self._deposit_currency:
+                if rate != Decimal('0'):
+                    if rate > Decimal('1.0'):
+                        return self._note + f" [1 {self._deposit_currency} = {rate:.4f} {self._withdrawal_currency}]"
+                    if rate < Decimal('1.0'):
+                        rate = Decimal('1.0') / rate
+                        return self._note + f" [{rate:.4f} {self._deposit_currency} = 1 {self._withdrawal_currency}]"
+                else:
+                    return self._note + " " + self.tr("Error. Zero rate")
+        return self._note
 
     def value_change(self) -> list:
         if self._display_type == Transfer.Outgoing:
             return [-self._withdrawal]
         elif self._display_type == Transfer.Incoming:
-            return [self._deposit]
+            if self._asset.id():
+                return [self._withdrawal]  # amount of asset doesn't change and self._deposit contains a cost basis
+            else:
+                return [self._deposit]
         elif self._display_type == Transfer.Fee:
             return [-self._fee]
         else:
@@ -861,12 +865,12 @@ class Transfer(LedgerTransaction):
     def value_currency(self) -> str:
         if self._display_type == Transfer.Outgoing:
             if self._asset.id():
-                return JalAsset(self._asset.id()).symbol(self._withdrawal_account.currency())
+                return self._asset.symbol(self._withdrawal_account.currency())
             else:
                 return self._withdrawal_currency
         elif self._display_type == Transfer.Incoming:
             if self._asset.id():
-                return JalAsset(self._asset.id()).symbol(self._deposit_account.currency())
+                return self._asset.symbol(self._deposit_account.currency())
             else:
                 return self._deposit_currency
         elif self._display_type == Transfer.Fee:

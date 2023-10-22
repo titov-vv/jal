@@ -277,7 +277,7 @@
    <item row="3" column="9">
     <widget class="QLabel" name="value_label">
      <property name="text">
-      <string>(asset value in new currency)</string>
+      <string>(asset cost basis in new currency)</string>
      </property>
     </widget>
    </item>
