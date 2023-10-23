@@ -206,11 +206,11 @@ class JalAccount(JalDB):
         query = self._exec(
             "WITH _last_ids AS ("
             "SELECT MAX(id) AS id, asset_id FROM ledger "
-            "WHERE account_id=:account_id AND timestamp<=:timestamp GROUP BY asset_id"
+            "WHERE account_id=:account_id AND timestamp<=:timestamp AND book_account=:assets GROUP BY asset_id"
             ") "
             "SELECT l.asset_id, amount_acc, value_acc "
-            "FROM ledger l JOIN _last_ids d ON l.asset_id=d.asset_id AND l.id=d.id "
-            "WHERE amount_acc!='0' AND book_account=:assets",
+            "FROM ledger l JOIN _last_ids d ON l.id=d.id "
+            "WHERE amount_acc!='0'",
             [(":account_id", self._id), (":timestamp", timestamp), (":assets", BookAccount.Assets)])
         while query.next():
             try:
