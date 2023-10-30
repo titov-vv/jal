@@ -78,7 +78,7 @@ class TransferWidget(AbstractOperationDetails):
             if not JalAccount(int(fields['fee_account'])).organization():
                 QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Can't collect fee from an account without organization assigned"), QMessageBox.Ok)
                 return False
-        if fields['asset'] == 0:   # Store None if asset isn't selected
+        if not fields['asset'] or fields['asset'] == '0':   # Store None if asset isn't selected
             self.model.setData(self.model.index(0, self.model.fieldIndex("asset")), None)
         return True
 
