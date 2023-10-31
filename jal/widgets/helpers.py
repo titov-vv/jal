@@ -178,11 +178,10 @@ class ManipulateDate:
         end = day + timedelta(days=1)
         prev_quarter_month = day.month - day.month % 3 - 3
         if prev_quarter_month > 0:
-            quarter_back = day.replace(month=prev_quarter_month)
+            quarter_back = day.replace(day=1, month=prev_quarter_month)
         else:
-            quarter_back = day.replace(month=(prev_quarter_month + 12), year=(day.year - 1))
-        first_day_of_prev_quarter = quarter_back.replace(day=1)
-        return ManipulateDate.toTimestamp(first_day_of_prev_quarter), ManipulateDate.toTimestamp(end)
+            quarter_back = day.replace(day=1, month=(prev_quarter_month + 12), year=(day.year - 1))
+        return ManipulateDate.toTimestamp(quarter_back), ManipulateDate.toTimestamp(end)
 
     @staticmethod
     def PreviousYear(day=datetime.today()):
@@ -197,10 +196,9 @@ class ManipulateDate:
         end = day + timedelta(days=1)
         begin_month = day.month - 3
         if begin_month > 0:
-            begin = day.replace(month=begin_month)
+            begin = day.replace(day=1, month=begin_month)
         else:
-            begin = day.replace(month=(begin_month + 12), year=(day.year - 1))
-        begin = begin.replace(day=1)
+            begin = day.replace(day=1, month=(begin_month + 12), year=(day.year - 1))
         return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
 
     @staticmethod
