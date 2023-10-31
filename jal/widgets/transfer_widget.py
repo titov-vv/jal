@@ -48,8 +48,8 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.from_account_widget.changed.connect(self.mapper.submit)
         self.ui.to_account_widget.changed.connect(self.mapper.submit)
         self.ui.fee_account_widget.changed.connect(self.mapper.submit)
-        self.mapper.currentIndexChanged.connect(self.on_record_change)
         self.ui.asset_widget.changed.connect(self.mapper.submit)
+        self.mapper.currentIndexChanged.connect(self.on_record_change)
 
         self.mapper.addMapping(self.ui.withdrawal_timestamp, self.model.fieldIndex("withdrawal_timestamp"))
         self.mapper.addMapping(self.ui.from_account_widget, self.model.fieldIndex("withdrawal_account"))
@@ -71,14 +71,17 @@ class TransferWidget(AbstractOperationDetails):
     def _validated(self):
         fields = db_row2dict(self.model, 0)
         # Set related fields NULL if we don't have fee. This is required for correct transfer processing
-        if not fields['fee_account'] or not fields['fee'] or Decimal(fields['fee']) == Decimal('0'):
+        if not fields['fee'] or Decimal(fields['fee']) == Decimal('0'):
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee_account")), None)
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee")), None)
         else:
+            if fields['fee_account'] == '0':
+                QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("An account isn't chosen for fee collection from"), QMessageBox.Ok)
+                return False
             if not JalAccount(int(fields['fee_account'])).organization():
                 QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Can't collect fee from an account without organization assigned"), QMessageBox.Ok)
                 return False
-        if not fields['asset'] or fields['asset'] == '0':   # Store None if asset isn't selected
+        if fields['asset'] == '0':   # Store None if asset isn't selected
             self.model.setData(self.model.index(0, self.model.fieldIndex("asset")), None)
         return True
 
@@ -94,9 +97,9 @@ class TransferWidget(AbstractOperationDetails):
         new_record.setValue("deposit_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         new_record.setValue("deposit_account", 0)
         new_record.setValue("deposit", '0')
-        new_record.setValue("fee_account", 0)
+        new_record.setNull("fee_account")
         new_record.setValue("fee", '0')
-        new_record.setValue("asset", None)
+        new_record.setNull("asset")
         new_record.setValue("number", None)
         new_record.setValue("note", None)
         return new_record

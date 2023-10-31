@@ -53,7 +53,7 @@ class AbstractReferenceSelector(QWidget):
     def get_id(self):
         return self.p_selected_id
 
-    def set_id(self, selected_id):
+    def set_id(self, selected_id: int):
         if self.p_selected_id == selected_id:
             return
         self.p_selected_id = selected_id

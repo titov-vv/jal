@@ -63,8 +63,7 @@ class AccountCurrencyLabel(QLabel):
         self.setText(self.EMPTY)
 
     def get_id(self) -> str:
-        string_id = '' if self._account_id == 0 else str(self._account_id)
-        return string_id
+        return str(self._account_id)
 
     def set_id(self, account_id: str):
         self._account_id = int(account_id) if account_id else 0
