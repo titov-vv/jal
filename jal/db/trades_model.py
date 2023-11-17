@@ -1,8 +1,11 @@
 from __future__ import annotations
 from decimal import Decimal
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
+from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2d
 from jal.widgets.delegates import TimestampDelegate, FloatDelegate, GridLinesDelegate
@@ -104,6 +107,7 @@ class ClosedTradesModel(ReportTreeModel):
         self._float4_delegate = None
         self._timestamp_delegate = None
         self._profit_delegate = None
+        self._total_currency_name = ''
         self._columns = [
             {'name': self.tr("Asset"), 'field': 'symbol'},
             {'name': self.tr("Open Date/Time"), 'field': 'open_ts'},
@@ -136,10 +140,31 @@ class ClosedTradesModel(ReportTreeModel):
             return item.details()[self._columns[index.column()]['field']]
         return None
 
+    def footerData(self, section: int, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            total_data = self._root.details()
+            if section == 0:
+                return self.tr("Total:")
+            elif section == 9:
+                return localize_decimal(total_data[self._columns[section]['field']], precision=2)
+            elif section == 10:
+                return self._total_currency_name
+        elif role == Qt.FontRole:
+            font = QFont()
+            font.setBold(True)
+            return font
+        elif role == Qt.TextAlignmentRole:
+            if section == 9:
+                return Qt.AlignRight | Qt.AlignVCenter
+            else:
+                return Qt.AlignLeft | Qt.AlignVCenter
+        return None
+
     def updateView(self, account_id, dates, grouping):
         update = False
         if self._account_id != account_id:
             self._account_id = account_id
+            self._total_currency_name = JalAsset(JalAccount(account_id).currency()).symbol()
             update = True
         if self._begin != dates[0]:
             self._begin = dates[0]

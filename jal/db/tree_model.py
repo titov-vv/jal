@@ -130,6 +130,9 @@ class ReportTreeModel(QAbstractItemModel):
                 return int(Qt.AlignCenter)
         return None
 
+    def footerData(self, section, role=Qt.DisplayRole):
+        return None
+
     # defines report grouping by provided field list - 'group_field1;group_field2;...'
     # return True if grouping was actually changed and False otherwise
     def setGrouping(self, group_list) -> bool:

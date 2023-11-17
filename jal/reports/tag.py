@@ -36,7 +36,7 @@ class TagOperationsModel(OperationsModel):
             font.setBold(True)
             return font
         elif role == Qt.TextAlignmentRole:
-            if section ==3 or section == 4:
+            if section == 3 or section == 4:
                 return Qt.AlignRight | Qt.AlignVCenter
             else:
                 return Qt.AlignLeft | Qt.AlignVCenter

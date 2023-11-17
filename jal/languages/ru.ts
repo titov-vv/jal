@@ -2349,7 +2349,7 @@ Application will be terminated now.</source>
 <context>
     <name>OptionalCurrencyComboBox</name>
     <message>
-        <location filename="../widgets/account_select.py" line="168"/>
+        <location filename="../widgets/account_select.py" line="167"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
@@ -3512,18 +3512,18 @@ Application will be terminated now.</source>
 <context>
     <name>SelectAccountDialog</name>
     <message>
-        <location filename="../widgets/account_select.py" line="101"/>
-        <location filename="../widgets/account_select.py" line="106"/>
+        <location filename="../widgets/account_select.py" line="100"/>
+        <location filename="../widgets/account_select.py" line="105"/>
         <source>No selection</source>
         <translation>Ничего не выбрано</translation>
     </message>
     <message>
-        <location filename="../widgets/account_select.py" line="101"/>
+        <location filename="../widgets/account_select.py" line="100"/>
         <source>Invalid account selected</source>
         <translation>Выбран некорректный счёт</translation>
     </message>
     <message>
-        <location filename="../widgets/account_select.py" line="106"/>
+        <location filename="../widgets/account_select.py" line="105"/>
         <source>Please select different account</source>
         <translation>Пожалуйста, выберите другой счёт</translation>
     </message>
@@ -5226,11 +5226,17 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../widgets/transfer_widget.py" line="79"/>
+        <location filename="../widgets/transfer_widget.py" line="82"/>
         <source>Incomplete data</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
         <location filename="../widgets/transfer_widget.py" line="79"/>
+        <source>An account isn&apos;t chosen for fee collection from</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/transfer_widget.py" line="82"/>
         <source>Can&apos;t collect fee from an account without organization assigned</source>
         <translation>Невозможно удержать комиссию со счёта без привязанной организации</translation>
     </message>

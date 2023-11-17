@@ -54,7 +54,7 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="DateRangeSelector" name="ReportRange" native="true">
+       <widget class="DateRangeSelector" name="ReportRange">
         <property name="ItemsList" stdset="0">
          <string notr="true">QTD;YTD;this_year;last_year</string>
         </property>
@@ -104,7 +104,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTreeView" name="ReportTreeView">
+    <widget class="TreeViewWithFooter" name="ReportTreeView">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
@@ -124,6 +124,11 @@
    <extends>QWidget</extends>
    <header>jal/widgets/custom/date_range_selector.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TreeViewWithFooter</class>
+   <extends>QTreeView</extends>
+   <header>jal/widgets/custom/treeview_with_footer.h</header>
   </customwidget>
   <customwidget>
    <class>AccountButton</class>

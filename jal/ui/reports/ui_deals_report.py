@@ -17,11 +17,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame,
     QHBoxLayout, QHeaderView, QLabel, QPushButton,
-    QSizePolicy, QSpacerItem, QTreeView, QVBoxLayout,
-    QWidget)
+    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import AccountButton
 from jal.widgets.custom.date_range_selector import DateRangeSelector
+from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
 
 class Ui_DealsReportWidget(object):
     def setupUi(self, DealsReportWidget):
@@ -78,7 +78,7 @@ class Ui_DealsReportWidget(object):
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
 
-        self.ReportTreeView = QTreeView(DealsReportWidget)
+        self.ReportTreeView = TreeViewWithFooter(DealsReportWidget)
         self.ReportTreeView.setObjectName(u"ReportTreeView")
         self.ReportTreeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.ReportTreeView.setAlternatingRowColors(True)
