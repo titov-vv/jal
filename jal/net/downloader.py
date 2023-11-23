@@ -491,7 +491,7 @@ class QuoteDownloader(QObject):
             return None
         # Download PDF-file with current quotes
         url = "https://www.victoria-seguros.pt/cdu-services/UNIDADES_PARTICIPACAO_VIDA_OPC1_UP"
-        pdf_data = get_web_data(url, binary=True)
+        pdf_data = get_web_data(url, binary=True, verify='victoria-seguros.pem')
         if not pdf_data:
             return None
         pdf = PdfReader(BytesIO(pdf_data))

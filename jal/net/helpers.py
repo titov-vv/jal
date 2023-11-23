@@ -1,9 +1,12 @@
+import os
 import requests
 from requests.exceptions import ConnectTimeout, ConnectionError
 import logging
 import platform
 from PySide6.QtWidgets import QApplication
 from jal import __version__
+from jal.constants import Setup
+from jal.db.helpers import get_app_path
 
 
 # ===================================================================================================================
@@ -28,21 +31,21 @@ def isEnglish(text):
 
 # ===================================================================================================================
 # Retrieve URL from web with given method and params
-def request_url(method, url, params=None, json_params=None, headers=None, binary=False):
+def request_url(method, url, params=None, json_params=None, headers=None, binary=False, verify=True):
     session = requests.Session()
     session.headers['User-Agent'] = make_user_agent(url=url)
     if headers is not None:
         session.headers.update(headers)
     try:
         if method == "GET":
-            response = session.get(url)
+            response = session.get(url, verify=verify)
         elif method == "POST":
             if params:
-                response = session.post(url, data=params)
+                response = session.post(url, data=params, verify=verify)
             elif json_params:
-                response = session.post(url, json=json_params)
+                response = session.post(url, json=json_params, verify=verify)
             else:
-                response = session.post(url)
+                response = session.post(url, verify=verify)
         else:
             raise ValueError("Unknown download method for URL")
     except ConnectTimeout:
@@ -64,8 +67,10 @@ def request_url(method, url, params=None, json_params=None, headers=None, binary
 
 # ===================================================================================================================
 # Function download URL and return it content as string or empty string if site returns error
-def get_web_data(url, headers=None, binary=False):
-    return request_url("GET", url, headers=headers, binary=binary)
+def get_web_data(url, headers=None, binary=False, verify=True):
+    if type(verify) != bool:  # there is a certificate path given -> add full path to it
+        verify = get_app_path() + Setup.NET_PATH + os.sep + verify
+    return request_url("GET", url, headers=headers, binary=binary, verify=verify)
 
 
 # ===================================================================================================================
