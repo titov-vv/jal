@@ -17,9 +17,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLayout,
     QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QSplitter, QTableView, QVBoxLayout, QWidget)
+    QSplitter, QVBoxLayout, QWidget)
 
+from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.date_range_selector import DateRangeSelector
+from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.operations_tabs import JalOperationsTabs
 from jal.widgets.reference_selector import PeerSelector
 
@@ -27,7 +29,7 @@ class Ui_PeerReportWidget(object):
     def setupUi(self, PeerReportWidget):
         if not PeerReportWidget.objectName():
             PeerReportWidget.setObjectName(u"PeerReportWidget")
-        PeerReportWidget.resize(636, 345)
+        PeerReportWidget.resize(767, 345)
         self.verticalLayout = QVBoxLayout(PeerReportWidget)
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -45,9 +47,14 @@ class Ui_PeerReportWidget(object):
         self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
+        self.ReportPeerEdit = PeerSelector(self.ReportParamsFrame)
+        self.ReportPeerEdit.setObjectName(u"ReportPeerEdit")
+
+        self.gridLayout.addWidget(self.ReportPeerEdit, 0, 2, 1, 1)
+
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 3, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 5, 1, 1)
 
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
@@ -60,10 +67,15 @@ class Ui_PeerReportWidget(object):
 
         self.gridLayout.addWidget(self.ReportPeerLbl, 0, 1, 1, 1)
 
-        self.ReportPeerEdit = PeerSelector(self.ReportParamsFrame)
-        self.ReportPeerEdit.setObjectName(u"ReportPeerEdit")
+        self.TotalCurrencyLbl = QLabel(self.ReportParamsFrame)
+        self.TotalCurrencyLbl.setObjectName(u"TotalCurrencyLbl")
 
-        self.gridLayout.addWidget(self.ReportPeerEdit, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.TotalCurrencyLbl, 0, 3, 1, 1)
+
+        self.TotalCurrencyCombo = CurrencyComboBox(self.ReportParamsFrame)
+        self.TotalCurrencyCombo.setObjectName(u"TotalCurrencyCombo")
+
+        self.gridLayout.addWidget(self.TotalCurrencyCombo, 0, 4, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -71,7 +83,7 @@ class Ui_PeerReportWidget(object):
         self.splitter = QSplitter(PeerReportWidget)
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Vertical)
-        self.ReportTableView = QTableView(self.splitter)
+        self.ReportTableView = TableViewWithFooter(self.splitter)
         self.ReportTableView.setObjectName(u"ReportTableView")
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy1.setHorizontalStretch(0)
@@ -108,5 +120,6 @@ class Ui_PeerReportWidget(object):
     def retranslateUi(self, PeerReportWidget):
         PeerReportWidget.setWindowTitle(QCoreApplication.translate("PeerReportWidget", u"Report by peer", None))
         self.ReportPeerLbl.setText(QCoreApplication.translate("PeerReportWidget", u"Peer:", None))
+        self.TotalCurrencyLbl.setText(QCoreApplication.translate("PeerReportWidget", u"Common currency:", None))
     # retranslateUi
 

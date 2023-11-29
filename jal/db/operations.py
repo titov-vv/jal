@@ -345,6 +345,10 @@ class IncomeSpending(LedgerTransaction):
         else:
             return super().value_total()
 
+    # Return peer_id of current operation
+    def peer(self) -> int:
+        return self._peer_id
+
     # Returns a list of income/spending lines in form of
     # {"category_id", "category", "tag_id", "tag", "amount", "amount_alt", "note"}
     def lines(self) -> list:

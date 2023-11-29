@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>636</width>
+    <width>767</width>
     <height>345</height>
    </rect>
   </property>
@@ -59,7 +59,10 @@
       <property name="spacing">
        <number>6</number>
       </property>
-      <item row="0" column="3">
+      <item row="0" column="2">
+       <widget class="PeerSelector" name="ReportPeerEdit" native="true"/>
+      </item>
+      <item row="0" column="5">
        <spacer name="ReportFrameSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -73,7 +76,7 @@
        </spacer>
       </item>
       <item row="0" column="0">
-       <widget class="DateRangeSelector" name="ReportRange" native="true">
+       <widget class="DateRangeSelector" name="ReportRange">
         <property name="ItemsList" stdset="0">
          <string notr="true">QTD;YTD;this_year;last_year</string>
         </property>
@@ -86,8 +89,15 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="PeerSelector" name="ReportPeerEdit" native="true"/>
+      <item row="0" column="3">
+       <widget class="QLabel" name="TotalCurrencyLbl">
+        <property name="text">
+         <string>Common currency:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="CurrencyComboBox" name="TotalCurrencyCombo"/>
       </item>
      </layout>
     </widget>
@@ -97,7 +107,7 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <widget class="QTableView" name="ReportTableView">
+     <widget class="TableViewWithFooter" name="ReportTableView">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -150,6 +160,16 @@
    <extends>QWidget</extends>
    <header>jal/widgets/custom/date_range_selector.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TableViewWithFooter</class>
+   <extends>QTableView</extends>
+   <header>jal/widgets/custom/tableview_with_footer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CurrencyComboBox</class>
+   <extends>QComboBox</extends>
+   <header>jal/widgets/account_select.h</header>
   </customwidget>
   <customwidget>
    <class>JalOperationsTabs</class>
