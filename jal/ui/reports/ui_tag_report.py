@@ -29,7 +29,7 @@ class Ui_TagReportWidget(object):
     def setupUi(self, TagReportWidget):
         if not TagReportWidget.objectName():
             TagReportWidget.setObjectName(u"TagReportWidget")
-        TagReportWidget.resize(727, 345)
+        TagReportWidget.resize(767, 345)
         self.verticalLayout = QVBoxLayout(TagReportWidget)
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")

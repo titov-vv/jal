@@ -17,9 +17,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLayout,
     QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QSplitter, QTableView, QVBoxLayout, QWidget)
+    QSplitter, QVBoxLayout, QWidget)
 
+from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.date_range_selector import DateRangeSelector
+from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.operations_tabs import JalOperationsTabs
 from jal.widgets.reference_selector import CategorySelector
 
@@ -27,7 +29,7 @@ class Ui_CategoryReportWidget(object):
     def setupUi(self, CategoryReportWidget):
         if not CategoryReportWidget.objectName():
             CategoryReportWidget.setObjectName(u"CategoryReportWidget")
-        CategoryReportWidget.resize(636, 345)
+        CategoryReportWidget.resize(769, 345)
         self.verticalLayout = QVBoxLayout(CategoryReportWidget)
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -42,7 +44,17 @@ class Ui_CategoryReportWidget(object):
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 3, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 5, 1, 1)
+
+        self.ReportCategoryEdit = CategorySelector(self.ReportParamsFrame)
+        self.ReportCategoryEdit.setObjectName(u"ReportCategoryEdit")
+
+        self.gridLayout.addWidget(self.ReportCategoryEdit, 0, 2, 1, 1)
+
+        self.ReportCategoryLbl = QLabel(self.ReportParamsFrame)
+        self.ReportCategoryLbl.setObjectName(u"ReportCategoryLbl")
+
+        self.gridLayout.addWidget(self.ReportCategoryLbl, 0, 1, 1, 1)
 
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
@@ -50,15 +62,15 @@ class Ui_CategoryReportWidget(object):
 
         self.gridLayout.addWidget(self.ReportRange, 0, 0, 1, 1)
 
-        self.ReportCategoryLbl = QLabel(self.ReportParamsFrame)
-        self.ReportCategoryLbl.setObjectName(u"ReportCategoryLbl")
+        self.TotalCurrencyLbl = QLabel(self.ReportParamsFrame)
+        self.TotalCurrencyLbl.setObjectName(u"TotalCurrencyLbl")
 
-        self.gridLayout.addWidget(self.ReportCategoryLbl, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.TotalCurrencyLbl, 0, 3, 1, 1)
 
-        self.ReportCategoryEdit = CategorySelector(self.ReportParamsFrame)
-        self.ReportCategoryEdit.setObjectName(u"ReportCategoryEdit")
+        self.TotalCurrencyCombo = CurrencyComboBox(self.ReportParamsFrame)
+        self.TotalCurrencyCombo.setObjectName(u"TotalCurrencyCombo")
 
-        self.gridLayout.addWidget(self.ReportCategoryEdit, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.TotalCurrencyCombo, 0, 4, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -66,7 +78,7 @@ class Ui_CategoryReportWidget(object):
         self.splitter = QSplitter(CategoryReportWidget)
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Vertical)
-        self.ReportTableView = QTableView(self.splitter)
+        self.ReportTableView = TableViewWithFooter(self.splitter)
         self.ReportTableView.setObjectName(u"ReportTableView")
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -103,5 +115,6 @@ class Ui_CategoryReportWidget(object):
     def retranslateUi(self, CategoryReportWidget):
         CategoryReportWidget.setWindowTitle(QCoreApplication.translate("CategoryReportWidget", u"Report by category", None))
         self.ReportCategoryLbl.setText(QCoreApplication.translate("CategoryReportWidget", u"Category:", None))
+        self.TotalCurrencyLbl.setText(QCoreApplication.translate("CategoryReportWidget", u"Common currency:", None))
     # retranslateUi
 

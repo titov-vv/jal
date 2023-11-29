@@ -354,8 +354,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/category_report.ui" line="79"/>
+        <location filename="../ui/reports/category_report.ui" line="75"/>
         <source>Category:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/category_report.ui" line="89"/>
+        <source>Common currency:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
