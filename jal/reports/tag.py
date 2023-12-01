@@ -1,13 +1,11 @@
 from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QObject
-from PySide6.QtGui import QFont
 from jal.db.ledger import Ledger
 from jal.db.asset import JalAsset
 from jal.db.tag import JalTag
-from jal.db.helpers import localize_decimal
 from jal.reports.reports import Reports
+from jal.reports.operations_base import ReportOperationsModel
 from jal.db.operations import LedgerTransaction
-from jal.db.operations_model import OperationsModel
 from jal.ui.reports.ui_tag_report import Ui_TagReportWidget
 from jal.widgets.mdi import MdiWidget
 
@@ -15,51 +13,22 @@ JAL_REPORT_CLASS = "TagReport"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class TagOperationsModel(OperationsModel):
+class TagOperationsModel(ReportOperationsModel):
     def __init__(self, parent_view):
         self._tag_id = 0
-        self._total = Decimal('0')
-        self._total_currency = 0
-        self._total_currency_name = ''
         super().__init__(parent_view)
 
     def footerData(self, section: int, role=Qt.DisplayRole):
-        if role == Qt.DisplayRole:
-            if section == 3:
-                return self.tr("Total with tag ") + f"'{JalTag(self._tag_id).name()}':"
-            elif section == 4:
-                return localize_decimal(self._total, precision=2)
-            elif section == 5:
-                return self._total_currency_name
-        elif role == Qt.FontRole:
-            font = QFont()
-            font.setBold(True)
-            return font
-        elif role == Qt.TextAlignmentRole:
-            if section == 3 or section == 4:
-                return Qt.AlignRight | Qt.AlignVCenter
-            else:
-                return Qt.AlignLeft | Qt.AlignVCenter
-        return None
+        if role == Qt.DisplayRole and section == 3:
+            return self.tr("Total with tag ") + f"'{JalTag(self._tag_id).name()}':"
+        return super().footerData(section, role)
 
     def updateView(self, tag_id: int, dates_range: tuple, total_currency_id: int):
         update = False
         if self._tag_id != tag_id:
             self._tag_id = tag_id
             update = True
-        if self._begin != dates_range[0]:
-            self._begin = dates_range[0]
-            update = True
-        if self._end != dates_range[1]:
-            self._end = dates_range[1]
-            update = True
-        if self._total_currency != total_currency_id:
-            self._total_currency = total_currency_id
-            self._total_currency_name = JalAsset(total_currency_id).symbol()
-            update = True
-        if update:
-            self.prepareData()
-            self.configureView()
+        super().updateView(update, dates_range, total_currency_id)
 
     def prepareData(self):
         self._data = []
