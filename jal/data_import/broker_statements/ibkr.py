@@ -94,6 +94,13 @@ class IBKR_Currency:
 class IBKR_Asset:
     BondPrincipal = 1000
 
+# -----------------------------------------------------------------------------------------------------------------------
+# Returns True if masked value ('U***XXXX') matches with given account number.
+def is_account(masked_value, account_number) -> bool:
+    if re.compile(f"^{masked_value.replace('*', '.')}$").match(account_number):
+        return True
+    else:
+        return False
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR_Account:
@@ -101,7 +108,7 @@ class IBKR_Account:
         self.id = None
         account_ids = []
         for currency in currency_ids:
-            match = [x for x in accounts_list if x['number'] == number and x['currency'] == currency]
+            match = [x for x in accounts_list if is_account(number, x['number']) and x['currency'] == currency]
             if match:
                 if len(match) == 1:
                     account_ids.append(match[0]["id"])
@@ -110,8 +117,7 @@ class IBKR_Account:
             else:
                 new_id = max([0] + [x['id'] for x in accounts_list]) + 1
                 account_ids.append(new_id)
-                account = {"id": new_id, "number": number,
-                           "currency": currency, "precision": IBKR_CALCULATION_PRECISION}
+                account = {"id": new_id, "number": number, "currency": currency, "precision": IBKR_CALCULATION_PRECISION}
                 accounts_list.append(account)
         if account_ids:
             if len(account_ids) == 1:
@@ -413,11 +419,22 @@ class StatementIBKR(StatementXML):
             return candidates[0]["asset"]
         return 0
 
-    def set_asset_counry(self, asset_id, country):
+    def set_asset_country(self, asset_id, country):
         assets = [x for x in self._data[FOF.ASSETS] if 'id' in x and x['id'] == asset_id]
         if len(assets) != 1:
             return
         assets[0]["country"] = country
+
+    # IB report may be in form U***XXXX where XXXX are last account number digits.
+    # In this case account number is fetched from database or error is thrown if account not found
+    def unmask_account(self, masked_account: str) -> str:
+        if not '*' in masked_account:
+            return masked_account
+        account_numbers = [x.number() for x in JalAccount.get_all_accounts() if is_account(masked_account, x.number())]
+        if account_numbers:
+            return account_numbers[0]
+        raise Statement_ImportError(self.tr("Can't find account for a given masked account: ") +
+                                    f"'{masked_account}'. " + self.tr("Please create one."))
 
     def load_header(self, header):
         self._data[FOF.PERIOD][0] = header['period_start']
@@ -429,6 +446,7 @@ class StatementIBKR(StatementXML):
     def load_accounts(self, balances):
         for i, balance in enumerate(sorted(balances, key=lambda x: x['currency'])):
             balance['id'] = i + 1
+            balance['number'] = self.unmask_account(balance['number'])
             balance['precision'] = IBKR_CALCULATION_PRECISION
             self._data[FOF.ACCOUNTS].append(balance)
 
@@ -1009,7 +1027,7 @@ class StatementIBKR(StatementXML):
             logging.warning(self.tr("Unhandled tax country pattern found: ") + f"{tax['description']}")
             return 0
         parts = parts.groupdict()
-        self.set_asset_counry(tax['asset'], parts['country'].lower())
+        self.set_asset_country(tax['asset'], parts['country'].lower())
         description = parts['description']
         previous_tax = Decimal(tax['amount']) if Decimal(tax['amount']) >= Decimal('0') else Decimal('0')
         new_tax = -tax['amount'] if tax['amount'] < 0 else 0
