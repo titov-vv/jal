@@ -8,3 +8,4 @@ jsonschema
 sqlparse
 oauthlib
 requests_oauthlib
+setuptools
