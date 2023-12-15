@@ -39,8 +39,8 @@ class TransferWidget(AbstractOperationDetails):
 
         self.ui.copy_date_btn.clicked.connect(self.onCopyDate)
         self.ui.copy_amount_btn.clicked.connect(self.onCopyAmount)
-        self.ui.fee_check.clicked.connect(self.on_fee_check_change)
-        self.ui.asset_check.clicked.connect(self.on_asset_check_change)
+        self.ui.fee_check.clicked.connect(self.fee_toggled)
+        self.ui.asset_check.clicked.connect(self.asset_toggled)
 
         super()._init_db("transfers")
         self.mapper.setItemDelegate(TransferWidgetDelegate(self.mapper))
@@ -49,7 +49,7 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.to_account_widget.changed.connect(self.mapper.submit)
         self.ui.fee_account_widget.changed.connect(self.mapper.submit)
         self.ui.asset_widget.changed.connect(self.mapper.submit)
-        self.mapper.currentIndexChanged.connect(self.on_record_change)
+        self.mapper.currentIndexChanged.connect(self.record_changed)
 
         self.mapper.addMapping(self.ui.withdrawal_timestamp, self.model.fieldIndex("withdrawal_timestamp"))
         self.mapper.addMapping(self.ui.from_account_widget, self.model.fieldIndex("withdrawal_account"))
@@ -87,7 +87,7 @@ class TransferWidget(AbstractOperationDetails):
 
     def revertChanges(self):
         super().revertChanges()
-        self.on_record_change(0)
+        self.record_changed(0)
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
@@ -122,7 +122,7 @@ class TransferWidget(AbstractOperationDetails):
         self.mapper.submit()
 
     @Slot()
-    def on_record_change(self, idx):
+    def record_changed(self, idx):
         if self.ui.fee_account_widget.selected_id:
             self.ui.fee_check.setCheckState(Qt.CheckState.Checked)
             self.set_fee_data_visible(True)
@@ -142,7 +142,7 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.fee_currency.setVisible(visible)
 
     @Slot()
-    def on_fee_check_change(self, _state):
+    def fee_toggled(self, _state):
         with_fee = self.ui.fee_check.isChecked()
         self.set_fee_data_visible(with_fee)
         if not with_fee:
@@ -157,7 +157,7 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.from_currency.setVisible(not visible)
 
     @Slot()
-    def on_asset_check_change(self, _state):
+    def asset_toggled(self, _state):
         asset_transfer = self.ui.asset_check.isChecked()
         self.set_asset_data_visible(asset_transfer)
         if not asset_transfer:
