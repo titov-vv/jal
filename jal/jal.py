@@ -22,10 +22,10 @@ def exception_logger(exctype, value, tb):
 def main():
     sys.excepthook = exception_logger
     os.environ['QT_MAC_WANTS_LAYER'] = '1'    # Workaround for https://bugreports.qt.io/browse/QTBUG-87014
+    app = QApplication([])
 
     error = JalDB().init_db(get_app_path())
 
-    app = QApplication([])
     language = JalSettings().getLanguage()
     translator = QTranslator(app)
     language_file = get_app_path() + Setup.LANG_PATH + os.sep + language + '.qm'
