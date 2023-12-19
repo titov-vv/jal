@@ -7,5 +7,8 @@
   },
   "2022": {
     "tax_treaty": ["al", "am", "ar", "at", "au", "az", "be", "bg", "bw", "by", "ca", "ch", "cl", "cn", "cu", "cy", "cz", "de", "dk", "dz", "eg", "es", "fi", "fr", "gb", "gr", "hr", "hu", "id", "ie", "il", "in", "ir", "is", "it", "jp", "kg", "kp", "kr", "kw", "kz", "lb", "lk", "lt", "lu", "ma", "md", "me", "mk", "ml", "mn", "mt", "mx", "my", "na", "no", "nz", "ph", "pl", "pt", "qa", "rs", "sa", "se", "sg", "si", "sk", "sy", "th", "tj", "tm", "tr", "us", "uz", "ve", "vn", "za"]
+  },
+  "2023": {
+    "tax_treaty": ["am", "ar", "az", "bw", "by", "cl", "cn", "cu", "dz", "eg", "id", "il", "in", "ir", "kg", "kp", "kw", "kz", "lb", "lk", "ma", "md", "ml", "mn", "mx", "my", "na", "ph", "qa", "rs", "sa", "sy", "th", "tj", "tm", "tr", "uz", "ve", "vn", "za"]
   }
 }
