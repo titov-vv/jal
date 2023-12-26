@@ -33,6 +33,7 @@ def test_MOEX_details():
     assert QuoteDownloader.MOEX_find_secid(isin='RU000A1038V6') == 'SU26238RMFS4'
     assert QuoteDownloader.MOEX_find_secid(isin='IE00B8XB7377', reg_number='CEOGCS') == 'FXGD'
     assert QuoteDownloader.MOEX_find_secid(name='МЕТАЛЛОИНВЕСТ 028') == 'RU000A105A04'
+    assert QuoteDownloader.MOEX_find_secid(name='АБЗ-1 1Р01') == 'RU000A102LW1'
 
     assert QuoteDownloader.MOEX_info() == {}
     assert QuoteDownloader.MOEX_info(special=True) == {}

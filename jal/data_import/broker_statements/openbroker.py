@@ -418,9 +418,10 @@ class StatementOpenBroker(StatementXML):
     def asset_payment(self, timestamp, account_id, amount, description):
         payment_operations = {
             'НКД': self.interest_payment,
-            'Погашение': self.bond_repayment
+            'Погашение': self.bond_repayment,
+            'Част.погашение': self.bond_amortization
         }
-        payment_pattern = r"^.*\((?P<type>\w+).*\).*$"
+        payment_pattern = r"^.*\((?P<type>[\w\.]+).*\).*$"
         parts = re.match(payment_pattern, description, re.IGNORECASE)
         if parts is None:
             payment_pattern = r"^Выплата дохода клиент (?P<type>\d+) дивиденды (?P<asset>.*) налог к удержанию (?P<tax>\d+\.\d+) рублей$"
@@ -468,12 +469,12 @@ class StatementOpenBroker(StatementXML):
         self._data[FOF.ASSET_PAYMENTS].append(payment)
 
     def interest_payment(self, timestamp, account_id, amount, description):
-        intrest_pattern = r"^Выплата дохода клиент (?P<account>\w+) \((?P<type>\w+) (?P<number>\d+) (?P<symbol>.*)\) налог.* (?P<tax>\d+\.\d+) рубл.*$"
-        parts = re.match(intrest_pattern, description, re.IGNORECASE)
+        interest_pattern = r"^Выплата дохода клиент (?P<account>\w+) \((?P<type>\w+) (?P<number>\d+) (?P<symbol>.*)\) налог.* (?P<tax>\d+\.\d+) рубл.*$"
+        parts = re.match(interest_pattern, description, re.IGNORECASE)
         if parts is None:
             raise Statement_ImportError(self.tr("Can't parse Interest description ") + f"'{description}'")
         interest = parts.groupdict()
-        if len(interest) != intrest_pattern.count("(?P<"):  # check expected number of matches
+        if len(interest) != interest_pattern.count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Interest description miss some data ") + f"'{description}'")
         asset_id = self.asset_id({'symbol': interest['symbol'], 'search_online': 'MOEX'})
         if asset_id is None:
@@ -512,6 +513,24 @@ class StatementOpenBroker(StatementXML):
                  "asset": asset_cancel['asset'], "quantity": qty, "price": price, "fee": 0.0,
                  "note": asset_cancel['note']}
         self._data[FOF.TRADES].append(trade)
+
+    def bond_amortization(self, timestamp, account_id, amount, description):
+        amortization_pattern = r"^Выплата дохода клиент (?P<account>\w+) \((?P<type>[\w\.]+) (?P<symbol>.*)\) налог не удерживается$"
+        parts = re.match(amortization_pattern, description, re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't parse Bond Amortization description ") + f"'{description}'")
+        amortization = parts.groupdict()
+        if len(amortization) != amortization_pattern.count("(?P<"):  # check expected number of matches
+            raise Statement_ImportError(self.tr("Bond Amortization description miss some data ") + f"'{description}'")
+        asset_id = self.asset_id({'symbol': amortization['symbol'], 'search_online': 'MOEX'})
+        if asset_id is None:
+            raise Statement_ImportError(self.tr("Can't find asset for Bond Amortization ")
+                                        + f"'{amortization['symbol']}'")
+        note = f"{amortization['type']} {amortization['symbol']}"
+        new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        payment = {"id": new_id, "type": FOF.PAYMENT_AMORTIZATION, "account": account_id, "timestamp": timestamp,
+                   "asset": asset_id, "amount": amount, "tax": 0.0, "description": note}
+        self._data[FOF.ASSET_PAYMENTS].append(payment)
 
     def load_loans(self, loans):
         for loan in loans:

@@ -434,6 +434,7 @@
 <item operation_date="2023-02-06T00:00:00" currency_code="RUB" amount="75.00" comment="Поступили средства клиента 12345. Дарение ДС по договору дарения 44433322 от 04.02.2023 в рамках &quot;Программы лояльности&quot;" />
 <item operation_date="2023-02-27T00:00:00" currency_code="RUB" amount="-1945.00" comment="Удержан налог на купонный доход  по ФПК Гарант-Инвест БО 002Р-04 с клиента 12345" />
 <item operation_date="2023-02-27T00:00:00" currency_code="RUB" amount="14960.00" comment="Выплата дохода клиент 12345 (НКД 5 ФПК Гарант-Инвест БО 002Р-04) налог к удержанию 1945.00 рублей" />
+<item operation_date="2023-06-26T00:00:00" currency_code="RUB" amount="231000.00" comment="Выплата дохода клиент 12345 (Част.погашение АБЗ-1 1Р01) налог не удерживается" />
 </spot_non_trade_money_operations>
 <spot_non_trade_security_operations>
 <item operation_date="2021-09-01T00:00:00" security_name="МТС 1P-05 " grn_code="4B02-05-04715-A-001P" quantity="-60.00000000" comment="Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05" board_name="Фондовый Рынок Московской биржи (ФР МБ)" />
