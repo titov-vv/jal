@@ -33,7 +33,8 @@ class DividendWidget(AbstractOperationDetails):
                                              self.tr("Dividend"),
                                              self.tr("Bond Interest"),
                                              self.tr("Stock Dividend"),
-                                             self.tr("Stock Vesting")])
+                                             self.tr("Stock Vesting"),
+                                             self.tr("Bond Amortization")])
         self.ui.type.setModel(self.combo_model)
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.ex_date_editor.setFixedWidth(self.ui.ex_date_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
@@ -67,6 +68,10 @@ class DividendWidget(AbstractOperationDetails):
 
     @Slot()
     def typeChanged(self, dividend_type_id):
+        if dividend_type_id == Dividend.BondAmortization:
+            self.ui.amount_label.setText("Repayment")
+        else:
+            self.ui.amount_label.setText("Dividend")
         self.ui.price_label.setVisible(
             dividend_type_id == Dividend.StockDividend or dividend_type_id == Dividend.StockVesting)
         self.ui.price_edit.setVisible(

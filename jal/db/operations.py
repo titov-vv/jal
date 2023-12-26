@@ -384,6 +384,7 @@ class Dividend(LedgerTransaction):
     BondInterest = 2
     StockDividend = 3
     StockVesting = 4
+    BondAmortization = 5
     _db_table = "dividends"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -402,7 +403,8 @@ class Dividend(LedgerTransaction):
             Dividend.Dividend: ('Δ', CustomColor.DarkGreen),
             Dividend.BondInterest: ('%', CustomColor.DarkGreen),
             Dividend.StockDividend: ('Δ\n+', CustomColor.DarkGreen),
-            Dividend.StockVesting: ('Δ\n+', CustomColor.DarkBlue)
+            Dividend.StockVesting: ('Δ\n+', CustomColor.DarkBlue),
+            Dividend.BondAmortization: ('⌳', CustomColor.DarkRed)
         }
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Dividend
@@ -510,7 +512,10 @@ class Dividend(LedgerTransaction):
         return self._note
 
     def description(self) -> str:
-        return self._note + "\n" + self.tr("Tax: ") + self._asset.country_name()
+        description = self._note + "\n"
+        if self._tax:
+            description += self.tr("Tax: ") + self._asset.country_name()
+        return description
 
     def value_change(self) -> list:
         if self._tax:
@@ -557,6 +562,9 @@ class Dividend(LedgerTransaction):
         if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
             self.processStockDividendOrVesting(ledger)
             return
+        if self._subtype == Dividend.BondAmortization:
+            self.processBondAmortization(ledger)
+            return
         if self._subtype == Dividend.Dividend:
             category = PredefinedCategory.Dividends
         elif self._subtype == Dividend.BondInterest:
@@ -597,6 +605,17 @@ class Dividend(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Money, -self._tax)
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
                                      category=PredefinedCategory.Taxes, peer=self._broker)
+
+    def processBondAmortization(self, ledger):
+        operation_value = (self._amount - self._tax)
+        assert operation_value > Decimal('0'), "Bond amortization is expected to increase account balance"
+        credit_returned = ledger.returnCredit(self, self._account.id(), operation_value)
+        if credit_returned < operation_value:
+            ledger.appendTransaction(self, BookAccount.Money, operation_value - credit_returned)
+        if self._tax:
+            ledger.appendTransaction(self, BookAccount.Costs, self._tax,
+                                     category=PredefinedCategory.Taxes, peer=self._broker)
+        ledger.appendTransaction(self, BookAccount.Assets, Decimal('0'), asset_id=self._asset.id(), value=-self._amount)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
