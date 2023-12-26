@@ -435,7 +435,7 @@ class StatementOpenBroker(StatementXML):
             try:
                 payment_operations[parts.groupdict()['type']](timestamp, account_id, amount, description)
             except KeyError:
-                raise Statement_ImportError(self.tr("Unknown payment type: ") + f"'{parts.groupdict()['type']}'")
+                raise Statement_ImportError(self.tr("Unknown payment type in description: ") + f"'{parts.groupdict()['type']}'/'{description}'")
 
     def tax_refund(self, timestamp, account_id, amount, description):
         new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
