@@ -29,7 +29,7 @@
     {"id": 12, "asset": 9, "symbol": "NVTK", "currency": 1, "note": "MOEX"},
     {"id": 14, "asset": 10, "symbol": "ПИК К 1P3", "currency": 1, "note": "MOEX"},
     {"id": 15, "asset": 11, "symbol": "ГарИнв2P04", "currency": 1, "note": "MOEX"},
-    {"id": 18, "asset": 12, "symbol": "АБЗ-1 1Р01", "note": "MOEX"}
+    {"id": 18, "asset": 12, "symbol": "АБЗ-1 1Р01", "currency": 1, "note": "MOEX"}
   ],
   "assets_data": [
     {"id": 1, "asset": 3, "reg_number": "RU34003MOR0", "principal": 400.0, "expiry": 1630627200},

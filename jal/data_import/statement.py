@@ -518,6 +518,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             elif payment['type'] == FOF.PAYMENT_INTEREST:
                 payment['type'] = Dividend.BondInterest
                 LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+            elif payment['type'] == FOF.PAYMENT_AMORTIZATION:
+                payment['type'] = Dividend.BondAmortization
+                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
             elif payment['type'] == FOF.PAYMENT_STOCK_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
                     payment['type'] = Dividend.StockDividend
@@ -643,8 +646,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     moex_asset['type'] = FOF.convert_predefined_asset_type(moex_asset['type'])
                 except KeyError:
                     raise Statement_ImportError(self.tr("Unsupported asset type from moex.com: ") + f"'{moex_asset}'")
-                if currency is not None:
-                    moex_asset['currency'] = currency
+                moex_asset['currency'] = JalAsset.get_base_currency() if currency is None else currency
                 moex_asset['note'] = "MOEX"
                 return self.asset_id(moex_asset)  # Call itself once again to cross-check downloaded data
         if asset is None:
