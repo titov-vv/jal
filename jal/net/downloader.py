@@ -337,6 +337,8 @@ class QuoteDownloader(QObject):
             securities = asset_data['securities']
             columns = securities['columns']
             data = [x for x in securities['data'] if x[columns.index('name')] == kwargs['name']]
+            if not data:
+                data = [x for x in securities['data'] if x[columns.index('shortname')] == kwargs['name']]
         if data:
             if len(data) > 1:
                 # remove not traded assets if there are any outdated doubles present

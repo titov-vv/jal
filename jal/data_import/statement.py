@@ -56,6 +56,7 @@ class FOF:
     PAYMENT_INTEREST = "interest"
     PAYMENT_STOCK_DIVIDEND = "stock_dividend"
     PAYMENT_STOCK_VESTING = 'stock_vesting'
+    PAYMENT_AMORTIZATION = 'bond_amortization'
 
     def __init__(self):
         pass
@@ -635,12 +636,17 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 if not symbol and 'symbol' in asset_info:
                     symbol = asset_info['symbol']
                 currency = asset_info['currency'] if 'currency' in asset_info else None  # Keep currency
-                asset_info = QuoteDownloader.MOEX_info(symbol=symbol)
-                asset_info['type'] = FOF.convert_predefined_asset_type(asset_info['type'])
+                moex_asset = QuoteDownloader.MOEX_info(symbol=symbol)
+                if not moex_asset:
+                    raise Statement_ImportError(self.tr("Can't find asset on moex.com: ") + f"'{asset_info}'")
+                try:
+                    moex_asset['type'] = FOF.convert_predefined_asset_type(moex_asset['type'])
+                except KeyError:
+                    raise Statement_ImportError(self.tr("Unsupported asset type from moex.com: ") + f"'{moex_asset}'")
                 if currency is not None:
-                    asset_info['currency'] = currency
-                asset_info['note'] = "MOEX"
-                return self.asset_id(asset_info)  # Call itself once again to cross-check downloaded data
+                    moex_asset['currency'] = currency
+                moex_asset['note'] = "MOEX"
+                return self.asset_id(moex_asset)  # Call itself once again to cross-check downloaded data
         if asset is None:
             if asset_info.get('should_exist', False):
                 raise Statement_ImportError(self.tr("Can't locate asset in statement data: ") + f"'{asset_info}'")
