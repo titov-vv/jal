@@ -256,67 +256,67 @@
     <message>
         <location filename="../reports/assets_payments.py" line="19"/>
         <source>Date</source>
-        <translation type="unfinished">Дата</translation>
+        <translation>Дата</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="19"/>
         <source>Symbol</source>
-        <translation type="unfinished">Символ</translation>
+        <translation>Символ</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="19"/>
         <source>Asset</source>
-        <translation type="unfinished"></translation>
+        <translation>ЦБ</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="19"/>
         <source>Type</source>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="20"/>
         <source>Amount</source>
-        <translation type="unfinished">Сумма</translation>
+        <translation>Сумма</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="20"/>
         <source>Tax</source>
-        <translation type="unfinished">Налог</translation>
+        <translation>Налог</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="21"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
+        <translation>Описание</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="21"/>
         <source>N/A</source>
-        <translation type="unfinished">N/A</translation>
+        <translation>N/A</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="21"/>
         <source>Dividend</source>
-        <translation type="unfinished">Дивиденд</translation>
+        <translation>Дивиденд</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="21"/>
         <source>Bond Interest</source>
-        <translation type="unfinished">Купон</translation>
+        <translation>Купон</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="21"/>
         <source>Stock Dividend</source>
-        <translation type="unfinished">Дивиденд акциями</translation>
+        <translation>Дивиденд акциями</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="22"/>
         <source>Stock Vesting</source>
-        <translation type="unfinished">Передача акций</translation>
+        <translation>Передача акций</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="23"/>
         <source>Bond Amortization</source>
-        <translation type="unfinished">Амортизация облигации</translation>
+        <translation>Амортизация облигации</translation>
     </message>
 </context>
 <context>
@@ -324,7 +324,7 @@
     <message>
         <location filename="../reports/assets_payments.py" line="119"/>
         <source>Assets&apos; Payments</source>
-        <translation type="unfinished"></translation>
+        <translation>Выплаты по ЦБ</translation>
     </message>
 </context>
 <context>
@@ -332,17 +332,17 @@
     <message>
         <location filename="../ui/reports/assets_payments_report.ui" line="14"/>
         <source>Report by category</source>
-        <translation type="unfinished">Отчёт по категории</translation>
+        <translation>Отчёт по категории</translation>
     </message>
     <message>
         <location filename="../ui/reports/assets_payments_report.ui" line="79"/>
         <source>Account:</source>
-        <translation type="unfinished">Счет:</translation>
+        <translation>Счет:</translation>
     </message>
     <message>
         <location filename="../ui/reports/assets_payments_report.ui" line="93"/>
         <source>Save...</source>
-        <translation type="unfinished">Сохранить...</translation>
+        <translation>Сохранить...</translation>
     </message>
 </context>
 <context>
@@ -350,7 +350,7 @@
     <message>
         <location filename="../reports/assets_payments.py" line="130"/>
         <source>Assets&apos; Payments</source>
-        <translation type="unfinished"></translation>
+        <translation>Выплаты по ЦБ</translation>
     </message>
 </context>
 <context>
