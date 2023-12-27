@@ -358,7 +358,7 @@ class QuoteDownloader(QObject):
                 (moex_info['engine'] is None) or (moex_info['market'] is None) or (moex_info['board'] is None):
             logging.warning(f"Failed to find {asset.symbol()} on moex.com")
             return None
-        if (moex_info['market'] == 'bonds') and (moex_info['board'] == 'TQCB'):
+        if (moex_info['market'] == 'bonds') and (moex_info['board'] in ['TQCB', 'TQIR']):
             asset_code = asset.isin()   # Corporate bonds are quoted by ISIN
         elif (moex_info['market'] == 'shares') and (moex_info['board'] == 'TQIF'):
             asset_code = asset.isin()   # ETFs are quoted by ISIN

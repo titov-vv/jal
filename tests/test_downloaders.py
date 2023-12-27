@@ -129,8 +129,9 @@ def test_ECB_downloader(prepare_db):
     assert_frame_equal(rates_usd, rates_downloaded)
 
 def test_MOEX_downloader(prepare_db_moex):
-    create_assets([('ЗПИФ ПНК', 'ЗПИФ ПНК Рентал', 'RU000A1013V9', 1, PredefinedAsset.ETF, 0)])   # ID = 8
-    create_assets([('TEST', 'TEST', '', 1, PredefinedAsset.Stock, 0)])                            # ID = 9
+    create_assets([('ЗПИФ ПНК', 'ЗПИФ ПНК Рентал', 'RU000A1013V9', 1, PredefinedAsset.ETF, 0)])
+    create_assets([('TEST', 'TEST', '', 1, PredefinedAsset.Stock, 0)])
+    create_assets([('БДеньги-02', 'МФК Быстроденьги 02', 'RU000A102ZT7', 1, PredefinedAsset.Bond, 0)])
 
     stock_quotes = pd.DataFrame({'Close': [Decimal('287.95'), Decimal('287.18')],
                                  'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
@@ -144,6 +145,9 @@ def test_MOEX_downloader(prepare_db_moex):
     etf_quotes = pd.DataFrame({'Close': [Decimal('1736.8'), Decimal('1735.0')],
                                'Date': [datetime(2021, 12, 13), datetime(2021, 12, 14)]})
     etf_quotes = etf_quotes.set_index('Date')
+    bond_quotes2 = pd.DataFrame({'Close': [Decimal('984.30'), Decimal('981.50')],
+                                'Date': [datetime(2023, 9, 13), datetime(2023, 9, 14)]})
+    bond_quotes2 = bond_quotes2.set_index('Date')
 
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(4), 1, 1618272000, 1618358400)
@@ -182,6 +186,9 @@ def test_MOEX_downloader(prepare_db_moex):
     # Test of non-existing asset download
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(10), 1, 1639353600, 1639440000, update_symbol=False)
     assert quotes_downloaded is None
+    # Bond with high risk
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(11), 1, d2t(230913), d2t(230914), update_symbol=False)
+    assert_frame_equal(bond_quotes2, quotes_downloaded)
 
 
 def test_MOEX_downloader_USD(prepare_db_moex):
