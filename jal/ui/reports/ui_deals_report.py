@@ -61,10 +61,10 @@ class Ui_DealsReportWidget(object):
 
         self.horizontalLayout.addWidget(self.ReportAccountLbl)
 
-        self.ReportAccountBtn = AccountButton(self.ReportParamsFrame)
-        self.ReportAccountBtn.setObjectName(u"ReportAccountBtn")
+        self.ReportAccountButton = AccountButton(self.ReportParamsFrame)
+        self.ReportAccountButton.setObjectName(u"ReportAccountButton")
 
-        self.horizontalLayout.addWidget(self.ReportAccountBtn)
+        self.horizontalLayout.addWidget(self.ReportAccountButton)
 
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 

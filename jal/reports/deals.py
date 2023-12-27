@@ -40,13 +40,13 @@ class DealsReportWindow(MdiWidget):
         self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
-        self.ui.ReportAccountBtn.changed.connect(self.updateReport)
+        self.ui.ReportAccountButton.changed.connect(self.updateReport)
         self.ui.ReportRange.changed.connect(self.updateReport)
         self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
     @Slot()
     def updateReport(self):
-        self.ui.ReportTreeView.model().updateView(account_id=self.ui.ReportAccountBtn.account_id,
+        self.ui.ReportTreeView.model().updateView(account_id=self.ui.ReportAccountButton.account_id,
                                                   dates=self.ui.ReportRange.getRange(),
                                                   grouping=self.ui.GroupCombo.currentData())
