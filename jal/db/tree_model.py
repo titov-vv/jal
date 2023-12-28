@@ -82,10 +82,6 @@ class ReportTreeModel(QAbstractItemModel):
         self._view_configured = False
 
     def index(self, row, column, parent=None):
-        if not parent.isValid():
-            parent = self._root
-        else:
-            parent = parent.internalPointer()
         if not self.hasIndex(row, column, parent):
             return None
         parent = parent.internalPointer() if parent.isValid() else self._root
@@ -101,7 +97,6 @@ class ReportTreeModel(QAbstractItemModel):
         parent_item = child_item.getParent()
         if parent_item == self._root:
             return QModelIndex()
-        return self.createIndex(0, 0, parent_item)
         return self.createIndex(parent_item.row(), 0, parent_item)
 
     def rowCount(self, parent=None):
