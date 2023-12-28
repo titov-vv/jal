@@ -45,11 +45,7 @@ class ChartWidget(QWidget):
         self.chartView.chart().addSeries(self.quotes_series)
         self.chartView.chart().addSeries(self.trade_series)
         self.chartView.chart().addAxis(axisX, Qt.AlignBottom)
-        self.chartView.chart().setAxisX(axisX, self.quotes_series)
-        self.chartView.chart().setAxisX(axisX, self.trade_series)
         self.chartView.chart().addAxis(axisY, Qt.AlignLeft)
-        self.chartView.chart().setAxisY(axisY, self.quotes_series)
-        self.chartView.chart().setAxisY(axisY, self.trade_series)
         self.chartView.chart().legend().hide()
         self.chartView.setViewportMargins(0, 0, 0, 0)
         self.chartView.chart().layout().setContentsMargins(0, 0, 0, 0)  # To remove extra spacing around chart
