@@ -125,17 +125,8 @@ class BalancesModel(QAbstractTableModel):
         balances = []
         accounts = JalAccount.get_all_accounts(active_only=self._active_only)
         for account in accounts:
-            value = value_adjusted = Decimal('0')
-            assets = account.assets_list(self._date)
+            value = account.balance(self._date)
             rate = JalAsset(account.currency()).quote(self._date, self._currency)[1]
-            for asset_data in assets:
-                asset = asset_data['asset']
-                asset_value = asset_data['amount'] * asset.quote(self._date, account.currency())[1]
-                value += asset_value
-                value_adjusted += asset_value * rate
-            money = account.get_asset_amount(self._date, account.currency())
-            value += money
-            value_adjusted += money * rate
             if value != Decimal('0'):
                 balances.append({
                     "account_type": account.type(),
@@ -144,7 +135,7 @@ class BalancesModel(QAbstractTableModel):
                     "currency": account.currency(),
                     "currency_name": JalAsset(account.currency()).symbol(),
                     "balance": value,
-                    "balance_a": value_adjusted,
+                    "balance_a": value * rate,
                     "unreconciled": (account.last_operation_date() - account.reconciled_at())/86400,
                     "active": account.is_active()
                 })

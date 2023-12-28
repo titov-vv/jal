@@ -343,3 +343,15 @@ class JalAccount(JalDB):
             return Decimal(value)
         else:
             return Decimal('0')
+
+    # Returns account balance at given timestamp
+    def balance(self, timestamp: int) -> Decimal:
+        value = Decimal('0')
+        assets = self.assets_list(timestamp)
+        for asset_data in assets:
+            asset = asset_data['asset']
+            asset_value = asset_data['amount'] * asset.quote(timestamp, self.currency())[1]
+            value += asset_value
+        money = self.get_asset_amount(timestamp, self.currency())
+        value += money
+        return value
