@@ -37,7 +37,7 @@
     <message>
         <location filename="../reports/account_balance.py" line="67"/>
         <source>Account balance history</source>
-        <translation type="unfinished"></translation>
+        <translation>История баланса счёта</translation>
     </message>
 </context>
 <context>
@@ -45,17 +45,17 @@
     <message>
         <location filename="../ui/reports/account_balance_report.ui" line="14"/>
         <source>Account balance history chart</source>
-        <translation type="unfinished"></translation>
+        <translation>График истории баланса счёта</translation>
     </message>
     <message>
         <location filename="../ui/reports/account_balance_report.ui" line="79"/>
         <source>Account:</source>
-        <translation type="unfinished">Счет:</translation>
+        <translation>Счет:</translation>
     </message>
     <message>
         <location filename="../ui/reports/account_balance_report.ui" line="93"/>
         <source>Save...</source>
-        <translation type="unfinished">Сохранить...</translation>
+        <translation>Сохранить...</translation>
     </message>
 </context>
 <context>
@@ -63,7 +63,7 @@
     <message>
         <location filename="../reports/account_balance.py" line="78"/>
         <source>Account balance</source>
-        <translation type="unfinished"></translation>
+        <translation>Баланс счёта</translation>
     </message>
 </context>
 <context>
@@ -366,7 +366,7 @@
     <message>
         <location filename="../ui/reports/assets_payments_report.ui" line="14"/>
         <source>Assets&apos; payments report for account</source>
-        <translation type="unfinished"></translation>
+        <translation>Отчёт выплат по ЦБ для счёта</translation>
     </message>
     <message>
         <location filename="../ui/reports/assets_payments_report.ui" line="79"/>
