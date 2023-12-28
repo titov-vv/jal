@@ -1,8 +1,9 @@
 import os
 import logging
+from datetime import datetime
 from jal.constants import CustomColor
 from jal.db.helpers import load_icon
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, qInstallMessageHandler, QtMsgType
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
 from PySide6.QtGui import QBrush
 
@@ -16,7 +17,18 @@ class LogHandler(logging.Handler):
 
     def emit(self, record, **kwargs):
         message = self.format(record)
-        self._parent_view.displayMessage(record.levelno, message)
+        colors = {
+            logging.DEBUG: CustomColor.Grey,
+            logging.INFO: None,
+            logging.WARNING: CustomColor.LightRed,
+            logging.ERROR: CustomColor.LightRed,
+            logging.CRITICAL: CustomColor.LightRed
+        }
+        try:
+            message_color = colors[record.levelno]
+        except KeyError:
+            message_color = CustomColor.LightRed
+        self._parent_view.displayMessage(message, message_color)
 
 
 # A GUI class to display messages from python logging unit in a normal multi-line text area
@@ -50,35 +62,41 @@ class LogViewer(QPlainTextEdit):
         log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
         self._logger.setLevel(log_level)
         self._log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        qInstallMessageHandler(self.qtLogHandler)
+
+    def qtLogHandler(self, mode, _context, message):
+        colors = {
+            QtMsgType.QtDebugMsg: CustomColor.Grey,
+            QtMsgType.QtInfoMsg: None,
+            QtMsgType.QtWarningMsg: CustomColor.LightRed,
+            QtMsgType.QtCriticalMsg: CustomColor.LightRed,
+            QtMsgType.QtFatalMsg: CustomColor.LightRed,
+            QtMsgType.QtSystemMsg: CustomColor.LightRed
+        }
+        try:
+            message_color = colors[mode]
+        except KeyError:
+            message_color = CustomColor.LightRed
+        message = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]} - Qt - {message}"
+        self.displayMessage(message, message_color)
 
     def stopLogging(self):
         self._logger.removeHandler(self._log_handler)    # Removing handler (but it doesn't prevent exception at exit)
         logging.raiseExceptions = False                  # Silencing logging module exceptions
 
-    def displayMessage(self, level: int, message: str):
-        predefinded_colors = {
-            logging.DEBUG: CustomColor.Grey,
-            logging.INFO: self.clear_color,
-            logging.WARNING: CustomColor.LightRed,
-            logging.ERROR: CustomColor.LightRed,
-            logging.CRITICAL: CustomColor.LightRed
-        }
-        try:
-            msg_color = predefinded_colors[level]
-        except KeyError:
-            self.appendPlainText(self.tr("Unknown logging level provided: ") + f"{level}")
-            msg_color = CustomColor.LightRed
+    def displayMessage(self, message: str, color: CustomColor = None):
+        color = self.clear_color if color is None else color
 
         # Store message in log window
-        tf = self.currentCharFormat()
-        tf.setForeground(QBrush(msg_color))
-        self.setCurrentCharFormat(tf)
+        text_format = self.currentCharFormat()
+        text_format.setForeground(QBrush(color))
+        self.setCurrentCharFormat(text_format)
         self.appendPlainText(message)
 
         # Show in status bar
         if self.notification:
             palette = self.notification.palette()
-            palette.setColor(self.notification.foregroundRole(), msg_color)
+            palette.setColor(self.notification.foregroundRole(), color)
             self.notification.setPalette(palette)
             msg = message.replace('\n', "; ")  # Get rid of new lines in error message
             elided_text = self.notification.fontMetrics().elidedText(msg, Qt.ElideRight, self.get_available_width())
@@ -86,7 +104,7 @@ class LogViewer(QPlainTextEdit):
         # Set button color
         if self.expandButton:
             palette = self.expandButton.palette()
-            palette.setColor(self.expandButton.foregroundRole(), msg_color)
+            palette.setColor(self.expandButton.foregroundRole(), color)
         self.app.processEvents()
 
     def showEvent(self, event):
