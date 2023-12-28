@@ -90,6 +90,17 @@ def week_end_ts(year: int, week: int) -> int:
     return dt2ts(end)
 
 # -----------------------------------------------------------------------------------------------------------------------
+# returns an iterator that represents beginning of each day between start_ts unix-timestamp and end_ts unix-timestamp
+def timestamp_range(start_ts, end_ts):
+    start_date = datetime.utcfromtimestamp(start_ts)
+    start_date = datetime.combine(start_date, time.min).replace(tzinfo=timezone.utc)
+    end_date = datetime.utcfromtimestamp(end_ts)
+    end_date = datetime.combine(end_date, time.max).replace(tzinfo=timezone.utc)
+    for n in range(int((end_date - start_date).days)+1):
+        day_n = start_date + timedelta(n)
+        yield int(day_n.timestamp())
+
+# -----------------------------------------------------------------------------------------------------------------------
 # returns a list of dictionaries for each month between 'begin' and 'end' timestamps (including):
 # { year, number, begin_ts, end_ts }
 # where number is a month number from 1 to 12
