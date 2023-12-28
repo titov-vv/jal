@@ -1,6 +1,6 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QDate
+from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QDate, qDebug, qCDebug
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog, QMessageBox
 from jal.db.helpers import load_icon
@@ -12,6 +12,7 @@ from jal.widgets.mdi import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
 from jal.widgets.price_chart import ChartWindow
 from jal.widgets.selection_dialog import SelectTagDialog
+from PySide6.QtTest import QAbstractItemModelTester
 
 JAL_REPORT_CLASS = "AssetPortfolioReport"
 
@@ -60,6 +61,7 @@ class PortfolioReportWindow(MdiWidget):
         self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
         self.ui.ShowInactiveAccounts.toggled.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.PortfolioTreeView.model()))
+        self.ui.testButton.pressed.connect(self._test)
 
     @Slot()
     def updateReport(self):
@@ -120,3 +122,9 @@ class PortfolioReportWindow(MdiWidget):
         if dialog.exec() != QDialog.Accepted:
             return
         asset.set_tag(dialog.selected_id)
+
+    @Slot()
+    def _test(self):
+        qDebug("--- Holdings model test started ---")
+        tester = QAbstractItemModelTester(self.holdings_model, QAbstractItemModelTester.FailureReportingMode.Warning, self)
+        qDebug("--- Holdings model test completed ---")
