@@ -301,14 +301,14 @@ class StatementOpenBroker(StatementXML):
             trade['account'] = self.account_by_currency(trade['currency'])
             if trade['account'] == 0:
                 raise Statement_ImportError(self.tr("Can't find account for trade: ") + f"{trade}")
-            if trade['quantity_buy'] < 0 and trade['quantity_sell'] < 0:
+            if trade['quantity_buy'] < 0 and trade['quantity_sell'] < 0:  # No buy or sell quantity found in operation description
                 raise Statement_ImportError(self.tr("Can't determine trade type/quantity: ") + f"{trade}")
-            if trade['quantity_sell'] < 0:
+            amount = trade['proceeds'] - trade['accrued_interest']
+            if trade['quantity_sell'] < 0:    # This is buy operation as sell quantity is missing
                 trade['quantity'] = trade['quantity_buy']
                 trade['accrued_interest'] = -trade['accrued_interest']
             else:
                 trade['quantity'] = -trade['quantity_sell']
-            amount = trade['proceeds'] + trade['accrued_interest']
             if abs(abs(trade['price'] * trade['quantity']) - amount) >= self.RU_PRICE_TOLERANCE:
                 trade['price'] = abs(amount / trade['quantity'])
             if abs(trade['accrued_interest']) > 0:
