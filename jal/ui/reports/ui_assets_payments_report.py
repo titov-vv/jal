@@ -27,7 +27,7 @@ class Ui_AssetsPaymentsReportWidget(object):
     def setupUi(self, AssetsPaymentsReportWidget):
         if not AssetsPaymentsReportWidget.objectName():
             AssetsPaymentsReportWidget.setObjectName(u"AssetsPaymentsReportWidget")
-        AssetsPaymentsReportWidget.resize(769, 345)
+        AssetsPaymentsReportWidget.resize(769, 338)
         self.verticalLayout = QVBoxLayout(AssetsPaymentsReportWidget)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -94,7 +94,7 @@ class Ui_AssetsPaymentsReportWidget(object):
     # setupUi
 
     def retranslateUi(self, AssetsPaymentsReportWidget):
-        AssetsPaymentsReportWidget.setWindowTitle(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Report by category", None))
+        AssetsPaymentsReportWidget.setWindowTitle(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Assets' payments report for account", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Account:", None))
         self.ReportAccountButton.setText("")
         self.SaveButton.setText(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Save...", None))

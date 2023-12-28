@@ -33,6 +33,40 @@
     </message>
 </context>
 <context>
+    <name>AccountBalanceHistoryReport</name>
+    <message>
+        <location filename="../reports/account_balance.py" line="67"/>
+        <source>Account balance history</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AccountBalanceHistoryReportWidget</name>
+    <message>
+        <location filename="../ui/reports/account_balance_report.ui" line="14"/>
+        <source>Account balance history chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/account_balance_report.ui" line="79"/>
+        <source>Account:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/account_balance_report.ui" line="93"/>
+        <source>Save...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AccountBalanceHistoryReportWindow</name>
+    <message>
+        <location filename="../reports/account_balance.py" line="78"/>
+        <source>Account balance</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AccountButton</name>
     <message>
         <location filename="../widgets/account_select.py" line="22"/>
@@ -331,7 +365,7 @@
     <name>AssetsPaymentsReportWidget</name>
     <message>
         <location filename="../ui/reports/assets_payments_report.ui" line="14"/>
-        <source>Report by category</source>
+        <source>Assets&apos; payments report for account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -490,7 +524,7 @@
 <context>
     <name>ChartWindow</name>
     <message>
-        <location filename="../widgets/price_chart.py" line="96"/>
+        <location filename="../widgets/price_chart.py" line="92"/>
         <source>Price chart for </source>
         <translation></translation>
     </message>
@@ -1892,33 +1926,28 @@ do you want to save it?</source>
 <context>
     <name>LogViewer</name>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="35"/>
+        <location filename="../widgets/custom/log_viewer.py" line="47"/>
         <source>▶ logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="37"/>
+        <location filename="../widgets/custom/log_viewer.py" line="49"/>
         <source>▲ logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="38"/>
+        <location filename="../widgets/custom/log_viewer.py" line="50"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="39"/>
+        <location filename="../widgets/custom/log_viewer.py" line="51"/>
         <source>Select all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="40"/>
+        <location filename="../widgets/custom/log_viewer.py" line="52"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/custom/log_viewer.py" line="69"/>
-        <source>Unknown logging level provided: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
