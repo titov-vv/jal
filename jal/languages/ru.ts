@@ -2709,11 +2709,6 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../ui/reports/portfolio_report.ui" line="122"/>
-        <source>TEST</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/portfolio_report.ui" line="129"/>
         <source>Save...</source>
         <translation>Сохранить...</translation>
     </message>

@@ -30,15 +30,6 @@ class AbstractTreeItem:
             return None
         return self._children[id]
 
-    def childIndex(self, child):
-        assert child in self._children
-        return self._children.index(child)
-
-    def row(self):
-        if self._parent is None:
-            return 0
-        return self._parent.childIndex(self)
-
     def details(self, **kwargs):
         raise NotImplementedError("To be defined in derived class")
 
@@ -82,9 +73,10 @@ class ReportTreeModel(QAbstractItemModel):
         self._view_configured = False
 
     def index(self, row, column, parent=None):
-        if not self.hasIndex(row, column, parent):
-            return None
-        parent = parent.internalPointer() if parent.isValid() else self._root
+        if not parent.isValid():
+            parent = self._root
+        else:
+            parent = parent.internalPointer()
         child = parent.getChild(row)
         if child:
             return self.createIndex(row, column, child)
@@ -97,15 +89,13 @@ class ReportTreeModel(QAbstractItemModel):
         parent_item = child_item.getParent()
         if parent_item == self._root:
             return QModelIndex()
-        return self.createIndex(parent_item.row(), 0, parent_item)
+        return self.createIndex(0, 0, parent_item)
 
     def rowCount(self, parent=None):
         if not parent.isValid():
             parent_item = self._root
         else:
             parent_item = parent.internalPointer()
-        if parent.column() > 0:
-            return 0
         if parent_item is not None:
             return parent_item.childrenCount()
         else:
