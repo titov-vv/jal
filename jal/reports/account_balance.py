@@ -1,4 +1,4 @@
-from random import randrange
+from functools import partial
 from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QMargins
 from PySide6.QtWidgets import QWidget, QHBoxLayout
 from PySide6.QtCharts import QChartView, QLineSeries, QDateTimeAxis, QValueAxis
@@ -87,6 +87,7 @@ class AccountBalanceHistoryReportWindow(MdiWidget):
     def connect_signals_and_slots(self):
         self.ui.ReportRange.changed.connect(self.updateReport)
         self.ui.ReportAccountButton.changed.connect(self.updateReport)
+        self.ui.SaveButton.pressed.connect(partial(self._parent.save_chart, self.chart.chartView))
 
     @Slot()
     def updateReport(self):

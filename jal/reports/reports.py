@@ -78,3 +78,16 @@ class Reports(QObject):
         report.output_model(name, model)
         report.save()
         logging.info(self.tr("Report was saved to file ") + f"'{filename}'")
+
+    # Save content of report chart view to png-file chosen by user
+    def save_chart(self, chart_view):
+        folder = JalSettings().getRecentFolder(FolderFor.Report, '.')
+        filename, filter = QFileDialog.getSaveFileName(self._mdi, self.tr("Save report to:"),
+                                                       folder, self.tr("PNG-image (*.png)"))
+        if filename:
+            if filter == self.tr("PNG-image (*.png)") and filename[-5:] != '.png':
+                filename = filename + '.png'
+        else:
+            return
+        pixmap = chart_view.grab()
+        pixmap.save(filename, "PNG")
