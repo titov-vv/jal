@@ -35,7 +35,7 @@
 <context>
     <name>AccountBalanceHistoryReport</name>
     <message>
-        <location filename="../reports/account_balance.py" line="67"/>
+        <location filename="../reports/account_balance.py" line="69"/>
         <source>Account balance history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -61,7 +61,7 @@
 <context>
     <name>AccountBalanceHistoryReportWindow</name>
     <message>
-        <location filename="../reports/account_balance.py" line="78"/>
+        <location filename="../reports/account_balance.py" line="80"/>
         <source>Account balance</source>
         <translation type="unfinished"></translation>
     </message>
@@ -390,22 +390,22 @@
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="21"/>
+        <location filename="../db/balances_model.py" line="23"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="21"/>
+        <location filename="../db/balances_model.py" line="23"/>
         <source>Balance</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="22"/>
+        <location filename="../db/balances_model.py" line="24"/>
         <source>Balance, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="57"/>
+        <location filename="../db/balances_model.py" line="64"/>
         <source>Total</source>
         <translation></translation>
     </message>
@@ -2404,37 +2404,42 @@ Application will be terminated now.</source>
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="35"/>
+        <location filename="../widgets/operations_widget.py" line="121"/>
         <source>Reconcile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="36"/>
+        <location filename="../widgets/operations_widget.py" line="123"/>
         <source>Assign tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="37"/>
+        <location filename="../widgets/operations_widget.py" line="125"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="38"/>
+        <location filename="../widgets/operations_widget.py" line="127"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="97"/>
+        <location filename="../widgets/operations_widget.py" line="84"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="98"/>
+        <location filename="../widgets/operations_widget.py" line="85"/>
         <source>Are you sure to delete selected transaction(s)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="158"/>
+        <location filename="../widgets/operations_widget.py" line="149"/>
+        <source>Balance history chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/operations_widget.py" line="174"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3571,6 +3576,7 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../reports/reports.py" line="69"/>
+        <location filename="../reports/reports.py" line="85"/>
         <source>Save report to:</source>
         <translation></translation>
     </message>
@@ -3583,6 +3589,12 @@ Application will be terminated now.</source>
     <message>
         <location filename="../reports/reports.py" line="80"/>
         <source>Report was saved to file </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="86"/>
+        <location filename="../reports/reports.py" line="88"/>
+        <source>PNG-image (*.png)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
