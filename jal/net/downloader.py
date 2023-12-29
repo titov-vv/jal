@@ -1,6 +1,7 @@
 import logging
 import xml.etree.ElementTree as xml_tree
 from datetime import datetime, timedelta, timezone
+from jal.widgets.helpers import timestamp_range
 from decimal import Decimal
 from io import StringIO, BytesIO
 
@@ -132,7 +133,8 @@ class QuoteDownloader(QObject):
             MarketDataFeed.CA: self.TMX_Downloader,
             MarketDataFeed.GB: self.YahooLSE_Downloader,
             MarketDataFeed.FRA: self.YahooFRA_Downloader,
-            MarketDataFeed.SMA_VICTORIA: self.Victoria_Downloader
+            MarketDataFeed.SMA_VICTORIA: self.Victoria_Downloader,
+            MarketDataFeed.COIN: self.Coinbase_Downloader
         }
         assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)  # append assets list
         for asset_data in assets:
@@ -544,5 +546,23 @@ class QuoteDownloader(QObject):
             logging.warning(self.tr("Can't find quote for Victoria Seguros fund: ") + asset.name())
             return None
         data = pd.DataFrame([{'Date': quote_date, 'Close': asset_quotes[0]['price']}])
+        close = data.set_index("Date")
+        return close
+
+    def Coinbase_Downloader(self, asset, currency_id, start_timestamp, end_timestamp):
+        currency_symbol = JalAsset(currency_id).symbol()
+        base_url = f"https://api.coinbase.com/v2/prices/{asset.symbol()}-{currency_symbol}/spot?date="
+        quotes = []
+        for ts in timestamp_range(start_timestamp, end_timestamp):
+            url = base_url + datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d')
+            result_data = json.loads(get_web_data(url))
+            try:
+                quote = result_data['data']['amount']
+            except:
+                continue
+            quotes.append({"Date": datetime.utcfromtimestamp(ts), "Close": quote})
+        data = pd.DataFrame(quotes, columns=["Date", "Close"])
+        data['Close'] = data['Close'].apply(Decimal)
+        data.dropna(inplace=True)
         close = data.set_index("Date")
         return close
