@@ -15,6 +15,8 @@ JAL_REPORT_CLASS = "AccountBalanceHistoryReport"
 class BalanceChartWidget(QWidget):
     def __init__(self, parent): #, quotes, trades, data_range, currency_name):
         super().__init__(parent=parent)
+        self.setMinimumWidth(600)
+        self.setMinimumHeight(400)
         self.chartView = QChartView()
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)  # Remove extra space around layout

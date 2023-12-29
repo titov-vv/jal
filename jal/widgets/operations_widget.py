@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QMenu, QMessageBox, QDialog
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectTagDialog
+from jal.widgets.helpers import ManipulateDate
 from jal.db.helpers import load_icon
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -22,6 +23,7 @@ class OperationsWidget(MdiWidget):
         super().__init__(parent)
         self.ui = Ui_OperationsWidget()
         self.ui.setupUi(self)
+        self._parent = parent  # Main window
 
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
@@ -47,6 +49,7 @@ class OperationsWidget(MdiWidget):
         self.balances_model = BalancesModel(self.ui.BalancesTableView)
         self.ui.BalancesTableView.setModel(self.balances_model)
         self.balances_model.configureView()
+        self.ui.BalancesTableView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.operations_model = OperationsModel(self.ui.OperationsTableView)
         self.operations_filtered_model = QSortFilterProxyModel(self.ui.OperationsTableView)
@@ -79,6 +82,7 @@ class OperationsWidget(MdiWidget):
         self.ui.BalanceDate.dateChanged.connect(self.ui.BalancesTableView.model().setDate)
         self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTableView.model().setCurrency)
         self.ui.BalancesTableView.doubleClicked.connect(self.balance_double_click)
+        self.ui.BalancesTableView.customContextMenuRequested.connect(self.balances_context_menu)
         self.ui.ShowInactiveCheckBox.stateChanged.connect(self.ui.BalancesTableView.model().toggleActive)
         self.ui.DateRange.changed.connect(self.operations_model.setDateRange)
         self.ui.ChooseAccountBtn.changed.connect(self.operations_model.setAccount)
@@ -140,6 +144,20 @@ class OperationsWidget(MdiWidget):
         self.contextMenu.popup(self.ui.OperationsTableView.viewport().mapToGlobal(pos))
 
     @Slot()
+    def balances_context_menu(self, pos):
+        index = self.ui.BalancesTableView.indexAt(pos)
+        account_id = self.balances_model.data(index, BalancesModel.ACCOUNT_ROLE)
+        contextMenu = QMenu(self.ui.BalancesTableView)
+        actionBalanceHistory = QAction(load_icon("chart.png"), self.tr("Balance history chart"), self)
+        actionBalanceHistory.triggered.connect(partial(self.show_balance_history_chart, account_id))
+        if account_id:
+            actionBalanceHistory.setEnabled(True)
+        else:
+            actionBalanceHistory.setEnabled(False)
+        contextMenu.addAction(actionBalanceHistory)
+        contextMenu.popup(self.ui.BalancesTableView.viewport().mapToGlobal(pos))
+
+    @Slot()
     def reconcile_at_current_operation(self):
         idx = self.operations_model.index(self.current_index.row(), 0)  # we need only row to address fields by name
         timestamp = self.operations_model.data(idx, Qt.UserRole, field="timestamp")
@@ -160,3 +178,9 @@ class OperationsWidget(MdiWidget):
             return
         self.operations_model.assign_tag_to_rows(rows, dialog.selected_id)
         self.dbUpdated.emit()
+
+    @Slot()
+    def show_balance_history_chart(self, account_id):
+        begin, end = ManipulateDate.PreviousQuarter()
+        details = {'begin_ts': begin, 'end_ts': end, 'account_id': account_id}
+        self._parent.reports.show_report("AccountBalanceHistoryReportWindow", details)

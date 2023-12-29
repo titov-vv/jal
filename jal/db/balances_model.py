@@ -10,6 +10,8 @@ from jal.widgets.delegates import FloatDelegate
 
 
 class BalancesModel(QAbstractTableModel):
+    ACCOUNT_ROLE = Qt.UserRole
+
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._view = parent_view
@@ -47,6 +49,11 @@ class BalancesModel(QAbstractTableModel):
                 return int(Qt.AlignLeft)
             else:
                 return int(Qt.AlignRight)
+        if role == self.ACCOUNT_ROLE:
+            if self._data[index.row()]['level']:
+                return 0   # This is a group, not an account line
+            else:
+                return self._data[index.row()]['account']
         return None
 
     def data_text(self, row, column):
