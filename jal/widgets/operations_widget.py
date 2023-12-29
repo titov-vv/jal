@@ -32,19 +32,6 @@ class OperationsWidget(MdiWidget):
         self.ui.CopyOperationBtn.setIcon(load_icon("copy.png"))
         self.ui.DeleteOperationBtn.setIcon(load_icon("delete.png"))
 
-        # Operations view context menu
-        self.contextMenu = QMenu(self.ui.OperationsTableView)
-        self.actionReconcile = QAction(load_icon("reconcile.png"), self.tr("Reconcile"), self)
-        self.actionTag = QAction(load_icon("tag.png"), self.tr("Assign tag"), self)
-        self.actionCopy = QAction(load_icon("copy.png"), self.tr("Copy"), self)
-        self.actionDelete = QAction(load_icon("delete.png"), self.tr("Delete"), self)
-        self.contextMenu.addAction(self.actionReconcile)
-        self.contextMenu.addSeparator()
-        self.contextMenu.addAction(self.actionTag)
-        self.contextMenu.addSeparator()
-        self.contextMenu.addAction(self.actionCopy)
-        self.contextMenu.addAction(self.actionDelete)
-
         # Customize UI configuration
         self.balances_model = BalancesModel(self.ui.BalancesTableView)
         self.ui.BalancesTableView.setModel(self.balances_model)
@@ -78,7 +65,6 @@ class OperationsWidget(MdiWidget):
         self.ui.DateRange.setCurrentIndex(0)
 
     def connect_signals_and_slots(self):
-        self.actionReconcile.triggered.connect(self.reconcile_at_current_operation)
         self.ui.BalanceDate.dateChanged.connect(self.ui.BalancesTableView.model().setDate)
         self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTableView.model().setCurrency)
         self.ui.BalancesTableView.doubleClicked.connect(self.balance_double_click)
@@ -91,10 +77,7 @@ class OperationsWidget(MdiWidget):
         self.operations_model.modelReset.connect(partial(self.operation_selection_change, None, None))  # Use the same slot with NULL-parameters to clean operation view
         self.ui.OperationsTableView.customContextMenuRequested.connect(self.operation_context_menu)
         self.ui.DeleteOperationBtn.clicked.connect(self.delete_operation)
-        self.actionDelete.triggered.connect(self.delete_operation)
         self.ui.CopyOperationBtn.clicked.connect(self.ui.OperationsTabs.copy_operation)
-        self.actionCopy.triggered.connect(self.ui.OperationsTabs.copy_operation)
-        self.actionTag.triggered.connect(self.assign_tag)
 
     @Slot()
     def delete_operation(self):
@@ -134,14 +117,29 @@ class OperationsWidget(MdiWidget):
 
     @Slot()
     def operation_context_menu(self, pos):
+        contextMenu = QMenu(self.ui.OperationsTableView)
+        actionReconcile = QAction(load_icon("reconcile.png"), self.tr("Reconcile"), self)
+        actionReconcile.triggered.connect(self.reconcile_at_current_operation)
+        actionTag = QAction(load_icon("tag.png"), self.tr("Assign tag"), self)
+        actionTag.triggered.connect(self.assign_tag)
+        actionCopy = QAction(load_icon("copy.png"), self.tr("Copy"), self)
+        actionCopy.triggered.connect(self.ui.OperationsTabs.copy_operation)
+        actionDelete = QAction(load_icon("delete.png"), self.tr("Delete"), self)
+        actionDelete.triggered.connect(self.delete_operation)
+        contextMenu.addAction(actionReconcile)
+        contextMenu.addSeparator()
+        contextMenu.addAction(actionTag)
+        contextMenu.addSeparator()
+        contextMenu.addAction(actionCopy)
+        contextMenu.addAction(actionDelete)
         self.current_index = self.ui.OperationsTableView.indexAt(pos)
         if len(self.ui.OperationsTableView.selectionModel().selectedRows()) != 1:
-            self.actionReconcile.setEnabled(False)
-            self.actionCopy.setEnabled(False)
+            actionReconcile.setEnabled(False)
+            actionCopy.setEnabled(False)
         else:
-            self.actionReconcile.setEnabled(True)
-            self.actionCopy.setEnabled(True)
-        self.contextMenu.popup(self.ui.OperationsTableView.viewport().mapToGlobal(pos))
+            actionReconcile.setEnabled(True)
+            actionCopy.setEnabled(True)
+        contextMenu.popup(self.ui.OperationsTableView.viewport().mapToGlobal(pos))
 
     @Slot()
     def balances_context_menu(self, pos):
