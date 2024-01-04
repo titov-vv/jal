@@ -566,3 +566,11 @@ class QuoteDownloader(QObject):
         data.dropna(inplace=True)
         close = data.set_index("Date")
         return close
+
+    # Returns a list of currencies supported by Coinbase exchange as a list of {'symbol', 'name'}
+    @staticmethod
+    def Coinbase_GetCurrencyList() -> list:
+        result_data = json.loads(get_web_data("https://api.coinbase.com/v2/currencies/crypto"))
+        data = result_data['data']
+        assets = [{'symbol': x['code'], 'name': x['name']} for x in data if x['type'] == 'crypto']
+        return assets
