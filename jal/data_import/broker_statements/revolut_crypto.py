@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import logging
 import pandas
 from jal.data_import.statement import FOF, Statement, Statement_Capabilities
@@ -22,9 +23,13 @@ class StatementRevolutCrypto(Statement):
     def capabilities() -> set:
         return {Statement_Capabilities.MULTIPLE_LOAD}
 
+    @staticmethod
+    def order_statements(statementFiles) -> list:
+        return statementFiles   # We don't care about order of revolut statements loading as they are per asset
+
     def load(self, filename: str) -> None:
         self._data = {
-            FOF.PERIOD: [0, 0],
+            FOF.PERIOD: [int(datetime.now(tz=timezone.utc).timestamp())] * 2,  # Set the latest timestamp to prevent warning message
             FOF.ACCOUNTS: [],
             FOF.ASSETS: [],
             FOF.SYMBOLS: [],
@@ -69,4 +74,4 @@ class StatementRevolutCrypto(Statement):
             if coinbase_asset is None:
                 continue
             asset['name'] = coinbase_asset['name']
-            symbol['note'] = 'Coinbase'
+            symbol['note'] = 'COIN'
