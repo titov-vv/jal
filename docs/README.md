@@ -15,15 +15,16 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 - Generic income/spending with multi-category split.
 - Asset and money transfers, including currency conversion.
 - Trading operations: Buy/Sell securities (stocks, ETFs, options, and more).
-- Dividends for stocks and bond interest payments.
+- Dividends for stocks and bond interest payments (including bond amortization).
 - Corporate actions for stocks.
 ### Reports
+- Daily history of account balance.
 - Portfolio asset allocation for a given date.
 - Monthly income/expenditure by category.
 - Investment profit/loss.
 - Closed deals summary.
 ### Price Updates
-- Stock/ETF prices updated for major global exchanges.
+- Stock/ETF/Crypto prices updated for major global exchanges.
 - Currency exchange rates from European and Russian central banks.
 ### Broker Statement Imports
 - Supports various Russian and international brokers.

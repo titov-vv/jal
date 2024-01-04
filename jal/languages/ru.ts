@@ -3770,214 +3770,219 @@ Application will be terminated now.</source>
 <context>
     <name>Statement</name>
     <message>
-        <location filename="../data_import/statement.py" line="188"/>
+        <location filename="../data_import/statement.py" line="189"/>
         <source>Failed to read JSON from file: </source>
         <translation>Невозможно прочитать JSON из файла: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="190"/>
-        <location filename="../data_import/statement.py" line="324"/>
+        <location filename="../data_import/statement.py" line="191"/>
+        <location filename="../data_import/statement.py" line="325"/>
         <source>Failed to read file: </source>
         <translation>Невозможно прочесть файл: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="372"/>
+        <location filename="../data_import/statement.py" line="373"/>
         <source>Can&apos;t create asset: </source>
         <translation>Невозможно создать ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="377"/>
+        <location filename="../data_import/statement.py" line="378"/>
         <source>Symbol ticker isn&apos;t linked to asset: </source>
         <translation>Символ не привязан к ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="379"/>
+        <location filename="../data_import/statement.py" line="380"/>
         <source>Symbol currency isn&apos;t linked to asset: </source>
         <translation>Символ валюты не привязан к ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="396"/>
+        <location filename="../data_import/statement.py" line="397"/>
         <source>Asset data aren&apos;t linked to asset: </source>
         <translation>Данные не привязаны к ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="404"/>
+        <location filename="../data_import/statement.py" line="405"/>
         <source>Unmatched currency for account: </source>
         <translation>Невозмоно сопоставить валюту для счёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="413"/>
+        <location filename="../data_import/statement.py" line="414"/>
         <source>Can&apos;t create account: </source>
         <translation>Невозможно создать счёт: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="418"/>
+        <location filename="../data_import/statement.py" line="419"/>
         <source>Unmatched account for income/spending: </source>
         <translation>Невозможно сопоставить счёт для операции прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="421"/>
+        <location filename="../data_import/statement.py" line="422"/>
         <source>Unmatched peer for income/spending: </source>
         <translation>Невозможно сопоставить контрагента для операции прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="427"/>
+        <location filename="../data_import/statement.py" line="428"/>
         <source>Unmatched category for income/spending: </source>
         <translation>Невозможно сопоставить категорию для прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="436"/>
+        <location filename="../data_import/statement.py" line="437"/>
         <source>Unmatched account for transfer: </source>
         <translation>Невзоможно сопоставить счёт для перевода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="439"/>
+        <location filename="../data_import/statement.py" line="440"/>
         <source>Unmatched asset for transfer: </source>
         <translation>Невозможно сопоставить ЦБ/валюту для перевода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="442"/>
+        <location filename="../data_import/statement.py" line="443"/>
         <source>Impossible to convert asset type in transfer: </source>
         <translation>Невозможно контвертировать тип актива в трансфере: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="447"/>
+        <location filename="../data_import/statement.py" line="448"/>
         <source>Deposit of </source>
         <translation>Депозит </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="450"/>
+        <location filename="../data_import/statement.py" line="451"/>
         <source>Select account to withdraw from:</source>
         <translation>Выберите счёт для списания:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="452"/>
+        <location filename="../data_import/statement.py" line="453"/>
         <source>Withdrawal of </source>
         <translation>Списание </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="455"/>
+        <location filename="../data_import/statement.py" line="456"/>
         <source>Select account to deposit to:</source>
         <translation>Выберите счёт для зачисления:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="461"/>
+        <location filename="../data_import/statement.py" line="462"/>
         <source>Account not selected</source>
         <translation>Счёт не выбран</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="486"/>
+        <location filename="../data_import/statement.py" line="487"/>
         <source>Unmatched account for trade: </source>
         <translation>Невозможно сопоставить счёт для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="489"/>
+        <location filename="../data_import/statement.py" line="490"/>
         <source>Unmatched asset for trade: </source>
         <translation>Невозможно сопоставить ЦБ для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="504"/>
+        <location filename="../data_import/statement.py" line="505"/>
         <source>Unmatched account for payment: </source>
         <translation>Невозможно сопоставить счёт для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="507"/>
+        <location filename="../data_import/statement.py" line="508"/>
         <source>Unmatched asset for payment: </source>
         <translation>Невозможно сопоставить ЦБ для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="538"/>
+        <location filename="../data_import/statement.py" line="539"/>
         <source>Unsupported payment type: </source>
         <translation>Неподдерживаемый тип выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="543"/>
+        <location filename="../data_import/statement.py" line="544"/>
         <source>Unmatched account for corporate action: </source>
         <translation>Невозможно сопоставить счёт для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="546"/>
-        <location filename="../data_import/statement.py" line="552"/>
+        <location filename="../data_import/statement.py" line="547"/>
+        <location filename="../data_import/statement.py" line="553"/>
         <source>Unmatched asset for corporate action: </source>
         <translation>Невозможно сопоставить ЦБ для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="559"/>
+        <location filename="../data_import/statement.py" line="560"/>
         <source>Unsupported corporate action: </source>
         <translation>Неподдерживаемое корпоративное действие: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="577"/>
+        <location filename="../data_import/statement.py" line="578"/>
         <source>Asset id not found</source>
         <translation>ЦБ id не найден</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="589"/>
+        <location filename="../data_import/statement.py" line="590"/>
         <source>Multiple match for </source>
         <translation>Неоднозначное совпадение для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="600"/>
+        <location filename="../data_import/statement.py" line="601"/>
         <source>Multiple currency match for </source>
         <translation>Неоднозначное совпадение валюты для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="647"/>
+        <location filename="../data_import/statement.py" line="648"/>
         <source>Can&apos;t find asset on moex.com: </source>
         <translation>Не удалось найти ЦБ на moex.com: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="651"/>
+        <location filename="../data_import/statement.py" line="652"/>
         <source>Unsupported asset type from moex.com: </source>
         <translation>Неподдерживаемый тип ЦБ с moex.com: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="657"/>
+        <source>Unknown online search source: </source>
+        <translation>Неизвестный источник для онлайн поиска: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement.py" line="660"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation>Невозможно найте ЦБ в отчёте: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="356"/>
+        <location filename="../data_import/statement.py" line="357"/>
         <source>Statement import was cancelled</source>
         <translation>Импорт отчёта прерван</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="346"/>
+        <location filename="../data_import/statement.py" line="347"/>
         <source>Statement period is invalid</source>
         <translation>Неверный период отчёта</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="195"/>
+        <location filename="../data_import/statement.py" line="196"/>
         <source>Some sections are not supported: </source>
         <translation>Некоторые секции не поддерживаются: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="143"/>
+        <location filename="../data_import/statement.py" line="144"/>
         <source>Debug information is saved in </source>
         <translation>Отладочная информация сохранена в </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="145"/>
+        <location filename="../data_import/statement.py" line="146"/>
         <source>Failed to write statement dump into: </source>
         <translation>Ошибка при сохранении отладочной информации: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="322"/>
+        <location filename="../data_import/statement.py" line="323"/>
         <source>Failed to read JSON schema from: </source>
         <translation>Не удалось прочитать схему JSON из: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="328"/>
+        <location filename="../data_import/statement.py" line="329"/>
         <source>Statement validation failed</source>
         <translation>Отчёт содержит ошибки</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="353"/>
+        <location filename="../data_import/statement.py" line="354"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="354"/>
+        <location filename="../data_import/statement.py" line="355"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation>Период отчёта начинается ранее последней операции для счёта (повторный импорт?). Продолжить импорт?</translation>
     </message>
@@ -4621,23 +4626,23 @@ Application will be terminated now.</source>
 <context>
     <name>StatementRevolutCrypto</name>
     <message>
-        <location filename="../data_import/broker_statements/revolut_crypto.py" line="15"/>
+        <location filename="../data_import/broker_statements/revolut_crypto.py" line="17"/>
         <source>Revolut / Crypto</source>
         <translation>Revolut / Crypto</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/revolut_crypto.py" line="17"/>
+        <location filename="../data_import/broker_statements/revolut_crypto.py" line="19"/>
         <source>Revolut statement (*.csv)</source>
         <translation>Выписка Revolut (*.csv)</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/revolut_crypto.py" line="42"/>
+        <location filename="../data_import/broker_statements/revolut_crypto.py" line="50"/>
         <source>Revolut statement doesn&apos;t have account number.
 Please select an account for import:</source>
         <translation>Выписка Revolut не содержит номера счёта.\nПожалуйста выберите счёт для импорта:</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/revolut_crypto.py" line="57"/>
+        <location filename="../data_import/broker_statements/revolut_crypto.py" line="66"/>
         <source>Statement loaded successfully: </source>
         <translation>Отчёт загружен успешно: </translation>
     </message>
