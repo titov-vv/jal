@@ -157,7 +157,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             return 0, 0
 
     # returns timestamp that is equal to the last second of initial timestamp
-    def _end_of_date(self, timestamp) -> int:
+    def _end_of_date(self, timestamp) -> int:   #FIXME - something similar is in helpers.py -> refactor
         end_of_day = datetime.utcfromtimestamp(timestamp).replace(hour=23, minute=59, second=59)
         return int(end_of_day.replace(tzinfo=timezone.utc).timestamp())
 
@@ -265,8 +265,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def _match_account_ids(self):
         for account in self._data[FOF.ACCOUNTS]:
             account_data = account.copy()
-            account_data['currency'] = -account['currency']
-            account_id = JalAccount(data=account_data, search=True, create=False).id()
+            if 'selection_text' in account:
+                account_id = self.select_account(account['selection_text'], 0, self._last_selected_account)
+            else:
+                account_data['currency'] = -account['currency']
+                account_id = JalAccount(data=account_data, search=True, create=False).id()
             if account_id:
                 old_id, account['id'] = account['id'], -account_id
                 self._update_id("account", old_id, account_id)
@@ -497,10 +500,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     def _import_asset_payments(self, payments):
         for payment in payments:
-            if payment['account'] > 0:
+            if payment['account'] >= 0:
                 raise Statement_ImportError(self.tr("Unmatched account for payment: ") + f"{payment}")
             payment['account_id'] = -payment.pop('account')
-            if payment['asset'] > 0:
+            if payment['asset'] >= 0:
                 raise Statement_ImportError(self.tr("Unmatched asset for payment: ") + f"{payment}")
             payment['asset_id'] = -payment.pop('asset')
             payment['note'] = payment.pop('description')
