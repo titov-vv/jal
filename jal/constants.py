@@ -25,6 +25,7 @@ class Setup:
     TAX_TREATY_PARAM = "tax_treaty"
     UPDATE_PREFIX = 'jal_delta_'
     DEFAULT_ACCOUNT_PRECISION = 2
+    NULL_VALUE = '-.--'
 
 
 class BookAccount:  # PREDEFINED BOOK ACCOUNTS

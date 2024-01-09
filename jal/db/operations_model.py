@@ -1,8 +1,8 @@
 from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel, QModelIndex
-from PySide6.QtGui import QBrush, QFontDatabase
+from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
-from jal.constants import CustomColor
+from jal.constants import CustomColor, Setup
 from jal.db.ledger import Ledger
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
@@ -189,7 +189,7 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
         painter.restore()
 
     def draw_value(self, rect, painter, value, color=None):
-        text = '-.--' if value is None else self._f_str.format(x=value)
+        text = Setup.NULL_VALUE if value is None else self._f_str.format(x=value)
         pen = painter.pen()
         try:
             if self._view.isEnabled():

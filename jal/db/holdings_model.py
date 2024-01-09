@@ -5,7 +5,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import CustomColor, PredefinedAccountType
+from jal.constants import CustomColor, PredefinedAccountType, Setup
 from jal.db.helpers import localize_decimal
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
@@ -158,7 +158,7 @@ class HoldingsModel(ReportTreeModel):
         elif column == 4:
             return f"{float(data['quote']):,.4f}" if data['quote'] and float(data['qty']) != 0 else ''
         elif column == 5:
-            return f"{data['share']:,.2f}" if data['share'] else '-.--'
+            return f"{data['share']:,.2f}" if data['share'] else Setup.NULL_VALUE
         elif column == 6:
             return f"{data['profit_rel']:,.2f}" if data['profit_rel'] else ''
         elif column == 7:
@@ -166,7 +166,7 @@ class HoldingsModel(ReportTreeModel):
         elif column == 8:
             return f"{data['value']:,.2f}" if data['value'] else ''
         elif column == 9:
-            return f"{data['value_a']:,.2f}" if data['value_a'] else '-.--'
+            return f"{data['value_a']:,.2f}" if data['value_a'] else Setup.NULL_VALUE
         else:
             assert False
 
