@@ -172,7 +172,7 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
     def __init__(self, parent=None, colors=True, signs=True):
         self._view = parent
         self._colors = colors
-        self._f_str = '{x:+,.2f}' if signs else '{x:,.2f}'
+        self._signs = signs
         super().__init__(parent=parent)
 
     def paint(self, painter, option, index):
@@ -189,7 +189,7 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
         painter.restore()
 
     def draw_value(self, rect, painter, value, color=None):
-        text = Setup.NULL_VALUE if value is None else self._f_str.format(x=value)
+        text = Setup.NULL_VALUE if value is None else localize_decimal(value, precision=2, sign=self._signs)
         pen = painter.pen()
         try:
             if self._view.isEnabled():

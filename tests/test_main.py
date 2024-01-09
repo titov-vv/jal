@@ -23,6 +23,8 @@ def test_number_formatting():
     assert localize_decimal(Decimal('1234.123'), precision=5) == '1\xa0234,12300'
     assert localize_decimal(Decimal('120')) == '120'
     assert localize_decimal(Decimal('13000')) == '13\xa0000'
+    assert localize_decimal(Decimal('-1.23E-8')) == '-1,23E-8'
+    assert localize_decimal(Decimal('9.76E-8'), sign=True) == '+9,76E-8'
 
 
 def test_helpers():
