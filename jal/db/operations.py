@@ -1046,7 +1046,7 @@ class CorporateAction(LedgerTransaction):
         self._results = []
         while results_query.next():
             self._results.append(self._read_record(results_query, named=True))
-        self._view_rows = len(self._results)
+        self._view_rows = len(self._results) + 1
         self._subtype = self._data['type']
         self._oname = self.names[self._subtype]
         if self._subtype == CorporateAction.SpinOff or self._view_rows < 2:
