@@ -4,6 +4,7 @@ from PySide6.QtGui import QBrush, QFontDatabase
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor
 from jal.db.ledger import Ledger
+from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2dt
 
@@ -60,6 +61,10 @@ class OperationsModel(QAbstractTableModel):
             elif index.column() == 5:
                 if operation.reconciled():
                     return QBrush(CustomColor.Blue)
+        if role == Qt.ToolTipRole and index.column() == 4:
+            data = self.data_text(operation, index.column())
+            if max([abs(x - round(x, 2)) for x in data]) > Decimal('0'):  # Underline decimal part
+                return '\n'.join([localize_decimal(x) for x in data])
         if role == Qt.TextAlignmentRole:
             if index.column() == 0:
                 return int(Qt.AlignCenter | Qt.AlignVCenter)
