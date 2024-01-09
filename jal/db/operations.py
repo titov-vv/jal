@@ -241,8 +241,8 @@ class LedgerTransaction(JalDB):
     def value_change(self) -> list:
         return [0]
 
-    def value_total(self) -> str:
-        return "-.--"
+    def value_total(self) -> list:
+        return [None]
 
     def value_currency(self) -> str:
         return ''
@@ -338,12 +338,8 @@ class IncomeSpending(LedgerTransaction):
         else:
             return f" {self._account_currency}"
 
-    def value_total(self) -> str:
-        amount = self._money_total(self._account.id())
-        if amount is not None:
-            return f"{amount:,.2f}"
-        else:
-            return super().value_total()
+    def value_total(self) -> list:
+        return [self._money_total(self._account.id())]
 
     # Return peer_id of current operation
     def peer(self) -> int:
@@ -532,20 +528,18 @@ class Dividend(LedgerTransaction):
         else:
             return f" {self._account_currency}\n {self._asset.symbol(self._account.currency())}"
 
-    def value_total(self) -> str:
+    def value_total(self) -> list:
+        balance = []
         amount = self._money_total(self._account.id())
         if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
             qty = self._asset_total(self._account.id(), self._asset.id())
             if qty is None:
-                return super().value_total()
-            if amount is None:
-                return f"{qty:.2f}"
-            else:
-                return f"{qty:.2f}\n{amount:.2f}"
+                return [None]
+            balance.append(qty)
         if amount is not None:
-            return f"{amount:,.2f}"
-        else:
-            return super().value_total()
+            balance.append(amount)
+        balance = balance if balance else [None]
+        return balance
 
     def update_amount(self, amount: Decimal) -> None:
         self._exec("UPDATE dividends SET amount=:amount WHERE id=:id",
@@ -696,13 +690,13 @@ class Trade(LedgerTransaction):
     def value_currency(self) -> str:
         return f" {self._account_currency}\n {self._asset.symbol(self._account.currency())}"
 
-    def value_total(self) -> str:
+    def value_total(self) -> list:
         amount = self._money_total(self._account.id())
         qty = self._asset_total(self._account.id(), self._asset.id())
         if amount is None or qty is None:
-            return super().value_total()
+            return [None]
         else:
-            return f"{amount:,.2f}\n{qty:,.2f}"
+            return [amount, qty]
 
     # Searches for dividend with type BondInterest that matches trade by timestamp, account, asset and number
     # This dividend represents accrued interest for this operation.
@@ -901,7 +895,7 @@ class Transfer(LedgerTransaction):
         else:
             assert False, "Unknown transfer type"
 
-    def value_total(self) -> str:
+    def value_total(self) -> list:
         if self._display_type == Transfer.Outgoing:
             if self._asset.id():
                 amount = self._asset_total(self._withdrawal_account.id(), self._asset.id())
@@ -916,10 +910,7 @@ class Transfer(LedgerTransaction):
             amount = self._money_total(self._fee_account.id())
         else:
             assert False, "Unknown transfer type"
-        if amount is None:
-            return super().value_total()
-        else:
-            return f"{amount:,.2f}"
+        return [amount]
 
     def processLedger(self, ledger):
         if self._display_type == Transfer.Outgoing:
@@ -1103,18 +1094,17 @@ class CorporateAction(LedgerTransaction):
             symbol += f" {JalAsset(self._read_record(query, cast=[int])).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
 
-    def value_total(self) -> str:
+    def value_total(self) -> list:
         if self._subtype == CorporateAction.SpinOff:
-            balance = ""
+            balance = []
         elif self._subtype == CorporateAction.Split:
-            balance = f"{0.00:,.2f}\n"
+            balance = [Decimal('0')]
         else:
-            balance = f"{self._account.get_asset_amount(self._timestamp, self._asset.id()):,.2f}\n"
+            balance = [self._account.get_asset_amount(self._timestamp, self._asset.id())]
         query = self._exec("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
-            qty = self._account.get_asset_amount(self._timestamp, self._read_record(query, cast=[int]))
-            balance += f"{qty:,.2f}\n"
-        return balance[:-1]  # Crop ending line break
+            balance.append(self._account.get_asset_amount(self._timestamp, self._read_record(query, cast=[int])))
+        return balance  # Crop ending line break
 
     def qty(self) -> Decimal:
         return self._qty

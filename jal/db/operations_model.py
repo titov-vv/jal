@@ -16,6 +16,7 @@ class OperationsModel(QAbstractTableModel):
                          self.tr("Amount"), self.tr("Balance"), self.tr("Currency")]
         self._view = parent_view
         self._amount_delegate = None
+        self._total_delegate = None
         self._data = []
         self._begin = 0
         self._end = 0
@@ -57,11 +58,10 @@ class OperationsModel(QAbstractTableModel):
             return self._bold_font
         if role == Qt.ForegroundRole and self._view.isEnabled():
             if index.column() == 0:
-                return QBrush(operation.label_color())
-            elif index.column() == 5:
-                if operation.reconciled():
-                    return QBrush(CustomColor.Blue)
-        if role == Qt.ToolTipRole and index.column() == 4:
+                return operation.label_color()
+            if index.column() == 5 and operation.reconciled():
+                return CustomColor.Blue
+        if role == Qt.ToolTipRole and (index.column() == 4 or index.column() == 5):
             data = self.data_text(operation, index.column())
             if max([abs(x - round(x, 2)) for x in data]) > Decimal('0'):  # Underline decimal part
                 return '\n'.join([localize_decimal(x) for x in data])
@@ -105,7 +105,9 @@ class OperationsModel(QAbstractTableModel):
         self._view.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
         self._view.horizontalHeader().setFont(self._bold_font)
         self._amount_delegate = ColoredAmountsDelegate(self._view)
+        self._total_delegate = ColoredAmountsDelegate(self._view, colors=False, signs=False)
         self._view.setItemDelegateForColumn(4, self._amount_delegate)
+        self._view.setItemDelegateForColumn(5, self._total_delegate)
 
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)  # row size is adjusted in data() method
 
@@ -162,37 +164,47 @@ class OperationsModel(QAbstractTableModel):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Display several numbers that provided by the model in form of a list
+# Each number is displayed on its own line
+# colors - display positive/negative values with green/red color
+# signs - display +/- sign before the number if True or only "-" if False
 class ColoredAmountsDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, colors=True, signs=True):
         self._view = parent
+        self._colors = colors
+        self._f_str = '{x:+,.2f}' if signs else '{x:,.2f}'
         super().__init__(parent=parent)
 
     def paint(self, painter, option, index):
         painter.save()
         data = index.model().data(index)
+        color = index.model().data(index, role = Qt.ForegroundRole)
         rect = option.rect
         H = rect.height()
         Y = rect.top()
         rect.setHeight(H / len(data))
         for i, item in enumerate(data):
             rect.moveTop(Y + i * (H / len(data)))
-            self.draw_value(option.rect, painter, item)
+            self.draw_value(option.rect, painter, item, color)
         painter.restore()
 
-    def draw_value(self, rect, painter, value):
-        if value is None:
-            return
+    def draw_value(self, rect, painter, value, color=None):
+        text = '-.--' if value is None else self._f_str.format(x=value)
         pen = painter.pen()
         try:
             if self._view.isEnabled():
-                if value >= 0:
-                    pen.setColor(CustomColor.DarkGreen)
+                if self._colors:
+                    if value >= 0:
+                        pen.setColor(CustomColor.DarkGreen)
+                    else:
+                        pen.setColor(CustomColor.DarkRed)
                 else:
-                    pen.setColor(CustomColor.DarkRed)
+                    if color is not None:
+                        pen.setColor(color)
             painter.setPen(pen)
-            painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, f"{value:+,.2f}")
-            if abs(value - round(value, 2)) > Decimal('0'):  # Underline decimal part
-                shift = painter.fontMetrics().horizontalAdvance(f"{value:+,.2f}"[-2:])
+            painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, text)
+            if value is not None and abs(value - round(value, 2)) > Decimal('0'):  # Underline decimal part
+                shift = painter.fontMetrics().horizontalAdvance(text[-2:])
                 painter.drawLine(rect.right() - shift, rect.bottom(), rect.right(), rect.bottom())
         except TypeError:
             pass
