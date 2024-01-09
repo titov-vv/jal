@@ -54,7 +54,7 @@ class OperationsModel(QAbstractTableModel):
             return self.data_text(operation, index.column())
         if role == Qt.FontRole and index.column() == 0:
             # below line isn't related with font, it is put here to be called for each row minimal times (ideally 1)
-            self._view.setRowHeight(row, self._view.verticalHeader().defaultSectionSize() * operation.view_rows())
+            self._view.setRowHeight(row, self._view.verticalHeader().fontMetrics().height() * operation.view_rows())
             return self._bold_font
         if role == Qt.ForegroundRole and self._view.isEnabled():
             if index.column() == 0:
