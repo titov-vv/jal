@@ -122,11 +122,13 @@ class LedgerTransaction(JalDB):
                            "account_id = :account_id AND book_account=:book",
                            [(":op_type", self._otype), (":oid", self._oid),
                             (":account_id", account_id), (":book", BookAccount.Money)])
-        money = Decimal('0') if money is None else Decimal(money)
         debt = self._read("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
                           "account_id = :account_id AND book_account=:book",
                           [(":op_type", self._otype), (":oid", self._oid),
                            (":account_id", account_id), (":book", BookAccount.Liabilities)])
+        if money is None and debt is None:
+            return Decimal('NaN')
+        money = Decimal('0') if money is None else Decimal(money)
         debt = Decimal('0') if debt is None else Decimal(debt)
         return money + debt
 
@@ -135,7 +137,7 @@ class LedgerTransaction(JalDB):
                             "account_id=:account_id AND asset_id=:asset_id AND book_account=:book",
                             [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
                              (":asset_id", asset_id), (":book", BookAccount.Assets)])
-        amount = Decimal('0') if amount is None else Decimal(amount)
+        amount = Decimal('NaN') if amount is None else Decimal(amount)
         return amount
 
     # Performs FIFO deals match in ledger: takes current open positions from 'open_trades' table and converts
@@ -242,7 +244,7 @@ class LedgerTransaction(JalDB):
         return [0]
 
     def value_total(self) -> list:
-        return [None]
+        return []
 
     def value_currency(self) -> str:
         return ''
@@ -526,7 +528,7 @@ class Dividend(LedgerTransaction):
             else:
                 return f" {self._asset.symbol(self._account.currency())}"
         else:
-            return f" {self._account_currency}\n {self._asset.symbol(self._account.currency())}"
+            return f" {self._account_currency}"
 
     def value_total(self) -> list:
         balance = []
@@ -534,11 +536,12 @@ class Dividend(LedgerTransaction):
         if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
             qty = self._asset_total(self._account.id(), self._asset.id())
             if qty is None:
-                return [None]
+                return [Decimal('NaN')]
             balance.append(qty)
-        if amount is not None:
+        if not amount.is_nan():
             balance.append(amount)
-        balance = balance if balance else [None]
+        if len(balance) < 2:
+            balance.append(None)
         return balance
 
     def update_amount(self, amount: Decimal) -> None:
@@ -694,7 +697,7 @@ class Trade(LedgerTransaction):
         amount = self._money_total(self._account.id())
         qty = self._asset_total(self._account.id(), self._asset.id())
         if amount is None or qty is None:
-            return [None]
+            return [Decimal('NaN'), Decimal('NaN')]
         else:
             return [amount, qty]
 

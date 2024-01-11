@@ -19,7 +19,13 @@ def remove_exponent(d) -> Decimal:
 
 # Make a locale-specific string from a Decimal value rounded to 'precision' digits after decimal point
 # Multiplies value by 100 if 'percent' is True
+# Returns empty string for None value
+# Returns Setup.NULL_VALUE for NaN value
 def localize_decimal(value: Decimal, precision: int = None, percent: bool = False, sign: bool = False) -> str:
+    if value is None:
+        return ''
+    if value.is_nan():
+        return Setup.NULL_VALUE
     if percent:
         value *= Decimal('100')
     value = remove_exponent(value)

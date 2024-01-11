@@ -9,6 +9,16 @@ from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2dt
 
 
+#-----------------------------------------------------------------------------------------------------------------------
+# Function returns True if given number has move decimal places than Setup.DEFAULT_ACCOUNT_PRECISION
+def long_fraction(x: Decimal) -> bool:
+    if x is None:
+        return False
+    if x.is_nan():
+        return False
+    return abs(x - round(x, Setup.DEFAULT_ACCOUNT_PRECISION)) > Decimal('0')
+#-----------------------------------------------------------------------------------------------------------------------
+
 class OperationsModel(QAbstractTableModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -63,7 +73,7 @@ class OperationsModel(QAbstractTableModel):
                 return CustomColor.Blue
         if role == Qt.ToolTipRole and (index.column() == 4 or index.column() == 5):
             data = self.data_text(operation, index.column())
-            if max([abs(x - round(x, 2)) for x in data]) > Decimal('0'):  # Underline decimal part
+            if any([long_fraction(x) for x in data]):
                 return '\n'.join([localize_decimal(x) for x in data])
         if role == Qt.TextAlignmentRole:
             if index.column() == 0:
@@ -188,8 +198,11 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
             self.draw_value(option.rect, painter, item, color)
         painter.restore()
 
+
+    # Displays given value as formatted number with required color (or Green/Red if self._colors is True)
+    # If value is None - displays nothing, If value is NaN - displays Setup.NULL_VALUE
     def draw_value(self, rect, painter, value, color=None):
-        text = Setup.NULL_VALUE if value is None else localize_decimal(value, precision=2, sign=self._signs)
+        text = localize_decimal(value, precision=2, sign=self._signs)
         pen = painter.pen()
         try:
             if self._view.isEnabled():
@@ -203,8 +216,8 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
                         pen.setColor(color)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, text)
-            if value is not None and abs(value - round(value, 2)) > Decimal('0'):  # Underline decimal part
-                shift = painter.fontMetrics().horizontalAdvance(text[-2:])
+            if long_fraction(value):  # Underline decimal part
+                shift = painter.fontMetrics().horizontalAdvance(text[-Setup.DEFAULT_ACCOUNT_PRECISION:])
                 painter.drawLine(rect.right() - shift, rect.bottom(), rect.right(), rect.bottom())
         except TypeError:
             pass
