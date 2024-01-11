@@ -71,10 +71,13 @@ class OperationsModel(QAbstractTableModel):
                 return operation.label_color()
             if index.column() == 5 and operation.reconciled():
                 return CustomColor.Blue
-        if role == Qt.ToolTipRole and (index.column() == 4 or index.column() == 5):
-            data = self.data_text(operation, index.column())
-            if any([long_fraction(x) for x in data]):
-                return '\n'.join([localize_decimal(x) for x in data])
+        if role == Qt.ToolTipRole:
+            if index.column() == 0:
+                return operation.name()
+            elif index.column() == 4 or index.column() == 5:
+                data = self.data_text(operation, index.column())
+                if any([long_fraction(x) for x in data]):
+                    return '\n'.join([localize_decimal(x) for x in data])
         if role == Qt.TextAlignmentRole:
             if index.column() == 0:
                 return int(Qt.AlignCenter | Qt.AlignVCenter)

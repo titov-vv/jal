@@ -306,7 +306,12 @@ class IncomeSpending(LedgerTransaction):
         while details_query.next():
             self._details.append(self._read_record(details_query, named=True))
         self._amount = sum(Decimal(line['amount']) for line in self._details)
-        self._label, self._label_color = ('—', CustomColor.DarkRed) if self._amount < 0 else ('+', CustomColor.DarkGreen)
+        if self._amount < 0:
+            self._label, self._label_color = ('—', CustomColor.DarkRed)
+            self._oname = self.tr("Spending")
+        else:
+            self._label, self._label_color = ('+', CustomColor.DarkGreen)
+            self._oname = self.tr("Income")
         if self._currency:
             self._view_rows = 2
             self._currency_name = JalAsset(self._currency).symbol()
@@ -404,6 +409,14 @@ class Dividend(LedgerTransaction):
             Dividend.StockVesting: ('Δ\n+', CustomColor.DarkBlue),
             Dividend.BondAmortization: ('⌳', CustomColor.DarkRed)
         }
+        self.names = {
+            Dividend.NA: self.tr("UNDEFINED"),
+            Dividend.Dividend: self.tr("Dividend"),
+            Dividend.BondInterest: self.tr("Bond Interest"),
+            Dividend.StockDividend: self.tr("Stock Dividend"),
+            Dividend.StockVesting: self.tr("Stock Vesting"),
+            Dividend.BondAmortization: self.tr("Bond Amortization")
+        }
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Dividend
         self._view_rows = 2
@@ -415,6 +428,7 @@ class Dividend(LedgerTransaction):
                                 "AND l.book_account = :book_assets WHERE d.id=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
         self._subtype = self._data['type']
+        self._oname = self.names[self._subtype]
         try:
             self._label, self._label_color = labels[self._subtype]
         except KeyError:
@@ -654,8 +668,10 @@ class Trade(LedgerTransaction):
         self._broker = self._account.organization()
         if self._qty < Decimal('0'):
             self._label, self._label_color = ('S', CustomColor.DarkRed)
+            self._oname = self.tr("Sell")
         else:
             self._label, self._label_color = ('B', CustomColor.DarkGreen)
+            self._oname = self.tr("Buy")
 
     def settlement(self) -> int:
         return self._settlement
@@ -781,6 +797,12 @@ class Transfer(LedgerTransaction):
             Transfer.Incoming: ('>', CustomColor.DarkBlue),
             Transfer.Fee: ('=', CustomColor.DarkRed)
         }
+        self.names = {
+            Transfer.NA: self.tr("UNDEFINED"),
+            Transfer.Outgoing: self.tr("Outgoing transfer"),
+            Transfer.Incoming: self.tr("Incoming transfer"),
+            Transfer.Fee: self.tr("Transfer fee"),
+        }
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Transfer
         self._display_type = display_type
@@ -804,6 +826,7 @@ class Transfer(LedgerTransaction):
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
         try:
             self._label, self._label_color = labels[display_type]
+            self._oname = self.names[display_type]
         except KeyError:
             assert False, "Unknown transfer type"
         self._asset = JalAsset(self._data['asset'])
