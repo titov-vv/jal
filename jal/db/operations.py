@@ -405,8 +405,8 @@ class Dividend(LedgerTransaction):
         labels = {
             Dividend.Dividend: ('Δ', CustomColor.DarkGreen),
             Dividend.BondInterest: ('%', CustomColor.DarkGreen),
-            Dividend.StockDividend: ('Δ\n+', CustomColor.DarkGreen),
-            Dividend.StockVesting: ('Δ\n+', CustomColor.DarkBlue),
+            Dividend.StockDividend: ('⍙', CustomColor.DarkGreen),
+            Dividend.StockVesting: ('V', CustomColor.DarkBlue),
             Dividend.BondAmortization: ('⌳', CustomColor.DarkRed)
         }
         self.names = {
