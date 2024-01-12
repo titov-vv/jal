@@ -8,6 +8,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.constants import CustomColor
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.helpers import ts2d
 
 
 class ChartWidget(QWidget):
@@ -66,7 +67,8 @@ class ChartWidget(QWidget):
             trade = [x for x in self._trades if float(x['timestamp']) == point.x() and float(x['price']) == point.y()]
             qty = sum([x['qty'] for x in trade])
             avg_price = sum([x['price']*x['qty'] for x in trade]) / qty
-            tip_text = f"B: {qty}@{avg_price}" if qty > 0 else f"S: {qty}@{avg_price}"
+            tip_text = ts2d(int(point.x()/1000)) + ": "
+            tip_text += f"+{qty}@{avg_price}" if qty > 0 else f"{qty}@{avg_price}"
             self.setToolTip(tip_text)
         else:
             self.setToolTip("")
