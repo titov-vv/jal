@@ -169,7 +169,7 @@ class LedgerTransaction(JalDB):
             open_price = opening_trade['price']
             close_price = opening_trade['price'] if price is None else price
             _ = self._exec(
-                "INSERT INTO trades_closed(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
+                "INSERT INTO trades_sequence(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
                 "close_op_type, close_op_id, close_timestamp, close_price, qty) "
                 "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
                 ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",

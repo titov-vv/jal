@@ -303,8 +303,8 @@ CREATE TABLE trades (
 );
 
 -- Table for closed deals storage
-DROP TABLE IF EXISTS trades_closed;
-CREATE TABLE trades_closed (
+DROP TABLE IF EXISTS trades_sequence;
+CREATE TABLE trades_sequence (
     id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
     account_id      INTEGER NOT NULL,
     asset_id        INTEGER NOT NULL,
@@ -321,7 +321,7 @@ CREATE TABLE trades_closed (
 
 DROP TRIGGER IF EXISTS on_closed_trade_delete;
 CREATE TRIGGER on_closed_trade_delete
-    AFTER DELETE ON trades_closed
+    AFTER DELETE ON trades_sequence
     FOR EACH ROW
     WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN

@@ -12,7 +12,7 @@ class JalClosedTrade(JalDB):
         self._id = id
         self._data = self._read("SELECT account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
                                 "close_op_type, close_op_id, close_timestamp, close_price, qty "
-                                "FROM trades_closed WHERE id=:id", [(":id", self._id)], named=True)
+                                "FROM trades_sequence WHERE id=:id", [(":id", self._id)], named=True)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
             self._asset = jal.db.asset.JalAsset(self._data['asset_id'])
