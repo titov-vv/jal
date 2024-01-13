@@ -312,10 +312,10 @@ CREATE TABLE trades_sequence (
     open_op_id      INTEGER NOT NULL,
     open_timestamp  INTEGER NOT NULL,
     open_price      TEXT    NOT NULL,
-    close_op_type   INTEGER NOT NULL,
-    close_op_id     INTEGER NOT NULL,
-    close_timestamp INTEGER NOT NULL,
-    close_price     TEXT    NOT NULL,
+    close_op_type   INTEGER,
+    close_op_id     INTEGER,
+    close_timestamp INTEGER,
+    close_price     TEXT,
     qty             TEXT    NOT NULL
 );
 
