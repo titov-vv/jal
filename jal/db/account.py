@@ -284,7 +284,8 @@ class JalAccount(JalDB):
     def open_trades_list(self, asset) -> list:
         trades = []
         query = self._exec("SELECT op_type, operation_id, price, remaining_qty FROM trades_opened "
-                           "WHERE remaining_qty!='0' AND account_id=:account AND asset_id=:asset",
+                           "WHERE remaining_qty!='0' AND account_id=:account AND asset_id=:asset "
+                           "ORDER BY timestamp, op_type DESC",
                            [(":account", self._id), (":asset", asset.id())])
         while query.next():
             op_type, oid, price, qty = self._read_record(query, cast=[int, int, Decimal, Decimal])
