@@ -6,6 +6,22 @@ import jal.db.operations
 from jal.db.asset import JalAsset
 
 
+def get_trade_remaning_amount(operation, account, asset) -> Decimal:
+    # result = Decimal('0')
+    # query = JalDB._exec("SELECT qty FROM trades_sequence "
+    #                    "WHERE account_id=:account_id AND asset_id=:asset_id AND open_op_type=:otype AND open_op_id=:oid",
+    #                     [(':account_id', operation.account().id()), (':asset_id', operation.asset().id()),
+    #                     (':otype', operation.type()), (':oid', operation.id())])
+    # while query.next():
+    #     qty = JalDB._read_record(query)
+    #     result += Decimal(qty)
+    # return operation.qty() - result
+    result = JalDB._read("SELECT remaining_qty FROM trades_opened "
+                         "WHERE account_id=:account_id AND asset_id=:asset_id AND op_type=:otype AND operation_id=:oid",
+                         [(':account_id', account.id()), (':asset_id', asset.id()),
+                          (':otype', operation.type()), (':oid', operation.id())])
+    return Decimal(result)
+
 class JalClosedTrade(JalDB):
     def __init__(self, id: int = 0) -> None:
         super().__init__()

@@ -6,6 +6,7 @@ from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
 from jal.db.asset import JalAsset
+from jal.db.closed_trade import get_trade_remaning_amount
 from jal.widgets.helpers import ts2dt
 
 
@@ -149,33 +150,27 @@ class LedgerTransaction(JalDB):
     def _close_deals_fifo(self, deal_sign, qty, price):
         processed_qty = Decimal('0')
         processed_value = Decimal('0')
-        # Get a list of all previous not matched trades or corporate actions
-        query = self._exec("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
-                           "FROM trades_opened "
-                           "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=:zero "
-                           "ORDER BY timestamp, op_type DESC",
-                           [(":account_id", self._account.id()), (":asset_id", self._asset.id()),
-                            (":zero", format_decimal(Decimal('0')))])
-        while query.next():
-            opening_trade = self._read_record(query, named=True, cast=[int, int, int, int, int, Decimal, Decimal])
-            next_deal_qty = opening_trade['remaining_qty']
+        open_trades = self._account.open_trades_list(self._asset)
+        for operation in open_trades:
+            remaining_qty = get_trade_remaning_amount(operation['operation'], self._account, self._asset)
+            next_deal_qty = remaining_qty
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
-            remaining_qty = opening_trade['remaining_qty'] - next_deal_qty
+            new_remaining_qty = remaining_qty - next_deal_qty
             _ = self._exec("UPDATE trades_opened SET remaining_qty=:new_remaining_qty "
                            "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                           [(":new_remaining_qty", format_decimal(remaining_qty)), (":asset_id", self._asset.id()),
-                            (":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id'])])
-            open_price = opening_trade['price']
-            close_price = opening_trade['price'] if price is None else price
+                           [(":new_remaining_qty", format_decimal(new_remaining_qty)), (":asset_id", self._asset.id()),
+                            (":op_type", operation['operation'].type()), (":id", operation['operation'].id())])
+            open_price = operation['price']
+            close_price = operation['price'] if price is None else price
             _ = self._exec(
                 "INSERT INTO trades_sequence(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
                 "close_op_type, close_op_id, close_timestamp, close_price, qty) "
                 "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
                 ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
                 [(":account_id", self._account.id()), (":asset_id", self._asset.id()),
-                 (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
-                 (":open_timestamp", opening_trade['timestamp']), (":open_price", format_decimal(open_price)),
+                 (":open_op_type", operation['operation'].type()), (":open_op_id", operation['operation'].id()),
+                 (":open_timestamp", operation['operation'].timestamp()), (":open_price", format_decimal(open_price)),
                  (":close_op_type", self._otype), (":close_op_id", self._oid),
                  (":close_timestamp", self.timestamp()), (":close_price", format_decimal(close_price)),
                  (":qty", format_decimal((-deal_sign) * next_deal_qty))])
