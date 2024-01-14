@@ -6,6 +6,7 @@ import jal.db.operations
 import jal.db.closed_trade
 from jal.constants import Setup, BookAccount, PredefinedAccountType, PredefinedAsset
 from jal.db.country import JalCountry
+from jal.db.helpers import format_decimal
 
 
 class JalAccount(JalDB):
@@ -267,6 +268,14 @@ class JalAccount(JalDB):
         while query.next():
             trades.append(jal.db.closed_trade.JalClosedTrade(self._read_record(query, cast=[int])))
         return trades
+
+    # Creates a record in 'trades_open' table that manifests current asset position
+    def open_trade(self, timestamp, otype, oid, asset, price, amount):
+        _ = self._exec(
+            "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
+            "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
+            [(":timestamp", timestamp), (":type", otype), (":operation_id", oid), (":account_id", self._id),
+             (":asset_id", asset.id()), (":price", format_decimal(price)), (":remaining_qty", format_decimal(amount))])
 
     # Returns a list of {"operation": LedgerTransaction, "price": Decimal, "remaining_qty": Decimal}
     # that represents all trades that were opened for given asset on this account

@@ -140,7 +140,7 @@ class LedgerTransaction(JalDB):
         amount = Decimal('NaN') if amount is None else Decimal(amount)
         return amount
 
-    # Performs FIFO deals match in ledger: takes current open positions from 'open_trades' table and converts
+    # Performs FIFO deals match in ledger: takes current open positions from 'trades_opened' table and converts
     # them into deals in 'deals' table while supplied qty is enough.
     # deal_sign = +1 if closing deal is Buy operation and -1 if it is Sell operation.
     # qty - quantity of asset that closes previous open positions
@@ -604,12 +604,7 @@ class Dividend(LedgerTransaction):
         if asset_amount < Decimal('0'):
             raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
-        _ = self._exec(
-            "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
-            "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-            [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-             (":account_id", self._account.id()), (":asset_id", self._asset.id()),
-             (":price", format_decimal(self.price())),(":remaining_qty", format_decimal(self._amount))])
+        self._account.open_trade(self._timestamp, self._otype, self._oid, self._asset, self.price(), self._amount)
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
                                  asset_id=self._asset.id(), value=self._amount * self.price())
         if self._tax:
@@ -758,12 +753,7 @@ class Trade(LedgerTransaction):
                                      deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
                                      category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have a reminder that opens a new position
-            _ = self._exec(
-                "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
-                "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-                [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-                 (":account_id", self._account.id()), (":asset_id", self._asset.id()),
-                 (":price", format_decimal(self._price)), (":remaining_qty", format_decimal(qty - processed_qty))])
+            self._account.open_trade(self._timestamp, self._otype, self._oid, self._asset, self._price, qty - processed_qty)
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty),
                                      asset_id=self._asset.id(), value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
@@ -995,12 +985,7 @@ class Transfer(LedgerTransaction):
             else:
                 transferred_value = self._deposit
             price = transferred_value / transfer_amount
-            _ = self._exec(
-                "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
-                "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-                [(":timestamp", self._deposit_timestamp), (":type", self._otype), (":operation_id", self._oid),
-                 (":account_id", self._deposit_account.id()), (":asset_id", self._asset.id()),
-                 (":price", format_decimal(price)), (":remaining_qty", format_decimal(transfer_amount))])
+            self._deposit_account.open_trade(self._deposit_timestamp, self._otype, self._oid, self._asset, price, transfer_amount)
             ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount,
                                      asset_id=self._asset.id(), value=-transferred_value)
             ledger.appendTransaction(self, BookAccount.Assets, transfer_amount,
@@ -1214,11 +1199,5 @@ class CorporateAction(LedgerTransaction):
             else:
                 value = share * processed_value
                 price = value / qty
-                _ = self._exec(
-                    "INSERT INTO trades_opened(timestamp, op_type, operation_id, "
-                    "account_id, asset_id, price, remaining_qty) "
-                    "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-                    [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-                     (":account_id", self._account.id()), (":asset_id", asset.id()), (":price", format_decimal(price)),
-                     (":remaining_qty", format_decimal(qty))])
+                self._account.open_trade(self._timestamp, self._otype, self._oid, asset, price, qty)
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)
