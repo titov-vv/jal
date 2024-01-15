@@ -270,12 +270,12 @@ class JalAccount(JalDB):
         return trades
 
     # Creates a record in 'trades_open' table that manifests current asset position
-    def open_trade(self, timestamp, otype, oid, asset, price, amount):
+    def open_trade(self, timestamp, otype, oid, asset, price, qty):
         _ = self._exec(
             "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
             "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
             [(":timestamp", timestamp), (":type", otype), (":operation_id", oid), (":account_id", self._id),
-             (":asset_id", asset.id()), (":price", format_decimal(price)), (":remaining_qty", format_decimal(amount))])
+             (":asset_id", asset.id()), (":price", format_decimal(price)), (":remaining_qty", format_decimal(qty))])
 
     # Returns a list of {"operation": LedgerTransaction, "price": Decimal, "remaining_qty": Decimal}
     # that represents all trades that were opened for given asset on this account
@@ -283,14 +283,17 @@ class JalAccount(JalDB):
     # It doesn't take 'timestamp' as a parameter as it always return current open trades, not a retrospective position
     def open_trades_list(self, asset) -> list:
         trades = []
-        query = self._exec("SELECT op_type, operation_id, price, remaining_qty FROM trades_opened "
-                           "WHERE remaining_qty!='0' AND account_id=:account AND asset_id=:asset "
+        query = self._exec("WITH open_trades_numbered AS "
+                           "(SELECT timestamp, op_type, operation_id, price, remaining_qty, "
+                           "ROW_NUMBER() OVER (PARTITION BY op_type, operation_id ORDER BY timestamp DESC, op_type DESC) AS row_no "
+                           "FROM trades_opened WHERE account_id=:account AND asset_id=:asset ) "
+                           "SELECT op_type, operation_id, price, remaining_qty "
+                           "FROM open_trades_numbered WHERE row_no=1 AND remaining_qty!=:zero "
                            "ORDER BY timestamp, op_type DESC",
-                           [(":account", self._id), (":asset", asset.id())])
+                           [(":account", self._id), (":asset", asset.id()), (":zero", format_decimal(Decimal('0')))])
         while query.next():
             op_type, oid, price, qty = self._read_record(query, cast=[int, int, Decimal, Decimal])
-            operation = jal.db.operations.LedgerTransaction().get_operation(op_type, oid,
-                                                                            jal.db.operations.Transfer.Incoming)
+            operation = jal.db.operations.LedgerTransaction().get_operation(op_type, oid, jal.db.operations.Transfer.Incoming)
             trades.append({"operation": operation, "price": price, "remaining_qty": qty})
         return trades
 

@@ -159,7 +159,7 @@ def test_buy_sell_change(prepare_db_fifo):
     LedgerTransaction.get_operation(LedgerTransaction.Trade, 2).delete()
 
     open_trades = JalAccount(1).open_trades_list(JalAsset(4))
-    assert len(open_trades) == 0
+    assert len(open_trades) == 1
     assert ledger.getCurrentFrontier() < 1609729200
 
     # Re-build ledger from last actual data

@@ -319,16 +319,6 @@ CREATE TABLE trades_sequence (
     qty             TEXT    NOT NULL
 );
 
-DROP TRIGGER IF EXISTS on_closed_trade_delete;
-CREATE TRIGGER on_closed_trade_delete
-    AFTER DELETE ON trades_sequence
-    FOR EACH ROW
-    WHEN (SELECT value FROM settings WHERE id = 1)
-BEGIN
-    UPDATE trades_opened
-    SET remaining_qty = remaining_qty + OLD.qty
-    WHERE op_type=OLD.open_op_type AND operation_id=OLD.open_op_id AND account_id=OLD.account_id AND asset_id = OLD.asset_id;
-END;
 
 -- Table: transfers
 DROP TABLE IF EXISTS transfers;

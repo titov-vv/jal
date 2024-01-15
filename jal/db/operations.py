@@ -6,7 +6,6 @@ from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
 from jal.db.asset import JalAsset
-from jal.db.closed_trade import get_trade_remaning_amount
 from jal.widgets.helpers import ts2dt
 
 
@@ -152,16 +151,13 @@ class LedgerTransaction(JalDB):
         processed_value = Decimal('0')
         open_trades = self._account.open_trades_list(self._asset)
         for operation in open_trades:
-            remaining_qty = get_trade_remaning_amount(operation['operation'], self._account, self._asset)
+            remaining_qty = operation['remaining_qty']
             next_deal_qty = remaining_qty
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
             new_remaining_qty = remaining_qty - next_deal_qty
-            _ = self._exec("UPDATE trades_opened SET remaining_qty=:new_remaining_qty "
-                           "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                           [(":new_remaining_qty", format_decimal(new_remaining_qty)), (":asset_id", self._asset.id()),
-                            (":op_type", operation['operation'].type()), (":id", operation['operation'].id())])
             open_price = operation['price']
+            self._account.open_trade(self.timestamp(), operation['operation'].type(), operation['operation'].id(), self._asset, open_price, new_remaining_qty)
             close_price = operation['price'] if price is None else price
             _ = self._exec(
                 "INSERT INTO trades_sequence(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
@@ -748,7 +744,7 @@ class Trade(LedgerTransaction):
                                      deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
                                      category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have a reminder that opens a new position
-            self._account.open_trade(self._timestamp, self._otype, self._oid, self._asset, self._price, qty - processed_qty)
+            self._account.open_trade(self._timestamp, self._otype, self._oid, self._asset, self._price, (qty - processed_qty))
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty),
                                      asset_id=self._asset.id(), value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
