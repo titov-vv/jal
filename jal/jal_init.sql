@@ -303,8 +303,8 @@ CREATE TABLE trades (
 );
 
 -- Table for closed deals storage
-DROP TABLE IF EXISTS trades_sequence;
-CREATE TABLE trades_sequence (
+DROP TABLE IF EXISTS trades_closed;
+CREATE TABLE trades_closed (
     id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
     account_id      INTEGER NOT NULL,
     asset_id        INTEGER NOT NULL,
@@ -312,10 +312,10 @@ CREATE TABLE trades_sequence (
     open_op_id      INTEGER NOT NULL,
     open_timestamp  INTEGER NOT NULL,
     open_price      TEXT    NOT NULL,
-    close_op_type   INTEGER,
-    close_op_id     INTEGER,
-    close_timestamp INTEGER,
-    close_price     TEXT,
+    close_op_type   INTEGER NOT NULL,
+    close_op_id     INTEGER NOT NULL,
+    close_timestamp INTEGER NOT NULL,
+    close_price     TEXT    NOT NULL,
     qty             TEXT    NOT NULL
 );
 

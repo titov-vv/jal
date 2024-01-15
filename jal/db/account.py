@@ -264,7 +264,7 @@ class JalAccount(JalDB):
     # Returns a list of JalClosedTrade objects recorded for the account
     def closed_trades_list(self) -> list:
         trades = []
-        query = self._exec("SELECT id FROM trades_sequence WHERE account_id=:account", [(":account", self._id)])
+        query = self._exec("SELECT id FROM trades_closed WHERE account_id=:account", [(":account", self._id)])
         while query.next():
             trades.append(jal.db.closed_trade.JalClosedTrade(self._read_record(query, cast=[int])))
         return trades

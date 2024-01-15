@@ -6,6 +6,7 @@ from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
 from jal.db.asset import JalAsset
+from jal.db.closed_trade import JalClosedTrade
 from jal.widgets.helpers import ts2dt
 
 
@@ -141,12 +142,14 @@ class LedgerTransaction(JalDB):
         return amount
 
     # Performs FIFO deals match in ledger: takes current open positions from 'trades_opened' table and converts
-    # them into deals in 'deals' table while supplied qty is enough.
+    # them into deals in 'trades_closed' table while supplied qty is enough.
     # deal_sign = +1 if closing deal is Buy operation and -1 if it is Sell operation.
     # qty - quantity of asset that closes previous open positions
     # price is None if we process corporate action or transfer where we keep initial value and don't have profit or loss
     # Returns total qty, value of deals created.
     def _close_deals_fifo(self, deal_sign, qty, price):
+        assert self._asset.id() == self.asset().id()   # The function works with these assumptions as any operation may take only one incoming asset
+        assert self._account.id() == self.account().id()
         processed_qty = Decimal('0')
         processed_value = Decimal('0')
         open_trades = self._account.open_trades_list(self._asset)
@@ -155,21 +158,10 @@ class LedgerTransaction(JalDB):
             next_deal_qty = remaining_qty
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
-            new_remaining_qty = remaining_qty - next_deal_qty
             open_price = operation['price']
-            self._account.open_trade(self.timestamp(), operation['operation'].type(), operation['operation'].id(), self._asset, open_price, new_remaining_qty)
             close_price = operation['price'] if price is None else price
-            _ = self._exec(
-                "INSERT INTO trades_sequence(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
-                "close_op_type, close_op_id, close_timestamp, close_price, qty) "
-                "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
-                ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
-                [(":account_id", self._account.id()), (":asset_id", self._asset.id()),
-                 (":open_op_type", operation['operation'].type()), (":open_op_id", operation['operation'].id()),
-                 (":open_timestamp", operation['operation'].timestamp()), (":open_price", format_decimal(open_price)),
-                 (":close_op_type", self._otype), (":close_op_id", self._oid),
-                 (":close_timestamp", self.timestamp()), (":close_price", format_decimal(close_price)),
-                 (":qty", format_decimal((-deal_sign) * next_deal_qty))])
+            self._account.open_trade(self.timestamp(), operation['operation'].type(), operation['operation'].id(), self._asset, open_price, remaining_qty - next_deal_qty)
+            JalClosedTrade.create_from_trades(operation['operation'], self, (-deal_sign) * next_deal_qty, open_price, close_price)
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * open_price)
             if processed_qty == qty:

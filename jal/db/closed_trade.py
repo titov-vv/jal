@@ -1,5 +1,6 @@
 from decimal import Decimal
 from jal.db.db import JalDB
+from jal.db.helpers import format_decimal
 import jal.db.account
 import jal.db.asset
 import jal.db.operations
@@ -12,7 +13,7 @@ class JalClosedTrade(JalDB):
         self._id = id
         self._data = self._read("SELECT account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
                                 "close_op_type, close_op_id, close_timestamp, close_price, qty "
-                                "FROM trades_sequence WHERE id=:id", [(":id", self._id)], named=True)
+                                "FROM trades_closed WHERE id=:id", [(":id", self._id)], named=True)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
             self._asset = jal.db.asset.JalAsset(self._data['asset_id'])
@@ -24,6 +25,20 @@ class JalClosedTrade(JalDB):
         else:
             self._account = self._asset = self._open_op = self._close_op = None
             self._open_price = self._close_price = self._qty = Decimal('0')
+
+    @classmethod
+    def create_from_trades(cls, open_trade, close_trade, qty, open_price, close_price):
+        _ = cls._exec(
+            "INSERT INTO trades_closed(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
+            "close_op_type, close_op_id, close_timestamp, close_price, qty) "
+            "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
+            ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
+            [(":account_id", close_trade.account().id()), (":asset_id", close_trade.asset().id()),
+             (":open_op_type", open_trade.type()), (":open_op_id", open_trade.id()),
+             (":open_timestamp", open_trade.timestamp()), (":open_price", format_decimal(open_price)),
+             (":close_op_type", close_trade.type()), (":close_op_id", close_trade.id()),
+             (":close_timestamp", close_trade.timestamp()), (":close_price", format_decimal(close_price)),
+             (":qty", format_decimal(qty))])
 
     def dump(self) -> list:
         return [

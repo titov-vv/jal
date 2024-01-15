@@ -250,7 +250,7 @@ class Ledger(QObject, JalDB):
             self.main_window.showProgressBar(True)
         logging.info(self.tr("Re-building ledger since: ") + f"{ts2dt(frontier)}")
         start_time = datetime.now()
-        _ = self._exec("DELETE FROM trades_sequence WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
+        _ = self._exec("DELETE FROM trades_closed WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
         _ = self._exec("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = self._exec("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = self._exec("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
