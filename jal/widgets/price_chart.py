@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout
 from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis, QXYSeries
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, Transfer
+from jal.db.operations import LedgerTransaction, Transfer, CorporateAction
 from jal.constants import CustomColor
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d
@@ -111,26 +111,30 @@ class ChartWindow(MdiWidget):
         for trade in positions:
             marker_color = CustomColor.LightYellow
             text = ''
-            if trade['operation'].type() == LedgerTransaction.Trade:
+            operation = trade['operation']
+            if operation.type() == LedgerTransaction.Trade:
                 if trade['remaining_qty'] >= 0:
                     marker_color = CustomColor.LightGreen
                     text = self.tr("Buy")
                 else:
                     marker_color = CustomColor.LightRed
                     text = self.tr("Sell")
-            if trade['operation'].type() == LedgerTransaction.Transfer:
-                transfer_in = trade['operation']
-                transfer_out = LedgerTransaction().get_operation(transfer_in.type(), transfer_in.id(), Transfer.Outgoing)
+            if operation.type() == LedgerTransaction.Transfer:
+                transfer_out = LedgerTransaction().get_operation(operation.type(), operation.id(), Transfer.Outgoing)
                 trades += self.load_open_trades(transfer_out.account(), asset, transfer_out.timestamp()-1)  # get position just before the transfer
                 text = self.tr("Transfer ") + f"{transfer_out.account_name()}"
+            if operation.type() == LedgerTransaction.CorporateAction and operation.subtype() == CorporateAction.Split:
+                trades += self.load_open_trades(account, asset, operation.timestamp()-1)  # get position just before the split
+                text = operation.description().split('\n')[0]
+            if operation.type() == LedgerTransaction.Dividend:
+                text = operation.name() + "\n" + operation.description().split('\n')[0]
             trades.append({
-                'timestamp': trade['operation'].timestamp() * 1000,  # timestamp to ms
+                'timestamp': operation.timestamp() * 1000,  # timestamp to ms
                 'price': trade['price'],
                 'qty': trade['remaining_qty'],
                 'color': marker_color,
                 'text': text
             })
-
         return trades
 
     def prepare_chart_data(self, end_time):
