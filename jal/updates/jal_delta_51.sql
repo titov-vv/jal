@@ -3,6 +3,9 @@ BEGIN TRANSACTION;
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
 DROP TRIGGER IF EXISTS on_closed_trade_delete;
+
+DROP INDEX IF EXISTS open_trades_by_operation_idx;
+CREATE INDEX open_trades_by_operation_idx ON trades_opened (timestamp, op_type, operation_id);
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------

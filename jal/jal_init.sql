@@ -116,6 +116,9 @@ CREATE TABLE agents (
     location TEXT (128) 
 );
 
+DROP INDEX IF EXISTS agents_by_name_idx;
+CREATE INDEX agents_by_name_idx ON agents (name);
+
 -- Table: categories
 DROP TABLE IF EXISTS categories;
 CREATE TABLE categories (
@@ -234,6 +237,8 @@ CREATE TABLE trades_opened (
     remaining_qty TEXT    NOT NULL
 );
 
+DROP INDEX IF EXISTS open_trades_by_operation_idx;
+CREATE INDEX open_trades_by_operation_idx ON trades_opened (timestamp, op_type, operation_id);
 
 -- Table: quotes
 DROP TABLE IF EXISTS quotes;
@@ -337,10 +342,6 @@ CREATE TABLE transfers (
     asset                INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
     note                 TEXT
 );
-
--- Index: agents_by_name_idx
-DROP INDEX IF EXISTS agents_by_name_idx;
-CREATE INDEX agents_by_name_idx ON agents (name);
 
 
 -- View: operation_sequence
