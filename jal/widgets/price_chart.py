@@ -73,6 +73,8 @@ class ChartWidget(QWidget):
             avg_price = sum([x['price']*x['qty'] for x in trade]) / qty
             tip_text = ts2d(int(point.x()/1000)) + ": "
             tip_text += f"+{qty}@{avg_price}" if qty > 0 else f"{qty}@{avg_price}"
+            if len(trade) and trade[0]['text']:
+                tip_text += "\n" + trade[0]['text']
             self.setToolTip(tip_text)
         else:
             self.setToolTip("")
@@ -108,18 +110,27 @@ class ChartWindow(MdiWidget):
         positions = account.open_trades_list(asset, end_time)
         for trade in positions:
             marker_color = CustomColor.LightYellow
+            text = ''
             if trade['operation'].type() == LedgerTransaction.Trade:
-                marker_color = CustomColor.LightGreen if trade['remaining_qty'] >= 0 else CustomColor.LightRed
-            trades.append({
-                'timestamp': trade['operation'].timestamp() * 1000,  # timestamp to ms
-                'price': trade['price'],
-                'qty': trade['remaining_qty'],
-                'color': marker_color
-            })
+                if trade['remaining_qty'] >= 0:
+                    marker_color = CustomColor.LightGreen
+                    text = self.tr("Buy")
+                else:
+                    marker_color = CustomColor.LightRed
+                    text = self.tr("Sell")
             if trade['operation'].type() == LedgerTransaction.Transfer:
                 transfer_in = trade['operation']
                 transfer_out = LedgerTransaction().get_operation(transfer_in.type(), transfer_in.id(), Transfer.Outgoing)
                 trades += self.load_open_trades(transfer_out.account(), asset, transfer_out.timestamp()-1)  # get position just before the transfer
+                text = self.tr("Transfer ") + f"{transfer_out.account_name()}"
+            trades.append({
+                'timestamp': trade['operation'].timestamp() * 1000,  # timestamp to ms
+                'price': trade['price'],
+                'qty': trade['remaining_qty'],
+                'color': marker_color,
+                'text': text
+            })
+
         return trades
 
     def prepare_chart_data(self, end_time):
