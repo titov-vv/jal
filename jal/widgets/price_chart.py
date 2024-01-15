@@ -1,12 +1,12 @@
 from math import floor, ceil
 from decimal import Decimal
 
-from PySide6.QtCore import Qt, QMargins, QDateTime, QDate
+from PySide6.QtCore import Qt, QMargins, QDateTime
 from PySide6.QtWidgets import QWidget, QHBoxLayout
 from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis, QXYSeries
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction
+from jal.db.operations import LedgerTransaction, Transfer
 from jal.constants import CustomColor
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d
@@ -103,25 +103,34 @@ class ChartWindow(MdiWidget):
 
         self.ready = True
 
-    def prepare_chart_data(self, end_time):
-        account = JalAccount(self.account_id)
-        asset = JalAsset(self.asset_id)
-        self.currency_name = JalAsset(account.currency()).symbol()
+    def load_open_trades(self, account, asset, end_time):
+        trades = []
         positions = account.open_trades_list(asset, end_time)
-        start_time = 0 if not positions else min([x['operation'].timestamp() for x in positions]) - 2592000  # Shift back by 30 days
-        quotes = asset.quotes(start_time, end_time, self.currency_id)
-        for quote in quotes:
-            self.quotes.append({'timestamp': quote[0] * 1000, 'quote': quote[1]})  # timestamp to ms
         for trade in positions:
             marker_color = CustomColor.LightYellow
             if trade['operation'].type() == LedgerTransaction.Trade:
                 marker_color = CustomColor.LightGreen if trade['remaining_qty'] >= 0 else CustomColor.LightRed
-            self.trades.append({
+            trades.append({
                 'timestamp': trade['operation'].timestamp() * 1000,  # timestamp to ms
                 'price': trade['price'],
                 'qty': trade['remaining_qty'],
                 'color': marker_color
             })
+            if trade['operation'].type() == LedgerTransaction.Transfer:
+                transfer_in = trade['operation']
+                transfer_out = LedgerTransaction().get_operation(transfer_in.type(), transfer_in.id(), Transfer.Outgoing)
+                trades += self.load_open_trades(transfer_out.account(), asset, transfer_out.timestamp()-1)  # get position just before the transfer
+        return trades
+
+    def prepare_chart_data(self, end_time):
+        account = JalAccount(self.account_id)
+        asset = JalAsset(self.asset_id)
+        self.currency_name = JalAsset(account.currency()).symbol()
+        self.trades = self.load_open_trades(account, asset, end_time)
+        start_time = 0 if not self.trades else min([x['timestamp'] for x in self.trades])/1000 - 2592000  # Shift back by 30 days
+        quotes = asset.quotes(start_time, end_time, self.currency_id)
+        for quote in quotes:
+            self.quotes.append({'timestamp': quote[0] * 1000, 'quote': quote[1]})  # timestamp to ms
         if self.quotes or self.trades:
             min_price = min([x['quote'] for x in self.quotes] + [x['price'] for x in self.trades])
             max_price = max([x['quote'] for x in self.quotes] + [x['price'] for x in self.trades])
