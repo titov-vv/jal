@@ -3,9 +3,10 @@ from decimal import Decimal
 
 from PySide6.QtCore import Qt, QMargins, QDateTime, QDate
 from PySide6.QtWidgets import QWidget, QHBoxLayout
-from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis
+from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis, QXYSeries
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.operations import LedgerTransaction
 from jal.constants import CustomColor
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d
@@ -20,14 +21,17 @@ class ChartWidget(QWidget):
         self.quotes_series = QLineSeries()
         for point in quotes:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
             self.quotes_series.append(float(point['timestamp']), point['quote'])
+        self.quotes_series.setColor(CustomColor.DarkBlue)
 
         self._trades = trades
         self.trade_series = QScatterSeries()
-        for point in trades:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
+        points_config = {}
+        for i, point in enumerate(trades):            # Conversion to 'float' in order not to get 'int' overflow on some platforms
             self.trade_series.append(float(point['timestamp']), point['price'])
-        self.trade_series.setMarkerSize(5)
-        self.trade_series.setBorderColor(CustomColor.LightRed)
-        self.trade_series.setBrush(CustomColor.DarkRed)
+            points_config[i] = {QXYSeries.PointConfiguration.Color: point['color']}
+        self.trade_series.setMarkerSize(7)
+        self.trade_series.setBorderColor(CustomColor.Grey)
+        self.trade_series.setPointsConfiguration(points_config)
         self.trade_series.hovered.connect(self.MouseOverTrade)
 
         self.axisX = QDateTimeAxis()
@@ -109,10 +113,14 @@ class ChartWindow(MdiWidget):
         for quote in quotes:
             self.quotes.append({'timestamp': quote[0] * 1000, 'quote': quote[1]})  # timestamp to ms
         for trade in positions:
+            marker_color = CustomColor.LightYellow
+            if trade['operation'].type() == LedgerTransaction.Trade:
+                marker_color = CustomColor.LightGreen if trade['remaining_qty'] >= 0 else CustomColor.LightRed
             self.trades.append({
                 'timestamp': trade['operation'].timestamp() * 1000,  # timestamp to ms
                 'price': trade['price'],
-                'qty': trade['remaining_qty']
+                'qty': trade['remaining_qty'],
+                'color': marker_color
             })
         if self.quotes or self.trades:
             min_price = min([x['quote'] for x in self.quotes] + [x['price'] for x in self.trades])
