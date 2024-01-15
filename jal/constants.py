@@ -26,6 +26,7 @@ class Setup:
     UPDATE_PREFIX = 'jal_delta_'
     DEFAULT_ACCOUNT_PRECISION = 2
     NULL_VALUE = '-.--'
+    MAX_TIMESTAMP = 9999999999
 
 
 class BookAccount:  # PREDEFINED BOOK ACCOUNTS

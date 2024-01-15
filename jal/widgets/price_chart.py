@@ -78,7 +78,7 @@ class ChartWidget(QWidget):
             self.setToolTip("")
 
 class ChartWindow(MdiWidget):
-    def __init__(self, account_id, asset_id, currency_id, _asset_qty, parent=None):
+    def __init__(self, account_id, asset_id, currency_id, timestamp, parent=None):
         super().__init__(parent)
 
         self.account_id = account_id
@@ -90,7 +90,7 @@ class ChartWindow(MdiWidget):
         self.currency_name = ''
         self.range = [0, 0, 0, 0]
 
-        self.prepare_chart_data()
+        self.prepare_chart_data(timestamp)
 
         self.chart = ChartWidget(self, self.quotes, self.trades, self.range, self.currency_name)
 
@@ -103,13 +103,13 @@ class ChartWindow(MdiWidget):
 
         self.ready = True
 
-    def prepare_chart_data(self):
+    def prepare_chart_data(self, end_time):
         account = JalAccount(self.account_id)
         asset = JalAsset(self.asset_id)
         self.currency_name = JalAsset(account.currency()).symbol()
-        positions = account.open_trades_list(asset)
+        positions = account.open_trades_list(asset, end_time)
         start_time = 0 if not positions else min([x['operation'].timestamp() for x in positions]) - 2592000  # Shift back by 30 days
-        quotes = asset.quotes(start_time, QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(), self.currency_id)
+        quotes = asset.quotes(start_time, end_time, self.currency_id)
         for quote in quotes:
             self.quotes.append({'timestamp': quote[0] * 1000, 'quote': quote[1]})  # timestamp to ms
         for trade in positions:

@@ -99,7 +99,7 @@ class PortfolioReportWindow(MdiWidget):
     def showPriceChart(self, index):
         model = index.model()
         account, asset, currency, asset_qty = model.get_data_for_tax(index)
-        self._parent.mdi_area().addSubWindow(ChartWindow(account, asset, currency, asset_qty))
+        self._parent.mdi_area().addSubWindow(ChartWindow(account, asset, currency, self.ui.PortfolioDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch()))
 
     @Slot()
     def estimateRussianTax(self, index, country_code):
