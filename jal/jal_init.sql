@@ -354,6 +354,16 @@ CREATE TABLE term_deposits (
 );
 
 
+DROP TABLE IF EXISTS deposit_actions;
+CREATE TABLE deposit_actions (
+    id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    deposit_id INTEGER REFERENCES term_deposits (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    timestamp  INTEGER NOT NULL,
+    type       INTEGER NOT NULL,
+    amount     TEXT    NOT NULL
+);
+
+
 -- View: operation_sequence
 DROP VIEW IF EXISTS operation_sequence;
 CREATE VIEW operation_sequence AS

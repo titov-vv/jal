@@ -1201,7 +1201,7 @@ class TermDeposit(LedgerTransaction):
         #     "mandatory": True, "validation": False, "children": True,
         #     "child_table": "action_details", "child_pid": "pid",
         #     "child_fields": {
-        #         "pid": {"mandatory": True, "validation": False},    # TODO Check if mandatory requirement is true here and works as expected
+        #         "pid": {"mandatory": True, "validation": False},
         #         "category_id": {"mandatory": True, "validation": False},
         #         "tag_id": {"mandatory": False, "validation": False},
         #         "amount": {"mandatory": True, "validation": False},

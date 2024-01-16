@@ -5305,74 +5305,59 @@ Please select an account for import:</source>
         <translation type="unfinished">Форма</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="32"/>
-        <source>Add asset</source>
-        <translation type="unfinished">Добавить актив</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="42"/>
-        <source>Asset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="52"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="137"/>
         <source>Account</source>
         <translation type="unfinished">Счет</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="59"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="100"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="69"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="35"/>
         <source>Commit changes</source>
         <translation type="unfinished">Сохранить изменения</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="79"/>
-        <source>Qty</source>
-        <translation type="unfinished">Кол-во</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="91"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="149"/>
         <source>Term Deposit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="98"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="107"/>
         <source>Date/Time</source>
         <translation type="unfinished">Дата/Время</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="105"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="74"/>
+        <source>Copy detail</source>
+        <translation type="unfinished">Скопировать детальную запись</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="117"/>
+        <source>Details</source>
+        <translation type="unfinished">Детали</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="127"/>
+        <source>Remove detail</source>
+        <translation type="unfinished">Удалить детальную запись</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="169"/>
+        <source>Add detail</source>
+        <translation type="unfinished">Добавить детальную запись</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="179"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation type="unfinished">dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="118"/>
-        <source> - </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="125"/>
-        <source>Type</source>
-        <translation type="unfinished">Тип</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="150"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="90"/>
         <source>Cancel changes</source>
         <translation type="unfinished">Отменить изменения</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="176"/>
-        <source>Remove asset</source>
-        <translation type="unfinished">Удалить актив</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="186"/>
-        <source>#</source>
-        <translation type="unfinished">№</translation>
     </message>
 </context>
 <context>
