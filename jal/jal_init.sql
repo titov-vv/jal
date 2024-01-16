@@ -480,6 +480,7 @@ CREATE TRIGGER dividends_after_delete
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
 
 -- Trigger: dividends_after_insert
@@ -490,16 +491,18 @@ CREATE TRIGGER dividends_after_insert
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
 
 -- Trigger: dividends_after_update
 DROP TRIGGER IF EXISTS dividends_after_update;
 CREATE TRIGGER dividends_after_update
-      AFTER UPDATE OF timestamp, account_id, asset_id, amount, tax ON dividends
+      AFTER UPDATE OF timestamp, type, account_id, asset_id, amount, tax ON dividends
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS trades_after_delete;
