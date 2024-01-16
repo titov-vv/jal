@@ -427,7 +427,10 @@ class StatementOpenBroker(StatementXML):
             payment_pattern = r"^Выплата дохода клиент (?P<type>\d+) дивиденды (?P<asset>.*) налог к удержанию (?P<tax>\d+\.\d+) рублей$"
             parts = re.match(payment_pattern, description, re.IGNORECASE)
             if parts is None:
-                raise Statement_ImportError(self.tr("Unknown payment description: ") + f"'{description}'")
+                payment_pattern = r"^Выплата дохода клиент (?P<type>\d+) дивиденды (?P<asset>.*), удержан налог депозитарием (?P<tax>\d+\.\d+) рублей$"
+                parts = re.match(payment_pattern, description, re.IGNORECASE)
+                if parts is None:
+                    raise Statement_ImportError(self.tr("Unknown payment description: ") + f"'{description}'")
             dividend_data = parts.groupdict()
             asset_id = self.find_most_probable_asset(dividend_data['asset'])
             tax = float(dividend_data['tax'])
@@ -557,7 +560,7 @@ class StatementOpenBroker(StatementXML):
         if match:
             asset = [x for x in self._data[FOF.SYMBOLS] if x['symbol'] == match[0]]
             return asset[0]['asset']
-        match = difflib.get_close_matches(asset_name, [x['name'] for x in self._data[FOF.ASSETS]], 1)
+        match = difflib.get_close_matches(asset_name, [x['name'] for x in self._data[FOF.ASSETS] if 'name' in x], 1)
         if match:
             asset = [x for x in self._data[FOF.ASSETS] if x['name'] == match[0]]
             return asset[0]['id']
