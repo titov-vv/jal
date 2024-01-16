@@ -200,6 +200,7 @@ class JalAccount(JalDB):
         last_timestamp = 0 if last_timestamp == '' else last_timestamp
         return last_timestamp
 
+    # FIXME This method now looks duplicated with open_trades_list() - need some unification
     # Returns a list of dictionaries {"asset" JalAsset object, "amount": qty of asset, "value" initial asset value}
     # corresponding to assets present on account at given timestamp
     def assets_list(self, timestamp: int) -> list:
