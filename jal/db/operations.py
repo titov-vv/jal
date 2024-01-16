@@ -24,6 +24,7 @@ class LedgerTransaction(JalDB):
     Trade = 3
     Transfer = 4
     CorporateAction = 5
+    TermDeposit = 6
     _db_table = ''   # Table where operation is stored in DB
     _db_fields = {}
 
@@ -109,6 +110,9 @@ class LedgerTransaction(JalDB):
         elif operation_type == LedgerTransaction.CorporateAction:
             table = CorporateAction._db_table
             fields = CorporateAction._db_fields
+        elif operation_type == LedgerTransaction.TermDeposit:
+            table = TermDeposit._db_table
+            fields = TermDepoist._db_fields
         else:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
         self.validate_operation_data(table, fields, operation_data)
@@ -1184,3 +1188,123 @@ class CorporateAction(LedgerTransaction):
                 price = value / qty
                 self._account.open_trade(self._timestamp, self._otype, self._oid, asset, price, qty)
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)
+
+# ----------------------------------------------------------------------------------------------------------------------
+class TermDeposit(LedgerTransaction):
+    _db_table = "term_deposits"
+    _db_fields = {
+        # "timestamp": {"mandatory": True, "validation": False},
+        # "account_id": {"mandatory": True, "validation": False},
+        # "peer_id": {"mandatory": True, "validation": False},
+        # "alt_currency_id": {"mandatory": False, "validation": False},
+        # "lines": {
+        #     "mandatory": True, "validation": False, "children": True,
+        #     "child_table": "action_details", "child_pid": "pid",
+        #     "child_fields": {
+        #         "pid": {"mandatory": True, "validation": False},    # TODO Check if mandatory requirement is true here and works as expected
+        #         "category_id": {"mandatory": True, "validation": False},
+        #         "tag_id": {"mandatory": False, "validation": False},
+        #         "amount": {"mandatory": True, "validation": False},
+        #         "amount_alt": {"mandatory": False, "validation": False},
+        #         "note": {"mandatory": False, "validation": False}
+        #     }
+        # }
+    }
+
+    def __init__(self, operation_id=None):
+        super().__init__(operation_id)
+        self._otype = LedgerTransaction.TermDeposit
+        # self._data = self._read("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
+        #                         "a.alt_currency_id AS currency FROM actions AS a "
+        #                         "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.id=:oid",
+        #                         [(":oid", self._oid)], named=True)
+        # self._timestamp = self._data['timestamp']
+        # self._account = jal.db.account.JalAccount(self._data['account_id'])
+        # self._account_name = self._account.name()
+        # self._account_currency = JalAsset(self._account.currency()).symbol()
+        # self._reconciled = self._account.reconciled_at() >= self._timestamp
+        # self._peer_id = self._data['peer_id']
+        # self._peer = self._data['peer']
+        # self._currency = self._data['currency']
+        # details_query = self._exec("SELECT d.category_id, c.name AS category, d.tag_id, t.tag, "
+        #                            "d.amount, d.amount_alt, d.note FROM action_details AS d "
+        #                            "LEFT JOIN categories AS c ON c.id=d.category_id "
+        #                            "LEFT JOIN tags AS t ON t.id=d.tag_id "
+        #                            "WHERE d.pid= :pid", [(":pid", self._oid)])
+        # self._details = []
+        # while details_query.next():
+        #     self._details.append(self._read_record(details_query, named=True))
+        # self._amount = sum(Decimal(line['amount']) for line in self._details)
+        # if self._amount < 0:
+        #     self._label, self._label_color = ('—', CustomColor.DarkRed)
+        #     self._oname = self.tr("Spending")
+        # else:
+        #     self._label, self._label_color = ('+', CustomColor.DarkGreen)
+        #     self._oname = self.tr("Income")
+        # if self._currency:
+        #     self._view_rows = 2
+        #     self._currency_name = JalAsset(self._currency).symbol()
+        # self._amount_alt = sum(Decimal(line['amount_alt']) for line in self._details)
+    #
+    # def description(self) -> str:
+    #     description = self._peer
+    #     if self._currency:
+    #         if self._amount_alt == Decimal('0'):
+    #             return description
+    #         try:
+    #             rate = self._amount_alt / self._amount
+    #         except ZeroDivisionError:
+    #             return description
+    #         description += "\n" + self.tr("Rate: ")
+    #         if rate >= 1:
+    #             description += f"{rate:.4f} {self._currency_name}/{self._account_currency}"
+    #         else:
+    #             description += f"{1/rate:.4f} {self._account_currency}/{self._currency_name}"
+    #     return description
+    #
+    # def value_change(self) -> list:
+    #     if self._currency:
+    #         return [self._amount, self._amount_alt]
+    #     else:
+    #         return [self._amount]
+    #
+    # def value_currency(self) -> str:
+    #     if self._currency:
+    #         return f" {self._account_currency}\n {self._currency_name}"
+    #     else:
+    #         return f" {self._account_currency}"
+    #
+    # def value_total(self) -> list:
+    #     return [self._money_total(self._account.id())]
+    #
+    # # Return peer_id of current operation
+    # def peer(self) -> int:
+    #     return self._peer_id
+    #
+    # # Returns a list of income/spending lines in form of
+    # # {"category_id", "category", "tag_id", "tag", "amount", "amount_alt", "note"}
+    # def lines(self) -> list:
+    #     return self._details
+    #
+    # def amount(self) -> Decimal:
+    #     return self._amount
+    #
+    # # it assigns tag to all operation details
+    # def assign_tag(self, tag_id: int):
+    #     self._exec("UPDATE action_details SET tag_id=:tag_id WHERE pid=:pid",
+    #                [(":tag_id", tag_id), (":pid", self._oid)])
+    #
+    # def processLedger(self, ledger):
+    #     if len(self._details) == 0:
+    #         raise LedgerError(self.tr("Can't process operation without details") + f"  Operation: {self.dump()}")
+    #     if self._amount < Decimal('0'):
+    #         credit_taken = ledger.takeCredit(self, self._account.id(), -self._amount)
+    #         ledger.appendTransaction(self, BookAccount.Money, -(-self._amount - credit_taken))
+    #     else:
+    #         credit_returned = ledger.returnCredit(self, self._account.id(), self._amount)
+    #         if credit_returned < self._amount:
+    #             ledger.appendTransaction(self, BookAccount.Money, self._amount - credit_returned)
+    #     for detail in self._details:
+    #         book = BookAccount.Costs if Decimal(detail['amount']) < Decimal('0') else BookAccount.Incomes
+    #         ledger.appendTransaction(self, book, -Decimal(detail['amount']),
+    #                                  category=detail['category_id'], peer=self._peer_id, tag=detail['tag_id'])

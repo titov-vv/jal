@@ -6,6 +6,7 @@ from jal.widgets.dividend_widget import DividendWidget
 from jal.widgets.income_spending_widget import IncomeSpendingWidget
 from jal.widgets.trade_widget import TradeWidget
 from jal.widgets.transfer_widget import TransferWidget
+from jal.widgets.term_deposit_widget import TermDepositWidget
 from jal.db.operations import LedgerTransaction
 
 
@@ -18,7 +19,8 @@ class JalOperationsTabs(QStackedWidget):
                         LedgerTransaction.IncomeSpending: IncomeSpendingWidget(self),
                         LedgerTransaction.Dividend: DividendWidget(self), LedgerTransaction.Trade: TradeWidget(self),
                         LedgerTransaction.Transfer: TransferWidget(self),
-                        LedgerTransaction.CorporateAction: CorporateActionWidget(self)}
+                        LedgerTransaction.CorporateAction: CorporateActionWidget(self),
+                        LedgerTransaction.TermDeposit: TermDepositWidget(self)}
         for key, widget in self.widgets.items():
             if key != LedgerTransaction.NA:
                 widget.dbUpdated.connect(self.dbUpdated)

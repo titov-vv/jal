@@ -18,6 +18,7 @@
 /usr/lib/qt6/uic -g python -o ./ui/widgets/ui_trade_operation.py ./ui/widgets/trade_operation.ui
 /usr/lib/qt6/uic -g python -o ./ui/widgets/ui_transfer_operation.py ./ui/widgets/transfer_operation.ui
 /usr/lib/qt6/uic -g python -o ./ui/widgets/ui_corporate_action_operation.py ./ui/widgets/corporate_action_operation.ui
+/usr/lib/qt6/uic -g python -o ./ui/widgets/ui_term_deposit_operation.py ./ui/widgets/term_deposit_operation.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_portfolio_report.py ./ui/reports/portfolio_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_tax_estimation.py ./ui/reports/tax_estimation.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_income_spending_report.py ./ui/reports/income_spending_report.ui

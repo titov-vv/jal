@@ -344,6 +344,16 @@ CREATE TABLE transfers (
 );
 
 
+DROP TABLE IF EXISTS term_deposits;
+CREATE TABLE term_deposits (
+    id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    op_type    INTEGER NOT NULL DEFAULT (6),
+    timestamp  INTEGER NOT NULL,
+    account_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    note       TEXT
+);
+
+
 -- View: operation_sequence
 DROP VIEW IF EXISTS operation_sequence;
 CREATE VIEW operation_sequence AS

@@ -36,6 +36,7 @@ class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Assets = 4
     Liabilities = 5
     Transfers = 6
+    Savings = 7
 
 
 class PredefinedList:
