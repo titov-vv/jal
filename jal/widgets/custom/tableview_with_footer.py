@@ -39,7 +39,6 @@ class FooterView(QHeaderView):
         painter.drawText(inner_rect, alignment, f" {text} ")
 
     def on_header_resize(self, section: int, _old_size: int, new_size: int) -> None:
-        print("XXX")
         self.resizeSection(section, new_size)
 
     def on_header_move(self, _section: int, old: int, new: int) -> None:
