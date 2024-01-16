@@ -109,7 +109,8 @@ class AssetsPaymentsModel(QAbstractTableModel):
         self._view.setItemDelegateForColumn(5, self._float_delegate)
         self._view.setColumnWidth(0, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(2, 200)
-        self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
+        if self._view.horizontalHeader().count():  # Next line crashes if there are no columns (count==0)
+            self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AssetsPaymentsReport(QObject):
