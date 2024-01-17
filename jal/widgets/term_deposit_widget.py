@@ -46,7 +46,7 @@ class TermDepositWidget(AbstractOperationDetails):
         self.actions_model.configureView()
 
     def set_id(self, oid):
-        self.actions_model.setFilter(f"deposit_details.deposit_id = {oid}")  # First we need to select right children
+        self.actions_model.setFilter(f"deposit_actions.deposit_id = {oid}")  # First we need to select right children
         super().set_id(oid)
 
     @Slot()
