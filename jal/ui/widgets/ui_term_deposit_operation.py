@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDateTimeEdit, QGridLayout, QHeaderView,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QWidget)
+from PySide6.QtWidgets import (QApplication, QGridLayout, QHeaderView, QLabel,
+    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QWidget)
 
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.reference_selector import AccountSelector
@@ -30,71 +30,10 @@ class Ui_TermDepositOperation(object):
         self.layout = QGridLayout(TermDepositOperation)
         self.layout.setObjectName(u"layout")
         self.layout.setContentsMargins(2, 2, 2, 2)
-        self.commit_button = QPushButton(TermDepositOperation)
-        self.commit_button.setObjectName(u"commit_button")
-        self.commit_button.setEnabled(False)
-
-        self.layout.addWidget(self.commit_button, 0, 8, 1, 1)
-
-        self.actions_table = TableViewWithFooter(TermDepositOperation)
-        self.actions_table.setObjectName(u"actions_table")
-        self.actions_table.setAlternatingRowColors(True)
-        self.actions_table.verticalHeader().setVisible(False)
-        self.actions_table.verticalHeader().setMinimumSectionSize(20)
-        self.actions_table.verticalHeader().setDefaultSectionSize(20)
-
-        self.layout.addWidget(self.actions_table, 4, 0, 1, 7)
-
-        self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.layout.addItem(self.vertical_spacer, 5, 0, 1, 1)
-
-        self.copy_button = QPushButton(TermDepositOperation)
-        self.copy_button.setObjectName(u"copy_button")
-
-        self.layout.addWidget(self.copy_button, 3, 3, 1, 1)
-
-        self.revert_button = QPushButton(TermDepositOperation)
-        self.revert_button.setObjectName(u"revert_button")
-        self.revert_button.setEnabled(False)
-        self.revert_button.setAcceptDrops(False)
-
-        self.layout.addWidget(self.revert_button, 0, 9, 1, 1)
-
         self.note_label = QLabel(TermDepositOperation)
         self.note_label.setObjectName(u"note_label")
 
-        self.layout.addWidget(self.note_label, 3, 5, 1, 1)
-
-        self.date_label = QLabel(TermDepositOperation)
-        self.date_label.setObjectName(u"date_label")
-
-        self.layout.addWidget(self.date_label, 2, 0, 1, 1)
-
-        self.account_widget = AccountSelector(TermDepositOperation)
-        self.account_widget.setObjectName(u"account_widget")
-
-        self.layout.addWidget(self.account_widget, 2, 6, 1, 1)
-
-        self.details_label = QLabel(TermDepositOperation)
-        self.details_label.setObjectName(u"details_label")
-
-        self.layout.addWidget(self.details_label, 3, 0, 1, 1)
-
-        self.note = QLineEdit(TermDepositOperation)
-        self.note.setObjectName(u"note")
-
-        self.layout.addWidget(self.note, 3, 6, 1, 1)
-
-        self.del_button = QPushButton(TermDepositOperation)
-        self.del_button.setObjectName(u"del_button")
-
-        self.layout.addWidget(self.del_button, 3, 4, 1, 1)
-
-        self.account_label = QLabel(TermDepositOperation)
-        self.account_label.setObjectName(u"account_label")
-
-        self.layout.addWidget(self.account_label, 2, 5, 1, 1)
+        self.layout.addWidget(self.note_label, 3, 0, 1, 1)
 
         self.main_label = QLabel(TermDepositOperation)
         self.main_label.setObjectName(u"main_label")
@@ -104,21 +43,69 @@ class Ui_TermDepositOperation(object):
 
         self.layout.addWidget(self.main_label, 0, 0, 1, 3)
 
+        self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.layout.addItem(self.vertical_spacer, 6, 0, 1, 1)
+
+        self.revert_button = QPushButton(TermDepositOperation)
+        self.revert_button.setObjectName(u"revert_button")
+        self.revert_button.setEnabled(False)
+        self.revert_button.setAcceptDrops(False)
+
+        self.layout.addWidget(self.revert_button, 0, 11, 1, 1)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.layout.addItem(self.horizontalSpacer, 2, 7, 1, 1)
+        self.layout.addItem(self.horizontalSpacer, 3, 8, 1, 1)
+
+        self.del_button = QPushButton(TermDepositOperation)
+        self.del_button.setObjectName(u"del_button")
+
+        self.layout.addWidget(self.del_button, 4, 7, 1, 1)
+
+        self.actions_table = TableViewWithFooter(TermDepositOperation)
+        self.actions_table.setObjectName(u"actions_table")
+        self.actions_table.setAlternatingRowColors(True)
+        self.actions_table.verticalHeader().setVisible(False)
+        self.actions_table.verticalHeader().setMinimumSectionSize(20)
+        self.actions_table.verticalHeader().setDefaultSectionSize(20)
+
+        self.layout.addWidget(self.actions_table, 5, 0, 1, 8)
+
+        self.details_label = QLabel(TermDepositOperation)
+        self.details_label.setObjectName(u"details_label")
+
+        self.layout.addWidget(self.details_label, 4, 0, 1, 1)
+
+        self.account_label = QLabel(TermDepositOperation)
+        self.account_label.setObjectName(u"account_label")
+
+        self.layout.addWidget(self.account_label, 2, 0, 1, 1)
+
+        self.commit_button = QPushButton(TermDepositOperation)
+        self.commit_button.setObjectName(u"commit_button")
+        self.commit_button.setEnabled(False)
+
+        self.layout.addWidget(self.commit_button, 0, 10, 1, 1)
 
         self.add_button = QPushButton(TermDepositOperation)
         self.add_button.setObjectName(u"add_button")
 
-        self.layout.addWidget(self.add_button, 3, 2, 1, 1)
+        self.layout.addWidget(self.add_button, 4, 6, 1, 1)
 
-        self.timestamp_editor = QDateTimeEdit(TermDepositOperation)
-        self.timestamp_editor.setObjectName(u"timestamp_editor")
-        self.timestamp_editor.setCalendarPopup(True)
-        self.timestamp_editor.setTimeSpec(Qt.UTC)
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.layout.addWidget(self.timestamp_editor, 2, 2, 1, 3)
+        self.layout.addItem(self.horizontalSpacer_2, 4, 5, 1, 1)
+
+        self.note = QLineEdit(TermDepositOperation)
+        self.note.setObjectName(u"note")
+
+        self.layout.addWidget(self.note, 3, 2, 1, 6)
+
+        self.account_widget = AccountSelector(TermDepositOperation)
+        self.account_widget.setObjectName(u"account_widget")
+
+        self.layout.addWidget(self.account_widget, 2, 2, 1, 3)
 
 
         self.retranslateUi(TermDepositOperation)
@@ -128,31 +115,25 @@ class Ui_TermDepositOperation(object):
 
     def retranslateUi(self, TermDepositOperation):
         TermDepositOperation.setWindowTitle(QCoreApplication.translate("TermDepositOperation", u"Form", None))
+        self.note_label.setText(QCoreApplication.translate("TermDepositOperation", u"Note", None))
+        self.main_label.setText(QCoreApplication.translate("TermDepositOperation", u"Term Deposit", None))
+#if QT_CONFIG(tooltip)
+        self.revert_button.setToolTip(QCoreApplication.translate("TermDepositOperation", u"Cancel changes", None))
+#endif // QT_CONFIG(tooltip)
+        self.revert_button.setText("")
+#if QT_CONFIG(tooltip)
+        self.del_button.setToolTip(QCoreApplication.translate("TermDepositOperation", u"Remove activity", None))
+#endif // QT_CONFIG(tooltip)
+        self.del_button.setText("")
+        self.details_label.setText(QCoreApplication.translate("TermDepositOperation", u"Deposit activity", None))
+        self.account_label.setText(QCoreApplication.translate("TermDepositOperation", u"Account", None))
 #if QT_CONFIG(tooltip)
         self.commit_button.setToolTip(QCoreApplication.translate("TermDepositOperation", u"Commit changes", None))
 #endif // QT_CONFIG(tooltip)
         self.commit_button.setText("")
 #if QT_CONFIG(tooltip)
-        self.copy_button.setToolTip(QCoreApplication.translate("TermDepositOperation", u"Copy detail", None))
-#endif // QT_CONFIG(tooltip)
-        self.copy_button.setText("")
-#if QT_CONFIG(tooltip)
-        self.revert_button.setToolTip(QCoreApplication.translate("TermDepositOperation", u"Cancel changes", None))
-#endif // QT_CONFIG(tooltip)
-        self.revert_button.setText("")
-        self.note_label.setText(QCoreApplication.translate("TermDepositOperation", u"Note", None))
-        self.date_label.setText(QCoreApplication.translate("TermDepositOperation", u"Date/Time", None))
-        self.details_label.setText(QCoreApplication.translate("TermDepositOperation", u"Details", None))
-#if QT_CONFIG(tooltip)
-        self.del_button.setToolTip(QCoreApplication.translate("TermDepositOperation", u"Remove detail", None))
-#endif // QT_CONFIG(tooltip)
-        self.del_button.setText("")
-        self.account_label.setText(QCoreApplication.translate("TermDepositOperation", u"Account", None))
-        self.main_label.setText(QCoreApplication.translate("TermDepositOperation", u"Term Deposit", None))
-#if QT_CONFIG(tooltip)
-        self.add_button.setToolTip(QCoreApplication.translate("TermDepositOperation", u"Add detail", None))
+        self.add_button.setToolTip(QCoreApplication.translate("TermDepositOperation", u"Add activity", None))
 #endif // QT_CONFIG(tooltip)
         self.add_button.setText("")
-        self.timestamp_editor.setDisplayFormat(QCoreApplication.translate("TermDepositOperation", u"dd/MM/yyyy hh:mm:ss", None))
     # retranslateUi
 

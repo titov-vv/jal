@@ -1,6 +1,4 @@
 import logging
-from datetime import datetime
-from dateutil import tz
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
@@ -11,7 +9,7 @@ from jal.ui.widgets.ui_corporate_action_operation import Ui_CorporateActionOpera
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
 from jal.db.view_model import JalViewModel
-from jal.db.helpers import load_icon, localize_decimal
+from jal.db.helpers import load_icon, localize_decimal, now_ts
 from jal.db.operations import LedgerTransaction
 
 
@@ -134,7 +132,7 @@ class CorporateActionWidget(AbstractOperationDetails):
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
-        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("timestamp", now_ts())
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
         new_record.setValue("type", 0)
@@ -158,7 +156,7 @@ class CorporateActionWidget(AbstractOperationDetails):
     def copyToNew(self, row):
         new_record = self.model.record(row)
         new_record.setNull("id")
-        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("timestamp", now_ts())
         new_record.setValue("number", '')
         return new_record
 

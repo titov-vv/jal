@@ -1,6 +1,3 @@
-from datetime import datetime
-from dateutil import tz
-
 from PySide6.QtCore import Slot, QStringListModel, QByteArray
 from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_dividend_operation import Ui_DividendOperation
@@ -8,7 +5,7 @@ from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.helpers import db_row2dict
+from jal.db.helpers import db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction, Dividend
 
 
@@ -102,7 +99,7 @@ class DividendWidget(AbstractOperationDetails):
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
-        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("timestamp", now_ts())
         new_record.setValue("ex_date", 0)
         new_record.setValue("type", 0)
         new_record.setValue("number", '')
@@ -116,7 +113,7 @@ class DividendWidget(AbstractOperationDetails):
     def copyToNew(self, row):
         new_record = self.model.record(row)
         new_record.setNull("id")
-        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("timestamp", now_ts())
         new_record.setValue("ex_date", 0)
         new_record.setValue("number", '')
         return new_record

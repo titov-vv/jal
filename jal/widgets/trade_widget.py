@@ -1,10 +1,8 @@
-from datetime import datetime
-from dateutil import tz
-
 from jal.ui.widgets.ui_trade_operation import Ui_TradeOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.operations import LedgerTransaction
+from jal.db.helpers import now_ts
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -49,8 +47,8 @@ class TradeWidget(AbstractOperationDetails):
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
-        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
-        new_record.setValue("settlement", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("timestamp", now_ts())
+        new_record.setValue("settlement", now_ts())
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
         new_record.setValue("asset_id", 0)
@@ -63,7 +61,7 @@ class TradeWidget(AbstractOperationDetails):
     def copyToNew(self, row):
         new_record = self.model.record(row)
         new_record.setNull("id")
-        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
-        new_record.setValue("settlement", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("timestamp", now_ts())
+        new_record.setValue("settlement", now_ts())
         new_record.setValue("number", '')
         return new_record

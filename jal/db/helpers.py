@@ -104,4 +104,8 @@ def year_end(timestamp: int) -> int:
     end = end.replace(year=end.year + 1) - timedelta(seconds=1)
     return int(end.replace(tzinfo=timezone.utc).timestamp())
 
+# Returns current timestamp
+def now_ts() -> int:
+    return int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
+
 # -------------------------------------------------------------------------------------------------------------------

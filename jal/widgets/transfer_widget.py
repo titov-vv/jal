@@ -1,5 +1,3 @@
-from datetime import datetime
-from dateutil import tz
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot, QByteArray
@@ -8,7 +6,7 @@ from jal.ui.widgets.ui_transfer_operation import Ui_TransferOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.operations import LedgerTransaction
-from jal.db.helpers import db_row2dict
+from jal.db.helpers import db_row2dict, now_ts
 from jal.db.account import JalAccount
 
 
@@ -91,10 +89,10 @@ class TransferWidget(AbstractOperationDetails):
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
-        new_record.setValue("withdrawal_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("withdrawal_timestamp", now_ts())
         new_record.setValue("withdrawal_account", account_id)
         new_record.setValue("withdrawal", '0')
-        new_record.setValue("deposit_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("deposit_timestamp", now_ts())
         new_record.setValue("deposit_account", 0)
         new_record.setValue("deposit", '0')
         new_record.setNull("fee_account")
@@ -107,8 +105,8 @@ class TransferWidget(AbstractOperationDetails):
     def copyToNew(self, row):
         new_record = self.model.record(row)
         new_record.setNull("id")
-        new_record.setValue("withdrawal_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
-        new_record.setValue("deposit_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("withdrawal_timestamp", now_ts())
+        new_record.setValue("deposit_timestamp", now_ts())
         return new_record
 
     @Slot()

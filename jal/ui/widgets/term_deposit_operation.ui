@@ -26,115 +26,10 @@
    <property name="bottomMargin">
     <number>2</number>
    </property>
-   <item row="0" column="8">
-    <widget class="QPushButton" name="commit_button">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="toolTip">
-      <string>Commit changes</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="7">
-    <widget class="TableViewWithFooter" name="actions_table">
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-     <attribute name="verticalHeaderMinimumSectionSize">
-      <number>20</number>
-     </attribute>
-     <attribute name="verticalHeaderDefaultSectionSize">
-      <number>20</number>
-     </attribute>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <spacer name="vertical_spacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="3" column="3">
-    <widget class="QPushButton" name="copy_button">
-     <property name="toolTip">
-      <string>Copy detail</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="9">
-    <widget class="QPushButton" name="revert_button">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="acceptDrops">
-      <bool>false</bool>
-     </property>
-     <property name="toolTip">
-      <string>Cancel changes</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="5">
+   <item row="3" column="0">
     <widget class="QLabel" name="note_label">
      <property name="text">
       <string>Note</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="date_label">
-     <property name="text">
-      <string>Date/Time</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="6">
-    <widget class="AccountSelector" name="account_widget" native="true"/>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="details_label">
-     <property name="text">
-      <string>Details</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="6">
-    <widget class="QLineEdit" name="note"/>
-   </item>
-   <item row="3" column="4">
-    <widget class="QPushButton" name="del_button">
-     <property name="toolTip">
-      <string>Remove detail</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="5">
-    <widget class="QLabel" name="account_label">
-     <property name="text">
-      <string>Account</string>
      </property>
     </widget>
    </item>
@@ -150,7 +45,36 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="7">
+   <item row="6" column="0">
+    <spacer name="vertical_spacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="11">
+    <widget class="QPushButton" name="revert_button">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="acceptDrops">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Cancel changes</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="8">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -163,28 +87,87 @@
      </property>
     </spacer>
    </item>
-   <item row="3" column="2">
-    <widget class="QPushButton" name="add_button">
+   <item row="4" column="7">
+    <widget class="QPushButton" name="del_button">
      <property name="toolTip">
-      <string>Add detail</string>
+      <string>Remove activity</string>
      </property>
      <property name="text">
       <string/>
      </property>
     </widget>
    </item>
-   <item row="2" column="2" colspan="3">
-    <widget class="QDateTimeEdit" name="timestamp_editor">
-     <property name="displayFormat">
-      <string>dd/MM/yyyy hh:mm:ss</string>
-     </property>
-     <property name="calendarPopup">
+   <item row="5" column="0" colspan="8">
+    <widget class="TableViewWithFooter" name="actions_table">
+     <property name="alternatingRowColors">
       <bool>true</bool>
      </property>
-     <property name="timeSpec">
-      <enum>Qt::UTC</enum>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="verticalHeaderMinimumSectionSize">
+      <number>20</number>
+     </attribute>
+     <attribute name="verticalHeaderDefaultSectionSize">
+      <number>20</number>
+     </attribute>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="details_label">
+     <property name="text">
+      <string>Deposit activity</string>
      </property>
     </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="account_label">
+     <property name="text">
+      <string>Account</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="10">
+    <widget class="QPushButton" name="commit_button">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Commit changes</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="6">
+    <widget class="QPushButton" name="add_button">
+     <property name="toolTip">
+      <string>Add activity</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="5">
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="3" column="2" colspan="6">
+    <widget class="QLineEdit" name="note"/>
+   </item>
+   <item row="2" column="2" colspan="3">
+    <widget class="AccountSelector" name="account_widget" native="true"/>
    </item>
   </layout>
  </widget>

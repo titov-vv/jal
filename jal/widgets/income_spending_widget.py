@@ -1,6 +1,4 @@
 import logging
-from datetime import datetime
-from dateutil import tz
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot, QByteArray
@@ -10,7 +8,7 @@ from PySide6.QtGui import QFont
 from jal.ui.widgets.ui_income_spending_operation import Ui_IncomeSpendingOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.db.view_model import JalViewModel
-from jal.db.helpers import load_icon, localize_decimal, db_row2dict
+from jal.db.helpers import load_icon, localize_decimal, db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
@@ -163,7 +161,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
-        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("timestamp", now_ts())
         new_record.setValue("account_id", account_id)
         new_record.setValue("peer_id", 0)
         new_record.setValue("alt_currency_id", None)
@@ -186,7 +184,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     def copyToNew(self, row):
         new_record = self.model.record(row)
         new_record.setNull("id")
-        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("timestamp", now_ts())
         return new_record
 
     def before_record_insert(self, record):
