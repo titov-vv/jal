@@ -384,6 +384,8 @@ FROM
     SELECT op_type, 5 AS seq, id, withdrawal_timestamp AS timestamp, fee_account AS account_id, 0 AS subtype FROM transfers WHERE NOT fee IS NULL
     UNION ALL
     SELECT op_type, 5 AS seq, id, deposit_timestamp AS timestamp, deposit_account AS account_id, 1 AS subtype FROM transfers
+    UNION ALL
+    SELECT td.op_type, 6 AS seq, td.id, da.timestamp, td.account_id, da.action_type AS subtype FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.id
 ) AS m
 ORDER BY m.timestamp, m.seq, m.subtype, m.id;
 

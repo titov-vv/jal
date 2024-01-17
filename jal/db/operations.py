@@ -68,6 +68,8 @@ class LedgerTransaction(JalDB):
             return Transfer(operation_id, display_type)
         elif operation_type == LedgerTransaction.CorporateAction:
             return CorporateAction(operation_id)
+        elif operation_type == LedgerTransaction.TermDeposit:
+            return TermDeposit(operation_id)
         else:
             raise ValueError(f"An attempt to select unknown operation type: {operation_type}")
 
@@ -228,7 +230,7 @@ class LedgerTransaction(JalDB):
         return ''
 
     def value_change(self) -> list:
-        return [0]
+        return []
 
     def value_total(self) -> list:
         return []

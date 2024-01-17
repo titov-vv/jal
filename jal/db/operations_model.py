@@ -189,8 +189,10 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
         super().__init__(parent=parent)
 
     def paint(self, painter, option, index):
-        painter.save()
         data = index.model().data(index)
+        if not data:
+            return
+        painter.save()
         color = index.model().data(index, role = Qt.ForegroundRole)
         rect = option.rect
         H = rect.height()
@@ -200,7 +202,6 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
             rect.moveTop(Y + i * (H / len(data)))
             self.draw_value(option.rect, painter, item, color)
         painter.restore()
-
 
     # Displays given value as formatted number with required color (or Green/Red if self._colors is True)
     # If value is None - displays nothing, If value is NaN - displays Setup.NULL_VALUE
