@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
-from jal.constants import BookAccount, CustomColor, PredefinedCategory, PredefinedAsset
+from jal.constants import BookAccount, CustomColor, PredefinedCategory, PredefinedAsset, DepositActions
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
@@ -54,6 +54,11 @@ class LedgerTransaction(JalDB):
         return QApplication.translate("LedgerTransaction", text)
 
     def dump(self):
+        for key in self._data:
+            if 'timestamp' in key:
+                self._data[key] = ts2dt(self._data[key])
+            if 'account' in key:
+                self._data[key] = jal.db.account.JalAccount(self._data[key]).name()
         return str(self._data)
 
     @staticmethod
@@ -69,7 +74,7 @@ class LedgerTransaction(JalDB):
         elif operation_type == LedgerTransaction.CorporateAction:
             return CorporateAction(operation_id)
         elif operation_type == LedgerTransaction.TermDeposit:
-            return TermDeposit(operation_id)
+            return TermDeposit(operation_id, display_type)
         else:
             raise ValueError(f"An attempt to select unknown operation type: {operation_type}")
 
@@ -114,7 +119,7 @@ class LedgerTransaction(JalDB):
             fields = CorporateAction._db_fields
         elif operation_type == LedgerTransaction.TermDeposit:
             table = TermDeposit._db_table
-            fields = TermDepoist._db_fields
+            fields = TermDeposit._db_fields
         else:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
         self.validate_operation_data(table, fields, operation_data)
@@ -1195,118 +1200,88 @@ class CorporateAction(LedgerTransaction):
 class TermDeposit(LedgerTransaction):
     _db_table = "term_deposits"
     _db_fields = {
-        # "timestamp": {"mandatory": True, "validation": False},
-        # "account_id": {"mandatory": True, "validation": False},
-        # "peer_id": {"mandatory": True, "validation": False},
-        # "alt_currency_id": {"mandatory": False, "validation": False},
-        # "lines": {
-        #     "mandatory": True, "validation": False, "children": True,
-        #     "child_table": "action_details", "child_pid": "pid",
-        #     "child_fields": {
-        #         "pid": {"mandatory": True, "validation": False},
-        #         "category_id": {"mandatory": True, "validation": False},
-        #         "tag_id": {"mandatory": False, "validation": False},
-        #         "amount": {"mandatory": True, "validation": False},
-        #         "amount_alt": {"mandatory": False, "validation": False},
-        #         "note": {"mandatory": False, "validation": False}
-        #     }
-        # }
+        "account_id": {"mandatory": True, "validation": False},
+        "note": {"mandatory": False, "validation": False},
+        "actions": {
+            "mandatory": True, "validation": False, "children": True,
+            "child_table": "deposit_actions", "child_pid": "deposit_id",
+            "child_fields": {
+                "deposit_id": {"mandatory": True, "validation": False},
+                "timestamp": {"mandatory": True, "validation": False},
+                "action_type": {"mandatory": True, "validation": False},
+                "amount": {"mandatory": True, "validation": False}
+            }
+        }
     }
 
-    def __init__(self, operation_id=None):
+    def __init__(self, operation_id=None, display_type=None):
         super().__init__(operation_id)
         self._otype = LedgerTransaction.TermDeposit
-        # self._data = self._read("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
-        #                         "a.alt_currency_id AS currency FROM actions AS a "
-        #                         "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.id=:oid",
-        #                         [(":oid", self._oid)], named=True)
-        # self._timestamp = self._data['timestamp']
-        # self._account = jal.db.account.JalAccount(self._data['account_id'])
-        # self._account_name = self._account.name()
-        # self._account_currency = JalAsset(self._account.currency()).symbol()
-        # self._reconciled = self._account.reconciled_at() >= self._timestamp
-        # self._peer_id = self._data['peer_id']
-        # self._peer = self._data['peer']
-        # self._currency = self._data['currency']
-        # details_query = self._exec("SELECT d.category_id, c.name AS category, d.tag_id, t.tag, "
-        #                            "d.amount, d.amount_alt, d.note FROM action_details AS d "
-        #                            "LEFT JOIN categories AS c ON c.id=d.category_id "
-        #                            "LEFT JOIN tags AS t ON t.id=d.tag_id "
-        #                            "WHERE d.pid= :pid", [(":pid", self._oid)])
-        # self._details = []
-        # while details_query.next():
-        #     self._details.append(self._read_record(details_query, named=True))
-        # self._amount = sum(Decimal(line['amount']) for line in self._details)
-        # if self._amount < 0:
-        #     self._label, self._label_color = ('—', CustomColor.DarkRed)
-        #     self._oname = self.tr("Spending")
-        # else:
-        #     self._label, self._label_color = ('+', CustomColor.DarkGreen)
-        #     self._oname = self.tr("Income")
-        # if self._currency:
-        #     self._view_rows = 2
-        #     self._currency_name = JalAsset(self._currency).symbol()
-        # self._amount_alt = sum(Decimal(line['amount_alt']) for line in self._details)
-    #
-    # def description(self) -> str:
-    #     description = self._peer
-    #     if self._currency:
-    #         if self._amount_alt == Decimal('0'):
-    #             return description
-    #         try:
-    #             rate = self._amount_alt / self._amount
-    #         except ZeroDivisionError:
-    #             return description
-    #         description += "\n" + self.tr("Rate: ")
-    #         if rate >= 1:
-    #             description += f"{rate:.4f} {self._currency_name}/{self._account_currency}"
-    #         else:
-    #             description += f"{1/rate:.4f} {self._account_currency}/{self._currency_name}"
-    #     return description
-    #
-    # def value_change(self) -> list:
-    #     if self._currency:
-    #         return [self._amount, self._amount_alt]
-    #     else:
-    #         return [self._amount]
-    #
-    # def value_currency(self) -> str:
-    #     if self._currency:
-    #         return f" {self._account_currency}\n {self._currency_name}"
-    #     else:
-    #         return f" {self._account_currency}"
-    #
-    # def value_total(self) -> list:
-    #     return [self._money_total(self._account.id())]
-    #
-    # # Return peer_id of current operation
-    # def peer(self) -> int:
-    #     return self._peer_id
-    #
-    # # Returns a list of income/spending lines in form of
-    # # {"category_id", "category", "tag_id", "tag", "amount", "amount_alt", "note"}
-    # def lines(self) -> list:
-    #     return self._details
-    #
-    # def amount(self) -> Decimal:
-    #     return self._amount
-    #
-    # # it assigns tag to all operation details
-    # def assign_tag(self, tag_id: int):
-    #     self._exec("UPDATE action_details SET tag_id=:tag_id WHERE pid=:pid",
-    #                [(":tag_id", tag_id), (":pid", self._oid)])
-    #
-    # def processLedger(self, ledger):
-    #     if len(self._details) == 0:
-    #         raise LedgerError(self.tr("Can't process operation without details") + f"  Operation: {self.dump()}")
-    #     if self._amount < Decimal('0'):
-    #         credit_taken = ledger.takeCredit(self, self._account.id(), -self._amount)
-    #         ledger.appendTransaction(self, BookAccount.Money, -(-self._amount - credit_taken))
-    #     else:
-    #         credit_returned = ledger.returnCredit(self, self._account.id(), self._amount)
-    #         if credit_returned < self._amount:
-    #             ledger.appendTransaction(self, BookAccount.Money, self._amount - credit_returned)
-    #     for detail in self._details:
-    #         book = BookAccount.Costs if Decimal(detail['amount']) < Decimal('0') else BookAccount.Incomes
-    #         ledger.appendTransaction(self, book, -Decimal(detail['amount']),
-    #                                  category=detail['category_id'], peer=self._peer_id, tag=detail['tag_id'])
+        self._aid = display_type   # action id
+        self._data = self._read("SELECT da.timestamp, td.account_id, da.action_type, da.amount, td.note "
+                                "FROM term_deposits td LEFT JOIN deposit_actions da ON td.id=da.deposit_id "
+                                "WHERE td.id=:oid AND da.id=:aid",
+                                [(":oid", self._oid), (":aid", self._aid)], named=True)
+        self._timestamp = self._data['timestamp']
+        self._account = jal.db.account.JalAccount(self._data['account_id'])
+        self._account_name = self._account.name()
+        self._note = self._data['note']
+        self._action = self._data['action_type']
+        self._account_currency = JalAsset(self._account.currency()).symbol()
+        if self._action == DepositActions.End:
+            self._amount = self._get_deposit_amount()
+        else:
+            self._amount = Decimal(self._data['amount'])
+        self._label, self._label_color = ('%', CustomColor.Black)
+        self._oname = f'{DepositActions().get_name(self._action)}'
+
+    def _get_deposit_amount(self) -> Decimal:
+        amount = self._read("SELECT amount_acc FROM ledger "
+                            "WHERE op_type=:op_type AND operation_id=:oid AND "
+                            "book_account=:book AND account_id=:account_id AND timestamp<:timestamp "
+                            "ORDER BY id DESC LIMIT 1",
+                            [(":op_type", self._otype), (":oid", self._oid), (":timestamp", self._timestamp),
+                             (":account_id", self._account.id()), (":book", BookAccount.Savings)])
+        amount = Decimal('0') if amount is None else Decimal(amount)
+        return amount
+
+    def description(self) -> str:
+        return f'{DepositActions().get_name(self._action)}: "{self._note}"'
+
+    def value_change(self) -> list:
+        if self._action == DepositActions.Start or self._action == DepositActions.TaxWithdrawal:
+            return [-self._amount]
+        elif self._action == DepositActions.End or self._action == DepositActions.InterestCredit:
+            return [self._amount]
+        else:
+            return []
+
+    def value_currency(self) -> str:
+            return f" {self._account_currency}"
+
+    def value_total(self) -> list:
+        return [self._money_total(self._account.id())]
+
+    def amount(self) -> Decimal:
+        return self._amount
+
+    def processLedger(self, ledger):
+        if self._action == DepositActions.Start:
+            ledger.appendTransaction(self, BookAccount.Money, -self._amount)
+            ledger.appendTransaction(self, BookAccount.Savings, self._amount)
+        elif self._action == DepositActions.TaxWithdrawal:
+            ledger.appendTransaction(self, BookAccount.Savings, -self._amount)
+            ledger.appendTransaction(self, BookAccount.Costs, self._amount,
+                                     category=PredefinedCategory.Taxes, peer=self._account.organization())
+        elif self._action == DepositActions.End:
+            amount = self._get_deposit_amount()
+            ledger.appendTransaction(self, BookAccount.Money, amount)
+            ledger.appendTransaction(self, BookAccount.Savings, -amount)
+        elif self._action == DepositActions.InterestCredit:
+            ledger.appendTransaction(self, BookAccount.Savings, self._amount)
+            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount,
+                                     category=PredefinedCategory.Interest, peer=self._account.organization())
+        elif self._action == DepositActions.Renewal:
+            return
+        else:
+            assert False, "Unknown deposit action"
