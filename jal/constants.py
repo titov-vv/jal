@@ -118,6 +118,23 @@ class PredefinedAsset(PredefinedList, QObject):
         }
 
 
+class DepositActions(PredefinedList, QObject):
+    Start = 1
+    End = 2
+    Renewal = 3
+    InterestCredit = 4
+    TaxWithdrawal = 5
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.Start: self.tr("Deposit start"),
+            self.End: self.tr("Deposit end"),
+            self.Renewal: self.tr("Deposit renewal"),
+            self.InterestCredit: self.tr("Interest credit"),
+            self.TaxWithdrawal: self.tr("Tax withdrawal")
+        }
+
 class AssetData:
     RegistrationCode = 1
     ExpiryDate = 2

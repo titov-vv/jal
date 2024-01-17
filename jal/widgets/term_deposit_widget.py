@@ -6,10 +6,11 @@ from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
 from jal.ui.widgets.ui_term_deposit_operation import Ui_TermDepositOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
+from jal.constants import DepositActions
 from jal.db.view_model import JalViewModel
 from jal.db.operations import LedgerTransaction
 from jal.db.helpers import load_icon, now_ts, localize_decimal, db_row2dict
-from jal.widgets.delegates import FloatDelegate, TimestampDelegate
+from jal.widgets.delegates import FloatDelegate, TimestampDelegate, ConstantLookupDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -21,6 +22,7 @@ class TermDepositWidget(AbstractOperationDetails):
 
         self.timestamp_delegate = TimestampDelegate()
         self.float_delegate = FloatDelegate(2)
+        self.action_delegate = ConstantLookupDelegate(DepositActions, self)
 
         self.ui.actions_table.horizontalHeader().setFont(self.bold_font)
         self.ui.add_button.setIcon(load_icon("add.png"))
@@ -32,13 +34,14 @@ class TermDepositWidget(AbstractOperationDetails):
         self.actions_model = DepositActionsModel(self.ui.actions_table, "deposit_actions")
         self.actions_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.ui.actions_table.setModel(self.actions_model)
-
+        self.actions_model.dataChanged.connect(self.onDataChange)
         self.ui.account_widget.changed.connect(self.mapper.submit)
 
         self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
 
         self.ui.actions_table.setItemDelegateForColumn(2, self.timestamp_delegate)
+        self.ui.actions_table.setItemDelegateForColumn(3, self.action_delegate)
         self.ui.actions_table.setItemDelegateForColumn(4, self.float_delegate)
 
         self.model.select()
