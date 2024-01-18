@@ -615,57 +615,57 @@
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="1022"/>
+        <location filename="../db/operations.py" line="1029"/>
         <source>UNDEFINED</source>
         <translation>НЕОПРЕДЕЛЕНО</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1023"/>
+        <location filename="../db/operations.py" line="1030"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1024"/>
+        <location filename="../db/operations.py" line="1031"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1025"/>
+        <location filename="../db/operations.py" line="1032"/>
         <source>Spin-off</source>
         <translation>Выделение компании (спин-офф)</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1026"/>
+        <location filename="../db/operations.py" line="1033"/>
         <source>Merger</source>
         <translation>Реорганизация компании</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1029"/>
+        <location filename="../db/operations.py" line="1036"/>
         <source>Delisting</source>
         <translation>Делистинг</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1130"/>
+        <location filename="../db/operations.py" line="1137"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation>ЦБ не является результатом корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1149"/>
+        <location filename="../db/operations.py" line="1156"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation>Не задан тип корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1154"/>
+        <location filename="../db/operations.py" line="1161"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количетво ценных бумаг недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1158"/>
+        <location filename="../db/operations.py" line="1165"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation>Неподерживаемый случай: Корпоративное событие покрывает не всю открытую позицию. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1167"/>
+        <location filename="../db/operations.py" line="1174"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation>Результаты корпоративного события не распределяют 100% стоимости изначального актива. </translation>
     </message>
@@ -978,24 +978,62 @@
     </message>
 </context>
 <context>
+    <name>DepositActions</name>
+    <message>
+        <location filename="../constants.py" line="133"/>
+        <source>Open term deposit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="134"/>
+        <source>Close term deposit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="135"/>
+        <source>Top-up term deposit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="136"/>
+        <source>Partial withdrawal from term deposit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="137"/>
+        <source>Term deposit renewal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="138"/>
+        <source>Interest credit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="142"/>
+        <source>Tax debit</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DepositActionsModel</name>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="144"/>
+        <location filename="../widgets/term_deposit_widget.py" line="148"/>
         <source>Date/Time</source>
         <translation type="unfinished">Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="144"/>
+        <location filename="../widgets/term_deposit_widget.py" line="148"/>
         <source>Action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="146"/>
+        <location filename="../widgets/term_deposit_widget.py" line="150"/>
         <source>Amount</source>
         <translation type="unfinished">Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="150"/>
+        <location filename="../widgets/term_deposit_widget.py" line="154"/>
         <source>Planned value:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1031,62 +1069,62 @@
 <context>
     <name>Dividend</name>
     <message>
-        <location filename="../db/operations.py" line="400"/>
+        <location filename="../db/operations.py" line="407"/>
         <source>UNDEFINED</source>
         <translation type="unfinished">НЕОПРЕДЕЛЕНО</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="401"/>
+        <location filename="../db/operations.py" line="408"/>
         <source>Dividend</source>
         <translation type="unfinished">Дивиденд</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="402"/>
+        <location filename="../db/operations.py" line="409"/>
         <source>Bond Interest</source>
         <translation type="unfinished">Купон</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="403"/>
+        <location filename="../db/operations.py" line="410"/>
         <source>Stock Dividend</source>
         <translation type="unfinished">Дивиденд акциями</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="404"/>
+        <location filename="../db/operations.py" line="411"/>
         <source>Stock Vesting</source>
         <translation type="unfinished">Передача акций</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="407"/>
+        <location filename="../db/operations.py" line="414"/>
         <source>Bond Amortization</source>
         <translation type="unfinished">Амортизация облигации</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="493"/>
+        <location filename="../db/operations.py" line="500"/>
         <source>No price data for stock dividend/vesting: </source>
         <translation>Не задана цена для выплаты ценными бумагами: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="516"/>
+        <location filename="../db/operations.py" line="523"/>
         <source>Tax: </source>
         <translation>Налог: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="559"/>
+        <location filename="../db/operations.py" line="566"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
         <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="571"/>
+        <location filename="../db/operations.py" line="578"/>
         <source>Unsupported dividend type.</source>
         <translation>Неподдерживаемый тип дивиденда.</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="593"/>
+        <location filename="../db/operations.py" line="600"/>
         <source>Not supported action: stock dividend or vesting closes short trade.</source>
         <translation>Неподдерживаемое действие: дивиденд акциями или зачисление акций закрывает короткую позицию.</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="474"/>
+        <location filename="../db/operations.py" line="481"/>
         <source>No stock quote for stock dividend or vesting.</source>
         <translation>Нет котировки для дивиденда акциями или зачисления акций.</translation>
     </message>
@@ -1466,22 +1504,22 @@
 <context>
     <name>IncomeSpending</name>
     <message>
-        <location filename="../db/operations.py" line="299"/>
+        <location filename="../db/operations.py" line="306"/>
         <source>Spending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="302"/>
+        <location filename="../db/operations.py" line="309"/>
         <source>Income</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="317"/>
+        <location filename="../db/operations.py" line="324"/>
         <source>Rate: </source>
         <translation>Курс: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="357"/>
+        <location filename="../db/operations.py" line="364"/>
         <source>Can&apos;t process operation without details</source>
         <translation>Невозможно обработать операцию без детальных данных</translation>
     </message>
@@ -2333,52 +2371,52 @@ Application will be terminated now.</source>
 <context>
     <name>MarketDataFeed</name>
     <message>
-        <location filename="../constants.py" line="143"/>
+        <location filename="../constants.py" line="164"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="144"/>
+        <location filename="../constants.py" line="165"/>
         <source>Central banks</source>
         <translation>Центральные банки</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="145"/>
+        <location filename="../constants.py" line="166"/>
         <source>MOEX</source>
         <translation>МосБиржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="146"/>
+        <location filename="../constants.py" line="167"/>
         <source>NYSE/Nasdaq</source>
         <translation>NYSE/Nasdaq</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="147"/>
+        <location filename="../constants.py" line="168"/>
         <source>Euronext</source>
         <translation>Euronext</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="148"/>
+        <location filename="../constants.py" line="169"/>
         <source>TMX TSX</source>
         <translation>TMX TSX</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="149"/>
+        <location filename="../constants.py" line="170"/>
         <source>LSE</source>
         <translation>LSE</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="150"/>
+        <location filename="../constants.py" line="171"/>
         <source>Frankfurt Borse</source>
         <translation>Франкфунтская биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="151"/>
+        <location filename="../constants.py" line="172"/>
         <source>Victoria Seguros</source>
         <translation>Victoria Seguros</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="156"/>
+        <location filename="../constants.py" line="177"/>
         <source>Coinbase</source>
         <translation>Coinbase</translation>
     </message>
@@ -4775,62 +4813,67 @@ Please select an account for import:</source>
         <translation>Операции с ЦБ загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="282"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="280"/>
+        <source>Asset transfer was skipped as it will be loaded from the destination account report: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/tvoy.py" line="285"/>
         <source>Can&apos;t parse asset transfer description </source>
         <translation>Невозможно распознать описание перевода ЦБ </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="285"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="288"/>
         <source>Asset transfer description miss some data </source>
         <translation>Отсутствуют ожидаемые данные в описании перевода ЦБ </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="340"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="343"/>
         <source>Unsuppported cash transaction </source>
         <translation>Неподдерживаемая денежная транзакция </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="351"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="354"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="359"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="362"/>
         <source>Can&apos;t parse money transfer description </source>
         <translation>Невозможно распознать описание денежного перевода </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="362"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="365"/>
         <source>Money transfer description miss some data </source>
         <translation>Отсутствуют ожидаемые данные в описании денежного перевода </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="397"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="400"/>
         <source>Can&apos;t parse dividend description </source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="415"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="418"/>
         <source>Failed to convert dividend tax </source>
         <translation>Ошибка при конвертации суммы налога </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="431"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="434"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation>Невозможно распознать описание купона </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="445"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="448"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation>Невозможно распознать описание погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="451"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="454"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation>Невозможно найти запись списания ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="454"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="457"/>
         <source>Multiple asset cancellation match for </source>
         <translation>Найдены несколько записей погашения ЦБ для </translation>
     </message>
@@ -5328,42 +5371,42 @@ Please select an account for import:</source>
         <translation type="unfinished">Форма</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="126"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="32"/>
         <source>Account</source>
         <translation type="unfinished">Счет</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="32"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="42"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="136"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="145"/>
         <source>Commit changes</source>
         <translation type="unfinished">Сохранить изменения</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="93"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="59"/>
         <source>Remove activity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="146"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="49"/>
         <source>Add activity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="119"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="155"/>
         <source>Deposit activity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="44"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="90"/>
         <source>Term Deposit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/term_deposit_operation.ui" line="70"/>
+        <location filename="../ui/widgets/term_deposit_operation.ui" line="75"/>
         <source>Cancel changes</source>
         <translation type="unfinished">Отменить изменения</translation>
     </message>
@@ -5371,33 +5414,33 @@ Please select an account for import:</source>
 <context>
     <name>TermDepositWidget</name>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="58"/>
+        <location filename="../widgets/term_deposit_widget.py" line="62"/>
         <source>Failed to add new record: </source>
         <translation type="unfinished">Невозможно добавить новую запись: </translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="73"/>
-        <location filename="../widgets/term_deposit_widget.py" line="78"/>
+        <location filename="../widgets/term_deposit_widget.py" line="77"/>
+        <location filename="../widgets/term_deposit_widget.py" line="82"/>
         <source>Incomplete data</source>
         <translation type="unfinished">Неполные данные</translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="73"/>
+        <location filename="../widgets/term_deposit_widget.py" line="77"/>
         <source>Deposit contains no actions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="78"/>
+        <location filename="../widgets/term_deposit_widget.py" line="82"/>
         <source>Deposit action type isn&apos;t set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="86"/>
+        <location filename="../widgets/term_deposit_widget.py" line="90"/>
         <source>Operation submit failed: </source>
         <translation type="unfinished">Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="93"/>
+        <location filename="../widgets/term_deposit_widget.py" line="97"/>
         <source>Operation details submit failed: </source>
         <translation type="unfinished">Ошибка при записи деталей операции: </translation>
     </message>
@@ -5405,17 +5448,17 @@ Please select an account for import:</source>
 <context>
     <name>Trade</name>
     <message>
-        <location filename="../db/operations.py" line="654"/>
+        <location filename="../db/operations.py" line="661"/>
         <source>Sell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="658"/>
+        <location filename="../db/operations.py" line="665"/>
         <source>Buy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="719"/>
+        <location filename="../db/operations.py" line="726"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account: </source>
         <translation>Невозможно обработать сделку, т.к. не задан банк для инвестиционного счёта: </translation>
     </message>
@@ -5507,52 +5550,52 @@ Please select an account for import:</source>
 <context>
     <name>Transfer</name>
     <message>
-        <location filename="../db/operations.py" line="778"/>
+        <location filename="../db/operations.py" line="785"/>
         <source>UNDEFINED</source>
         <translation type="unfinished">НЕОПРЕДЕЛЕНО</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="779"/>
+        <location filename="../db/operations.py" line="786"/>
         <source>Outgoing transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="780"/>
+        <location filename="../db/operations.py" line="787"/>
         <source>Incoming transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="781"/>
+        <location filename="../db/operations.py" line="788"/>
         <source>Transfer fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="855"/>
+        <location filename="../db/operations.py" line="862"/>
         <source>Cost basis:</source>
         <translation>Стоимость позиции:</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="870"/>
+        <location filename="../db/operations.py" line="877"/>
         <source>Error. Zero rate</source>
         <translation>Ошибка. Курс равен нулю</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="928"/>
+        <location filename="../db/operations.py" line="935"/>
         <source>Can&apos;t collect fee from the account &apos;{}&apos; ({}) as organization isn&apos;t set for it. Date: {}</source>
         <translation>Невозможно удержать комиссию со счёта &apos;{}&apos; ({}), т.к. для него не указана организация. Дата: {}</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="951"/>
+        <location filename="../db/operations.py" line="958"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation>Количество актива недостаточно для обработки перевода. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="956"/>
+        <location filename="../db/operations.py" line="963"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation>Обработанное количество меньше, чем количество в трансфере. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="969"/>
+        <location filename="../db/operations.py" line="976"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation>Списание актива не найдено для трансфера.</translation>
     </message>

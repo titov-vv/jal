@@ -1228,7 +1228,7 @@ class TermDeposit(LedgerTransaction):
         self._note = self._data['note']
         self._action = self._data['action_type']
         self._account_currency = JalAsset(self._account.currency()).symbol()
-        if self._action == DepositActions.End:
+        if self._action == DepositActions.Closing:
             self._amount = self._get_deposit_amount()
         else:
             self._amount = Decimal(self._data['amount'])
@@ -1249,9 +1249,9 @@ class TermDeposit(LedgerTransaction):
         return f'{DepositActions().get_name(self._action)}: "{self._note}"'
 
     def value_change(self) -> list:
-        if self._action == DepositActions.Start or self._action == DepositActions.TaxWithdrawal:
+        if self._action == DepositActions.Opening or self._action == DepositActions.TaxWithheld:
             return [-self._amount]
-        elif self._action == DepositActions.End or self._action == DepositActions.InterestCredit:
+        elif self._action == DepositActions.Closing or self._action == DepositActions.InterestAccrued:
             return [self._amount]
         else:
             return []
@@ -1260,28 +1260,43 @@ class TermDeposit(LedgerTransaction):
             return f" {self._account_currency}"
 
     def value_total(self) -> list:
-        return [self._money_total(self._account.id())]
+        money = self._read("SELECT amount_acc FROM ledger WHERE op_type=:op_type AND operation_id=:oid AND "
+                           "account_id = :account_id AND book_account=:book AND timestamp=:timestamp",
+                           [(":op_type", self._otype), (":oid", self._oid),
+                            (":account_id", self._account.id()), (":book", BookAccount.Money), (":timestamp", self._timestamp)])
+        debt = self._read("SELECT amount_acc FROM ledger WHERE op_type=:op_type AND operation_id=:oid AND "
+                          "account_id = :account_id AND book_account=:book AND timestamp=:timestamp",
+                          [(":op_type", self._otype), (":oid", self._oid),
+                           (":account_id", self._account.id()), (":book", BookAccount.Liabilities), (":timestamp", self._timestamp)])
+        if money is None and debt is None:
+            return []
+        money = Decimal('0') if money is None else Decimal(money)
+        debt = Decimal('0') if debt is None else Decimal(debt)
+        return [money + debt]
 
     def amount(self) -> Decimal:
         return self._amount
 
     def processLedger(self, ledger):
-        if self._action == DepositActions.Start:
-            ledger.appendTransaction(self, BookAccount.Money, -self._amount)
-            ledger.appendTransaction(self, BookAccount.Savings, self._amount)
-        elif self._action == DepositActions.TaxWithdrawal:
+        if self._action in [DepositActions.Opening, DepositActions.TopUp, DepositActions.Closing, DepositActions.PartialWithdrawal]:
+            amount = self._get_deposit_amount() if self._action == DepositActions.Closing else self._amount
+            if self._action in [DepositActions.Opening, DepositActions.TopUp]:
+                amount = -amount
+            if amount < Decimal('0'):
+                credit_taken = ledger.takeCredit(self, self._account.id(), -amount)
+                ledger.appendTransaction(self, BookAccount.Money, -(-amount - credit_taken))
+            else:
+                credit_returned = ledger.returnCredit(self, self._account.id(), amount)
+                if credit_returned < amount:
+                    ledger.appendTransaction(self, BookAccount.Money, amount - credit_returned)
+            ledger.appendTransaction(self, BookAccount.Savings, -amount)
+        elif self._action == DepositActions.TaxWithheld:
             ledger.appendTransaction(self, BookAccount.Savings, -self._amount)
             ledger.appendTransaction(self, BookAccount.Costs, self._amount,
                                      category=PredefinedCategory.Taxes, peer=self._account.organization())
-        elif self._action == DepositActions.End:
-            amount = self._get_deposit_amount()
-            ledger.appendTransaction(self, BookAccount.Money, amount)
-            ledger.appendTransaction(self, BookAccount.Savings, -amount)
-        elif self._action == DepositActions.InterestCredit:
+        elif self._action == DepositActions.InterestAccrued:
             ledger.appendTransaction(self, BookAccount.Savings, self._amount)
             ledger.appendTransaction(self, BookAccount.Incomes, -self._amount,
                                      category=PredefinedCategory.Interest, peer=self._account.organization())
-        elif self._action == DepositActions.Renewal:
-            return
         else:
-            assert False, "Unknown deposit action"
+            assert False, "Not implemented deposit action"

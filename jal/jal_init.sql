@@ -385,7 +385,7 @@ FROM
     UNION ALL
     SELECT op_type, 5 AS seq, id, deposit_timestamp AS timestamp, deposit_account AS account_id, 1 AS subtype FROM transfers
     UNION ALL
-    SELECT td.op_type, 6 AS seq, td.id, da.timestamp, td.account_id, da.id AS subtype FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.id
+    SELECT td.op_type, 6 AS seq, td.id, da.timestamp, td.account_id, da.id AS subtype FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.id WHERE da.action_type<=100
 ) AS m
 ORDER BY m.timestamp, m.seq, m.subtype, m.id;
 
@@ -642,6 +642,33 @@ CREATE TRIGGER transfers_after_update
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
+END;
+
+DROP TRIGGER IF EXISTS deposit_action_after_delete;
+CREATE TRIGGER deposit_action_after_delete
+      AFTER DELETE ON deposit_actions
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+END;
+
+DROP TRIGGER IF EXISTS deposit_action_after_insert;
+CREATE TRIGGER deposit_action_after_insert
+      AFTER INSERT ON deposit_actions
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+END;
+
+DROP TRIGGER IF EXISTS deposit_action_after_update;
+CREATE TRIGGER deposit_action_after_update
+      AFTER UPDATE OF timestamp, account_id, type, asset_id, qty ON deposit_actions
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS validate_account_insert;

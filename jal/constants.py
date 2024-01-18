@@ -119,20 +119,24 @@ class PredefinedAsset(PredefinedList, QObject):
 
 
 class DepositActions(PredefinedList, QObject):
-    Start = 1
-    End = 2
-    Renewal = 3
-    InterestCredit = 4
-    TaxWithdrawal = 5
+    Opening = 1
+    Closing = 2
+    TopUp = 3
+    PartialWithdrawal = 4    # Actions with ID<=100 will move real money on a linked account (BookAccount.Money)
+    Renewal = 101            # Actions with ID above 100 will move change savings value only (BookAccount.Savings)
+    InterestAccrued = 102
+    TaxWithheld = 103
 
     def __init__(self):
         super().__init__()
         self._names = {
-            self.Start: self.tr("Deposit start"),
-            self.End: self.tr("Deposit end"),
-            self.Renewal: self.tr("Deposit renewal"),
-            self.InterestCredit: self.tr("Interest credit"),
-            self.TaxWithdrawal: self.tr("Tax withdrawal")
+            self.Opening: self.tr("Open term deposit"),
+            self.Closing: self.tr("Close term deposit"),
+            self.TopUp: self.tr("Top-up term deposit"),
+            self.PartialWithdrawal: self.tr("Partial withdrawal from term deposit"),
+            self.Renewal: self.tr("Term deposit renewal"),
+            self.InterestAccrued: self.tr("Interest accrued"),
+            self.TaxWithheld: self.tr("Tax withheld")
         }
 
 class AssetData:
