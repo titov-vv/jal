@@ -156,12 +156,13 @@ class Ledger(QObject, JalDB):
     def get_term_deposits(cls, timestamp: int) -> list:
         deposits = []
         for currency in JalAsset.get_currencies():
-            amount = cls._read("SELECT amount_acc FROM ledger "
-                               "WHERE asset_id=:currency AND timestamp<=:timestamp AND book_account=:book "
-                               "ORDER BY id DESC LIMIT 1",
-                               [(":currency", currency.id()), (":timestamp", timestamp),
-                                (":book", BookAccount.Savings)])
-            if amount is not None:
+            amount = cls._read(
+                "WITH last_deposit_amount AS ("
+                "SELECT amount_acc, ROW_NUMBER() OVER (PARTITION BY op_type, operation_id ORDER BY id DESC) AS row_no "
+                "FROM ledger WHERE asset_id=:currency AND timestamp<=:timestamp AND book_account=:book) "
+                "SELECT SUM(amount_acc) FROM last_deposit_amount WHERE row_no=1",
+                [(":currency", currency.id()), (":timestamp", timestamp), (":book", BookAccount.Savings)])
+            if amount:
                 deposits.append({"currency": currency, "balance": Decimal(amount)})
         return deposits
 

@@ -1989,52 +1989,52 @@ do you want to save it?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="175"/>
+        <location filename="../db/ledger.py" line="176"/>
         <source>No asset defined for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="179"/>
+        <location filename="../db/ledger.py" line="180"/>
         <source>No category set for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="181"/>
+        <location filename="../db/ledger.py" line="182"/>
         <source>No peer set for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="255"/>
+        <location filename="../db/ledger.py" line="256"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="256"/>
+        <location filename="../db/ledger.py" line="257"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="312"/>
+        <location filename="../db/ledger.py" line="313"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="314"/>
+        <location filename="../db/ledger.py" line="315"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="315"/>
+        <location filename="../db/ledger.py" line="316"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="261"/>
+        <location filename="../db/ledger.py" line="262"/>
         <source>Leger is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="266"/>
+        <location filename="../db/ledger.py" line="267"/>
         <source>Re-building ledger since: </source>
         <translation></translation>
     </message>
@@ -5452,6 +5452,40 @@ Please select an account for import:</source>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="111"/>
         <source>Operation details submit failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TermDepositsReport</name>
+    <message>
+        <location filename="../reports/term_deposits.py" line="13"/>
+        <source>Term deposits</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TermDepositsReportWidget</name>
+    <message>
+        <location filename="../ui/reports/term_deposits_report.ui" line="14"/>
+        <source>Term deposits report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/term_deposits_report.ui" line="72"/>
+        <source>Save...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/term_deposits_report.ui" line="89"/>
+        <source>dd/MM/yyyy</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TermDepositsReportWindow</name>
+    <message>
+        <location filename="../reports/term_deposits.py" line="23"/>
+        <source>Term deposits</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

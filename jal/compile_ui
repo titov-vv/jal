@@ -23,6 +23,7 @@
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_tax_estimation.py ./ui/reports/tax_estimation.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_income_spending_report.py ./ui/reports/income_spending_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_assets_payments_report.py ./ui/reports/assets_payments_report.ui
+/usr/lib/qt6/uic -g python -o ./ui/reports/ui_term_deposits_report.py ./ui/reports/term_deposits_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_account_balance_report.py ./ui/reports/account_balance_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_category_report.py ./ui/reports/category_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_tag_report.py ./ui/reports/tag_report.ui
