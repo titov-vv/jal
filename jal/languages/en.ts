@@ -1006,12 +1006,12 @@
     </message>
     <message>
         <location filename="../constants.py" line="138"/>
-        <source>Interest credit</source>
+        <source>Interest accrued</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../constants.py" line="142"/>
-        <source>Tax debit</source>
+        <source>Tax withheld</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

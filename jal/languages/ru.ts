@@ -531,17 +531,17 @@
     <message>
         <location filename="../widgets/price_chart.py" line="119"/>
         <source>Buy</source>
-        <translation type="unfinished"></translation>
+        <translation>Покупка</translation>
     </message>
     <message>
         <location filename="../widgets/price_chart.py" line="122"/>
         <source>Sell</source>
-        <translation type="unfinished"></translation>
+        <translation>Продажа</translation>
     </message>
     <message>
         <location filename="../widgets/price_chart.py" line="125"/>
         <source>Transfer </source>
-        <translation type="unfinished"></translation>
+        <translation>Перевод</translation>
     </message>
 </context>
 <context>
@@ -982,37 +982,37 @@
     <message>
         <location filename="../constants.py" line="133"/>
         <source>Open term deposit</source>
-        <translation type="unfinished"></translation>
+        <translation>Открытие вклада</translation>
     </message>
     <message>
         <location filename="../constants.py" line="134"/>
         <source>Close term deposit</source>
-        <translation type="unfinished"></translation>
+        <translation>Закрытие вклада</translation>
     </message>
     <message>
         <location filename="../constants.py" line="135"/>
         <source>Top-up term deposit</source>
-        <translation type="unfinished"></translation>
+        <translation>Пополнение вклада</translation>
     </message>
     <message>
         <location filename="../constants.py" line="136"/>
         <source>Partial withdrawal from term deposit</source>
-        <translation type="unfinished"></translation>
+        <translation>Частичное изъятие вклада</translation>
     </message>
     <message>
         <location filename="../constants.py" line="137"/>
         <source>Term deposit renewal</source>
-        <translation type="unfinished"></translation>
+        <translation>Пролонгация вклада</translation>
     </message>
     <message>
         <location filename="../constants.py" line="138"/>
-        <source>Interest credit</source>
-        <translation type="unfinished"></translation>
+        <source>Interest accrued</source>
+        <translation>Начисление процентов</translation>
     </message>
     <message>
         <location filename="../constants.py" line="142"/>
-        <source>Tax debit</source>
-        <translation type="unfinished"></translation>
+        <source>Tax withheld</source>
+        <translation>Удержание налога</translation>
     </message>
 </context>
 <context>
@@ -1020,22 +1020,22 @@
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="148"/>
         <source>Date/Time</source>
-        <translation type="unfinished">Дата/Время</translation>
+        <translation>Дата/Время</translation>
     </message>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="148"/>
         <source>Action</source>
-        <translation type="unfinished"></translation>
+        <translation>Действие</translation>
     </message>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="150"/>
         <source>Amount</source>
-        <translation type="unfinished">Сумма</translation>
+        <translation>Сумма</translation>
     </message>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="154"/>
         <source>Planned value:</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -1071,32 +1071,32 @@
     <message>
         <location filename="../db/operations.py" line="407"/>
         <source>UNDEFINED</source>
-        <translation type="unfinished">НЕОПРЕДЕЛЕНО</translation>
+        <translation>НЕОПРЕДЕЛЕНО</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="408"/>
         <source>Dividend</source>
-        <translation type="unfinished">Дивиденд</translation>
+        <translation>Дивиденд</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="409"/>
         <source>Bond Interest</source>
-        <translation type="unfinished">Купон</translation>
+        <translation>Купон</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="410"/>
         <source>Stock Dividend</source>
-        <translation type="unfinished">Дивиденд акциями</translation>
+        <translation>Дивиденд акциями</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="411"/>
         <source>Stock Vesting</source>
-        <translation type="unfinished">Передача акций</translation>
+        <translation>Передача акций</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="414"/>
         <source>Bond Amortization</source>
-        <translation type="unfinished">Амортизация облигации</translation>
+        <translation>Амортизация облигации</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="500"/>
@@ -1506,12 +1506,12 @@
     <message>
         <location filename="../db/operations.py" line="306"/>
         <source>Spending</source>
-        <translation type="unfinished"></translation>
+        <translation>Расход</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="309"/>
         <source>Income</source>
-        <translation type="unfinished"></translation>
+        <translation>Приход</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="324"/>
@@ -4815,7 +4815,7 @@ Please select an account for import:</source>
     <message>
         <location filename="../data_import/broker_statements/tvoy.py" line="280"/>
         <source>Asset transfer was skipped as it will be loaded from the destination account report: </source>
-        <translation type="unfinished"></translation>
+        <translation>Перевод ЦБ пропущен, т.к. он будет загружен при загрузке отчёта для принимающего счёта: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/tvoy.py" line="285"/>
@@ -5368,47 +5368,47 @@ Please select an account for import:</source>
     <message>
         <location filename="../ui/widgets/term_deposit_operation.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Форма</translation>
+        <translation>Форма</translation>
     </message>
     <message>
         <location filename="../ui/widgets/term_deposit_operation.ui" line="32"/>
         <source>Account</source>
-        <translation type="unfinished">Счет</translation>
+        <translation>Счет</translation>
     </message>
     <message>
         <location filename="../ui/widgets/term_deposit_operation.ui" line="42"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
+        <translation>Описание</translation>
     </message>
     <message>
         <location filename="../ui/widgets/term_deposit_operation.ui" line="145"/>
         <source>Commit changes</source>
-        <translation type="unfinished">Сохранить изменения</translation>
+        <translation>Сохранить изменения</translation>
     </message>
     <message>
         <location filename="../ui/widgets/term_deposit_operation.ui" line="59"/>
         <source>Remove activity</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить действие</translation>
     </message>
     <message>
         <location filename="../ui/widgets/term_deposit_operation.ui" line="49"/>
         <source>Add activity</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить действие</translation>
     </message>
     <message>
         <location filename="../ui/widgets/term_deposit_operation.ui" line="155"/>
         <source>Deposit activity</source>
-        <translation type="unfinished"></translation>
+        <translation>Действие с вкладом</translation>
     </message>
     <message>
         <location filename="../ui/widgets/term_deposit_operation.ui" line="90"/>
         <source>Term Deposit</source>
-        <translation type="unfinished"></translation>
+        <translation>Вклад</translation>
     </message>
     <message>
         <location filename="../ui/widgets/term_deposit_operation.ui" line="75"/>
         <source>Cancel changes</source>
-        <translation type="unfinished">Отменить изменения</translation>
+        <translation>Отменить изменения</translation>
     </message>
 </context>
 <context>
@@ -5416,33 +5416,33 @@ Please select an account for import:</source>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="62"/>
         <source>Failed to add new record: </source>
-        <translation type="unfinished">Невозможно добавить новую запись: </translation>
+        <translation>Невозможно добавить новую запись: </translation>
     </message>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="77"/>
         <location filename="../widgets/term_deposit_widget.py" line="82"/>
         <source>Incomplete data</source>
-        <translation type="unfinished">Неполные данные</translation>
+        <translation>Неполные данные</translation>
     </message>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="77"/>
         <source>Deposit contains no actions</source>
-        <translation type="unfinished"></translation>
+        <translation>Не указаны действия для депозита</translation>
     </message>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="82"/>
         <source>Deposit action type isn&apos;t set</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип действия для депозита не указан</translation>
     </message>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="90"/>
         <source>Operation submit failed: </source>
-        <translation type="unfinished">Ошибка при записи операции: </translation>
+        <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="97"/>
         <source>Operation details submit failed: </source>
-        <translation type="unfinished">Ошибка при записи деталей операции: </translation>
+        <translation>Ошибка при записи деталей операции: </translation>
     </message>
 </context>
 <context>
@@ -5450,12 +5450,12 @@ Please select an account for import:</source>
     <message>
         <location filename="../db/operations.py" line="661"/>
         <source>Sell</source>
-        <translation type="unfinished"></translation>
+        <translation>Продажа</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="665"/>
         <source>Buy</source>
-        <translation type="unfinished"></translation>
+        <translation>Покупка</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="726"/>
@@ -5552,22 +5552,22 @@ Please select an account for import:</source>
     <message>
         <location filename="../db/operations.py" line="785"/>
         <source>UNDEFINED</source>
-        <translation type="unfinished">НЕОПРЕДЕЛЕНО</translation>
+        <translation>НЕОПРЕДЕЛЕНО</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="786"/>
         <source>Outgoing transfer</source>
-        <translation type="unfinished"></translation>
+        <translation>Исходящий перевод</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="787"/>
         <source>Incoming transfer</source>
-        <translation type="unfinished"></translation>
+        <translation>Входящий перевод</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="788"/>
         <source>Transfer fee</source>
-        <translation type="unfinished"></translation>
+        <translation>Комиссия за перевод</translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="862"/>
