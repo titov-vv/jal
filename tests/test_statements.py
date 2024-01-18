@@ -30,6 +30,8 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# This test normally generates warning message:
+# WARNING  root:tvoy.py:280 Asset transfer was skipped as it will be loaded from the destination account report: Перевод ЦБ с субсчета 12345 на субсчет 54321. Код клиента 01495.
 def test_statement_uralsib(tmp_path, project_root, data_path, prepare_db_moex):
     with open(data_path + 'tvoy.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
