@@ -11,12 +11,11 @@
     {"id": -8, "type": "stock", "name": "АО Аэрофлот", "isin": "RU0009062285"},
     {"id": 3, "type": "etf", "name": "FinEx Gold ETF USD", "isin": "IE00B8XB7377"},
     {"id": 4, "type": "bond", "name": "АО \"Тинькофф Банк\" БО-07", "isin": "RU000A0JWM31"},
-    {"id": 5, "type": "stock", "name": "ГДР ЕвроМедЦентр GEMC", "isin": "US91085A2033"},
-    {"id": 6, "type": "stock", "name": "ао ПАО Банк ВТБ", "isin": "RU000A0JP5V6"},
-    {"id": 7, "type": "futures", "name": "Фьючерсный контракт Si-12.21"},
-    {"id": 8, "type": "stock", "name": "ПАО Московская Биржа", "isin": "RU000A0JR4A1"},
-    {"id": 9, "type": "stock", "name": "Polymetal International plc", "isin": "JE00B6T5S470"},
-    {"id": 10, "type": "stock", "name": "Северсталь (ПАО)ао", "isin": "RU0009046510"}
+    {"id": 5, "type": "stock", "name": "ао ПАО Банк ВТБ", "isin": "RU000A0JP5V6"},
+    {"id": 6, "type": "futures", "name": "Фьючерсный контракт Si-12.21"},
+    {"id": 7, "type": "stock", "name": "ПАО Московская Биржа", "isin": "RU000A0JR4A1"},
+    {"id": 8, "type": "stock", "name": "Polymetal International plc", "isin": "JE00B6T5S470"},
+    {"id": 9, "type": "stock", "name": "Северсталь (ПАО)ао", "isin": "RU0009046510"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "RUB"},
@@ -24,26 +23,25 @@
     {"id": 3, "asset": -8, "symbol": "AFLT", "currency": 1},
     {"id": 4, "asset": 3, "symbol": "FXGD", "currency": 1, "note": "MOEX"},
     {"id": 5, "asset": 4, "symbol": "ТинькоффБ7", "currency": 1, "note": "MOEX"},
-    {"id": 6, "asset": 5, "symbol": "GEMC", "currency": 1, "note": "MOEX"},
-    {"id": 7, "asset": 6, "symbol": "VTBR", "currency": 1, "note": "MOEX"},
-    {"id": 8, "asset": 7, "symbol": "SiZ1", "currency": 1, "note": "MOEX"},
-    {"id": 9, "asset": 8, "symbol": "MOEX", "currency": 1, "note": "MOEX"},
-    {"id": 10, "asset": 9, "symbol": "POLY", "currency": 1, "note": "MOEX"},
-    {"id": 11, "asset": 10, "symbol": "CHMF", "currency": 1, "note": "MOEX"}
+    {"id": 6, "asset": 5, "symbol": "VTBR", "currency": 1, "note": "MOEX"},
+    {"id": 7, "asset": 6, "symbol": "SiZ1", "currency": 1, "note": "MOEX"},
+    {"id": 8, "asset": 7, "symbol": "MOEX", "currency": 1, "note": "MOEX"},
+    {"id": 9, "asset": 8, "symbol": "POLY", "currency": 1, "note": "MOEX"},
+    {"id": 10, "asset": 9, "symbol": "CHMF", "currency": 1, "note": "MOEX"}
   ],
   "assets_data": [
     {"id": 1, "asset": 4, "reg_number": "4B020702673B", "principal": 1000.0, "expiry": 1624492800},
-    {"id": 2, "asset": 6, "reg_number": "10401000B", "principal": 0.01},
-    {"id": 3, "asset": 7, "expiry": 1639612800},
-    {"id": 4, "asset": 8, "reg_number": "1-05-08443-H", "principal": 1.0},
-    {"id": 5, "asset": 9, "principal": 0.03},
-    {"id": 6, "asset": 10, "reg_number": "1-02-00143-A", "principal": 0.01}
+    {"id": 2, "asset": 5, "reg_number": "10401000B", "principal": 0.01},
+    {"id": 3, "asset": 6, "expiry": 1639612800},
+    {"id": 4, "asset": 7, "reg_number": "1-05-08443-H", "principal": 1.0},
+    {"id": 5, "asset": 8, "principal": 0.03},
+    {"id": 6, "asset": 9, "reg_number": "1-02-00143-A", "principal": 0.01}
   ],
   "trades": [
     {"id": 1, "number": "3312348787", "timestamp": 1615647620, "settlement": 1615766400, "account": 1, "asset": 3, "quantity": 10, "price": 987.65, "fee": 1.23},
     {"id": 2, "number": "3720000652", "timestamp": 1615909088, "settlement": 1615939200, "account": 1, "asset": 4, "quantity": 1, "price": 1005.7, "fee": 0.1},
     {"id": 3, "number": "3725000743", "timestamp": 1615976923, "settlement": 1616025600, "account": 1, "asset": 4, "quantity": -1, "price": 1004.1, "fee": 0.1},
-    {"id": 4, "number": 1892946460041117738, "timestamp": 1624306420, "settlement": 1624320000, "account": 1, "asset": 7, "quantity": 2, "price": 70892, "fee": 3.0999999999999996},
+    {"id": 4, "number": 1892946460041117738, "timestamp": 1624306420, "settlement": 1624320000, "account": 1, "asset": 6, "quantity": 2, "price": 70892, "fee": 3.0999999999999996},
     {"id": 5, "number": "N/210624/7579904", "timestamp": 1624492800, "settlement": 1624492800, "account": 1, "asset": 4, "quantity": -12, "price": 1000.0, "fee": 0.0,"note": "Погашение номинала ТинькоффБ7, Отчет вышестоящего депозитария CO2106247591 от 24.06.2021"}
   ],
   "income_spending": [
@@ -57,11 +55,11 @@
   "asset_payments": [
     {"id": 1, "type": "interest", "account": 1, "timestamp": 1615909088, "number": "3720000652", "asset": 4, "amount": -16.83, "description": "НКД"},
     {"id": 2, "type": "interest", "account": 1, "timestamp": 1615976923, "number": "3725000743", "asset": 4, "amount": 17.03, "description": "НКД"},
-    {"id": 3, "type": "dividend", "account": 1, "timestamp": 1619568000, "number": "N/210528/9533196", "asset": 8, "amount": 1417.5, "tax": 184.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО Московская Биржа"},
-    {"id": 4, "type": "dividend", "account": 2, "timestamp": 1620000000, "number": "N/210603/9546601", "asset": 9, "amount": 13.35, "tax": 0, "description": "Перечисление дивидендов по иностранным акциям POLYMETAL INTL PLC"},
-    {"id": 5, "type": "dividend", "account": 2, "timestamp": 1620000000, "number": "N/210603/9546481", "asset": 9, "amount": 8.9, "tax": 0, "description": "Перечисление дивидендов по иностранным акциям POLYMETAL INTL PLC"},
-    {"id": 6, "type": "dividend", "account": 1, "timestamp": 1620518400, "number": "N/210609/9561721", "asset": 10, "amount": 1403.1, "tax": 182.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО \"Северсталь\" за период за 1 кв 2021"},
-    {"id": 7, "type": "dividend", "account": 1, "timestamp": 1620518400, "number": "N/210609/9562103", "asset": 10, "amount": 1088.1, "tax": 141.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО \"Северсталь\" за период за 2020 год"},
+    {"id": 3, "type": "dividend", "account": 1, "timestamp": 1619568000, "number": "N/210528/9533196", "asset": 7, "amount": 1417.5, "tax": 184.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО Московская Биржа"},
+    {"id": 4, "type": "dividend", "account": 2, "timestamp": 1620000000, "number": "N/210603/9546601", "asset": 8, "amount": 13.35, "tax": 0, "description": "Перечисление дивидендов по иностранным акциям POLYMETAL INTL PLC"},
+    {"id": 5, "type": "dividend", "account": 2, "timestamp": 1620000000, "number": "N/210603/9546481", "asset": 8, "amount": 8.9, "tax": 0, "description": "Перечисление дивидендов по иностранным акциям POLYMETAL INTL PLC"},
+    {"id": 6, "type": "dividend", "account": 1, "timestamp": 1620518400, "number": "N/210609/9561721", "asset": 9, "amount": 1403.1, "tax": 182.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО \"Северсталь\" за период за 1 кв 2021"},
+    {"id": 7, "type": "dividend", "account": 1, "timestamp": 1620518400, "number": "N/210609/9562103", "asset": 9, "amount": 1088.1, "tax": 141.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО \"Северсталь\" за период за 2020 год"},
     {"id": 8, "type": "interest", "account": 1, "timestamp": 1624492800, "number": "NC/210624/191213", "asset": 4, "amount": 385.32, "description": "Погашение купона № ТинькоффБ7"}
   ]
 }

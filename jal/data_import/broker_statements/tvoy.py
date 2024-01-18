@@ -276,6 +276,9 @@ class StatementTvoyBroker(StatementXLS):
         self.asset_withdrawal.append(record)
 
     def asset_transfer(self, timestamp, number, asset, qty, description):
+        if description.startswith("Перевод ЦБ с субсчета"):
+            logging.warning(self.tr("Asset transfer was skipped as it will be loaded from the destination account report: ") + description)
+            return
         TransferPattern = r"^Перевод ЦБ на с\/с (?P<account_to>[\w|\/]+) с с\/с (?P<account_from>[\w|\/]+)\..*$"
         parts = re.match(TransferPattern, description, re.IGNORECASE)
         if parts is None:
