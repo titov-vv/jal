@@ -9,6 +9,7 @@ from jal.constants import BookAccount
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction, LedgerError
 from jal.widgets.helpers import ts2dt, ts2d
@@ -149,6 +150,20 @@ class Ledger(QObject, JalDB):
         condition = "WHERE tag_id=:tag AND timestamp>=:begin AND timestamp<=:end"
         parameters = [(":begin", begin), (":end", end), (":tag", tag_id)]
         return cls._get_operations_by_filter(condition, parameters)
+
+    @classmethod
+    # Returns a list of {currency, balance} dicts that contain total amount of term deposits at given date per currency
+    def get_term_deposits(cls, timestamp: int) -> list:
+        deposits = []
+        for currency in JalAsset.get_currencies():
+            amount = cls._read("SELECT amount_acc FROM ledger "
+                               "WHERE asset_id=:currency AND timestamp<=:timestamp AND book_account=:book "
+                               "ORDER BY id DESC LIMIT 1",
+                               [(":currency", currency.id()), (":timestamp", timestamp),
+                                (":book", BookAccount.Savings)])
+            if amount is not None:
+                deposits.append({"currency": currency, "balance": Decimal(amount)})
+        return deposits
 
     # Add one more transaction to 'book' of ledger.
     # If book is Assets and value is not None then amount contains Asset Quantity and Value contains amount

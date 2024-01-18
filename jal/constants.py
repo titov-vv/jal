@@ -119,13 +119,13 @@ class PredefinedAsset(PredefinedList, QObject):
 
 
 class DepositActions(PredefinedList, QObject):
-    Opening = 1
-    Closing = 2
-    TopUp = 3
-    PartialWithdrawal = 4    # Actions with ID<=100 will move real money on a linked account (BookAccount.Money)
-    Renewal = 101            # Actions with ID above 100 will move change savings value only (BookAccount.Savings)
-    InterestAccrued = 102
-    TaxWithheld = 103
+    Opening = 1                 # These constants define order of deposit operations processing
+    TopUp = 2
+    Renewal = 10
+    InterestAccrued = 50
+    TaxWithheld = 51
+    PartialWithdrawal = 99
+    Closing = 100
 
     def __init__(self):
         super().__init__()

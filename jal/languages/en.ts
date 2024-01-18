@@ -390,24 +390,29 @@
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="23"/>
+        <location filename="../db/balances_model.py" line="24"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="23"/>
+        <location filename="../db/balances_model.py" line="24"/>
         <source>Balance</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="24"/>
+        <location filename="../db/balances_model.py" line="25"/>
         <source>Balance, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="64"/>
+        <location filename="../db/balances_model.py" line="69"/>
         <source>Total</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/balances_model.py" line="156"/>
+        <source>Term deposits</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -615,57 +620,57 @@
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="1029"/>
+        <location filename="../db/operations.py" line="1030"/>
         <source>UNDEFINED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1030"/>
+        <location filename="../db/operations.py" line="1031"/>
         <source>Symbol change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1031"/>
+        <location filename="../db/operations.py" line="1032"/>
         <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1032"/>
+        <location filename="../db/operations.py" line="1033"/>
         <source>Spin-off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1033"/>
+        <location filename="../db/operations.py" line="1034"/>
         <source>Merger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1036"/>
+        <location filename="../db/operations.py" line="1037"/>
         <source>Delisting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1137"/>
+        <location filename="../db/operations.py" line="1138"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1156"/>
+        <location filename="../db/operations.py" line="1157"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1161"/>
+        <location filename="../db/operations.py" line="1162"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1165"/>
+        <location filename="../db/operations.py" line="1166"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1174"/>
+        <location filename="../db/operations.py" line="1175"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1018,17 +1023,17 @@
 <context>
     <name>DepositActionsModel</name>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="160"/>
+        <location filename="../widgets/term_deposit_widget.py" line="162"/>
         <source>Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="160"/>
+        <location filename="../widgets/term_deposit_widget.py" line="162"/>
         <source>Action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="162"/>
+        <location filename="../widgets/term_deposit_widget.py" line="164"/>
         <source>Amount</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1064,62 +1069,62 @@
 <context>
     <name>Dividend</name>
     <message>
-        <location filename="../db/operations.py" line="407"/>
+        <location filename="../db/operations.py" line="408"/>
         <source>UNDEFINED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="408"/>
+        <location filename="../db/operations.py" line="409"/>
         <source>Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="409"/>
+        <location filename="../db/operations.py" line="410"/>
         <source>Bond Interest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="410"/>
+        <location filename="../db/operations.py" line="411"/>
         <source>Stock Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="411"/>
+        <location filename="../db/operations.py" line="412"/>
         <source>Stock Vesting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="414"/>
+        <location filename="../db/operations.py" line="415"/>
         <source>Bond Amortization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="500"/>
+        <location filename="../db/operations.py" line="501"/>
         <source>No price data for stock dividend/vesting: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="523"/>
+        <location filename="../db/operations.py" line="524"/>
         <source>Tax: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="566"/>
+        <location filename="../db/operations.py" line="567"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="578"/>
+        <location filename="../db/operations.py" line="579"/>
         <source>Unsupported dividend type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="600"/>
+        <location filename="../db/operations.py" line="601"/>
         <source>Not supported action: stock dividend or vesting closes short trade.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="481"/>
+        <location filename="../db/operations.py" line="482"/>
         <source>No stock quote for stock dividend or vesting.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1499,22 +1504,22 @@
 <context>
     <name>IncomeSpending</name>
     <message>
-        <location filename="../db/operations.py" line="306"/>
+        <location filename="../db/operations.py" line="307"/>
         <source>Spending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="309"/>
+        <location filename="../db/operations.py" line="310"/>
         <source>Income</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="324"/>
+        <location filename="../db/operations.py" line="325"/>
         <source>Rate: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="364"/>
+        <location filename="../db/operations.py" line="365"/>
         <source>Can&apos;t process operation without details</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1984,52 +1989,52 @@ do you want to save it?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="160"/>
+        <location filename="../db/ledger.py" line="175"/>
         <source>No asset defined for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="164"/>
+        <location filename="../db/ledger.py" line="179"/>
         <source>No category set for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="166"/>
+        <location filename="../db/ledger.py" line="181"/>
         <source>No peer set for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="240"/>
+        <location filename="../db/ledger.py" line="255"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="241"/>
+        <location filename="../db/ledger.py" line="256"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="297"/>
+        <location filename="../db/ledger.py" line="312"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="299"/>
+        <location filename="../db/ledger.py" line="314"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="300"/>
+        <location filename="../db/ledger.py" line="315"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="246"/>
+        <location filename="../db/ledger.py" line="261"/>
         <source>Leger is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="251"/>
+        <location filename="../db/ledger.py" line="266"/>
         <source>Re-building ledger since: </source>
         <translation></translation>
     </message>
@@ -5409,7 +5414,7 @@ Please select an account for import:</source>
     </message>
     <message>
         <location filename="../widgets/term_deposit_widget.py" line="79"/>
-        <location filename="../widgets/term_deposit_widget.py" line="84"/>
+        <location filename="../widgets/term_deposit_widget.py" line="86"/>
         <source>Incomplete data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5419,33 +5424,33 @@ Please select an account for import:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="84"/>
+        <location filename="../widgets/term_deposit_widget.py" line="86"/>
         <source>Deposit action type isn&apos;t set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="91"/>
-        <location filename="../widgets/term_deposit_widget.py" line="94"/>
+        <location filename="../widgets/term_deposit_widget.py" line="93"/>
+        <location filename="../widgets/term_deposit_widget.py" line="96"/>
         <source>Incorrect data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="91"/>
+        <location filename="../widgets/term_deposit_widget.py" line="93"/>
         <source>There should be 1 deposit opening action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="94"/>
+        <location filename="../widgets/term_deposit_widget.py" line="96"/>
         <source>There should be 1 deposit closing action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="102"/>
+        <location filename="../widgets/term_deposit_widget.py" line="104"/>
         <source>Operation submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="109"/>
+        <location filename="../widgets/term_deposit_widget.py" line="111"/>
         <source>Operation details submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -5453,17 +5458,17 @@ Please select an account for import:</source>
 <context>
     <name>Trade</name>
     <message>
-        <location filename="../db/operations.py" line="661"/>
+        <location filename="../db/operations.py" line="662"/>
         <source>Sell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="665"/>
+        <location filename="../db/operations.py" line="666"/>
         <source>Buy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="726"/>
+        <location filename="../db/operations.py" line="727"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -5555,52 +5560,52 @@ Please select an account for import:</source>
 <context>
     <name>Transfer</name>
     <message>
-        <location filename="../db/operations.py" line="785"/>
+        <location filename="../db/operations.py" line="786"/>
         <source>UNDEFINED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="786"/>
+        <location filename="../db/operations.py" line="787"/>
         <source>Outgoing transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="787"/>
+        <location filename="../db/operations.py" line="788"/>
         <source>Incoming transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="788"/>
+        <location filename="../db/operations.py" line="789"/>
         <source>Transfer fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="862"/>
+        <location filename="../db/operations.py" line="863"/>
         <source>Cost basis:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="877"/>
+        <location filename="../db/operations.py" line="878"/>
         <source>Error. Zero rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="935"/>
+        <location filename="../db/operations.py" line="936"/>
         <source>Can&apos;t collect fee from the account &apos;{}&apos; ({}) as organization isn&apos;t set for it. Date: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="958"/>
+        <location filename="../db/operations.py" line="959"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="963"/>
+        <location filename="../db/operations.py" line="964"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="976"/>
+        <location filename="../db/operations.py" line="977"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation type="unfinished"></translation>
     </message>
