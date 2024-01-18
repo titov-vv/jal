@@ -1018,24 +1018,19 @@
 <context>
     <name>DepositActionsModel</name>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="148"/>
+        <location filename="../widgets/term_deposit_widget.py" line="160"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="148"/>
+        <location filename="../widgets/term_deposit_widget.py" line="160"/>
         <source>Action</source>
         <translation>Действие</translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="150"/>
+        <location filename="../widgets/term_deposit_widget.py" line="162"/>
         <source>Amount</source>
         <translation>Сумма</translation>
-    </message>
-    <message>
-        <location filename="../widgets/term_deposit_widget.py" line="154"/>
-        <source>Planned value:</source>
-        <translation></translation>
     </message>
 </context>
 <context>
@@ -5419,28 +5414,44 @@ Please select an account for import:</source>
         <translation>Невозможно добавить новую запись: </translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="77"/>
-        <location filename="../widgets/term_deposit_widget.py" line="82"/>
+        <location filename="../widgets/term_deposit_widget.py" line="79"/>
+        <location filename="../widgets/term_deposit_widget.py" line="84"/>
         <source>Incomplete data</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="77"/>
+        <location filename="../widgets/term_deposit_widget.py" line="79"/>
         <source>Deposit contains no actions</source>
         <translation>Не указаны действия для депозита</translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="82"/>
+        <location filename="../widgets/term_deposit_widget.py" line="84"/>
         <source>Deposit action type isn&apos;t set</source>
         <translation>Тип действия для депозита не указан</translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="90"/>
+        <location filename="../widgets/term_deposit_widget.py" line="91"/>
+        <location filename="../widgets/term_deposit_widget.py" line="94"/>
+        <source>Incorrect data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/term_deposit_widget.py" line="91"/>
+        <source>There should be 1 deposit opening action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/term_deposit_widget.py" line="94"/>
+        <source>There should be 1 deposit closing action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/term_deposit_widget.py" line="102"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="97"/>
+        <location filename="../widgets/term_deposit_widget.py" line="109"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>

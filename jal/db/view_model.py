@@ -42,3 +42,9 @@ class JalViewModel(JalModel):
             font.setStrikeOut(True)
             return font
         return super().data(index, role)
+
+    def row_is_deleted(self, row):
+        if row in self.deleted:
+            return True
+        else:
+            return False

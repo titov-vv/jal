@@ -70,6 +70,8 @@ class TermDepositWidget(AbstractOperationDetails):
             self.onDataChange(idx, idx, None)
 
     def _validated(self):
+        open_action_count = 0
+        close_action_count = 0
         fields = db_row2dict(self.model, 0)
         if not fields['account_id']:
             return False
@@ -77,10 +79,22 @@ class TermDepositWidget(AbstractOperationDetails):
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Deposit contains no actions"), QMessageBox.Ok)
             return False
         for row in range(self.actions_model.rowCount()):
+            if self.actions_model.row_is_deleted(row):
+                continue
             fields = db_row2dict(self.actions_model, row)
             if fields['action_type'] is None or fields['action_type'] == 0:
                 QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Deposit action type isn't set"), QMessageBox.Ok)
                 return False
+            if fields['action_type'] == DepositActions.Opening:
+                open_action_count += 1
+            if fields['action_type'] == DepositActions.Closing:
+                close_action_count += 1
+        if open_action_count != 1:
+            QMessageBox().warning(self, self.tr("Incorrect data"), self.tr("There should be 1 deposit opening action"), QMessageBox.Ok)
+            return False
+        if close_action_count != 1:
+            QMessageBox().warning(self, self.tr("Incorrect data"), self.tr("There should be 1 deposit closing action"), QMessageBox.Ok)
+            return False
         return True
 
     def _save(self):
@@ -146,24 +160,6 @@ class DepositActionsModel(JalViewModel):
     def __init__(self, parent_view, table_name):
         super().__init__(parent_view, table_name)
         self._columns = ["id", "deposit_id", self.tr("Date/Time"), self.tr("Action"), self.tr("Amount")]
-
-    def footerData(self, section, role=Qt.DisplayRole):
-        if role == Qt.DisplayRole:
-            if section == 3:
-                return self.tr("Planned value:")
-            elif section == 4:
-                total = Decimal('0')
-                return localize_decimal(total, precision=2, percent=True)
-        elif role == Qt.FontRole:
-            font = QFont()
-            font.setBold(True)
-            return font
-        elif role == Qt.TextAlignmentRole:
-            if section == 4:
-                return Qt.AlignRight | Qt.AlignVCenter
-            else:
-                return Qt.AlignLeft | Qt.AlignVCenter
-        return None
 
     def configureView(self):
         assert self.columnCount() == len(self._columns), "Mismatch between deposit actions model and view"

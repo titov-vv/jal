@@ -18,6 +18,7 @@ class LedgerError(Exception):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class LedgerTransaction(JalDB):
+    NoOpException = 'NoLedgerOperation'
     NA = 0                  # Transaction types - these are aligned with tabs in main window
     IncomeSpending = 1
     Dividend = 2
@@ -1222,6 +1223,8 @@ class TermDeposit(LedgerTransaction):
                                 "FROM term_deposits td LEFT JOIN deposit_actions da ON td.id=da.deposit_id "
                                 "WHERE td.id=:oid AND da.id=:aid",
                                 [(":oid", self._oid), (":aid", self._aid)], named=True)
+        if self._data is None:
+            raise IndexError(LedgerTransaction.NoOpException)
         self._timestamp = self._data['timestamp']
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()

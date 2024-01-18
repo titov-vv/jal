@@ -57,9 +57,14 @@ class OperationsModel(QAbstractTableModel):
         row = index.row()
         if not index.isValid():
             return None
-        operation = LedgerTransaction().get_operation(self._data[row]['op_type'],
-                                                      self._data[row]['id'],
-                                                      self._data[row]['subtype'])
+        try:
+            operation = LedgerTransaction().get_operation(self._data[row]['op_type'],
+                                                          self._data[row]['id'],
+                                                          self._data[row]['subtype'])
+        except IndexError as e:
+            if str(e) == LedgerTransaction.NoOpException:
+                return None
+            raise e
         if role == Qt.DisplayRole:
             return self.data_text(operation, index.column())
         if role == Qt.FontRole and index.column() == 0:
