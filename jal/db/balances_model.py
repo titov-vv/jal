@@ -61,7 +61,10 @@ class BalancesModel(QAbstractTableModel):
             if self._data[row]['level'] == 0:
                 return self._data[row]['account_name']
             else:
-                return PredefinedAccountType().get_name(self._data[row]['account_type'], default=self.tr("Total"))
+                if self._data[row]['account_type']:
+                    return self._data[row]['account_type']
+                else:
+                    return self.tr("Total")
         elif column == 1:
             return self._data[row]['balance']
         elif column == 2:
@@ -136,7 +139,7 @@ class BalancesModel(QAbstractTableModel):
             rate = JalAsset(account.currency()).quote(self._date, self._currency)[1]
             if value != Decimal('0'):
                 balances.append({
-                    "account_type": account.type(),
+                    "account_type": PredefinedAccountType().get_name(account.type()),
                     "account": account.id(),
                     "account_name": account.name(),
                     "currency": account.currency(),
@@ -150,16 +153,16 @@ class BalancesModel(QAbstractTableModel):
         self._data = []
         field_names = ["account_type", "account", "account_name", "currency", "currency_name", "balance", "balance_a",
                        "unreconciled", "active", "level"]
-        current_type = 0
+        current_type = ''
         for values in balances:
             values['level'] = 0
             if values['account_type'] != current_type:
-                if current_type != 0:
+                if current_type:
                     sub_total = sum([row['balance_a'] for row in self._data if row['account_type'] == current_type])
                     self._data.append(dict(zip(field_names, [current_type, 0, '', 0, '', 0, sub_total, 0, 1, 1])))
                 current_type = values['account_type']
             self._data.append(values)
-        if current_type != 0:
+        if current_type:
             sub_total = sum([row['balance_a'] for row in self._data if row['account_type'] == current_type])
             self._data.append(dict(zip(field_names, [current_type, 0, '', 0, '', 0, sub_total, 0, 1, 1])))
         total_sum = sum([row['balance_a'] for row in self._data if row['level'] == 0])
