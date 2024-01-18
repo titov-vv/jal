@@ -362,7 +362,7 @@ CREATE TABLE deposit_actions (
     amount      TEXT    NOT NULL
 );
 DROP INDEX IF EXISTS deposit_actions_idx;
-CREATE UNIQUE INDEX deposit_actions_idx ON deposit_actions (deposit_id, timestamp, type);
+CREATE UNIQUE INDEX deposit_actions_idx ON deposit_actions (deposit_id, timestamp, action_type);
 
 
 -- View: operation_sequence
@@ -669,7 +669,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 51);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 52);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 -- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1); -- Deprecated and ID shouldn't be re-used
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);

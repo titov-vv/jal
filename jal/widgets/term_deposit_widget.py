@@ -166,6 +166,7 @@ class DepositActionsModel(JalViewModel):
         return None
 
     def configureView(self):
+        assert self.columnCount() == len(self._columns), "Mismatch between deposit actions model and view"
         self._view.setColumnHidden(0, True)
         self._view.setColumnHidden(1, True)
         self._view.setColumnWidth(2, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)

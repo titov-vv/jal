@@ -18,7 +18,7 @@ CREATE TABLE deposit_actions (
     amount      TEXT    NOT NULL
 );
 DROP INDEX IF EXISTS deposit_actions_idx;
-CREATE UNIQUE INDEX deposit_actions_idx ON deposit_actions (deposit_id, timestamp, type);
+CREATE UNIQUE INDEX deposit_actions_idx ON deposit_actions (deposit_id, timestamp, action_type);
 
 DROP VIEW IF EXISTS operation_sequence;
 CREATE VIEW operation_sequence AS
