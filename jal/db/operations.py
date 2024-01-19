@@ -1260,7 +1260,7 @@ class TermDeposit(LedgerTransaction):
             return []
 
     def value_currency(self) -> str:
-            return f" {self._account_currency}"
+        return f" {self._account_currency}"
 
     def value_total(self) -> list:
         money = self._read("SELECT amount_acc FROM ledger WHERE op_type=:op_type AND operation_id=:oid AND "

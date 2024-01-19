@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefinedAccountType
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
-from jal.db.ledger import Ledger
+from jal.db.deposit import JalDeposit
 from jal.widgets.delegates import FloatDelegate
 
 
@@ -150,16 +150,16 @@ class BalancesModel(QAbstractTableModel):
                     "unreconciled": (account.last_operation_date() - account.reconciled_at())/86400,
                     "active": account.is_active()
                 })
-        for deposit in Ledger.get_term_deposits(self._date):
-            rate = deposit["currency"].quote(self._date, self._currency)[1]
+        for deposit in JalDeposit.get_term_deposits(self._date):
+            rate = deposit.currency().quote(self._date, self._currency)[1]
             balances.append({
                 "account_type": self.tr("Term deposits"),
                 "account": 0,
-                "account_name": '',
-                "currency": deposit["currency"],
-                "currency_name": deposit["currency"].symbol(),
-                "balance": deposit["balance"],
-                "balance_a": deposit["balance"] * rate,
+                "account_name": deposit.name(),
+                "currency": deposit.currency(),
+                "currency_name": deposit.currency().symbol(),
+                "balance": deposit.balance(self._date),
+                "balance_a": deposit.balance(self._date) * rate,
                 "unreconciled": 0,
                 "active": 1
             })
