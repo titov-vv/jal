@@ -11,10 +11,13 @@ It was designed to keep records of personal incomes/spendings and investments wi
     3. Buy/Sell operation for securities (jal supports stocks, ETFs, options, partial support of bonds and futures)
     4. Dividend for stocks and Interest payments for bonds
     5. Corporate actions for stocks (Split, Symbol change, Merger, Spin-Off, Stock dividend)
+    6. Term deposits. 
 - basic reports:
-    1. monthly incomes/spendings split by category
-    2. profit/loss report for investments accounts
-    3. closed deals report 
+    1. Daily history of account balance.
+    2. Portfolio asset allocation for a given date.
+    3. Monthly income/expenditure by category. 
+    4. Investment profit/loss and history of payments for an assets. 
+    5. Closed deals summary.
 - stock/ETF quotes updates for US (Yahoo), EU (Euronext), CA (TSX) and RU (MOEX) exchanges traded stocks
 - Broker statement import:
     1. Russian: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
