@@ -1039,6 +1039,49 @@
     </message>
 </context>
 <context>
+    <name>DepositsListModel</name>
+    <message>
+        <location filename="../reports/term_deposits.py" line="18"/>
+        <source>Name</source>
+        <translation>Наименование</translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="18"/>
+        <source>Start Date</source>
+        <translation>Дата открытия</translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="18"/>
+        <source>End Date</source>
+        <translation>Дата закрытия</translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="18"/>
+        <source>Currency</source>
+        <translation>Валюта</translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="19"/>
+        <source>Initial amount</source>
+        <translation>Начальный вклад</translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="19"/>
+        <source>Accrued Interest</source>
+        <translation>Накопленные проценты</translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="20"/>
+        <source>Planned End Value</source>
+        <translation>Плановая сумма</translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="66"/>
+        <source>Total</source>
+        <translation>Итого</translation>
+    </message>
+</context>
+<context>
     <name>DetailsModel</name>
     <message>
         <location filename="../widgets/income_spending_widget.py" line="202"/>
@@ -1992,52 +2035,52 @@ do you want to save it?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="176"/>
+        <location filename="../db/ledger.py" line="160"/>
         <source>No asset defined for: </source>
         <translation>Не указана ЦБ для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="180"/>
+        <location filename="../db/ledger.py" line="164"/>
         <source>No category set for: </source>
         <translation>Ну указана категория для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="182"/>
+        <location filename="../db/ledger.py" line="166"/>
         <source>No peer set for: </source>
         <translation>Не указан контрагент для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="256"/>
+        <location filename="../db/ledger.py" line="240"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="257"/>
+        <location filename="../db/ledger.py" line="241"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="313"/>
+        <location filename="../db/ledger.py" line="297"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation>Произошла ошибка. Расчёт итогов не окончен. Проверьте сообщения об ошибках</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="315"/>
+        <location filename="../db/ledger.py" line="299"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="316"/>
+        <location filename="../db/ledger.py" line="300"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="262"/>
+        <location filename="../db/ledger.py" line="246"/>
         <source>Leger is empty</source>
         <translation>Транзакции отсутствуют</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="267"/>
+        <location filename="../db/ledger.py" line="251"/>
         <source>Re-building ledger since: </source>
         <translation>Пересчёт итогов с: </translation>
     </message>
@@ -5464,9 +5507,9 @@ Please select an account for import:</source>
 <context>
     <name>TermDepositsReport</name>
     <message>
-        <location filename="../reports/term_deposits.py" line="13"/>
+        <location filename="../reports/term_deposits.py" line="120"/>
         <source>Term deposits</source>
-        <translation type="unfinished">Срочные вклады</translation>
+        <translation>Срочные вклады</translation>
     </message>
 </context>
 <context>
@@ -5474,25 +5517,25 @@ Please select an account for import:</source>
     <message>
         <location filename="../ui/reports/term_deposits_report.ui" line="14"/>
         <source>Term deposits report</source>
-        <translation type="unfinished"></translation>
+        <translation>Отчет по срочным вкладам</translation>
     </message>
     <message>
         <location filename="../ui/reports/term_deposits_report.ui" line="72"/>
         <source>Save...</source>
-        <translation type="unfinished">Сохранить...</translation>
+        <translation>Сохранить...</translation>
     </message>
     <message>
         <location filename="../ui/reports/term_deposits_report.ui" line="89"/>
         <source>dd/MM/yyyy</source>
-        <translation type="unfinished">dd/MM/yyyy</translation>
+        <translation>dd/MM/yyyy</translation>
     </message>
 </context>
 <context>
     <name>TermDepositsReportWindow</name>
     <message>
-        <location filename="../reports/term_deposits.py" line="23"/>
+        <location filename="../reports/term_deposits.py" line="131"/>
         <source>Term deposits</source>
-        <translation type="unfinished">Срочные вклады</translation>
+        <translation>Срочные вклады</translation>
     </message>
 </context>
 <context>

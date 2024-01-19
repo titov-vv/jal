@@ -1039,6 +1039,49 @@
     </message>
 </context>
 <context>
+    <name>DepositsListModel</name>
+    <message>
+        <location filename="../reports/term_deposits.py" line="18"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="18"/>
+        <source>Start Date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="18"/>
+        <source>End Date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="18"/>
+        <source>Currency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="19"/>
+        <source>Initial amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="19"/>
+        <source>Accrued Interest</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="20"/>
+        <source>Planned End Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/term_deposits.py" line="66"/>
+        <source>Total</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DetailsModel</name>
     <message>
         <location filename="../widgets/income_spending_widget.py" line="202"/>
@@ -1989,52 +2032,52 @@ do you want to save it?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="176"/>
+        <location filename="../db/ledger.py" line="160"/>
         <source>No asset defined for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="180"/>
+        <location filename="../db/ledger.py" line="164"/>
         <source>No category set for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="182"/>
+        <location filename="../db/ledger.py" line="166"/>
         <source>No peer set for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="256"/>
+        <location filename="../db/ledger.py" line="240"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="257"/>
+        <location filename="../db/ledger.py" line="241"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="313"/>
+        <location filename="../db/ledger.py" line="297"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="315"/>
+        <location filename="../db/ledger.py" line="299"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="316"/>
+        <location filename="../db/ledger.py" line="300"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="262"/>
+        <location filename="../db/ledger.py" line="246"/>
         <source>Leger is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="267"/>
+        <location filename="../db/ledger.py" line="251"/>
         <source>Re-building ledger since: </source>
         <translation></translation>
     </message>
@@ -5458,7 +5501,7 @@ Please select an account for import:</source>
 <context>
     <name>TermDepositsReport</name>
     <message>
-        <location filename="../reports/term_deposits.py" line="13"/>
+        <location filename="../reports/term_deposits.py" line="120"/>
         <source>Term deposits</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5484,7 +5527,7 @@ Please select an account for import:</source>
 <context>
     <name>TermDepositsReportWindow</name>
     <message>
-        <location filename="../reports/term_deposits.py" line="23"/>
+        <location filename="../reports/term_deposits.py" line="131"/>
         <source>Term deposits</source>
         <translation type="unfinished"></translation>
     </message>

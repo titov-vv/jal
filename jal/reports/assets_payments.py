@@ -39,6 +39,9 @@ class AssetsPaymentsModel(QAbstractTableModel):
             return self._columns[section]
         return None
 
+    def headerWidth(self, section):
+        return self._view.horizontalHeader().sectionSize(section)
+
     def data(self, index, role=Qt.DisplayRole, field=''):
         if role == Qt.DisplayRole:
             dividend = self._data[index.row()]

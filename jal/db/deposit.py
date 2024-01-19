@@ -1,5 +1,6 @@
+import logging
 from decimal import Decimal
-from jal.constants import BookAccount
+from jal.constants import BookAccount, DepositActions
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -20,7 +21,7 @@ class JalDeposit(JalDB):
                                    "WHERE deposit_id=:deposit_id", [(":deposit_id", self._id)])
         self._actions = []
         while actions_query.next():
-            self._actions.append(self._read_record(actions_query, named=True))
+            self._actions.append(self._read_record(actions_query, named=True, cast=[int, int, Decimal]))
 
     @classmethod
     # Returns a list of deposits that are opened before and not closed at given timestamp
@@ -28,8 +29,9 @@ class JalDeposit(JalDB):
         deposits = []
         query = cls._exec(
             "SELECT o.deposit_id FROM deposit_actions o "
-            "LEFT JOIN deposit_actions c ON o.action_type=1 AND c.action_type=100 and o.deposit_id=c.deposit_id "
-            "WHERE o.timestamp<=:timestamp AND c.timestamp>=:timestamp", [(":timestamp", timestamp)])
+            "LEFT JOIN deposit_actions c ON o.action_type=:opening AND c.action_type=:closing and o.deposit_id=c.deposit_id "
+            "WHERE o.timestamp<=:timestamp AND c.timestamp>=:timestamp",
+            [(":timestamp", timestamp), (":opening", DepositActions.Opening), (":closing", DepositActions.Closing)])
         while query.next():
             deposits.append(JalDeposit(super(JalDeposit, JalDeposit)._read_record(query, cast=[int])))
         return deposits
@@ -42,6 +44,7 @@ class JalDeposit(JalDB):
     def currency(self) -> JalAsset:
         return self._currency
 
+    # Return accumulated money for the deposit at given timestamp
     def balance(self, timestamp: int) -> Decimal:
         balance = self._read(
             "WITH last_deposit_amount AS ( "
@@ -52,3 +55,45 @@ class JalDeposit(JalDB):
              (":id", self._id), (":timestamp", timestamp)])
         balance = Decimal('0') if balance is None else Decimal(balance)
         return balance
+
+    # Return a timestamp of deposit opening
+    def start_date(self) -> int:
+        opening = [x for x in self._actions if x['action_type']==DepositActions.Opening]
+        assert len(opening) == 1
+        return opening[0]['timestamp']
+
+    # Return a timestamp of deposit closure
+    def end_date(self) -> int:
+        opening = [x for x in self._actions if x['action_type'] == DepositActions.Closing]
+        assert len(opening) == 1
+        return opening[0]['timestamp']
+
+    def open_amount(self) -> Decimal:
+        opening = [x for x in self._actions if x['action_type'] == DepositActions.Opening]
+        assert len(opening) == 1
+        return opening[0]['amount']
+
+    def accrued_interest(self, timestamp) -> Decimal:
+        amount = Decimal('0')
+        interests = [x for x in self._actions if x['timestamp'] <= timestamp]
+        for interest in interests:
+            if interest['action_type'] == DepositActions.InterestAccrued:
+                amount += interest['amount']
+            elif interest['action_type'] == DepositActions.TaxWithheld:
+                amount += interest['amount']
+            else:
+                continue
+        return amount
+
+    def close_amount(self) -> Decimal:
+        amount = self.open_amount()
+        for action in self._actions:
+            if action['action_type'] in [DepositActions.TopUp, DepositActions.InterestAccrued]:
+                amount += action['amount']
+            elif action['action_type'] in [DepositActions.PartialWithdrawal, DepositActions.TaxWithheld]:
+                amount -= action['amount']
+            elif action['action_type'] in [DepositActions.Opening, DepositActions.Closing, DepositActions.Renewal]:
+                continue
+            else:
+                logging.warning(self.tr("Unexpected deposit action: ") + action['action_type'])
+        return amount
