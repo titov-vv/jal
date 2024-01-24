@@ -1239,13 +1239,13 @@ class TermDeposit(LedgerTransaction):
         self._oname = f'{DepositActions().get_name(self._action)}'
 
     def _get_deposit_amount(self) -> Decimal:
-        amount = self._read("SELECT amount_acc FROM ledger "
-                            "WHERE op_type=:op_type AND operation_id=:oid AND "
-                            "book_account=:book AND account_id=:account_id AND timestamp<:timestamp "
-                            "ORDER BY id DESC LIMIT 1",
-                            [(":op_type", self._otype), (":oid", self._oid), (":timestamp", self._timestamp),
-                             (":account_id", self._account.id()), (":book", BookAccount.Savings)])
-        amount = Decimal('0') if amount is None else Decimal(amount)
+        amount = Decimal('0')
+        query = self._exec("SELECT amount FROM ledger WHERE op_type=:op_type AND operation_id=:oid AND "
+                           "book_account=:book AND account_id=:account_id AND timestamp<:timestamp",
+                           [(":op_type", self._otype), (":oid", self._oid), (":timestamp", self._timestamp),
+                            (":account_id", self._account.id()), (":book", BookAccount.Savings)])
+        while query.next():
+            amount += self._read_record(query, cast=[Decimal])
         return amount
 
     def description(self) -> str:

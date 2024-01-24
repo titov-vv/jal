@@ -46,14 +46,13 @@ class JalDeposit(JalDB):
 
     # Return accumulated money for the deposit at given timestamp
     def balance(self, timestamp: int) -> Decimal:
-        balance = self._read(
-            "WITH last_deposit_amount AS ( "
-            "SELECT amount_acc, ROW_NUMBER() OVER (PARTITION BY op_type, operation_id ORDER BY id DESC) AS row_no "
-            "FROM ledger WHERE book_account=:book AND op_type=:type AND operation_id=:id AND timestamp<=:timestamp) "
-            "SELECT amount_acc FROM last_deposit_amount WHERE row_no=1",
-            [(":book", BookAccount.Savings), (":type", LedgerTransaction.TermDeposit),
-             (":id", self._id), (":timestamp", timestamp)])
-        balance = Decimal('0') if balance is None else Decimal(balance)
+        balance = Decimal('0')
+        query = self._exec("SELECT amount FROM ledger "
+                           "WHERE book_account=:book AND op_type=:type AND operation_id=:id AND timestamp<=:timestamp",
+                           [(":book", BookAccount.Savings), (":type", LedgerTransaction.TermDeposit),
+                            (":id", self._id), (":timestamp", timestamp)])
+        while query.next():
+            balance += self._read_record(query, cast=[Decimal])
         return balance
 
     # Return a timestamp of deposit opening
