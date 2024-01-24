@@ -6,7 +6,7 @@ import jal.db.operations
 import jal.db.closed_trade
 from jal.constants import Setup, BookAccount, PredefinedAccountType, PredefinedAsset
 from jal.db.country import JalCountry
-from jal.db.helpers import format_decimal
+from jal.db.helpers import format_decimal, now_ts
 
 
 class JalAccount(JalDB):
@@ -198,6 +198,7 @@ class JalAccount(JalDB):
                                     "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.id=:account_id",
                                     [(":account_id", self._id)])
         last_timestamp = 0 if last_timestamp == '' else last_timestamp
+        last_timestamp = now_ts() if last_timestamp > now_ts() else last_timestamp  # Skip future operations
         return last_timestamp
 
     # FIXME This method now looks duplicated with open_trades_list() - need some unification
