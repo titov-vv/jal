@@ -7,6 +7,7 @@ from data_import.broker_statements.kit import StatementKIT
 from data_import.broker_statements.openbroker import StatementOpenBroker
 from data_import.broker_statements.just2trade import StatementJ2T
 from data_import.broker_statements.open_portfolio import StatementOpenPortfolio
+from data_import.broker_statements.vtb import StatementVTB
 
 from constants import PredefinedAsset
 from tests.helpers import create_assets
@@ -76,3 +77,12 @@ def test_statement_open_portfolio(tmp_path, project_root, data_path, prepare_db_
     OpenPortfolio = StatementOpenPortfolio()
     OpenPortfolio.load(data_path + 'pof.json')
     assert OpenPortfolio._data == statement
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_statement_vtb(tmp_path, project_root, data_path, prepare_db_moex):
+    with open(data_path + 'vtb.json', 'r', encoding='utf-8') as json_file:
+        statement = json.load(json_file)
+    vtb = StatementVTB()
+    vtb.load(data_path + 'vtb.xls')
+    assert vtb._data == statement

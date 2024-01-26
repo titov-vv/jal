@@ -131,7 +131,6 @@ class StatementXLS(Statement):
         if self.AccountPattern[2] is None:
             self._account_number = str(self._statement[self.AccountPattern[0]][self.AccountPattern[1]])
             return
-
         parts = re.match(self.AccountPattern[2],
                          self._statement[self.AccountPattern[0]][self.AccountPattern[1]], re.IGNORECASE)
         if parts is None:
