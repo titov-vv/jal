@@ -341,7 +341,10 @@ class IncomeSpending(LedgerTransaction):
             return f" {self._account_currency}"
 
     def value_total(self) -> list:
-        return [self._money_total(self._account.id())]
+        total = [self._money_total(self._account.id())]
+        if self._currency:
+            total.append(None)
+        return total
 
     # Return peer_id of current operation
     def peer(self) -> int:
