@@ -1,5 +1,6 @@
 import logging
 from jal.data_import.statement_xls import StatementXLS
+from jal.data_import.statement import FOF
 
 
 JAL_STATEMENT_CLASS = "StatementVTB"
@@ -20,7 +21,7 @@ class StatementVTB(StatementXLS):
         self.name = self.tr("VTB Investments")
         self.icon_name = "vtb.ico"
         self.filename_filter = self.tr("VTB statement (*.xls)")
-        self.asset_withdrawal = []
+        self.account_end_balance = {}
 
     def _load_currencies(self):
         cnt = 0
@@ -36,9 +37,17 @@ class StatementVTB(StatementXLS):
             except KeyError:
                 code = currency
             self.currency_id(code)
+            self.account_end_balance[code] = self._statement[headers['cash_end']][row]
             cnt += 1
             row += 1
         logging.info(self.tr("Account currencies loaded: ") + f"{cnt}")
+
+    # Planned money amount already loaded in _load_currencies(). Here it is only put in account data
+    def _load_money(self):
+        for currency in self.account_end_balance:
+            account_id = self._find_account_id(self._account_number, currency)
+            account = [x for x in self._data[FOF.ACCOUNTS] if x['id'] == account_id][0]
+            account["cash_end"] = self.account_end_balance[currency]
 
     def _load_deals(self):
         pass
