@@ -1,8 +1,17 @@
 {
   "period": [1704067200, 1705535999],
-  "accounts": [],
-  "assets": [],
-  "symbols": [],
+  "accounts": [
+    {"id": 1, "number": "111ABC", "currency": 1},
+    {"id": 2, "number": "111ABC", "currency": 2}
+  ],
+  "assets": [
+    {"id": 1, "name": "", "type": "money"},
+    {"id": 2, "name": "", "type": "money"}
+  ],
+  "symbols": [
+    {"id": 1, "asset": 1, "symbol": "RUB"},
+    {"id": 2, "asset": 2, "symbol": "USD"}
+  ],
   "assets_data": [],
   "trades": [],
   "income_spending": [],
