@@ -29,9 +29,15 @@
     {"id": 4, "asset": 6, "reg_number": "3915"},
     {"id": 5, "asset": 7, "reg_number": "1-02-00143-A", "principal": 0.01}
   ],
-  "trades": [],
+  "trades": [
+    {"id": 1, "number": "B9340571485", "timestamp": 1704799653, "settlement": 1704877200, "account": 1, "asset": 6, "quantity": 200, "price": 1.3252, "fee": 0},
+    {"id": 2, "number": "B9392407465", "timestamp": 1704979595, "settlement": 1705050000, "account": 1, "asset": 5, "quantity": 23, "price": 970.1, "fee": 11.35},
+    {"id": 3, "number": "S9392676025", "timestamp": 1704993223, "settlement": 1705050000, "account": 1, "asset": 6, "quantity": -24, "price": 1.3283333333333334, "fee": 0}
+  ],
   "income_spending": [],
   "transfers": [],
-  "asset_payments": [],
+  "asset_payments": [
+    {"id": 1, "type": "interest", "account": 1, "timestamp": 1704979595, "number": "B9392407465", "asset": 5, "amount": -616.86, "description": "НКД"}
+  ],
   "corporate_actions": []
 }

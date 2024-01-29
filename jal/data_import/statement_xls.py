@@ -102,7 +102,6 @@ class StatementXLS(Statement):
             for idx in column_indices:                         # Verify that all columns were found
                 if column_indices[idx] < 0 and idx[0] != '*':  # * - means header is optional
                     raise Statement_ImportError(self.tr("Column not found in section ") + f"{section_header}: {idx}")
-                    start_row = -1
         start_row += header_height
         return start_row, column_indices
 
