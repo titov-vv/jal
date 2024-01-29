@@ -81,7 +81,8 @@ class StatementVTB(StatementXLS):
             except KeyError:
                 currency_code = currency
             asset_id = self.asset_id({'isin': asset_data['isin'], 'reg_number': asset_data['reg_number'],
-                                      'currency': currency_code, 'search_offline': True, 'search_online': "MOEX"})
+                                      'currency': self.currency_id(currency_code), 'search_offline': True,
+                                      'search_online': "MOEX"})
             asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_id)
             asset['broker_name'] = asset_name
             cnt += 1

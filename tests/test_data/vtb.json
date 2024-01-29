@@ -17,12 +17,12 @@
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "RUB"},
     {"id": 2, "asset": 2, "symbol": "USD"},
-    {"id": 3, "asset": 3, "symbol": "БДеньги-02", "currency": "RUB", "note": "MOEX"},
-    {"id": 4, "asset": 4, "symbol": "Займер 01", "currency": "RUB", "note": "MOEX"},
-    {"id": 5, "asset": 5, "symbol": "МВ ФИН 1Р1", "currency": "RUB", "note": "MOEX"},
-    {"id": 6, "asset": 6, "symbol": "МФК ЦФПО01", "currency": "RUB", "note": "MOEX"},
-    {"id": 7, "asset": 7, "symbol": "LQDT", "currency": "RUB", "note": "MOEX"},
-    {"id": 8, "asset": 8, "symbol": "CHMF", "currency": "RUB", "note": "MOEX"}
+    {"id": 3, "asset": 3, "symbol": "БДеньги-02", "currency": 1, "note": "MOEX"},
+    {"id": 4, "asset": 4, "symbol": "Займер 01", "currency": 1, "note": "MOEX"},
+    {"id": 5, "asset": 5, "symbol": "МВ ФИН 1Р1", "currency": 1, "note": "MOEX"},
+    {"id": 6, "asset": 6, "symbol": "МФК ЦФПО01", "currency": 1, "note": "MOEX"},
+    {"id": 7, "asset": 7, "symbol": "LQDT", "currency": 1, "note": "MOEX"},
+    {"id": 8, "asset": 8, "symbol": "CHMF", "currency": 1, "note": "MOEX"}
   ],
   "assets_data": [
     {"id": 1, "asset": 3, "reg_number": "4-01-00487-R", "expiry": 1711584000, "principal": 1000.0},
