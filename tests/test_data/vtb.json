@@ -10,8 +10,9 @@
     {"id": 3, "isin": "RU000A102ZT7", "name": "МФК Быстроденьги 02", "type": "bond"},
     {"id": 4, "isin": "RU000A102TL7", "name": "МФК Займер - 01", "type": "bond"},
     {"id": 5, "isin": "RU000A103117", "name": "МВ ФИНАНС 001Р-01", "type": "bond"},
-    {"id": 6, "isin": "RU000A1014L8", "name": "БПИФ Ликвидность УК ВИМ", "type": "etf"},
-    {"id": 7, "isin": "RU0009046510", "name": "Северсталь (ПАО)ао", "type": "stock"}
+    {"id": 6, "isin": "RU000A102T55", "name": "МФК ЦФП Об-01", "type": "bond"},
+    {"id": 7, "isin": "RU000A1014L8", "name": "БПИФ Ликвидность УК ВИМ", "type": "etf"},
+    {"id": 8, "isin": "RU0009046510", "name": "Северсталь (ПАО)ао", "type": "stock"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "RUB"},
@@ -19,25 +20,32 @@
     {"id": 3, "asset": 3, "symbol": "БДеньги-02", "currency": "RUB", "note": "MOEX"},
     {"id": 4, "asset": 4, "symbol": "Займер 01", "currency": "RUB", "note": "MOEX"},
     {"id": 5, "asset": 5, "symbol": "МВ ФИН 1Р1", "currency": "RUB", "note": "MOEX"},
-    {"id": 6, "asset": 6, "symbol": "LQDT", "currency": "RUB", "note": "MOEX"},
-    {"id": 7, "asset": 7, "symbol": "CHMF", "currency": "RUB", "note": "MOEX"}
+    {"id": 6, "asset": 6, "symbol": "МФК ЦФПО01", "currency": "RUB", "note": "MOEX"},
+    {"id": 7, "asset": 7, "symbol": "LQDT", "currency": "RUB", "note": "MOEX"},
+    {"id": 8, "asset": 8, "symbol": "CHMF", "currency": "RUB", "note": "MOEX"}
   ],
   "assets_data": [
     {"id": 1, "asset": 3, "reg_number": "4-01-00487-R", "expiry": 1711584000, "principal": 1000.0},
     {"id": 2, "asset": 4, "reg_number": "4-01-00587-R", "expiry": 1708128000, "principal": 1000.0},
     {"id": 3, "asset": 5, "reg_number": "4B02-01-00590-R-001P", "expiry": 1713398400, "principal": 1000.0},
-    {"id": 4, "asset": 6, "reg_number": "3915"},
-    {"id": 5, "asset": 7, "reg_number": "1-02-00143-A", "principal": 0.01}
+    {"id": 4, "asset": 6, "reg_number": "4-01-00009-L", "expiry": 1707955200, "principal": 1000.0},
+    {"id": 5, "asset": 7, "reg_number": "3915"},
+    {"id": 6, "asset": 8, "reg_number": "1-02-00143-A", "principal": 0.01}
   ],
   "trades": [
-    {"id": 1, "number": "B9340571485", "timestamp": 1704799653, "settlement": 1704877200, "account": 1, "asset": 6, "quantity": 200, "price": 1.3252, "fee": 0},
+    {"id": 1, "number": "B9340571485", "timestamp": 1704799653, "settlement": 1704877200, "account": 1, "asset": 7, "quantity": 200, "price": 1.3252, "fee": 0},
     {"id": 2, "number": "B9392407465", "timestamp": 1704979595, "settlement": 1705050000, "account": 1, "asset": 5, "quantity": 23, "price": 970.1, "fee": 11.35},
-    {"id": 3, "number": "S9392676025", "timestamp": 1704993223, "settlement": 1705050000, "account": 1, "asset": 6, "quantity": -24, "price": 1.3283333333333334, "fee": 0}
+    {"id": 3, "number": "S9392676025", "timestamp": 1704993223, "settlement": 1705050000, "account": 1, "asset": 7, "quantity": -24, "price": 1.3283333333333334, "fee": 0}
   ],
   "income_spending": [],
-  "transfers": [],
+  "transfers": [
+    {"id": 1, "account": [0, 1, 0], "asset": [1, 1], "timestamp": 1704240000, "withdrawal": 888.5, "deposit": 888.5, "fee": 0.0, "description": "Перевод денежных средств на ТС Основной рынок"},
+    {"id": 2, "account": [0, 2, 0], "asset": [2, 2], "timestamp": 1705363200, "withdrawal": 0.09, "deposit": 0.09, "fee": 0.0, "description": ""},
+    {"id": 3, "account": [1, 0, 0], "asset": [1, 1], "timestamp": 1705536000, "withdrawal": 585.6, "deposit": 585.6, "fee": 0.0, "description": " Вывод денежных средств с брокерского счета /111ABC/ по распоряжению от 18.01.2024. НДС не облагается"}
+  ],
   "asset_payments": [
-    {"id": 1, "type": "interest", "account": 1, "timestamp": 1704979595, "number": "B9392407465", "asset": 5, "amount": -616.86, "description": "НКД"}
+    {"id": 1, "type": "interest", "account": 1, "timestamp": 1704979595, "number": "B9392407465", "asset": 5, "amount": -616.86, "description": "НКД"},
+    {"id": 2, "type": "interest", "account": 1, "timestamp": 1705449600, "asset": 6, "amount": 610.5, "description": "Куп. дох. по обл. ООО МФК ЦФП 4-01-00009-L, Е918036. Размер куп. на 1 обл. 11.1 руб.  НДС не обл. Налог не удерживается."}
   ],
   "corporate_actions": []
 }

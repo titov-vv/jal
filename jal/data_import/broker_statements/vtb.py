@@ -153,4 +153,67 @@ class StatementVTB(StatementXLS):
         logging.info(self.tr("Trades loaded: ") + f"{cnt}")
 
     def _load_cash_transactions(self):
-        pass
+        cnt = 0
+        columns = {
+            "date": "Дата",
+            "type": "Тип операции",
+            "amount": "Сумма",
+            "currency": "Валюта",
+            "description": "Комментарий"
+        }
+        operations = {
+            'Зачисление денежных средств': self.transfer_in,
+            'Списание денежных средств': self.transfer_out,
+            'Купонный доход': self.interest,
+            'Сальдо расчётов по сделкам с ценными бумагами': None,  # These operations are results of trades
+            'Вознаграждение Брокера': None
+        }
+        row, headers = self.find_section_start("Движение денежных средств", columns)
+        if row < 0:
+            return False
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row] == '':  # Stop if there are no next date available
+                break
+            operation = self._statement[headers['type']][row]
+            if operation == '':  # Skip market header as of now
+                row += 1
+                continue
+            if operation not in operations:
+                raise Statement_ImportError(self.tr("Unsuppported cash transaction ") + f"'{operation}'")
+            timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+            amount = self._statement[headers['amount']][row]
+            description = self._statement[headers['description']][row]
+            account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
+            if operations[operation] is not None:
+                operations[operation](timestamp, account_id, amount, description)
+            cnt += 1
+            row += 1
+        logging.info(self.tr("Cash operations loaded: ") + f"{cnt}")
+
+    def transfer_in(self, timestamp, account_id, amount, description):
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [0, account_id, 0],
+                    "asset": [account['currency'], account['currency']], "timestamp": timestamp,
+                    "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": description}
+        self._data[FOF.TRANSFERS].append(transfer)
+
+    def transfer_out(self, timestamp, account_id, amount, description):
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [account_id, 0, 0],
+                    "asset": [account['currency'], account['currency']], "timestamp": timestamp,
+                    "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": description}
+        self._data[FOF.TRANSFERS].append(transfer)
+
+    def interest(self, timestamp, account_id, amount, description):
+        BondInterestPattern = r"^Куп\. дох\. по обл\. .* (?P<reg_number>\S*), \S*\..*$"
+        parts = re.match(BondInterestPattern, description, re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't parse bond interest description ") + f"'{description}'")
+        interest_data = parts.groupdict()
+        asset_id = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', interest_data['reg_number'])['asset']
+        new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
+                   "asset": asset_id, "amount": amount, "description": description}
+        self._data[FOF.ASSET_PAYMENTS].append(payment)
