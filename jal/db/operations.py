@@ -1,6 +1,7 @@
 import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon
 from jal.constants import BookAccount, CustomColor, PredefinedCategory, PredefinedAsset, DepositActions
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
@@ -8,6 +9,7 @@ import jal.db.account
 from jal.db.asset import JalAsset
 from jal.db.closed_trade import JalClosedTrade
 from jal.widgets.helpers import ts2dt
+from jal.widgets.icons import JalIcons
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -41,6 +43,7 @@ class LedgerTransaction(JalDB):
         self._subtype = 0
         self._data = None
         self._view_rows = 1    # How many rows it will require operation in QTableView
+        self._icon = JalIcons().icon(JalIcons.NONE)
         self._label = '?'
         self._label_color = CustomColor.LightRed
         self._timestamp = 0
@@ -195,6 +198,9 @@ class LedgerTransaction(JalDB):
     def label(self):
         return self._label
 
+    def icon(self) -> QIcon:
+        return self._icon
+
     def name(self):
         return self._oname
 
@@ -303,9 +309,11 @@ class IncomeSpending(LedgerTransaction):
         self._amount = sum(Decimal(line['amount']) for line in self._details)
         if self._amount < 0:
             self._label, self._label_color = ('—', CustomColor.DarkRed)
+            self._icon = JalIcons().icon(JalIcons.MINUS)
             self._oname = self.tr("Spending")
         else:
             self._label, self._label_color = ('+', CustomColor.DarkGreen)
+            self._icon = JalIcons().icon(JalIcons.PLUS)
             self._oname = self.tr("Income")
         if self._currency:
             self._view_rows = 2
