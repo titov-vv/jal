@@ -4,13 +4,14 @@ from jal.constants import Setup
 from jal.db.helpers import get_app_path
 
 
+ICON_PREFIX = "ui_"
 class JalIcons:
     NONE = 0
     PLUS = 1
     MINUS = 2
     _icon_files = {
-        PLUS: "i_plus.png",
-        MINUS: "i_minus.png"
+        PLUS: "plus.png",
+        MINUS: "minus.png"
     }
     _icons = {}
 
@@ -19,7 +20,7 @@ class JalIcons:
     def __init__(self):
         if self._icons:     # Already loaded - nothing to do
             return
-        img_path = get_app_path() + Setup.ICONS_PATH + os.sep
+        img_path = get_app_path() + Setup.ICONS_PATH + os.sep + ICON_PREFIX
         for icon_id, filename in self._icon_files.items():
             self._icons[icon_id] = QIcon(img_path + filename)
 
