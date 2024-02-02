@@ -22,7 +22,7 @@ def long_fraction(x: Decimal) -> bool:
 class OperationsModel(QAbstractTableModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
-        self._columns = [" ", self.tr("Timestamp"), self.tr("Account"), self.tr("Notes"),
+        self._columns = [self.tr("Timestamp"), self.tr("Account"), self.tr("Notes"),
                          self.tr("Amount"), self.tr("Balance"), self.tr("Currency")]
         self._view = parent_view
         self._amount_delegate = None
@@ -67,26 +67,24 @@ class OperationsModel(QAbstractTableModel):
             raise e
         if role == Qt.DisplayRole:
             return self.data_text(operation, index.column())
-        if role == Qt.DecorationRole and index.column() == 1:
+        if role == Qt.DecorationRole and index.column() == 0:
             return operation.icon()
         if role == Qt.FontRole and index.column() == 0:
             # below line isn't related with font, it is put here to be called for each row minimal times (ideally 1)
             self._view.setRowHeight(row, self._view.verticalHeader().fontMetrics().height() * operation.view_rows())
-            return self._bold_font
+            return self._view.font()
         if role == Qt.ForegroundRole and self._view.isEnabled():
-            if index.column() == 5 and operation.reconciled():
+            if index.column() == 4 and operation.reconciled():
                 return CustomColor.Blue
         if role == Qt.ToolTipRole:
             if index.column() == 0:
                 return operation.name()
-            elif index.column() == 4 or index.column() == 5:
+            elif index.column() == 3 or index.column() == 4:
                 data = self.data_text(operation, index.column())
                 if any([long_fraction(x) for x in data]):
                     return '\n'.join([localize_decimal(x) for x in data])
         if role == Qt.TextAlignmentRole:
-            if index.column() == 0:
-                return int(Qt.AlignCenter | Qt.AlignVCenter)
-            if index.column() == 4 or index.column() == 5:
+            if index.column() == 3 or index.column() == 4:
                 return int(Qt.AlignRight)
             return int(Qt.AlignLeft)
         if role == Qt.UserRole:  # return underlying data for given field extra parameter
@@ -94,38 +92,35 @@ class OperationsModel(QAbstractTableModel):
 
     def data_text(self, operation, column):
         if column == 0:
-            return '*'
-        elif column == 1:
             date_time = ts2dt(operation.timestamp())
             if operation.number()  and operation.type() != LedgerTransaction.Transfer:  # Transfer is 1-liner
                 date_time += f"\n# {operation.number()}"
             return date_time
-        elif column == 2:
+        elif column == 1:
             if operation.asset_name() and operation.type() != LedgerTransaction.Transfer:
                 return operation.account_name() + "\n" + operation.asset_name()
             else:
                 return operation.account_name()
-        elif column == 3:
+        elif column == 2:
             return operation.description()
-        elif column == 4:
+        elif column == 3:
             return operation.value_change()
-        elif column == 5:
+        elif column == 4:
             return operation.value_total()
-        elif column == 6:
+        elif column == 5:
             return operation.value_currency()
         else:
             assert False, "Unexpected column number"
 
     def configureView(self):
-        self._view.setColumnWidth(0, 10)
-        self._view.setColumnWidth(1, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
-        self._view.setColumnWidth(2, 300)
-        self._view.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
+        self._view.setColumnWidth(0, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.2)
+        self._view.setColumnWidth(1, 300)
+        self._view.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
         self._view.horizontalHeader().setFont(self._bold_font)
         self._amount_delegate = ColoredAmountsDelegate(self._view)
         self._total_delegate = ColoredAmountsDelegate(self._view, colors=False, signs=False)
-        self._view.setItemDelegateForColumn(4, self._amount_delegate)
-        self._view.setItemDelegateForColumn(5, self._total_delegate)
+        self._view.setItemDelegateForColumn(3, self._amount_delegate)
+        self._view.setItemDelegateForColumn(4, self._total_delegate)
 
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)  # row size is adjusted in data() method
 
