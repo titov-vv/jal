@@ -399,11 +399,11 @@ class Dividend(LedgerTransaction):
 
     def __init__(self, operation_id=None):
         icons = {
-            Dividend.Dividend: JalIcons.INTEREST,
-            Dividend.BondInterest: JalIcons.INTEREST,
-            Dividend.StockDividend: JalIcons.NONE,
-            Dividend.StockVesting: JalIcons.NONE,
-            Dividend.BondAmortization: JalIcons.NONE
+            Dividend.Dividend: JalIcons.DIVIDEND,
+            Dividend.BondInterest: JalIcons.BOND_INTEREST,
+            Dividend.StockDividend: JalIcons.STOCK_DIVIDEND,
+            Dividend.StockVesting: JalIcons.STOCK_VESTING,
+            Dividend.BondAmortization: JalIcons.BOND_AMORTIZATION
         }
         self.names = {
             Dividend.NA: self.tr("UNDEFINED"),
@@ -1024,8 +1024,8 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.Merger: JalIcons.MERGER,
             CorporateAction.SpinOff: JalIcons.SPINOFF,
             CorporateAction.Split: JalIcons.SPLIT,
-            CorporateAction.SymbolChange:  JalIcons.NONE,
-            CorporateAction.Delisting: JalIcons.NONE
+            CorporateAction.SymbolChange:  JalIcons.SYMBOL_CHANGE,
+            CorporateAction.Delisting: JalIcons.DELISTING
         }
         self.names = {
             CorporateAction.NA: self.tr("UNDEFINED"),
@@ -1217,6 +1217,15 @@ class TermDeposit(LedgerTransaction):
     }
 
     def __init__(self, operation_id=None, display_type=None):
+        icons = {
+            DepositActions.Opening: JalIcons.DEPOSIT_OPEN,
+            DepositActions.TopUp: JalIcons.DEPOSIT_OPEN,
+            DepositActions.Renewal: JalIcons.DEPOSIT_OPEN,
+            DepositActions.PartialWithdrawal: JalIcons.DEPOSIT_CLOSE,
+            DepositActions.Closing: JalIcons.DEPOSIT_CLOSE,
+            DepositActions.InterestAccrued: JalIcons.INTEREST,
+            DepositActions.TaxWithheld: JalIcons.TAX
+        }
         super().__init__(operation_id)
         self._otype = LedgerTransaction.TermDeposit
         self._aid = display_type   # action id
@@ -1236,7 +1245,7 @@ class TermDeposit(LedgerTransaction):
             self._amount = self._get_deposit_amount()
         else:
             self._amount = Decimal(self._data['amount'])
-        self._icon = JalIcons().icon(JalIcons.TAX)
+        self._icon = JalIcons().icon(icons[self._action])
         self._oname = f'{DepositActions().get_name(self._action)}'
 
     def _get_deposit_amount(self) -> Decimal:

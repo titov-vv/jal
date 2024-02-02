@@ -7,31 +7,50 @@ from jal.db.helpers import get_app_path
 ICON_PREFIX = "ui_"
 class JalIcons:
     NONE = 0
-    PLUS = 1
-    MINUS = 2
+    BOND_AMORTIZATION = 1
+    BOND_INTEREST = 2
     BUY = 3
-    SELL = 4
-    TRANSFER_IN = 5
-    TRANSFER_OUT = 6
-    FEE = 7
-    INTEREST = 8
-    MERGER = 9
-    SPINOFF = 10
-    SPLIT = 11
-    TAX = 12
+    DELISTING = 4
+    DEPOSIT_OPEN = 5
+    DEPOSIT_CLOSE = 6
+    DIVIDEND = 7
+    FEE = 8
+    INTEREST = 9
+    MERGER = 10
+    MINUS = 11
+    PLUS = 12
+    SELL = 13
+    SPINOFF = 14
+    SPLIT = 15
+    STOCK_DIVIDEND = 16
+    STOCK_VESTING = 17
+    SYMBOL_CHANGE = 18
+    TAX = 19
+    TRANSFER_IN = 20
+    TRANSFER_OUT = 21
+
     _icon_files = {
+        BOND_AMORTIZATION: "amortization.ico",
+        BOND_INTEREST: "coupon.ico",
         BUY: "buy.ico",
-        FEE: "fee.png",
-        INTEREST: "interest.png",
-        MERGER: "merger.png",
+        DELISTING: "delisting.ico",
+        DEPOSIT_OPEN: "deposit_open.ico",
+        DEPOSIT_CLOSE: "deposit_close.ico",
+        DIVIDEND: "dividend.ico",
+        FEE: "fee.ico",
+        INTEREST: "interest.ico",
+        MERGER: "merger.ico",
         MINUS: "minus.ico",
         PLUS: "plus.ico",
         SELL: "sell.ico",
-        SPINOFF: "spinoff.png",
-        SPLIT: "split.png",
-        TAX: "tax.png",
-        TRANSFER_IN: "transfer_in.png",
-        TRANSFER_OUT: "transfer_out.png"
+        SPINOFF: "spinoff.ico",
+        SPLIT: "split.ico",
+        STOCK_DIVIDEND: "dividend_stock.ico",
+        STOCK_VESTING: "vesting.ico",
+        SYMBOL_CHANGE: "renaming.ico",
+        TAX: "tax.ico",
+        TRANSFER_IN: "transfer_in.ico",
+        TRANSFER_OUT: "transfer_out.ico"
     }
     _icons = {}
 
@@ -44,7 +63,7 @@ class JalIcons:
         for icon_id, filename in self._icon_files.items():
             self._icons[icon_id] = QIcon(img_path + filename)
 
-    def icon(self, id: int) -> QIcon:
-        if id not in self._icons:
+    def icon(self, icon_id: int) -> QIcon:
+        if icon_id not in self._icons:
             return QIcon()
-        return self._icons[id]
+        return self._icons[icon_id]
