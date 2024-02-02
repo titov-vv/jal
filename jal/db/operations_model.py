@@ -74,8 +74,6 @@ class OperationsModel(QAbstractTableModel):
             self._view.setRowHeight(row, self._view.verticalHeader().fontMetrics().height() * operation.view_rows())
             return self._bold_font
         if role == Qt.ForegroundRole and self._view.isEnabled():
-            if index.column() == 0:
-                return operation.label_color()
             if index.column() == 5 and operation.reconciled():
                 return CustomColor.Blue
         if role == Qt.ToolTipRole:
@@ -96,7 +94,7 @@ class OperationsModel(QAbstractTableModel):
 
     def data_text(self, operation, column):
         if column == 0:
-            return operation.label()
+            return '*'
         elif column == 1:
             date_time = ts2dt(operation.timestamp())
             if operation.number()  and operation.type() != LedgerTransaction.Transfer:  # Transfer is 1-liner

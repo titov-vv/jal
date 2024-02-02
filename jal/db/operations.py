@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
-from jal.constants import BookAccount, CustomColor, PredefinedCategory, PredefinedAsset, DepositActions
+from jal.constants import BookAccount, PredefinedCategory, PredefinedAsset, DepositActions
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
@@ -44,8 +44,6 @@ class LedgerTransaction(JalDB):
         self._data = None
         self._view_rows = 1    # How many rows it will require operation in QTableView
         self._icon = JalIcons().icon(JalIcons.NONE)
-        self._label = '?'
-        self._label_color = CustomColor.LightRed
         self._timestamp = 0
         self._account = None
         self._account_name = ''
@@ -195,17 +193,11 @@ class LedgerTransaction(JalDB):
     def oid(self):
         return self._oid
 
-    def label(self):
-        return self._label
-
     def icon(self) -> QIcon:
         return self._icon
 
     def name(self):
         return self._oname
-
-    def label_color(self):
-        return self._label_color
 
     def timestamp(self):
         return self._timestamp
@@ -308,11 +300,9 @@ class IncomeSpending(LedgerTransaction):
             self._details.append(self._read_record(details_query, named=True))
         self._amount = sum(Decimal(line['amount']) for line in self._details)
         if self._amount < 0:
-            self._label, self._label_color = ('—', CustomColor.DarkRed)
             self._icon = JalIcons().icon(JalIcons.MINUS)
             self._oname = self.tr("Spending")
         else:
-            self._label, self._label_color = ('+', CustomColor.DarkGreen)
             self._icon = JalIcons().icon(JalIcons.PLUS)
             self._oname = self.tr("Income")
         if self._currency:
@@ -408,12 +398,12 @@ class Dividend(LedgerTransaction):
     }
 
     def __init__(self, operation_id=None):
-        labels = {
-            Dividend.Dividend: ('Δ', CustomColor.DarkGreen),
-            Dividend.BondInterest: ('%', CustomColor.DarkGreen),
-            Dividend.StockDividend: ('⍙', CustomColor.DarkGreen),
-            Dividend.StockVesting: ('V', CustomColor.DarkBlue),
-            Dividend.BondAmortization: ('⌳', CustomColor.DarkRed)
+        icons = {
+            Dividend.Dividend: JalIcons.INTEREST,
+            Dividend.BondInterest: JalIcons.INTEREST,
+            Dividend.StockDividend: JalIcons.NONE,
+            Dividend.StockVesting: JalIcons.NONE,
+            Dividend.BondAmortization: JalIcons.NONE
         }
         self.names = {
             Dividend.NA: self.tr("UNDEFINED"),
@@ -436,7 +426,7 @@ class Dividend(LedgerTransaction):
         self._subtype = self._data['type']
         self._oname = self.names[self._subtype]
         try:
-            self._label, self._label_color = labels[self._subtype]
+            self._icon = JalIcons().icon(icons[self._subtype])
         except KeyError:
             assert False, "Unknown dividend type"
         self._timestamp = self._data['timestamp']
@@ -668,10 +658,10 @@ class Trade(LedgerTransaction):
         self._note = self._data['note']
         self._broker = self._account.organization()
         if self._qty < Decimal('0'):
-            self._label, self._label_color = ('S', CustomColor.DarkRed)
+            self._icon = JalIcons().icon(JalIcons.SELL)
             self._oname = self.tr("Sell")
         else:
-            self._label, self._label_color = ('B', CustomColor.DarkGreen)
+            self._icon = JalIcons().icon(JalIcons.BUY)
             self._oname = self.tr("Buy")
 
     def settlement(self) -> int:
@@ -788,10 +778,10 @@ class Transfer(LedgerTransaction):
     }
 
     def __init__(self, operation_id=None, display_type=None):
-        labels = {
-            Transfer.Outgoing: ('<', CustomColor.DarkBlue),
-            Transfer.Incoming: ('>', CustomColor.DarkBlue),
-            Transfer.Fee: ('=', CustomColor.DarkRed)
+        icons = {
+            Transfer.Outgoing: JalIcons.TRANSFER_OUT,
+            Transfer.Incoming: JalIcons.TRANSFER_IN,
+            Transfer.Fee: JalIcons.FEE
         }
         self.names = {
             Transfer.NA: self.tr("UNDEFINED"),
@@ -821,7 +811,7 @@ class Transfer(LedgerTransaction):
         self._fee_account_name = self._fee_account.name()
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
         try:
-            self._label, self._label_color = labels[display_type]
+            self._icon = JalIcons().icon(icons[display_type])
             self._oname = self.names[display_type]
         except KeyError:
             assert False, "Unknown transfer type"
@@ -1029,13 +1019,13 @@ class CorporateAction(LedgerTransaction):
     }
 
     def __init__(self, operation_id=None):
-        labels = {
-            CorporateAction.NA: ("?", CustomColor.LightRed),
-            CorporateAction.Merger: ('⭃', CustomColor.Black),
-            CorporateAction.SpinOff: ('⎇', CustomColor.DarkGreen),
-            CorporateAction.Split: ('ᗕ', CustomColor.Black),
-            CorporateAction.SymbolChange:  ('🡘', CustomColor.Black),
-            CorporateAction.Delisting: ('✖', CustomColor.DarkRed)
+        icons = {
+            CorporateAction.NA: JalIcons.NONE,
+            CorporateAction.Merger: JalIcons.MERGER,
+            CorporateAction.SpinOff: JalIcons.SPINOFF,
+            CorporateAction.Split: JalIcons.SPLIT,
+            CorporateAction.SymbolChange:  JalIcons.NONE,
+            CorporateAction.Delisting: JalIcons.NONE
         }
         self.names = {
             CorporateAction.NA: self.tr("UNDEFINED"),
@@ -1059,7 +1049,7 @@ class CorporateAction(LedgerTransaction):
         self._oname = self.names[self._subtype]
         if self._subtype == CorporateAction.SpinOff or self._view_rows < 2:
             self._view_rows = 2
-        self._label, self._label_color = labels[self._subtype]
+        self._icon = JalIcons().icon(icons[self._subtype])
         self._timestamp = self._data['timestamp']
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
@@ -1246,7 +1236,7 @@ class TermDeposit(LedgerTransaction):
             self._amount = self._get_deposit_amount()
         else:
             self._amount = Decimal(self._data['amount'])
-        self._label, self._label_color = ('%', CustomColor.Black)
+        self._icon = JalIcons().icon(JalIcons.TAX)
         self._oname = f'{DepositActions().get_name(self._action)}'
 
     def _get_deposit_amount(self) -> Decimal:

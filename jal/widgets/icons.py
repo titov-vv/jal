@@ -9,9 +9,29 @@ class JalIcons:
     NONE = 0
     PLUS = 1
     MINUS = 2
+    BUY = 3
+    SELL = 4
+    TRANSFER_IN = 5
+    TRANSFER_OUT = 6
+    FEE = 7
+    INTEREST = 8
+    MERGER = 9
+    SPINOFF = 10
+    SPLIT = 11
+    TAX = 12
     _icon_files = {
+        BUY: "buy.png",
+        FEE: "fee.png",
+        INTEREST: "interest.png",
+        MERGER: "merger.png",
+        MINUS: "minus.png",
         PLUS: "plus.png",
-        MINUS: "minus.png"
+        SELL: "sell.png",
+        SPINOFF: "spinoff.png",
+        SPLIT: "split.png",
+        TAX: "tax.png",
+        TRANSFER_IN: "transfer_in.png",
+        TRANSFER_OUT: "transfer_out.png"
     }
     _icons = {}
 
