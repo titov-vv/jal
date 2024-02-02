@@ -20,13 +20,13 @@ class JalIcons:
     SPLIT = 11
     TAX = 12
     _icon_files = {
-        BUY: "buy.png",
+        BUY: "buy.ico",
         FEE: "fee.png",
         INTEREST: "interest.png",
         MERGER: "merger.png",
-        MINUS: "minus.png",
-        PLUS: "plus.png",
-        SELL: "sell.png",
+        MINUS: "minus.ico",
+        PLUS: "plus.ico",
+        SELL: "sell.ico",
         SPINOFF: "spinoff.png",
         SPLIT: "split.png",
         TAX: "tax.png",
