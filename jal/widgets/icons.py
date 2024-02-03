@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from enum import auto
 from collections import UserDict
 from PySide6.QtGui import QIcon
@@ -9,6 +10,7 @@ from jal.db.helpers import get_app_path
 
 ICON_PREFIX = "ui_"
 FLAG_PREFIX = "flag_"
+AUX_PREFIX = "aux_"
 
 class JalIcon(UserDict):
     NONE = auto()
@@ -108,6 +110,10 @@ class JalIcon(UserDict):
             self._icons[icon_id] = self.load_icon(img_path + ICON_PREFIX + filename)
         for icon_id, filename in self._flag_files.items():
             self._icons[icon_id] = self.load_icon(img_path + FLAG_PREFIX + filename)
+        for filename in os.listdir(img_path):
+            match = re.match(f"^{AUX_PREFIX}.*", filename)
+            if match:
+                self._icons[filename] = self.load_icon(img_path + filename)
 
     @staticmethod
     def load_icon(path) -> QIcon:
@@ -127,3 +133,10 @@ class JalIcon(UserDict):
         if country_code not in cls._flags:
             return QIcon()
         return cls._icons[cls._flags[country_code]]
+
+    @classmethod
+    def aux_icon(cls, icon_name) -> QIcon:
+        filename = AUX_PREFIX + icon_name
+        if filename not in cls._icons:
+            return QIcon()
+        return cls._icons[filename]

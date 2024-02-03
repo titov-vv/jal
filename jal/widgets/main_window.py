@@ -20,7 +20,7 @@ from jal.widgets.reference_dialogs import AccountListDialog, AssetListDialog, Ta
     CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog
 from jal.constants import Setup
 from jal.db.backup_restore import JalBackup
-from jal.db.helpers import get_app_path, get_dbfilename, load_icon
+from jal.db.helpers import get_app_path, get_dbfilename
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
@@ -186,7 +186,7 @@ class MainWindow(QMainWindow):
         for i, statement in enumerate(self.statements.items):
             statement_name = statement['name'].replace('&', '&&')  # & -> && to prevent shortcut creation
             if statement['icon']:
-                statement_icon = load_icon(statement['icon'])
+                statement_icon = JalIcon.aux_icon(statement['icon'])
                 action = QAction(statement_icon, statement_name, self)
             else:
                 action = QAction(statement_name, self)

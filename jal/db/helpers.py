@@ -88,11 +88,6 @@ def db_row2dict(model, row) -> dict:
     return {record.field(x).name(): record.value(x) for x in range(record.count())}
 
 # -------------------------------------------------------------------------------------------------------------------
-# returns QIcon loaded from the file with icon_name located in folder Setup.ICONS_PATH
-def load_icon(icon_name) -> QIcon:
-    return QIcon(get_app_path() + Setup.ICONS_PATH + os.sep + icon_name)
-
-# -------------------------------------------------------------------------------------------------------------------
 # Returns timestamp of the first second of the year of given timestamp
 def year_begin(timestamp: int) -> int:
     begin = datetime.utcfromtimestamp(timestamp).replace(month=1, day=1, hour=0, minute=0, second=0)
