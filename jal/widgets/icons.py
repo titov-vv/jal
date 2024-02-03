@@ -1,4 +1,5 @@
 import os
+from enum import auto
 from collections import UserDict
 from PySide6.QtGui import QIcon
 from jal.constants import Setup
@@ -7,28 +8,28 @@ from jal.db.helpers import get_app_path
 
 ICON_PREFIX = "ui_"
 class JalIcon(UserDict):
-    NONE = 0
-    BOND_AMORTIZATION = 1
-    BOND_INTEREST = 2
-    BUY = 3
-    DELISTING = 4
-    DEPOSIT_OPEN = 5
-    DEPOSIT_CLOSE = 6
-    DIVIDEND = 7
-    FEE = 8
-    INTEREST = 9
-    MERGER = 10
-    MINUS = 11
-    PLUS = 12
-    SELL = 13
-    SPINOFF = 14
-    SPLIT = 15
-    STOCK_DIVIDEND = 16
-    STOCK_VESTING = 17
-    SYMBOL_CHANGE = 18
-    TAX = 19
-    TRANSFER_IN = 20
-    TRANSFER_OUT = 21
+    NONE = auto()
+    BOND_AMORTIZATION = auto()
+    BOND_INTEREST = auto()
+    BUY = auto()
+    DELISTING = auto()
+    DEPOSIT_OPEN = auto()
+    DEPOSIT_CLOSE = auto()
+    DIVIDEND = auto()
+    FEE = auto()
+    INTEREST = auto()
+    MERGER = auto()
+    MINUS = auto()
+    PLUS = auto()
+    SELL = auto()
+    SPINOFF = auto()
+    SPLIT = auto()
+    STOCK_DIVIDEND = auto()
+    STOCK_VESTING = auto()
+    SYMBOL_CHANGE = auto()
+    TAX = auto()
+    TRANSFER_IN = auto()
+    TRANSFER_OUT = auto()
 
     _icon_files = {
         BOND_AMORTIZATION: "amortization.ico",
