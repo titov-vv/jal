@@ -9,7 +9,7 @@ import jal.db.account
 from jal.db.asset import JalAsset
 from jal.db.closed_trade import JalClosedTrade
 from jal.widgets.helpers import ts2dt
-from jal.widgets.icons import JalIcons
+from jal.widgets.icons import JalIcon
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ class LedgerTransaction(JalDB):
         self._subtype = 0
         self._data = None
         self._view_rows = 1    # How many rows it will require operation in QTableView
-        self._icon = JalIcons().icon(JalIcons.NONE)
+        self._icon = JalIcon[JalIcon.NONE]
         self._timestamp = 0
         self._account = None
         self._account_name = ''
@@ -300,10 +300,10 @@ class IncomeSpending(LedgerTransaction):
             self._details.append(self._read_record(details_query, named=True))
         self._amount = sum(Decimal(line['amount']) for line in self._details)
         if self._amount < 0:
-            self._icon = JalIcons().icon(JalIcons.MINUS)
+            self._icon = JalIcon[JalIcon.MINUS]
             self._oname = self.tr("Spending")
         else:
-            self._icon = JalIcons().icon(JalIcons.PLUS)
+            self._icon = JalIcon[JalIcon.PLUS]
             self._oname = self.tr("Income")
         if self._currency:
             self._view_rows = 2
@@ -399,11 +399,11 @@ class Dividend(LedgerTransaction):
 
     def __init__(self, operation_id=None):
         icons = {
-            Dividend.Dividend: JalIcons.DIVIDEND,
-            Dividend.BondInterest: JalIcons.BOND_INTEREST,
-            Dividend.StockDividend: JalIcons.STOCK_DIVIDEND,
-            Dividend.StockVesting: JalIcons.STOCK_VESTING,
-            Dividend.BondAmortization: JalIcons.BOND_AMORTIZATION
+            Dividend.Dividend: JalIcon.DIVIDEND,
+            Dividend.BondInterest: JalIcon.BOND_INTEREST,
+            Dividend.StockDividend: JalIcon.STOCK_DIVIDEND,
+            Dividend.StockVesting: JalIcon.STOCK_VESTING,
+            Dividend.BondAmortization: JalIcon.BOND_AMORTIZATION
         }
         self.names = {
             Dividend.NA: self.tr("UNDEFINED"),
@@ -426,7 +426,7 @@ class Dividend(LedgerTransaction):
         self._subtype = self._data['type']
         self._oname = self.names[self._subtype]
         try:
-            self._icon = JalIcons().icon(icons[self._subtype])
+            self._icon = JalIcon[icons[self._subtype]]
         except KeyError:
             assert False, "Unknown dividend type"
         self._timestamp = self._data['timestamp']
@@ -658,10 +658,10 @@ class Trade(LedgerTransaction):
         self._note = self._data['note']
         self._broker = self._account.organization()
         if self._qty < Decimal('0'):
-            self._icon = JalIcons().icon(JalIcons.SELL)
+            self._icon = JalIcon[JalIcon.SELL]
             self._oname = self.tr("Sell")
         else:
-            self._icon = JalIcons().icon(JalIcons.BUY)
+            self._icon = JalIcon[JalIcon.BUY]
             self._oname = self.tr("Buy")
 
     def settlement(self) -> int:
@@ -779,9 +779,9 @@ class Transfer(LedgerTransaction):
 
     def __init__(self, operation_id=None, display_type=None):
         icons = {
-            Transfer.Outgoing: JalIcons.TRANSFER_OUT,
-            Transfer.Incoming: JalIcons.TRANSFER_IN,
-            Transfer.Fee: JalIcons.FEE
+            Transfer.Outgoing: JalIcon.TRANSFER_OUT,
+            Transfer.Incoming: JalIcon.TRANSFER_IN,
+            Transfer.Fee: JalIcon.FEE
         }
         self.names = {
             Transfer.NA: self.tr("UNDEFINED"),
@@ -811,7 +811,7 @@ class Transfer(LedgerTransaction):
         self._fee_account_name = self._fee_account.name()
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
         try:
-            self._icon = JalIcons().icon(icons[display_type])
+            self._icon = JalIcon[icons[display_type]]
             self._oname = self.names[display_type]
         except KeyError:
             assert False, "Unknown transfer type"
@@ -1020,12 +1020,12 @@ class CorporateAction(LedgerTransaction):
 
     def __init__(self, operation_id=None):
         icons = {
-            CorporateAction.NA: JalIcons.NONE,
-            CorporateAction.Merger: JalIcons.MERGER,
-            CorporateAction.SpinOff: JalIcons.SPINOFF,
-            CorporateAction.Split: JalIcons.SPLIT,
-            CorporateAction.SymbolChange:  JalIcons.SYMBOL_CHANGE,
-            CorporateAction.Delisting: JalIcons.DELISTING
+            CorporateAction.NA: JalIcon.NONE,
+            CorporateAction.Merger: JalIcon.MERGER,
+            CorporateAction.SpinOff: JalIcon.SPINOFF,
+            CorporateAction.Split: JalIcon.SPLIT,
+            CorporateAction.SymbolChange:  JalIcon.SYMBOL_CHANGE,
+            CorporateAction.Delisting: JalIcon.DELISTING
         }
         self.names = {
             CorporateAction.NA: self.tr("UNDEFINED"),
@@ -1049,7 +1049,7 @@ class CorporateAction(LedgerTransaction):
         self._oname = self.names[self._subtype]
         if self._subtype == CorporateAction.SpinOff or self._view_rows < 2:
             self._view_rows = 2
-        self._icon = JalIcons().icon(icons[self._subtype])
+        self._icon = JalIcon[icons[self._subtype]]
         self._timestamp = self._data['timestamp']
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
@@ -1218,13 +1218,13 @@ class TermDeposit(LedgerTransaction):
 
     def __init__(self, operation_id=None, display_type=None):
         icons = {
-            DepositActions.Opening: JalIcons.DEPOSIT_OPEN,
-            DepositActions.TopUp: JalIcons.DEPOSIT_OPEN,
-            DepositActions.Renewal: JalIcons.DEPOSIT_OPEN,
-            DepositActions.PartialWithdrawal: JalIcons.DEPOSIT_CLOSE,
-            DepositActions.Closing: JalIcons.DEPOSIT_CLOSE,
-            DepositActions.InterestAccrued: JalIcons.INTEREST,
-            DepositActions.TaxWithheld: JalIcons.TAX
+            DepositActions.Opening: JalIcon.DEPOSIT_OPEN,
+            DepositActions.TopUp: JalIcon.DEPOSIT_OPEN,
+            DepositActions.Renewal: JalIcon.DEPOSIT_OPEN,
+            DepositActions.PartialWithdrawal: JalIcon.DEPOSIT_CLOSE,
+            DepositActions.Closing: JalIcon.DEPOSIT_CLOSE,
+            DepositActions.InterestAccrued: JalIcon.INTEREST,
+            DepositActions.TaxWithheld: JalIcon.TAX
         }
         super().__init__(operation_id)
         self._otype = LedgerTransaction.TermDeposit
@@ -1245,7 +1245,7 @@ class TermDeposit(LedgerTransaction):
             self._amount = self._get_deposit_amount()
         else:
             self._amount = Decimal(self._data['amount'])
-        self._icon = JalIcons().icon(icons[self._action])
+        self._icon = JalIcon[icons[self._action]]
         self._oname = f'{DepositActions().get_name(self._action)}'
 
     def _get_deposit_amount(self) -> Decimal:

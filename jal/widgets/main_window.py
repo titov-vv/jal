@@ -15,6 +15,7 @@ from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget
 from jal.widgets.helpers import dependency_present
+from jal.widgets.icons import JalIcon
 from jal.widgets.reference_dialogs import AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog
 from jal.constants import Setup
@@ -41,6 +42,8 @@ class MainWindow(QMainWindow):
         self.restoreState(base64.decodebytes(JalSettings().getValue('WindowState', '').encode('utf-8')))
 
         self.ledger = Ledger()
+        self.icons = JalIcon()   # This variable is used to initialize JalIcons class and keep its cache in memory.
+                                  # It is not used directly but icons are accessed via @classmethod of JalIcons class
 
         # Customize Status bar and logs
         self.ProgressBar = QProgressBar(self)

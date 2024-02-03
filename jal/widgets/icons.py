@@ -1,11 +1,12 @@
 import os
+from collections import UserDict
 from PySide6.QtGui import QIcon
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
 
 
 ICON_PREFIX = "ui_"
-class JalIcons:
+class JalIcon(UserDict):
     NONE = 0
     BOND_AMORTIZATION = 1
     BOND_INTEREST = 2
@@ -57,13 +58,15 @@ class JalIcons:
     # initiates class loading all icons listed in self._icon_files from given directory img_path (should and
     # with a system directory separator)
     def __init__(self):
+        super().__init__()
         if self._icons:     # Already loaded - nothing to do
             return
         img_path = get_app_path() + Setup.ICONS_PATH + os.sep + ICON_PREFIX
         for icon_id, filename in self._icon_files.items():
             self._icons[icon_id] = QIcon(img_path + filename)
 
-    def icon(self, icon_id: int) -> QIcon:
-        if icon_id not in self._icons:
+    @classmethod
+    def __class_getitem__(cls, key) -> QIcon:
+        if key not in cls._icons:
             return QIcon()
-        return self._icons[icon_id]
+        return cls._icons[key]
