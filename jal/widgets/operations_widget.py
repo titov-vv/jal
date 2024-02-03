@@ -146,7 +146,7 @@ class OperationsWidget(MdiWidget):
         index = self.ui.BalancesTableView.indexAt(pos)
         account_id = self.balances_model.data(index, BalancesModel.ACCOUNT_ROLE)
         contextMenu = QMenu(self.ui.BalancesTableView)
-        actionBalanceHistory = QAction(load_icon("chart.png"), self.tr("Balance history chart"), self)
+        actionBalanceHistory = QAction(JalIcon[JalIcon.CHART], self.tr("Balance history chart"), self)
         actionBalanceHistory.triggered.connect(partial(self.show_balance_history_chart, account_id))
         if account_id:
             actionBalanceHistory.setEnabled(True)
