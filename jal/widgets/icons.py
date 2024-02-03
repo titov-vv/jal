@@ -14,6 +14,7 @@ class JalIcon(UserDict):
     NONE = auto()
     ADD = auto()
     ADD_CHILD = auto()
+    APP_MAIN = auto()
     BOND_AMORTIZATION = auto()
     BOND_INTEREST = auto()
     BUY = auto()
@@ -52,6 +53,7 @@ class JalIcon(UserDict):
     _icon_files = {
         ADD: "add.ico",
         ADD_CHILD: "add_child.ico",
+        APP_MAIN: "jal.png",
         BOND_AMORTIZATION: "amortization.ico",
         BOND_INTEREST: "coupon.ico",
         BUY: "buy.ico",

@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
         self.reportsGroup = QActionGroup(self.ui.menuReports)
         self.createReportsMenu()
 
-        self.setWindowIcon(load_icon("jal.png"))
+        self.setWindowIcon(JalIcon[JalIcon.APP_MAIN])
 
         self.connect_signals_and_slots()
 
