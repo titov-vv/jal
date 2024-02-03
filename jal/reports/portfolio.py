@@ -3,7 +3,6 @@ from functools import partial
 from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QDate
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog, QMessageBox
-from jal.db.helpers import load_icon
 from jal.ui.reports.ui_portfolio_report import Ui_PortfolioWidget
 from jal.reports.reports import Reports
 from jal.db.asset import JalAsset
@@ -77,10 +76,10 @@ class PortfolioReportWindow(MdiWidget):
         actionShowChart.triggered.connect(partial(self.showPriceChart, index))
         contextMenu.addAction(actionShowChart)
         tax_submenu = contextMenu.addMenu(JalIcon[JalIcon.TAX], self.tr("Estimate tax"))
-        actionEstimateTaxPt = QAction(icon=load_icon("pt.png"), text=self.tr("Portugal"), parent=self.ui.PortfolioTreeView)
+        actionEstimateTaxPt = QAction(icon=JalIcon.country_flag('pt'), text=self.tr("Portugal"), parent=self.ui.PortfolioTreeView)
         actionEstimateTaxPt.triggered.connect(partial(self.estimateRussianTax, index, 'pt'))
         tax_submenu.addAction(actionEstimateTaxPt)
-        actionEstimateTaxRu = QAction(icon=load_icon("ru.png"), text=self.tr("Russia"), parent=self.ui.PortfolioTreeView)
+        actionEstimateTaxRu = QAction(icon=JalIcon.country_flag('ru'), text=self.tr("Russia"), parent=self.ui.PortfolioTreeView)
         actionEstimateTaxRu.triggered.connect(partial(self.estimateRussianTax, index, 'ru'))
         tax_submenu.addAction(actionEstimateTaxRu)
         contextMenu.addSeparator()

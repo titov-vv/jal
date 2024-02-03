@@ -1,3 +1,4 @@
+import logging
 import os
 from enum import auto
 from collections import UserDict
@@ -7,6 +8,8 @@ from jal.db.helpers import get_app_path
 
 
 ICON_PREFIX = "ui_"
+FLAG_PREFIX = "flag_"
+
 class JalIcon(UserDict):
     NONE = auto()
     ADD = auto()
@@ -41,6 +44,10 @@ class JalIcon(UserDict):
     TAX = auto()
     TRANSFER_IN = auto()
     TRANSFER_OUT = auto()
+
+    FLAG_PT = auto()
+    FLAG_RU = auto()
+    FLAG_US = auto()
 
     _icon_files = {
         ADD: "add.ico",
@@ -77,6 +84,16 @@ class JalIcon(UserDict):
         TRANSFER_OUT: "transfer_out.ico"
     }
     _icons = {}
+    _flag_files = {
+        FLAG_PT: "pt.png",
+        FLAG_RU: "ru.png",
+        FLAG_US: "en.png"
+    }
+    _flags = {
+        'pt': FLAG_PT,
+        'ru': FLAG_RU,
+        'en': FLAG_US
+    }
 
     # initiates class loading all icons listed in self._icon_files from given directory img_path (should and
     # with a system directory separator)
@@ -84,12 +101,27 @@ class JalIcon(UserDict):
         super().__init__()
         if self._icons:     # Already loaded - nothing to do
             return
-        img_path = get_app_path() + Setup.ICONS_PATH + os.sep + ICON_PREFIX
+        img_path = get_app_path() + Setup.ICONS_PATH + os.sep
         for icon_id, filename in self._icon_files.items():
-            self._icons[icon_id] = QIcon(img_path + filename)
+            self._icons[icon_id] = self.load_icon(img_path + ICON_PREFIX + filename)
+        for icon_id, filename in self._flag_files.items():
+            self._icons[icon_id] = self.load_icon(img_path + FLAG_PREFIX + filename)
+
+    @staticmethod
+    def load_icon(path) -> QIcon:
+        icon = QIcon(path)
+        if icon.isNull():
+            logging.warning(f"Image file {path} not found")  # This error won't come to GUI as LogViewer is initialized later
+        return icon
 
     @classmethod
     def __class_getitem__(cls, key) -> QIcon:
         if key not in cls._icons:
             return QIcon()
         return cls._icons[key]
+
+    @classmethod
+    def country_flag(cls, country_code) -> QIcon:
+        if country_code not in cls._flags:
+            return QIcon()
+        return cls._icons[cls._flags[country_code]]

@@ -149,7 +149,7 @@ class MainWindow(QMainWindow):
         for language_file in langDirectory.entryList(['*.qm']):
             language_code = language_file.split('.')[0]
             language = QLocale.languageToString(QLocale(language_code).language())
-            action = QAction(icon=load_icon(language_code + '.png'), text=language, parent=self)
+            action = QAction(icon=JalIcon.country_flag(language_code), text=language, parent=self)
             action.setCheckable(True)
             action.setData(language_code)
             self.ui.menuLanguage.addAction(action)

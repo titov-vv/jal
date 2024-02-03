@@ -18,8 +18,8 @@ class TaxReport:
     PORTUGAL = 0
     RUSSIA = 1
     countries = {
-        PORTUGAL: {"name": "Portugal", "module": "jal.data_export.tax_reports.portugal", "class": "TaxesPortugal", "icon": "pt.png"},
-        RUSSIA: {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia", "icon": "ru.png"}
+        PORTUGAL: {"name": "Portugal", "module": "jal.data_export.tax_reports.portugal", "class": "TaxesPortugal", "flag": "pt"},
+        RUSSIA: {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia", "flag": "ru"}
     }
     currency_name = ''  # The name of the currency for tax values calculation
     country_name = ''   # The name of the country for tax preparation
