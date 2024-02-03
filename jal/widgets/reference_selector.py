@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QToolButton, QCompleter
 from PySide6.QtGui import QPalette
 import jal.widgets.reference_dialogs as ui_dialogs
-from jal.db.helpers import load_icon
+from jal.widgets.icons import JalIcon
 from jal.constants import CustomColor
 
 
@@ -28,10 +28,10 @@ class AbstractReferenceSelector(QWidget):
         self.details.setVisible(False)
         self.layout.addWidget(self.details)
         self.button = QToolButton()
-        self.button.setIcon(load_icon("meatballs.png"))
+        self.button.setIcon(JalIcon[JalIcon.DETAILS])
         self.layout.addWidget(self.button)
         self.clean_button = QToolButton()
-        self.clean_button.setIcon(load_icon("broom.png"))
+        self.clean_button.setIcon(JalIcon[JalIcon.CLEAN])
         self.layout.addWidget(self.clean_button)
         self.setLayout(self.layout)
 

@@ -7,8 +7,9 @@ from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
 from jal.ui.widgets.ui_income_spending_operation import Ui_IncomeSpendingOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
+from jal.widgets.icons import JalIcon
 from jal.db.view_model import JalViewModel
-from jal.db.helpers import load_icon, localize_decimal, db_row2dict, now_ts
+from jal.db.helpers import localize_decimal, db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
@@ -34,9 +35,9 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.a_currency.setText(self.tr("Paid in foreign currency:"))
         self.ui.details_table.horizontalHeader().setFont(self.bold_font)
-        self.ui.add_button.setIcon(load_icon("add.png"))
-        self.ui.del_button.setIcon(load_icon("remove.png"))
-        self.ui.copy_button.setIcon(load_icon("copy.png"))
+        self.ui.add_button.setIcon(JalIcon[JalIcon.ADD])
+        self.ui.del_button.setIcon(JalIcon[JalIcon.REMOVE])
+        self.ui.copy_button.setIcon(JalIcon[JalIcon.COPY])
 
         self.ui.add_button.clicked.connect(self.add_child)
         self.ui.copy_button.clicked.connect(self.copy_child)

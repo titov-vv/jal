@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, Signal, Property, Slot
 from PySide6.QtWidgets import QDialog, QMessageBox, QMenu, QWidgetAction, QLabel
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from jal.db.helpers import load_icon
+from jal.widgets.icons import JalIcon
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -42,11 +42,11 @@ class ReferenceDataDialog(QDialog):
         self.ui.GroupCombo.setVisible(False)
         self.ui.SearchFrame.setVisible(False)
 
-        self.ui.AddBtn.setIcon(load_icon("add.png"))
-        self.ui.AddChildBtn.setIcon(load_icon("add_child.png"))
-        self.ui.RemoveBtn.setIcon(load_icon("delete.png"))
-        self.ui.CommitBtn.setIcon(load_icon("accept.png"))
-        self.ui.RevertBtn.setIcon(load_icon("cancel.png"))
+        self.ui.AddBtn.setIcon(JalIcon[JalIcon.ADD])
+        self.ui.AddChildBtn.setIcon(JalIcon[JalIcon.ADD_CHILD])
+        self.ui.RemoveBtn.setIcon(JalIcon[JalIcon.REMOVE])
+        self.ui.CommitBtn.setIcon(JalIcon[JalIcon.OK])
+        self.ui.RevertBtn.setIcon(JalIcon[JalIcon.CANCEL])
 
         self.ui.SearchString.textChanged.connect(self.OnSearchChange)
         self.ui.GroupCombo.currentIndexChanged.connect(self.OnGroupChange)

@@ -7,7 +7,7 @@ from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectTagDialog
 from jal.widgets.helpers import ManipulateDate
-from jal.db.helpers import load_icon
+from jal.widgets.icons import JalIcon
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.balances_model import BalancesModel
@@ -28,9 +28,9 @@ class OperationsWidget(MdiWidget):
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
         # Set icons
-        self.ui.NewOperationBtn.setIcon(load_icon("new.png"))
-        self.ui.CopyOperationBtn.setIcon(load_icon("copy.png"))
-        self.ui.DeleteOperationBtn.setIcon(load_icon("delete.png"))
+        self.ui.NewOperationBtn.setIcon(JalIcon[JalIcon.ADD])
+        self.ui.CopyOperationBtn.setIcon(JalIcon[JalIcon.COPY])
+        self.ui.DeleteOperationBtn.setIcon(JalIcon[JalIcon.REMOVE])
 
         # Customize UI configuration
         self.balances_model = BalancesModel(self.ui.BalancesTableView)

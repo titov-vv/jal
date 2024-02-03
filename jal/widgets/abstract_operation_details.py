@@ -3,8 +3,8 @@ from PySide6.QtCore import Slot, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QDataWidgetMapper
 from PySide6.QtSql import QSqlTableModel
-from jal.db.helpers import load_icon
 from jal.db.db import JalModel
+from jal.widgets.icons import JalIcon
 
 
 class AbstractOperationDetails(QWidget):
@@ -28,8 +28,8 @@ class AbstractOperationDetails(QWidget):
         self.bold_font = QFont()
         self.bold_font.setBold(True)
 
-        self.ui.commit_button.setIcon(load_icon("accept.png"))
-        self.ui.revert_button.setIcon(load_icon("cancel.png"))
+        self.ui.commit_button.setIcon(JalIcon[JalIcon.OK])
+        self.ui.revert_button.setIcon(JalIcon[JalIcon.CANCEL])
 
     def _init_db(self, table_name):
         self.table_name = table_name

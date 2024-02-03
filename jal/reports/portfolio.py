@@ -10,6 +10,7 @@ from jal.db.asset import JalAsset
 from jal.db.holdings_model import HoldingsModel
 from jal.widgets.mdi import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
+from jal.widgets.icons import JalIcon
 from jal.widgets.price_chart import ChartWindow
 from jal.widgets.selection_dialog import SelectTagDialog
 
@@ -72,10 +73,10 @@ class PortfolioReportWindow(MdiWidget):
     def onHoldingsContextMenu(self, pos):
         index = self.ui.PortfolioTreeView.indexAt(pos)
         contextMenu = QMenu(self.ui.PortfolioTreeView)
-        actionShowChart = QAction(icon=load_icon("chart.png"), text=self.tr("Show Price Chart"), parent=self.ui.PortfolioTreeView)
+        actionShowChart = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show Price Chart"), parent=self.ui.PortfolioTreeView)
         actionShowChart.triggered.connect(partial(self.showPriceChart, index))
         contextMenu.addAction(actionShowChart)
-        tax_submenu = contextMenu.addMenu(load_icon("tax.png"), self.tr("Estimate tax"))
+        tax_submenu = contextMenu.addMenu(JalIcon[JalIcon.TAX], self.tr("Estimate tax"))
         actionEstimateTaxPt = QAction(icon=load_icon("pt.png"), text=self.tr("Portugal"), parent=self.ui.PortfolioTreeView)
         actionEstimateTaxPt.triggered.connect(partial(self.estimateRussianTax, index, 'pt'))
         tax_submenu.addAction(actionEstimateTaxPt)
@@ -83,7 +84,7 @@ class PortfolioReportWindow(MdiWidget):
         actionEstimateTaxRu.triggered.connect(partial(self.estimateRussianTax, index, 'ru'))
         tax_submenu.addAction(actionEstimateTaxRu)
         contextMenu.addSeparator()
-        actionSetTag = QAction(icon=load_icon("tag.png"), text=self.tr("Set asset tag"), parent=self.ui.PortfolioTreeView)
+        actionSetTag = QAction(icon=JalIcon[JalIcon.TAG], text=self.tr("Set asset tag"), parent=self.ui.PortfolioTreeView)
         actionSetTag.triggered.connect(partial(self.setTag, index))
         contextMenu.addAction(actionSetTag)
         contextMenu.addSeparator()

@@ -6,10 +6,11 @@ from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit
 from jal.ui.ui_asset_dlg import Ui_AssetDialog
 from jal.constants import PredefinedAsset, AssetData, MarketDataFeed
-from jal.db.helpers import load_icon, localize_decimal
+from jal.db.helpers import localize_decimal
 from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantLookupDelegate
 from jal.db.reference_models import AbstractReferenceListModel
 from jal.db.tag import JalTag
+from jal.widgets.icons import JalIcon
 from jal.widgets.reference_selector import TagSelector
 
 
@@ -55,12 +56,12 @@ class AssetDialog(QDialog):
         self._data_model.select()
         self._data_model.configureView()
 
-        self.ui.AddSymbolButton.setIcon(load_icon("add.png"))
-        self.ui.RemoveSymbolButton.setIcon(load_icon("delete.png"))
-        self.ui.AddDataButton.setIcon(load_icon("add.png"))
-        self.ui.RemoveDataButton.setIcon(load_icon("delete.png"))
-        self.ui.OkButton.setIcon(load_icon("accept.png"))
-        self.ui.CancelButton.setIcon(load_icon("cancel.png"))
+        self.ui.AddSymbolButton.setIcon(JalIcon[JalIcon.ADD])
+        self.ui.RemoveSymbolButton.setIcon(JalIcon[JalIcon.REMOVE])
+        self.ui.AddDataButton.setIcon(JalIcon[JalIcon.ADD])
+        self.ui.RemoveDataButton.setIcon(JalIcon[JalIcon.REMOVE])
+        self.ui.OkButton.setIcon(JalIcon[JalIcon.OK])
+        self.ui.CancelButton.setIcon(JalIcon[JalIcon.CANCEL])
 
         self.ui.TypeCombo.currentIndexChanged.connect(self.onTypeUpdate)
         self.ui.AddSymbolButton.clicked.connect(self.onAddSymbol)

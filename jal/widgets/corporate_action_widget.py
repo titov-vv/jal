@@ -7,9 +7,10 @@ from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
 from jal.ui.widgets.ui_corporate_action_operation import Ui_CorporateActionOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
+from jal.widgets.icons import JalIcon
 from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
 from jal.db.view_model import JalViewModel
-from jal.db.helpers import load_icon, localize_decimal, now_ts
+from jal.db.helpers import localize_decimal, now_ts
 from jal.db.operations import LedgerTransaction
 
 
@@ -34,8 +35,8 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.percent_delegate = FloatDelegate(2, percent=True)
 
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.ui.add_button.setIcon(load_icon("add.png"))
-        self.ui.del_button.setIcon(load_icon("remove.png"))
+        self.ui.add_button.setIcon(JalIcon[JalIcon.ADD])
+        self.ui.del_button.setIcon(JalIcon[JalIcon.REMOVE])
         self.ui.results_table.horizontalHeader().setFont(self.bold_font)
         self.ui.arrow.setText(" 🡆 ")  # it crashes if added via Qt-Designer
 

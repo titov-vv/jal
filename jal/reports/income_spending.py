@@ -7,10 +7,10 @@ from jal.reports.reports import Reports
 from jal.db.asset import JalAsset
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.constants import CustomColor
-from jal.db.helpers import load_icon
 from jal.db.category import JalCategory
 from jal.widgets.helpers import is_signal_connected, month_list, month_start_ts, month_end_ts, \
     week_list, week_start_ts, week_end_ts, str2int
+from jal.widgets.icons import JalIcon
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 from jal.widgets.mdi import MdiWidget
 
@@ -394,7 +394,7 @@ class IncomeSpendingReportWindow(MdiWidget):
 
         # Operations view context menu
         self.contextMenu = QMenu(self.ui.ReportTreeView)
-        self.actionDetails = QAction(load_icon("list.png"), self.tr("Show operations"), self)
+        self.actionDetails = QAction(JalIcon[JalIcon.LIST], self.tr("Show operations"), self)
         self.contextMenu.addAction(self.actionDetails)
 
         self.connect_signals_and_slots()

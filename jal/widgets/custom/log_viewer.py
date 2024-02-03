@@ -2,7 +2,7 @@ import os
 import logging
 from datetime import datetime
 from jal.constants import CustomColor
-from jal.db.helpers import load_icon
+from jal.widgets.icons import JalIcon
 from PySide6.QtCore import Qt, Slot, qInstallMessageHandler, QtMsgType
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
 from PySide6.QtGui import QBrush
@@ -47,9 +47,9 @@ class LogViewer(QPlainTextEdit):
         self.expanded_text = self.tr("▲ logs")
 
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
-        self.addAction(load_icon("copy.png"), self.tr('Copy'), self._copy2clipboard)
+        self.addAction(JalIcon[JalIcon.COPY], self.tr('Copy'), self._copy2clipboard)
         self.addAction(self.tr('Select all'), self.selectAll)
-        self.addAction(load_icon("delete.png"), self.tr('Clear'), self.clear)
+        self.addAction(JalIcon[JalIcon.CLEAN], self.tr('Clear'), self.clear)
 
     def _copy2clipboard(self):
         cursor = self.textCursor()

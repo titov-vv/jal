@@ -35,6 +35,9 @@ from jal.data_import.shop_receipt import ImportReceiptDialog
 class MainWindow(QMainWindow):
     def __init__(self, language):
         super().__init__()
+        self.icons = JalIcon()  # This variable is used to initialize JalIcons class and keep its cache in memory.
+                                # It is not used directly but icons are accessed via @classmethod of JalIcons class
+                                # Should be called before ui-initialization
         self.running = False
         self.ui = Ui_JAL_MainWindow()
         self.ui.setupUi(self)
@@ -42,8 +45,6 @@ class MainWindow(QMainWindow):
         self.restoreState(base64.decodebytes(JalSettings().getValue('WindowState', '').encode('utf-8')))
 
         self.ledger = Ledger()
-        self.icons = JalIcon()   # This variable is used to initialize JalIcons class and keep its cache in memory.
-                                  # It is not used directly but icons are accessed via @classmethod of JalIcons class
 
         # Customize Status bar and logs
         self.ProgressBar = QProgressBar(self)

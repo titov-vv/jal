@@ -1,16 +1,15 @@
 import logging
-from decimal import Decimal
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QMessageBox, QHeaderView
 from PySide6.QtSql import QSqlTableModel
-from PySide6.QtGui import QFont
 from jal.ui.widgets.ui_term_deposit_operation import Ui_TermDepositOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.constants import DepositActions
 from jal.db.view_model import JalViewModel
 from jal.db.operations import LedgerTransaction
-from jal.db.helpers import load_icon, now_ts, localize_decimal, db_row2dict
+from jal.db.helpers import now_ts, db_row2dict
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate, ConstantLookupDelegate
+from jal.widgets.icons import JalIcon
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -25,8 +24,8 @@ class TermDepositWidget(AbstractOperationDetails):
         self.action_delegate = ConstantLookupDelegate(DepositActions, self)
 
         self.ui.actions_table.horizontalHeader().setFont(self.bold_font)
-        self.ui.add_button.setIcon(load_icon("add.png"))
-        self.ui.del_button.setIcon(load_icon("remove.png"))
+        self.ui.add_button.setIcon(JalIcon[JalIcon.ADD])
+        self.ui.del_button.setIcon(JalIcon[JalIcon.REMOVE])
 
         self.ui.add_button.clicked.connect(self.add_action)
         self.ui.del_button.clicked.connect(self.remove_action)
