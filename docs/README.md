@@ -57,6 +57,11 @@ You may choose program language in menu *Languages*.
 ## ❗️ Upgrades
 If you installed *jal* via *pip* then you may upgrade it to newer version with help of command `pip install jal -U`
 
+## 🖭  Backups
+You can use menu *Data->Backup* and *Data->Restore* to save and restore a copy of your data.
+But you may get the same result by simply saving *jal.sqlite* file that contains everything.
+You may see a location of the file that *jal* uses in menu *About*.
+
 ## 📈 Tax report for investment account
 Tax report can be prepared based on data from any broker if operations are present in JAL. Tax reports are supported for Russia and Portugal.    
 You can import operations from broker statement with help of menu *Import->Statement*.  
