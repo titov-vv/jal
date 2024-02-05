@@ -3,7 +3,7 @@ import os
 import re
 from enum import auto
 from collections import UserDict
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QPixmap
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
 
@@ -107,7 +107,7 @@ class JalIcon(UserDict):
             return
         img_path = get_app_path() + Setup.ICONS_PATH + os.sep
         for icon_id, filename in self._icon_files.items():
-            self._icons[icon_id] = self.load_icon(img_path + ICON_PREFIX + filename)
+            self._icons[icon_id] = self.add_disabled_state(self.load_icon(img_path + ICON_PREFIX + filename))
         for icon_id, filename in self._flag_files.items():
             self._icons[icon_id] = self.load_icon(img_path + FLAG_PREFIX + filename)
         for filename in os.listdir(img_path):
@@ -140,3 +140,19 @@ class JalIcon(UserDict):
         if filename not in cls._icons:
             return QIcon()
         return cls._icons[filename]
+
+    # Iterates through all available images and creates a copy of images with adjusted alpha-channel (20% of initial value)
+    # This new image is added to the icon as disabled state image
+    def add_disabled_state(self, icon: QIcon) -> QIcon:
+        disabled_icons = []
+        for size in icon.availableSizes():
+            icon_image = icon.pixmap(size).toImage()
+            for y in range(icon_image.height()):
+                for x in range(icon_image.width()):
+                    pixel_color = icon_image.pixelColor(x, y)
+                    pixel_color.setAlpha(pixel_color.alpha() / 5)
+                    icon_image.setPixelColor(x, y, pixel_color)
+            disabled_icons.append(QPixmap.fromImage(icon_image))
+        for disabled_image in disabled_icons:
+            icon.addPixmap(disabled_image, mode=QIcon.Mode.Disabled)
+        return icon
