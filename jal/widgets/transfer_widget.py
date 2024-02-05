@@ -112,7 +112,7 @@ class TransferWidget(AbstractOperationDetails):
     @Slot()
     def onCopyDate(self):
         self.ui.deposit_timestamp.setDateTime(self.ui.withdrawal_timestamp.dateTime())
-        # mapper.submit() isn't needed here as 'changed' signal of 'deposit_timestamp' is linked with it
+        self.mapper.submit()
 
     @Slot()
     def onCopyAmount(self):
