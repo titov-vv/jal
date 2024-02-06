@@ -778,16 +778,22 @@ class Transfer(LedgerTransaction):
     }
 
     def __init__(self, operation_id=None, display_type=None):
+        assert display_type in [Transfer.Outgoing, Transfer.Incoming, Transfer.Fee], "Unknown transfer type"
         icons = {
-            Transfer.Outgoing: JalIcon.TRANSFER_OUT,
-            Transfer.Incoming: JalIcon.TRANSFER_IN,
-            Transfer.Fee: JalIcon.FEE
+            (Transfer.Outgoing, True): JalIcon.TRANSFER_OUT,
+            (Transfer.Incoming, True): JalIcon.TRANSFER_IN,
+            (Transfer.Fee, True): JalIcon.FEE,
+            (Transfer.Outgoing, False): JalIcon.TRANSFER_ASSET_OUT,
+            (Transfer.Incoming, False): JalIcon.TRANSFER_ASSET_IN,
+            (Transfer.Fee, False): JalIcon.FEE,
         }
         self.names = {
-            Transfer.NA: self.tr("UNDEFINED"),
-            Transfer.Outgoing: self.tr("Outgoing transfer"),
-            Transfer.Incoming: self.tr("Incoming transfer"),
-            Transfer.Fee: self.tr("Transfer fee"),
+            (Transfer.Outgoing, True): self.tr("Outgoing transfer"),
+            (Transfer.Incoming, True): self.tr("Incoming transfer"),
+            (Transfer.Fee, True): self.tr("Transfer fee"),
+            (Transfer.Outgoing, False): self.tr("Outgoing asset transfer"),
+            (Transfer.Incoming, False): self.tr("Incoming asset transfer"),
+            (Transfer.Fee, False): self.tr("Asset transfer fee"),
         }
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Transfer
@@ -810,23 +816,18 @@ class Transfer(LedgerTransaction):
         self._fee_currency = JalAsset(self._fee_account.currency()).symbol()
         self._fee_account_name = self._fee_account.name()
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
-        try:
-            self._icon = JalIcon[icons[display_type]]
-            self._oname = self.names[display_type]
-        except KeyError:
-            assert False, "Unknown transfer type"
         self._asset = JalAsset(self._data['asset'])
         self._number = self._data['number']
         self._account = self._withdrawal_account
         self._note = self._data['note']
+        self._icon = JalIcon[icons[(display_type, self._asset.id() == 0)]]
+        self._oname = self.names[(display_type, self._asset.id() == 0)]
         if self._display_type == Transfer.Outgoing:
             self._reconciled = self._withdrawal_account.reconciled_at() >= self._withdrawal_timestamp
-        elif self._display_type == Transfer.Incoming:
+        if self._display_type == Transfer.Incoming:
             self._reconciled = self._deposit_account.reconciled_at() >= self._deposit_timestamp
-        elif self._display_type == Transfer.Fee:
+        if self._display_type == Transfer.Fee:
             self._reconciled = self._fee_account.reconciled_at() >= self._withdrawal_timestamp
-        else:
-            assert False, "Unknown transfer type"
 
     def timestamp(self):
         if self._display_type == Transfer.Incoming:

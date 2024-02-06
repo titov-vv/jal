@@ -25,7 +25,10 @@ class JalAsset(JalDB):
         super().__init__(cached=True)
         if not JalAsset.db_cache:
             self._fetch_data()
-        self._id = asset_id
+        try:
+            self._id = int(asset_id)
+        except (TypeError, ValueError):
+            self._id = 0
         if self._valid_data(data, search, create):
             if search:
                 self._id = self._find_asset(data)

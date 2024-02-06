@@ -47,6 +47,8 @@ class JalIcon(UserDict):
     TAX = auto()
     TRANSFER_IN = auto()
     TRANSFER_OUT = auto()
+    TRANSFER_ASSET_IN = auto()
+    TRANSFER_ASSET_OUT = auto()
 
     FLAG_PT = auto()
     FLAG_RU = auto()
@@ -85,7 +87,9 @@ class JalIcon(UserDict):
         TAG: "tag.ico",
         TAX: "tax.ico",
         TRANSFER_IN: "transfer_in.ico",
-        TRANSFER_OUT: "transfer_out.ico"
+        TRANSFER_OUT: "transfer_out.ico",
+        TRANSFER_ASSET_IN: "transfer_asset_in.ico",
+        TRANSFER_ASSET_OUT: "transfer_asset_out.ico"
     }
     _icons = {}
     _flag_files = {
