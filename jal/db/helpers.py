@@ -2,7 +2,6 @@ import os
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import QLocale
-from PySide6.QtGui import QIcon
 from jal.constants import Setup
 
 
@@ -103,4 +102,8 @@ def year_end(timestamp: int) -> int:
 def now_ts() -> int:
     return int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
 
+# Returns timestamp of the last second of the day of given timestamp
+def day_end(timestamp: int) -> int:
+    end = datetime.utcfromtimestamp(timestamp).replace(hour=23, minute=59, second=59)
+    return int(end.replace(tzinfo=timezone.utc).timestamp())
 # -------------------------------------------------------------------------------------------------------------------

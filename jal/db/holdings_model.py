@@ -2,11 +2,11 @@ from __future__ import annotations
 from datetime import datetime
 from decimal import Decimal
 
-from PySide6.QtCore import Qt, QDate
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefinedAccountType, Setup
-from jal.db.helpers import localize_decimal
+from jal.db.helpers import localize_decimal, now_ts, day_end
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -84,8 +84,8 @@ class HoldingsModel(ReportTreeModel):
         self._currency = 0
         self._only_active_accounts = True
         self._currency_name = ''
-        self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
-        self._columns = [{'name': self.tr("Currency/Account/Asset")},
+        self._date = day_end(now_ts())
+        self._columns = [{'name': self.tr("Currency/Account/Asset")},  # 'field' key isn't used as model isn't query based
                          {'name': self.tr("Asset Name")},
                          {'name': self.tr("Qty")},
                          {'name': self.tr("Open")},
@@ -103,6 +103,7 @@ class HoldingsModel(ReportTreeModel):
         return value
 
     def data(self, index, role=Qt.DisplayRole):
+        assert index.column() in range(len(self._columns))
         try:
             if not index.isValid():
                 return None
@@ -134,13 +135,13 @@ class HoldingsModel(ReportTreeModel):
                 all_fields = ['currency', 'account', 'asset']
                 display_fields = [y for y in all_fields if y not in [x.strip("_id") for x in self._groups]]
                 return ': '.join([data[x] for x in display_fields])
-        elif column == 1:
+        if column == 1:
             expiry_text = ""
             if data['expiry']:
                 expiry_header = self.tr("Exp:")
                 expiry_text = f" [{expiry_header} {ts2d(int(data['expiry']))}]"
             return data['asset_name'] + expiry_text
-        elif column == 2:
+        if column == 2:
             if data['qty']:
                 if data['asset_is_currency']:
                     decimal_places = 2
@@ -150,25 +151,23 @@ class HoldingsModel(ReportTreeModel):
                 return localize_decimal(Decimal(data['qty']), decimal_places)
             else:
                 return ''
-        elif column == 3:
+        if column == 3:
             if data['qty'] != Decimal('0') and data['value_i'] != Decimal('0'):
-                return f"{(data['value_i'] / data['qty']):,.4f}"
+                return localize_decimal(data['value_i'] / data['qty'], 4)
             else:
                 return ''
-        elif column == 4:
-            return f"{float(data['quote']):,.4f}" if data['quote'] and float(data['qty']) != 0 else ''
-        elif column == 5:
-            return f"{data['share']:,.2f}" if data['share'] else Setup.NULL_VALUE
-        elif column == 6:
-            return f"{data['profit_rel']:,.2f}" if data['profit_rel'] else ''
-        elif column == 7:
-            return f"{data['profit']:,.2f}" if data['profit'] else ''
-        elif column == 8:
-            return f"{data['value']:,.2f}" if data['value'] else ''
-        elif column == 9:
-            return f"{data['value_a']:,.2f}" if data['value_a'] else Setup.NULL_VALUE
-        else:
-            assert False
+        if column == 4:
+            return localize_decimal(data['quote'], 4) if data['quote'] and float(data['qty']) != 0 else ''
+        if column == 5:
+            return localize_decimal(data['share'], 2) if data['share'] else Setup.NULL_VALUE
+        if column == 6:
+            return localize_decimal(data['profit_rel'], 2)
+        if column == 7:
+            return localize_decimal(data['profit'], 2)
+        if column == 8:
+            return localize_decimal(data['value'], 2)
+        if column == 9:
+            return localize_decimal(data['value_a'], 2) if data['value_a'] else Setup.NULL_VALUE
 
     def data_tooltip(self, data, column):
         if 4 <= column <= 8:
@@ -304,7 +303,7 @@ class HoldingsModel(ReportTreeModel):
                     "qty": money,
                     "value_i": Decimal('0'),
                     "quote": Decimal('1'),
-                    "quote_ts": QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
+                    "quote_ts": day_end(now_ts()),
                     "quote_a": rate
                 })
             holdings += account_holdings
