@@ -563,9 +563,8 @@ class Dividend(LedgerTransaction):
                        [(":dividend_id", self._oid), (":tax", new_tax)], commit=True)
 
     def processLedger(self, ledger):
-        if self._broker is None:
-            raise LedgerError(
-                self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
+        if not self._broker:
+            raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
         if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
             self.processStockDividendOrVesting(ledger)
             return
@@ -592,8 +591,7 @@ class Dividend(LedgerTransaction):
         else:   # This branch is valid for accrued bond interest payments for bond buying trades
             ledger.appendTransaction(self, BookAccount.Costs, -self._amount, category=category, peer=self._broker)
         if self._tax:
-            ledger.appendTransaction(self, BookAccount.Costs, self._tax,
-                                     category=PredefinedCategory.Taxes, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, self._tax, category=PredefinedCategory.Taxes, peer=self._broker)
 
     def processStockDividendOrVesting(self, ledger):
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
@@ -605,8 +603,7 @@ class Dividend(LedgerTransaction):
                                  asset_id=self._asset.id(), value=self._amount * self.price())
         if self._tax:
             ledger.appendTransaction(self, BookAccount.Money, -self._tax)
-            ledger.appendTransaction(self, BookAccount.Costs, self._tax,
-                                     category=PredefinedCategory.Taxes, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, self._tax, category=PredefinedCategory.Taxes, peer=self._broker)
 
     def processBondAmortization(self, ledger):
         operation_value = (self._amount - self._tax)
@@ -615,8 +612,7 @@ class Dividend(LedgerTransaction):
         if credit_returned < operation_value:
             ledger.appendTransaction(self, BookAccount.Money, operation_value - credit_returned)
         if self._tax:
-            ledger.appendTransaction(self, BookAccount.Costs, self._tax,
-                                     category=PredefinedCategory.Taxes, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, self._tax, category=PredefinedCategory.Taxes, peer=self._broker)
         ledger.appendTransaction(self, BookAccount.Assets, Decimal('0'), asset_id=self._asset.id(), value=-self._amount)
 
 
@@ -723,9 +719,8 @@ class Trade(LedgerTransaction):
             return value
 
     def processLedger(self, ledger):
-        if self._broker is None:
-            raise LedgerError(
-                self.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
+        if not self._broker:
+            raise LedgerError(self.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
         deal_sign = Decimal('1.0').copy_sign(self._qty)  # 1 is buy and -1 is sell operation
         qty = abs(self._qty)
         trade_value = self._price * qty + deal_sign * self._fee
@@ -753,8 +748,7 @@ class Trade(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty),
                                      asset_id=self._asset.id(), value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
-            ledger.appendTransaction(self, BookAccount.Costs, self._fee,
-                                     category=PredefinedCategory.Fees, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, self._fee, category=PredefinedCategory.Fees, peer=self._broker)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1181,8 +1175,7 @@ class CorporateAction(LedgerTransaction):
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                  asset_id=self._asset.id(), value=-processed_value)
         if self._subtype == CorporateAction.Delisting:  # Map value to costs and exit - nothing more for delisting
-            ledger.appendTransaction(self, BookAccount.Costs, processed_value,
-                                     category=PredefinedCategory.Profit, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=PredefinedCategory.Profit, peer=self._broker)
             return
         # Process assets after corporate action
         query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
@@ -1191,8 +1184,7 @@ class CorporateAction(LedgerTransaction):
             asset, qty, share = self._read_record(query, cast=[JalAsset, Decimal, Decimal])
             if asset.type() == PredefinedAsset.Money:
                 ledger.appendTransaction(self, BookAccount.Money, qty)
-                ledger.appendTransaction(self, BookAccount.Incomes, -qty,
-                                         category=PredefinedCategory.Interest, peer=self._broker)
+                ledger.appendTransaction(self, BookAccount.Incomes, -qty, category=PredefinedCategory.Interest, peer=self._broker)
             else:
                 value = share * processed_value
                 price = value / qty
@@ -1248,6 +1240,7 @@ class TermDeposit(LedgerTransaction):
             self._amount = Decimal(self._data['amount'])
         self._icon = JalIcon[icons[self._action]]
         self._oname = f'{DepositActions().get_name(self._action)}'
+        self._bank = self._account.organization()
 
     def _get_deposit_amount(self) -> Decimal:
         amount = Decimal('0')
@@ -1292,6 +1285,8 @@ class TermDeposit(LedgerTransaction):
         return self._amount
 
     def processLedger(self, ledger):
+        if not self._bank:
+            raise LedgerError(self.tr("Can't process deposit as bank isn't set for account: ") + self._account_name)
         if self._action in [DepositActions.Opening, DepositActions.TopUp, DepositActions.Closing, DepositActions.PartialWithdrawal]:
             amount = self._get_deposit_amount() if self._action == DepositActions.Closing else self._amount
             if self._action in [DepositActions.Opening, DepositActions.TopUp]:
@@ -1307,10 +1302,10 @@ class TermDeposit(LedgerTransaction):
         elif self._action == DepositActions.TaxWithheld:
             ledger.appendTransaction(self, BookAccount.Savings, -self._amount)
             ledger.appendTransaction(self, BookAccount.Costs, self._amount,
-                                     category=PredefinedCategory.Taxes, peer=self._account.organization())
+                                     category=PredefinedCategory.Taxes, peer=self._bank)
         elif self._action == DepositActions.InterestAccrued:
             ledger.appendTransaction(self, BookAccount.Savings, self._amount)
             ledger.appendTransaction(self, BookAccount.Incomes, -self._amount,
-                                     category=PredefinedCategory.Interest, peer=self._account.organization())
+                                     category=PredefinedCategory.Interest, peer=self._bank)
         else:
             assert False, "Not implemented deposit action"
