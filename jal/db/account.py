@@ -289,7 +289,7 @@ class JalAccount(JalDB):
         trades = []
         query = self._exec("WITH open_trades_numbered AS "
                            "(SELECT timestamp, op_type, operation_id, price, remaining_qty, "
-                           "ROW_NUMBER() OVER (PARTITION BY op_type, operation_id ORDER BY timestamp DESC, op_type DESC) AS row_no "
+                           "ROW_NUMBER() OVER (PARTITION BY op_type, operation_id ORDER BY timestamp DESC, id DESC) AS row_no "
                            "FROM trades_opened WHERE account_id=:account AND asset_id=:asset AND timestamp<=:timestamp) "
                            "SELECT op_type, operation_id, price, remaining_qty "
                            "FROM open_trades_numbered WHERE row_no=1 AND remaining_qty!=:zero "

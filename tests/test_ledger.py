@@ -239,6 +239,7 @@ def test_fifo(prepare_db_fifo):
         ('N', 'N WITH STOCK DIVIDEND'),
         ('O', 'O SHARE'),
         ('P', 'P SHARE'),
+        ('V', 'V SHARE')
     ]
     create_stocks(test_assets, currency_id=2)
 
@@ -305,7 +306,14 @@ def test_fifo(prepare_db_fifo):
         (1608714000, 1608757200, 18, 1.0, 2700.0, 0.0),
         (1608717600, 1608757200, 18, -1.0, 3000.0, 0.0),
         (1608721200, 1608757200, 18, -1.0, 2000.0, 0.0),
-        (1608724800, 1608757200, 18, 2.0, 2500.0, 0.0)
+        (1608724800, 1608757200, 18, 2.0, 2500.0, 0.0),
+        (d2t(210405), d2t(210406), 19, +5.0, 100, 0.0),
+        (d2t(210405), d2t(210406), 19, +12.0, 100, 0.0),
+        (d2t(210405), d2t(210406), 19, +8.0, 100, 0.0),
+        (d2t(210409), d2t(210410), 19, -20.0, 200, 0.0),
+        (d2t(210409), d2t(210410), 19, -5.0, 200, 0.0),
+        (d2t(210501), d2t(210502), 19, +10.0, 200, 0.0),
+        (d2t(210510), d2t(210511), 19, -10.0, 100, 0.0),
     ]
     create_trades(1, test_trades)
 
@@ -315,9 +323,9 @@ def test_fifo(prepare_db_fifo):
 
     trades = JalAccount(1).closed_trades_list()
     # totals
-    assert len(trades) == 41
-    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade and x.close_operation().type() == LedgerTransaction.Trade]) == 29
-    assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction or x.close_operation().type() != LedgerTransaction.CorporateAction]) == 37
+    assert len(trades) == 46
+    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade and x.close_operation().type() == LedgerTransaction.Trade]) == 34
+    assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction or x.close_operation().type() != LedgerTransaction.CorporateAction]) == 42
     assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.CorporateAction and x.close_operation().type() == LedgerTransaction.CorporateAction]) == 4
 
     # Check single deal
@@ -355,6 +363,10 @@ def test_fifo(prepare_db_fifo):
     assert len(trades) == 11
     assert sum([x.profit() for x in trades]) == Decimal('3500')
     assert sum([x.fee() for x in trades]) == Decimal('0')
+
+    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 19]
+    assert len(trades) == 5
+    assert [x.qty() for x in trades if x.asset().id() == 19] == [Decimal('5'), Decimal('12'), Decimal('3'), Decimal('5'), Decimal('10')]
 
     # Symbol change
     trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 10]
@@ -404,7 +416,7 @@ def test_fifo(prepare_db_fifo):
     amounts = LedgerAmounts("amount_acc")
     values = LedgerAmounts("value_acc")
     assert amounts[BookAccount.Money, 1, 1] == Decimal('0')
-    assert amounts[BookAccount.Money, 1, 2] == Decimal('16700')
+    assert amounts[BookAccount.Money, 1, 2] == Decimal('18200')
     for asset_id in range(4, 18):
         assert values[BookAccount.Assets, 1, asset_id] == Decimal('0')
 
