@@ -302,6 +302,9 @@ class JalAccount(JalDB):
             trades.append({"operation": operation, "price": price, "remaining_qty": qty})
         return trades
 
+    def asset_payments_amount(self, asset, start_ts, end_ts) -> Decimal:
+        return Decimal('0')
+
     def _valid_data(self, data: dict, search: bool = False, create: bool = False) -> bool:
         if data is None:
             return False

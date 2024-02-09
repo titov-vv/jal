@@ -10,6 +10,7 @@ from jal.db.helpers import localize_decimal, now_ts, day_end
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.operations import LedgerTransaction, Transfer, CorporateAction
 from jal.widgets.delegates import GridLinesDelegate
 from jal.widgets.helpers import ts2d
 
@@ -21,7 +22,7 @@ class AssetTreeItem(AbstractTreeItem):
             self._data = {
                 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0, 'tag': '',
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '', 'expiry': 0,
-                'qty': Decimal('0'), 'value_i': Decimal('0'),
+                'since': 0, 'qty': Decimal('0'), 'value_i': Decimal('0'),
                 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0')
             }
         else:
@@ -88,6 +89,7 @@ class HoldingsModel(ReportTreeModel):
         self._columns = [{'name': self.tr("Currency/Account/Asset")},  # 'field' key isn't used as model isn't query based
                          {'name': self.tr("Asset Name")},
                          {'name': self.tr("Qty")},
+                         {'name': self.tr("Since")},
                          {'name': self.tr("Open")},
                          {'name': self.tr("Last")},
                          {'name': self.tr("Share, %")},
@@ -98,7 +100,7 @@ class HoldingsModel(ReportTreeModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         value = super().headerData(section, orientation, role)
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole and section == 9:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole and section == 10:
             value += self._currency_name
         return value
 
@@ -152,25 +154,30 @@ class HoldingsModel(ReportTreeModel):
             else:
                 return ''
         if column == 3:
+            if data['since'] == 0:
+                return ''
+            else:
+                return ts2d(data['since'])
+        if column == 4:
             if data['qty'] != Decimal('0') and data['value_i'] != Decimal('0'):
                 return localize_decimal(data['value_i'] / data['qty'], 4)
             else:
                 return ''
-        if column == 4:
-            return localize_decimal(data['quote'], 4) if data['quote'] and float(data['qty']) != 0 else ''
         if column == 5:
-            return localize_decimal(data['share'], 2) if data['share'] else Setup.NULL_VALUE
+            return localize_decimal(data['quote'], 4) if data['quote'] and float(data['qty']) != 0 else ''
         if column == 6:
-            return localize_decimal(data['profit_rel'], 2)
+            return localize_decimal(data['share'], 2) if data['share'] else Setup.NULL_VALUE
         if column == 7:
-            return localize_decimal(data['profit'], 2)
+            return localize_decimal(data['profit_rel'], 2)
         if column == 8:
-            return localize_decimal(data['value'], 2)
+            return localize_decimal(data['profit'], 2)
         if column == 9:
+            return localize_decimal(data['value'], 2)
+        if column == 10:
             return localize_decimal(data['value_a'], 2) if data['value_a'] else Setup.NULL_VALUE
 
     def data_tooltip(self, data, column):
-        if 4 <= column <= 8:
+        if 5 <= column <= 9:
             quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
             quote_age = int((datetime.utcnow() - quote_date).total_seconds() / 86400)
             if quote_age > 7:
@@ -194,7 +201,7 @@ class HoldingsModel(ReportTreeModel):
                     else:
                         font.setItalic(True)
                     return font
-            if column >= 4 and column <= 8:
+            if column >= 5 and column <= 9:
                 quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
                 quote_age = int((datetime.utcnow()- quote_date).total_seconds() / 86400)
                 if quote_age > 7:
@@ -211,12 +218,12 @@ class HoldingsModel(ReportTreeModel):
                 return QBrush(CustomColor.LightPurple.lighter(factor))
             if group == "account_id":
                 return QBrush(CustomColor.LightBlue.lighter(factor))
-        if column == 6 and data['profit_rel']:
+        if column == 7 and data['profit_rel']:
             if data['profit_rel'] >= 0:
                 return QBrush(CustomColor.LightGreen.lighter(factor))
             else:
                 return QBrush(CustomColor.LightRed.lighter(factor))
-        if column == 7 and data['profit']:
+        if column == 8 and data['profit']:
             if data['profit'] >= 0:
                 return QBrush(CustomColor.LightGreen.lighter(factor))
             else:
@@ -253,11 +260,30 @@ class HoldingsModel(ReportTreeModel):
         data = index.internalPointer().details()
         return data['account_id'], data['asset_id'], data['currency_id'], data['qty']
 
+    # Returns tuple of two values for open position in 'asset' for 'account' on given date 'end_ts':
+    # 1st (int) - the earliest timestamp of open position
+    # 2nd (Decimal) = 0 (not implemented - the amount of payments that were accumulated for given asset)
+    def get_asset_history_payments(self, account: JalAccount, asset: JalAsset, end_ts: int) -> (int, Decimal):
+        trades = account.open_trades_list(asset, end_ts)
+        since = min([x['operation'].timestamp() for x in trades])
+        amount = account.asset_payments_amount(asset, since, end_ts)
+        for trade in trades:
+            operation = trade['operation']
+            if operation.type() == LedgerTransaction.Transfer:
+                transfer_out = LedgerTransaction().get_operation(operation.type(), operation.id(), Transfer.Outgoing)
+                since_new, amount_new = self.get_asset_history_payments(transfer_out.account(), asset, transfer_out.timestamp()-1)  # get position just before the transfer
+            elif operation.type() == LedgerTransaction.CorporateAction and operation.subtype() == CorporateAction.Split:
+                since_new, amount_new = self.get_asset_history_payments(account, asset, operation.timestamp()-1)  # get position just before the split
+            else:
+                continue
+            since = min(since, since_new)
+            amount += amount_new
+        return since, amount
+
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def prepareData(self):
         holdings = []
-        accounts = JalAccount.get_all_accounts(account_type=PredefinedAccountType.Investment,
-                                               active_only=self._only_active_accounts)
+        accounts = JalAccount.get_all_accounts(account_type=PredefinedAccountType.Investment, active_only=self._only_active_accounts)
         for account in accounts:
             account_holdings = []
             assets = account.assets_list(self._date)
@@ -265,6 +291,7 @@ class HoldingsModel(ReportTreeModel):
             for asset_data in assets:
                 asset = asset_data['asset']
                 quote_ts, quote = asset.quote(self._date, account.currency())
+                since, payments_amount = self.get_asset_history_payments(account, asset, self._date)
                 record = {
                     "currency_id": account.currency(),
                     "currency": JalAsset(account.currency()).symbol(),
@@ -278,6 +305,7 @@ class HoldingsModel(ReportTreeModel):
                     "country": asset.country().name(),
                     "tag": asset.tag().name() if asset.tag().name() else self.tr("N/A"),
                     "expiry": asset.expiry(),
+                    "since": since,
                     "qty": asset_data['amount'],
                     "value_i": asset_data['value'],
                     "quote": quote,
@@ -300,6 +328,7 @@ class HoldingsModel(ReportTreeModel):
                     "country": JalAsset(account.currency()).country().name(),
                     "tag": self.tr("Money"),
                     "expiry": 0,
+                    "since": 0,
                     "qty": money,
                     "value_i": Decimal('0'),
                     "quote": Decimal('1'),
