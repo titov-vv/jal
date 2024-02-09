@@ -536,6 +536,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             elif payment['type'] == FOF.PAYMENT_STOCK_VESTING:
                 payment['type'] = Dividend.StockVesting
                 LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+            elif payment['type'] == FOF.PAYMENT_FEE:
+                payment['type'] = Dividend.Fee
+                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 

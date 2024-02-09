@@ -384,6 +384,7 @@ class Dividend(LedgerTransaction):
     StockDividend = 3
     StockVesting = 4
     BondAmortization = 5
+    Fee = 6
     _db_table = "dividends"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -403,7 +404,8 @@ class Dividend(LedgerTransaction):
             Dividend.BondInterest: JalIcon.BOND_INTEREST,
             Dividend.StockDividend: JalIcon.STOCK_DIVIDEND,
             Dividend.StockVesting: JalIcon.STOCK_VESTING,
-            Dividend.BondAmortization: JalIcon.BOND_AMORTIZATION
+            Dividend.BondAmortization: JalIcon.BOND_AMORTIZATION,
+            Dividend.Fee: JalIcon.FEE
         }
         self.names = {
             Dividend.NA: self.tr("UNDEFINED"),
@@ -411,7 +413,8 @@ class Dividend(LedgerTransaction):
             Dividend.BondInterest: self.tr("Bond Interest"),
             Dividend.StockDividend: self.tr("Stock Dividend"),
             Dividend.StockVesting: self.tr("Stock Vesting"),
-            Dividend.BondAmortization: self.tr("Bond Amortization")
+            Dividend.BondAmortization: self.tr("Bond Amortization"),
+            Dividend.Fee: self.tr("Asset fee/tax")
         }
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Dividend

@@ -174,8 +174,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     # validate income/spending
     assert JalAccount(1).dump_actions() == [
         [1, 1, 1578073286, 1, 1, '', '', [1, 1, 5, '', '-7.96', '0', 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019']],
-        [2, 1, 1601462520, 1, 1, '', '', [2, 2, 5, '', '0.6905565', '0', 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)']],
-        [4, 1, 1549843200, 1, 1, '', '', [4, 4, 6, '', '-0.249018', '0', 'BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax']]
+        [2, 1, 1601462520, 1, 1, '', '', [2, 2, 5, '', '0.6905565', '0', 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)']]
     ]
     assert JalAccount(2).dump_actions() == [
         [3, 1, 1591142400, 2, 1, '', '', [3, 3, 8, '', '0.5', '0', 'RUB CREDIT INT FOR MAY-2020']]
@@ -198,7 +197,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [1, 3, 1553545500, 1553545500, '', 1, 9, '-0.777', '168.37', '0.0', ''],
         [2, 3, 1579094694, 1579219200, '2661774904', 1, 22, '45000.0', '0.0012', '0.54', ''],
         [3, 3, 1580215513, 1580215513, '2674740000', 1, 4, '-1240.0', '54.84', '7.75519312', ''],
-        [4, 3, 1580215566, 1580342400, '2674740000', 1, 31, '-148.0', '316.68', '-1.987792848', ''],
+        [4, 3, 1580215566, 1580342400, '2674741000', 1, 31, '-148.0', '316.68', '-5.007792848', ''],
         [5, 3, 1590595065, 1590710400, '2882737839', 1, 12, '2.0', '637.09', '2.0', ''],
         [6, 3, 1592575273, 1592784000, '2931083780', 1, 32, '-100.0', '4.54', '1.1058334', ''],
         [7, 3, 1595607600, 1595808000, '2997636969', 1, 32, '100.0', '0.0', '0.0', 'Option assignment'],
@@ -224,7 +223,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [7, 2, 1633033200, 0, '', 1, 1, 4, '158.6', '15.86', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
         [8, 2, 1590595065, 0, '2882737839', 2, 1, 12, '-25.69', '0', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
         [9, 2, 1600128000, 0, '', 2, 1, 12, '62.5', '0', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
-        [10, 2, 1620345600, 0, '', 4, 1, 8, '2.0', '0', 'Stock Award Grant for Cash Deposit']
+        [10, 2, 1620345600, 0, '', 4, 1, 8, '2.0', '0', 'Stock Award Grant for Cash Deposit'],
+        [11, 2, 1549843200, 0, '', 6, 1, 9, '-0.249018', '0', 'French Transaction Tax']
     ]
     dividends = JalAccount(1).dump_dividends()
     assert len(dividends) == len(test_payments)

@@ -145,7 +145,7 @@
     {"id": 4, "number": "", "timestamp": 1553545500, "settlement": 1553545500, "account": -1, "asset": 6, "quantity": -0.777, "price": 168.37, "fee": 0.0},
     {"id": 5, "number": "2661774904", "timestamp": 1579094694, "settlement": 1579219200, "account": -1, "asset": 19, "quantity": 45000.0, "price": 0.0012, "fee": 0.54},
     {"id": 6, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": -1, "asset": -4, "quantity": -1240.0, "price": 54.84, "fee": 7.75519312},
-    {"id": 7, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": -1, "asset": 29, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
+    {"id": 7, "number": "2674741000", "timestamp": 1580215566, "settlement": 1580342400, "account": -1, "asset": 29, "quantity": -148.0, "price": 316.68, "fee": -5.007792848},
     {"id": 8, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": -1, "asset": 9, "quantity": 2.0, "price": 637.09, "fee": 2.0},
     {"id": 9, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": -1, "asset": 30, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
     {"id": 10, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": -1, "asset": 30, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
@@ -158,8 +158,7 @@
   "income_spending": [
     {"id": 1, "timestamp": 1578073286, "account": -1, "peer": 0, "lines": [{"amount": -7.96, "category": -5, "description": "BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019"}]},
     {"id": 2, "timestamp": 1601462520, "account": -1, "peer": 0, "lines": [{"amount": 0.6905565, "category": -5, "description": "COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)"}]},
-    {"id": 3, "timestamp": 1591142400, "account": 1, "peer": 0, "lines": [{"amount": 0.5, "category": -8, "description": "RUB CREDIT INT FOR MAY-2020"}]},
-    {"id": 4, "timestamp": 1549843200, "account": -1, "peer": 0, "lines": [{"amount": -0.249018, "category": -6, "description": "BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax"}]}
+    {"id": 3, "timestamp": 1591142400, "account": 1, "peer": 0, "lines": [{"amount": 0.5, "category": -8, "description": "RUB CREDIT INT FOR MAY-2020"}]}
   ],
   "transfers": [
     {"id": 1, "account": [6, -1, -1], "number": "2674343226","asset": [-3, -2], "timestamp": 1580443370, "withdrawal": 890.47, "deposit": 1000.0, "fee": 3.0, "description": "IDEALFX"},
@@ -213,6 +212,7 @@
     {"id": 7, "type": "interest", "account": -1, "timestamp": 1600128000, "number": "", "asset": 9, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
     {"id": -1, "type": "dividend", "account": -1, "timestamp": 1529612400, "number": "", "asset": -5, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
     {"id": -2, "type": "dividend", "account": -1, "timestamp": 1533673200, "number": "", "asset": -5, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"},
-    {"id": 8, "type": "stock_vesting","account": -1, "timestamp": 1620345600, "asset": 4, "amount": 2.0, "price": "678.0", "description": "Stock Award Grant for Cash Deposit"}
+    {"id": 8, "type": "stock_vesting","account": -1, "timestamp": 1620345600, "asset": 4, "amount": 2.0, "price": "678.0", "description": "Stock Award Grant for Cash Deposit"},
+    {"id": 9, "type": "fee", "account": -1, "timestamp": 1549843200, "asset": 6, "amount": -0.249018, "description": "French Transaction Tax"}
   ]
 }
