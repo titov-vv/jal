@@ -1234,10 +1234,7 @@ class TermDeposit(LedgerTransaction):
         self._note = self._data['note']
         self._action = self._data['action_type']
         self._account_currency = JalAsset(self._account.currency()).symbol()
-        if self._action == DepositActions.Closing:
-            self._amount = self._get_deposit_amount()
-        else:
-            self._amount = Decimal(self._data['amount'])
+        self._amount = Decimal(self._data['amount'])
         self._icon = JalIcon[icons[self._action]]
         self._oname = f'{DepositActions().get_name(self._action)}'
         self._bank = self._account.organization()
@@ -1245,7 +1242,7 @@ class TermDeposit(LedgerTransaction):
     def _get_deposit_amount(self) -> Decimal:
         amount = Decimal('0')
         query = self._exec("SELECT amount FROM ledger WHERE op_type=:op_type AND operation_id=:oid AND "
-                           "book_account=:book AND account_id=:account_id AND timestamp<:timestamp",
+                           "book_account=:book AND account_id=:account_id AND timestamp<=:timestamp",
                            [(":op_type", self._otype), (":oid", self._oid), (":timestamp", self._timestamp),
                             (":account_id", self._account.id()), (":book", BookAccount.Savings)])
         while query.next():
