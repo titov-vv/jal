@@ -578,6 +578,8 @@ class Dividend(LedgerTransaction):
             category = PredefinedCategory.Dividends
         elif self._subtype == Dividend.BondInterest:
             category = PredefinedCategory.Interest
+        elif self._subtype == Dividend.Fee:
+            category = PredefinedCategory.Fees
         else:
             raise LedgerError(self.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
         operation_value = (self._amount - self._tax)

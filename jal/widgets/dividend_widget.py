@@ -31,7 +31,8 @@ class DividendWidget(AbstractOperationDetails):
                                              self.tr("Bond Interest"),
                                              self.tr("Stock Dividend"),
                                              self.tr("Stock Vesting"),
-                                             self.tr("Bond Amortization")])
+                                             self.tr("Bond Amortization"),
+                                             self.tr("Fee / Tax")])
         self.ui.type.setModel(self.combo_model)
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.ex_date_editor.setFixedWidth(self.ui.ex_date_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)

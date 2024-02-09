@@ -209,7 +209,7 @@ class Ui_DividendOperation(object):
         self.revert_button.setToolTip(QCoreApplication.translate("DividendOperation", u"Cancel changes", None))
 #endif // QT_CONFIG(tooltip)
         self.revert_button.setText("")
-        self.amount_label.setText(QCoreApplication.translate("DividendOperation", u"Dividend", None))
+        self.amount_label.setText(QCoreApplication.translate("DividendOperation", u"Payment", None))
         self.timestamp_editor.setDisplayFormat(QCoreApplication.translate("DividendOperation", u"dd/MM/yyyy hh:mm:ss", None))
         self.price_label.setText(QCoreApplication.translate("DividendOperation", u"Price", None))
     # retranslateUi
