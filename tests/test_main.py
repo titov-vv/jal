@@ -25,6 +25,7 @@ def test_number_formatting():
     assert localize_decimal(Decimal('13000')) == '13\xa0000'
     assert localize_decimal(Decimal('-1.23E-8')) == '-1,23E-8'
     assert localize_decimal(Decimal('9.76E-8'), sign=True) == '+9,76E-8'
+    assert localize_decimal(Decimal('-321.0')) == '-321'
 
 
 def test_helpers():

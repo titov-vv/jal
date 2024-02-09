@@ -29,6 +29,7 @@ def localize_decimal(value: Decimal, precision: int = None, percent: bool = Fals
         value *= Decimal('100')
     value = remove_exponent(value)
     has_sign, digits, exponent = remove_exponent(value).as_tuple()
+    value = -value if has_sign else value   # Remove sign. It will be added back at the end.
     try:
         precision = int(precision)
     except (ValueError, TypeError):
@@ -36,10 +37,7 @@ def localize_decimal(value: Decimal, precision: int = None, percent: bool = Fals
     rounded = round(value, precision)
     digits = [digit for digit in str(rounded)]    # Represent string as list for easier insertions/replacements
     if 'E' in digits:
-        if has_sign:
-            digits[2] = QLocale().decimalPoint()
-        else:
-            digits[1] = QLocale().decimalPoint()
+        digits[1] = QLocale().decimalPoint()
     else:
         if precision > 0:
             digits[-precision - 1] = QLocale().decimalPoint()  # Replace decimal point with locale-specific value
@@ -49,8 +47,10 @@ def localize_decimal(value: Decimal, precision: int = None, percent: bool = Fals
         if QLocale().groupSeparator():
             for i in range(3, integer_part_size, 3):           # Insert locale-specific thousand separator at each 3rd digit
                 digits.insert(integer_part_size - i, QLocale().groupSeparator())
-    if sign and not has_sign:
-        digits.insert(0, '+')
+    if has_sign:
+        digits.insert(0, QLocale().negativeSign())
+    elif sign:
+        digits.insert(0, QLocale().positiveSign())
     formatted_number = ''.join(digits)
     return formatted_number
 
