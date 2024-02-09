@@ -22,7 +22,7 @@ class AssetTreeItem(AbstractTreeItem):
             self._data = {
                 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0, 'tag': '',
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '', 'expiry': 0,
-                'since': 0, 'qty': Decimal('0'), 'value_i': Decimal('0'),
+                'since': 0, 'qty': Decimal('0'), 'value_i': Decimal('0'), 'payments': Decimal('0'),
                 'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0')
             }
         else:
@@ -39,6 +39,7 @@ class AssetTreeItem(AbstractTreeItem):
         self._data['asset'] = child_data['asset']
         self._data['country'] = child_data['country']
         self._data['tag'] = child_data['tag']
+        self._data['payments'] += child_data['payments']
         self._data['value'] += child_data['value']
         self._data['value_a'] += child_data['value_a']
         self._data['profit'] += child_data['profit']
@@ -95,12 +96,13 @@ class HoldingsModel(ReportTreeModel):
                          {'name': self.tr("Share, %")},
                          {'name': self.tr("P/L, %")},
                          {'name': self.tr("P/L")},
+                         {'name': self.tr("Paid")},
                          {'name': self.tr("Value")},
                          {'name': self.tr("Value, ")}]
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         value = super().headerData(section, orientation, role)
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole and section == 10:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole and section == 11:
             value += self._currency_name
         return value
 
@@ -172,12 +174,14 @@ class HoldingsModel(ReportTreeModel):
         if column == 8:
             return localize_decimal(data['profit'], 2)
         if column == 9:
-            return localize_decimal(data['value'], 2)
+            return localize_decimal(data['payments'], 2)
         if column == 10:
+            return localize_decimal(data['value'], 2)
+        if column == 11:
             return localize_decimal(data['value_a'], 2) if data['value_a'] else Setup.NULL_VALUE
 
     def data_tooltip(self, data, column):
-        if 5 <= column <= 9:
+        if 5 <= column <= 10:
             quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
             quote_age = int((datetime.utcnow() - quote_date).total_seconds() / 86400)
             if quote_age > 7:
@@ -201,7 +205,7 @@ class HoldingsModel(ReportTreeModel):
                     else:
                         font.setItalic(True)
                     return font
-            if column >= 5 and column <= 9:
+            if column >= 5 and column <= 10:
                 quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
                 quote_age = int((datetime.utcnow()- quote_date).total_seconds() / 86400)
                 if quote_age > 7:
@@ -308,6 +312,7 @@ class HoldingsModel(ReportTreeModel):
                     "since": since,
                     "qty": asset_data['amount'],
                     "value_i": asset_data['value'],
+                    "payments": payments_amount,
                     "quote": quote,
                     "quote_ts": quote_ts,
                     "quote_a": rate * quote
@@ -331,6 +336,7 @@ class HoldingsModel(ReportTreeModel):
                     "since": 0,
                     "qty": money,
                     "value_i": Decimal('0'),
+                    "payments": Decimal('0'),
                     "quote": Decimal('1'),
                     "quote_ts": day_end(now_ts()),
                     "quote_a": rate

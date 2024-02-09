@@ -302,8 +302,17 @@ class JalAccount(JalDB):
             trades.append({"operation": operation, "price": price, "remaining_qty": qty})
         return trades
 
+    # Returns amount that was paid for an asset that was hold on the account during time between start_ts and end_ts
+    # Asset payment is counted if its ex-date is between start and end or, if ex-date is missing, the timestamp of
+    # payment is between start and end timestamps
     def asset_payments_amount(self, asset, start_ts, end_ts) -> Decimal:
-        return Decimal('0')
+        payments = jal.db.operations.Dividend.get_list(self._id, asset.id())
+        payments = [x for x in payments if (start_ts <= x.ex_date() <= end_ts) or (x.ex_date() == 0 and (start_ts <= x.timestamp() <= end_ts))]
+        if payments:
+            amount = sum([x.amount(currency_id=self._currency_id) for x in payments])
+        else:
+            amount = Decimal('0')
+        return amount
 
     def _valid_data(self, data: dict, search: bool = False, create: bool = False) -> bool:
         if data is None:
