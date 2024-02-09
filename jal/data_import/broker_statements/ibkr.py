@@ -260,11 +260,12 @@ class StatementIBKR(StatementXML):
             'TransactionTaxes': {'tag': 'TransactionTax',
                                  'level': 'SUMMARY',
                                  'values': [('accountId', 'account', IBKR_Account, None),
-                                            ('symbol', 'symbol', str, None),
+                                            ('symbol', 'asset', IBKR_Asset, None),
                                             ('date', 'timestamp', datetime, None),
                                             ('taxAmount', 'amount', float, None),
-                                            ('description', 'description', str, None),
-                                            ('taxDescription', 'tax_description', str, None)],
+                                            ('taxDescription', 'description', str, None),
+                                            ('source', 'source', str, None),
+                                            ('tradeId', 'number', str, None)],
                                  'loader': self.load_taxes},
             'CFDCharges': {'tag': 'CFDCharge',
                            'level': '',
@@ -982,16 +983,22 @@ class StatementIBKR(StatementXML):
         return taxes_aggregated
 
     def load_taxes(self, taxes):
-        cnt = 0   #FIXME Link this tax with asset
-        tax_base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        cnt = 0
         for i, tax in enumerate(taxes):
-            tax['id'] = tax_base + i
-            tax['peer'] = 0
-            note = f"{tax['symbol']} ({tax['description']}) - {tax['tax_description']}"
-            tax['lines'] = [{'amount': tax['amount'], 'category': -PredefinedCategory.Taxes, 'description': note}]
-            self.drop_extra_fields(tax, ["symbol", "amount", "description", "tax_description"])
-            self._data[FOF.INCOME_SPENDING].append(tax)
-            cnt += 1
+            if tax['source'] == 'TRADE':
+                trade = self._find_in_list(self._data[FOF.TRADES], "number", tax['number'])
+                if trade is None:
+                    raise Statement_ImportError(self.tr("Can't find trade for tax: ") + f"{ts2dt(tax['timestamp'])}, '{tax['symbol']}' - {tax['description']}")
+                trade['fee'] += tax['amount']
+                cnt += 1
+            else:
+                if tax['source'] != 'STANDALONE':
+                    logging.warning(self.tr("Unexpected tax source: ") + f"{ts2dt(tax['timestamp'])}, '{tax['source']}': {tax['description']}")
+                tax['id'] = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+                tax['type'] = FOF.PAYMENT_FEE
+                self.drop_extra_fields(tax, ["source", "number"])
+                self._data[FOF.ASSET_PAYMENTS].append(tax)
+                cnt += 1
         logging.info(self.tr("Taxes loaded: ") + f"{cnt} ({len(taxes)})")
 
     def load_cfd_charges(self, charges):

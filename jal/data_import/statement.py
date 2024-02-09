@@ -57,6 +57,7 @@ class FOF:
     PAYMENT_STOCK_DIVIDEND = "stock_dividend"
     PAYMENT_STOCK_VESTING = 'stock_vesting'
     PAYMENT_AMORTIZATION = 'bond_amortization'
+    PAYMENT_FEE = 'fee'
 
     def __init__(self):
         pass
