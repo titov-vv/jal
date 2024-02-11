@@ -143,18 +143,18 @@ class ClosedTradesModel(ReportTreeModel):
     def footerData(self, section: int, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             total_data = self._root.details()
-            if section == 0:
+            if section == self.fieldIndex('symbol'):
                 return self.tr("Total:")
-            elif section == 9:
+            elif section == self.fieldIndex('p/l'):
                 return localize_decimal(total_data[self._columns[section]['field']], precision=2)
-            elif section == 10:
+            elif section == self.fieldIndex('p/l%'):
                 return self._total_currency_name
         elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)
             return font
         elif role == Qt.TextAlignmentRole:
-            if section == 9:
+            if section == self.fieldIndex('p/l'):
                 return Qt.AlignRight | Qt.AlignVCenter
             else:
                 return Qt.AlignLeft | Qt.AlignVCenter
@@ -188,7 +188,7 @@ class ClosedTradesModel(ReportTreeModel):
     def configureView(self):
         self._view.setSortingEnabled(True)
         for column in range(self.columnCount()):
-            if column == 0:
+            if column == self.fieldIndex('symbol'):
                 self._view.setColumnWidth(column, 300)
             else:
                 self._view.setColumnWidth(column, 100)
