@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
 from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset
@@ -46,7 +47,7 @@ class JalAsset(JalDB):
         self._isin = self._data['isin'] if self._data is not None else None
         self._country = JalCountry(self._data['country_id']) if self._data is not None else JalCountry(0)
         self._reg_number = self._data.get('data', {}).get(AssetData.RegistrationCode, '') if self._data is not None else ''
-        self._expiry = self._data.get('data', {}).get(AssetData.ExpiryDate, '') if self._data is not None else ''
+        self._expiry = int(self._data.get('data', {}).get(AssetData.ExpiryDate, 0)) if self._data is not None else 0
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '') if self._data is not None else ''
         self._principal = Decimal(self._principal) if self._principal else Decimal('0')
         try:
@@ -215,8 +216,17 @@ class JalAsset(JalDB):
             logging.info(self.tr("Quotations were updated: ") +
                          f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) {ts2d(begin)} - {ts2d(end)}")
 
-    def expiry(self):
+    # returns expiration timestamp
+    def expiry(self) -> int:
         return self._expiry
+
+    # Returns number of days before expiration (negative value if asset is expired)
+    def days2expiration(self) -> int:
+        if self._expiry == 0:
+            return 0
+        expiry_date = datetime.utcfromtimestamp(self._expiry)
+        days_remaining = int((expiry_date - datetime.utcnow()).total_seconds() / 86400)
+        return days_remaining
 
     def reg_number(self):
         return self._reg_number

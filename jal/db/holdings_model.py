@@ -3,50 +3,57 @@ from datetime import datetime
 from decimal import Decimal
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QBrush, QFont
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import CustomColor, PredefinedAccountType, Setup
-from jal.db.helpers import localize_decimal, now_ts, day_end
+from jal.constants import PredefinedAccountType
+from jal.db.helpers import now_ts, day_end
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, Transfer, CorporateAction
-from jal.widgets.delegates import GridLinesDelegate
+from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate
 from jal.widgets.helpers import ts2d
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+OLD_QUOTE_AGE = 7   # when mark line as italic for old quote
 # ----------------------------------------------------------------------------------------------------------------------
 class AssetTreeItem(AbstractTreeItem):
     def __init__(self, data=None, parent=None, group=''):
         super().__init__(parent, group)
         if data is None:
             self._data = {
+                'header': '',
                 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0, 'tag': '',
-                'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '', 'expiry': 0,
-                'since': 0, 'qty': Decimal('0'), 'value_i': Decimal('0'), 'payments': Decimal('0'),
-                'quote': Decimal('0'), 'quote_ts': Decimal('0'), 'quote_a': Decimal('0')
+                'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
+                'since': 0, 'qty': None, 'value_i': Decimal('0'), 'paid': Decimal('0'),
+                'open_quote': None, 'quote': None, 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
+                'value': Decimal('0'), 'value_common': Decimal('0'), 'p/l': Decimal('0'), 'p/l%': Decimal('0'),
+                "font": 'bold', 'quote_age': 0
             }
         else:
             self._data = data.copy()
+            self._data['value'] = self._data['quote'] * self._data['qty']
+            self._data['value_common'] = self._data['quote_a'] * self._data['qty'] if self._data['quote_a'] else Decimal('0')
+            self._data['p/l'] = self._data['quote'] * self._data['qty'] - self._data['value_i'] if not self._data['asset_is_currency'] else Decimal('0')
+            self._data['p/l%'] = Decimal('100') * (self._data['quote'] * self._data['qty'] / self._data['value_i'] - 1) if self._data['value_i'] != Decimal('0') else Decimal('0')
         self._data['share'] = Decimal('0')
-        self._data['value'] = self._data['quote'] * self._data['qty']
-        self._data['value_a'] = self._data['quote_a'] * self._data['qty'] if self._data['quote_a'] else Decimal('0')
-        self._data['profit'] = self._data['quote'] * self._data['qty'] - self._data['value_i'] if not self._data['asset_is_currency'] else Decimal('0')
-        self._data['profit_rel'] = Decimal('100') * (self._data['quote'] * self._data['qty'] / self._data['value_i'] - 1) if self._data['value_i'] != Decimal('0') else Decimal('0')
 
     def _calculateGroupTotals(self, child_data):
+        self._data['header'] = child_data.get(self._group.strip("_id"), '<none>')
         self._data['currency'] = child_data['currency']
         self._data['account'] = child_data['account']
         self._data['asset'] = child_data['asset']
         self._data['country'] = child_data['country']
         self._data['tag'] = child_data['tag']
-        self._data['payments'] += child_data['payments']
+        self._data['paid'] += child_data['paid']
         self._data['value'] += child_data['value']
-        self._data['value_a'] += child_data['value_a']
-        self._data['profit'] += child_data['profit']
-        self._data['profit_rel'] = Decimal('100') * self._data['profit'] / (self._data['value'] - self._data['profit']) if self._data['value'] != self._data['profit'] else Decimal('0')
+        self._data['value_common'] += child_data['value_common']
+        self._data['p/l'] += child_data['p/l']
+        self._data['p/l%'] = Decimal('100') * self._data['p/l'] / (self._data['value'] - self._data['p/l']) if self._data['value'] != self._data['p/l'] else Decimal('0')
 
     def _afterParentGroupUpdate(self, group_data):
-        self._data['share'] = Decimal('100') * self._data['value_a'] / group_data['value_a'] if group_data['value_a'] else Decimal('0')
+        self._data['share'] = Decimal('100') * self._data['value_common'] / group_data['value_common'] if group_data['value_common'] else Decimal('0')
 
     def details(self):
         return self._data
@@ -83,26 +90,38 @@ class HoldingsModel(ReportTreeModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._grid_delegate = None
+        self._float_delegate = None
+        self._float2_delegate = None
+        self._float4_delegate = None
+        self._profit_delegate = None
+        self._date_delegate = None
+        bold_font = QFont()
+        bold_font.setBold(True)
+        strikeout_font = QFont()
+        strikeout_font.setStrikeOut(True)
+        italic_font = QFont()
+        italic_font.setItalic(True)
+        self._fonts = {'normal': None, 'bold': bold_font, 'italic': italic_font, 'strikeout': strikeout_font}
         self._currency = 0
         self._only_active_accounts = True
         self._currency_name = ''
         self._date = day_end(now_ts())
-        self._columns = [{'name': self.tr("Currency/Account/Asset")},  # 'field' key isn't used as model isn't query based
-                         {'name': self.tr("Asset Name")},
-                         {'name': self.tr("Qty")},
-                         {'name': self.tr("Since")},
-                         {'name': self.tr("Open")},
-                         {'name': self.tr("Last")},
-                         {'name': self.tr("Share, %")},
-                         {'name': self.tr("P/L, %")},
-                         {'name': self.tr("P/L")},
-                         {'name': self.tr("Paid")},
-                         {'name': self.tr("Value")},
-                         {'name': self.tr("Value, ")}]
+        self._columns = [{'name': self.tr("Currency/Account/Asset"), 'field': 'header'},
+                         {'name': self.tr("Asset Name"), 'field': 'asset_name'},
+                         {'name': self.tr("Qty"), 'field': 'qty'},
+                         {'name': self.tr("Since"), 'field': 'since'},
+                         {'name': self.tr("Open"), 'field': 'open_quote'},
+                         {'name': self.tr("Last"), 'field': 'quote'},
+                         {'name': self.tr("Share, %"), 'field': 'share'},
+                         {'name': self.tr("P/L, %"), 'field': 'p/l%'},
+                         {'name': self.tr("P/L"), 'field': 'p/l'},
+                         {'name': self.tr("Paid"), 'field': 'paid'},
+                         {'name': self.tr("Value"), 'field': 'value'},
+                         {'name': self.tr("Value, "), 'field': 'value_common'}]
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         value = super().headerData(section, orientation, role)
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole and section == 11:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole and section == self.fieldIndex('value_common'):
             value += self._currency_name
         return value
 
@@ -113,125 +132,19 @@ class HoldingsModel(ReportTreeModel):
                 return None
             item = index.internalPointer()
             if role == Qt.DisplayRole:
-                return self.data_text(item, index.column())
+                return item.details().get(self._columns[index.column()]['field'], None)
             if role == Qt.FontRole:
-                return self.data_font(item, index.column())
-            if role == Qt.BackgroundRole:
-                return self.data_background(item, index.column(), self._view.isEnabled())
+                return self._fonts.get(item.details()['font'], None)
             if role == Qt.ToolTipRole:
-                return self.data_tooltip(item.details(), index.column())
-            if role == Qt.TextAlignmentRole:
-                if index.column() < 2:
-                    return int(Qt.AlignLeft)
-                else:
-                    return int(Qt.AlignRight)
+                return self.data_tooltip(item.details())
             return None
         except Exception as e:
             print(e)
 
-    def data_text(self, item, column):
-        data = item.details()
-        if column == 0:
-            if item.isGroup():
-                group, value = item.getGroup()
-                return data[group.strip("_id")]
-            else:
-                all_fields = ['currency', 'account', 'asset']
-                display_fields = [y for y in all_fields if y not in [x.strip("_id") for x in self._groups]]
-                return ': '.join([data[x] for x in display_fields])
-        if column == 1:
-            expiry_text = ""
-            if data['expiry']:
-                expiry_header = self.tr("Exp:")
-                expiry_text = f" [{expiry_header} {ts2d(int(data['expiry']))}]"
-            return data['asset_name'] + expiry_text
-        if column == 2:
-            if data['qty']:
-                if data['asset_is_currency']:
-                    decimal_places = 2
-                else:
-                    decimal_places = -data['qty'].as_tuple().exponent
-                    decimal_places = max(min(decimal_places, 6), 0)
-                return localize_decimal(Decimal(data['qty']), decimal_places)
-            else:
-                return ''
-        if column == 3:
-            if data['since'] == 0:
-                return ''
-            else:
-                return ts2d(data['since'])
-        if column == 4:
-            if data['qty'] != Decimal('0') and data['value_i'] != Decimal('0'):
-                return localize_decimal(data['value_i'] / data['qty'], 4)
-            else:
-                return ''
-        if column == 5:
-            return localize_decimal(data['quote'], 4) if data['quote'] and float(data['qty']) != 0 else ''
-        if column == 6:
-            return localize_decimal(data['share'], 2) if data['share'] else Setup.NULL_VALUE
-        if column == 7:
-            return localize_decimal(data['profit_rel'], 2)
-        if column == 8:
-            return localize_decimal(data['profit'], 2)
-        if column == 9:
-            return localize_decimal(data['payments'], 2)
-        if column == 10:
-            return localize_decimal(data['value'], 2)
-        if column == 11:
-            return localize_decimal(data['value_a'], 2) if data['value_a'] else Setup.NULL_VALUE
-
-    def data_tooltip(self, data, column):
-        if 5 <= column <= 10:
-            quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
-            quote_age = int((datetime.utcnow() - quote_date).total_seconds() / 86400)
-            if quote_age > 7:
-                return self.tr("Last quote date: ") + ts2d(int(data['quote_ts']))
-        return ''
-
-    def data_font(self, item, column):
-        data = item.details()
-        if item.isGroup():
-            font = QFont()
-            font.setBold(True)
-            return font
-        else:
-            if column == 1 and data['expiry']:
-                expiry_date = datetime.utcfromtimestamp(int(data['expiry']))
-                days_remaining = int((expiry_date - datetime.utcnow()).total_seconds() / 86400)
-                if days_remaining <= 10:
-                    font = QFont()
-                    if days_remaining < 0:
-                        font.setStrikeOut(True)
-                    else:
-                        font.setItalic(True)
-                    return font
-            if column >= 5 and column <= 10:
-                quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
-                quote_age = int((datetime.utcnow()- quote_date).total_seconds() / 86400)
-                if quote_age > 7:
-                    font = QFont()
-                    font.setItalic(True)
-                    return font
-
-    def data_background(self, item, column, enabled=True):
-        data = item.details()
-        factor = 100 if enabled else 125
-        if item.isGroup():
-            group, value = item.getGroup()
-            if group == "currency_id":
-                return QBrush(CustomColor.LightPurple.lighter(factor))
-            if group == "account_id":
-                return QBrush(CustomColor.LightBlue.lighter(factor))
-        if column == 7 and data['profit_rel']:
-            if data['profit_rel'] >= 0:
-                return QBrush(CustomColor.LightGreen.lighter(factor))
-            else:
-                return QBrush(CustomColor.LightRed.lighter(factor))
-        if column == 8 and data['profit']:
-            if data['profit'] >= 0:
-                return QBrush(CustomColor.LightGreen.lighter(factor))
-            else:
-                return QBrush(CustomColor.LightRed.lighter(factor))
+    def data_tooltip(self, data):
+        if data['quote_age'] > OLD_QUOTE_AGE:
+            return self.tr("Last quote date: ") + ts2d(int(data['quote_ts']))
+        return None
 
     def configureView(self):
         self._view.header().setSectionResizeMode(0, QHeaderView.ResizeToContents)
@@ -239,8 +152,23 @@ class HoldingsModel(ReportTreeModel):
         for i in range(len(self._columns))[2:]:
             self._view.header().setSectionResizeMode(i, QHeaderView.ResizeToContents)
         self._grid_delegate = GridLinesDelegate(self._view)
-        for i in range(len(self._columns)):
-            self._view.setItemDelegateForColumn(i, self._grid_delegate)
+        self._date_delegate = TimestampDelegate(display_format='%d/%m/%Y', parent=self._view)
+        self._float_delegate = FloatDelegate(0, allow_tail=True, parent=self._view)
+        self._float2_delegate = FloatDelegate(2, allow_tail=False, parent=self._view)
+        self._float4_delegate = FloatDelegate(4, allow_tail=False, parent=self._view)
+        self._profit_delegate = FloatDelegate(2, allow_tail=False, colors=True, parent=self._view)
+        self._view.setItemDelegateForColumn(0, self._grid_delegate)
+        self._view.setItemDelegateForColumn(1, self._grid_delegate)
+        self._view.setItemDelegateForColumn(2, self._float_delegate)
+        self._view.setItemDelegateForColumn(3, self._date_delegate)
+        self._view.setItemDelegateForColumn(4, self._float4_delegate)
+        self._view.setItemDelegateForColumn(5, self._float4_delegate)
+        self._view.setItemDelegateForColumn(6, self._float2_delegate)
+        self._view.setItemDelegateForColumn(7, self._profit_delegate)
+        self._view.setItemDelegateForColumn(8, self._profit_delegate)
+        self._view.setItemDelegateForColumn(9, self._float2_delegate)
+        self._view.setItemDelegateForColumn(10, self._float2_delegate)
+        self._view.setItemDelegateForColumn(11, self._float2_delegate)
         super().configureView()
 
     def updateView(self, currency_id, date, grouping, show_inactive):
@@ -292,10 +220,17 @@ class HoldingsModel(ReportTreeModel):
             account_holdings = []
             assets = account.assets_list(self._date)
             rate = JalAsset(account.currency()).quote(self._date, self._currency)[1]
+            all_fields = ['currency', 'account', 'asset']
+            display_fields = [y for y in all_fields if y not in [x.strip("_id") for x in self._groups]]
             for asset_data in assets:
                 asset = asset_data['asset']
                 quote_ts, quote = asset.quote(self._date, account.currency())
+                quote_age = int((datetime.utcnow() - datetime.utcfromtimestamp(quote_ts)).total_seconds() / 86400)
                 since, payments_amount = self.get_asset_history_payments(account, asset, self._date)
+                font = 'italic' if quote_age > OLD_QUOTE_AGE else 'normal'
+                font = 'strikeout' if asset.days2expiration() < 0 else font
+                expiry_header = self.tr("Exp:")
+                expiry_text = f" [{expiry_header} {ts2d(asset.expiry())}]" if asset.expiry() else ''
                 record = {
                     "currency_id": account.currency(),
                     "currency": JalAsset(account.currency()).symbol(),
@@ -304,23 +239,26 @@ class HoldingsModel(ReportTreeModel):
                     "asset_id": asset.id(),
                     "asset_is_currency": False,
                     "asset": asset.symbol(currency=account.currency()),
-                    "asset_name": asset.name(),
+                    "asset_name": asset.name() + expiry_text,
                     "country_id": asset.country().id(),
                     "country": asset.country().name(),
                     "tag": asset.tag().name() if asset.tag().name() else self.tr("N/A"),
-                    "expiry": asset.expiry(),
                     "since": since,
                     "qty": asset_data['amount'],
                     "value_i": asset_data['value'],
-                    "payments": payments_amount,
+                    "paid": payments_amount,
+                    "open_quote": asset_data['value'] / asset_data['amount'],
                     "quote": quote,
                     "quote_ts": quote_ts,
-                    "quote_a": rate * quote
+                    "quote_a": rate * quote,
+                    "quote_age": quote_age,
+                    "font": font
                 }
+                record['header'] = ': '.join([record[x] for x in display_fields])
                 account_holdings.append(record)
             money = account.get_asset_amount(self._date, account.currency())
             if money:
-                account_holdings.append({
+                record = {
                     "currency_id": account.currency(),
                     "currency": JalAsset(account.currency()).symbol(),
                     "account_id": account.id(),
@@ -332,15 +270,19 @@ class HoldingsModel(ReportTreeModel):
                     "country_id": JalAsset(account.currency()).country().id(),
                     "country": JalAsset(account.currency()).country().name(),
                     "tag": self.tr("Money"),
-                    "expiry": 0,
                     "since": 0,
                     "qty": money,
                     "value_i": Decimal('0'),
-                    "payments": Decimal('0'),
+                    "paid": Decimal('0'),
+                    "open_quote": None,
                     "quote": Decimal('1'),
                     "quote_ts": day_end(now_ts()),
-                    "quote_a": rate
-                })
+                    "quote_a": rate,
+                    "quote_age": 0,
+                    "font": 'normal'
+                }
+                record['header'] = ': '.join([record[x] for x in display_fields])
+                account_holdings.append(record)
             holdings += account_holdings
         sort_names = [x.removesuffix("_id") for x in self._groups]
         if 'asset' in sort_names:

@@ -167,7 +167,7 @@ def test_MOEX_downloader(prepare_db_moex):
     assert bond.symbol(1) == 'SU26238RMFS4'
     assert bond.name() == ''
     assert bond.reg_number() == '26238RMFS'
-    assert bond.expiry() == str(d2t(410515))
+    assert bond.expiry() == d2t(410515)
     assert bond.principal() == Decimal('1000')
 
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(7), 1, 1626912000, 1626998400)
@@ -178,7 +178,7 @@ def test_MOEX_downloader(prepare_db_moex):
     assert bond2.symbol(1) == 'МКБ 1P2'
     assert bond2.name() == ''
     assert bond2.reg_number() == '4B020901978B001P'
-    assert bond2.expiry() == str(d2t(211130))
+    assert bond2.expiry() == d2t(211130)
     assert bond2.principal() == Decimal('1000')
     # Test of quotes download for PNK Rental Fund
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(9), 1, 1639353600, 1639440000, update_symbol=False)
