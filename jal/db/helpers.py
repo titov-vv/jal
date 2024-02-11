@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import QLocale
-from jal.constants import Setup
+from jal.constants import Setup, JalGlobals
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -27,31 +27,28 @@ def localize_decimal(value: Decimal, precision: int = None, percent: bool = Fals
         return Setup.NULL_VALUE
     if percent:
         value *= Decimal('100')
-    value = remove_exponent(value)
-    has_sign, digits, exponent = remove_exponent(value).as_tuple()
-    value = -value if has_sign else value   # Remove sign. It will be added back at the end.
-    try:
-        precision = int(precision)
-    except (ValueError, TypeError):
-        precision = -exponent
-    rounded = round(value, precision)
-    digits = [digit for digit in str(rounded)]    # Represent string as list for easier insertions/replacements
-    if 'E' in digits:
-        digits[1] = QLocale().decimalPoint()
+    f_str = '{:'
+    if sign:
+        f_str += '+'
+    f_str += ','
+    if precision:
+        f_str += f".{precision}"
+    if abs(value) > 1:
+        f_str += "f}"
     else:
-        if precision > 0:
-            digits[-precision - 1] = QLocale().decimalPoint()  # Replace decimal point with locale-specific value
-            integer_part_size = len(digits) - precision - 1
+        f_str += "G}"
+    formatted_number = f_str.format(value)
+    pos = formatted_number.find('.')
+    if pos==0:
+        formatted_number = '0' + formatted_number
+        pos += 1
+    if pos > 0:
+        if precision is not None:
+            formatted_number = formatted_number[:pos+precision+1]
         else:
-            integer_part_size = len(digits)  # No decimal point is present in number
-        if QLocale().groupSeparator():
-            for i in range(3, integer_part_size, 3):           # Insert locale-specific thousand separator at each 3rd digit
-                digits.insert(integer_part_size - i, QLocale().groupSeparator())
-    if has_sign:
-        digits.insert(0, QLocale().negativeSign())
-    elif sign:
-        digits.insert(0, QLocale().positiveSign())
-    formatted_number = ''.join(digits)
+            formatted_number = formatted_number.rstrip('0')
+            formatted_number = formatted_number[:-1] if formatted_number[-1]=='.' else formatted_number
+    formatted_number = formatted_number.replace(',', JalGlobals().number_group_separator).replace('.', JalGlobals().number_decimal_point)
     return formatted_number
 
 

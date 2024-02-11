@@ -1,8 +1,10 @@
-from PySide6.QtCore import Property, QObject
+from PySide6.QtCore import Property, QObject, QLocale
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QComboBox
 
 
+#-----------------------------------------------------------------------------------------------------------------------
+# This class contains a list of predefined constants used by JAL
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
@@ -29,6 +31,23 @@ class Setup:
     MAX_TIMESTAMP = 9999999999
 
 
+#-----------------------------------------------------------------------------------------------------------------------
+# This class is initialized with global values that is used by JAL
+class JalGlobals:
+    number_decimal_point = None
+    number_group_separator = None
+
+    def __init__(self):
+        if self.number_decimal_point is None:
+            JalGlobals.init_values()
+
+    @classmethod
+    def init_values(cls):
+        cls.number_decimal_point = QLocale().decimalPoint()
+        cls.number_group_separator = QLocale().groupSeparator()
+
+
+#-----------------------------------------------------------------------------------------------------------------------
 class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Costs = 1
     Incomes = 2

@@ -18,7 +18,7 @@ from jal.widgets.helpers import dependency_present
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_dialogs import AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog
-from jal.constants import Setup
+from jal.constants import Setup, JalGlobals
 from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_app_path, get_dbfilename
 from jal.db.account import JalAccount
@@ -35,6 +35,7 @@ from jal.data_import.shop_receipt import ImportReceiptDialog
 class MainWindow(QMainWindow):
     def __init__(self, language):
         super().__init__()
+        self.globals = JalGlobals()  # Initialize and keep global values
         self.icons = JalIcon()  # This variable is used to initialize JalIcons class and keep its cache in memory.
                                 # It is not used directly but icons are accessed via @classmethod of JalIcons class
                                 # Should be called before ui-initialization
