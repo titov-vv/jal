@@ -99,7 +99,7 @@ class TimestampDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
-        if type(self._parent) == QTreeView:    # Extra code for tree views - to draw grid lines
+        if issubclass(type(self._parent), QTreeView):    # Extra code for tree views - to draw grid lines
             painter.save()
             pen = painter.pen()
             pen.setWidth(1)
@@ -140,8 +140,9 @@ class FloatDelegate(QStyledItemDelegate):
         try:
             amount = Decimal(value)
         except ValueError:
-            amount = Decimal('0')
-        amount = Decimal('0') if amount.is_nan() else amount  # Protection against occasional NaNs in database
+            amount = None
+        if amount is None or amount.is_nan():
+            return localize_decimal(amount)
         if self._percent:
             amount *= Decimal('100')
         if amount > Decimal('0'):
@@ -185,7 +186,7 @@ class FloatDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
-        if type(self._parent) == QTreeView:  # Extra code for tree views - to draw grid lines
+        if issubclass(type(self._parent), QTreeView):  # Extra code for tree views - to draw grid lines
             painter.save()
             pen = painter.pen()
             pen.setWidth(1)
@@ -227,7 +228,7 @@ class BoolDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
-        if type(self._parent) == QTreeView:  # Extra code for tree views - to draw grid lines
+        if issubclass(type(self._parent), QTreeView):  # Extra code for tree views - to draw grid lines
             painter.save()
             pen = painter.pen()
             pen.setWidth(1)
