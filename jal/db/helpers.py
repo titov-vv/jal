@@ -33,10 +33,7 @@ def localize_decimal(value: Decimal, precision: int = None, percent: bool = Fals
     f_str += ','
     if precision:
         f_str += f".{precision}"
-    if abs(value) > 1:
-        f_str += "f}"
-    else:
-        f_str += "G}"
+    f_str += "f}"
     formatted_number = f_str.format(value)
     pos = formatted_number.find('.')
     if pos==0:

@@ -5,13 +5,13 @@ from decimal import Decimal
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import CustomColor, PredefinedAccountType, Setup
-from jal.db.helpers import localize_decimal, now_ts, day_end
+from jal.constants import CustomColor, PredefinedAccountType
+from jal.db.helpers import now_ts, day_end
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, Transfer, CorporateAction
-from jal.widgets.delegates import GridLinesDelegate
+from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate
 from jal.widgets.helpers import ts2d
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -83,6 +83,17 @@ class HoldingsModel(ReportTreeModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._grid_delegate = None
+        self._float_delegate = None
+        self._float2_delegate = None
+        self._float4_delegate = None
+        self._profit_delegate = None
+        self._date_delegate = None
+        self._bold_font = QFont()
+        self._bold_font.setBold(True)
+        self._strikeout_font = QFont()
+        self._strikeout_font.setStrikeOut(True)
+        self._italic_font = QFont()
+        self._italic_font.setItalic(True)
         self._currency = 0
         self._only_active_accounts = True
         self._currency_name = ''
@@ -117,68 +128,58 @@ class HoldingsModel(ReportTreeModel):
             if role == Qt.FontRole:
                 return self.data_font(item, index.column())
             if role == Qt.BackgroundRole:
-                return self.data_background(item, index.column(), self._view.isEnabled())
+                return self.data_background(item, self._view.isEnabled())
             if role == Qt.ToolTipRole:
                 return self.data_tooltip(item.details(), index.column())
-            if role == Qt.TextAlignmentRole:
-                if index.column() < 2:
-                    return int(Qt.AlignLeft)
-                else:
-                    return int(Qt.AlignRight)
             return None
         except Exception as e:
             print(e)
 
+    def data0(self, item, data):
+        if item.isGroup():
+            group, value = item.getGroup()
+            return data[group.strip("_id")]
+        else:
+            all_fields = ['currency', 'account', 'asset']
+            display_fields = [y for y in all_fields if y not in [x.strip("_id") for x in self._groups]]
+            return ': '.join([data[x] for x in display_fields])
+
+    def data1(self, data):
+        expiry_text = ""
+        if data['expiry']:
+            expiry_header = self.tr("Exp:")
+            expiry_text = f" [{expiry_header} {ts2d(int(data['expiry']))}]"
+        return data['asset_name'] + expiry_text
+
     def data_text(self, item, column):
         data = item.details()
         if column == 0:
-            if item.isGroup():
-                group, value = item.getGroup()
-                return data[group.strip("_id")]
-            else:
-                all_fields = ['currency', 'account', 'asset']
-                display_fields = [y for y in all_fields if y not in [x.strip("_id") for x in self._groups]]
-                return ': '.join([data[x] for x in display_fields])
+            return self.data0(item, data)
         if column == 1:
-            expiry_text = ""
-            if data['expiry']:
-                expiry_header = self.tr("Exp:")
-                expiry_text = f" [{expiry_header} {ts2d(int(data['expiry']))}]"
-            return data['asset_name'] + expiry_text
+            return self.data1(data)
         if column == 2:
-            if data['qty']:
-                if data['asset_is_currency']:
-                    decimal_places = 2
-                else:
-                    decimal_places = -data['qty'].as_tuple().exponent
-                    decimal_places = max(min(decimal_places, 6), 0)
-                return localize_decimal(Decimal(data['qty']), decimal_places)
-            else:
-                return ''
+            return data['qty']
         if column == 3:
-            if data['since'] == 0:
-                return ''
-            else:
-                return ts2d(data['since'])
+            return data['since']
         if column == 4:
             if data['qty'] != Decimal('0') and data['value_i'] != Decimal('0'):
-                return localize_decimal(data['value_i'] / data['qty'], 4)
+                return data['value_i'] / data['qty']
             else:
-                return ''
+                return Decimal('NaN')
         if column == 5:
-            return localize_decimal(data['quote'], 4) if data['quote'] and float(data['qty']) != 0 else ''
+            return data['quote']
         if column == 6:
-            return localize_decimal(data['share'], 2) if data['share'] else Setup.NULL_VALUE
+            return data['share']
         if column == 7:
-            return localize_decimal(data['profit_rel'], 2)
+            return data['profit_rel']
         if column == 8:
-            return localize_decimal(data['profit'], 2)
+            return data['profit']
         if column == 9:
-            return localize_decimal(data['payments'], 2)
+            return data['payments']
         if column == 10:
-            return localize_decimal(data['value'], 2)
+            return data['value']
         if column == 11:
-            return localize_decimal(data['value_a'], 2) if data['value_a'] else Setup.NULL_VALUE
+            return data['value_a']
 
     def data_tooltip(self, data, column):
         if 5 <= column <= 10:
@@ -191,30 +192,23 @@ class HoldingsModel(ReportTreeModel):
     def data_font(self, item, column):
         data = item.details()
         if item.isGroup():
-            font = QFont()
-            font.setBold(True)
-            return font
+            return self._bold_font
         else:
             if column == 1 and data['expiry']:
                 expiry_date = datetime.utcfromtimestamp(int(data['expiry']))
                 days_remaining = int((expiry_date - datetime.utcnow()).total_seconds() / 86400)
                 if days_remaining <= 10:
-                    font = QFont()
                     if days_remaining < 0:
-                        font.setStrikeOut(True)
+                        return self._strikeout_font
                     else:
-                        font.setItalic(True)
-                    return font
+                        return self._italic_font
             if column >= 5 and column <= 10:
                 quote_date = datetime.utcfromtimestamp(int(data['quote_ts']))
                 quote_age = int((datetime.utcnow()- quote_date).total_seconds() / 86400)
                 if quote_age > 7:
-                    font = QFont()
-                    font.setItalic(True)
-                    return font
+                    return self._italic_font
 
-    def data_background(self, item, column, enabled=True):
-        data = item.details()
+    def data_background(self, item, enabled=True):
         factor = 100 if enabled else 125
         if item.isGroup():
             group, value = item.getGroup()
@@ -222,16 +216,6 @@ class HoldingsModel(ReportTreeModel):
                 return QBrush(CustomColor.LightPurple.lighter(factor))
             if group == "account_id":
                 return QBrush(CustomColor.LightBlue.lighter(factor))
-        if column == 7 and data['profit_rel']:
-            if data['profit_rel'] >= 0:
-                return QBrush(CustomColor.LightGreen.lighter(factor))
-            else:
-                return QBrush(CustomColor.LightRed.lighter(factor))
-        if column == 8 and data['profit']:
-            if data['profit'] >= 0:
-                return QBrush(CustomColor.LightGreen.lighter(factor))
-            else:
-                return QBrush(CustomColor.LightRed.lighter(factor))
 
     def configureView(self):
         self._view.header().setSectionResizeMode(0, QHeaderView.ResizeToContents)
@@ -239,8 +223,23 @@ class HoldingsModel(ReportTreeModel):
         for i in range(len(self._columns))[2:]:
             self._view.header().setSectionResizeMode(i, QHeaderView.ResizeToContents)
         self._grid_delegate = GridLinesDelegate(self._view)
-        for i in range(len(self._columns)):
-            self._view.setItemDelegateForColumn(i, self._grid_delegate)
+        self._date_delegate = TimestampDelegate(display_format='%d/%m/%Y', parent=self._view)
+        self._float_delegate = FloatDelegate(0, allow_tail=True, parent=self._view)
+        self._float2_delegate = FloatDelegate(2, allow_tail=False, parent=self._view)
+        self._float4_delegate = FloatDelegate(4, allow_tail=False, parent=self._view)
+        self._profit_delegate = FloatDelegate(2, allow_tail=False, colors=True, parent=self._view)
+        self._view.setItemDelegateForColumn(0, self._grid_delegate)
+        self._view.setItemDelegateForColumn(1, self._grid_delegate)
+        self._view.setItemDelegateForColumn(2, self._float_delegate)
+        self._view.setItemDelegateForColumn(3, self._date_delegate)
+        self._view.setItemDelegateForColumn(4, self._float4_delegate)
+        self._view.setItemDelegateForColumn(5, self._float4_delegate)
+        self._view.setItemDelegateForColumn(6, self._float2_delegate)
+        self._view.setItemDelegateForColumn(7, self._profit_delegate)
+        self._view.setItemDelegateForColumn(8, self._profit_delegate)
+        self._view.setItemDelegateForColumn(9, self._float2_delegate)
+        self._view.setItemDelegateForColumn(10, self._float2_delegate)
+        self._view.setItemDelegateForColumn(11, self._float2_delegate)
         super().configureView()
 
     def updateView(self, currency_id, date, grouping, show_inactive):

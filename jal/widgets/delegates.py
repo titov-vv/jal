@@ -154,7 +154,7 @@ class FloatDelegate(QStyledItemDelegate):
                 return ''
         decimal_places = -amount.normalize().as_tuple().exponent
         decimal_places = decimal_places if self._allow_tail and (decimal_places > self._tolerance) else self._tolerance
-        return QLocale().toString(float(amount), 'f', decimal_places)
+        return localize_decimal(amount, decimal_places)
 
     # this is required when edit operation is called from QTableView
     def createEditor(self, aParent, option, index):
