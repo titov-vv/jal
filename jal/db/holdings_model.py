@@ -23,13 +23,12 @@ class AssetTreeItem(AbstractTreeItem):
         super().__init__(parent, group)
         if data is None:
             self._data = {
-                'header': '',
-                'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0, 'tag': '',
-                'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
+                'header': '', 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
+                'tag': '', 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
                 'since': 0, 'qty': None, 'value_i': Decimal('0'), 'paid': Decimal('0'),
                 'open_quote': None, 'quote': None, 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
                 'value': Decimal('0'), 'value_common': Decimal('0'), 'p/l': Decimal('0'), 'p/l%': Decimal('0'),
-                "font": 'bold', 'quote_age': 0
+                'font': 'bold', 'quote_age': 0, 'share': Decimal('0')
             }
         else:
             self._data = data.copy()
@@ -37,7 +36,6 @@ class AssetTreeItem(AbstractTreeItem):
             self._data['value_common'] = self._data['quote_a'] * self._data['qty'] if self._data['quote_a'] else Decimal('0')
             self._data['p/l'] = self._data['quote'] * self._data['qty'] - self._data['value_i'] if not self._data['asset_is_currency'] else Decimal('0')
             self._data['p/l%'] = Decimal('100') * (self._data['quote'] * self._data['qty'] / self._data['value_i'] - 1) if self._data['value_i'] != Decimal('0') else Decimal('0')
-        self._data['share'] = Decimal('0')
 
     def _calculateGroupTotals(self, child_data):
         self._data['header'] = child_data.get(self._group.strip("_id"), '<none>')
@@ -233,14 +231,14 @@ class HoldingsModel(ReportTreeModel):
                 expiry_header = self.tr("Exp:")
                 expiry_text = f" [{expiry_header} {ts2d(asset.expiry())}]" if asset.expiry() else ''
                 record = {
-                    "currency_id": account.currency(),
+                    "currency_id": account.currency(),                      # Fields 'x' and 'x_id' are used together for grouping
                     "currency": JalAsset(account.currency()).symbol(),
                     "account_id": account.id(),
                     "account": account.name(),
                     "asset_id": asset.id(),
-                    "asset_is_currency": False,
                     "asset": asset.symbol(currency=account.currency()),
                     "asset_name": asset.name() + expiry_text,
+                    "asset_is_currency": False,
                     "country_id": asset.country().id(),
                     "country": asset.country().name(),
                     "tag": asset.tag().name() if asset.tag().name() else self.tr("N/A"),
@@ -253,6 +251,7 @@ class HoldingsModel(ReportTreeModel):
                     "quote_ts": quote_ts,
                     "quote_a": rate * quote,
                     "quote_age": quote_age,
+                    "share": Decimal('0'),
                     "font": font
                 }
                 record['header'] = ': '.join([record[x] for x in display_fields])
@@ -265,9 +264,9 @@ class HoldingsModel(ReportTreeModel):
                     "account_id": account.id(),
                     "account": account.name(),
                     "asset_id": account.currency(),
-                    "asset_is_currency": True,
                     "asset": JalAsset(account.currency()).symbol(),
                     "asset_name": JalAsset(account.currency()).name(),
+                    "asset_is_currency": True,
                     "country_id": JalAsset(account.currency()).country().id(),
                     "country": JalAsset(account.currency()).country().name(),
                     "tag": self.tr("Money"),
@@ -280,6 +279,7 @@ class HoldingsModel(ReportTreeModel):
                     "quote_ts": day_end(now_ts()),
                     "quote_a": rate,
                     "quote_age": 0,
+                    "share": Decimal('0'),
                     "font": 'normal'
                 }
                 record['header'] = ': '.join([record[x] for x in display_fields])
