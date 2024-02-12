@@ -8,6 +8,7 @@ from jal.widgets.reference_selector import AssetSelector, PeerSelector, Category
 from jal.db.db import JalModel
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
+from jal.widgets.icons import JalIcon
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -209,25 +210,25 @@ class SymbolDelegate(QStyledItemDelegate):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Display '*' if true and empty cell if false
-# Toggle True/False by mouse click
+# Toggle True/False by mouse click and display status by relevant icon
 class BoolDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         self._parent = parent
         super().__init__(parent=parent)
-
-    def displayText(self, value, locale):
-        if value:
-            return ' ☒ '
-        else:
-            return ' ☐ '
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
         option.displayAlignment = Qt.AlignCenter
 
     def paint(self, painter, option, index):
-        super().paint(painter, option, index)
+        value = index.model().data(index, Qt.DisplayRole)
+        painter.save()
+        if value:
+            icon = JalIcon[JalIcon.OK]
+        else:
+            icon = JalIcon[JalIcon.CANCEL]
+        icon.paint(painter, option.rect, Qt.AlignVCenter | Qt.AlignCenter)
+        painter.restore()
         if issubclass(type(self._parent), QTreeView):  # Extra code for tree views - to draw grid lines
             painter.save()
             pen = painter.pen()
