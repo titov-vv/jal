@@ -147,28 +147,29 @@ class HoldingsModel(ReportTreeModel):
         return None
 
     def configureView(self):
-        self._view.header().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self._view.header().setSectionResizeMode(1, QHeaderView.Stretch)
-        for i in range(len(self._columns))[2:]:
-            self._view.header().setSectionResizeMode(i, QHeaderView.ResizeToContents)
+        for field in [x['field'] for x in self._columns]:
+            if field == 'asset_name':
+                self._view.header().setSectionResizeMode(self.fieldIndex(field), QHeaderView.Stretch)
+            else:
+                self._view.header().setSectionResizeMode(self.fieldIndex(field), QHeaderView.ResizeToContents)
         self._grid_delegate = GridLinesDelegate(self._view)
         self._date_delegate = TimestampDelegate(display_format='%d/%m/%Y', parent=self._view)
         self._float_delegate = FloatDelegate(0, allow_tail=True, parent=self._view)
         self._float2_delegate = FloatDelegate(2, allow_tail=False, parent=self._view)
         self._float4_delegate = FloatDelegate(4, allow_tail=False, parent=self._view)
         self._profit_delegate = FloatDelegate(2, allow_tail=False, colors=True, parent=self._view)
-        self._view.setItemDelegateForColumn(0, self._grid_delegate)
-        self._view.setItemDelegateForColumn(1, self._grid_delegate)
-        self._view.setItemDelegateForColumn(2, self._float_delegate)
-        self._view.setItemDelegateForColumn(3, self._date_delegate)
-        self._view.setItemDelegateForColumn(4, self._float4_delegate)
-        self._view.setItemDelegateForColumn(5, self._float4_delegate)
-        self._view.setItemDelegateForColumn(6, self._float2_delegate)
-        self._view.setItemDelegateForColumn(7, self._profit_delegate)
-        self._view.setItemDelegateForColumn(8, self._profit_delegate)
-        self._view.setItemDelegateForColumn(9, self._float2_delegate)
-        self._view.setItemDelegateForColumn(10, self._float2_delegate)
-        self._view.setItemDelegateForColumn(11, self._float2_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('header'), self._grid_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('asset_name'), self._grid_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('qty'), self._float_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('since'), self._date_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('open_quote'), self._float4_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('quote'), self._float4_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('share'), self._float2_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('p/l%'), self._profit_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('p/l'), self._profit_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('paid'), self._float2_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('value'), self._float2_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('value_common'), self._float2_delegate)
         super().configureView()
 
     def updateView(self, currency_id, date, grouping, show_inactive):
