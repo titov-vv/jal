@@ -1344,83 +1344,82 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="107"/>
+        <location filename="../db/holdings_model.py" line="109"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="108"/>
+        <location filename="../db/holdings_model.py" line="110"/>
         <source>Since</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="109"/>
+        <location filename="../db/holdings_model.py" line="111"/>
         <source>Open</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="110"/>
+        <location filename="../db/holdings_model.py" line="112"/>
         <source>Last</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="111"/>
+        <location filename="../db/holdings_model.py" line="113"/>
         <source>Share, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="112"/>
+        <location filename="../db/holdings_model.py" line="114"/>
         <source>P/L, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="113"/>
+        <location filename="../db/holdings_model.py" line="115"/>
         <source>P/L</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="114"/>
+        <location filename="../db/holdings_model.py" line="116"/>
         <source>Paid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="115"/>
+        <location filename="../db/holdings_model.py" line="117"/>
         <source>Value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="116"/>
+        <location filename="../db/holdings_model.py" line="118"/>
         <source>Value, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="187"/>
+        <location filename="../db/holdings_model.py" line="144"/>
         <source>Last quote date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="293"/>
+        <location filename="../db/holdings_model.py" line="244"/>
         <source>N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="320"/>
+        <location filename="../db/holdings_model.py" line="272"/>
         <source>Money</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="105"/>
+        <location filename="../db/holdings_model.py" line="107"/>
         <source>Currency/Account/Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="106"/>
+        <location filename="../db/holdings_model.py" line="108"/>
         <source>Asset Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="155"/>
-        <location filename="../db/holdings_model.py" line="281"/>
+        <location filename="../db/holdings_model.py" line="232"/>
         <source>Exp:</source>
         <translation></translation>
     </message>

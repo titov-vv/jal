@@ -1344,83 +1344,82 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="107"/>
+        <location filename="../db/holdings_model.py" line="109"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="108"/>
+        <location filename="../db/holdings_model.py" line="110"/>
         <source>Since</source>
         <translation>С</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="109"/>
+        <location filename="../db/holdings_model.py" line="111"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="110"/>
+        <location filename="../db/holdings_model.py" line="112"/>
         <source>Last</source>
         <translation>Цена закр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="111"/>
+        <location filename="../db/holdings_model.py" line="113"/>
         <source>Share, %</source>
         <translation>Доля, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="112"/>
+        <location filename="../db/holdings_model.py" line="114"/>
         <source>P/L, %</source>
         <translation>ПиУ, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="113"/>
+        <location filename="../db/holdings_model.py" line="115"/>
         <source>P/L</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="114"/>
+        <location filename="../db/holdings_model.py" line="116"/>
         <source>Paid</source>
         <translation>Выплачено</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="115"/>
+        <location filename="../db/holdings_model.py" line="117"/>
         <source>Value</source>
         <translation>Оценка</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="116"/>
+        <location filename="../db/holdings_model.py" line="118"/>
         <source>Value, </source>
         <translation>Оценка, </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="187"/>
+        <location filename="../db/holdings_model.py" line="144"/>
         <source>Last quote date: </source>
         <translation>Дата последней котировки: </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="293"/>
+        <location filename="../db/holdings_model.py" line="244"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="320"/>
+        <location filename="../db/holdings_model.py" line="272"/>
         <source>Money</source>
         <translation>Деньги</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="105"/>
+        <location filename="../db/holdings_model.py" line="107"/>
         <source>Currency/Account/Asset</source>
         <translation>Валюта/Счёт/ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="106"/>
+        <location filename="../db/holdings_model.py" line="108"/>
         <source>Asset Name</source>
         <translation>Ценная бумага</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="155"/>
-        <location filename="../db/holdings_model.py" line="281"/>
+        <location filename="../db/holdings_model.py" line="232"/>
         <source>Exp:</source>
         <translation>Эксп:</translation>
     </message>

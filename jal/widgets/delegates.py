@@ -64,9 +64,34 @@ class DateTimeEditWithReset(QDateTimeEdit):
         super().keyPressEvent(event)
 
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+# QTreeView doesn't draw grid lines and have no normal method to implement it
+# So the purpose of this delegate is solely to draw dotted box around report cell
+class GridLinesDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        self._parent = parent
+        super().__init__(parent=parent)
+
+    def paint_grid(self, painter, option, index):
+        if issubclass(type(self._parent), QTreeView):  # Extra code for tree views - to draw grid lines
+            painter.save()
+            pen = painter.pen()
+            pen.setWidth(1)
+            pen.setStyle(Qt.DotLine)
+            pen.setColor(Qt.GlobalColor.lightGray)
+            painter.setPen(pen)
+            painter.drawRect(option.rect)
+            painter.restore()
+
+    def paint(self, painter, option, index):
+        self.paint_grid(painter, option, index)
+        super().paint(painter, option, index)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Delegate to convert timestamp from unix-time to QDateTime and display it according to the given format
-class TimestampDelegate(QStyledItemDelegate):
+class TimestampDelegate(GridLinesDelegate):
     def __init__(self, display_format='%d/%m/%Y %H:%M:%S', parent=None):
         super().__init__(parent=parent)
         self._parent = parent
@@ -98,18 +123,6 @@ class TimestampDelegate(QStyledItemDelegate):
         timestamp = editor.dateTime().toSecsSinceEpoch()
         model.setData(index, timestamp)
 
-    def paint(self, painter, option, index):
-        super().paint(painter, option, index)
-        if issubclass(type(self._parent), QTreeView):    # Extra code for tree views - to draw grid lines
-            painter.save()
-            pen = painter.pen()
-            pen.setWidth(1)
-            pen.setStyle(Qt.DotLine)
-            pen.setColor(Qt.GlobalColor.lightGray)
-            painter.setPen(pen)
-            painter.drawRect(option.rect)
-            painter.restore()
-
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Delegate for float numbers formatting
@@ -119,7 +132,7 @@ class TimestampDelegate(QStyledItemDelegate):
 # 'colors' - make Green/Red background for positive/negative values
 # 'percent' - multiply values by 100 in order to display percents
 # 'empty_zero' - display nothing instead of number 0
-class FloatDelegate(QStyledItemDelegate):
+class FloatDelegate(GridLinesDelegate):
     DEFAULT_TOLERANCE = 6
 
     def __init__(self, tolerance=None, allow_tail=True, colors=False, percent=False, empty_zero=False, parent=None):
@@ -185,18 +198,6 @@ class FloatDelegate(QStyledItemDelegate):
         if self._colors and self._color is not None:
             option.backgroundBrush = QBrush(self._color)
 
-    def paint(self, painter, option, index):
-        super().paint(painter, option, index)
-        if issubclass(type(self._parent), QTreeView):  # Extra code for tree views - to draw grid lines
-            painter.save()
-            pen = painter.pen()
-            pen.setWidth(1)
-            pen.setStyle(Qt.DotLine)
-            pen.setColor(Qt.GlobalColor.lightGray)
-            painter.setPen(pen)
-            painter.drawRect(option.rect)
-            painter.restore()
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Delegate to apply currency filter for AssetSelector widgets based on current account
@@ -211,7 +212,7 @@ class SymbolDelegate(QStyledItemDelegate):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Toggle True/False by mouse click and display status by relevant icon
-class BoolDelegate(QStyledItemDelegate):
+class BoolDelegate(GridLinesDelegate):
     def __init__(self, parent=None):
         self._parent = parent
         super().__init__(parent=parent)
@@ -229,15 +230,7 @@ class BoolDelegate(QStyledItemDelegate):
             icon = JalIcon[JalIcon.CANCEL]
         icon.paint(painter, option.rect, Qt.AlignVCenter | Qt.AlignCenter)
         painter.restore()
-        if issubclass(type(self._parent), QTreeView):  # Extra code for tree views - to draw grid lines
-            painter.save()
-            pen = painter.pen()
-            pen.setWidth(1)
-            pen.setStyle(Qt.DotLine)
-            pen.setColor(Qt.GlobalColor.lightGray)
-            painter.setPen(pen)
-            painter.drawRect(option.rect)
-            painter.restore()
+        self.paint_grid(painter, option, index)
 
     def editorEvent(self, event, model, option, index):
         if event.type() == QEvent.MouseButtonPress:
@@ -273,25 +266,6 @@ class ConstantLookupDelegate(QStyledItemDelegate):
 
     def setModelData(self, editor, model, index):
         model.setData(index, editor.currentData())
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# QTreeView doesn't draw grid lines and have no normal method to implement it
-# So the purpose of this delegate is solely to draw dotted box around report cell
-class GridLinesDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        pen = painter.pen()
-        pen.setWidth(1)
-        pen.setStyle(Qt.DotLine)
-        pen.setColor(Qt.GlobalColor.lightGray)
-        painter.setPen(pen)
-        painter.drawRect(option.rect)
-        painter.restore()
-        super().paint(painter, option, index)
 
 
 # -----------------------------------------------------------------------------------------------------------------------
