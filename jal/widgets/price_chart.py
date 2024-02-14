@@ -126,7 +126,7 @@ class ChartWindow(MdiWidget):
             if operation.type() == LedgerTransaction.CorporateAction and operation.subtype() == CorporateAction.Split:
                 trades += self.load_open_trades(account, asset, operation.timestamp()-1)  # get position just before the split
                 text = operation.description().split('\n')[0]
-            if operation.type() == LedgerTransaction.Dividend:
+            if operation.type() == LedgerTransaction.AssetPayment:
                 text = operation.name() + "\n" + operation.description().split('\n')[0]
             trades.append({
                 'timestamp': operation.timestamp() * 1000,  # timestamp to ms

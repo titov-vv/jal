@@ -8,7 +8,7 @@ from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
-from jal.db.operations import LedgerTransaction, Dividend
+from jal.db.operations import LedgerTransaction, AssetPayment
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -185,7 +185,7 @@ def test_stock_dividend_change(prepare_db_fifo):
 
     # Insert a stock dividend between trades
     stock_dividends = [
-        (Dividend.StockDividend, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Stock dividend +2 A')
+        (AssetPayment.StockDividend, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Stock dividend +2 A')
     ]
     create_stock_dividends(stock_dividends)
 
@@ -201,7 +201,7 @@ def test_stock_dividend_change(prepare_db_fifo):
     assert len(trades) == 4
 
     # Modify stock dividend
-    LedgerTransaction.get_operation(LedgerTransaction.Dividend, 1).update_amount(Decimal('3.0'))
+    LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, 1).update_amount(Decimal('3.0'))
 
     # Re-build ledger from last actual data
     ledger.rebuild()
@@ -254,7 +254,7 @@ def test_fifo(prepare_db_fifo):
     create_corporate_actions(1, test_corp_actions)
 
     stock_dividends = [
-        (Dividend.StockDividend, 1608368400, 1, 16, 1.0, 2, 1050.0, 60.0, 'Stock dividend +1 N')
+        (AssetPayment.StockDividend, 1608368400, 1, 16, 1.0, 2, 1050.0, 60.0, 'Stock dividend +1 N')
     ]
     create_stock_dividends(stock_dividends)
 

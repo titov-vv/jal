@@ -11,7 +11,7 @@ from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ManipulateDate, ts2dt, ts2d
 from jal.db.helpers import format_decimal
 from jal.db.account import JalAccount
-from jal.db.operations import Dividend
+from jal.db.operations import AssetPayment
 from jal.data_import.statement import FOF, Statement_ImportError, Statement_Capabilities
 from jal.data_import.statement_xml import StatementXML
 
@@ -1069,7 +1069,7 @@ class StatementIBKR(StatementXML):
         db_account = self._map_db_account(account_id)
         db_asset = self._map_db_asset(asset_id)
         if db_account and db_asset:
-            for db_dividend in Dividend.get_list(db_account, db_asset, Dividend.Dividend):
+            for db_dividend in AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend):
                 dividends.append({
                     "id": -db_dividend.oid(),
                     "account": account_id,

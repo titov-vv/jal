@@ -14,7 +14,7 @@ from jal.constants import Setup, MarketDataFeed, PredefinedAsset, PredefinedAcco
 from jal.db.helpers import get_app_path
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
+from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
 from jal.net.downloader import QuoteDownloader
@@ -515,30 +515,30 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     JalAccount(payment['account_id']).currency())
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
-                    payment['type'] = Dividend.Dividend
-                    LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                    payment['type'] = AssetPayment.Dividend
+                    LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
                 else:  # Dividend exists, only tax to be updated
-                    dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
+                    dividend = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, -payment['id'])
                     dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_INTEREST:
-                payment['type'] = Dividend.BondInterest
-                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                payment['type'] = AssetPayment.BondInterest
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
             elif payment['type'] == FOF.PAYMENT_AMORTIZATION:
-                payment['type'] = Dividend.BondAmortization
-                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                payment['type'] = AssetPayment.BondAmortization
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
             elif payment['type'] == FOF.PAYMENT_STOCK_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
-                    payment['type'] = Dividend.StockDividend
-                    LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                    payment['type'] = AssetPayment.StockDividend
+                    LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
                 else:  # Dividend exists, only tax to be updated
-                    dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
+                    dividend = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, -payment['id'])
                     dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_STOCK_VESTING:
-                payment['type'] = Dividend.StockVesting
-                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                payment['type'] = AssetPayment.StockVesting
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
             elif payment['type'] == FOF.PAYMENT_FEE:
-                payment['type'] = Dividend.Fee
-                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                payment['type'] = AssetPayment.Fee
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 

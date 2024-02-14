@@ -1,7 +1,7 @@
 from decimal import Decimal
 from datetime import datetime
 
-from jal.db.operations import Dividend
+from jal.db.operations import AssetPayment
 from jal.data_export.taxes import TaxReport
 
 
@@ -24,9 +24,9 @@ class TaxesPortugal(TaxReport):
         for dividend in dividends:
             country = dividend.asset().country()
             note = ''
-            if dividend.subtype() == Dividend.StockDividend:
+            if dividend.subtype() == AssetPayment.StockDividend:
                 note = "Stock dividend"
-            if dividend.subtype() == Dividend.StockVesting:
+            if dividend.subtype() == AssetPayment.StockVesting:
                 note = "Stock vesting"
             line = {
                 'report_template': "dividend",
@@ -77,7 +77,7 @@ class TaxesPortugal(TaxReport):
             else:  # Short trade
                 # Check were there any dividends during short position holding
                 short_dividend_eur = Decimal('0')
-                dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
+                dividends = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
                 dividends = [x for x in dividends if
                              trade.open_operation().settlement() <= x.ex_date() <= trade.close_operation().settlement()]
                 for dividend in dividends:

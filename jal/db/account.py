@@ -306,7 +306,7 @@ class JalAccount(JalDB):
     # Asset payment is counted if its ex-date is between start and end or, if ex-date is missing, the timestamp of
     # payment is between start and end timestamps
     def asset_payments_amount(self, asset, start_ts, end_ts) -> Decimal:
-        payments = jal.db.operations.Dividend.get_list(self._id, asset.id())
+        payments = jal.db.operations.AssetPayment.get_list(self._id, asset.id())
         payments = [x for x in payments if (start_ts <= x.ex_date() <= end_ts) or (x.ex_date() == 0 and (start_ts <= x.timestamp() <= end_ts))]
         if payments:
             amount = sum([x.amount(currency_id=self._currency_id) for x in payments])

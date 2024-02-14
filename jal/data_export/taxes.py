@@ -9,7 +9,7 @@ from jal.constants import Setup, PredefinedAsset
 from jal.db.helpers import get_app_path
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, Dividend
+from jal.db.operations import LedgerTransaction, AssetPayment
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
@@ -112,9 +112,9 @@ class TaxReport:
 
     # Returns a list of dividends that should be included into the report for given year
     def dividends_list(self) -> list:
-        dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
-        dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockDividend)
-        dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockVesting)
+        dividends = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
+        dividends += AssetPayment.get_list(self.account.id(), subtype=AssetPayment.StockDividend)
+        dividends += AssetPayment.get_list(self.account.id(), subtype=AssetPayment.StockVesting)
         dividends = [x for x in dividends if self.year_begin <= x.timestamp() <= self.year_end]
         return dividends
 
@@ -124,9 +124,9 @@ class TaxReport:
         trades = [x for x in trades if x.asset().type() in [PredefinedAsset.Stock, PredefinedAsset.ETF]]
         trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade or (
-                x.open_operation().type() == LedgerTransaction.Dividend and (
-                x.open_operation().subtype() == Dividend.StockDividend or
-                x.open_operation().subtype() == Dividend.StockVesting))]
+                x.open_operation().type() == LedgerTransaction.AssetPayment and (
+                x.open_operation().subtype() == AssetPayment.StockDividend or
+                x.open_operation().subtype() == AssetPayment.StockVesting))]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         return trades
 

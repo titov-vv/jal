@@ -23,7 +23,7 @@ class LedgerTransaction(JalDB):
     NoOpException = 'NoLedgerOperation'
     NA = 0                  # Transaction types - these are aligned with tabs in main window
     IncomeSpending = 1
-    Dividend = 2
+    AssetPayment = 2
     Trade = 3
     Transfer = 4
     CorporateAction = 5
@@ -67,8 +67,8 @@ class LedgerTransaction(JalDB):
     def get_operation(operation_type, operation_id, display_type=None):
         if operation_type == LedgerTransaction.IncomeSpending:
             return IncomeSpending(operation_id)
-        elif operation_type == LedgerTransaction.Dividend:
-            return Dividend(operation_id)
+        elif operation_type == LedgerTransaction.AssetPayment:
+            return AssetPayment(operation_id)
         elif operation_type == LedgerTransaction.Trade:
             return Trade(operation_id)
         elif operation_type == LedgerTransaction.Transfer:
@@ -84,8 +84,8 @@ class LedgerTransaction(JalDB):
     def create_new(operation_type, operation_data):
         if operation_type == LedgerTransaction.IncomeSpending:
             return IncomeSpending(operation_data)
-        elif operation_type == LedgerTransaction.Dividend:
-            return Dividend(operation_data)
+        elif operation_type == LedgerTransaction.AssetPayment:
+            return AssetPayment(operation_data)
         elif operation_type == LedgerTransaction.Trade:
             return Trade(operation_data)
         elif operation_type == LedgerTransaction.Transfer:
@@ -107,9 +107,9 @@ class LedgerTransaction(JalDB):
         if operation_type == LedgerTransaction.IncomeSpending:
             table = IncomeSpending._db_table
             fields = IncomeSpending._db_fields
-        elif operation_type == LedgerTransaction.Dividend:
-            table = Dividend._db_table
-            fields = Dividend._db_fields
+        elif operation_type == LedgerTransaction.AssetPayment:
+            table = AssetPayment._db_table
+            fields = AssetPayment._db_fields
         elif operation_type == LedgerTransaction.Trade:
             table = Trade._db_table
             fields = Trade._db_fields
@@ -378,7 +378,7 @@ class IncomeSpending(LedgerTransaction):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class Dividend(LedgerTransaction):
+class AssetPayment(LedgerTransaction):
     Dividend = 1
     BondInterest = 2
     StockDividend = 3
@@ -400,24 +400,24 @@ class Dividend(LedgerTransaction):
 
     def __init__(self, operation_id=None):
         icons = {
-            Dividend.Dividend: JalIcon.DIVIDEND,
-            Dividend.BondInterest: JalIcon.BOND_INTEREST,
-            Dividend.StockDividend: JalIcon.STOCK_DIVIDEND,
-            Dividend.StockVesting: JalIcon.STOCK_VESTING,
-            Dividend.BondAmortization: JalIcon.BOND_AMORTIZATION,
-            Dividend.Fee: JalIcon.FEE
+            AssetPayment.Dividend: JalIcon.DIVIDEND,
+            AssetPayment.BondInterest: JalIcon.BOND_INTEREST,
+            AssetPayment.StockDividend: JalIcon.STOCK_DIVIDEND,
+            AssetPayment.StockVesting: JalIcon.STOCK_VESTING,
+            AssetPayment.BondAmortization: JalIcon.BOND_AMORTIZATION,
+            AssetPayment.Fee: JalIcon.FEE
         }
         self.names = {
-            Dividend.NA: self.tr("UNDEFINED"),
-            Dividend.Dividend: self.tr("Dividend"),
-            Dividend.BondInterest: self.tr("Bond Interest"),
-            Dividend.StockDividend: self.tr("Stock Dividend"),
-            Dividend.StockVesting: self.tr("Stock Vesting"),
-            Dividend.BondAmortization: self.tr("Bond Amortization"),
-            Dividend.Fee: self.tr("Asset fee/tax")
+            AssetPayment.NA: self.tr("UNDEFINED"),
+            AssetPayment.Dividend: self.tr("Dividend"),
+            AssetPayment.BondInterest: self.tr("Bond Interest"),
+            AssetPayment.StockDividend: self.tr("Stock Dividend"),
+            AssetPayment.StockVesting: self.tr("Stock Vesting"),
+            AssetPayment.BondAmortization: self.tr("Bond Amortization"),
+            AssetPayment.Fee: self.tr("Asset fee/tax")
         }
         super().__init__(operation_id)
-        self._otype = LedgerTransaction.Dividend
+        self._otype = LedgerTransaction.AssetPayment
         self._view_rows = 2
         self._data = self._read("SELECT p.type, p.timestamp, p.ex_date, p.number, p.account_id, p.asset_id, "
                                 "p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
@@ -466,7 +466,7 @@ class Dividend(LedgerTransaction):
             params += [(":type", subtype)]
         query = cls._exec(query, params)
         while query.next():
-            payments.append(Dividend(cls._read_record(query, cast=[int])))
+            payments.append(AssetPayment(cls._read_record(query, cast=[int])))
         return payments
 
     # Settlement returns timestamp - it is required for stock dividend/vesting
@@ -479,7 +479,7 @@ class Dividend(LedgerTransaction):
 
     # Return price of asset for stock dividend and vesting
     def price(self) -> Decimal:
-        if self._subtype != Dividend.StockDividend and self._subtype != Dividend.StockVesting:
+        if self._subtype != AssetPayment.StockDividend and self._subtype != AssetPayment.StockVesting:
             return Decimal('0')
         quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
         if quote_timestamp != self._timestamp:
@@ -499,7 +499,7 @@ class Dividend(LedgerTransaction):
     def amount(self, currency_id: int = 0) -> Decimal:
         if not currency_id:
             return self._amount
-        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
+        if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
             price = self._asset.quote(self._timestamp, self._account.currency())[1]
             if not price:
                 logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
@@ -535,7 +535,7 @@ class Dividend(LedgerTransaction):
             return [self._amount, None]
 
     def value_currency(self) -> str:
-        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
+        if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
             if self._tax:
                 return f" {self._asset.symbol(self._account.currency())}\n {self._account_currency}"
             else:
@@ -546,7 +546,7 @@ class Dividend(LedgerTransaction):
     def value_total(self) -> list:
         balance = []
         amount = self._money_total(self._account.id())
-        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
+        if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
             qty = self._asset_total(self._account.id(), self._asset.id())
             if qty is None:
                 return [Decimal('NaN')]
@@ -558,7 +558,7 @@ class Dividend(LedgerTransaction):
         return balance
 
     def update_amount(self, amount: Decimal) -> None:
-        self._exec("UPDATE asseet_payments SET amount=:amount WHERE id=:id",
+        self._exec("UPDATE asset_payments SET amount=:amount WHERE id=:id",
                    [(":id", self._oid), (":amount", format_decimal(amount))])
 
     def update_tax(self, new_tax) -> None:   # FIXME method should take Decimal value, not float
@@ -568,17 +568,17 @@ class Dividend(LedgerTransaction):
     def processLedger(self, ledger):
         if not self._broker:
             raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
-        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
+        if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
             self.processStockDividendOrVesting(ledger)
             return
-        if self._subtype == Dividend.BondAmortization:
+        if self._subtype == AssetPayment.BondAmortization:
             self.processBondAmortization(ledger)
             return
-        if self._subtype == Dividend.Dividend:
+        if self._subtype == AssetPayment.Dividend:
             category = PredefinedCategory.Dividends
-        elif self._subtype == Dividend.BondInterest:
+        elif self._subtype == AssetPayment.BondInterest:
             category = PredefinedCategory.Interest
-        elif self._subtype == Dividend.Fee:
+        elif self._subtype == AssetPayment.Fee:
             category = PredefinedCategory.Fees
         else:
             raise LedgerError(self.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
@@ -716,8 +716,8 @@ class Trade(LedgerTransaction):
         id = self._read("SELECT id FROM asset_payments WHERE timestamp=:timestamp AND account_id=:account "
                         "AND asset_id=:asset AND number=:number AND type=:interest",
                         [(":timestamp", self._timestamp), (":account", self._account.id()), (":number", self._number),
-                         (":asset", self._asset.id()), (":interest", Dividend.BondInterest)])
-        value = Dividend(id).amount() if id else Decimal('0')
+                         (":asset", self._asset.id()), (":interest", AssetPayment.BondInterest)])
+        value = AssetPayment(id).amount() if id else Decimal('0')
         if currency_id and currency_id != self._account.currency():
             return value * JalAsset(self._account.currency()).quote(self.timestamp(), currency_id)[1]
         else:
