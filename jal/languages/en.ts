@@ -255,6 +255,74 @@
     </message>
 </context>
 <context>
+    <name>AssetPayment</name>
+    <message>
+        <location filename="../db/operations.py" line="411"/>
+        <source>UNDEFINED</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="412"/>
+        <source>Dividend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="413"/>
+        <source>Bond Interest</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="414"/>
+        <source>Stock Dividend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="415"/>
+        <source>Stock Vesting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="416"/>
+        <source>Bond Amortization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="419"/>
+        <source>Asset fee/tax</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="486"/>
+        <source>No stock quote for stock dividend or vesting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="505"/>
+        <source>No price data for stock dividend/vesting: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="528"/>
+        <source>Tax: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="570"/>
+        <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="584"/>
+        <source>Unsupported dividend type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="605"/>
+        <source>Not supported action: stock dividend or vesting closes short trade.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AssetPortfolioReport</name>
     <message>
         <location filename="../reports/portfolio.py" line="24"/>
@@ -1107,225 +1175,6 @@
         <location filename="../widgets/income_spending_widget.py" line="217"/>
         <source>Total</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Dividend</name>
-    <message>
-        <location filename="../db/operations.py" line="411"/>
-        <source>UNDEFINED</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="412"/>
-        <source>Dividend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="413"/>
-        <source>Bond Interest</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="414"/>
-        <source>Stock Dividend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="415"/>
-        <source>Stock Vesting</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="416"/>
-        <source>Bond Amortization</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="419"/>
-        <source>Asset fee/tax</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="505"/>
-        <source>No price data for stock dividend/vesting: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="528"/>
-        <source>Tax: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="570"/>
-        <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="584"/>
-        <source>Unsupported dividend type.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="605"/>
-        <source>Not supported action: stock dividend or vesting closes short trade.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="486"/>
-        <source>No stock quote for stock dividend or vesting.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DividendOperation</name>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="88"/>
-        <source>Tax</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="136"/>
-        <source>CUR</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="196"/>
-        <source>Note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="239"/>
-        <source>Payment</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="259"/>
-        <source>dd/MM/yyyy hh:mm:ss</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="272"/>
-        <source>Price</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="229"/>
-        <source>Cancel changes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="58"/>
-        <source>Commit changes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="78"/>
-        <source>Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="45"/>
-        <source>#</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="216"/>
-        <source>Ex-Date</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="101"/>
-        <source>Asset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="35"/>
-        <source>Date/Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="206"/>
-        <source>Account</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="129"/>
-        <source>Dividend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="163"/>
-        <source>unknown</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="180"/>
-        <source>dd/MM/yyyy</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DividendWidget</name>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="30"/>
-        <source>Dividend</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="32"/>
-        <source>Stock Dividend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="33"/>
-        <source>Stock Vesting</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="34"/>
-        <source>Bond Amortization</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="35"/>
-        <source>Fee / Tax</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="89"/>
-        <source>No quote</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="92"/>
-        <source>You should set quote via Data-&gt;Quotes menu for Date/Time of the dividend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="97"/>
-        <source>Incomplete data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="97"/>
-        <source>Please set a type of the dividend.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="29"/>
-        <source>N/A</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="31"/>
-        <source>Bond Interest</source>
-        <translation></translation>
     </message>
 </context>
 <context>

@@ -1,6 +1,6 @@
 from PySide6.QtCore import Slot, QStringListModel, QByteArray
 from PySide6.QtWidgets import QMessageBox
-from jal.ui.widgets.ui_dividend_operation import Ui_DividendOperation
+from jal.ui.widgets.ui_asset_payment_operation import Ui_AssetPaymentOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.account import JalAccount
@@ -10,7 +10,7 @@ from jal.db.operations import LedgerTransaction, AssetPayment
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class DividendWidgetDelegate(WidgetMapperDelegateBase):
+class AssetPaymentWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
@@ -21,9 +21,9 @@ class DividendWidgetDelegate(WidgetMapperDelegateBase):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class DividendWidget(AbstractOperationDetails):
+class AssetPaymentWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
-        super().__init__(parent=parent, ui_class=Ui_DividendOperation)
+        super().__init__(parent=parent, ui_class=Ui_AssetPaymentOperation)
         self.operation_type = LedgerTransaction.AssetPayment
         super()._init_db("asset_payments")
         self.combo_model = QStringListModel([self.tr("N/A"),
@@ -39,7 +39,7 @@ class DividendWidget(AbstractOperationDetails):
         self.ui.price_label.setVisible(False)
         self.ui.price_edit.setVisible(False)
 
-        self.mapper.setItemDelegate(DividendWidgetDelegate(self.mapper))
+        self.mapper.setItemDelegate(AssetPaymentWidgetDelegate(self.mapper))
 
         self.ui.account_widget.changed.connect(self.mapper.submit)
         self.ui.asset_widget.changed.connect(self.assetChanged)
@@ -68,6 +68,8 @@ class DividendWidget(AbstractOperationDetails):
     def typeChanged(self, dividend_type_id):
         if dividend_type_id == AssetPayment.BondAmortization:
             self.ui.amount_label.setText("Repayment")
+        elif dividend_type_id == AssetPayment.Fee:
+            self.ui.amount_label.setText("Fee / Tax")
         else:
             self.ui.amount_label.setText("Dividend")
         self.ui.price_label.setVisible(

@@ -255,6 +255,74 @@
     </message>
 </context>
 <context>
+    <name>AssetPayment</name>
+    <message>
+        <location filename="../db/operations.py" line="411"/>
+        <source>UNDEFINED</source>
+        <translation type="unfinished">НЕОПРЕДЕЛЕНО</translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="412"/>
+        <source>Dividend</source>
+        <translation type="unfinished">Дивиденд</translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="413"/>
+        <source>Bond Interest</source>
+        <translation type="unfinished">Купон</translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="414"/>
+        <source>Stock Dividend</source>
+        <translation type="unfinished">Дивиденд акциями</translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="415"/>
+        <source>Stock Vesting</source>
+        <translation type="unfinished">Передача акций</translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="416"/>
+        <source>Bond Amortization</source>
+        <translation type="unfinished">Амортизация облигации</translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="419"/>
+        <source>Asset fee/tax</source>
+        <translation type="unfinished">Комиссия / налог за ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="486"/>
+        <source>No stock quote for stock dividend or vesting.</source>
+        <translation type="unfinished">Нет котировки для дивиденда акциями или зачисления акций.</translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="505"/>
+        <source>No price data for stock dividend/vesting: </source>
+        <translation type="unfinished">Не задана цена для выплаты ценными бумагами: </translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="528"/>
+        <source>Tax: </source>
+        <translation type="unfinished">Налог: </translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="570"/>
+        <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
+        <translation type="unfinished">Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта: </translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="584"/>
+        <source>Unsupported dividend type.</source>
+        <translation type="unfinished">Неподдерживаемый тип дивиденда.</translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="605"/>
+        <source>Not supported action: stock dividend or vesting closes short trade.</source>
+        <translation type="unfinished">Неподдерживаемое действие: дивиденд акциями или зачисление акций закрывает короткую позицию.</translation>
+    </message>
+</context>
+<context>
     <name>AssetPortfolioReport</name>
     <message>
         <location filename="../reports/portfolio.py" line="24"/>
@@ -1107,225 +1175,6 @@
         <location filename="../widgets/income_spending_widget.py" line="217"/>
         <source>Total</source>
         <translation>Итого</translation>
-    </message>
-</context>
-<context>
-    <name>Dividend</name>
-    <message>
-        <location filename="../db/operations.py" line="411"/>
-        <source>UNDEFINED</source>
-        <translation>НЕОПРЕДЕЛЕНО</translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="412"/>
-        <source>Dividend</source>
-        <translation>Дивиденд</translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="413"/>
-        <source>Bond Interest</source>
-        <translation>Купон</translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="414"/>
-        <source>Stock Dividend</source>
-        <translation>Дивиденд акциями</translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="415"/>
-        <source>Stock Vesting</source>
-        <translation>Передача акций</translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="416"/>
-        <source>Bond Amortization</source>
-        <translation>Амортизация облигации</translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="419"/>
-        <source>Asset fee/tax</source>
-        <translation>Комиссия / налог за ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="505"/>
-        <source>No price data for stock dividend/vesting: </source>
-        <translation>Не задана цена для выплаты ценными бумагами: </translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="528"/>
-        <source>Tax: </source>
-        <translation>Налог: </translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="570"/>
-        <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
-        <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта: </translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="584"/>
-        <source>Unsupported dividend type.</source>
-        <translation>Неподдерживаемый тип дивиденда.</translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="605"/>
-        <source>Not supported action: stock dividend or vesting closes short trade.</source>
-        <translation>Неподдерживаемое действие: дивиденд акциями или зачисление акций закрывает короткую позицию.</translation>
-    </message>
-    <message>
-        <location filename="../db/operations.py" line="486"/>
-        <source>No stock quote for stock dividend or vesting.</source>
-        <translation>Нет котировки для дивиденда акциями или зачисления акций.</translation>
-    </message>
-</context>
-<context>
-    <name>DividendOperation</name>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="14"/>
-        <source>Form</source>
-        <translation>Форма</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="88"/>
-        <source>Tax</source>
-        <translation>Налог</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="136"/>
-        <source>CUR</source>
-        <translation>ВАЛ</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="196"/>
-        <source>Note</source>
-        <translation>Примечание</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="239"/>
-        <source>Payment</source>
-        <translation>Выплата</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="259"/>
-        <source>dd/MM/yyyy hh:mm:ss</source>
-        <translation>dd/MM/yyyy hh:mm:ss</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="272"/>
-        <source>Price</source>
-        <translation>Цена</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="229"/>
-        <source>Cancel changes</source>
-        <translation>Отменить изменения</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="58"/>
-        <source>Commit changes</source>
-        <translation>Сохранить изменения</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="78"/>
-        <source>Type</source>
-        <translation>Тип</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="45"/>
-        <source>#</source>
-        <translation>№</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="216"/>
-        <source>Ex-Date</source>
-        <translation>Отсечка</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="101"/>
-        <source>Asset</source>
-        <translation>ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="35"/>
-        <source>Date/Time</source>
-        <translation>Дата/Время</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="206"/>
-        <source>Account</source>
-        <translation>Счет</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="129"/>
-        <source>Dividend</source>
-        <translation>Дивиденд</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="163"/>
-        <source>unknown</source>
-        <translation>неизвестно</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dividend_operation.ui" line="180"/>
-        <source>dd/MM/yyyy</source>
-        <translation>dd/MM/yyyy</translation>
-    </message>
-</context>
-<context>
-    <name>DividendWidget</name>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="30"/>
-        <source>Dividend</source>
-        <translation>Дивиденд</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="32"/>
-        <source>Stock Dividend</source>
-        <translation>Дивиденд акциями</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="33"/>
-        <source>Stock Vesting</source>
-        <translation>Передача акций</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="34"/>
-        <source>Bond Amortization</source>
-        <translation>Амортизация облигации</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="35"/>
-        <source>Fee / Tax</source>
-        <translation>Комиссия / Налог</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="89"/>
-        <source>No quote</source>
-        <translation>Нет котировки</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="92"/>
-        <source>You should set quote via Data-&gt;Quotes menu for Date/Time of the dividend</source>
-        <translation>Нужно установить котировку бумаги для Даты/Времени дивиденда через меню Данные-&gt;Котировки</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="97"/>
-        <source>Incomplete data</source>
-        <translation>Неполные данные</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="97"/>
-        <source>Please set a type of the dividend.</source>
-        <translation>Пожалуйста укажите тип дивиденда.</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="29"/>
-        <source>N/A</source>
-        <translation>N/A</translation>
-    </message>
-    <message>
-        <location filename="../widgets/dividend_widget.py" line="31"/>
-        <source>Bond Interest</source>
-        <translation>Купон</translation>
     </message>
 </context>
 <context>
