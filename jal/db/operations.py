@@ -385,7 +385,7 @@ class Dividend(LedgerTransaction):
     StockVesting = 4
     BondAmortization = 5
     Fee = 6
-    _db_table = "dividends"
+    _db_table = "asset_payments"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "ex_date": {"mandatory": False, "validation": False},
@@ -419,12 +419,12 @@ class Dividend(LedgerTransaction):
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Dividend
         self._view_rows = 2
-        self._data = self._read("SELECT d.type, d.timestamp, d.ex_date, d.number, d.account_id, d.asset_id, "
-                                "d.amount, d.tax, l.amount_acc AS t_qty, d.note AS note "
-                                "FROM dividends AS d "
-                                "LEFT JOIN assets AS a ON d.asset_id = a.id "
-                                "LEFT JOIN ledger_totals AS l ON l.op_type=d.op_type AND l.operation_id=d.id "
-                                "AND l.book_account = :book_assets WHERE d.id=:oid",
+        self._data = self._read("SELECT p.type, p.timestamp, p.ex_date, p.number, p.account_id, p.asset_id, "
+                                "p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
+                                "FROM asset_payments AS p "
+                                "LEFT JOIN assets AS a ON p.asset_id = a.id "
+                                "LEFT JOIN ledger_totals AS l ON l.op_type=p.op_type AND l.operation_id=p.id "
+                                "AND l.book_account = :book_assets WHERE p.id=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
         self._subtype = self._data['type']
         self._oname = self.names[self._subtype]
@@ -450,24 +450,24 @@ class Dividend(LedgerTransaction):
     # skip_accrued=True - don't include accrued interest in resulting list
     @classmethod
     def get_list(cls, account_id: int, asset_id: int = 0, subtype: int = 0, skip_accrued: bool = False) -> list:
-        dividends = []
+        payments = []
         if skip_accrued:
-            query = "SELECT d.id FROM dividends d LEFT JOIN trades t ON d.account_id=t.account_id "\
-                    "AND d.asset_id=t.asset_id AND d.number=t.number AND t.number!='' "\
-                    "WHERE d.account_id=:account AND t.id IS NULL"
+            query = "SELECT p.id FROM asset_payments p LEFT JOIN trades t ON p.account_id=t.account_id "\
+                    "AND p.asset_id=t.asset_id AND p.number=t.number AND t.number!='' "\
+                    "WHERE p.account_id=:account AND t.id IS NULL"
         else:
-            query = "SELECT d.id FROM dividends d WHERE d.account_id=:account"
+            query = "SELECT p.id FROM asset_payments p WHERE p.account_id=:account"
         params = [(":account", account_id)]
         if asset_id:
-            query += " AND d.asset_id=:asset"
+            query += " AND p.asset_id=:asset"
             params += [(":asset", asset_id)]
         if subtype:
-            query += " AND d.type=:type"
+            query += " AND p.type=:type"
             params += [(":type", subtype)]
         query = cls._exec(query, params)
         while query.next():
-            dividends.append(Dividend(cls._read_record(query, cast=[int])))
-        return dividends
+            payments.append(Dividend(cls._read_record(query, cast=[int])))
+        return payments
 
     # Settlement returns timestamp - it is required for stock dividend/vesting
     def settlement(self) -> int:
@@ -558,11 +558,11 @@ class Dividend(LedgerTransaction):
         return balance
 
     def update_amount(self, amount: Decimal) -> None:
-        self._exec("UPDATE dividends SET amount=:amount WHERE id=:id",
+        self._exec("UPDATE asseet_payments SET amount=:amount WHERE id=:id",
                    [(":id", self._oid), (":amount", format_decimal(amount))])
 
     def update_tax(self, new_tax) -> None:   # FIXME method should take Decimal value, not float
-        _ = self._exec("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
+        _ = self._exec("UPDATE asset_payments SET tax=:tax WHERE id=:dividend_id",
                        [(":dividend_id", self._oid), (":tax", new_tax)], commit=True)
 
     def processLedger(self, ledger):
@@ -713,7 +713,7 @@ class Trade(LedgerTransaction):
     # This dividend represents accrued interest for this operation.
     # Returns value of accrued interest or 0 if such isn't found
     def accrued_interest(self,currency_id: int = 0) -> Decimal:
-        id = self._read("SELECT id FROM dividends WHERE timestamp=:timestamp AND account_id=:account "
+        id = self._read("SELECT id FROM asset_payments WHERE timestamp=:timestamp AND account_id=:account "
                         "AND asset_id=:asset AND number=:number AND type=:interest",
                         [(":timestamp", self._timestamp), (":account", self._account.id()), (":number", self._number),
                          (":asset", self._asset.id()), (":interest", Dividend.BondInterest)])

@@ -104,13 +104,13 @@ class JalAccount(JalDB):
                 action.append(self._read_record(query))
         return actions
 
-    # Returns everything from 'dividends' table associated with current account - used in test cases only
-    def dump_dividends(self):
-        dividends = []
-        query = self._exec("SELECT * FROM dividends WHERE account_id=:id", [(":id", self._id)])
+    # Returns everything from 'asset_payments' table associated with current account - used in test cases only
+    def dump_asset_payments(self):
+        payments = []
+        query = self._exec("SELECT * FROM asset_payments WHERE account_id=:id", [(":id", self._id)])
         while query.next():
-            dividends.append(self._read_record(query))
-        return dividends
+            payments.append(self._read_record(query))
+        return payments
 
     # Returns everything from 'trades' table associated with current account - used in test cases only
     def dump_trades(self):

@@ -226,10 +226,10 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [10, 2, 1620345600, 0, '', 4, 1, 8, '2.0', '0', 'Stock Award Grant for Cash Deposit'],
         [11, 2, 1549843200, 0, '', 6, 1, 9, '-0.249018', '0', 'French Transaction Tax']
     ]
-    dividends = JalAccount(1).dump_dividends()
-    assert len(dividends) == len(test_payments)
-    for i, dividend in enumerate(test_payments):
-        assert dividends[i] == dividend
+    payments = JalAccount(1).dump_asset_payments()
+    assert len(payments) == len(test_payments)
+    for i, payment in enumerate(test_payments):
+        assert payments[i] == payment
 
     # Verify that asset prices were loaded for stock dividends and vestings
     assert JalAsset(1).quote(d2t(230101), 1) == (1672531200, Decimal('1'))

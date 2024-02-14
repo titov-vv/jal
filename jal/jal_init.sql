@@ -145,9 +145,9 @@ CREATE TABLE country_names (
 );
 CREATE UNIQUE INDEX country_name_by_language ON country_names (country_id, language_id);
 
--- Table: dividends
-DROP TABLE IF EXISTS dividends;
-CREATE TABLE dividends (
+-- Table: asset_payments
+DROP TABLE IF EXISTS asset_payments;
+CREATE TABLE asset_payments (
     id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
     op_type    INTEGER NOT NULL DEFAULT (2),
     timestamp  INTEGER NOT NULL,
@@ -373,7 +373,7 @@ FROM
 (
     SELECT op_type, 1 AS seq, id, timestamp, account_id, 0 AS subtype FROM actions
     UNION ALL
-    SELECT op_type, 2 AS seq, id, timestamp, account_id, type AS subtype FROM dividends
+    SELECT op_type, 2 AS seq, id, timestamp, account_id, type AS subtype FROM asset_payments
     UNION ALL
     SELECT op_type, 3 AS seq, id, timestamp, account_id, type AS subtype FROM asset_actions
     UNION ALL
@@ -495,10 +495,10 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
--- Trigger: dividends_after_delete
-DROP TRIGGER IF EXISTS dividends_after_delete;
-CREATE TRIGGER dividends_after_delete
-      AFTER DELETE ON dividends
+-- Trigger: asset_payments_after_delete
+DROP TRIGGER IF EXISTS asset_payments_after_delete;
+CREATE TRIGGER asset_payments_after_delete
+      AFTER DELETE ON asset_payments
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
@@ -506,10 +506,10 @@ BEGIN
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
 
--- Trigger: dividends_after_insert
-DROP TRIGGER IF EXISTS dividends_after_insert;
-CREATE TRIGGER dividends_after_insert
-      AFTER INSERT ON dividends
+-- Trigger: asset_payments_after_insert
+DROP TRIGGER IF EXISTS asset_payments_after_insert;
+CREATE TRIGGER asset_payments_after_insert
+      AFTER INSERT ON asset_payments
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
@@ -517,10 +517,10 @@ BEGIN
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
 
--- Trigger: dividends_after_update
-DROP TRIGGER IF EXISTS dividends_after_update;
-CREATE TRIGGER dividends_after_update
-      AFTER UPDATE OF timestamp, type, account_id, asset_id, amount, tax ON dividends
+-- Trigger: asset_payments_after_update
+DROP TRIGGER IF EXISTS asset_payments_after_update;
+CREATE TRIGGER asset_payments_after_update
+      AFTER UPDATE OF timestamp, type, account_id, asset_id, amount, tax ON asset_payments
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
@@ -696,7 +696,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 52);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 53);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 -- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1); -- Deprecated and ID shouldn't be re-used
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);

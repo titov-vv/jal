@@ -25,7 +25,7 @@ class DividendWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         super().__init__(parent=parent, ui_class=Ui_DividendOperation)
         self.operation_type = LedgerTransaction.Dividend
-        super()._init_db("dividends")
+        super()._init_db("asset_payments")
         self.combo_model = QStringListModel([self.tr("N/A"),
                                              self.tr("Dividend"),
                                              self.tr("Bond Interest"),

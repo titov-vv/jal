@@ -72,10 +72,10 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         [2, 2, 1596054000, 0, '', 1, 1, 9, '51.0', '5.1', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'],
         [3, 2, 1588191600, 0, '', 1, 1, 10, '25.0', '2.5', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)']
     ]
-    dividends = JalAccount(1).dump_dividends()
-    assert len(dividends) == len(test_dividends)
-    for i, dividend in enumerate(test_dividends):
-        assert dividends[i] == dividend
+    payments = JalAccount(1).dump_asset_payments()
+    assert len(payments) == len(test_dividends)
+    for i, payment in enumerate(test_dividends):
+        assert payments[i] == payment
 
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
@@ -155,10 +155,10 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         [2, 2, 1596054000, 0, '', 1, 1, 9, '51.0', '0.01', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'],
         [3, 2, 1588191600, 0, '', 1, 1, 10, '25.0', '1.04', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)']
     ]
-    dividends = JalAccount(1).dump_dividends()
-    assert len(dividends) == len(test_dividends)
-    for i, dividend in enumerate(test_dividends):
-        assert dividends[i] == dividend
+    payments = JalAccount(1).dump_asset_payments()
+    assert len(payments) == len(test_dividends)
+    for i, payment in enumerate(test_dividends):
+        assert payments[i] == payment
 
     # validate corp actions
     test_asset_actions = [
