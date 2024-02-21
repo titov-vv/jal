@@ -192,15 +192,22 @@ def test_MOEX_downloader(prepare_db_moex):
 
 
 def test_MOEX_downloader_USD(prepare_db_moex):
-    create_assets([('FXGD', 'FinEx Gold ETF', 'IE00B8XB7377', 2, PredefinedAsset.ETF, 0)])   # ID = 8
+    create_assets([('FXGD', 'FinEx Gold ETF', 'IE00B8XB7377', 2, PredefinedAsset.ETF, 0)])   # ID = 9
+    create_assets([('ГазКЗ-30Д', 'Газпром капитал ООО ЗО30-1-Д', 'RU000A105SG2', 2, PredefinedAsset.Bond, 0)])
+
     JalAsset(9).add_symbol('FXGD', 1, 'FinEx Gold ETF - RUB')
     usd_quotes = pd.DataFrame({'Close': [Decimal('12.02'), Decimal('11.90')],
                                'Date': [datetime(2021, 12, 13), datetime(2021, 12, 14)]})
     usd_quotes = usd_quotes.set_index('Date')
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(9), 2, 1639353600, 1639440000, update_symbol=False)
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(9), 2, d2t(211213), d2t(211214), update_symbol=False)
     assert_frame_equal(usd_quotes, quotes_downloaded)
 
+    bond_usd_quotes = pd.DataFrame({'Close': [Decimal('846.509'), Decimal('844.998')],
+                               'Date': [datetime(2024, 2, 13), datetime(2024, 2, 14)]})
+    bond_usd_quotes = bond_usd_quotes.set_index('Date')
+    bond_quotes = downloader.MOEX_DataReader(JalAsset(10), 2, d2t(240213), d2t(240214))
+    assert_frame_equal(bond_quotes, bond_usd_quotes)
 
 def test_NYSE_downloader(prepare_db):
     create_stocks([('AAPL', '')], currency_id=2)   # id = 4

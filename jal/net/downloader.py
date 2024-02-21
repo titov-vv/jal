@@ -301,12 +301,12 @@ class QuoteDownloader(QObject):
         boards_list = [board.attrib for board in boards]
         primary_board = [x for x in boards_list if "is_primary" in x and x["is_primary"] == '1']
         if primary_board:
-            if currency == 'USD':
-                board_id = primary_board[0]['boardid'][:-1] + 'D'
-            elif currency == 'EUR':
-                board_id = primary_board[0]['boardid'][:-1] + 'E'
-            else:
-                board_id = primary_board[0]['boardid']
+            board_id = primary_board[0]['boardid']
+            if primary_board[0]['currencyid'] != currency and primary_board[0]['market'] != 'bonds':
+                if currency == 'USD':
+                    board_id = board_id[:-1] + 'D'
+                if currency == 'EUR':
+                    board_id = board_id[:-1] + 'E'
             board = [x for x in boards_list if "boardid" in x and x["boardid"] == board_id]
             if board:
                 asset.update({'engine': board[0]['engine'],
