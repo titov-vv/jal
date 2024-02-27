@@ -21,20 +21,21 @@ class AccountListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
-                         ("type_id", ''),
+                         ("type_id", 'Type'),
                          ("name", self.tr("Name")),
                          ("currency_id", self.tr("Currency")),
                          ("active", self.tr("Act.")),
                          ("number", self.tr("Account #")),
                          ("reconciled_on", self.tr("Reconciled @")),
                          ("organization_id", self.tr("Bank/Broker")),
-                         ("country_id", self.tr("CC")),
+                         ("country_id", self.tr("Country")),
                          ("precision", self.tr("Precision"))]
         self._sort_by = "name"
         self._group_by = "type_id"
-        self._hidden = ["id", "type_id"]
+        self._hidden = ["id"]
         self._stretch = "name"
         self._lookup_delegate = None
+        self._type_lookup_delegate = None
         self._peer_delegate = None
         self._timestamp_delegate = None
         self._bool_delegate = None
@@ -47,9 +48,10 @@ class AccountListModel(AbstractReferenceListModel):
         self._view.setColumnWidth(self.fieldIndex("active"), 32)
         self._view.setColumnWidth(self.fieldIndex("reconciled_on"),
                                   self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
-        self._view.setColumnWidth(self.fieldIndex("country_id"), 50)
-
+        self._view.setColumnWidth(self.fieldIndex("country_id"), 70)
+        self._type_lookup_delegate = ConstantLookupDelegate(PredefinedAccountType, self._view)
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("type_id"), self._type_lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._peer_delegate = PeerSelectorDelegate()
