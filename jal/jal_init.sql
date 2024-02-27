@@ -10,6 +10,7 @@ CREATE TABLE accounts (
     name            TEXT (64) NOT NULL UNIQUE,
     currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
     active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,
+    investing       INTEGER   NOT NULL DEFAULT (0),
     number          TEXT (32),
     reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,
     organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -674,7 +675,7 @@ END;
 DROP TRIGGER IF EXISTS validate_account_insert;
 CREATE TRIGGER validate_account_insert BEFORE INSERT ON accounts
     FOR EACH ROW
-    WHEN NEW.type_id = 4 AND NEW.organization_id IS NULL
+    WHEN NEW.investing = 1 AND NEW.organization_id IS NULL
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
 END;
@@ -682,7 +683,7 @@ END;
 DROP TRIGGER IF EXISTS validate_account_update;
 CREATE TRIGGER validate_account_update BEFORE UPDATE ON accounts
     FOR EACH ROW
-    WHEN NEW.type_id = 4 AND NEW.organization_id IS NULL
+    WHEN NEW.investing = 1 AND NEW.organization_id IS NULL
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
 END;

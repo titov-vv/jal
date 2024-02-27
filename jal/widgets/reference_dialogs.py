@@ -25,6 +25,7 @@ class AccountListModel(AbstractReferenceListModel):
                          ("name", self.tr("Name")),
                          ("currency_id", self.tr("Currency")),
                          ("active", self.tr("Act.")),
+                         ("investing", self.tr("Invest.")),
                          ("number", self.tr("Account #")),
                          ("reconciled_on", self.tr("Reconciled @")),
                          ("organization_id", self.tr("Bank/Broker")),
@@ -45,10 +46,11 @@ class AccountListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.setColumnWidth(self.fieldIndex("active"), 32)
+        self._view.setColumnWidth(self.fieldIndex("active"), 64)
+        self._view.setColumnWidth(self.fieldIndex("investing"), 64)
         self._view.setColumnWidth(self.fieldIndex("reconciled_on"),
                                   self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
-        self._view.setColumnWidth(self.fieldIndex("country_id"), 70)
+        self._view.setColumnWidth(self.fieldIndex("country_id"), 80)
         self._type_lookup_delegate = ConstantLookupDelegate(PredefinedAccountType, self._view)
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("type_id"), self._type_lookup_delegate)
@@ -60,6 +62,7 @@ class AccountListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("reconciled_on"), self._timestamp_delegate)
         self._bool_delegate = BoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("investing"), self._bool_delegate)
 
 
 class AccountListDialog(ReferenceDataDialog):
