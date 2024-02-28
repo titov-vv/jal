@@ -3,7 +3,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import CustomColor, PredefinedAccountType
+from jal.constants import CustomColor
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
 from jal.db.deposit import JalDeposit
@@ -140,7 +140,7 @@ class BalancesModel(QAbstractTableModel):
             rate = JalAsset(account.currency()).quote(self._date, self._currency)[1]
             if value != Decimal('0'):
                 balances.append({
-                    "account_type": PredefinedAccountType().get_name(account.type()),
+                    "account_type": str(account.type()),
                     "account": account.id(),
                     "account_name": account.name(),
                     "currency": account.currency(),

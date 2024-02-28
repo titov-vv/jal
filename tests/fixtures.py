@@ -3,7 +3,7 @@ import os
 from shutil import copyfile
 from PySide6.QtSql import QSqlDatabase
 
-from constants import Setup, PredefinedCategory, PredefinedAsset, AssetData, PredefinedAccountType
+from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.db import JalDB, JalDBError
 from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
@@ -49,7 +49,7 @@ def prepare_db_ledger(prepare_db):
     peer = JalPeer(data={'name': 'Shop', 'parent': 0}, create=True)
     assert peer.id() == 1
     account = JalAccount(
-        data={'type': PredefinedAccountType.Cash, 'name': 'Wallet', 'number': 'N/A', 'currency': 1, 'active': 1},
+        data={'name': 'Wallet', 'number': 'N/A', 'currency': 1, 'active': 1, 'investing': 0},
         create=True)
     assert account.id() == 1
 
@@ -59,8 +59,7 @@ def prepare_db_ibkr(prepare_db):
     peer = JalPeer(data={'name': 'IB', 'parent': 0}, create=True)
     assert peer.id() == 1
     account = JalAccount(
-        data={'type': PredefinedAccountType.Investment, 'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2,
-              'active': 1, 'organization': 1, 'precision': 10},
+        data={'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1, 'precision': 10},
         create=True)
     assert account.id() == 1
     test_assets = [
@@ -82,8 +81,7 @@ def prepare_db_fifo(prepare_db):
     peer = JalPeer(data={'name': 'Test Peer', 'parent': 0}, create=True)
     assert peer.id() == 1
     account = JalAccount(
-        data={'type': PredefinedAccountType.Investment, 'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2,
-              'active': 1, 'organization': 1},
+        data={'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1},
         create=True)
     assert account.id() == 1
     create_actions([(d2t(201101), 1, 1, [(PredefinedCategory.StartingBalance, 10000.0)])])  # starting balance
@@ -106,8 +104,7 @@ def prepare_db_taxes(prepare_db):
     peer = JalPeer(data={'name': 'IB', 'parent': 0}, create=True)
     assert peer.id() == 1
     account = JalAccount(
-        data={'type': PredefinedAccountType.Investment, 'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2,
-              'active': 1, 'organization': 1, 'country': 'us', 'precision': 3},
+        data={'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1, 'country': 'us', 'precision': 3},
         create=True)
     assert account.id() == 1
     yield

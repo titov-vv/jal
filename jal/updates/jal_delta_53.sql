@@ -8,7 +8,7 @@ CREATE TABLE accounts_old AS SELECT * FROM accounts;
 DROP TABLE accounts;
 CREATE TABLE accounts (
     id              INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    type_id         INTEGER   NOT NULL,
+    type_id         INTEGER,
     name            TEXT (64) NOT NULL UNIQUE,
     currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
     active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,

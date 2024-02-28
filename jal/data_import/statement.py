@@ -10,7 +10,7 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset, PredefinedAccountType
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset
 from jal.db.helpers import get_app_path
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -405,7 +405,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if account['currency'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched currency for account: ") + f"{account}")
             account_data = account.copy()
-            account_data['type'] = PredefinedAccountType.Investment if 'type' not in account_data else account_data['type']
+            account_data['investing'] = 1 # if 'type' not in account_data else account_data['type']
             account_data['currency'] = -account_data['currency']  # all currencies are already in db
             new_account = JalAccount(data=account_data, search=True, create=True)
             if new_account.id():

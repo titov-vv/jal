@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QAction
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog, QMessageBox
-from jal.constants import PredefinedAccountType, PredefinedAsset, MarketDataFeed
+from jal.constants import PredefinedAsset, MarketDataFeed
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
@@ -36,7 +36,6 @@ class AccountListModel(AbstractReferenceListModel):
         self._hidden = ["id"]
         self._stretch = "name"
         self._lookup_delegate = None
-        self._type_lookup_delegate = None
         self._peer_delegate = None
         self._timestamp_delegate = None
         self._bool_delegate = None
@@ -51,9 +50,7 @@ class AccountListModel(AbstractReferenceListModel):
         self._view.setColumnWidth(self.fieldIndex("reconciled_on"),
                                   self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("country_id"), 80)
-        self._type_lookup_delegate = ConstantLookupDelegate(PredefinedAccountType, self._view)
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("type_id"), self._type_lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._peer_delegate = PeerSelectorDelegate()
@@ -87,7 +84,7 @@ class AccountListDialog(ReferenceDataDialog):
         self.ui.GroupLbl.setText(self.tr("Account type:"))
         self.ui.GroupCombo.setVisible(True)
         self.group_field = self.model.group_by
-        PredefinedAccountType().load2combo(self.ui.GroupCombo)
+        # PredefinedAccountType().load2combo(self.ui.GroupCombo)
         self.group_id = 1
 
     def locateItem(self, item_id):

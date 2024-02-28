@@ -6,16 +6,16 @@ DROP TABLE IF EXISTS accounts;
 
 CREATE TABLE accounts (
     id              INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    type_id         INTEGER   NOT NULL,
-    name            TEXT (64) NOT NULL UNIQUE,
+    type_id         INTEGER,
+    name            TEXT (64) NOT NULL UNIQUE,   -- human-readable name of the account
     currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
-    active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,
-    investing       INTEGER   NOT NULL DEFAULT (0),
-    number          TEXT (32),
-    reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,
+    active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,  -- 1 = account is active, 0 = inactive (hidden in UI)
+    investing       INTEGER   NOT NULL DEFAULT (0),   -- 1 if account can hold investment assets, 0 otherwise
+    number          TEXT (32),                   -- human-readable number of account (as a reference to bank/broker documents)
+    reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,   -- timestamp of last confirmed operation
     organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL ON UPDATE CASCADE,
     country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,
-    precision       INTEGER   NOT NULL DEFAULT (2)
+    precision       INTEGER   NOT NULL DEFAULT (2)  -- number of digits after decimal points that is used by this account
 );
 
 
