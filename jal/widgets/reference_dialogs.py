@@ -4,12 +4,13 @@ from PySide6.QtGui import QAction
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog, QMessageBox
 from jal.constants import PredefinedAsset, MarketDataFeed
+from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate, \
-    AssetSelectorDelegate, ConstantLookupDelegate
+    AssetSelectorDelegate, ConstantLookupDelegate, TagSelectorDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
@@ -21,24 +22,25 @@ class AccountListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
-                         ("type_id", 'Type'),
                          ("name", self.tr("Name")),
                          ("currency_id", self.tr("Currency")),
                          ("active", self.tr("Act.")),
                          ("investing", self.tr("Invest.")),
+                         ("tag_id", 'Tag'),
                          ("number", self.tr("Account #")),
                          ("reconciled_on", self.tr("Reconciled @")),
                          ("organization_id", self.tr("Bank/Broker")),
                          ("country_id", self.tr("Country")),
                          ("precision", self.tr("Precision"))]
         self._sort_by = "name"
-        self._group_by = "type_id"
+        self._group_by = "tag_id"
         self._hidden = ["id"]
         self._stretch = "name"
         self._lookup_delegate = None
         self._peer_delegate = None
         self._timestamp_delegate = None
         self._bool_delegate = None
+        self._tag_delegate = None
         self._default_values = {'active': 1, 'reconciled_on': 0, 'country_id': 0, 'precision': 2}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
@@ -60,6 +62,8 @@ class AccountListModel(AbstractReferenceListModel):
         self._bool_delegate = BoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("investing"), self._bool_delegate)
+        self._tag_delegate = TagSelectorDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("tag_id"), self._tag_delegate)
 
 
 class AccountListDialog(ReferenceDataDialog):
@@ -84,8 +88,10 @@ class AccountListDialog(ReferenceDataDialog):
         self.ui.GroupLbl.setText(self.tr("Account type:"))
         self.ui.GroupCombo.setVisible(True)
         self.group_field = self.model.group_by
-        # PredefinedAccountType().load2combo(self.ui.GroupCombo)
-        self.group_id = 1
+        self.ui.GroupCombo.clear()
+        for tag_id, tag in JalAccount.get_all_tags().items():
+            self.ui.GroupCombo.addItem(tag, userData=tag_id)
+        self.group_id = self.ui.GroupCombo.itemData(0)
 
     def locateItem(self, item_id):
         type_id = self.model.getGroupId(item_id)

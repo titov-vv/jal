@@ -42,7 +42,7 @@ class JalAccount(JalDB):
                     self._id = query.lastInsertId()
                 self._fetch_data(only_self=True)
         self._data = next((x for x in self.db_cache if x['id']==self._id), None)
-        self._type = self._data['type_id'] if self._data is not None else None
+        self._tag = self._data['tag_id'] if self._data is not None else None
         self._name = self._data['name'] if self._data is not None else ''
         self._number = self._data['number'] if self._data is not None else None
         self._currency_id = self._data['currency_id'] if self._data is not None else None
@@ -148,8 +148,17 @@ class JalAccount(JalDB):
         return self._id
 
     # Returns type of the account
-    def type(self) -> int:
-        return self._type
+    def tag(self) -> int:
+        return self._tag
+
+    @classmethod
+    def get_all_tags(cls) -> dict:
+        tags = {}
+        query = cls._exec("SELECT DISTINCT a.tag_id, t.tag FROM accounts a LEFT JOIN tags t ON t.id=a.tag_id")
+        while query.next():
+            tag = cls._read_record(query, cast=[int, str])
+            tags[tag[0]] = tag[1]
+        return tags
 
     # Returns name of the account
     def name(self) -> str:

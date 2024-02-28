@@ -8,19 +8,19 @@ CREATE TABLE accounts_old AS SELECT * FROM accounts;
 DROP TABLE accounts;
 CREATE TABLE accounts (
     id              INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    type_id         INTEGER,
     name            TEXT (64) NOT NULL UNIQUE,
     currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
     active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,
     investing       INTEGER   NOT NULL DEFAULT (0),
+    tag_id          INTEGER   REFERENCES tags (id) ON DELETE CASCADE ON UPDATE CASCADE,
     number          TEXT (32),
     reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,
     organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL ON UPDATE CASCADE,
     country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,
     precision       INTEGER   NOT NULL DEFAULT (2)
 );
-INSERT INTO accounts (id, type_id, name, currency_id, active, number, reconciled_on, organization_id, country_id, precision)
-  SELECT id, type_id, name, currency_id, active, number, reconciled_on, organization_id, country_id, precision FROM accounts_old;
+INSERT INTO accounts (id, type_id, name, currency_id, active, tag_id, number, reconciled_on, organization_id, country_id, precision)
+  SELECT id, type_id, name, currency_id, active, type_id, number, reconciled_on, organization_id, country_id, precision FROM accounts_old;
 DROP TABLE accounts_old;
 
 UPDATE accounts SET investing=1 WHERE type_id=4;   -- Set flat for accounts that had investment type assigned
