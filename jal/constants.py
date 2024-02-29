@@ -76,28 +76,6 @@ class PredefinedList:
         for item in self._names:
             combobox.addItem(self._names[item], userData=item)
 
-#
-# class PredefinedAccountType(PredefinedList, QObject):
-#     Cash = 1
-#     Bank = 2
-#     Card = 3
-#     Investment = 4
-#     Savings = 5
-#     Loans = 6
-#     eWallet = 7
-#
-#     def __init__(self):
-#         super().__init__()
-#         self._names = {
-#             self.Cash: self.tr("Cash"),
-#             self.Bank: self.tr("Bank accounts"),
-#             self.Card: self.tr("Cards"),
-#             self.Investment: self.tr("Investments"),
-#             self.Savings: self.tr("Savings"),
-#             self.Loans: self.tr("Debts / Loans"),
-#             self.eWallet: self.tr("e-Wallets")
-#         }
-
 
 class PredefinedCategory:
     Income = 1

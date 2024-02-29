@@ -1,5 +1,33 @@
 BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
+-- Free space for 4 predefined tags
+UPDATE tags SET pid = (SELECT MAX(id)+1 FROM tags) WHERE pid = 1;
+UPDATE tags SET id = (SELECT MAX(id)+1 FROM tags) WHERE id = 1;
+UPDATE tags SET pid = (SELECT MAX(id)+1 FROM tags) WHERE pid = 2;
+UPDATE tags SET id = (SELECT MAX(id)+1 FROM tags) WHERE id = 2;
+UPDATE tags SET pid = (SELECT MAX(id)+1 FROM tags) WHERE pid = 3;
+UPDATE tags SET id = (SELECT MAX(id)+1 FROM tags) WHERE id = 3;
+UPDATE tags SET pid = (SELECT MAX(id)+1 FROM tags) WHERE pid = 4;
+UPDATE tags SET id = (SELECT MAX(id)+1 FROM tags) WHERE id = 4;
+UPDATE tags SET pid = (SELECT MAX(id)+1 FROM tags) WHERE pid = 5;
+UPDATE tags SET id = (SELECT MAX(id)+1 FROM tags) WHERE id = 5;
+-- Create predefined tags for account types
+INSERT INTO tags (id, pid, tag) VALUES (1, 0, 'Account type');
+INSERT INTO tags (id, pid, tag) VALUES (2, 1, 'Cash');
+INSERT INTO tags (id, pid, tag) VALUES (3, 1, 'Bank account');
+INSERT INTO tags (id, pid, tag) VALUES (4, 1, 'Card');
+INSERT INTO tags (id, pid, tag) VALUES (5, 1, 'Broker account');
+--------------------------------------------------------------------------------
+-- Drop/disable triggers before modifications
+DROP TRIGGER IF EXISTS validate_account_insert;
+DROP TRIGGER IF EXISTS validate_account_update;
+-- Replace old account type_id with new tag value
+UPDATE accounts SET type_id=2 WHERE type_id IN (5, 6, 7);
+UPDATE accounts SET type_id=5 WHERE type_id = 4;
+UPDATE accounts SET type_id=4 WHERE type_id = 3;
+UPDATE accounts SET type_id=3 WHERE type_id = 2;
+UPDATE accounts SET type_id=2 WHERE type_id = 1;
+--------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
 ALTER TABLE dividends RENAME TO asset_payments;
@@ -19,13 +47,12 @@ CREATE TABLE accounts (
     country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,
     precision       INTEGER   NOT NULL DEFAULT (2)
 );
-INSERT INTO accounts (id, type_id, name, currency_id, active, tag_id, number, reconciled_on, organization_id, country_id, precision)
-  SELECT id, type_id, name, currency_id, active, type_id, number, reconciled_on, organization_id, country_id, precision FROM accounts_old;
+INSERT INTO accounts (id, name, currency_id, active, tag_id, number, reconciled_on, organization_id, country_id, precision)
+  SELECT id, name, currency_id, active, type_id, number, reconciled_on, organization_id, country_id, precision FROM accounts_old;
 DROP TABLE accounts_old;
 
-UPDATE accounts SET investing=1 WHERE type_id=4;   -- Set flat for accounts that had investment type assigned
+UPDATE accounts SET investing=1 WHERE tag_id = 5;   -- Set flag for accounts that had investment type assigned
 
-DROP TRIGGER IF EXISTS validate_account_insert;
 CREATE TRIGGER validate_account_insert BEFORE INSERT ON accounts
     FOR EACH ROW
     WHEN NEW.investing = 1 AND NEW.organization_id IS NULL
@@ -33,7 +60,6 @@ BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
 END;
 
-DROP TRIGGER IF EXISTS validate_account_update;
 CREATE TRIGGER validate_account_update BEFORE UPDATE ON accounts
     FOR EACH ROW
     WHEN NEW.investing = 1 AND NEW.organization_id IS NULL

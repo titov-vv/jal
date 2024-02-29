@@ -733,6 +733,13 @@ INSERT INTO categories (id, pid, name, often, special) VALUES (7, 3, 'Dividends'
 INSERT INTO categories (id, pid, name, often, special) VALUES (8, 3, 'Interest', 0, 1);
 INSERT INTO categories (id, pid, name, often, special) VALUES (9, 3, 'Results of investments', 0, 1);
 
+-- Initialize predefined tags
+INSERT INTO tags (id, pid, tag) VALUES (1, 0, 'Account type');
+INSERT INTO tags (id, pid, tag) VALUES (2, 1, 'Cash');
+INSERT INTO tags (id, pid, tag) VALUES (3, 1, 'Bank account');
+INSERT INTO tags (id, pid, tag) VALUES (4, 1, 'Card');
+INSERT INTO tags (id, pid, tag) VALUES (5, 1, 'Broker account');
+
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');
 INSERT INTO asset_tickers (id, asset_id, symbol, description, quote_source, active) VALUES (1, 1, 'RUB', 'Российский Рубль', -1, 1);
