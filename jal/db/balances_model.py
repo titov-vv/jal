@@ -140,7 +140,7 @@ class BalancesModel(QAbstractTableModel):
             rate = JalAsset(account.currency()).quote(self._date, self._currency)[1]
             if value != Decimal('0'):
                 balances.append({
-                    "account_type": str(account.tag()),
+                    "account_type": account.tag().name(),
                     "account": account.id(),
                     "account_name": account.name(),
                     "currency": account.currency(),

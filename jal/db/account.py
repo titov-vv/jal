@@ -5,6 +5,7 @@ from jal.db.peer import JalPeer
 import jal.db.operations
 import jal.db.closed_trade
 from jal.constants import Setup, BookAccount, PredefinedAsset
+from jal.db.tag import JalTag
 from jal.db.country import JalCountry
 from jal.db.helpers import format_decimal, now_ts
 
@@ -42,8 +43,8 @@ class JalAccount(JalDB):
                     self._id = query.lastInsertId()
                 self._fetch_data(only_self=True)
         self._data = next((x for x in self.db_cache if x['id']==self._id), None)
-        self._tag = self._data['tag_id'] if self._data is not None else None
-        self._name = self._data['name'] if self._data is not None else ''
+        self._tag = JalTag(self._data['tag_id']) if self._data is not None else None
+        self._name = self._data['name'] if self._data is not None else JalTag(0)
         self._number = self._data['number'] if self._data is not None else None
         self._currency_id = self._data['currency_id'] if self._data is not None else None
         self._active = self._data['active'] if self._data is not None else None
@@ -148,7 +149,7 @@ class JalAccount(JalDB):
         return self._id
 
     # Returns type of the account
-    def tag(self) -> int:
+    def tag(self) -> JalTag:
         return self._tag
 
     @classmethod
