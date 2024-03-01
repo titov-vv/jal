@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'reference_data_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -31,7 +31,7 @@ class Ui_ReferenceDataDialog(object):
         self.verticalLayout.setContentsMargins(2, 2, 2, 2)
         self.EditFrame = QFrame(ReferenceDataDialog)
         self.EditFrame.setObjectName(u"EditFrame")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.EditFrame.sizePolicy().hasHeightForWidth())
@@ -58,7 +58,7 @@ class Ui_ReferenceDataDialog(object):
 
         self.edit_layout.addWidget(self.Toggle)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.edit_layout.addItem(self.horizontalSpacer)
 

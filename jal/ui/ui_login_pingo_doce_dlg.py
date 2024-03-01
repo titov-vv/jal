@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'login_pingo_doce_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -72,7 +72,7 @@ class Ui_LoginPingoDoceDialog(object):
 
         self.frame = QFrame(LoginPingoDoceDialog)
         self.frame.setObjectName(u"frame")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
@@ -83,7 +83,7 @@ class Ui_LoginPingoDoceDialog(object):
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
         self.LoginBtn = QPushButton(self.frame)
         self.LoginBtn.setObjectName(u"LoginBtn")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.LoginBtn.sizePolicy().hasHeightForWidth())

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'tax_export_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -27,7 +27,7 @@ class Ui_TaxWidget(object):
         if not TaxWidget.objectName():
             TaxWidget.setObjectName(u"TaxWidget")
         TaxWidget.resize(618, 321)
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(TaxWidget.sizePolicy().hasHeightForWidth())
@@ -38,7 +38,7 @@ class Ui_TaxWidget(object):
         self.gridLayout.setContentsMargins(0, -1, -1, -1)
         self.XlsFileName = QLineEdit(TaxWidget)
         self.XlsFileName.setObjectName(u"XlsFileName")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.XlsFileName.sizePolicy().hasHeightForWidth())
@@ -77,7 +77,7 @@ class Ui_TaxWidget(object):
 
         self.XlsSelectBtn = QPushButton(TaxWidget)
         self.XlsSelectBtn.setObjectName(u"XlsSelectBtn")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.XlsSelectBtn.sizePolicy().hasHeightForWidth())
@@ -95,7 +95,7 @@ class Ui_TaxWidget(object):
 
         self.gridLayout.addWidget(self.YearLbl, 1, 0, 1, 1)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout.addItem(self.verticalSpacer, 12, 2, 1, 1)
 

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'term_deposits_report.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -38,7 +38,7 @@ class Ui_TermDepositsReportWidget(object):
         self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout.addItem(self.ReportFrameSpacer, 0, 1, 1, 1)
 
@@ -60,7 +60,7 @@ class Ui_TermDepositsReportWidget(object):
 
         self.ReportTableView = TableViewWithFooter(TermDepositsReportWidget)
         self.ReportTableView.setObjectName(u"ReportTableView")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(4)
         sizePolicy.setHeightForWidth(self.ReportTableView.sizePolicy().hasHeightForWidth())

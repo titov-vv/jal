@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'asset_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -35,13 +35,13 @@ class Ui_AssetDialog(object):
         self.gridLayout.setSpacing(2)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout.addItem(self.horizontalSpacer_4, 1, 2, 1, 1)
 
         self.frame = QFrame(AssetDialog)
         self.frame.setObjectName(u"frame")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
@@ -54,7 +54,7 @@ class Ui_AssetDialog(object):
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.splitter = QSplitter(self.frame)
         self.splitter.setObjectName(u"splitter")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
@@ -62,7 +62,7 @@ class Ui_AssetDialog(object):
         self.splitter.setOrientation(Qt.Horizontal)
         self.SymbolsFrame = QFrame(self.splitter)
         self.SymbolsFrame.setObjectName(u"SymbolsFrame")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy2.setHorizontalStretch(5)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.SymbolsFrame.sizePolicy().hasHeightForWidth())
@@ -86,7 +86,7 @@ class Ui_AssetDialog(object):
 
         self.horizontalLayout_5.addWidget(self.SymbolsLabel)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_5.addItem(self.horizontalSpacer_2)
 
@@ -117,7 +117,7 @@ class Ui_AssetDialog(object):
         self.splitter.addWidget(self.SymbolsFrame)
         self.DataFrame = QFrame(self.splitter)
         self.DataFrame.setObjectName(u"DataFrame")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy3.setHorizontalStretch(2)
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.DataFrame.sizePolicy().hasHeightForWidth())
@@ -141,7 +141,7 @@ class Ui_AssetDialog(object):
 
         self.horizontalLayout_2.addWidget(self.DataLbl)
 
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer_3)
 
@@ -199,7 +199,7 @@ class Ui_AssetDialog(object):
         self.horizontalLayout.setSpacing(2)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 

@@ -33,10 +33,9 @@ class OperationsWidget(MdiWidget):
         self.ui.DeleteOperationBtn.setIcon(JalIcon[JalIcon.REMOVE])
 
         # Customize UI configuration
-        self.balances_model = BalancesModel(self.ui.BalancesTableView)
-        self.ui.BalancesTableView.setModel(self.balances_model)
-        self.balances_model.configureView()
-        self.ui.BalancesTableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.balances_model = BalancesModel(self.ui.BalancesTreeView)
+        self.ui.BalancesTreeView.setModel(self.balances_model)
+        self.ui.BalancesTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.operations_model = OperationsModel(self.ui.OperationsTableView)
         self.operations_filtered_model = QSortFilterProxyModel(self.ui.OperationsTableView)
@@ -65,11 +64,11 @@ class OperationsWidget(MdiWidget):
         self.ui.DateRange.setCurrentIndex(0)
 
     def connect_signals_and_slots(self):
-        self.ui.BalanceDate.dateChanged.connect(self.ui.BalancesTableView.model().setDate)
-        self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTableView.model().setCurrency)
-        self.ui.BalancesTableView.doubleClicked.connect(self.balance_double_click)
-        self.ui.BalancesTableView.customContextMenuRequested.connect(self.balances_context_menu)
-        self.ui.ShowInactiveCheckBox.stateChanged.connect(self.ui.BalancesTableView.model().toggleActive)
+        self.ui.BalanceDate.dateChanged.connect(self.ui.BalancesTreeView.model().setDate)
+        self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTreeView.model().setCurrency)
+        self.ui.BalancesTreeView.doubleClicked.connect(self.balance_double_click)
+        self.ui.BalancesTreeView.customContextMenuRequested.connect(self.balances_context_menu)
+        self.ui.ShowInactiveCheckBox.stateChanged.connect(self.ui.BalancesTreeView.model().toggleActive)
         self.ui.DateRange.changed.connect(self.operations_model.setDateRange)
         self.ui.ChooseAccountBtn.changed.connect(self.operations_model.setAccount)
         self.ui.SearchString.editingFinished.connect(self.update_operations_filter)
@@ -102,7 +101,7 @@ class OperationsWidget(MdiWidget):
 
     @Slot()
     def balance_double_click(self, index):
-        self.ui.ChooseAccountBtn.account_id = index.model().getAccountId(index.row())
+        self.ui.ChooseAccountBtn.account_id = index.model().getAccountId(index)
 
     @Slot()
     def operation_selection_change(self, selected, _deselected):
@@ -143,9 +142,9 @@ class OperationsWidget(MdiWidget):
 
     @Slot()
     def balances_context_menu(self, pos):
-        index = self.ui.BalancesTableView.indexAt(pos)
+        index = self.ui.BalancesTreeView.indexAt(pos)
         account_id = self.balances_model.data(index, BalancesModel.ACCOUNT_ROLE)
-        contextMenu = QMenu(self.ui.BalancesTableView)
+        contextMenu = QMenu(self.ui.BalancesTreeView)
         actionBalanceHistory = QAction(JalIcon[JalIcon.CHART], self.tr("Balance history chart"), self)
         actionBalanceHistory.triggered.connect(partial(self.show_balance_history_chart, account_id))
         if account_id:
@@ -153,7 +152,7 @@ class OperationsWidget(MdiWidget):
         else:
             actionBalanceHistory.setEnabled(False)
         contextMenu.addAction(actionBalanceHistory)
-        contextMenu.popup(self.ui.BalancesTableView.viewport().mapToGlobal(pos))
+        contextMenu.popup(self.ui.BalancesTreeView.viewport().mapToGlobal(pos))
 
     @Slot()
     def reconcile_at_current_operation(self):

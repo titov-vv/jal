@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'tax_estimation.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -51,7 +51,7 @@ class Ui_TaxEstimationDialog(object):
 
         self.horizontalLayout_2.addWidget(self.QuoteLbl)
 
-        self.RateSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.RateSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_2.addItem(self.RateSpacer)
 
@@ -76,7 +76,7 @@ class Ui_TaxEstimationDialog(object):
 
         self.horizontalLayout_3.addWidget(self.RateLbl)
 
-        self.QuoteSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.QuoteSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_3.addItem(self.QuoteSpacer)
 

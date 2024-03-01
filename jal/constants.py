@@ -78,7 +78,7 @@ class PredefinedList:
 
 
 class PredefinedCategory:
-    Income = 1
+    Income = 1          # These constants are linked with 'categories' table initial values
     Spending = 2
     Profits = 3
     StartingBalance = 4
@@ -87,6 +87,14 @@ class PredefinedCategory:
     Dividends = 7
     Interest = 8
     Profit = 9
+
+
+class PredefinedTags:   # These constants are linked with 'tags' table initial values
+    AccountType = 1
+    CashAccount = 2
+    BankAccount = 3
+    CardAccount = 4
+    BrokerAccount = 5
 
 
 class PredefinedAsset(PredefinedList, QObject):

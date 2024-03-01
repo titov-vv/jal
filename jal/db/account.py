@@ -148,11 +148,12 @@ class JalAccount(JalDB):
     def id(self) -> int:
         return self._id
 
-    # Returns type of the account
+    # Returns tag of the account
     def tag(self) -> JalTag:
         return self._tag
 
     @classmethod
+    # Returns a list of tags used for accounts in form {tag_id(int): tag_name(str)}
     def get_all_tags(cls) -> dict:
         tags = {}
         query = cls._exec("SELECT DISTINCT a.tag_id, t.tag FROM accounts a LEFT JOIN tags t ON t.id=a.tag_id")

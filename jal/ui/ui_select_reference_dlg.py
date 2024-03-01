@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'select_reference_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -24,7 +24,7 @@ class Ui_SelectReferenceDlg(object):
         if not SelectReferenceDlg.objectName():
             SelectReferenceDlg.setObjectName(u"SelectReferenceDlg")
         SelectReferenceDlg.resize(400, 97)
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(SelectReferenceDlg.sizePolicy().hasHeightForWidth())
@@ -58,7 +58,7 @@ class Ui_SelectReferenceDlg(object):
 
         self.WindowLayout.addWidget(self.buttonBox)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.WindowLayout.addItem(self.verticalSpacer)
 

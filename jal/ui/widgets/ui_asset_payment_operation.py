@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'asset_payment_operation.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -83,7 +83,7 @@ class Ui_AssetPaymentOperation(object):
 
         self.layout.addWidget(self.symbol_label, 3, 0, 1, 1)
 
-        self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.layout.addItem(self.vertical_spacer, 5, 0, 1, 1)
 
@@ -100,7 +100,7 @@ class Ui_AssetPaymentOperation(object):
 
         self.layout.addWidget(self.currency, 3, 7, 1, 1)
 
-        self.horizontal_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontal_spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.layout.addItem(self.horizontal_spacer, 2, 10, 1, 1)
 

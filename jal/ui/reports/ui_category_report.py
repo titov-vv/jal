@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'category_report.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -42,7 +42,7 @@ class Ui_CategoryReportWidget(object):
         self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout.addItem(self.ReportFrameSpacer, 0, 5, 1, 1)
 
@@ -80,7 +80,7 @@ class Ui_CategoryReportWidget(object):
         self.splitter.setOrientation(Qt.Vertical)
         self.ReportTableView = TableViewWithFooter(self.splitter)
         self.ReportTableView.setObjectName(u"ReportTableView")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(4)
         sizePolicy.setHeightForWidth(self.ReportTableView.sizePolicy().hasHeightForWidth())
@@ -97,7 +97,7 @@ class Ui_CategoryReportWidget(object):
         self.ReportTableView.verticalHeader().setDefaultSectionSize(20)
         self.OperationDetails = JalOperationsTabs(self.splitter)
         self.OperationDetails.setObjectName(u"OperationDetails")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(1)
         sizePolicy1.setHeightForWidth(self.OperationDetails.sizePolicy().hasHeightForWidth())
