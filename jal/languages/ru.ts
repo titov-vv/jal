@@ -463,32 +463,27 @@
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="39"/>
+        <location filename="../db/balances_model.py" line="84"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="40"/>
+        <location filename="../db/balances_model.py" line="85"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="41"/>
+        <location filename="../db/balances_model.py" line="86"/>
         <source> </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="42"/>
+        <location filename="../db/balances_model.py" line="87"/>
         <source>Balance, </source>
         <translation>Баланс, </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="88"/>
-        <source>Total</source>
-        <translation>Итого</translation>
-    </message>
-    <message>
-        <location filename="../db/balances_model.py" line="175"/>
+        <location filename="../db/balances_model.py" line="189"/>
         <source>Term deposits</source>
         <translation>Срочные вклады</translation>
     </message>
@@ -2465,42 +2460,42 @@ Application will be terminated now.</source>
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="121"/>
+        <location filename="../widgets/operations_widget.py" line="120"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="123"/>
+        <location filename="../widgets/operations_widget.py" line="122"/>
         <source>Assign tag</source>
         <translation>Присвоить метку</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="125"/>
+        <location filename="../widgets/operations_widget.py" line="124"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="127"/>
+        <location filename="../widgets/operations_widget.py" line="126"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="84"/>
+        <location filename="../widgets/operations_widget.py" line="83"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="85"/>
+        <location filename="../widgets/operations_widget.py" line="84"/>
         <source>Are you sure to delete selected transaction(s)?</source>
         <translation>Вы уверены что хотите удалить выбранную транзакцию(-ии),</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="149"/>
+        <location filename="../widgets/operations_widget.py" line="148"/>
         <source>Balance history chart</source>
         <translation>График истории баланса</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="174"/>
+        <location filename="../widgets/operations_widget.py" line="173"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation>Выберите метку для присвоения выбранным операциям:</translation>
     </message>

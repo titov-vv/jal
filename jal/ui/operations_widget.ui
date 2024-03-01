@@ -168,7 +168,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QTreeView" name="BalancesTreeView"/>
+        <widget class="TreeViewWithFooter" name="BalancesTreeView"/>
        </item>
       </layout>
      </widget>
@@ -445,6 +445,11 @@
    <extends>QWidget</extends>
    <header>jal/widgets/custom/date_range_selector.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TreeViewWithFooter</class>
+   <extends>QTreeView</extends>
+   <header>jal/widgets/custom/treeview_with_footer.h</header>
   </customwidget>
   <customwidget>
    <class>CurrencyComboBox</class>

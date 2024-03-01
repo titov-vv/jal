@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor
+from jal.db.helpers import localize_decimal
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
@@ -75,11 +76,11 @@ class BalancesModel(ReportTreeModel):
         self._currency_name = ''
         self._active_only = True
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
-        bold_font = QFont()
-        bold_font.setBold(True)
-        italic_font = QFont()
-        italic_font.setItalic(True)
-        self._fonts = {'normal': None, 'bold': bold_font, 'italic': italic_font}
+        self.bold_font = QFont()
+        self.bold_font.setBold(True)
+        self.italic_font = QFont()
+        self.italic_font.setItalic(True)
+        self._fonts = {'normal': None, 'bold': self.bold_font, 'italic': self.italic_font}
         self._columns = [
             {'name': self.tr("Account"), 'field': 'account_name'},
             {'name': self.tr("Balance"), 'field': 'value'},
@@ -110,6 +111,22 @@ class BalancesModel(ReportTreeModel):
             return None
         except Exception as e:
             print(e)
+
+    def footerData(self, section, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            total_data = self._root.details()
+            if section == self.fieldIndex('account_name'):
+                return self.tr("Total:")
+            elif section == self.fieldIndex('value_common'):
+                return localize_decimal(total_data[self._columns[section]['field']], precision=2)
+        elif role == Qt.FontRole:
+            return self.bold_font
+        elif role == Qt.TextAlignmentRole:
+            if section == self.fieldIndex('value_common'):
+                return Qt.AlignRight | Qt.AlignVCenter
+            else:
+                return Qt.AlignLeft | Qt.AlignVCenter
+        return None
 
     def data_background(self, unreconciled, enabled=True):
         factor = 100 if enabled else 125

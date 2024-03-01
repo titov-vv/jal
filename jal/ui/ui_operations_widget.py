@@ -18,11 +18,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QDateEdit,
     QFrame, QGroupBox, QHBoxLayout, QHeaderView,
     QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QSplitter, QTableView, QTreeView,
-    QVBoxLayout, QWidget)
+    QSpacerItem, QSplitter, QTableView, QVBoxLayout,
+    QWidget)
 
 from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
 from jal.widgets.custom.date_range_selector import DateRangeSelector
+from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
 from jal.widgets.operations_tabs import JalOperationsTabs
 
 class Ui_OperationsWidget(object):
@@ -95,7 +96,7 @@ class Ui_OperationsWidget(object):
 
         self.verticalLayout.addWidget(self.BalanceConfigFrame)
 
-        self.BalancesTreeView = QTreeView(self.BalanceBox)
+        self.BalancesTreeView = TreeViewWithFooter(self.BalanceBox)
         self.BalancesTreeView.setObjectName(u"BalancesTreeView")
 
         self.verticalLayout.addWidget(self.BalancesTreeView)
