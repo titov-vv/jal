@@ -11,6 +11,7 @@ from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
 from jal.db.deposit import JalDeposit
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
+from jal.widgets.icons import JalIcon
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -119,13 +120,15 @@ class BalancesModel(ReportTreeModel):
                 return self.tr("Total:")
             elif section == self.fieldIndex('value_common'):
                 return localize_decimal(total_data[self._columns[section]['field']], precision=2)
-        elif role == Qt.FontRole:
+        if role == Qt.FontRole:
             return self.bold_font
-        elif role == Qt.TextAlignmentRole:
+        if role == Qt.TextAlignmentRole:
             if section == self.fieldIndex('value_common'):
                 return Qt.AlignRight | Qt.AlignVCenter
             else:
                 return Qt.AlignLeft | Qt.AlignVCenter
+        if role == Qt.DecorationRole and section == self.fieldIndex('account_name'):
+            return JalIcon[JalIcon.TOTAL]
         return None
 
     def data_background(self, unreconciled, enabled=True):

@@ -45,6 +45,7 @@ class JalIcon(UserDict):
     SYMBOL_CHANGE = auto()
     TAG = auto()
     TAX = auto()
+    TOTAL = auto()
     TRANSFER_IN = auto()
     TRANSFER_OUT = auto()
     TRANSFER_ASSET_IN = auto()
@@ -86,6 +87,7 @@ class JalIcon(UserDict):
         SYMBOL_CHANGE: "renaming.ico",
         TAG: "tag.ico",
         TAX: "tax.ico",
+        TOTAL: "total.ico",
         TRANSFER_IN: "transfer_in.ico",
         TRANSFER_OUT: "transfer_out.ico",
         TRANSFER_ASSET_IN: "transfer_asset_in.ico",
