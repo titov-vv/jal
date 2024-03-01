@@ -159,6 +159,7 @@ class ReportTreeModel(QAbstractItemModel):
         self._view.expandAll()
 
     def configureView(self):
+        self._view.header().setStretchLastSection(False)
         font = self._view.header().font()
         font.setBold(True)
         self._view.header().setFont(font)

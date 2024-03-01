@@ -2,13 +2,14 @@ from __future__ import annotations
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot, QDate
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
+from jal.constants import CustomColor
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
 from jal.db.deposit import JalDeposit
-from jal.widgets.delegates import FloatDelegate
+from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -66,6 +67,8 @@ class BalancesModel(ReportTreeModel):
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
+        self._grid_delegate = None
+        self._float_delegate = None
         self._view = parent_view
         self._data = []
         self._currency = 0
@@ -83,7 +86,6 @@ class BalancesModel(ReportTreeModel):
             {'name': self.tr(" "), 'field': 'currency_name'},
             {'name': self.tr("Balance, "), 'field': 'value_common'}
         ]
-        self._float_delegate = None
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         value = super().headerData(section, orientation, role)
@@ -101,21 +103,21 @@ class BalancesModel(ReportTreeModel):
                 return item.details().get(self._columns[index.column()]['field'], None)
             if role == Qt.FontRole:
                 return self._fonts.get(item.details()['font'], None)
-            # if role == Qt.BackgroundRole:
-            #     return self.data_background(index.row(), index.column(), self._view.isEnabled())
+            if role == Qt.BackgroundRole and index.column() == self.fieldIndex('value'):
+                return self.data_background(item.details().get('unreconciled', 0), self._view.isEnabled())
             if role == self.ACCOUNT_ROLE:
                 return item.details().get('account', 0)
             return None
         except Exception as e:
             print(e)
 
-    # def data_background(self, row, column, enabled=True):
-    #     factor = 100 if enabled else 125
-    #     if column == 3:
-    #         if self._data[row]['unreconciled'] > 15:
-    #             return QBrush(CustomColor.LightRed.lighter(factor))
-    #         if self._data[row]['unreconciled'] > 7:
-    #             return QBrush(CustomColor.LightYellow.lighter(factor))
+    def data_background(self, unreconciled, enabled=True):
+        factor = 100 if enabled else 125
+        if unreconciled > 15:
+            return QBrush(CustomColor.LightRed.lighter(factor))
+        if unreconciled > 7:
+            return QBrush(CustomColor.LightYellow.lighter(factor))
+        return None
 
     def configureView(self):
         for field in [x['field'] for x in self._columns]:
@@ -123,9 +125,12 @@ class BalancesModel(ReportTreeModel):
                 self._view.header().setSectionResizeMode(self.fieldIndex(field), QHeaderView.Stretch)
             else:
                 self._view.header().setSectionResizeMode(self.fieldIndex(field), QHeaderView.ResizeToContents)
+        self._grid_delegate = GridLinesDelegate(self._view)
         self._float_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True, parent=self._view)
-        self._view.setItemDelegateForColumn(1, self._float_delegate)
-        self._view.setItemDelegateForColumn(3, self._float_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('account_name'), self._grid_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('currency_name'), self._grid_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('value'), self._float_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('value_common'), self._float_delegate)
         super().configureView()
 
     @Slot()
