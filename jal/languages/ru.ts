@@ -122,7 +122,7 @@
     <message>
         <location filename="../widgets/reference_dialogs.py" line="28"/>
         <source>Invest.</source>
-        <translation type="unfinished"></translation>
+        <translation>Инвест.</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="30"/>
@@ -142,7 +142,7 @@
     <message>
         <location filename="../widgets/reference_dialogs.py" line="33"/>
         <source>Country</source>
-        <translation type="unfinished">Страна</translation>
+        <translation>Страна</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="34"/>
@@ -463,27 +463,32 @@
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="84"/>
+        <location filename="../db/balances_model.py" line="87"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="85"/>
+        <location filename="../db/balances_model.py" line="88"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="86"/>
+        <location filename="../db/balances_model.py" line="89"/>
         <source> </source>
-        <translation type="unfinished"></translation>
+        <translation> </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="87"/>
+        <location filename="../db/balances_model.py" line="90"/>
         <source>Balance, </source>
         <translation>Баланс, </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="189"/>
+        <location filename="../db/balances_model.py" line="124"/>
+        <source>Total:</source>
+        <translation>Итого:</translation>
+    </message>
+    <message>
+        <location filename="../db/balances_model.py" line="213"/>
         <source>Term deposits</source>
         <translation>Срочные вклады</translation>
     </message>
@@ -4996,6 +5001,11 @@ Please select an account for import:</source>
         <location filename="../widgets/reference_dialogs.py" line="338"/>
         <source>Tag</source>
         <translation>Метка</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="338"/>
+        <source>Icon filename</source>
+        <translation>Файл иконки</translation>
     </message>
 </context>
 <context>

@@ -463,27 +463,32 @@
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="84"/>
+        <location filename="../db/balances_model.py" line="87"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="85"/>
+        <location filename="../db/balances_model.py" line="88"/>
         <source>Balance</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="86"/>
+        <location filename="../db/balances_model.py" line="89"/>
         <source> </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="87"/>
+        <location filename="../db/balances_model.py" line="90"/>
         <source>Balance, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="189"/>
+        <location filename="../db/balances_model.py" line="124"/>
+        <source>Total:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/balances_model.py" line="213"/>
         <source>Term deposits</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4989,6 +4994,11 @@ Please select an account for import:</source>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="338"/>
         <source>Tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="338"/>
+        <source>Icon filename</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
