@@ -71,6 +71,8 @@ class PortfolioReportWindow(MdiWidget):
     @Slot()
     def onHoldingsContextMenu(self, pos):
         index = self.ui.PortfolioTreeView.indexAt(pos)
+        if not index.isValid():
+            return
         contextMenu = QMenu(self.ui.PortfolioTreeView)
         actionShowChart = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show Price Chart"), parent=self.ui.PortfolioTreeView)
         actionShowChart.triggered.connect(partial(self.showPriceChart, index))

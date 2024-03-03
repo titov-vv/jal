@@ -143,6 +143,8 @@ class OperationsWidget(MdiWidget):
     @Slot()
     def balances_context_menu(self, pos):
         index = self.ui.BalancesTreeView.indexAt(pos)
+        if not index.isValid():
+            return
         account_id = self.balances_model.data(index, BalancesModel.ACCOUNT_ROLE)
         contextMenu = QMenu(self.ui.BalancesTreeView)
         actionBalanceHistory = QAction(JalIcon[JalIcon.CHART], self.tr("Balance history chart"), self)

@@ -97,10 +97,10 @@ class BalancesModel(ReportTreeModel):
         return value
 
     def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid():
+            return None
         assert index.column() in range(len(self._columns))
         try:
-            if not index.isValid():
-                return None
             item = index.internalPointer()
             if role == Qt.DisplayRole:
                 return item.details().get(self._columns[index.column()]['field'], None)
