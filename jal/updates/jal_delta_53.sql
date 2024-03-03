@@ -1,5 +1,7 @@
 BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
+ALTER TABLE tags ADD COLUMN icon_file TEXT DEFAULT ('');
+UPDATE tags SET icon_file='';
 -- Free space for 4 predefined tags
 UPDATE tags SET pid = (SELECT MAX(id)+1 FROM tags) WHERE pid = 1;
 UPDATE tags SET id = (SELECT MAX(id)+1 FROM tags) WHERE id = 1;
@@ -13,10 +15,10 @@ UPDATE tags SET pid = (SELECT MAX(id)+1 FROM tags) WHERE pid = 5;
 UPDATE tags SET id = (SELECT MAX(id)+1 FROM tags) WHERE id = 5;
 -- Create predefined tags for account types
 INSERT INTO tags (id, pid, tag) VALUES (1, 0, 'Account type');
-INSERT INTO tags (id, pid, tag) VALUES (2, 1, 'Cash');
-INSERT INTO tags (id, pid, tag) VALUES (3, 1, 'Bank account');
-INSERT INTO tags (id, pid, tag) VALUES (4, 1, 'Card');
-INSERT INTO tags (id, pid, tag) VALUES (5, 1, 'Broker account');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (2, 1, 'Cash', 'tag_cash.ico');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (3, 1, 'Bank account', 'tag_bank.ico');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (4, 1, 'Card', 'tag_card.ico');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_investing.ico');
 --------------------------------------------------------------------------------
 -- Drop/disable triggers before modifications
 DROP TRIGGER IF EXISTS validate_account_insert;

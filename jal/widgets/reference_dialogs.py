@@ -335,7 +335,7 @@ class CategoryListDialog(ReferenceDataDialog):
 class TagTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
-        self._columns = [("tag", self.tr("Tag"))]
+        self._columns = [("tag", self.tr("Tag")), ("icon_file", self.tr("Icon filename"))]
         self._default_name = "tag"
         self._sort_by = "tag"
         self._stretch = "tag"

@@ -20,7 +20,7 @@ class AccountTreeItem(AbstractTreeItem):
         super().__init__(parent, group)
         if data is None:
             self._data = {
-                "account_tag": '', "account": 0, "account_name": '', "currency": 0, "currency_name": '',
+                "account_tag": '', "icon_id": JalIcon.NONE, "account": 0, "account_name": '', "currency": 0, "currency_name": '',
                 "value": Decimal('0'), "value_common": Decimal('0'), "reconciled": 0, "active": 1, "font": "bold"
             }
         else:
@@ -28,6 +28,7 @@ class AccountTreeItem(AbstractTreeItem):
 
     def _calculateGroupTotals(self, child_data):
         self._data['account_name'] = child_data['account_tag']
+        self._data['icon_id'] = child_data['icon_id']
         self._data['value_common'] += child_data['value_common']
 
     def _afterParentGroupUpdate(self, group_data):
@@ -107,6 +108,8 @@ class BalancesModel(ReportTreeModel):
                 return self._fonts.get(item.details()['font'], None)
             if role == Qt.BackgroundRole and index.column() == self.fieldIndex('value'):
                 return self.data_background(item.details().get('unreconciled', 0), self._view.isEnabled())
+            if role == Qt.DecorationRole and item.isGroup() and index.column() == self.fieldIndex('account_name'):
+                return JalIcon[item.details().get('icon_id', JalIcon.NONE)]
             if role == self.ACCOUNT_ROLE:
                 return item.details().get('account', 0)
             return None
@@ -193,6 +196,7 @@ class BalancesModel(ReportTreeModel):
             if value != Decimal('0'):
                 balances.append({
                     "account_tag": account.tag().name(),
+                    "icon_id": account.tag().icon(),
                     "account": account.id(),
                     "account_name": account.name(),
                     "currency": account.currency(),
@@ -207,6 +211,7 @@ class BalancesModel(ReportTreeModel):
             rate = deposit.currency().quote(self._date, self._currency)[1]
             balances.append({
                 "account_tag": self.tr("Term deposits"),
+                "icon_id": JalIcon.DEPOSIT_ACCOUNT,
                 "account": 0,
                 "account_name": deposit.name(),
                 "currency": deposit.currency(),

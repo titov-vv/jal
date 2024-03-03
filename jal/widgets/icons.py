@@ -6,6 +6,7 @@ from collections import UserDict
 from PySide6.QtGui import QIcon, QPixmap
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
+from jal.db.tag import JalTag
 
 
 ICON_PREFIX = "ui_"
@@ -25,6 +26,7 @@ class JalIcon(UserDict):
     CLEAN = auto()
     COPY = auto()
     DELISTING = auto()
+    DEPOSIT_ACCOUNT = auto()
     DEPOSIT_OPEN = auto()
     DEPOSIT_CLOSE = auto()
     DETAILS = auto()
@@ -67,6 +69,7 @@ class JalIcon(UserDict):
         CLEAN: "clean.ico",
         COPY: "copy.ico",
         DELISTING: "delisting.ico",
+        DEPOSIT_ACCOUNT: "deposit_account.ico",
         DEPOSIT_OPEN: "deposit_open.ico",
         DEPOSIT_CLOSE: "deposit_close.ico",
         DETAILS: "details.ico",
@@ -120,6 +123,8 @@ class JalIcon(UserDict):
             match = re.match(f"^{AUX_PREFIX}.*", filename)
             if match:
                 self._icons[filename] = self.load_icon(img_path + filename)
+        for tag_id, filename in JalTag.icon_files().items():
+            self._icons[filename] = self.add_disabled_state(self.load_icon(img_path + filename))
 
     @staticmethod
     def load_icon(path) -> QIcon:
@@ -130,9 +135,7 @@ class JalIcon(UserDict):
 
     @classmethod
     def __class_getitem__(cls, key) -> QIcon:
-        if key not in cls._icons:
-            return QIcon()
-        return cls._icons[key]
+        return cls._icons.get(key, QIcon())
 
     @classmethod
     def country_flag(cls, country_code) -> QIcon:
@@ -143,9 +146,7 @@ class JalIcon(UserDict):
     @classmethod
     def aux_icon(cls, icon_name) -> QIcon:
         filename = AUX_PREFIX + icon_name
-        if filename not in cls._icons:
-            return QIcon()
-        return cls._icons[filename]
+        return cls._icons.get(filename, QIcon())
 
     # Iterates through all available images and creates a copy of images with adjusted alpha-channel (20% of initial value)
     # This new image is added to the icon as disabled state image

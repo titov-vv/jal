@@ -263,9 +263,10 @@ CREATE TABLE settings (
 -- Table: tags
 DROP TABLE IF EXISTS tags;
 CREATE TABLE tags (
-    id  INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    pid INTEGER   NOT NULL DEFAULT (0),
-    tag TEXT (64) NOT NULL UNIQUE
+    id         INTEGER   PRIMARY KEY UNIQUE NOT NULL,
+    pid        INTEGER   NOT NULL DEFAULT (0),
+    tag        TEXT (64) NOT NULL UNIQUE,
+    icon_file  TEXT DEFAULT ('')
 );
 
 -- Table to store about corporate actions that transform one asset into another
@@ -735,10 +736,10 @@ INSERT INTO categories (id, pid, name, often, special) VALUES (9, 3, 'Results of
 
 -- Initialize predefined tags
 INSERT INTO tags (id, pid, tag) VALUES (1, 0, 'Account type');
-INSERT INTO tags (id, pid, tag) VALUES (2, 1, 'Cash');
-INSERT INTO tags (id, pid, tag) VALUES (3, 1, 'Bank account');
-INSERT INTO tags (id, pid, tag) VALUES (4, 1, 'Card');
-INSERT INTO tags (id, pid, tag) VALUES (5, 1, 'Broker account');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (2, 1, 'Cash', 'tag_cash.ico');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (3, 1, 'Bank account', 'tag_bank.ico');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (4, 1, 'Card', 'tag_card.ico');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_investing.ico');
 
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');
