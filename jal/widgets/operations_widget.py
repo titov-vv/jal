@@ -143,9 +143,7 @@ class OperationsWidget(MdiWidget):
     @Slot()
     def balances_context_menu(self, pos):
         index = self.ui.BalancesTreeView.indexAt(pos)
-        if not index.isValid():
-            return
-        account_id = self.balances_model.data(index, BalancesModel.ACCOUNT_ROLE)
+        account_id = self.balances_model.data(index, BalancesModel.ACCOUNT_ROLE) if index.isValid() else 0
         contextMenu = QMenu(self.ui.BalancesTreeView)
         actionBalanceHistory = QAction(JalIcon[JalIcon.CHART], self.tr("Balance history chart"), self)
         actionBalanceHistory.triggered.connect(partial(self.show_balance_history_chart, account_id))
@@ -154,6 +152,13 @@ class OperationsWidget(MdiWidget):
         else:
             actionBalanceHistory.setEnabled(False)
         contextMenu.addAction(actionBalanceHistory)
+        contextMenu.addSeparator()
+        actionExpandAll = QAction(text=self.tr("Expand all"), parent=self)
+        actionExpandAll.triggered.connect(self.ui.BalancesTreeView.expandAll)
+        contextMenu.addAction(actionExpandAll)
+        actionCollapseAll = QAction(text=self.tr("Collapse all"), parent=self)
+        actionCollapseAll.triggered.connect(self.ui.BalancesTreeView.collapseAll)
+        contextMenu.addAction(actionCollapseAll)
         contextMenu.popup(self.ui.BalancesTreeView.viewport().mapToGlobal(pos))
 
     @Slot()
