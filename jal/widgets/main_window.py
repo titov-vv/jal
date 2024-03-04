@@ -147,7 +147,7 @@ class MainWindow(QMainWindow):
         super().closeEvent(event)
 
     def createLanguageMenu(self):
-        langDirectory = QDir(JalDB.get_path(JalDB.PATH_LANG))
+        langDirectory = QDir(JalSettings.path(JalSettings.PATH_LANG))
         for language_file in langDirectory.entryList(['*.qm']):
             language_code = language_file.split('.')[0]
             language = QLocale.languageToString(QLocale(language_code).language())
@@ -225,7 +225,7 @@ class MainWindow(QMainWindow):
         about_box.setWindowTitle(self.tr("About"))
         version = f"{__version__} (db{Setup.DB_REQUIRED_VERSION})"
         title = "<h3>JAL</h3><p>Just Another Ledger, " + self.tr("version") + " " + version +"</p>" + \
-            "<p>DB file: " + JalSettings().DbPath() + "</p>"
+            "<p>DB file: " + JalSettings.path(JalSettings.PATH_DB_FILE) + "</p>"
         about_box.setText(title)
         about_text = "<p>" + self.tr("More information, manuals and problem reports are at ") + \
                      "<a href=https://github.com/titov-vv/jal>" + self.tr("github home page") + "</a></p><p>" + \

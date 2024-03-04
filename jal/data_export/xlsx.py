@@ -3,7 +3,7 @@ import logging
 import xlsxwriter
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtWidgets import QApplication
-from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 from jal.widgets.helpers import ts2d
 
 
@@ -44,7 +44,7 @@ class XLSX:
 
     def load_template(self, file):
         template = None
-        file_path = JalDB.get_path(JalDB.PATH_TEMPLATES) + file
+        file_path = JalSettings.path(JalSettings.PATH_TEMPLATES) + file
         try:
             with open(file_path, 'r', encoding='utf-8') as json_file:
                 template = json.load(json_file)

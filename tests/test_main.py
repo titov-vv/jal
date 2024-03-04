@@ -6,6 +6,7 @@ from decimal import Decimal
 from tests.fixtures import project_root
 from constants import Setup
 from jal.db.db import JalDB, JalDBError
+from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
 from jal.db.helpers import localize_decimal
 from jal.db.backup_restore import JalBackup
@@ -55,7 +56,7 @@ def test_db_creation(tmp_path, project_root):
     # Clean up db
     JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
-    os.remove(JalDB.get_path(JalDB.PATH_DB_FILE))  # Clean db file
+    os.remove(JalSettings.path(JalSettings.PATH_DB_FILE))  # Clean db file
 
 
 def test_invalid_backup(tmp_path, project_root):
@@ -73,7 +74,7 @@ def test_invalid_backup(tmp_path, project_root):
     # Clean up db
     JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
-    os.remove(JalDB.get_path(JalDB.PATH_DB_FILE))  # Clean db file
+    os.remove(JalSettings.path(JalSettings.PATH_DB_FILE))  # Clean db file
 
 
 def test_backup_load(tmp_path, project_root):
@@ -105,4 +106,4 @@ def test_backup_load(tmp_path, project_root):
     # Clean up db
     JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
-    os.remove(JalDB.get_path(JalDB.PATH_DB_FILE))  # Clean db file
+    os.remove(JalSettings.path(JalSettings.PATH_DB_FILE))  # Clean db file

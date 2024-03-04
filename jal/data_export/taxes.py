@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 
 from jal.constants import Setup, PredefinedAsset
-from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, AssetPayment
@@ -63,7 +63,7 @@ class TaxReport:
     # Loads report parameters for given year into self._parameters
     def load_parameters(self, year: int):
         year_key = str(year)
-        file_path = JalDB.get_path(JalDB.PATH_TAX_REPORT_TEMPLATE) + self.country_name + ".json"
+        file_path = JalSettings.path(JalSettings.PATH_TAX_REPORT_TEMPLATE) + self.country_name + ".json"
         try:
             with open(file_path, 'r', encoding='utf-8') as json_file:
                 parameters = json.load(json_file)

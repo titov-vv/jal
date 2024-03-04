@@ -40,7 +40,7 @@ def prepare_db(project_root, tmp_path, data_path):
 
     db.close()
     os.remove(target_path)  # Clean db init script
-    os.remove(JalDB.get_path(JalDB.PATH_DB_FILE))  # Clean db file
+    os.remove(JalSettings.path(JalSettings.PATH_DB_FILE))  # Clean db file
 
 
 @pytest.fixture

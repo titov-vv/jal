@@ -6,7 +6,6 @@ from collections import defaultdict
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QFileDialog
 from jal.constants import Setup
-from jal.db.db import JalDB
 from jal.db.settings import JalSettings, FolderFor
 from jal.data_import.statement import Statement_ImportError, Statement_Capabilities
 
@@ -24,7 +23,7 @@ class Statements(QObject):
         self.loadStatementsList()
 
     def loadStatementsList(self):
-        statements_folder = JalDB.get_path(JalDB.PATH_APP) + Setup.IMPORT_PATH + os.sep + Setup.STATEMENT_PATH
+        statements_folder = JalSettings.path(JalSettings.PATH_APP) + Setup.IMPORT_PATH + os.sep + Setup.STATEMENT_PATH
         statement_modules = [filename[:-3] for filename in os.listdir(statements_folder) if filename.endswith(".py")]
         for module_name in statement_modules:
             logging.debug(f"Trying to load statement module: {module_name}")

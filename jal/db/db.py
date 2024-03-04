@@ -83,8 +83,6 @@ class JalDB:
     PATH_DB_FILE = auto()
     PATH_LANG = auto()
     PATH_ICONS = auto()
-    PATH_SQL_INIT = auto()
-    PATH_UPDATES = auto()
     PATH_LANG_FILE = auto()
     PATH_TAX_REPORT_TEMPLATE = auto()
     PATH_TEMPLATES = auto()
@@ -100,29 +98,15 @@ class JalDB:
         return QApplication.translate("JalDB", text)
 
     @staticmethod
-    def get_path(path_type, language='') -> str:    # FIXME - should this method be part of JalSettings instead?
-        app_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + os.sep
-        if path_type == JalDB.PATH_APP:
-            return app_path
-        if path_type == JalDB.PATH_DB_FILE:
-            if "pytest" in sys.modules:
-                return os.environ['JAL_TEST_PATH'] + os.sep + Setup.DB_PATH  # Use custom path if in test environment
-            else:
-                return app_path + Setup.DB_PATH
-        if path_type == JalDB.PATH_LANG:
-            return app_path + Setup.LANG_PATH + os.sep
-        if path_type == JalDB.PATH_ICONS:
-            return app_path + Setup.ICONS_PATH + os.sep
-        if path_type == JalDB.PATH_SQL_INIT:
-            return app_path + Setup.INIT_SCRIPT_PATH
-        if path_type == JalDB.PATH_UPDATES:
-            return app_path + Setup.UPDATES_PATH + os.sep
-        if path_type == JalDB.PATH_LANG_FILE:
-            return app_path + Setup.LANG_PATH + os.sep + language + '.qm'
-        if path_type == JalDB.PATH_TAX_REPORT_TEMPLATE:
-            return app_path + Setup.EXPORT_PATH + os.sep + Setup.TAX_REPORT_PATH + os.sep
-        if path_type == JalDB.PATH_TEMPLATES:
-            return app_path + Setup.EXPORT_PATH + os.sep + Setup.TEMPLATE_PATH + os.sep
+    def get_app_path() -> str:
+        return os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + os.sep
+
+    @staticmethod
+    def get_db_path() -> str:
+        if "pytest" in sys.modules:
+            return os.environ['JAL_TEST_PATH'] + os.sep + Setup.DB_PATH  # Use custom path if in test environment
+        else:
+            return JalDB.get_app_path() + Setup.DB_PATH
 
     # -------------------------------------------------------------------------------------------------------------------
     # This function:
@@ -135,7 +119,7 @@ class JalDB:
         db = QSqlDatabase.addDatabase("QSQLITE", Setup.DB_CONNECTION)
         if not db.isValid():
             return JalDBError(JalDBError.DbDriverFailure)
-        db.setDatabaseName(self.get_path(self.PATH_DB_FILE))
+        db.setDatabaseName(self.get_db_path())
         db.setConnectOptions("QSQLITE_ENABLE_REGEXP=1")
         db.open()
         sqlite_version = self.get_engine_version()
@@ -145,14 +129,14 @@ class JalDB:
         JalDB._tables = db.tables(QSql.Tables) + db.tables(QSql.Views)  # Bitwise or somehow doesn't work here :(
         if not JalDB._tables:
             logging.info("Loading DB initialization script")
-            error = self.run_sql_script(self.get_path(self.PATH_SQL_INIT))
+            error = self.run_sql_script(self.get_app_path() + Setup.INIT_SCRIPT_PATH)
             if error.code != JalDBError.NoError:
                 return error
         if self._read("SELECT value FROM settings WHERE name='CleanDB'") == 1:
             db.close()
-            os.remove(self.get_path(self.PATH_DB_FILE))
+            os.remove(self.get_db_path())
             db.open()
-            error = self.run_sql_script(self.get_path(self.PATH_SQL_INIT))
+            error = self.run_sql_script(self.get_app_path() + Setup.INIT_SCRIPT_PATH)
             if error.code != JalDBError.NoError:
                 return error
         schema_version = self._read("SELECT value FROM settings WHERE name='SchemaVersion'")
@@ -187,11 +171,6 @@ class JalDB:
         if not db.isOpen():
             logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
         return db
-
-    # Returns a name of current database file in use
-    @classmethod
-    def _db_path(cls) -> str:
-        return cls.connection().databaseName()
 
     # -------------------------------------------------------------------------------------------------------------------
     @classmethod
@@ -341,7 +320,7 @@ class JalDB:
         except ValueError:
             return JalDBError(JalDBError.DbInitFailure, details=f"(db schema: {version}")
         for step in range(schema_version, Setup.DB_REQUIRED_VERSION):
-            delta_file = self.get_path(self.PATH_UPDATES) + Setup.UPDATE_PREFIX + f"{step + 1}.sql"
+            delta_file = self.get_app_path() + Setup.UPDATES_PATH + os.sep + Setup.UPDATE_PREFIX + f"{step + 1}.sql"
             logging.info(f"Applying delta schema {step}->{step + 1} from {delta_file}")
             error = self.run_sql_script(delta_file)
             if error.code != JalDBError.NoError:

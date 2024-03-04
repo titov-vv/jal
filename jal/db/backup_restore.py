@@ -6,9 +6,9 @@ from dateutil import tz
 from datetime import datetime
 from tempfile import TemporaryDirectory
 import tarfile
-
 from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
 from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 
 
 # ------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ class JalBackup:
 
     def __init__(self, parent):
         self.parent = parent
-        self.file = JalDB.get_path(JalDB.PATH_DB_FILE)
+        self.file = JalSettings.path(JalSettings.PATH_DB_FILE)
         self.backup_name = None
         self._backup_label_date = ''
 

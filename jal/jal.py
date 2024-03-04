@@ -24,7 +24,7 @@ def main():
     error = JalDB().init_db()
 
     translator = QTranslator(app)
-    translator.load(JalDB.get_path(JalDB.PATH_LANG_FILE, language=JalSettings().getLanguage()))
+    translator.load(JalSettings.path(JalDB.PATH_LANG_FILE))
     app.installTranslator(translator)
 
     if error.code == JalDBError.OutdatedDbSchema:
