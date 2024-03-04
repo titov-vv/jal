@@ -1073,37 +1073,37 @@
 <context>
     <name>DepositActions</name>
     <message>
-        <location filename="../constants.py" line="152"/>
+        <location filename="../constants.py" line="173"/>
         <source>Open term deposit</source>
         <translation>Открытие вклада</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="153"/>
+        <location filename="../constants.py" line="174"/>
         <source>Close term deposit</source>
         <translation>Закрытие вклада</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="154"/>
+        <location filename="../constants.py" line="175"/>
         <source>Top-up term deposit</source>
         <translation>Пополнение вклада</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="155"/>
+        <location filename="../constants.py" line="176"/>
         <source>Partial withdrawal from term deposit</source>
         <translation>Частичное изъятие вклада</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="156"/>
+        <location filename="../constants.py" line="177"/>
         <source>Term deposit renewal</source>
         <translation>Пролонгация вклада</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="157"/>
+        <location filename="../constants.py" line="178"/>
         <source>Interest accrued</source>
         <translation>Начисление процентов</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="161"/>
+        <location filename="../constants.py" line="182"/>
         <source>Tax withheld</source>
         <translation>Удержание налога</translation>
     </message>
@@ -2319,52 +2319,52 @@ Application will be terminated now.</source>
 <context>
     <name>MarketDataFeed</name>
     <message>
-        <location filename="../constants.py" line="183"/>
+        <location filename="../constants.py" line="204"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="184"/>
+        <location filename="../constants.py" line="205"/>
         <source>Central banks</source>
         <translation>Центральные банки</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="185"/>
+        <location filename="../constants.py" line="206"/>
         <source>MOEX</source>
         <translation>МосБиржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="186"/>
+        <location filename="../constants.py" line="207"/>
         <source>NYSE/Nasdaq</source>
         <translation>NYSE/Nasdaq</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="187"/>
+        <location filename="../constants.py" line="208"/>
         <source>Euronext</source>
         <translation>Euronext</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="188"/>
+        <location filename="../constants.py" line="209"/>
         <source>TMX TSX</source>
         <translation>TMX TSX</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="189"/>
+        <location filename="../constants.py" line="210"/>
         <source>LSE</source>
         <translation>LSE</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="190"/>
+        <location filename="../constants.py" line="211"/>
         <source>Frankfurt Borse</source>
         <translation>Франкфунтская биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="191"/>
+        <location filename="../constants.py" line="212"/>
         <source>Victoria Seguros</source>
         <translation>Victoria Seguros</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="196"/>
+        <location filename="../constants.py" line="217"/>
         <source>Coinbase</source>
         <translation>Coinbase</translation>
     </message>
@@ -2827,77 +2827,133 @@ Application will be terminated now.</source>
     </message>
 </context>
 <context>
+    <name>PredefinedAgents</name>
+    <message>
+        <location filename="../constants.py" line="90"/>
+        <source>None</source>
+        <translation>Нет</translation>
+    </message>
+</context>
+<context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="128"/>
+        <location filename="../constants.py" line="149"/>
         <source>Money</source>
         <translation>Валюты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="129"/>
+        <location filename="../constants.py" line="150"/>
         <source>Shares</source>
         <translation>Акции</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="130"/>
+        <location filename="../constants.py" line="151"/>
         <source>Bonds</source>
         <translation>Облигации</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="131"/>
+        <location filename="../constants.py" line="152"/>
         <source>ETFs</source>
         <translation>БПИФ</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="132"/>
+        <location filename="../constants.py" line="153"/>
         <source>Commodities</source>
         <translation>Товары</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="133"/>
+        <location filename="../constants.py" line="154"/>
         <source>Derivatives</source>
         <translation>Деривативы</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="134"/>
+        <location filename="../constants.py" line="155"/>
         <source>Forex</source>
         <translation>Форекс</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="135"/>
+        <location filename="../constants.py" line="156"/>
         <source>Funds</source>
         <translation>Фонды</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="140"/>
+        <location filename="../constants.py" line="161"/>
         <source>Crypto-currency</source>
         <translation>Криптовалюты</translation>
     </message>
 </context>
 <context>
-    <name>PredefinedTags</name>
+    <name>PredefinedCategory</name>
+    <message>
+        <location filename="../constants.py" line="105"/>
+        <source>Income</source>
+        <translation>Приход</translation>
+    </message>
     <message>
         <location filename="../constants.py" line="106"/>
+        <source>Spending</source>
+        <translation>Расход</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="107"/>
+        <source>Profits</source>
+        <translation>Прибыли</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="108"/>
+        <source>Starting balance</source>
+        <translation>Начальный баланс</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="109"/>
+        <source>Fees</source>
+        <translation>Комиссии</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="110"/>
+        <source>Taxes</source>
+        <translation>Налоги</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="111"/>
+        <source>Dividends</source>
+        <translation>Дивиденды</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="112"/>
+        <source>Interest</source>
+        <translation>Проценты</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="116"/>
+        <source>Results of investments</source>
+        <translation>Результат инвестирования</translation>
+    </message>
+</context>
+<context>
+    <name>PredefinedTags</name>
+    <message>
+        <location filename="../constants.py" line="127"/>
         <source>Account type</source>
         <translation>Тип счёта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="107"/>
+        <location filename="../constants.py" line="128"/>
         <source>Cash</source>
         <translation>Наличные</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="108"/>
+        <location filename="../constants.py" line="129"/>
         <source>Bank account</source>
         <translation>Банковский счёт</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="109"/>
+        <location filename="../constants.py" line="130"/>
         <source>Card</source>
         <translation>Карта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="114"/>
+        <location filename="../constants.py" line="135"/>
         <source>Broker account</source>
         <translation>Брокерский счёт</translation>
     </message>

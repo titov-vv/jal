@@ -77,10 +77,18 @@ class PredefinedList:
             combobox.addItem(self._names[item], userData=item)
 
 
-class PredefinedAgents:  # These constant is linked with 'agents' table initial value and should be present in DB
+class PredefinedAgents(PredefinedList, QObject):  # These constant is linked with 'agents' table initial value and should be present in DB
+    db_update_query = "UPDATE agents SET name=:name WHERE id=:id"
     Empty = 1            # Protected by trigger 'keep_predefined_agents' that should be aligned with max ID
 
-class PredefinedCategory:  # These constants are linked with 'categories' table initial values and should be present in DB
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.Empty: self.tr("None")
+        }
+
+class PredefinedCategory(PredefinedList, QObject):  # These constants are linked with 'categories' table initial values and should be present in DB
+    db_update_query = "UPDATE categories SET name=:name WHERE id=:id"
     Income = 1             # Protected by trigger 'keep_predefined_categories' that should be aligned with max ID
     Spending = 2
     Profits = 3
@@ -91,6 +99,19 @@ class PredefinedCategory:  # These constants are linked with 'categories' table 
     Interest = 8
     Profit = 9
 
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.Income: self.tr("Income"),
+            self.Spending: self.tr("Spending"),
+            self.Profits: self.tr("Profits"),
+            self.StartingBalance: self.tr("Starting balance"),
+            self.Fees: self.tr("Fees"),
+            self.Taxes: self.tr("Taxes"),
+            self.Dividends: self.tr("Dividends"),
+            self.Interest: self.tr("Interest"),
+            self.Profit: self.tr("Results of investments")
+        }
 
 class PredefinedTags(PredefinedList, QObject):   # These constants are linked with 'tags' table initial values but are not mandatory as not used in code
     db_update_query = "UPDATE tags SET tag=:name WHERE id=:id"
