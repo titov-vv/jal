@@ -1,4 +1,5 @@
 from typing import Union
+from enum import auto
 import os
 import sys
 import re
@@ -7,31 +8,29 @@ import sqlparse
 from pkg_resources import parse_version
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlTableModel
-
 from jal.constants import Setup
-from jal.db.helpers import get_dbfilename
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # No translation of the file because these routines might be used before QApplication initialization
 class JalDBError:
-    NoError = 0
-    DbInitFailure = 1
-    OutdatedSqlite = 2
-    OutdatedDbSchema = 3
-    NewerDbSchema = 4
-    DbDriverFailure = 5
-    NoDeltaFile = 6
-    SQLFailure = 7
+    NoError = auto()
+    DbInitFailure = auto()
+    OutdatedSqlite = auto()
+    OutdatedDbSchema = auto()
+    NewerDbSchema = auto()
+    DbDriverFailure = auto()
+    NoDeltaFile = auto()
+    SQLFailure = auto()
     _messages = {
-        0: "No error",
-        1: "Database initialization failure.",
-        2: "You need SQLite version >= " + Setup.SQLITE_MIN_VERSION,
-        3: "Database schema version is outdated. Please update it or use older application version.",
-        4: "Unsupported database schema. Please update the application.",
-        5: "Sqlite driver initialization failed.",
-        6: "DB delta file not found.",
-        7: "SQL command was executed with error."
+        NoError: "No error",
+        DbInitFailure: "Database initialization failure.",
+        OutdatedSqlite: "You need SQLite version >= " + Setup.SQLITE_MIN_VERSION,
+        OutdatedDbSchema: "Database schema version is outdated. Please update it or use older application version.",
+        NewerDbSchema: "Unsupported database schema. Please update the application.",
+        DbDriverFailure: "Sqlite driver initialization failed.",
+        NoDeltaFile: "DB delta file not found.",
+        SQLFailure: "SQL command was executed with error."
     }
 
     def __init__(self, code, details=''):
@@ -80,6 +79,15 @@ class JalSqlError:
 class JalDB:
     _tables = []
     _instances_with_cache = []
+    PATH_APP = auto()
+    PATH_DB_FILE = auto()
+    PATH_LANG = auto()
+    PATH_ICONS = auto()
+    PATH_SQL_INIT = auto()
+    PATH_UPDATES = auto()
+    PATH_LANG_FILE = auto()
+    PATH_TAX_REPORT_TEMPLATE = auto()
+    PATH_TEMPLATES = auto()
 
     # By default, db objects don't cache data. But if and object may cache db data we need to track it so parameter
     # 'cached' to be set to True. Such objects should implement invalidate_cache(), class_cache() methods also.
@@ -91,6 +99,31 @@ class JalDB:
     def tr(self, text):
         return QApplication.translate("JalDB", text)
 
+    @staticmethod
+    def get_path(path_type, language='') -> str:    # FIXME - should this method be part of JalSettings instead?
+        app_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + os.sep
+        if path_type == JalDB.PATH_APP:
+            return app_path
+        if path_type == JalDB.PATH_DB_FILE:
+            if "pytest" in sys.modules:
+                return os.environ['JAL_TEST_PATH'] + os.sep + Setup.DB_PATH  # Use custom path if in test environment
+            else:
+                return app_path + Setup.DB_PATH
+        if path_type == JalDB.PATH_LANG:
+            return app_path + Setup.LANG_PATH + os.sep
+        if path_type == JalDB.PATH_ICONS:
+            return app_path + Setup.ICONS_PATH + os.sep
+        if path_type == JalDB.PATH_SQL_INIT:
+            return app_path + Setup.INIT_SCRIPT_PATH
+        if path_type == JalDB.PATH_UPDATES:
+            return app_path + Setup.UPDATES_PATH + os.sep
+        if path_type == JalDB.PATH_LANG_FILE:
+            return app_path + Setup.LANG_PATH + os.sep + language + '.qm'
+        if path_type == JalDB.PATH_TAX_REPORT_TEMPLATE:
+            return app_path + Setup.EXPORT_PATH + os.sep + Setup.TAX_REPORT_PATH + os.sep
+        if path_type == JalDB.PATH_TEMPLATES:
+            return app_path + Setup.EXPORT_PATH + os.sep + Setup.TEMPLATE_PATH + os.sep
+
     # -------------------------------------------------------------------------------------------------------------------
     # This function:
     # 1) checks that DB file is present and contains some data
@@ -98,11 +131,11 @@ class JalDB:
     # 2) checks that DB looks like a valid one:
     #    if schema version is invalid it will close DB
     # Returns: LedgerInitError(code == NoError(0) if db was initialized successfully)
-    def init_db(self, db_path) -> JalDBError:
+    def init_db(self) -> JalDBError:
         db = QSqlDatabase.addDatabase("QSQLITE", Setup.DB_CONNECTION)
         if not db.isValid():
             return JalDBError(JalDBError.DbDriverFailure)
-        db.setDatabaseName(get_dbfilename(db_path))
+        db.setDatabaseName(self.get_path(self.PATH_DB_FILE))
         db.setConnectOptions("QSQLITE_ENABLE_REGEXP=1")
         db.open()
         sqlite_version = self.get_engine_version()
@@ -112,14 +145,14 @@ class JalDB:
         JalDB._tables = db.tables(QSql.Tables) + db.tables(QSql.Views)  # Bitwise or somehow doesn't work here :(
         if not JalDB._tables:
             logging.info("Loading DB initialization script")
-            error = self.run_sql_script(db_path + Setup.INIT_SCRIPT_PATH)
+            error = self.run_sql_script(self.get_path(self.PATH_SQL_INIT))
             if error.code != JalDBError.NoError:
                 return error
         if self._read("SELECT value FROM settings WHERE name='CleanDB'") == 1:
             db.close()
-            os.remove(get_dbfilename(db_path))
+            os.remove(self.get_path(self.PATH_DB_FILE))
             db.open()
-            error = self.run_sql_script(db_path + Setup.INIT_SCRIPT_PATH)
+            error = self.run_sql_script(self.get_path(self.PATH_SQL_INIT))
             if error.code != JalDBError.NoError:
                 return error
         schema_version = self._read("SELECT value FROM settings WHERE name='SchemaVersion'")
@@ -159,6 +192,11 @@ class JalDB:
     @classmethod
     def _db_path(cls) -> str:
         return cls.connection().databaseName()
+
+    # -------------------------------------------------------------------------------------------------------------------
+    @classmethod
+    def retranslate(cls):
+        pass
 
     # -------------------------------------------------------------------------------------------------------------------
     # Executes an SQL query from given sql_text
@@ -291,7 +329,7 @@ class JalDB:
         return JalDBError(JalDBError.NoError)
 
     # updates current db schema to the latest available with help of scripts in 'updates' folder
-    def update_db_schema(self, db_path) -> JalDBError:
+    def update_db_schema(self) -> JalDBError:
         if QMessageBox().warning(None, QApplication.translate('DB', "Database format is outdated"),
                                  QApplication.translate('DB', "Do you agree to upgrade your data to newer format?"),
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
@@ -303,7 +341,7 @@ class JalDB:
         except ValueError:
             return JalDBError(JalDBError.DbInitFailure, details=f"(db schema: {version}")
         for step in range(schema_version, Setup.DB_REQUIRED_VERSION):
-            delta_file = db_path + Setup.UPDATES_PATH + os.sep + Setup.UPDATE_PREFIX + f"{step + 1}.sql"
+            delta_file = self.get_path(self.PATH_UPDATES) + Setup.UPDATE_PREFIX + f"{step + 1}.sql"
             logging.info(f"Applying delta schema {step}->{step + 1} from {delta_file}")
             error = self.run_sql_script(delta_file)
             if error.code != JalDBError.NoError:

@@ -135,4 +135,5 @@ PRAGMA foreign_keys = 1;
 -- Set new DB schema version
 UPDATE settings SET value=53 WHERE name='SchemaVersion';
 INSERT OR REPLACE INTO settings(id, name, value) VALUES (7, 'RebuildDB', 1);
+INSERT INTO settings(id, name, value) VALUES (20, 'TraslateDbNames', 1);
 COMMIT;

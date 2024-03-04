@@ -1,12 +1,13 @@
-from jal.db.db import JalDB
+from enum import auto
+import jal.db.db
 from PySide6.QtCore import QStandardPaths, QFileInfo
 
 
 class FolderFor:
-    Statement = 1
-    Report = 2
+    Statement = auto()
+    Report = auto()
 
-class JalSettings(JalDB):
+class JalSettings(jal.db.db.JalDB):
     __RECENT_PREFIX = "RecentFolder_"
     __folders = {
         FolderFor.Statement: "Statement",

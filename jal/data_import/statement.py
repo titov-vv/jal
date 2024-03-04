@@ -11,7 +11,7 @@ from collections import defaultdict
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, MarketDataFeed, PredefinedAsset
-from jal.db.helpers import get_app_path
+from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
@@ -136,7 +136,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # If 'debug_info' is given as parameter it is saved in JAL main directory text file appened with timestamp
     def save_debug_info(self, **kwargs):
         if 'debug_info' in kwargs:
-            dump_name = get_app_path() + os.sep + Setup.STATEMENT_DUMP + datetime.now().strftime("%y-%m-%d_%H-%M-%S") + ".txt"
+            dump_name = JalDB.get_path(JalDB.PATH_APP) + Setup.STATEMENT_DUMP + datetime.now().strftime("%y-%m-%d_%H-%M-%S") + ".txt"
             try:
                 with open(dump_name, 'w') as dump_file:
                     dump_file.write(f"JAL statement dump, {datetime.now().strftime('%y/%m/%d %H:%M:%S')}\n")
@@ -315,7 +315,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         return False
 
     def validate_format(self):
-        schema_name = get_app_path() + Setup.IMPORT_PATH + os.sep + Setup.IMPORT_SCHEMA_NAME
+        schema_name = JalDB.get_path(JalDB.PATH_APP) + Setup.IMPORT_PATH + os.sep + Setup.IMPORT_SCHEMA_NAME
         try:
             with open(schema_name, 'r') as schema_file:
                 try:

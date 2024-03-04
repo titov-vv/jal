@@ -7,7 +7,6 @@ from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.db import JalDB, JalDBError
 from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
-from jal.db.helpers import get_dbfilename
 from tests.helpers import d2t, dt2t, create_assets, create_actions, create_dividends
 
 
@@ -24,12 +23,13 @@ def data_path(project_root) -> str:
 @pytest.fixture
 def prepare_db(project_root, tmp_path, data_path):
     # Prepare environment
+    os.environ['JAL_TEST_PATH'] = str(tmp_path)
     src_path = project_root + os.sep + 'jal' + os.sep + Setup.INIT_SCRIPT_PATH
     target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
     copyfile(src_path, target_path)
 
     # Activate db connection
-    error = JalDB().init_db(str(tmp_path) + os.sep)
+    error = JalDB().init_db()
     assert error.code == JalDBError.NoError
     db = QSqlDatabase.database(Setup.DB_CONNECTION)
     assert db.isValid()
@@ -40,7 +40,7 @@ def prepare_db(project_root, tmp_path, data_path):
 
     db.close()
     os.remove(target_path)  # Clean db init script
-    os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
+    os.remove(JalDB.get_path(JalDB.PATH_DB_FILE))  # Clean db file
 
 
 @pytest.fixture

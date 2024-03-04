@@ -6,7 +6,7 @@ import platform
 from PySide6.QtWidgets import QApplication
 from jal import __version__
 from jal.constants import Setup
-from jal.db.helpers import get_app_path
+from jal.db.db import JalDB
 
 
 # ===================================================================================================================
@@ -69,7 +69,7 @@ def request_url(method, url, params=None, json_params=None, headers=None, binary
 # Function download URL and return it content as string or empty string if site returns error
 def get_web_data(url, headers=None, binary=False, verify=True):
     if type(verify) != bool:  # there is a certificate path given -> add full path to it
-        verify = get_app_path() + Setup.NET_PATH + os.sep + verify
+        verify = JalDB.get_path(JalDB.PATH_APP) + Setup.NET_PATH + os.sep + verify
     return request_url("GET", url, headers=headers, binary=binary, verify=verify)
 
 

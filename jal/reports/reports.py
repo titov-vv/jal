@@ -1,11 +1,10 @@
 import os
 import logging
 import importlib
-
 from PySide6.QtWidgets import QFileDialog
 from PySide6.QtCore import QObject
 from jal.constants import Setup
-from jal.db.helpers import get_app_path
+from jal.db.db import JalDB
 from jal.db.settings import JalSettings, FolderFor
 from jal.data_export.xlsx import XLSX
 
@@ -23,7 +22,7 @@ class Reports(QObject):
         return self._mdi
 
     def loadReportsList(self):
-        reports_folder = get_app_path() + Setup.REPORT_PATH
+        reports_folder = JalDB.get_path(JalDB.PATH_APP) + Setup.REPORT_PATH
         report_modules = [filename[:-3] for filename in os.listdir(reports_folder) if filename.endswith(".py")]
         for module_name in report_modules:
             logging.debug(f"Trying to load report module: {module_name}")

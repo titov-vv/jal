@@ -710,6 +710,7 @@ INSERT INTO settings(id, name, value) VALUES (16, 'EuLidlRefreshToken', '');
 INSERT INTO settings(id, name, value) VALUES (17, 'PtPingoDoceAccessToken', '');
 INSERT INTO settings(id, name, value) VALUES (18, 'PtPingoDoceRefreshToken', '');
 INSERT INTO settings(id, name, value) VALUES (19, 'PtPingoDoceUserProfile', '{}');
+INSERT INTO settings(id, name, value) VALUES (20, 'TraslateDbNames', 0);
 
 -- Initialize available languages
 INSERT INTO languages (id, language) VALUES (1, 'en');

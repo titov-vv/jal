@@ -17,9 +17,9 @@ class JalBackup:
     backup_label = 'JAL SQLITE backup. Created: '
     date_fmt = '%Y/%m/%d %H:%M:%S%z'
 
-    def __init__(self, parent, db_file):
+    def __init__(self, parent):
         self.parent = parent
-        self.file = db_file
+        self.file = JalDB.get_path(JalDB.PATH_DB_FILE)
         self.backup_name = None
         self._backup_label_date = ''
 

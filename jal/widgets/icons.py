@@ -4,8 +4,7 @@ import re
 from enum import auto
 from collections import UserDict
 from PySide6.QtGui import QIcon, QPixmap
-from jal.constants import Setup
-from jal.db.helpers import get_app_path
+from jal.db.db import JalDB
 from jal.db.tag import JalTag
 
 
@@ -114,7 +113,7 @@ class JalIcon(UserDict):
         super().__init__()
         if self._icons:     # Already loaded - nothing to do
             return
-        img_path = get_app_path() + Setup.ICONS_PATH + os.sep
+        img_path = JalDB.get_path(JalDB.PATH_ICONS)
         for icon_id, filename in self._icon_files.items():
             self._icons[icon_id] = self.add_disabled_state(self.load_icon(img_path + ICON_PREFIX + filename))
         for icon_id, filename in self._flag_files.items():
