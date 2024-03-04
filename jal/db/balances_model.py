@@ -195,7 +195,7 @@ class BalancesModel(ReportTreeModel):
             rate = JalAsset(account.currency()).quote(self._date, self._currency)[1]
             if value != Decimal('0'):
                 balances.append({
-                    "account_tag": account.tag().name(),
+                    "account_tag": account.tag().name() if account.tag().name() else self.tr("Without tag"),
                     "icon_id": account.tag().icon(),
                     "account": account.id(),
                     "account_name": account.name(),

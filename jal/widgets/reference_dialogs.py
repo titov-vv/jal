@@ -14,7 +14,8 @@ from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
-from jal.widgets.selection_dialog import SelectPeerDialog, SelectCategoryDialog, SelectTagDialog 
+from jal.widgets.selection_dialog import SelectPeerDialog, SelectCategoryDialog, SelectTagDialog
+from jal.widgets.icons import JalIcon
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -85,12 +86,13 @@ class AccountListDialog(ReferenceDataDialog):
         self.ui.Toggle.setText(self.tr("Show inactive"))
 
         self.ui.GroupLbl.setVisible(True)
-        self.ui.GroupLbl.setText(self.tr("Account type:"))
+        self.ui.GroupLbl.setText(self.tr("Account tag:"))
         self.ui.GroupCombo.setVisible(True)
         self.group_field = self.model.group_by
         self.ui.GroupCombo.clear()
-        for tag_id, tag in JalAccount.get_all_tags().items():
-            self.ui.GroupCombo.addItem(tag, userData=tag_id)
+        self.ui.GroupCombo.addItem(self.tr("All tags"), userData=None)
+        for tag_id, tag in sorted(JalAccount.get_all_tags().items(), key=lambda x: x[1]):
+            self.ui.GroupCombo.addItem(JalIcon[JalTag(tag_id).icon()], tag, tag_id)
         self.group_id = self.ui.GroupCombo.itemData(0)
 
     def locateItem(self, item_id):

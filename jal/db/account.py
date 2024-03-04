@@ -156,7 +156,7 @@ class JalAccount(JalDB):
     # Returns a list of tags used for accounts in form {tag_id(int): tag_name(str)}
     def get_all_tags(cls) -> dict:
         tags = {}
-        query = cls._exec("SELECT DISTINCT a.tag_id, t.tag FROM accounts a LEFT JOIN tags t ON t.id=a.tag_id")
+        query = cls._exec("SELECT DISTINCT a.tag_id, t.tag FROM accounts a JOIN tags t ON t.id=a.tag_id")
         while query.next():
             tag = cls._read_record(query, cast=[int, str])
             tags[tag[0]] = tag[1]
