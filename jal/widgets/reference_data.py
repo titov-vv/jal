@@ -1,8 +1,5 @@
-from functools import partial
-
 from PySide6.QtCore import Qt, Signal, Property, Slot
-from PySide6.QtWidgets import QDialog, QMessageBox, QMenu, QWidgetAction, QLabel
-
+from PySide6.QtWidgets import QDialog, QMessageBox, QMenu
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.icons import JalIcon
 
