@@ -77,8 +77,11 @@ class PredefinedList:
             combobox.addItem(self._names[item], userData=item)
 
 
-class PredefinedCategory:
-    Income = 1          # These constants are linked with 'categories' table initial values
+class PredefinedAgents:  # These constant is linked with 'agents' table initial value and should be present in DB
+    Empty = 1            # Protected by trigger 'keep_predefined_agents' that should be aligned with max ID
+
+class PredefinedCategory:  # These constants are linked with 'categories' table initial values and should be present in DB
+    Income = 1             # Protected by trigger 'keep_predefined_categories' that should be aligned with max ID
     Spending = 2
     Profits = 3
     StartingBalance = 4
@@ -89,7 +92,7 @@ class PredefinedCategory:
     Profit = 9
 
 
-class PredefinedTags:   # These constants are linked with 'tags' table initial values
+class PredefinedTags:   # These constants are linked with 'tags' table initial values but are not mandatory as not used in code
     AccountType = 1
     CashAccount = 2
     BankAccount = 3

@@ -6,7 +6,6 @@ from PySide6.QtSql import QSqlDatabase
 from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.db import JalDB, JalDBError
 from jal.db.account import JalAccount
-from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings
 from jal.db.helpers import get_dbfilename
 from tests.helpers import d2t, dt2t, create_assets, create_actions, create_dividends
@@ -46,18 +45,13 @@ def prepare_db(project_root, tmp_path, data_path):
 
 @pytest.fixture
 def prepare_db_ledger(prepare_db):
-    peer = JalPeer(data={'name': 'Shop', 'parent': 0}, create=True)
-    assert peer.id() == 1
-    account = JalAccount(
-        data={'name': 'Wallet', 'number': 'N/A', 'currency': 1, 'active': 1, 'investing': 0},
-        create=True)
+    account = JalAccount(data={'name': 'Wallet', 'number': 'N/A', 'currency': 1, 'active': 1, 'investing': 0},
+                         create=True)
     assert account.id() == 1
 
 
 @pytest.fixture
 def prepare_db_ibkr(prepare_db):
-    peer = JalPeer(data={'name': 'IB', 'parent': 0}, create=True)
-    assert peer.id() == 1
     account = JalAccount(
         data={'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1, 'precision': 10},
         create=True)
@@ -78,8 +72,6 @@ def prepare_db_ibkr(prepare_db):
 
 @pytest.fixture
 def prepare_db_fifo(prepare_db):
-    peer = JalPeer(data={'name': 'Test Peer', 'parent': 0}, create=True)
-    assert peer.id() == 1
     account = JalAccount(
         data={'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1},
         create=True)
@@ -101,8 +93,6 @@ def prepare_db_moex(prepare_db):   # Create assets in database to be updated fro
 
 @pytest.fixture
 def prepare_db_taxes(prepare_db):
-    peer = JalPeer(data={'name': 'IB', 'parent': 0}, create=True)
-    assert peer.id() == 1
     account = JalAccount(
         data={'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1, 'country': 'us', 'precision': 3},
         create=True)

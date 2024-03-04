@@ -13,7 +13,7 @@ CREATE TABLE accounts (
     tag_id          INTEGER   REFERENCES tags (id) ON DELETE CASCADE ON UPDATE CASCADE,
     number          TEXT (32),                   -- human-readable number of account (as a reference to bank/broker documents)
     reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,   -- timestamp of last confirmed operation
-    organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    organization_id INTEGER   REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL DEFAULT (1),
     country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,
     precision       INTEGER   NOT NULL DEFAULT (2)  -- number of digits after decimal points that is used by this account
 );
@@ -126,8 +126,7 @@ CREATE TABLE categories (
     id      INTEGER   PRIMARY KEY UNIQUE NOT NULL,
     pid     INTEGER   NOT NULL DEFAULT (0),
     name    TEXT (64) UNIQUE NOT NULL,
-    often   INTEGER,
-    special INTEGER
+    often   INTEGER
 );
 
 -- Create new table with list of countries
@@ -673,25 +672,18 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER IF EXISTS validate_account_insert;
-CREATE TRIGGER validate_account_insert BEFORE INSERT ON accounts
-    FOR EACH ROW
-    WHEN NEW.investing = 1 AND NEW.organization_id IS NULL
+
+-- Trigger to keep predefinded agents from deletion
+DROP TRIGGER IF EXISTS keep_predefined_agents;
+CREATE TRIGGER keep_predefined_agents BEFORE DELETE ON agents FOR EACH ROW WHEN OLD.id <= 1
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
 END;
 
-DROP TRIGGER IF EXISTS validate_account_update;
-CREATE TRIGGER validate_account_update BEFORE UPDATE ON accounts
-    FOR EACH ROW
-    WHEN NEW.investing = 1 AND NEW.organization_id IS NULL
-BEGIN
-    SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
-END;
 
 -- Trigger to keep predefinded categories from deletion
 DROP TRIGGER IF EXISTS keep_predefined_categories;
-CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.special = 1
+CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.id <= 9
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0002");
 END;
@@ -723,16 +715,19 @@ INSERT INTO settings(id, name, value) VALUES (19, 'PtPingoDoceUserProfile', '{}'
 INSERT INTO languages (id, language) VALUES (1, 'en');
 INSERT INTO languages (id, language) VALUES (2, 'ru');
 
+-- Initialize predefined peer agents
+INSERT INTO agents (id, pid, name) VALUES (1, 0, 'None');
+
 -- Initialize predefined categories
-INSERT INTO categories (id, pid, name, often, special) VALUES (1, 0, 'Income', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (2, 0, 'Spending', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (3, 0, 'Profits', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (4, 1, 'Starting balance', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (5, 2, 'Fees', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (6, 2, 'Taxes', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (7, 3, 'Dividends', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (8, 3, 'Interest', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (9, 3, 'Results of investments', 0, 1);
+INSERT INTO categories (id, pid, name, often) VALUES (1, 0, 'Income', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (2, 0, 'Spending', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (3, 0, 'Profits', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (4, 1, 'Starting balance', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (5, 2, 'Fees', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (6, 2, 'Taxes', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (7, 3, 'Dividends', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (8, 3, 'Interest', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (9, 3, 'Results of investments', 0);
 
 -- Initialize predefined tags
 INSERT INTO tags (id, pid, tag) VALUES (1, 0, 'Account type');

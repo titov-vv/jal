@@ -44,8 +44,8 @@ class JalDBError:
 class JalSqlError:
     def __init__(self, msg):
         self.messages = {
-            'JAL_SQL_MSG_0001': self.tr("Investment account should have associated broker assigned"),
-            'JAL_SQL_MSG_0002': self.tr("Can't delete predefined category"),
+            'JAL_SQL_MSG_0001': self.tr("Can't delete predefined peer agent from database"),
+            'JAL_SQL_MSG_0002': self.tr("Can't delete predefined category from database"),
             'JAL_SQL_MSG_0003': self.tr("Incorrect currency assignment for an asset")
         }
         self.translations = {

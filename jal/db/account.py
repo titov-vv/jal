@@ -1,10 +1,9 @@
 from decimal import Decimal
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
-from jal.db.peer import JalPeer
 import jal.db.operations
 import jal.db.closed_trade
-from jal.constants import Setup, BookAccount, PredefinedAsset
+from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents
 from jal.db.tag import JalTag
 from jal.db.country import JalCountry
 from jal.db.helpers import format_decimal, now_ts
@@ -28,10 +27,6 @@ class JalAccount(JalDB):
                 if similar_id:
                     self._id = self.__copy_similar_account(similar_id, data)
                 else:   # Create new account record
-                    if data['investing'] == 1 and data['organization'] is None:
-                        data['organization'] = JalPeer(
-                            data={'name': self.tr("Bank for account #" + str(data['number']))},
-                            search=True, create=True).id()
                     query = self._exec(
                         "INSERT INTO accounts (name, active, investing, number, currency_id, organization_id, "
                         "country_id, precision) "
@@ -49,8 +44,7 @@ class JalAccount(JalDB):
         self._currency_id = self._data['currency_id'] if self._data is not None else None
         self._active = self._data['active'] if self._data is not None else None
         self._investing = bool(self._data['investing']) if self._data is not None else False
-        self._organization_id = self._data['organization_id'] if self._data is not None else ''
-        self._organization_id = int(self._organization_id) if self._organization_id else 0
+        self._organization_id = int(self._data['organization_id']) if self._data is not None else PredefinedAgents.Empty
         self._country = JalCountry(self._data['country_id']) if self._data is not None else JalCountry(0)
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
         self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
@@ -342,7 +336,7 @@ class JalAccount(JalDB):
         if "name" not in data:
             data['name'] = data['number'] + '.' + JalAsset(data['currency']).symbol()
         data['investing'] = data['investing'] if 'investing' in data else 0
-        data['organization'] = data['organization'] if 'organization' in data else None
+        data['organization'] = data['organization'] if 'organization' in data else PredefinedAgents.Empty
         data['country'] = data['country'] if 'country' in data else 0
         data['precision'] = data['precision'] if "precision" in data else Setup.DEFAULT_ACCOUNT_PRECISION
         return True

@@ -20,6 +20,12 @@ INSERT INTO tags (id, pid, tag, icon_file) VALUES (3, 1, 'Bank account', 'tag_ba
 INSERT INTO tags (id, pid, tag, icon_file) VALUES (4, 1, 'Card', 'tag_card.ico');
 INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_investing.ico');
 --------------------------------------------------------------------------------
+-- Free space for new predefined agent
+UPDATE agents SET pid = (SELECT MAX(id)+1 FROM agents) WHERE pid = 1;
+UPDATE agents SET id = (SELECT MAX(id)+1 FROM agents) WHERE id = 1;
+-- Create predefined empty peer agent
+INSERT INTO agents (id, pid, name) VALUES (1, 0, 'None');
+--------------------------------------------------------------------------------
 -- Drop/disable triggers before modifications
 DROP TRIGGER IF EXISTS validate_account_insert;
 DROP TRIGGER IF EXISTS validate_account_update;
@@ -29,10 +35,20 @@ UPDATE accounts SET type_id=5 WHERE type_id = 4;
 UPDATE accounts SET type_id=4 WHERE type_id = 3;
 UPDATE accounts SET type_id=3 WHERE type_id = 2;
 UPDATE accounts SET type_id=2 WHERE type_id = 1;
+-- Set predefined peer of it is empty
+UPDATE accounts SET organization_id=1 WHERE organization_id IS NULL;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
 ALTER TABLE dividends RENAME TO asset_payments;
+--------------------------------------------------------------------------------
+-- Modify categories table way how to preserve mandatory categories
+DROP TRIGGER IF EXISTS keep_predefined_categories;
+ALTER TABLE categories DROP COLUMN special;
+CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.id <= 9
+BEGIN
+    SELECT RAISE(ABORT, "JAL_SQL_MSG_0002");
+END;
 --------------------------------------------------------------------------------
 CREATE TABLE accounts_old AS SELECT * FROM accounts;
 DROP TABLE accounts;
@@ -45,7 +61,7 @@ CREATE TABLE accounts (
     tag_id          INTEGER   REFERENCES tags (id) ON DELETE CASCADE ON UPDATE CASCADE,
     number          TEXT (32),
     reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,
-    organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    organization_id INTEGER   REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL DEFAULT (1),
     country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,
     precision       INTEGER   NOT NULL DEFAULT (2)
 );
@@ -55,16 +71,8 @@ DROP TABLE accounts_old;
 
 UPDATE accounts SET investing=1 WHERE tag_id = 5;   -- Set flag for accounts that had investment type assigned
 
-CREATE TRIGGER validate_account_insert BEFORE INSERT ON accounts
-    FOR EACH ROW
-    WHEN NEW.investing = 1 AND NEW.organization_id IS NULL
-BEGIN
-    SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
-END;
-
-CREATE TRIGGER validate_account_update BEFORE UPDATE ON accounts
-    FOR EACH ROW
-    WHEN NEW.investing = 1 AND NEW.organization_id IS NULL
+DROP TRIGGER IF EXISTS keep_predefined_agents;
+CREATE TRIGGER keep_predefined_agents BEFORE DELETE ON agents FOR EACH ROW WHEN OLD.id <= 1
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
 END;
