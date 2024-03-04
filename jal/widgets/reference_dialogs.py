@@ -349,6 +349,18 @@ class TagTreeModel(SqlTreeModel):
         self._sort_by = "tag"
         self._stretch = "tag"
 
+    def data(self, index, role=Qt.DisplayRole):   # Display tag icon as decoration role
+        if not index.isValid():
+            return None
+        if role == Qt.DecorationRole and index.column() == self.fieldIndex('icon_file'):
+            return JalIcon[super().data(index, Qt.DisplayRole)]
+        return super().data(index, role)
+
+    def configureView(self):
+        super().configureView()
+        self._grid_delegate = GridLinesDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("tag"), self._grid_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("icon_file"), self._grid_delegate)
 
 class TagsListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
