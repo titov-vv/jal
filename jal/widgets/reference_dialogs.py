@@ -46,6 +46,13 @@ class AccountListModel(AbstractReferenceListModel):
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
 
+    def data(self, index, role=Qt.DisplayRole):   # Display tag icon as decoration role
+        if not index.isValid():
+            return None
+        if role == Qt.DecorationRole and index.column() == self.fieldIndex('tag_id'):
+            return JalIcon[JalTag(super().data(index, Qt.DisplayRole)).icon()]
+        return super().data(index, role)
+
     def configureView(self):
         super().configureView()
         self._view.setColumnWidth(self.fieldIndex("active"), 64)

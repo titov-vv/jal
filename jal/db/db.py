@@ -179,6 +179,7 @@ class JalDB:
         for data_set in translated_data:
             for item_id, name in data_set().get_all_names().items():
                 cls._exec(data_set.db_update_query, [(":id", item_id), (":name", name)])
+        # Here should be db commit, but it isn't actually required as main window will save settings on closure
 
     # -------------------------------------------------------------------------------------------------------------------
     # Executes an SQL query from given sql_text
