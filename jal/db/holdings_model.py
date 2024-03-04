@@ -5,7 +5,6 @@ from decimal import Decimal
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import PredefinedAccountType
 from jal.db.helpers import now_ts, day_end
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
@@ -214,7 +213,7 @@ class HoldingsModel(ReportTreeModel):
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def prepareData(self):
         holdings = []
-        accounts = JalAccount.get_all_accounts(account_type=PredefinedAccountType.Investment, active_only=self._only_active_accounts)
+        accounts = JalAccount.get_all_accounts(investing_only=True, active_only=self._only_active_accounts)
         for account in accounts:
             account_holdings = []
             assets = account.assets_list(self._date)
@@ -285,13 +284,14 @@ class HoldingsModel(ReportTreeModel):
                 record['header'] = ': '.join([record[x] for x in display_fields])
                 account_holdings.append(record)
             holdings += account_holdings
+        # Sort data with respect to groups before building the tree
         sort_names = [x.removesuffix("_id") for x in self._groups]
         if 'asset' in sort_names:
             sort_names.insert(sort_names.index('asset'), 'asset_is_currency')  # Need to put currency at the end
         else:
             sort_names += ['asset_is_currency', 'asset']   # Sort by asset name for any kind of grouping
         holdings = sorted(holdings, key=lambda x: tuple([x[key_name] for key_name in sort_names]))
-
+        # Add data records to the report tree
         self._root = AssetTreeItem()
         for position in holdings:
             new_item = AssetTreeItem(position)

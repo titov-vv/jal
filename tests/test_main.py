@@ -6,8 +6,9 @@ from decimal import Decimal
 from tests.fixtures import project_root
 from constants import Setup
 from jal.db.db import JalDB, JalDBError
+from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
-from jal.db.helpers import get_dbfilename, localize_decimal
+from jal.db.helpers import localize_decimal
 from jal.db.backup_restore import JalBackup
 from tests.helpers import pop2minor_digits, d2t, dt2t
 
@@ -37,11 +38,12 @@ def test_helpers():
 # ----------------------------------------------------------------------------------------------------------------------
 def test_db_creation(tmp_path, project_root):
     # Prepare environment
+    os.environ['JAL_TEST_PATH'] = str(tmp_path)
     src_path = project_root + os.sep + 'jal' + os.sep + Setup.INIT_SCRIPT_PATH
     target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
     copyfile(src_path, target_path)
 
-    error = JalDB().init_db(str(tmp_path) + os.sep)
+    error = JalDB().init_db()
 
     # Check that sqlite db file was created
     result_path = str(tmp_path) + os.sep + Setup.DB_PATH
@@ -54,39 +56,38 @@ def test_db_creation(tmp_path, project_root):
     # Clean up db
     JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
-    os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
+    os.remove(JalSettings.path(JalSettings.PATH_DB_FILE))  # Clean db file
 
 
 def test_invalid_backup(tmp_path, project_root):
     # Prepare environment
+    os.environ['JAL_TEST_PATH'] = str(tmp_path)
     src_path = project_root + os.sep + 'jal' + os.sep + Setup.INIT_SCRIPT_PATH
     target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
     copyfile(src_path, target_path)
-    JalDB().init_db(str(tmp_path) + os.sep)
+    JalDB().init_db()
 
-    # Here backup is created without parent window - need to use with care
-    db_file_name = get_dbfilename(str(tmp_path) + os.sep)
-    
-    invalid_backup = JalBackup(None, db_file_name)
+    invalid_backup = JalBackup(None)
     invalid_backup.backup_name = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep + "invalid_backup.tgz"
     assert not invalid_backup.validate_backup()
 
     # Clean up db
     JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
-    os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
+    os.remove(JalSettings.path(JalSettings.PATH_DB_FILE))  # Clean db file
 
 
 def test_backup_load(tmp_path, project_root):
     # Prepare environment
+    os.environ['JAL_TEST_PATH'] = str(tmp_path)
     src_path = project_root + os.sep + 'jal' + os.sep + Setup.INIT_SCRIPT_PATH
     target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
     copyfile(src_path, target_path)
-    JalDB().init_db(str(tmp_path) + os.sep)
+    JalDB().init_db()
 
-    # Here backup is created without parent window - need to use with care
-    db_file_name = get_dbfilename(str(tmp_path) + os.sep)
-    backup = JalBackup(None, db_file_name)
+    # Here backup is created without parent window - need to use with care of 'file' member variable
+    db_file_name = str(tmp_path) + os.sep + Setup.DB_PATH
+    backup = JalBackup(None)
     backup.backup_name = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep + "deals_set.tgz"
 
     assert backup.validate_backup()
@@ -105,4 +106,4 @@ def test_backup_load(tmp_path, project_root):
     # Clean up db
     JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
-    os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
+    os.remove(JalSettings.path(JalSettings.PATH_DB_FILE))  # Clean db file

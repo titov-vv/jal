@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'operations_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QDate
 
 from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
 from jal.widgets.custom.date_range_selector import DateRangeSelector
+from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
 from jal.widgets.operations_tabs import JalOperationsTabs
 
 class Ui_OperationsWidget(object):
@@ -36,7 +37,7 @@ class Ui_OperationsWidget(object):
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.BalanceOperationsSplitter = QSplitter(OperationsWidget)
         self.BalanceOperationsSplitter.setObjectName(u"BalanceOperationsSplitter")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.BalanceOperationsSplitter.sizePolicy().hasHeightForWidth())
@@ -44,7 +45,7 @@ class Ui_OperationsWidget(object):
         self.BalanceOperationsSplitter.setOrientation(Qt.Horizontal)
         self.BalanceBox = QGroupBox(self.BalanceOperationsSplitter)
         self.BalanceBox.setObjectName(u"BalanceBox")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(1)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.BalanceBox.sizePolicy().hasHeightForWidth())
@@ -88,31 +89,22 @@ class Ui_OperationsWidget(object):
 
         self.horizontalLayout_2.addWidget(self.ShowInactiveCheckBox)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer_2)
 
 
         self.verticalLayout.addWidget(self.BalanceConfigFrame)
 
-        self.BalancesTableView = QTableView(self.BalanceBox)
-        self.BalancesTableView.setObjectName(u"BalancesTableView")
-        self.BalancesTableView.setFrameShape(QFrame.Panel)
-        self.BalancesTableView.setEditTriggers(QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
-        self.BalancesTableView.setAlternatingRowColors(True)
-        self.BalancesTableView.setSelectionMode(QAbstractItemView.NoSelection)
-        self.BalancesTableView.setGridStyle(Qt.DotLine)
-        self.BalancesTableView.setWordWrap(False)
-        self.BalancesTableView.verticalHeader().setVisible(False)
-        self.BalancesTableView.verticalHeader().setMinimumSectionSize(20)
-        self.BalancesTableView.verticalHeader().setDefaultSectionSize(20)
+        self.BalancesTreeView = TreeViewWithFooter(self.BalanceBox)
+        self.BalancesTreeView.setObjectName(u"BalancesTreeView")
 
-        self.verticalLayout.addWidget(self.BalancesTableView)
+        self.verticalLayout.addWidget(self.BalancesTreeView)
 
         self.BalanceOperationsSplitter.addWidget(self.BalanceBox)
         self.OperationsBox = QGroupBox(self.BalanceOperationsSplitter)
         self.OperationsBox.setObjectName(u"OperationsBox")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy2.setHorizontalStretch(4)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.OperationsBox.sizePolicy().hasHeightForWidth())
@@ -157,7 +149,7 @@ class Ui_OperationsWidget(object):
 
         self.horizontalLayout_3.addWidget(self.SearchString)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer)
 
@@ -169,7 +161,7 @@ class Ui_OperationsWidget(object):
         self.OperationsDetailsSplitter.setOrientation(Qt.Vertical)
         self.OperationsTableView = QTableView(self.OperationsDetailsSplitter)
         self.OperationsTableView.setObjectName(u"OperationsTableView")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(4)
         sizePolicy3.setHeightForWidth(self.OperationsTableView.sizePolicy().hasHeightForWidth())
@@ -184,7 +176,7 @@ class Ui_OperationsWidget(object):
         self.OperationsTableView.verticalHeader().setDefaultSectionSize(20)
         self.OperationDetails = QFrame(self.OperationsDetailsSplitter)
         self.OperationDetails.setObjectName(u"OperationDetails")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(1)
         sizePolicy4.setHeightForWidth(self.OperationDetails.sizePolicy().hasHeightForWidth())
@@ -199,7 +191,7 @@ class Ui_OperationsWidget(object):
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.OperationsTabs = JalOperationsTabs(self.OperationDetails)
         self.OperationsTabs.setObjectName(u"OperationsTabs")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy5.setHorizontalStretch(0)
         sizePolicy5.setVerticalStretch(0)
         sizePolicy5.setHeightForWidth(self.OperationsTabs.sizePolicy().hasHeightForWidth())
@@ -209,7 +201,7 @@ class Ui_OperationsWidget(object):
 
         self.OperationsButtons = QFrame(self.OperationDetails)
         self.OperationsButtons.setObjectName(u"OperationsButtons")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
         sizePolicy6.setHorizontalStretch(0)
         sizePolicy6.setVerticalStretch(0)
         sizePolicy6.setHeightForWidth(self.OperationsButtons.sizePolicy().hasHeightForWidth())
@@ -233,7 +225,7 @@ class Ui_OperationsWidget(object):
 
         self.verticalLayout_3.addWidget(self.DeleteOperationBtn)
 
-        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_3.addItem(self.verticalSpacer_4)
 

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'tag_report.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -36,7 +36,7 @@ class Ui_TagReportWidget(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(TagReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.ReportParamsFrame.sizePolicy().hasHeightForWidth())
@@ -63,7 +63,7 @@ class Ui_TagReportWidget(object):
 
         self.gridLayout.addWidget(self.TotalCurrencyCombo, 0, 4, 1, 1)
 
-        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout.addItem(self.ReportFrameSpacer, 0, 5, 1, 1)
 
@@ -85,7 +85,7 @@ class Ui_TagReportWidget(object):
         self.splitter.setOrientation(Qt.Vertical)
         self.ReportTableView = TableViewWithFooter(self.splitter)
         self.ReportTableView.setObjectName(u"ReportTableView")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(4)
         sizePolicy1.setHeightForWidth(self.ReportTableView.sizePolicy().hasHeightForWidth())
@@ -102,7 +102,7 @@ class Ui_TagReportWidget(object):
         self.ReportTableView.verticalHeader().setDefaultSectionSize(20)
         self.OperationDetails = JalOperationsTabs(self.splitter)
         self.OperationDetails.setObjectName(u"OperationDetails")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(1)
         sizePolicy2.setHeightForWidth(self.OperationDetails.sizePolicy().hasHeightForWidth())

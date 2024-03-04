@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QComboBox
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 52
+    DB_REQUIRED_VERSION = 53
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'
@@ -77,30 +77,19 @@ class PredefinedList:
             combobox.addItem(self._names[item], userData=item)
 
 
-class PredefinedAccountType(PredefinedList, QObject):
-    Cash = 1
-    Bank = 2
-    Card = 3
-    Investment = 4
-    Savings = 5
-    Loans = 6
-    eWallet = 7
+class PredefinedAgents(PredefinedList, QObject):  # These constant is linked with 'agents' table initial value and should be present in DB
+    db_update_query = "UPDATE agents SET name=:name WHERE id=:id"
+    Empty = 1            # Protected by trigger 'keep_predefined_agents' that should be aligned with max ID
 
     def __init__(self):
         super().__init__()
         self._names = {
-            self.Cash: self.tr("Cash"),
-            self.Bank: self.tr("Bank accounts"),
-            self.Card: self.tr("Cards"),
-            self.Investment: self.tr("Investments"),
-            self.Savings: self.tr("Savings"),
-            self.Loans: self.tr("Debts / Loans"),
-            self.eWallet: self.tr("e-Wallets")
+            self.Empty: self.tr("None")
         }
 
-
-class PredefinedCategory:
-    Income = 1
+class PredefinedCategory(PredefinedList, QObject):  # These constants are linked with 'categories' table initial values and should be present in DB
+    db_update_query = "UPDATE categories SET name=:name WHERE id=:id"
+    Income = 1             # Protected by trigger 'keep_predefined_categories' that should be aligned with max ID
     Spending = 2
     Profits = 3
     StartingBalance = 4
@@ -109,6 +98,38 @@ class PredefinedCategory:
     Dividends = 7
     Interest = 8
     Profit = 9
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.Income: self.tr("Income"),
+            self.Spending: self.tr("Spending"),
+            self.Profits: self.tr("Profits"),
+            self.StartingBalance: self.tr("Starting balance"),
+            self.Fees: self.tr("Fees"),
+            self.Taxes: self.tr("Taxes"),
+            self.Dividends: self.tr("Dividends"),
+            self.Interest: self.tr("Interest"),
+            self.Profit: self.tr("Results of investments")
+        }
+
+class PredefinedTags(PredefinedList, QObject):   # These constants are linked with 'tags' table initial values but are not mandatory as not used in code
+    db_update_query = "UPDATE tags SET tag=:name WHERE id=:id"
+    AccountType = 1
+    CashAccount = 2
+    BankAccount = 3
+    CardAccount = 4
+    BrokerAccount = 5
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.AccountType: self.tr("Account type"),
+            self.CashAccount: self.tr("Cash"),
+            self.BankAccount: self.tr("Bank account"),
+            self.CardAccount: self.tr("Card"),
+            self.BrokerAccount: self.tr("Broker account")
+        }
 
 
 class PredefinedAsset(PredefinedList, QObject):

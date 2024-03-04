@@ -10,7 +10,7 @@ from constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, CorporateAction, Dividend
+from jal.db.operations import LedgerTransaction, CorporateAction, AssetPayment
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
@@ -62,7 +62,7 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     ]
     create_dividends(dividends)
     stock_dividends = [
-        (Dividend.StockDividend, 1593205200, 1, 4, 2.0, 2, 53.4, 10.68, 'GE (US3696041033) Stock Dividend US3696041033 196232339 for 10000000000')
+        (AssetPayment.StockDividend, 1593205200, 1, 4, 2.0, 2, 53.4, 10.68, 'GE (US3696041033) Stock Dividend US3696041033 196232339 for 10000000000')
     ]
     create_stock_dividends(stock_dividends)
     coupons = [
@@ -185,7 +185,7 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
     ]
     create_assets(assets)
     stock_dividends = [
-        (Dividend.StockVesting, 1621641600, 1, 4, 11.0, 2, 22.53, 0.0, 'Stock vesting')
+        (AssetPayment.StockVesting, 1621641600, 1, 4, 11.0, 2, 22.53, 0.0, 'Stock vesting')
     ]
     create_stock_dividends(stock_dividends)
     test_trades = [

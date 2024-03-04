@@ -10,11 +10,11 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset, PredefinedAccountType
-from jal.db.helpers import get_app_path
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset
+from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
+from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
 from jal.net.downloader import QuoteDownloader
@@ -136,7 +136,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # If 'debug_info' is given as parameter it is saved in JAL main directory text file appened with timestamp
     def save_debug_info(self, **kwargs):
         if 'debug_info' in kwargs:
-            dump_name = get_app_path() + os.sep + Setup.STATEMENT_DUMP + datetime.now().strftime("%y-%m-%d_%H-%M-%S") + ".txt"
+            dump_name = JalSettings.path(JalSettings.PATH_APP) + Setup.STATEMENT_DUMP + datetime.now().strftime("%y-%m-%d_%H-%M-%S") + ".txt"
             try:
                 with open(dump_name, 'w') as dump_file:
                     dump_file.write(f"JAL statement dump, {datetime.now().strftime('%y/%m/%d %H:%M:%S')}\n")
@@ -315,7 +315,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         return False
 
     def validate_format(self):
-        schema_name = get_app_path() + Setup.IMPORT_PATH + os.sep + Setup.IMPORT_SCHEMA_NAME
+        schema_name = JalSettings.path(JalSettings.PATH_APP) + Setup.IMPORT_PATH + os.sep + Setup.IMPORT_SCHEMA_NAME
         try:
             with open(schema_name, 'r') as schema_file:
                 try:
@@ -405,7 +405,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if account['currency'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched currency for account: ") + f"{account}")
             account_data = account.copy()
-            account_data['type'] = PredefinedAccountType.Investment if 'type' not in account_data else account_data['type']
+            account_data['investing'] = 1 # if 'type' not in account_data else account_data['type']
             account_data['currency'] = -account_data['currency']  # all currencies are already in db
             new_account = JalAccount(data=account_data, search=True, create=True)
             if new_account.id():
@@ -515,30 +515,30 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     JalAccount(payment['account_id']).currency())
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
-                    payment['type'] = Dividend.Dividend
-                    LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                    payment['type'] = AssetPayment.Dividend
+                    LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
                 else:  # Dividend exists, only tax to be updated
-                    dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
+                    dividend = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, -payment['id'])
                     dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_INTEREST:
-                payment['type'] = Dividend.BondInterest
-                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                payment['type'] = AssetPayment.BondInterest
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
             elif payment['type'] == FOF.PAYMENT_AMORTIZATION:
-                payment['type'] = Dividend.BondAmortization
-                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                payment['type'] = AssetPayment.BondAmortization
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
             elif payment['type'] == FOF.PAYMENT_STOCK_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
-                    payment['type'] = Dividend.StockDividend
-                    LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                    payment['type'] = AssetPayment.StockDividend
+                    LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
                 else:  # Dividend exists, only tax to be updated
-                    dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
+                    dividend = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, -payment['id'])
                     dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_STOCK_VESTING:
-                payment['type'] = Dividend.StockVesting
-                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                payment['type'] = AssetPayment.StockVesting
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
             elif payment['type'] == FOF.PAYMENT_FEE:
-                payment['type'] = Dividend.Fee
-                LedgerTransaction.create_new(LedgerTransaction.Dividend, payment)
+                payment['type'] = AssetPayment.Fee
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 

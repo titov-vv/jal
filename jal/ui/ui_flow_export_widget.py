@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'flow_export_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -27,7 +27,7 @@ class Ui_MoneyFlowWidget(object):
         self.gridLayout.setObjectName(u"gridLayout")
         self.XlsSelectBtn = QPushButton(MoneyFlowWidget)
         self.XlsSelectBtn.setObjectName(u"XlsSelectBtn")
-        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.XlsSelectBtn.sizePolicy().hasHeightForWidth())
@@ -61,7 +61,7 @@ class Ui_MoneyFlowWidget(object):
 
         self.XlsFileName = QLineEdit(MoneyFlowWidget)
         self.XlsFileName.setObjectName(u"XlsFileName")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.XlsFileName.sizePolicy().hasHeightForWidth())

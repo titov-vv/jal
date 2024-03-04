@@ -1,7 +1,7 @@
 from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.helpers import remove_exponent
-from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
+from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
 from jal.data_export.taxes import TaxReport
@@ -43,9 +43,9 @@ class TaxesRussia(TaxReport):
         for dividend in dividends:
             country = dividend.asset().country()
             note = ''
-            if dividend.subtype() == Dividend.StockDividend:
+            if dividend.subtype() == AssetPayment.StockDividend:
                 note = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
-            if dividend.subtype() == Dividend.StockVesting:
+            if dividend.subtype() == AssetPayment.StockVesting:
                 note = "Доход получен в натуральной форме (ценными бумагами)"
             tax_rub = dividend.tax(self._currency_id)
             tax2pay = Decimal('0.13') * dividend.amount(self._currency_id)
@@ -80,7 +80,7 @@ class TaxesRussia(TaxReport):
         deals_report = []
         ns = not self.use_settlement
         # Prepare list of dividends withdrawn from account (due to short trades)
-        dividends_withdrawn = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
+        dividends_withdrawn = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
         dividends_withdrawn = [x for x in dividends_withdrawn if self.year_begin <= x.timestamp() <= self.year_end]
         dividends_withdrawn = [x for x in dividends_withdrawn if x.amount() < Decimal('0')]
         for trade in trades_list:
@@ -221,7 +221,7 @@ class TaxesRussia(TaxReport):
         # Second - take all bond interest payments not linked with buy/sell transactions
         currency = JalAsset(self.account.currency())
         country = self.account.country()
-        interests = Dividend.get_list(self.account.id(), subtype=Dividend.BondInterest, skip_accrued=True)
+        interests = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.BondInterest, skip_accrued=True)
         interests = [x for x in interests if self.year_begin <= x.timestamp() <= self.year_end]  # Only in given range
         for interest in interests:
             amount = interest.amount()

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'term_deposit_operation.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -83,11 +83,11 @@ class Ui_TermDepositOperation(object):
 
         self.layout.addWidget(self.actions_table, 5, 0, 1, 6)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.layout.addItem(self.horizontalSpacer, 3, 6, 1, 1)
 
-        self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.layout.addItem(self.vertical_spacer, 6, 0, 1, 1)
 
@@ -102,7 +102,7 @@ class Ui_TermDepositOperation(object):
 
         self.layout.addWidget(self.details_label, 4, 0, 1, 1)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.layout.addItem(self.horizontalSpacer_2, 4, 3, 1, 1)
 

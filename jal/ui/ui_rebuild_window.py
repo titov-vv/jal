@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'rebuild_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -26,7 +26,7 @@ class Ui_ReBuildDialog(object):
             ReBuildDialog.setObjectName(u"ReBuildDialog")
         ReBuildDialog.setWindowModality(Qt.ApplicationModal)
         ReBuildDialog.resize(268, 150)
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(ReBuildDialog.sizePolicy().hasHeightForWidth())
@@ -40,7 +40,7 @@ class Ui_ReBuildDialog(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.TypeGroup = QGroupBox(ReBuildDialog)
         self.TypeGroup.setObjectName(u"TypeGroup")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.TypeGroup.sizePolicy().hasHeightForWidth())

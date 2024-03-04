@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'receipt_import_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -34,7 +34,7 @@ class Ui_ImportShopReceiptDlg(object):
         self.verticalLayout.setContentsMargins(2, 2, 2, 2)
         self.InputFrame = QFrame(ImportShopReceiptDlg)
         self.InputFrame.setObjectName(u"InputFrame")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.InputFrame.sizePolicy().hasHeightForWidth())
@@ -47,7 +47,7 @@ class Ui_ImportShopReceiptDlg(object):
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.QRGroup = QGroupBox(self.InputFrame)
         self.QRGroup.setObjectName(u"QRGroup")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.QRGroup.sizePolicy().hasHeightForWidth())
@@ -62,7 +62,7 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.horizontalLayout.addWidget(self.ScanReceiptQR)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
@@ -95,11 +95,11 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.gridLayout_2.addWidget(self.DownloadReceiptBtn, 2, 0, 1, 2)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_2.addItem(self.verticalSpacer, 1, 0, 1, 1)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_2.addItem(self.horizontalSpacer_2, 0, 3, 1, 1)
 
@@ -117,7 +117,7 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.ReceiptGroup = QGroupBox(ImportShopReceiptDlg)
         self.ReceiptGroup.setObjectName(u"ReceiptGroup")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.ReceiptGroup.sizePolicy().hasHeightForWidth())

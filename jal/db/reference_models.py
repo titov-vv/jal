@@ -39,6 +39,12 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
     def group_by(self):
         return self._group_by
 
+    def row_is_deleted(self, row):
+        if row in self._deleted_rows:
+            return True
+        else:
+            return False
+
     def fieldIndex(self, field):
         column_data = [i for i, column in enumerate(self._columns) if column[0] == field]
         if len(column_data) > 0:

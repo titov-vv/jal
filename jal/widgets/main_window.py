@@ -1,5 +1,4 @@
 import json
-import os
 import base64
 import logging
 from math import log10
@@ -19,8 +18,8 @@ from jal.widgets.icons import JalIcon
 from jal.widgets.reference_dialogs import AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog
 from jal.constants import Setup, JalGlobals
+from jal.db.db import JalDB
 from jal.db.backup_restore import JalBackup
-from jal.db.helpers import get_app_path, get_dbfilename
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
@@ -33,8 +32,9 @@ from jal.data_import.shop_receipt import ImportReceiptDialog
 
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow):
-    def __init__(self, language):
+    def __init__(self, translator):
         super().__init__()
+        self._translator = translator
         self.globals = JalGlobals()  # Initialize and keep global values
         self.icons = JalIcon()  # This variable is used to initialize JalIcons class and keep its cache in memory.
                                 # It is not used directly but icons are accessed via @classmethod of JalIcons class
@@ -55,12 +55,10 @@ class MainWindow(QMainWindow):
         self.ui.Logs.setStatusBar(self.ui.StatusBar)
         self.ui.Logs.startLogging()
 
-        self.currentLanguage = language
-
         self.downloader = QuoteDownloader()
         self.statements = Statements(self)
         self.reports = Reports(self, self.ui.mdiArea)
-        self.backup = JalBackup(self, get_dbfilename(get_app_path()))
+        self.backup = JalBackup(self)
         self.estimator = None
         self.price_chart = None
 
@@ -144,9 +142,7 @@ class MainWindow(QMainWindow):
         super().closeEvent(event)
 
     def createLanguageMenu(self):
-        langPath = get_app_path() + Setup.LANG_PATH + os.sep
-
-        langDirectory = QDir(langPath)
+        langDirectory = QDir(JalSettings.path(JalSettings.PATH_LANG))
         for language_file in langDirectory.entryList(['*.qm']):
             language_code = language_file.split('.')[0]
             language = QLocale.languageToString(QLocale(language_code).language())
@@ -159,8 +155,13 @@ class MainWindow(QMainWindow):
     @Slot()
     def onLanguageChanged(self, action):
         language_code = action.data()
-        if language_code != self.currentLanguage:
+        if language_code != JalSettings().getLanguage():
             JalSettings().setLanguage(language_code)
+            self._translator.load(JalSettings.path(JalDB.PATH_LANG_FILE))
+            if QMessageBox().question(self, self.tr("Translation"),
+                                      self.tr("Translate predefined names in the database?\n(Default answer is 'yes', if haven't renamed manually before)"),
+                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
+                JalDB().retranslate()
             QMessageBox().information(self, self.tr("Restart required"),
                                       self.tr("Language was changed to ") +
                                       QLocale.languageToString(QLocale(language_code).language()) + "\n" +
@@ -223,7 +224,7 @@ class MainWindow(QMainWindow):
         about_box.setWindowTitle(self.tr("About"))
         version = f"{__version__} (db{Setup.DB_REQUIRED_VERSION})"
         title = "<h3>JAL</h3><p>Just Another Ledger, " + self.tr("version") + " " + version +"</p>" + \
-            "<p>DB file: " + JalSettings().DbPath() + "</p>"
+            "<p>DB file: " + JalSettings.path(JalSettings.PATH_DB_FILE) + "</p>"
         about_box.setText(title)
         about_text = "<p>" + self.tr("More information, manuals and problem reports are at ") + \
                      "<a href=https://github.com/titov-vv/jal>" + self.tr("github home page") + "</a></p><p>" + \

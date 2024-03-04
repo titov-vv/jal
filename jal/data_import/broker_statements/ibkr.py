@@ -11,7 +11,7 @@ from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ManipulateDate, ts2dt, ts2d
 from jal.db.helpers import format_decimal
 from jal.db.account import JalAccount
-from jal.db.operations import Dividend
+from jal.db.operations import AssetPayment
 from jal.data_import.statement import FOF, Statement_ImportError, Statement_Capabilities
 from jal.data_import.statement_xml import StatementXML
 
@@ -311,13 +311,13 @@ class StatementIBKR(StatementXML):
                     element.attrib['accountId'] = 'U7654321'  # Hide real account number
                 debug_info += etree.tostring(element).decode("utf-8")
         debug_info += "----------------------------------------------------------------\n"
-        # Dump dividends info from database for the given asset from
+        # Dump asset_payments info from database for the given asset from
         db_account = self._map_db_account(account)
         db_asset = self._map_db_asset(asset)
-        dividends = JalAccount(db_account).dump_dividends()
-        dividends = [x for x in dividends if x[DIVIDENDS_TABLE_ASSET_FIELD] == db_asset]
+        payments = JalAccount(db_account).dump_asset_payments()
+        payments = [x for x in payments if x[DIVIDENDS_TABLE_ASSET_FIELD] == db_asset]
         debug_info += "Database data:\n----------------------------------------------------------------\n"
-        debug_info += str(dividends)
+        debug_info += str(payments)
         debug_info += "\n----------------------------------------------------------------\n"
         super().save_debug_info(debug_info=debug_info)
 
@@ -1069,7 +1069,7 @@ class StatementIBKR(StatementXML):
         db_account = self._map_db_account(account_id)
         db_asset = self._map_db_asset(asset_id)
         if db_account and db_asset:
-            for db_dividend in Dividend.get_list(db_account, db_asset, Dividend.Dividend):
+            for db_dividend in AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend):
                 dividends.append({
                     "id": -db_dividend.oid(),
                     "account": account_id,

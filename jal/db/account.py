@@ -1,10 +1,10 @@
 from decimal import Decimal
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
-from jal.db.peer import JalPeer
 import jal.db.operations
 import jal.db.closed_trade
-from jal.constants import Setup, BookAccount, PredefinedAccountType, PredefinedAsset
+from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents
+from jal.db.tag import JalTag
 from jal.db.country import JalCountry
 from jal.db.helpers import format_decimal, now_ts
 
@@ -27,28 +27,24 @@ class JalAccount(JalDB):
                 if similar_id:
                     self._id = self.__copy_similar_account(similar_id, data)
                 else:   # Create new account record
-                    if data['type'] == PredefinedAccountType.Investment and data['organization'] is None:
-                        data['organization'] = JalPeer(
-                            data={'name': self.tr("Bank for account #" + str(data['number']))},
-                            search=True, create=True).id()
                     query = self._exec(
-                        "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, "
+                        "INSERT INTO accounts (name, active, investing, number, currency_id, organization_id, "
                         "country_id, precision) "
-                        "VALUES(:type, :name, 1, :number, :currency, :organization, "
+                        "VALUES(:name, 1, :investing, :number, :currency, :organization, "
                         "coalesce((SELECT id FROM countries WHERE code=:country), 0), :precision)",
-                        [(":type", data['type']), (":name", data['name']), (":number", data['number']),
+                        [(":name", data['name']), (":investing", data['investing']), (":number", data['number']),
                          (":currency", data['currency']), (":organization", data['organization']),
                          (":country", data['country']), (":precision", data['precision'])], commit=True)
                     self._id = query.lastInsertId()
                 self._fetch_data(only_self=True)
         self._data = next((x for x in self.db_cache if x['id']==self._id), None)
-        self._type = self._data['type_id'] if self._data is not None else None
-        self._name = self._data['name'] if self._data is not None else ''
+        self._tag = JalTag(self._data['tag_id']) if self._data is not None else None
+        self._name = self._data['name'] if self._data is not None else JalTag(0)
         self._number = self._data['number'] if self._data is not None else None
         self._currency_id = self._data['currency_id'] if self._data is not None else None
         self._active = self._data['active'] if self._data is not None else None
-        self._organization_id = self._data['organization_id'] if self._data is not None else ''
-        self._organization_id = int(self._organization_id) if self._organization_id else 0
+        self._investing = bool(self._data['investing']) if self._data is not None else False
+        self._organization_id = int(self._data['organization_id']) if self._data is not None else PredefinedAgents.Empty
         self._country = JalCountry(self._data['country_id']) if self._data is not None else JalCountry(0)
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
         self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
@@ -76,17 +72,18 @@ class JalAccount(JalDB):
             while query.next():
                 JalAccount.db_cache.append(self._read_record(query, named=True))
 
-    # Method returns a list of JalAccount objects for accounts of given type (or all if None given)
-    # Flag "active_only" allows only active accounts output by default
+    # Method returns a list of JalAccount objects with given filters (combined with AND):
+    # investing_only - return only investing accounts (false by default)
+    # active_only - return only active accounts (true by default)
     @classmethod
-    def get_all_accounts(cls, account_type: int = None, active_only: bool = True) -> list:
+    def get_all_accounts(cls, investing_only: bool = False, active_only: bool = True) -> list:
         accounts = []
-        query = cls._exec("SELECT id, active FROM accounts WHERE type_id=:type OR :type IS NULL",
-                          [(":type", account_type)])
+        all = 0 if active_only else 1
+        all_types = 0 if investing_only else 1
+        query = cls._exec("SELECT id FROM accounts WHERE investing >= (1-:all_types) AND active >= (1-:all)",
+                          [(":all_types", all_types), (":all", all)])
         while query.next():
-            account_id, active = cls._read_record(query, cast=[int, bool])
-            if active_only and not active:
-                continue
+            account_id = cls._read_record(query, cast=[int])
             accounts.append(JalAccount(account_id))
         return accounts
 
@@ -104,13 +101,13 @@ class JalAccount(JalDB):
                 action.append(self._read_record(query))
         return actions
 
-    # Returns everything from 'dividends' table associated with current account - used in test cases only
-    def dump_dividends(self):
-        dividends = []
-        query = self._exec("SELECT * FROM dividends WHERE account_id=:id", [(":id", self._id)])
+    # Returns everything from 'asset_payments' table associated with current account - used in test cases only
+    def dump_asset_payments(self):
+        payments = []
+        query = self._exec("SELECT * FROM asset_payments WHERE account_id=:id", [(":id", self._id)])
         while query.next():
-            dividends.append(self._read_record(query))
-        return dividends
+            payments.append(self._read_record(query))
+        return payments
 
     # Returns everything from 'trades' table associated with current account - used in test cases only
     def dump_trades(self):
@@ -145,9 +142,19 @@ class JalAccount(JalDB):
     def id(self) -> int:
         return self._id
 
-    # Returns type of the account
-    def type(self) -> int:
-        return self._type
+    # Returns tag of the account
+    def tag(self) -> JalTag:
+        return self._tag
+
+    @classmethod
+    # Returns a list of tags used for accounts in form {tag_id(int): tag_name(str)}
+    def get_all_tags(cls) -> dict:
+        tags = {}
+        query = cls._exec("SELECT DISTINCT a.tag_id, t.tag FROM accounts a JOIN tags t ON t.id=a.tag_id")
+        while query.next():
+            tag = cls._read_record(query, cast=[int, str])
+            tags[tag[0]] = tag[1]
+        return tags
 
     # Returns name of the account
     def name(self) -> str:
@@ -306,7 +313,7 @@ class JalAccount(JalDB):
     # Asset payment is counted if its ex-date is between start and end or, if ex-date is missing, the timestamp of
     # payment is between start and end timestamps
     def asset_payments_amount(self, asset, start_ts, end_ts) -> Decimal:
-        payments = jal.db.operations.Dividend.get_list(self._id, asset.id())
+        payments = jal.db.operations.AssetPayment.get_list(self._id, asset.id())
         payments = [x for x in payments if (start_ts <= x.ex_date() <= end_ts) or (x.ex_date() == 0 and (start_ts <= x.timestamp() <= end_ts))]
         if payments:
             amount = sum([x.amount(currency_id=self._currency_id) for x in payments])
@@ -322,13 +329,14 @@ class JalAccount(JalDB):
                 return True
             else:
                 return False
-        if 'type' not in data or 'currency' not in data:
+        if 'currency' not in data:
             return False
         if 'name' not in data and "number" not in data:
             return False
         if "name" not in data:
             data['name'] = data['number'] + '.' + JalAsset(data['currency']).symbol()
-        data['organization'] = data['organization'] if 'organization' in data else None
+        data['investing'] = data['investing'] if 'investing' in data else 0
+        data['organization'] = data['organization'] if 'organization' in data else PredefinedAgents.Empty
         data['country'] = data['country'] if 'country' in data else 0
         data['precision'] = data['precision'] if "precision" in data else Setup.DEFAULT_ACCOUNT_PRECISION
         return True
@@ -352,8 +360,8 @@ class JalAccount(JalDB):
         else:
             name = similar.name() + '.' + new_currency.symbol()
         query = self._exec(
-            "INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, country_id, precision) "
-            "SELECT type_id, :name, :currency, active, number, organization_id, country_id, precision "
+            "INSERT INTO accounts (name, currency_id, active, investing, number, organization_id, country_id, precision) "
+            "SELECT :name, :currency, active, investing, number, organization_id, country_id, precision "
             "FROM accounts WHERE id=:id", [(":id", similar.id()), (":name", name), (":currency", new_currency.id())])
         return query.lastInsertId()
 

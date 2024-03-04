@@ -6,15 +6,16 @@ DROP TABLE IF EXISTS accounts;
 
 CREATE TABLE accounts (
     id              INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    type_id         INTEGER   NOT NULL,
-    name            TEXT (64) NOT NULL UNIQUE,
+    name            TEXT (64) NOT NULL UNIQUE,   -- human-readable name of the account
     currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
-    active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,
-    number          TEXT (32),
-    reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,
-    organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,  -- 1 = account is active, 0 = inactive (hidden in UI)
+    investing       INTEGER   NOT NULL DEFAULT (0),   -- 1 if account can hold investment assets, 0 otherwise
+    tag_id          INTEGER   REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    number          TEXT (32),                   -- human-readable number of account (as a reference to bank/broker documents)
+    reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,   -- timestamp of last confirmed operation
+    organization_id INTEGER   REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL DEFAULT (1),
     country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,
-    precision       INTEGER   NOT NULL DEFAULT (2)
+    precision       INTEGER   NOT NULL DEFAULT (2)  -- number of digits after decimal points that is used by this account
 );
 
 
@@ -125,8 +126,7 @@ CREATE TABLE categories (
     id      INTEGER   PRIMARY KEY UNIQUE NOT NULL,
     pid     INTEGER   NOT NULL DEFAULT (0),
     name    TEXT (64) UNIQUE NOT NULL,
-    often   INTEGER,
-    special INTEGER
+    often   INTEGER
 );
 
 -- Create new table with list of countries
@@ -145,9 +145,9 @@ CREATE TABLE country_names (
 );
 CREATE UNIQUE INDEX country_name_by_language ON country_names (country_id, language_id);
 
--- Table: dividends
-DROP TABLE IF EXISTS dividends;
-CREATE TABLE dividends (
+-- Table: asset_payments
+DROP TABLE IF EXISTS asset_payments;
+CREATE TABLE asset_payments (
     id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
     op_type    INTEGER NOT NULL DEFAULT (2),
     timestamp  INTEGER NOT NULL,
@@ -262,9 +262,10 @@ CREATE TABLE settings (
 -- Table: tags
 DROP TABLE IF EXISTS tags;
 CREATE TABLE tags (
-    id  INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    pid INTEGER   NOT NULL DEFAULT (0),
-    tag TEXT (64) NOT NULL UNIQUE
+    id         INTEGER   PRIMARY KEY UNIQUE NOT NULL,
+    pid        INTEGER   NOT NULL DEFAULT (0),
+    tag        TEXT (64) NOT NULL UNIQUE,
+    icon_file  TEXT DEFAULT ('')
 );
 
 -- Table to store about corporate actions that transform one asset into another
@@ -373,7 +374,7 @@ FROM
 (
     SELECT op_type, 1 AS seq, id, timestamp, account_id, 0 AS subtype FROM actions
     UNION ALL
-    SELECT op_type, 2 AS seq, id, timestamp, account_id, type AS subtype FROM dividends
+    SELECT op_type, 2 AS seq, id, timestamp, account_id, type AS subtype FROM asset_payments
     UNION ALL
     SELECT op_type, 3 AS seq, id, timestamp, account_id, type AS subtype FROM asset_actions
     UNION ALL
@@ -495,10 +496,10 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
--- Trigger: dividends_after_delete
-DROP TRIGGER IF EXISTS dividends_after_delete;
-CREATE TRIGGER dividends_after_delete
-      AFTER DELETE ON dividends
+-- Trigger: asset_payments_after_delete
+DROP TRIGGER IF EXISTS asset_payments_after_delete;
+CREATE TRIGGER asset_payments_after_delete
+      AFTER DELETE ON asset_payments
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
@@ -506,10 +507,10 @@ BEGIN
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
 
--- Trigger: dividends_after_insert
-DROP TRIGGER IF EXISTS dividends_after_insert;
-CREATE TRIGGER dividends_after_insert
-      AFTER INSERT ON dividends
+-- Trigger: asset_payments_after_insert
+DROP TRIGGER IF EXISTS asset_payments_after_insert;
+CREATE TRIGGER asset_payments_after_insert
+      AFTER INSERT ON asset_payments
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
@@ -517,10 +518,10 @@ BEGIN
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
 
--- Trigger: dividends_after_update
-DROP TRIGGER IF EXISTS dividends_after_update;
-CREATE TRIGGER dividends_after_update
-      AFTER UPDATE OF timestamp, type, account_id, asset_id, amount, tax ON dividends
+-- Trigger: asset_payments_after_update
+DROP TRIGGER IF EXISTS asset_payments_after_update;
+CREATE TRIGGER asset_payments_after_update
+      AFTER UPDATE OF timestamp, type, account_id, asset_id, amount, tax ON asset_payments
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
@@ -671,32 +672,25 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER IF EXISTS validate_account_insert;
-CREATE TRIGGER validate_account_insert BEFORE INSERT ON accounts
-    FOR EACH ROW
-    WHEN NEW.type_id = 4 AND NEW.organization_id IS NULL
+
+-- Trigger to keep predefinded agents from deletion
+DROP TRIGGER IF EXISTS keep_predefined_agents;
+CREATE TRIGGER keep_predefined_agents BEFORE DELETE ON agents FOR EACH ROW WHEN OLD.id <= 1
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
 END;
 
-DROP TRIGGER IF EXISTS validate_account_update;
-CREATE TRIGGER validate_account_update BEFORE UPDATE ON accounts
-    FOR EACH ROW
-    WHEN NEW.type_id = 4 AND NEW.organization_id IS NULL
-BEGIN
-    SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
-END;
 
 -- Trigger to keep predefinded categories from deletion
 DROP TRIGGER IF EXISTS keep_predefined_categories;
-CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.special = 1
+CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.id <= 9
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0002");
 END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 52);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 53);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 -- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1); -- Deprecated and ID shouldn't be re-used
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
@@ -721,16 +715,26 @@ INSERT INTO settings(id, name, value) VALUES (19, 'PtPingoDoceUserProfile', '{}'
 INSERT INTO languages (id, language) VALUES (1, 'en');
 INSERT INTO languages (id, language) VALUES (2, 'ru');
 
+-- Initialize predefined peer agents
+INSERT INTO agents (id, pid, name) VALUES (1, 0, 'None');
+
 -- Initialize predefined categories
-INSERT INTO categories (id, pid, name, often, special) VALUES (1, 0, 'Income', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (2, 0, 'Spending', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (3, 0, 'Profits', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (4, 1, 'Starting balance', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (5, 2, 'Fees', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (6, 2, 'Taxes', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (7, 3, 'Dividends', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (8, 3, 'Interest', 0, 1);
-INSERT INTO categories (id, pid, name, often, special) VALUES (9, 3, 'Results of investments', 0, 1);
+INSERT INTO categories (id, pid, name, often) VALUES (1, 0, 'Income', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (2, 0, 'Spending', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (3, 0, 'Profits', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (4, 1, 'Starting balance', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (5, 2, 'Fees', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (6, 2, 'Taxes', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (7, 3, 'Dividends', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (8, 3, 'Interest', 0);
+INSERT INTO categories (id, pid, name, often) VALUES (9, 3, 'Results of investments', 0);
+
+-- Initialize predefined tags
+INSERT INTO tags (id, pid, tag) VALUES (1, 0, 'Account type');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (2, 1, 'Cash', 'tag_cash.ico');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (3, 1, 'Bank account', 'tag_bank.ico');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (4, 1, 'Card', 'tag_card.ico');
+INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_investing.ico');
 
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');

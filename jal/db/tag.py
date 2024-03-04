@@ -14,6 +14,7 @@ class JalTag(JalDB):
         except IndexError:
             self._data = None
         self._name = self._data['tag'] if self._data is not None else ''
+        self._iconfile = self._data['icon_file'] if self._data is not None else ''
 
     def invalidate_cache(self):
         self._fetch_data()
@@ -22,6 +23,16 @@ class JalTag(JalDB):
     @classmethod
     def class_cache(cls) -> True:
         return True
+
+    # Returns a dict {tag_id: 'icon_filename'} of all tags that have icons assigned
+    @classmethod
+    def icon_files(cls) -> dict:
+        icons = {}
+        query = cls._exec("SELECT id, icon_file FROM tags WHERE icon_file!=''")
+        while query.next():
+            tag_id, filename = cls._read_record(query)
+            icons[tag_id] = filename
+        return icons
 
     def _fetch_data(self):
         JalTag.db_cache = []
@@ -35,6 +46,10 @@ class JalTag(JalDB):
     # Returns country name in given language or in current interface language if no argument is given
     def name(self) -> str:
         return self._name
+
+    # Returns the name of icon file that is assigned to the tag
+    def icon(self) -> str:
+        return self._iconfile
 
     def replace_with(self, new_id):
         self._exec("UPDATE action_details SET tag_id=:new_id WHERE tag_id=:old_id",

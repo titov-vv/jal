@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'profit_loss_report.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -60,7 +60,7 @@ class Ui_ProfitLossReportWidget(object):
 
         self.horizontalLayout.addWidget(self.CurrencyLbl)
 
-        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.ReportFrameSpacer)
 

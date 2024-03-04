@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, Slot, QObject, QAbstractTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.reports.reports import Reports
-from jal.db.operations import Dividend
+from jal.db.operations import AssetPayment
 from jal.ui.reports.ui_assets_payments_report import Ui_AssetsPaymentsReportWidget
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
@@ -97,7 +97,7 @@ class AssetsPaymentsModel(QAbstractTableModel):
             self.configureView()
 
     def prepareData(self):
-        dividends = Dividend.get_list(self._account_id)
+        dividends = AssetPayment.get_list(self._account_id)
         self._data = [x for x in dividends if self._begin <= x.timestamp() <= self._end]
         self._total = sum([x.amount() for x in self._data])
         self._total_tax = sum([x.tax() for x in self._data])

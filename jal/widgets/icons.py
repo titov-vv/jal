@@ -4,8 +4,8 @@ import re
 from enum import auto
 from collections import UserDict
 from PySide6.QtGui import QIcon, QPixmap
-from jal.constants import Setup
-from jal.db.helpers import get_app_path
+from jal.db.settings import JalSettings
+from jal.db.tag import JalTag
 
 
 ICON_PREFIX = "ui_"
@@ -25,6 +25,7 @@ class JalIcon(UserDict):
     CLEAN = auto()
     COPY = auto()
     DELISTING = auto()
+    DEPOSIT_ACCOUNT = auto()
     DEPOSIT_OPEN = auto()
     DEPOSIT_CLOSE = auto()
     DETAILS = auto()
@@ -45,6 +46,7 @@ class JalIcon(UserDict):
     SYMBOL_CHANGE = auto()
     TAG = auto()
     TAX = auto()
+    TOTAL = auto()
     TRANSFER_IN = auto()
     TRANSFER_OUT = auto()
     TRANSFER_ASSET_IN = auto()
@@ -66,6 +68,7 @@ class JalIcon(UserDict):
         CLEAN: "clean.ico",
         COPY: "copy.ico",
         DELISTING: "delisting.ico",
+        DEPOSIT_ACCOUNT: "deposit_account.ico",
         DEPOSIT_OPEN: "deposit_open.ico",
         DEPOSIT_CLOSE: "deposit_close.ico",
         DETAILS: "details.ico",
@@ -86,6 +89,7 @@ class JalIcon(UserDict):
         SYMBOL_CHANGE: "renaming.ico",
         TAG: "tag.ico",
         TAX: "tax.ico",
+        TOTAL: "total.ico",
         TRANSFER_IN: "transfer_in.ico",
         TRANSFER_OUT: "transfer_out.ico",
         TRANSFER_ASSET_IN: "transfer_asset_in.ico",
@@ -109,7 +113,7 @@ class JalIcon(UserDict):
         super().__init__()
         if self._icons:     # Already loaded - nothing to do
             return
-        img_path = get_app_path() + Setup.ICONS_PATH + os.sep
+        img_path = JalSettings.path(JalSettings.PATH_ICONS)
         for icon_id, filename in self._icon_files.items():
             self._icons[icon_id] = self.add_disabled_state(self.load_icon(img_path + ICON_PREFIX + filename))
         for icon_id, filename in self._flag_files.items():
@@ -118,6 +122,8 @@ class JalIcon(UserDict):
             match = re.match(f"^{AUX_PREFIX}.*", filename)
             if match:
                 self._icons[filename] = self.load_icon(img_path + filename)
+        for tag_id, filename in JalTag.icon_files().items():
+            self._icons[filename] = self.add_disabled_state(self.load_icon(img_path + filename))
 
     @staticmethod
     def load_icon(path) -> QIcon:
@@ -128,9 +134,7 @@ class JalIcon(UserDict):
 
     @classmethod
     def __class_getitem__(cls, key) -> QIcon:
-        if key not in cls._icons:
-            return QIcon()
-        return cls._icons[key]
+        return cls._icons.get(key, QIcon())
 
     @classmethod
     def country_flag(cls, country_code) -> QIcon:
@@ -141,9 +145,7 @@ class JalIcon(UserDict):
     @classmethod
     def aux_icon(cls, icon_name) -> QIcon:
         filename = AUX_PREFIX + icon_name
-        if filename not in cls._icons:
-            return QIcon()
-        return cls._icons[filename]
+        return cls._icons.get(filename, QIcon())
 
     # Iterates through all available images and creates a copy of images with adjusted alpha-channel (20% of initial value)
     # This new image is added to the icon as disabled state image

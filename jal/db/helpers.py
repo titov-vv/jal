@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import QLocale
@@ -62,17 +61,6 @@ def delocalize_decimal(value: str, percent: bool = False) -> Decimal:
     if percent:
         number /= Decimal('100')
     return number
-
-
-# -------------------------------------------------------------------------------------------------------------------
-# Returns absolute path to a folder from where application was started
-def get_app_path() -> str:
-    return os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + os.sep
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def get_dbfilename(app_path):
-    return app_path + Setup.DB_PATH
 
 # -------------------------------------------------------------------------------------------------------------------
 # Return a row from the model in form of {"field_name": value} dictionary

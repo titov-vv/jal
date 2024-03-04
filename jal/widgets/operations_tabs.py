@@ -2,7 +2,7 @@ from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import QWidget, QStackedWidget, QMessageBox
 
 from jal.widgets.corporate_action_widget import CorporateActionWidget
-from jal.widgets.dividend_widget import DividendWidget
+from jal.widgets.asset_payment_widget import AssetPaymentWidget
 from jal.widgets.income_spending_widget import IncomeSpendingWidget
 from jal.widgets.trade_widget import TradeWidget
 from jal.widgets.transfer_widget import TransferWidget
@@ -17,7 +17,7 @@ class JalOperationsTabs(QStackedWidget):
         super().__init__(parent)
         self.widgets = {LedgerTransaction.NA: QWidget(self),
                         LedgerTransaction.IncomeSpending: IncomeSpendingWidget(self),
-                        LedgerTransaction.Dividend: DividendWidget(self), LedgerTransaction.Trade: TradeWidget(self),
+                        LedgerTransaction.AssetPayment: AssetPaymentWidget(self), LedgerTransaction.Trade: TradeWidget(self),
                         LedgerTransaction.Transfer: TransferWidget(self),
                         LedgerTransaction.CorporateAction: CorporateActionWidget(self),
                         LedgerTransaction.TermDeposit: TermDepositWidget(self)}

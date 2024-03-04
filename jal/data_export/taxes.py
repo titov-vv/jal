@@ -1,15 +1,14 @@
 import importlib   # it is used for delayed import in order to avoid circular reference in child classes
-import os
 import json
 import logging
 from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 
 from jal.constants import Setup, PredefinedAsset
-from jal.db.helpers import get_app_path
+from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, Dividend
+from jal.db.operations import LedgerTransaction, AssetPayment
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
@@ -64,7 +63,7 @@ class TaxReport:
     # Loads report parameters for given year into self._parameters
     def load_parameters(self, year: int):
         year_key = str(year)
-        file_path = get_app_path() + Setup.EXPORT_PATH + os.sep + Setup.TAX_REPORT_PATH + os.sep + self.country_name + ".json"
+        file_path = JalSettings.path(JalSettings.PATH_TAX_REPORT_TEMPLATE) + self.country_name + ".json"
         try:
             with open(file_path, 'r', encoding='utf-8') as json_file:
                 parameters = json.load(json_file)
@@ -112,9 +111,9 @@ class TaxReport:
 
     # Returns a list of dividends that should be included into the report for given year
     def dividends_list(self) -> list:
-        dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
-        dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockDividend)
-        dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockVesting)
+        dividends = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
+        dividends += AssetPayment.get_list(self.account.id(), subtype=AssetPayment.StockDividend)
+        dividends += AssetPayment.get_list(self.account.id(), subtype=AssetPayment.StockVesting)
         dividends = [x for x in dividends if self.year_begin <= x.timestamp() <= self.year_end]
         return dividends
 
@@ -124,9 +123,9 @@ class TaxReport:
         trades = [x for x in trades if x.asset().type() in [PredefinedAsset.Stock, PredefinedAsset.ETF]]
         trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade or (
-                x.open_operation().type() == LedgerTransaction.Dividend and (
-                x.open_operation().subtype() == Dividend.StockDividend or
-                x.open_operation().subtype() == Dividend.StockVesting))]
+                x.open_operation().type() == LedgerTransaction.AssetPayment and (
+                x.open_operation().subtype() == AssetPayment.StockDividend or
+                x.open_operation().subtype() == AssetPayment.StockVesting))]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         return trades
 

@@ -156,20 +156,15 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate accounts
     test_accounts = [
-        {'id': 1, 'type_id': 4, 'name': 'Inv. Account', 'number': 'U7654321', 'currency_id': 2, 'active': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
-        {'id': 2, 'type_id': 4, 'name': 'Inv. Account.RUB', 'number': 'U7654321', 'currency_id': 1, 'active': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
-        {'id': 3, 'type_id': 4, 'name': 'TEST_ACC.USD', 'number': 'TEST_ACC', 'currency_id': 2, 'active': 1, 'organization_id': 2, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
-        {'id': 4, 'type_id': 4, 'name': 'Inv. Account.CAD', 'number': 'U7654321', 'currency_id': 7, 'active': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
-        {'id': 5, 'type_id': 4, 'name': 'TEST_ACC.CAD', 'number': 'TEST_ACC', 'currency_id': 7, 'active': 1, 'organization_id': 2, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
-        {'id': 6, 'type_id': 4, 'name': 'Inv. Account.EUR', 'number': 'U7654321', 'currency_id': 3, 'active': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10}
+        {'id': 1, 'tag_id': '', 'name': 'Inv. Account', 'number': 'U7654321', 'currency_id': 2, 'active': 1, 'investing': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
+        {'id': 2, 'tag_id': '', 'name': 'Inv. Account.RUB', 'number': 'U7654321', 'currency_id': 1, 'active': 1, 'investing': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
+        {'id': 3, 'tag_id': '', 'name': 'TEST_ACC.USD', 'number': 'TEST_ACC', 'currency_id': 2, 'active': 1, 'investing': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
+        {'id': 4, 'tag_id': '', 'name': 'Inv. Account.CAD', 'number': 'U7654321', 'currency_id': 7, 'active': 1, 'investing': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
+        {'id': 5, 'tag_id': '', 'name': 'TEST_ACC.CAD', 'number': 'TEST_ACC', 'currency_id': 7, 'active': 1, 'investing': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10},
+        {'id': 6, 'tag_id': '', 'name': 'Inv. Account.EUR', 'number': 'U7654321', 'currency_id': 3, 'active': 1, 'investing': 1, 'organization_id': 1, 'country_id': 0, 'reconciled_on': 0, 'precision': 10}
     ]
     accounts = JalAccount.get_all_accounts()
     assert [x.dump() for x in accounts] == test_accounts
-
-    # validate peers
-    test_peers = [{'name': 'IB'}, {'name': 'Bank for account #TEST_ACC'}]
-    peers = JalPeer.get_all_peers()
-    assert [x.dump() for x in peers] == test_peers
 
     # validate income/spending
     assert JalAccount(1).dump_actions() == [
@@ -226,10 +221,10 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [10, 2, 1620345600, 0, '', 4, 1, 8, '2.0', '0', 'Stock Award Grant for Cash Deposit'],
         [11, 2, 1549843200, 0, '', 6, 1, 9, '-0.249018', '0', 'French Transaction Tax']
     ]
-    dividends = JalAccount(1).dump_dividends()
-    assert len(dividends) == len(test_payments)
-    for i, dividend in enumerate(test_payments):
-        assert dividends[i] == dividend
+    payments = JalAccount(1).dump_asset_payments()
+    assert len(payments) == len(test_payments)
+    for i, payment in enumerate(test_payments):
+        assert payments[i] == payment
 
     # Verify that asset prices were loaded for stock dividends and vestings
     assert JalAsset(1).quote(d2t(230101), 1) == (1672531200, Decimal('1'))

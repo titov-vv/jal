@@ -3,10 +3,10 @@ from datetime import datetime
 from decimal import Decimal
 from PySide6.QtCore import Qt, Property, QDateTime, QTimeZone, QLocale
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
-from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit
+from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox
 from jal.ui.ui_asset_dlg import Ui_AssetDialog
 from jal.constants import PredefinedAsset, AssetData, MarketDataFeed
-from jal.db.helpers import localize_decimal
+from jal.db.helpers import localize_decimal, db_row2dict
 from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantLookupDelegate
 from jal.db.reference_models import AbstractReferenceListModel
 from jal.db.tag import JalTag
@@ -93,7 +93,21 @@ class AssetDialog(QDialog):
         self._symbols_model.filterBy("asset_id", self._asset_id)
         self._data_model.filterBy("asset_id", self._asset_id)
 
+    def validated(self):
+        active_count = 0
+        for row in range(self._symbols_model.rowCount()):
+            if self._symbols_model.row_is_deleted(row):
+                continue
+            fields = db_row2dict(self._symbols_model, row)
+            active_count += fields['active']
+        if not active_count:
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Can't save asset without active symbols"), QMessageBox.Ok)
+            return False
+        return True
+
     def accept(self) -> None:
+        if not self.validated():
+            return
         self._model.database().transaction()
         try:
             if not self._model.submitAll():

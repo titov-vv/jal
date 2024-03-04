@@ -1,8 +1,5 @@
-from functools import partial
-
 from PySide6.QtCore import Qt, Signal, Property, Slot
-from PySide6.QtWidgets import QDialog, QMessageBox, QMenu, QWidgetAction, QLabel
-
+from PySide6.QtWidgets import QDialog, QMessageBox, QMenu
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.icons import JalIcon
 
@@ -75,19 +72,6 @@ class ReferenceDataDialog(QDialog):
         contextMenu = QMenu(self._view)
         if self.custom_context_menu:
             self.customizeContextMenu(contextMenu, self._view.indexAt(pos))
-        else:
-            if not self.group_id:
-                return
-            index = self._view.indexAt(pos)
-            menu_title = QWidgetAction(self._view)
-            title_lbl = QLabel()
-            title_lbl.setText(self.tr("Change type to:"))
-            menu_title.setDefaultWidget(title_lbl)
-            contextMenu.addAction(menu_title)
-            contextMenu.addSeparator()
-            for i in range(self.ui.GroupCombo.count()):
-                contextMenu.addAction(self.ui.GroupCombo.itemText(i),
-                                      partial(self.updateItemType, index, self.ui.GroupCombo.itemData(i)))
         contextMenu.popup(self._view.viewport().mapToGlobal(pos))
 
     @Slot()

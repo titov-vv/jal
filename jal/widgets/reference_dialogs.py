@@ -3,17 +3,19 @@ from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QAction
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog, QMessageBox
-from jal.constants import PredefinedAccountType, PredefinedAsset, MarketDataFeed
+from jal.constants import PredefinedAsset, MarketDataFeed
+from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate, \
-    AssetSelectorDelegate, ConstantLookupDelegate
+    AssetSelectorDelegate, ConstantLookupDelegate, TagSelectorDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
-from jal.widgets.selection_dialog import SelectPeerDialog, SelectCategoryDialog, SelectTagDialog 
+from jal.widgets.selection_dialog import SelectPeerDialog, SelectCategoryDialog, SelectTagDialog
+from jal.widgets.icons import JalIcon
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -21,34 +23,43 @@ class AccountListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
         self._columns = [("id", ''),
-                         ("type_id", ''),
                          ("name", self.tr("Name")),
                          ("currency_id", self.tr("Currency")),
                          ("active", self.tr("Act.")),
+                         ("investing", self.tr("Invest.")),
+                         ("tag_id", 'Tag'),
                          ("number", self.tr("Account #")),
                          ("reconciled_on", self.tr("Reconciled @")),
                          ("organization_id", self.tr("Bank/Broker")),
-                         ("country_id", self.tr("CC")),
+                         ("country_id", self.tr("Country")),
                          ("precision", self.tr("Precision"))]
         self._sort_by = "name"
-        self._group_by = "type_id"
-        self._hidden = ["id", "type_id"]
+        self._group_by = "tag_id"
+        self._hidden = ["id"]
         self._stretch = "name"
         self._lookup_delegate = None
         self._peer_delegate = None
         self._timestamp_delegate = None
         self._bool_delegate = None
+        self._tag_delegate = None
         self._default_values = {'active': 1, 'reconciled_on': 0, 'country_id': 0, 'precision': 2}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
 
+    def data(self, index, role=Qt.DisplayRole):   # Display tag icon as decoration role
+        if not index.isValid():
+            return None
+        if role == Qt.DecorationRole and index.column() == self.fieldIndex('tag_id'):
+            return JalIcon[JalTag(super().data(index, Qt.DisplayRole)).icon()]
+        return super().data(index, role)
+
     def configureView(self):
         super().configureView()
-        self._view.setColumnWidth(self.fieldIndex("active"), 32)
+        self._view.setColumnWidth(self.fieldIndex("active"), 64)
+        self._view.setColumnWidth(self.fieldIndex("investing"), 64)
         self._view.setColumnWidth(self.fieldIndex("reconciled_on"),
                                   self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
-        self._view.setColumnWidth(self.fieldIndex("country_id"), 50)
-
+        self._view.setColumnWidth(self.fieldIndex("country_id"), 80)
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
@@ -58,6 +69,9 @@ class AccountListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("reconciled_on"), self._timestamp_delegate)
         self._bool_delegate = BoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("investing"), self._bool_delegate)
+        self._tag_delegate = TagSelectorDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("tag_id"), self._tag_delegate)
 
 
 class AccountListDialog(ReferenceDataDialog):
@@ -79,11 +93,14 @@ class AccountListDialog(ReferenceDataDialog):
         self.ui.Toggle.setText(self.tr("Show inactive"))
 
         self.ui.GroupLbl.setVisible(True)
-        self.ui.GroupLbl.setText(self.tr("Account type:"))
+        self.ui.GroupLbl.setText(self.tr("Account tag:"))
         self.ui.GroupCombo.setVisible(True)
         self.group_field = self.model.group_by
-        PredefinedAccountType().load2combo(self.ui.GroupCombo)
-        self.group_id = 1
+        self.ui.GroupCombo.clear()
+        self.ui.GroupCombo.addItem(self.tr("All tags"), userData=None)
+        for tag_id, tag in sorted(JalAccount.get_all_tags().items(), key=lambda x: x[1]):
+            self.ui.GroupCombo.addItem(JalIcon[JalTag(tag_id).icon()], tag, tag_id)
+        self.group_id = self.ui.GroupCombo.itemData(0)
 
     def locateItem(self, item_id):
         type_id = self.model.getGroupId(item_id)
@@ -327,11 +344,23 @@ class CategoryListDialog(ReferenceDataDialog):
 class TagTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
-        self._columns = [("tag", self.tr("Tag"))]
+        self._columns = [("tag", self.tr("Tag")), ("icon_file", self.tr("Icon filename"))]
         self._default_name = "tag"
         self._sort_by = "tag"
         self._stretch = "tag"
 
+    def data(self, index, role=Qt.DisplayRole):   # Display tag icon as decoration role
+        if not index.isValid():
+            return None
+        if role == Qt.DecorationRole and index.column() == self.fieldIndex('icon_file'):
+            return JalIcon[super().data(index, Qt.DisplayRole)]
+        return super().data(index, role)
+
+    def configureView(self):
+        super().configureView()
+        self._grid_delegate = GridLinesDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("tag"), self._grid_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("icon_file"), self._grid_delegate)
 
 class TagsListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):

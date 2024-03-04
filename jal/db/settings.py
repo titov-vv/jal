@@ -1,10 +1,12 @@
+import os
+from enum import auto
 from jal.db.db import JalDB
 from PySide6.QtCore import QStandardPaths, QFileInfo
-
+from jal.constants import Setup
 
 class FolderFor:
-    Statement = 1
-    Report = 2
+    Statement = auto()
+    Report = auto()
 
 class JalSettings(JalDB):
     __RECENT_PREFIX = "RecentFolder_"
@@ -16,8 +18,23 @@ class JalSettings(JalDB):
     def __init__(self):
         super().__init__()
 
-    def DbPath(self):
-        return self._db_path()
+    @staticmethod
+    def path(path_type) -> str:
+        app_path = JalDB.get_app_path()
+        if path_type == JalDB.PATH_APP:
+            return app_path
+        if path_type == JalDB.PATH_DB_FILE:
+            return JalDB.get_db_path()
+        if path_type == JalDB.PATH_LANG:
+            return app_path + Setup.LANG_PATH + os.sep
+        if path_type == JalDB.PATH_ICONS:
+            return app_path + Setup.ICONS_PATH + os.sep
+        if path_type == JalDB.PATH_LANG_FILE:
+            return app_path + Setup.LANG_PATH + os.sep + JalSettings().getLanguage() + '.qm'
+        if path_type == JalDB.PATH_TAX_REPORT_TEMPLATE:
+            return app_path + Setup.EXPORT_PATH + os.sep + Setup.TAX_REPORT_PATH + os.sep
+        if path_type == JalDB.PATH_TEMPLATES:
+            return app_path + Setup.EXPORT_PATH + os.sep + Setup.TEMPLATE_PATH + os.sep
 
     def getValue(self, key, default=None):
         value = self._read("SELECT value FROM settings WHERE name=:key", [(":key", key)])
