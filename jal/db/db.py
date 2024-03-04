@@ -8,7 +8,7 @@ import sqlparse
 from pkg_resources import parse_version
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlTableModel
-from jal.constants import Setup
+from jal.constants import Setup, PredefinedTags
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -175,7 +175,10 @@ class JalDB:
     # -------------------------------------------------------------------------------------------------------------------
     @classmethod
     def retranslate(cls):
-        pass
+        translated_data = [PredefinedTags]
+        for data_set in translated_data:
+            for item_id, name in data_set().get_all_names().items():
+                cls._exec(data_set.db_update_query, [(":id", item_id), (":name", name)])
 
     # -------------------------------------------------------------------------------------------------------------------
     # Executes an SQL query from given sql_text

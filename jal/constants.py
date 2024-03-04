@@ -92,12 +92,23 @@ class PredefinedCategory:  # These constants are linked with 'categories' table 
     Profit = 9
 
 
-class PredefinedTags:   # These constants are linked with 'tags' table initial values but are not mandatory as not used in code
+class PredefinedTags(PredefinedList, QObject):   # These constants are linked with 'tags' table initial values but are not mandatory as not used in code
+    db_update_query = "UPDATE tags SET tag=:name WHERE id=:id"
     AccountType = 1
     CashAccount = 2
     BankAccount = 3
     CardAccount = 4
     BrokerAccount = 5
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.AccountType: self.tr("Account type"),
+            self.CashAccount: self.tr("Cash"),
+            self.BankAccount: self.tr("Bank account"),
+            self.CardAccount: self.tr("Card"),
+            self.BrokerAccount: self.tr("Broker account")
+        }
 
 
 class PredefinedAsset(PredefinedList, QObject):

@@ -38,7 +38,7 @@ def main():
         window.setText(error.message)
         window.setInformativeText(error.details)
     else:
-        window = MainWindow()
+        window = MainWindow(translator)
     window.show()
 
     app.exec()
