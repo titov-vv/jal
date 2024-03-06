@@ -7,7 +7,7 @@ from PySide6.QtGui import QResizeEvent, QPainter, QIcon, QFontMetrics
 # Underlying model should support footerData(section, role) method in order to provide data for the footer.
 # The footer is implemented as FooterView class that is derived from QHeaderView.
 # ----------------------------------------------------------------------------------------------------------------------
-class FooterView(QHeaderView):
+class FooterView(QHeaderView):   # The same class as in tableview_with_footer.py (to keep everything in one module)
     def __init__(self, parent: QTreeView):
         super().__init__(Qt.Horizontal, parent)
         self._model = None

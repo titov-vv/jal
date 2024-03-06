@@ -1,13 +1,13 @@
 from PySide6.QtCore import Qt, QAbstractItemModel, QRect
-from PySide6.QtWidgets import QTableView, QHeaderView
-from PySide6.QtGui import QResizeEvent, QPainter
+from PySide6.QtWidgets import QTableView, QHeaderView, QStyle, QStyleOptionHeaderV2
+from PySide6.QtGui import QResizeEvent, QPainter, QIcon, QFontMetrics
 
 # ----------------------------------------------------------------------------------------------------------------------
 # File implements TableViewWithFooter class that is a descendant of QTableView class with footer.
 # Underlying model should support footerData(section, role) method in order to provide data for the footer.
 # The footer is implemented as FooterView class that is derived from QHeaderView.
 # ----------------------------------------------------------------------------------------------------------------------
-class FooterView(QHeaderView):
+class FooterView(QHeaderView):   # The same class as in treeview_with_footer.py (to keep everything in one module)
     def __init__(self, parent: QTableView):
         super().__init__(Qt.Horizontal, parent)
         self._model = None
@@ -19,24 +19,24 @@ class FooterView(QHeaderView):
         super().setModel(model)
 
     def paintSection(self, painter: QPainter, rect: QRect, idx: int) -> None:
-        # First make standard painting by parent QHeaderView class method
         painter.save()
-        super().paintSection(painter, rect, idx)
-        painter.restore()
-        # Clean footer content (by default QHeaderView puts sections names there
-        inner_rect = rect.adjusted(self.lineWidth(), self.lineWidth(), -self.lineWidth(), -self.lineWidth())
-        bg_color = self.palette().color(self.backgroundRole())
-        painter.fillRect(inner_rect, bg_color)
-        # Get data from model and write text with given font and position
+        opt = QStyleOptionHeaderV2()
+        self.initStyleOption(opt)
+        self.initStyleOptionForIndex(opt, idx)
+        opt.rect = rect
         text = self._model.footerData(idx, role=Qt.DisplayRole)
-        if text is None:
-            return
+        opt.text = '' if text is None else text
         font = self._model.footerData(idx, role=Qt.FontRole)
         if font is not None:
+            opt.fontMetrics = QFontMetrics(font)
             painter.setFont(font)
+        icon = self._model.footerData(idx, role=Qt.DecorationRole)
+        opt.iconAlignment = Qt.AlignVCenter
+        opt.icon = QIcon() if icon is None else icon
         alignment = self._model.footerData(idx, role=Qt.TextAlignmentRole)
-        alignment = Qt.AlignCenter | Qt.AlignVCenter if alignment is None else alignment
-        painter.drawText(inner_rect, alignment, f" {text} ")
+        opt.textAlignment = Qt.AlignCenter | Qt.AlignVCenter if alignment is None else alignment
+        self.style().drawControl(QStyle.CE_Header, opt, painter, self)
+        painter.restore()
 
     def on_header_resize(self, section: int, _old_size: int, new_size: int) -> None:
         self.resizeSection(section, new_size)

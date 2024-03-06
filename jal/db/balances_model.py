@@ -118,11 +118,11 @@ class BalancesModel(ReportTreeModel):
 
     def footerData(self, section, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
-            total_data = self._root.details()
             if section == self.fieldIndex('account_name'):
                 return self.tr("Total:")
             elif section == self.fieldIndex('value_common'):
-                return localize_decimal(total_data[self._columns[section]['field']], precision=2)
+                totals_data = self._root.details()
+                return localize_decimal(totals_data[self._columns[section]['field']], precision=2)
         if role == Qt.FontRole:
             return self.bold_font
         if role == Qt.TextAlignmentRole:
