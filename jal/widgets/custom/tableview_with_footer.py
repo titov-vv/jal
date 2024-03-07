@@ -14,11 +14,15 @@ class TableViewWithFooter(QTableView):
         super().__init__(parent_view)
         self._footer = FooterView(self, self.horizontalHeader())
 
+    def footer(self) -> FooterView:
+        return self._footer
+
     # Create a bottom margin for footer placement (mirror of a top header margin)
     def resizeEvent(self, event: QResizeEvent) -> None:
         super().resizeEvent(event)
         margins = self.viewportMargins()
         self.setViewportMargins(margins.left(), margins.top(), margins.right(), margins.top())
+        self._footer.on_header_geometry()
 
     def setModel(self, model: QAbstractItemModel) -> None:
         super().setModel(model)
