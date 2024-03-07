@@ -9,6 +9,7 @@ class FooterView(QHeaderView):
     def __init__(self, parent: QTreeView, table_header: QHeaderView):
         super().__init__(Qt.Horizontal, parent)
         self._span = {}
+        self._sizes = {}
         self._parent = parent
         self._model = None
         self._linked_header = table_header
@@ -48,16 +49,15 @@ class FooterView(QHeaderView):
         self.setGeometry(cr.left(), cr.top() + cr.height() - hs.height() + 1, hs.width(), hs.height())
 
     def on_header_resize(self, section: int, _old_size: int, new_size: int) -> None:
-        if section not in self._span:
+        if section not in self._span:   # Simply set size, if section doesn't span to multiple columns
             self.resizeSection(section, new_size)
             return
-        if self._span[section] != section:
+        if self._span[section] != section:   # Hide, if section gives its place to another section that is spanned over it
             self.setSectionHidden(section, True)
-            return
-        size = 0
-        for i in [k for k, v in self._span.items() if v == section]:  # Add all sections that spans to target section
+        size = 0   # Calculate a size of section that is spanned over other columns and resize it
+        for i in [k for k, v in self._span.items() if v == self._span[section]]:
             size += new_size if i == section else self._linked_header.sectionSize(i)
-        self.resizeSection(section, size)
+        self.resizeSection(self._span[section], size)
 
     def on_header_move(self, _section: int, old: int, new: int) -> None:
         self.moveSection(old, new)
