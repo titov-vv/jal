@@ -8,9 +8,13 @@ from PySide6.QtGui import QPainter, QIcon, QFontMetrics
 class FooterView(QHeaderView):
     def __init__(self, parent: QTreeView, table_header: QHeaderView):
         super().__init__(Qt.Horizontal, parent)
+        self._parent = parent
         self._model = None
         self._linked_header = table_header
         self.setSectionResizeMode(QHeaderView.Fixed)
+        self._linked_header.geometriesChanged.connect(self.on_header_geometry)
+        self._linked_header.sectionResized.connect(self.on_header_resize)
+        self._linked_header.sectionMoved.connect(self.on_header_move)
 
     def setModel(self, model: QAbstractItemModel) -> None:
         self._model = model
@@ -36,6 +40,11 @@ class FooterView(QHeaderView):
         opt.textAlignment = Qt.AlignCenter | Qt.AlignVCenter if alignment is None else alignment
         self.style().drawControl(QStyle.CE_Header, opt, painter, self)
         painter.restore()
+
+    def on_header_geometry(self):
+        cr = self._parent.contentsRect()
+        hs = self._linked_header.geometry()
+        self.setGeometry(cr.left(), cr.top() + cr.height() - hs.height() + 1, hs.width(), hs.height())
 
     def on_header_resize(self, section: int, _old_size: int, new_size: int) -> None:
         self.resizeSection(section, new_size)

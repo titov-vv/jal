@@ -12,18 +12,13 @@ class TreeViewWithFooter(QTreeView):
     def __init__(self, parent_view):
         self._parent_view = parent_view
         super().__init__(parent_view)
-        self._header = self.header()
         self._footer = FooterView(self, self.header())
-        self._header.sectionResized.connect(self._footer.on_header_resize)
-        self._header.sectionMoved.connect(self._footer.on_header_move)
 
+    # Create a bottom margin for footer placement (mirror of a top header margin)
     def resizeEvent(self, event: QResizeEvent) -> None:
         super().resizeEvent(event)
-        m = self.viewportMargins()
-        self.setViewportMargins(m.left(), m.top(), m.right(), m.top())  # Mirror top margin to bottom
-        cr = self.contentsRect()
-        header_size = self._header.geometry()
-        self._footer.setGeometry(cr.left(), cr.top() + cr.height() - m.top() + 1, header_size.width(), header_size.height())
+        margins = self.viewportMargins()
+        self.setViewportMargins(margins.left(), margins.top(), margins.right(), margins.top())
 
     def setModel(self, model: QAbstractItemModel) -> None:
         super().setModel(model)
