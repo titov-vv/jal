@@ -154,6 +154,8 @@ class BalancesModel(ReportTreeModel):
         self._view.setItemDelegateForColumn(self.fieldIndex('currency_name'), self._grid_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('value'), self._float_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('value_common'), self._float_delegate)
+        self._view.footer().set_span(self.fieldIndex('account_name'), [self.fieldIndex('account_name'), self.fieldIndex('value')])
+        self._view.footer().set_span(self.fieldIndex('value_common'), [self.fieldIndex('currency_name'), self.fieldIndex('value_common')])
         super().configureView()
 
     @Slot()
