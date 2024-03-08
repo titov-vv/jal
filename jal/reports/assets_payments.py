@@ -5,6 +5,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.reports.reports import Reports
 from jal.db.operations import AssetPayment
+from jal.db.helpers import localize_decimal
 from jal.ui.reports.ui_assets_payments_report import Ui_AssetsPaymentsReportWidget
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
@@ -67,9 +68,9 @@ class AssetsPaymentsModel(QAbstractTableModel):
     def footerData(self, section: int, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             if section == 4:
-                return self._total
+                return localize_decimal(self._total, precision=2)
             if section == 5:
-                return self._total_tax
+                return localize_decimal(self._total_tax, precision=2)
         elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)

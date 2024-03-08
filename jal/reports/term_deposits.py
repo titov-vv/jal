@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QAbstractTableModel
 from PySide6.QtGui import QFont
 from jal.reports.reports import Reports
 from jal.db.deposit import JalDeposit
+from jal.db.helpers import localize_decimal
 from jal.ui.reports.ui_term_deposits_report import Ui_TermDepositsReportWidget
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.mdi import MdiWidget
@@ -67,11 +68,11 @@ class DepositsListModel(QAbstractTableModel):
             if section ==0:
                 return self.tr("Total")
             if section == 4:
-                return self._initial_total
+                return localize_decimal(self._initial_total, precision=2)
             if section == 5:
-                return self._accrued_total
+                return localize_decimal(self._accrued_total, precision=2)
             if section == 6:
-                return self._planned_total
+                return localize_decimal(self._planned_total, precision=2)
         elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)
