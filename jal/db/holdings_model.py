@@ -1,4 +1,5 @@
 from __future__ import annotations
+import logging
 from datetime import datetime
 from decimal import Decimal
 
@@ -195,6 +196,9 @@ class HoldingsModel(ReportTreeModel):
     # 2nd (Decimal) = 0 (not implemented - the amount of payments that were accumulated for given asset)
     def get_asset_history_payments(self, account: JalAccount, asset: JalAsset, end_ts: int) -> (int, Decimal):
         trades = account.open_trades_list(asset, end_ts)
+        if len(trades) == 0:
+            logging.warning(self.tr("Open position was expected but not found for (account-asset-date): ") + f"'{account.name()}' - {asset.symbol()} - {ts2d(end_ts)}")
+            return end_ts, Decimal('0')
         since = min([x['operation'].timestamp() for x in trades])
         amount = account.asset_payments_amount(asset, since, end_ts)
         for trade in trades:
