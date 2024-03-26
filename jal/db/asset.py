@@ -173,7 +173,7 @@ class JalAsset(JalDB):
             quotes.append((timestamp, quote))
         return quotes
 
-    # Returns tuple (begin_timestamp: int, end_timestamp: int) that defines timestamp range for which quotest are
+    # Returns tuple (begin_timestamp: int, end_timestamp: int) that defines timestamp range for which quotations are
     # available in database for given currency
     def quotes_range(self, currency_id: int) -> tuple:
         try:
