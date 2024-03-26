@@ -430,6 +430,7 @@ class QuotesListModel(AbstractReferenceListModel):
         self._asset_delegate = None
         self._timestamp_delegate = None
         self._lookup_delegate = None
+        self._float_delegate = None
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
 
     def configureView(self):
@@ -444,6 +445,8 @@ class QuotesListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
+        self._float_delegate = FloatDelegate(4, allow_tail=True, parent=self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("quote"), self._float_delegate)
 
 
 class QuotesListDialog(ReferenceDataDialog):
