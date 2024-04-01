@@ -22,6 +22,11 @@ def remove_exponent(d) -> Decimal:
 def localize_decimal(value: Decimal, precision: int = None, percent: bool = False, sign: bool = False) -> str:
     if value is None:
         return ''
+    if type(value) != Decimal:
+        try:
+            value = Decimal(value)
+        except:
+            return f"* {value} *"  # Indicate failure
     if value.is_nan():
         return Setup.NULL_VALUE
     if percent:
