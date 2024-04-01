@@ -239,16 +239,18 @@ class DLSG:
         return currency_record
 
     def append_dividend(self, dividend):
-        if dividend["country_iso"] == '000':
-            logging.error(self.tr(
-                "Account country is not set for asset, dividend isn't include in 3-NDFL ") + f"'{dividend['symbol']}'")
-            return
         if self._broker_as_income:
             income_source = self.broker_name
             income_iso_country = self.broker_iso_country
+            if income_iso_country == '000':
+                logging.error(self.tr("Account country is not set for asset, dividend isn't exported into 3-NDFL ") + f"'{income_source}'")
+                return
         else:
             income_source = f"Дивиденд от {dividend['symbol']} ({dividend['full_name']})"
             income_iso_country = dividend["country_iso"]
+            if income_iso_country == '000':
+                logging.error(self.tr("Country is not set for asset, dividend isn't exported into 3-NDFL ") + f"'{income_source}'")
+                return
         if self._year == 2020:
             income = (14, '1010', 'Дивиденды', income_source, income_iso_country)
         else:

@@ -210,12 +210,12 @@
     <message>
         <location filename="../widgets/asset_dialog.py" line="104"/>
         <source>Incomplete data</source>
-        <translation type="unfinished">Неполные данные</translation>
+        <translation>Неполные данные</translation>
     </message>
     <message>
         <location filename="../widgets/asset_dialog.py" line="104"/>
         <source>Can&apos;t save asset without active symbols</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно сохранить ЦБ без активных символов</translation>
     </message>
     <message>
         <location filename="../widgets/asset_dialog.py" line="114"/>
@@ -376,67 +376,67 @@
 <context>
     <name>AssetsPaymentsModel</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="19"/>
+        <location filename="../reports/assets_payments.py" line="20"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="19"/>
+        <location filename="../reports/assets_payments.py" line="20"/>
         <source>Symbol</source>
         <translation>Символ</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="19"/>
+        <location filename="../reports/assets_payments.py" line="20"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="19"/>
+        <location filename="../reports/assets_payments.py" line="20"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="20"/>
+        <location filename="../reports/assets_payments.py" line="21"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="20"/>
+        <location filename="../reports/assets_payments.py" line="21"/>
         <source>Tax</source>
         <translation>Налог</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="22"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="22"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="22"/>
         <source>Dividend</source>
         <translation>Дивиденд</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="22"/>
         <source>Bond Interest</source>
         <translation>Купон</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="22"/>
         <source>Stock Dividend</source>
         <translation>Дивиденд акциями</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="22"/>
+        <location filename="../reports/assets_payments.py" line="23"/>
         <source>Stock Vesting</source>
         <translation>Передача акций</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="23"/>
+        <location filename="../reports/assets_payments.py" line="24"/>
         <source>Bond Amortization</source>
         <translation>Амортизация облигации</translation>
     </message>
@@ -444,7 +444,7 @@
 <context>
     <name>AssetsPaymentsReport</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="123"/>
+        <location filename="../reports/assets_payments.py" line="124"/>
         <source>Assets&apos; Payments</source>
         <translation>Выплаты по ЦБ</translation>
     </message>
@@ -470,7 +470,7 @@
 <context>
     <name>AssetsPaymentsReportWindow</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="134"/>
+        <location filename="../reports/assets_payments.py" line="135"/>
         <source>Assets&apos; Payments</source>
         <translation>Выплаты по ЦБ</translation>
     </message>
@@ -503,12 +503,12 @@
         <translation>Итого:</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="198"/>
+        <location filename="../db/balances_model.py" line="200"/>
         <source>Without tag</source>
         <translation>Без метки</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="213"/>
+        <location filename="../db/balances_model.py" line="215"/>
         <source>Term deposits</source>
         <translation>Срочные вклады</translation>
     </message>
@@ -516,7 +516,7 @@
 <context>
     <name>BaseCurrencyDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="503"/>
+        <location filename="../widgets/reference_dialogs.py" line="506"/>
         <source>Base currency</source>
         <translation>Базовая валюта</translation>
     </message>
@@ -524,12 +524,12 @@
 <context>
     <name>BaseCurrencyListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="471"/>
+        <location filename="../widgets/reference_dialogs.py" line="474"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="472"/>
+        <location filename="../widgets/reference_dialogs.py" line="475"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
@@ -925,9 +925,14 @@
         <translation>Валюта не поддерживается для 3-НДФЛ: </translation>
     </message>
     <message>
-        <location filename="../data_export/dlsg.py" line="244"/>
-        <source>Account country is not set for asset, dividend isn&apos;t include in 3-NDFL </source>
-        <translation>Страна ЦБ не задана, дивиденд не будет включён в декларацию 3-НФДЛ </translation>
+        <location filename="../data_export/dlsg.py" line="246"/>
+        <source>Account country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
+        <translation>Страна счёта не указана для ЦБ, дивиденд не экспортирован в 3-НДФЛ </translation>
+    </message>
+    <message>
+        <location filename="../data_export/dlsg.py" line="252"/>
+        <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
+        <translation>Страна не указана для ЦБ, дивиденд не экспортирован в 3-НДФЛ </translation>
     </message>
 </context>
 <context>
@@ -1139,42 +1144,42 @@
 <context>
     <name>DepositsListModel</name>
     <message>
-        <location filename="../reports/term_deposits.py" line="18"/>
+        <location filename="../reports/term_deposits.py" line="19"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../reports/term_deposits.py" line="18"/>
+        <location filename="../reports/term_deposits.py" line="19"/>
         <source>Start Date</source>
         <translation>Дата открытия</translation>
     </message>
     <message>
-        <location filename="../reports/term_deposits.py" line="18"/>
+        <location filename="../reports/term_deposits.py" line="19"/>
         <source>End Date</source>
         <translation>Дата закрытия</translation>
     </message>
     <message>
-        <location filename="../reports/term_deposits.py" line="18"/>
+        <location filename="../reports/term_deposits.py" line="19"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../reports/term_deposits.py" line="19"/>
+        <location filename="../reports/term_deposits.py" line="20"/>
         <source>Initial amount</source>
         <translation>Начальный вклад</translation>
     </message>
     <message>
-        <location filename="../reports/term_deposits.py" line="19"/>
+        <location filename="../reports/term_deposits.py" line="20"/>
         <source>Accrued Interest</source>
         <translation>Накопленные проценты</translation>
     </message>
     <message>
-        <location filename="../reports/term_deposits.py" line="20"/>
+        <location filename="../reports/term_deposits.py" line="21"/>
         <source>Planned End Value</source>
         <translation>Плановая сумма</translation>
     </message>
     <message>
-        <location filename="../reports/term_deposits.py" line="69"/>
+        <location filename="../reports/term_deposits.py" line="70"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -1223,82 +1228,87 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="108"/>
+        <location filename="../db/holdings_model.py" line="109"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="109"/>
+        <location filename="../db/holdings_model.py" line="110"/>
         <source>Since</source>
         <translation>С</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="110"/>
+        <location filename="../db/holdings_model.py" line="111"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="111"/>
+        <location filename="../db/holdings_model.py" line="112"/>
         <source>Last</source>
         <translation>Цена закр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="112"/>
+        <location filename="../db/holdings_model.py" line="113"/>
         <source>Share, %</source>
         <translation>Доля, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="113"/>
+        <location filename="../db/holdings_model.py" line="114"/>
         <source>P/L, %</source>
         <translation>ПиУ, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="114"/>
+        <location filename="../db/holdings_model.py" line="115"/>
         <source>P/L</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="115"/>
+        <location filename="../db/holdings_model.py" line="116"/>
         <source>Paid</source>
         <translation>Выплачено</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="116"/>
+        <location filename="../db/holdings_model.py" line="117"/>
         <source>Value</source>
         <translation>Оценка</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="117"/>
+        <location filename="../db/holdings_model.py" line="118"/>
         <source>Value, </source>
         <translation>Оценка, </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="143"/>
+        <location filename="../db/holdings_model.py" line="144"/>
         <source>Last quote date: </source>
         <translation>Дата последней котировки: </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="243"/>
+        <location filename="../db/holdings_model.py" line="200"/>
+        <source>Open position was expected but not found for (account-asset-date): </source>
+        <translation>Открытая позиция ожидалась, но не была найдена для (счёт-ЦБ-дата): </translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="247"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="271"/>
+        <location filename="../db/holdings_model.py" line="275"/>
         <source>Money</source>
         <translation>Деньги</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="106"/>
+        <location filename="../db/holdings_model.py" line="107"/>
         <source>Currency/Account/Asset</source>
         <translation>Валюта/Счёт/ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="107"/>
+        <location filename="../db/holdings_model.py" line="108"/>
         <source>Asset Name</source>
         <translation>Ценная бумага</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="231"/>
+        <location filename="../db/holdings_model.py" line="235"/>
         <source>Exp:</source>
         <translation>Эксп:</translation>
     </message>
@@ -2218,12 +2228,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="298"/>
+        <location filename="../net/downloader.py" line="297"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="349"/>
+        <location filename="../net/downloader.py" line="348"/>
         <source>Multiple MOEX assets found for: </source>
         <translation>Найдено несколько ЦБ на MOEX для: </translation>
     </message>
@@ -3171,57 +3181,57 @@ Application will be terminated now.</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="123"/>
+        <location filename="../net/downloader.py" line="124"/>
         <source>No rates were downloaded for </source>
         <translation>Не загружены курсы для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="152"/>
+        <location filename="../net/downloader.py" line="153"/>
         <source>No quotes were downloaded for </source>
         <translation>Не загружены котировки для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="179"/>
+        <location filename="../net/downloader.py" line="180"/>
         <source>There are no CBR data for: </source>
         <translation>Нет данных ЦБ РФ для: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="433"/>
+        <location filename="../net/downloader.py" line="430"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="436"/>
+        <location filename="../net/downloader.py" line="433"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="439"/>
+        <location filename="../net/downloader.py" line="436"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="478"/>
+        <location filename="../net/downloader.py" line="474"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="494"/>
+        <location filename="../net/downloader.py" line="489"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation>Не обнаружен пакет pypdf, необходимый для чтения PDF файлов.</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="503"/>
+        <location filename="../net/downloader.py" line="498"/>
         <source>Unexpected number of pages in Victoria Seguros document: </source>
         <translation>Неожиданное количество страниц в документе Victoria Seguros: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="531"/>
+        <location filename="../net/downloader.py" line="526"/>
         <source>Can&apos;t parse date from Victoria Seguros file</source>
         <translation>Невозможно получить дату из файла Victoria Seguros</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="546"/>
+        <location filename="../net/downloader.py" line="541"/>
         <source>Can&apos;t find quote for Victoria Seguros fund: </source>
         <translation>Не удалось найти котировку для фонда Victoria Seguros: </translation>
     </message>
@@ -3229,7 +3239,7 @@ Application will be terminated now.</source>
 <context>
     <name>QuotesListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="462"/>
+        <location filename="../widgets/reference_dialogs.py" line="465"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
@@ -5516,7 +5526,7 @@ Please select an account for import:</source>
 <context>
     <name>TermDepositsReport</name>
     <message>
-        <location filename="../reports/term_deposits.py" line="123"/>
+        <location filename="../reports/term_deposits.py" line="124"/>
         <source>Term deposits</source>
         <translation>Срочные вклады</translation>
     </message>
@@ -5542,7 +5552,7 @@ Please select an account for import:</source>
 <context>
     <name>TermDepositsReportWindow</name>
     <message>
-        <location filename="../reports/term_deposits.py" line="134"/>
+        <location filename="../reports/term_deposits.py" line="135"/>
         <source>Term deposits</source>
         <translation>Срочные вклады</translation>
     </message>
