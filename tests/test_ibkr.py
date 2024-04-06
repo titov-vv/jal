@@ -215,3 +215,13 @@ def test_ibkr_dividends(tmp_path, project_root, data_path, prepare_db_taxes):
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr_dividends.xml')
     assert IBKR._data == statement
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_corp_actions(tmp_path, project_root, data_path, prepare_db_taxes):
+    with open(data_path + 'ibkr_corp_actions.json', 'r', encoding='utf-8') as json_file:
+        statement = json.load(json_file)
+
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_corp_actions.xml')
+    assert IBKR._data == statement

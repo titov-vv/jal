@@ -419,7 +419,7 @@ class QuoteDownloader(QObject):
 
     # noinspection PyMethodMayBeStatic
     def Euronext_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
-        params = {'format': 'csv', 'decimal_separator': '.', 'date_form': 'd/m/Y', 'op': '', 'adjusted': '',
+        params = {'format': 'csv', 'decimal_separator': '.', 'date_form': 'd/m/Y', 'op': '', 'adjusted': 'N',
                   'base100': '', 'startdate': datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d'),
                   'enddate': datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')}
         suffix = "ETFP" if asset.type() == PredefinedAsset.ETF else "XPAR"  # Dates don't work for ETFP due to glitch on their site
@@ -441,6 +441,8 @@ class QuoteDownloader(QObject):
         except ParserError:
             return None
         data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
+        data = data[data.Date >= datetime.utcfromtimestamp(start_timestamp)]   # There is a bug on Euronext side - it returns full set regardless of date
+        data = data[data.Date <= datetime.utcfromtimestamp(end_timestamp)]
         data['Close'] = data['Close'].apply(Decimal)
         data = data.drop(columns=['Open', 'High', 'Low', 'Last', 'Number of Shares', 'Number of Trades', 'Turnover', 'vwap'],
                          errors='ignore')  # Ignore errors as some columns might be missing

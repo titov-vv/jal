@@ -611,7 +611,9 @@ class StatementIBKR(StatementXML):
         paired_record = list(filter(
             lambda pair: pair['asset'] == asset
                          and (pair['description'].startswith(description + ", ")
-                              or pair['description'].startswith(description + ".OLD, "))
+                              or pair['description'].startswith(description + ".OLD, ")
+                              or pair['description'].startswith(description + "D, ")
+                              or pair['description'].startswith(description + "D.OLD, "))
                          and pair['type'] == action['type']
                          and pair['timestamp'] == action['timestamp'], parts_b))
         if len(paired_record) != 1:
