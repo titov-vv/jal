@@ -43,6 +43,7 @@ class FOF:
     ASSET_RIGHTS = "right"
     ASSET_CRYPTO = "crypto"
     ASSET_CFD = "cfd"
+    ASSET_MLP = "mlp"
 
     ACTION_MERGER = "merger"
     ACTION_SPLIT = "split"

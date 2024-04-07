@@ -43,7 +43,8 @@ class IBKR_AssetType:
         'FUT': FOF.ASSET_FUTURES,
         'WAR': FOF.ASSET_WARRANT,
         'RIGHT': FOF.ASSET_RIGHTS,
-        'CFD': FOF.ASSET_CFD
+        'CFD': FOF.ASSET_CFD,
+        'MLP': FOF.ASSET_MLP
     }
 
     def __init__(self, asset_type, subtype):
@@ -982,7 +983,26 @@ class StatementIBKR(StatementXML):
             part['amount'] = sum(tax['amount'] for tax in group_list)  # and update quantity in it
             lieu_aggregated.append(part)
         taxes_aggregated = sorted(other_taxes + lieu_aggregated, key=key_func)
-        return taxes_aggregated
+
+        # There might be additional record to withhold 10% of extra tax on partnerships (currently faced for MLP) reported in different dates
+        key_func = lambda x: (x['account'], x['asset'], x['currency'], x['description'], x['timestamp'])
+        mlp_taxes = [x for x in taxes_aggregated if self._find_in_list(self._data[FOF.ASSETS], 'id', x['asset'])['type'] == FOF.ASSET_MLP]
+        non_mlp_taxes = [x for x in taxes_aggregated if x not in mlp_taxes]
+        mlp_processed  = []
+        for k, group in groupby(mlp_taxes, key=key_func):
+            group_list = sorted(list(group), key=lambda x: (x['amount']))  # sort to have higher tax first
+            if len(group_list) > 2:
+                raise Statement_ImportError(self.tr("Too many records for MLP tax: ") + f"{group_list}")
+            if len(group_list) == 2:  # 1st line is expected to be a base tax and 2nd line seems to be additional 10%
+                tax = group_list[1]   # Store 2nd line as separate asset payment record
+                tax['id'] = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+                tax['type'] = FOF.PAYMENT_FEE
+                tax['description'] += " - Extra 10% tax due to IRS section 1446"
+                self.drop_extra_fields(tax, ["source", "currency", "reported"])
+                self._data[FOF.ASSET_PAYMENTS].append(tax)
+            mlp_processed.append(group_list[0])  # Keep only base tax
+        taxes_processed = sorted(non_mlp_taxes + mlp_processed, key=key_func)
+        return taxes_processed
 
     def load_taxes(self, taxes):
         cnt = 0
