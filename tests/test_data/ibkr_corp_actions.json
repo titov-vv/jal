@@ -5,16 +5,19 @@
   "assets": [
     {"id": 1, "type": "money", "name": ""},
     {"id": 2, "type": "stock", "name": "TWO HANDS CORP", "isin": "US90187E5015"},
-    {"id": 3, "type": "stock", "name": "TWO HANDS CORP", "isin": "US90187E4026"}
+    {"id": 3, "type": "stock", "name": "TWO HANDS CORP", "isin": "US90187E4026"},
+    {"id": 4, "type": "bond", "name": "B 01/25/24", "isin": "US912796ZY88"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "USD"},
     {"id": 2, "asset": 2, "symbol": "TWOHD", "currency": 1, "note": "PINK"},
-    {"id": 3, "asset": 3, "symbol": "TWOHD", "currency": 1, "note": "PINK"}
+    {"id": 3, "asset": 3, "symbol": "TWOHD", "currency": 1, "note": "PINK"},
+    {"id": 4, "asset": 4, "symbol": "912796ZY8", "currency": 1}
   ],
   "assets_data": [
     {"id": 1, "asset": 2, "reg_number": "90187E501"},
-    {"id": 2, "asset": 3, "reg_number": "90187E402"}
+    {"id": 2, "asset": 3, "reg_number": "90187E402"},
+    {"id": 3, "asset": 4, "expiry": 1706140800, "reg_number": "912796ZY8"}
   ],
   "asset_payments": [],
   "corporate_actions": [

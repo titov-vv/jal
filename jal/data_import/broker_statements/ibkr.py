@@ -39,6 +39,7 @@ class IBKR_AssetType:
         'ETF': FOF.ASSET_ETF,
         'ADR': FOF.ASSET_ADR,
         'BOND': FOF.ASSET_BOND,
+        'BILL': FOF.ASSET_BOND,
         'OPT': FOF.ASSET_OPTION,
         'FUT': FOF.ASSET_FUTURES,
         'WAR': FOF.ASSET_WARRANT,
