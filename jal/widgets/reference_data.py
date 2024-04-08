@@ -78,7 +78,7 @@ class ReferenceDataDialog(QDialog):
         self.setFilter()
         self.setWindowTitle(self.dialog_window_name)
         self.restoreGeometry(base64.decodebytes(JalSettings().getValue('DlgGeometry_' + self.dialog_window_name, '').encode('utf-8')))
-        self._view_header.restoreState(base64.decodebytes(JalSettings().getValue('ViewState_' + self.dialog_window_name, '').encode('utf-8')))
+        self._view_header.restoreState(base64.decodebytes(JalSettings().getValue('DlgViewState_' + self.dialog_window_name, '').encode('utf-8')))
 
     def onDataViewContextMenu(self, pos):
         contextMenu = QMenu(self._view)
@@ -95,7 +95,7 @@ class ReferenceDataDialog(QDialog):
     @Slot()
     def closeEvent(self, event):
         JalSettings().setValue('DlgGeometry_' + self.dialog_window_name, base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
-        JalSettings().setValue('ViewState_' + self.dialog_window_name, base64.encodebytes(self._view_header.saveState().data()).decode('utf-8'))
+        JalSettings().setValue('DlgViewState_' + self.dialog_window_name, base64.encodebytes(self._view_header.saveState().data()).decode('utf-8'))
         if self.ui.CommitBtn.isEnabled():    # There are uncommitted changed in a table
             if QMessageBox().warning(self, self.tr("Confirmation"),
                                      self.tr("You have uncommitted changes. Do you want to close?"),
