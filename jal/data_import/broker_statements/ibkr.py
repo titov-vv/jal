@@ -43,7 +43,8 @@ class IBKR_AssetType:
         'FUT': FOF.ASSET_FUTURES,
         'WAR': FOF.ASSET_WARRANT,
         'RIGHT': FOF.ASSET_RIGHTS,
-        'CFD': FOF.ASSET_CFD
+        'CFD': FOF.ASSET_CFD,
+        'MLP': FOF.ASSET_MLP
     }
 
     def __init__(self, asset_type, subtype):
@@ -283,11 +284,13 @@ class StatementIBKR(StatementXML):
                                      ('account', 'account2', IBKR_Account, 0),
                                      ('dateTime', 'timestamp', datetime, None),
                                      ('quantity', 'quantity', float, None),
-                                     ('type', 'description', str, None),
+                                     ('cashTransfer', 'amount', float, None),
+                                     ('type', 'type', str, None),
+                                     ('description', 'description', str, None),
                                      ('direction', 'direction', str, None),
                                      ('company', 'company', str, None),
                                      ('transactionID', 'number', str, '')],
-                          'loader': self.load_asset_transfers}
+                          'loader': self.load_transfers}
         }
 
     @staticmethod
@@ -365,6 +368,10 @@ class StatementIBKR(StatementXML):
         if xml_element.tag == 'Trade' and asset_category == FOF.ASSET_MONEY:
             currency = xml_element.attrib[attr_name].split('.')
             asset_id = [self.currency_id(code) for code in currency]
+            if not asset_id:
+                return default_value
+        elif xml_element.tag == 'Transfer' and asset_category == FOF.ASSET_MONEY:
+            asset_id = self.currency_id(xml_element.attrib['currency'])
             if not asset_id:
                 return default_value
         else:
@@ -477,7 +484,7 @@ class StatementIBKR(StatementXML):
         trades_loaded = self.load_trades(trades)
 
         transfers = [transfer for transfer in ib_trades if type(transfer['asset']) == list]
-        transfers_loaded = self.load_transfers(transfers)
+        transfers_loaded = self.load_cash_deposits_withdrawals(transfers)
 
         logging.info(self.tr("Trades loaded: ") + f"{trades_loaded + transfers_loaded} ({len(ib_trades)})")
 
@@ -501,7 +508,7 @@ class StatementIBKR(StatementXML):
             cnt += 1
         return cnt
 
-    def load_transfers(self, transfers):
+    def load_cash_deposits_withdrawals(self, transfers):
         transfer_base = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
         cnt = 0
         for i, transfer in enumerate(sorted(transfers, key=lambda x: x['timestamp'])):
@@ -519,19 +526,29 @@ class StatementIBKR(StatementXML):
             cnt += 1
         return cnt
 
-    def load_asset_transfers(self, transfers):
+    def load_transfers(self, transfers):
         transfer_base = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
         cnt = 0
         for i, transfer in enumerate(transfers):
             transfer['id'] = transfer_base + i
-            if transfer['direction'] != "IN":
-                raise Statement_ImportError(self.tr("Outgoing asset transfer not implemented yet"))
-            transfer['account'] = [transfer['account2'], transfer['account'], 0]
-            transfer['asset'] = [transfer['asset'], transfer['asset']]
-            transfer['withdrawal'] = transfer['deposit'] = transfer.pop('quantity')
-            transfer['description'] = transfer['description'] + f" TRANSFER ({transfer.pop('company')})"
-            transfer['fee'] = 0.0
-            self.drop_extra_fields(transfer, ["direction", "account2"])
+            if self._find_in_list(self._data[FOF.ASSETS], 'id', transfer['asset'])['type'] == FOF.ASSET_MONEY:
+                if transfer['direction'] != "OUT":
+                    raise Statement_ImportError(self.tr("Incoming money transfer not implemented yet"))
+                transfer['account'] = [transfer['account'], transfer.pop('account2'), 0]
+                transfer['asset'] = [transfer['asset'], transfer['asset']]
+                transfer['withdrawal'] = transfer['deposit'] = -transfer.pop('amount')
+                transfer['description'] = transfer.pop('type') + ' ' + transfer['description']
+                transfer['fee'] = 0.0
+                self.drop_extra_fields(transfer, ["direction", "amount", "company", "quantity"])
+            else:
+                if transfer['direction'] != "IN":
+                    raise Statement_ImportError(self.tr("Outgoing asset transfer not implemented yet"))
+                transfer['account'] = [transfer.pop('account2'), transfer['account'], 0]
+                transfer['asset'] = [transfer['asset'], transfer['asset']]
+                transfer['withdrawal'] = transfer['deposit'] = transfer.pop('quantity')
+                transfer['description'] = transfer.pop('type') + f" TRANSFER ({transfer.pop('company')})"
+                transfer['fee'] = 0.0
+                self.drop_extra_fields(transfer, ["direction", "amount"])
             self._data[FOF.TRANSFERS].append(transfer)
             cnt += 1
         return cnt
@@ -747,7 +764,7 @@ class StatementIBKR(StatementXML):
             raise Statement_ImportError(self.tr("Can't parse Symbol Change description ") + f"'{action}'")
         isin_change = parts.groupdict()
         if len(isin_change) != SymbolChangePattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(self.tr("Spin-off description miss some data ") + f"'{action}'")
+            raise Statement_ImportError(self.tr("Symbol Change description miss some data ") + f"'{action}'")
         description_b = action['description'][:parts.span('symbol')[0]] + isin_change['symbol_old']
         asset_b = self.locate_asset(isin_change['symbol_old'], isin_change['isin_old'])
         paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
@@ -982,7 +999,26 @@ class StatementIBKR(StatementXML):
             part['amount'] = sum(tax['amount'] for tax in group_list)  # and update quantity in it
             lieu_aggregated.append(part)
         taxes_aggregated = sorted(other_taxes + lieu_aggregated, key=key_func)
-        return taxes_aggregated
+
+        # There might be additional record to withhold 10% of extra tax on partnerships (currently faced for MLP) reported in different dates
+        key_func = lambda x: (x['account'], x['asset'], x['currency'], x['description'], x['timestamp'])
+        mlp_taxes = [x for x in taxes_aggregated if self._find_in_list(self._data[FOF.ASSETS], 'id', x['asset'])['type'] == FOF.ASSET_MLP]
+        non_mlp_taxes = [x for x in taxes_aggregated if x not in mlp_taxes]
+        mlp_processed  = []
+        for k, group in groupby(mlp_taxes, key=key_func):
+            group_list = sorted(list(group), key=lambda x: (x['amount']))  # sort to have higher tax first
+            if len(group_list) > 2:
+                raise Statement_ImportError(self.tr("Too many records for MLP tax: ") + f"{group_list}")
+            if len(group_list) == 2:  # 1st line is expected to be a base tax and 2nd line seems to be additional 10%
+                tax = group_list[1]   # Store 2nd line as separate asset payment record
+                tax['id'] = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+                tax['type'] = FOF.PAYMENT_FEE
+                tax['description'] += " - Extra 10% tax due to IRS section 1446"
+                self.drop_extra_fields(tax, ["source", "currency", "reported"])
+                self._data[FOF.ASSET_PAYMENTS].append(tax)
+            mlp_processed.append(group_list[0])  # Keep only base tax
+        taxes_processed = sorted(non_mlp_taxes + mlp_processed, key=key_func)
+        return taxes_processed
 
     def load_taxes(self, taxes):
         cnt = 0

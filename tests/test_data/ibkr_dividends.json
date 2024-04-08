@@ -7,17 +7,20 @@
     {"id": 1, "name": "", "type": "money"},
     {"id": 2, "type": "stock", "name": "BROOKFIELD RENEWABLE PARTNER", "isin": "BMG162581083", "country": "ca"},
     {"id": 3, "type": "adr", "name": "TELEFONICA SA-SPON ADR", "isin": "US8793822086", "country": "es"},
-    {"id": 4, "type": "stock", "name": "OWL ROCK CAPITAL CORP", "isin": "US69121K1043", "country": "us"}
+    {"id": 4, "type": "stock", "name": "OWL ROCK CAPITAL CORP", "isin": "US69121K1043", "country": "us"},
+    {"id": 5, "type": "mlp", "name": "USA COMPRESSION PARTNERS LP", "isin": "US90290N1090", "country": "us"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "USD"},
     {"id": 2, "asset": 2, "symbol": "BEP", "currency": 1, "note": "NYSE"},
     {"id": 3, "asset": 3, "symbol": "TEF", "currency": 1, "note": "NYSE"},
-    {"id": 4, "asset": 4, "symbol": "ORCC", "currency": 1, "note": "NYSE"}
+    {"id": 4, "asset": 4, "symbol": "ORCC", "currency": 1, "note": "NYSE"},
+    {"id": 5, "asset": 5, "symbol": "USAC", "currency": 1, "note": "NYSE"}
   ],
   "assets_data": [
     {"id": 1, "asset": 3, "reg_number": "879382208"},
-    {"id": 2, "asset": 4, "reg_number": "69121K104"}
+    {"id": 2, "asset": 4, "reg_number": "69121K104"},
+    {"id": 3, "asset": 5, "reg_number": "90290N109"}
   ],
   "asset_payments": [
     {"id": 1, "type": "stock_dividend", "account": 1, "timestamp": 1595017200, "number": "13259965038", "asset": 3, "amount": 3.0, "price": "4.73", "tax": 0, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000"},
@@ -35,7 +38,11 @@
     {"id": 13, "type": "dividend", "account": 1, "timestamp": 1621023600, "number": "", "asset": 4, "amount": 20.46, "tax": 2.05, "description": "ORCC(US69121K1043) CASH DIVIDEND USD 0.31 PER SHARE (Ordinary Dividend)"},
     {"id": 14, "type": "dividend", "account": 1, "timestamp": 1628886000, "number": "", "asset": 4, "amount": 31.0, "tax": 3.1, "description": "ORCC(US69121K1043) CASH DIVIDEND USD 0.31 PER SHARE (Ordinary Dividend)"},
     {"id": 15, "type": "dividend", "account": 1, "timestamp": 1611087600, "number": "", "asset": 4, "amount": 38.61, "tax": 3.58, "description": "ORCC(US69121K1043) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"},
-    {"id": 16, "type": "dividend", "account": 1, "timestamp": 1621023600, "number": "", "asset": 4, "amount": 10.54, "tax": 1.05,"description": "ORCC(US69121K1043) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"}
+    {"id": 16, "type": "dividend", "account": 1, "timestamp": 1621023600, "number": "", "asset": 4, "amount": 10.54, "tax": 1.05,"description": "ORCC(US69121K1043) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"},
+    {"id": 17, "type": "dividend", "account": 1, "timestamp": 1675455600, "number": "", "asset": 5, "amount": 5.25, "tax": 1.94, "description": "USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE (Ordinary Dividend)"},
+    {"id": 18, "type": "dividend", "account": 1, "timestamp": 1683318000, "number": "", "asset": 5, "amount": 5.25, "tax": 1.94, "description": "USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE (Ordinary Dividend)"},
+    {"id": 19, "type": "fee", "account": 1, "timestamp": 1675455600, "number": "", "asset": 5, "amount": -0.53, "description": "USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE - US TAX - Extra 10% tax due to IRS section 1446"},
+    {"id": 20, "type": "fee", "account": 1, "timestamp": 1683318000, "number": "", "asset": 5, "amount": -0.53, "description": "USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE - US TAX - Extra 10% tax due to IRS section 1446"}
   ],
  "corporate_actions": [],
  "income_spending": [
