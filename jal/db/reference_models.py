@@ -163,7 +163,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
     # returns group id for given item
     def getGroupId(self, item_id: int) -> int:
         group_id = self._read(f"SELECT {self._group_by} FROM {self._table} WHERE id=:id", [(":id", item_id)])
-        group_id = 0 if group_id is None else group_id
+        group_id = 0 if not group_id or group_id is None else group_id
         return group_id
 
 
