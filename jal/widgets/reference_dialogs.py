@@ -76,7 +76,7 @@ class AccountListModel(AbstractReferenceListModel):
 
 class AccountListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, window_title=self.tr("Accounts"))
         self.table = "accounts"
         self.model = AccountListModel(table=self.table, parent_view=self.ui.DataView)
         self.ui.DataView.setModel(self.model)
@@ -86,7 +86,6 @@ class AccountListDialog(ReferenceDataDialog):
 
     def setup_ui(self):
         self.search_field = "accounts.name"
-        self.setWindowTitle(self.tr("Accounts"))
         self.ui.SearchFrame.setVisible(True)
         self.ui.Toggle.setVisible(True)
         self.toggle_field = "active"
@@ -147,7 +146,7 @@ class AssetListModel(AbstractReferenceListModel):
 
 class AssetListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, window_title=self.tr("Assets"))
         self.table = "assets_ext"
         self.model = AssetListModel(self.table, self.ui.DataView)
         self.ui.DataView.setModel(self.model)
@@ -157,7 +156,6 @@ class AssetListDialog(ReferenceDataDialog):
 
     def setup_ui(self):
         self.search_field = "assets_ext.full_name"
-        self.setWindowTitle(self.tr("Assets"))
         self.ui.SearchFrame.setVisible(True)
         self.ui.Toggle.setVisible(False)
 
@@ -217,7 +215,7 @@ class PeerTreeModel(SqlTreeModel):
 
 class PeerListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, window_title=self.tr("Peers"))
         self.table = "agents"
         self.model = PeerTreeModel(self.table, self.ui.TreeView)
         self.ui.TreeView.setModel(self.model)
@@ -236,7 +234,6 @@ class PeerListDialog(ReferenceDataDialog):
         self.tree_view = True
         self.ui.AddChildBtn.setVisible(True)
         self.ui.SearchFrame.setVisible(True)
-        self.setWindowTitle(self.tr("Peers"))
         self.ui.Toggle.setVisible(False)
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
@@ -291,7 +288,7 @@ class CategoryTreeModel(SqlTreeModel):
 
 class CategoryListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, window_title=self.tr("Categories"))
         self.table = "categories"
         self.model = CategoryTreeModel(self.table, self.ui.TreeView)
         self.ui.TreeView.setModel(self.model)
@@ -310,7 +307,6 @@ class CategoryListDialog(ReferenceDataDialog):
         self.tree_view = True
         self.ui.AddChildBtn.setVisible(True)
         self.ui.SearchFrame.setVisible(True)
-        self.setWindowTitle(self.tr("Categories"))
         self.ui.Toggle.setVisible(False)
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
@@ -364,7 +360,7 @@ class TagTreeModel(SqlTreeModel):
 
 class TagsListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent, window_title=self.tr("Tags"))
         self.table = "tags"
         self.model = TagTreeModel(self.table, self.ui.TreeView)
         self.ui.TreeView.setModel(self.model)
@@ -383,7 +379,6 @@ class TagsListDialog(ReferenceDataDialog):
         self.tree_view = True
         self.ui.AddChildBtn.setVisible(True)
         self.ui.SearchFrame.setVisible(True)
-        self.setWindowTitle(self.tr("Tags"))
         self.ui.Toggle.setVisible(False)
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
@@ -451,7 +446,7 @@ class QuotesListModel(AbstractReferenceListModel):
 
 class QuotesListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent, window_title=self.tr("Quotes"))
         self.table = "quotes"
         self.model = QuotesListModel(self.table, self.ui.DataView)
         self.ui.DataView.setModel(self.model)
@@ -462,7 +457,6 @@ class QuotesListDialog(ReferenceDataDialog):
     def setup_ui(self):
         self.search_field = "asset_id-assets_ext-id-symbol"
         self.ui.SearchFrame.setVisible(True)
-        self.setWindowTitle(self.tr("Quotes"))
         self.ui.Toggle.setVisible(False)
 
 
@@ -494,7 +488,7 @@ class BaseCurrencyListModel(AbstractReferenceListModel):
 
 class BaseCurrencyDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
-        super().__init__(None)
+        super().__init__(None, window_title=self.tr("Base currency"))
         self.table = "base_currency"
         self.model = BaseCurrencyListModel(self.table, self.ui.DataView)
         self.ui.DataView.setModel(self.model)
@@ -503,7 +497,6 @@ class BaseCurrencyDialog(ReferenceDataDialog):
         super()._init_completed()
 
     def setup_ui(self):
-        self.setWindowTitle(self.tr("Base currency"))
         self.ui.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------

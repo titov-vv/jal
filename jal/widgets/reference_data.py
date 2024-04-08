@@ -1,7 +1,9 @@
+import base64
 from PySide6.QtCore import Qt, Signal, Property, Slot
 from PySide6.QtWidgets import QDialog, QMessageBox, QMenu
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.icons import JalIcon
+from jal.db.settings import JalSettings
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -9,15 +11,17 @@ from jal.widgets.icons import JalIcon
 # --------------------------------------------------------------------------------------------------------------
 class ReferenceDataDialog(QDialog):
     # tree_view - table will be displayed as hierarchical tree with help of 2 columns: 'id', 'pid' in sql table
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, window_title=''):
         super().__init__(parent)
         self.ui = Ui_ReferenceDataDialog()
         self.ui.setupUi(self)
         self._parent = parent
         self.model = None
         self._view = None
+        self._view_header = None
         self._previous_row = -1
         self.selected_id = 0
+        self.dialog_window_name = window_title
         self.p_selected_name = ''
         self._filter_text = ''
         self.selection_enabled = False
@@ -61,12 +65,20 @@ class ReferenceDataDialog(QDialog):
     def _init_completed(self):
         self.ui.DataView.setVisible(not self.tree_view)
         self.ui.TreeView.setVisible(self.tree_view)
-        self._view = self.ui.TreeView if self.tree_view else self.ui.DataView
+        if self.tree_view:
+            self._view = self.ui.TreeView
+            self._view_header = self._view.header()
+        else:
+            self._view = self.ui.DataView
+            self._view_header = self._view.horizontalHeader()
         self._view.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self._view.setContextMenuPolicy(Qt.CustomContextMenu)
         self._view.customContextMenuRequested.connect(self.onDataViewContextMenu)
         self.model.dataChanged.connect(self.OnDataChanged)
         self.setFilter()
+        self.setWindowTitle(self.dialog_window_name)
+        self.restoreGeometry(base64.decodebytes(JalSettings().getValue('DlgGeometry_' + self.dialog_window_name, '').encode('utf-8')))
+        self._view_header.restoreState(base64.decodebytes(JalSettings().getValue('ViewState_' + self.dialog_window_name, '').encode('utf-8')))
 
     def onDataViewContextMenu(self, pos):
         contextMenu = QMenu(self._view)
@@ -82,6 +94,8 @@ class ReferenceDataDialog(QDialog):
 
     @Slot()
     def closeEvent(self, event):
+        JalSettings().setValue('DlgGeometry_' + self.dialog_window_name, base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
+        JalSettings().setValue('ViewState_' + self.dialog_window_name, base64.encodebytes(self._view_header.saveState().data()).decode('utf-8'))
         if self.ui.CommitBtn.isEnabled():    # There are uncommitted changed in a table
             if QMessageBox().warning(self, self.tr("Confirmation"),
                                      self.tr("You have uncommitted changes. Do you want to close?"),
