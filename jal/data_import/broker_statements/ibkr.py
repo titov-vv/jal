@@ -66,7 +66,7 @@ class IBKR_AssetType:
 class IBKR_CorpActionType:
     NotSupported = -1
     _corporate_action_types = {
-        'BM': FOF.ACTION_BOND_MATURITY,    # No separate value as will be converted to ordinary bond sell operation
+        'BM': FOF.ACTION_BOND_MATURITY,    # Bond maturity (will be converted to bond sell operation)
         'DW': FOF.ACTION_DELISTING,        # Delisting with loss of value
         'FS': FOF.ACTION_SPLIT,            # Forward split
         'HI': FOF.PAYMENT_STOCK_DIVIDEND,  # Choice dividend
@@ -76,6 +76,7 @@ class IBKR_CorpActionType:
         'SO': FOF.ACTION_SPINOFF,          # Spin-off of new company
         'SD': FOF.PAYMENT_STOCK_DIVIDEND,  # Dividend paid in stocks
         'TC': FOF.ACTION_MERGER,           # Conversion of one stock into another
+        'TM': FOF.ACTION_BOND_MATURITY,    # T-Bill maturity (will be converted to bond sell operation)
         'TO': FOF.ACTION_MERGER            # Voluntary conversion of one asset into another
     }
 

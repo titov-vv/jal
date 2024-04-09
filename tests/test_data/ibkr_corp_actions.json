@@ -25,6 +25,8 @@
      "outcome": [{"asset": 2, "quantity": 0.035, "share": 1.0}], "description": "TWOH(US90187E4026) SPLIT 1 FOR 1000 (TWOHD, TWO HANDS CORP, US90187E5015)"}
   ],
  "income_spending": [],
-  "trades": [],
-  "transfers": []
+ "trades": [
+   {"id": 1, "number": "26300000000", "timestamp": 1706127900, "settlement": 1706127900, "account": 1, "asset": 4, "quantity": -5.0, "price": 1000.0, "fee": 0.0, "note": "(US912796ZY88) TBILL MATURITY (912796ZY8, B 01/25/24, US912796ZY88)"}
+ ],
+ "transfers": []
 }
