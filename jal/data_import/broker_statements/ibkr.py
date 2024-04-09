@@ -473,8 +473,8 @@ class StatementIBKR(StatementXML):
                 asset['expiry'] = asset['maturity']
             if asset['expiry'] == 0:
                 asset.pop('expiry')
-            if asset['principal']:
-                asset['principal'] = int(asset['principal']) * IBKR_Asset.BondPrincipal
+            if asset['type'] == FOF.ASSET_BOND:
+                asset['principal'] = int(asset['principal']) * IBKR_Asset.BondPrincipal if asset['principal'] else IBKR_Asset.BondPrincipal
             asset.pop('maturity')
             asset.pop('exchange')
             self.asset_id(asset)

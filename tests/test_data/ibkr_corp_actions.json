@@ -17,7 +17,7 @@
   "assets_data": [
     {"id": 1, "asset": 2, "reg_number": "90187E501"},
     {"id": 2, "asset": 3, "reg_number": "90187E402"},
-    {"id": 3, "asset": 4, "expiry": 1706140800, "reg_number": "912796ZY8"}
+    {"id": 3, "asset": 4, "principal": 1000, "expiry": 1706140800, "reg_number": "912796ZY8"}
   ],
   "asset_payments": [],
   "corporate_actions": [
