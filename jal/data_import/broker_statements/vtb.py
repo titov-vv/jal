@@ -9,7 +9,8 @@ JAL_STATEMENT_CLASS = "StatementVTB"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementVTB(StatementXLS):
-    PeriodPattern = (7, 1, r"Отчет Банка ВТБ \(ПАО\) за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d) о сделках, .*")
+    # VTB changed header placment and it may be shifted left or right
+    PeriodPattern = ([5, 7], 1, r"Отчет Банка ВТБ \(ПАО\) за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d) о сделках, .*")
     AccountPattern = (9, 7, None)
     HeaderCol = 1
     money_section = "Отчет об остатках денежных средств"
