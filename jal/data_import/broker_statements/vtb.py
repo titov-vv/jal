@@ -13,12 +13,12 @@ class StatementVTB(StatementXLS):
     PeriodPattern = ([5, 7], 1, r"Отчет Банка ВТБ \(ПАО\) за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d) о сделках, .*")
     AccountPattern = (9, 7, None)
     HeaderCol = 1
-    money_section = "Отчет об остатках денежных средств"
+    money_section = "^Отчет об остатках денежных средств"
     money_columns = {
         "name": "Валюта",
         "cash_end": "Плановый",
     }
-    asset_section = "Отчет об остатках ценных бумаг"
+    asset_section = "^Отчет об остатках ценных бумаг"
     asset_columns = {
         "name": "Наименование ценной бумаги, \n№ гос. регистрации, ISIN",
         "currency": "Валюта цены \n\(номинала для облигаций\)"
@@ -110,7 +110,7 @@ class StatementVTB(StatementXLS):
             "fee1": "Комиссия Банка за расчет по сделке",
             "fee2": "Комиссия Банка за заключение сделки"
         }
-        row, headers = self.find_section_start("Заключенные в отчетном периоде сделки с ценными бумагами", columns)
+        row, headers = self.find_section_start(r"^Заключенные в отчетном периоде сделки с ценными бумагами", columns)
         if row < 0:
             return
         while row < self._statement.shape[0]:
@@ -170,7 +170,7 @@ class StatementVTB(StatementXLS):
             'Сальдо расчётов по сделкам с ценными бумагами': None,  # These operations are results of trades
             'Вознаграждение Брокера': None
         }
-        row, headers = self.find_section_start("Движение денежных средств", columns)
+        row, headers = self.find_section_start("^Движение денежных средств", columns)
         if row < 0:
             return False
         while row < self._statement.shape[0]:
