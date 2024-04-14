@@ -131,13 +131,14 @@ class StatementXLS(Statement):
     def _get_account_number(self):
         if self.AccountPattern[2] is None:
             self._account_number = str(self._statement[self.AccountPattern[0]][self.AccountPattern[1]])
-            return
-        parts = re.match(self.AccountPattern[2],
-                         self._statement[self.AccountPattern[0]][self.AccountPattern[1]], re.IGNORECASE)
-        if parts is None:
-            self._account_number = self._statement[self.AccountPattern[0]][self.AccountPattern[1]]
         else:
-            self._account_number = parts.groupdict()['ACCOUNT']
+            parts = re.match(self.AccountPattern[2], self._statement[self.AccountPattern[0]][self.AccountPattern[1]], re.IGNORECASE)
+            if parts is None:
+                self._account_number = self._statement[self.AccountPattern[0]][self.AccountPattern[1]]
+            else:
+                self._account_number = parts.groupdict()['ACCOUNT']
+        if not self._account_number:
+            raise Statement_ImportError(self.tr("Empty account number"))
 
     def _load_currencies(self):
         amounts = {}
