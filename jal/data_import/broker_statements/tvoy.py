@@ -451,13 +451,10 @@ class StatementTvoyBroker(StatementXLS):
         asset_id = self.asset_id({'symbol': interest_data['NAME'], 'should_exist': True})
         match = [x for x in self.asset_withdrawal if x['asset'] == asset_id and x['timestamp'] == timestamp]
         if not match:
-            logging.error(self.tr("Can't find asset cancellation record for ") + f"'{description}'")
-            return
+            raise Statement_ImportError(self.tr("Can't find asset cancellation record for ") + f"'{description}'")
         if len(match) != 1:
-            logging.error(self.tr("Multiple asset cancellation match for ") + f"'{description}'")
-            return
+            raise Statement_ImportError(self.tr("Multiple asset cancellation match for ") + f"'{description}'")
         asset_cancel = match[0]
-
         qty = asset_cancel['quantity']
         price = abs(amount / qty)   # Price is always positive
         note = description + ", " + asset_cancel['note']
@@ -477,6 +474,9 @@ class StatementTvoyBroker(StatementXLS):
         fee = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
                "lines": [{"amount": amount, "category": -PredefinedCategory.Fees, "description": description}]}
         self._data[FOF.INCOME_SPENDING].append(fee)
+
+    def _load_asset_transactions(self):
+        pass
 
     def _strip_unused_data(self):
         for asset in self._data[FOF.ASSETS]:

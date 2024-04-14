@@ -7,6 +7,8 @@ from jal.data_import.statement import FOF, Statement_ImportError
 
 JAL_STATEMENT_CLASS = "StatementVTB"
 
+MAX_T_DELTA = 3  # Maximum allowed days between bond maturity and money transfer
+
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementVTB(StatementXLS):
     AccountPattern = None  # to be set during validation
@@ -29,6 +31,7 @@ class StatementVTB(StatementXLS):
         self.icon_name = "vtb.ico"
         self.filename_filter = self.tr("VTB statement (*.xls)")
         self.account_end_balance = {}
+        self.asset_withdrawal = []
 
     def _validate(self):
         shift = 0   # Check how header is shifted to the right
@@ -174,6 +177,48 @@ class StatementVTB(StatementXLS):
             row += 1
         logging.info(self.tr("Trades loaded: ") + f"{cnt}")
 
+    def _load_asset_transactions(self):
+        cnt = 0
+        columns = {
+            "asset_name": "Наименование ценной бумаги, № гос. Регистрации, ISIN",
+            "date": "Дата операции",
+            "qty": "Количество \n\(шт\.\)",
+            "type": "Тип операции"
+        }
+        operations = {
+            'Покупка': None,
+            'Продажа': None,
+            'Погашение ЦБ': self.asset_cancellation,
+        }
+        row, headers = self.find_section_start("^Движение ценных бумаг", columns)
+        if row < 0:
+            return False
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row] == '':  # Stop if there are no next date available
+                break
+            operation = self._statement[headers['type']][row]
+            if operation not in operations:
+                raise Statement_ImportError(self.tr("Unsuppported asset transaction ") + f"'{operation}'")
+            asset_name = self._statement[headers['asset_name']][row]   # FIXME the same piece of code is in load_deals
+            assets = [x for x in self._data[FOF.ASSETS] if x.get('broker_name') == asset_name]
+            if len(assets) != 1:
+                raise Statement_ImportError(self.tr("No asset match in asset transactions ") + f"'{asset_name}'")
+            asset_id = assets[0]['id']
+            timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+            try:
+                qty = abs(float(self._statement[headers['qty']][row]))  #
+            except ValueError:
+                raise Statement_ImportError(self.tr("Failed to convert asset amount ") + f"'{self._statement[headers['qty']][row]}'")
+            if operations[operation] is not None:
+                operations[operation](timestamp, asset_id, qty)
+            cnt += 1
+            row += 1
+        logging.info(self.tr("Asset transactions loaded: ") + f"{cnt}")
+
+    def asset_cancellation(self, timestamp, asset_id, qty):
+        # Statement has negative value for cancellation - will be used to create sell trade
+        self.asset_withdrawal.append({"timestamp": timestamp, "asset": asset_id, "quantity": qty})
+
     def _load_cash_transactions(self):
         cnt = 0
         columns = {
@@ -187,6 +232,7 @@ class StatementVTB(StatementXLS):
             'Зачисление денежных средств': self.transfer_in,
             'Списание денежных средств': self.transfer_out,
             'Купонный доход': self.interest,
+            'Погашение ценных бумаг': self.bond_maturity,
             'Сальдо расчётов по сделкам с ценными бумагами': None,  # These operations are results of trades
             'Вознаграждение Брокера': None,
             'Дивиденды': self.dividend
@@ -257,3 +303,24 @@ class StatementVTB(StatementXLS):
         payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
                    "asset": asset_id, "amount": amount, "tax": tax, "description": description}
         self._data[FOF.ASSET_PAYMENTS].append(payment)
+
+    def bond_maturity(self, timestamp, account_id, amount, description):
+        MaturityPattern = r"^Ден\.ср-ва от погаш\. номин\.ст-ти обл\. .* (?P<reg_number>\S*), .* Налог не удерживается\.$"
+        parts = re.match(MaturityPattern, description, re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't parse bond maturity description ") + f"'{description}'")
+        bond_maturity = parts.groupdict()
+        asset_id = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', bond_maturity['reg_number'])['asset']
+        match = [x for x in self.asset_withdrawal if x['asset'] == asset_id and (timestamp - x['timestamp']) <= MAX_T_DELTA*86400]
+        if not match:
+            breakpoint()
+            raise Statement_ImportError(self.tr("Can't find asset cancellation record for ") + f"'{description}'")
+        if len(match) != 1:
+            raise Statement_ImportError(self.tr("Multiple asset cancellation match for ") + f"'{description}'")
+        asset_cancel = match[0]
+        qty = asset_cancel['quantity']  # Expected to be negative
+        price = abs(amount / qty)  # Price is always positive
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+        trade = {"id": new_id, "timestamp": timestamp, "settlement": timestamp, "account": account_id,
+                 "asset": asset_id, "quantity": qty, "price": price, "fee": 0.0, "note": description}
+        self._data[FOF.TRADES].append(trade)

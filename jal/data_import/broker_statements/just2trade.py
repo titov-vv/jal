@@ -197,6 +197,9 @@ class StatementJ2T(StatementXLS):
             row += 1
         logging.info(self.tr("Crypto trades loaded: ") + f"{cnt}")
 
+    def _load_asset_transactions(self):
+        pass
+
     def _load_cash_transactions(self):
         self._load_money_table()
         self._load_fees()

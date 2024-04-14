@@ -122,6 +122,9 @@ class StatementPSB(StatementXLS):
                 row += 1
         logging.info(self.tr("Trades loaded: ") + f"{cnt}")
 
+    def _load_asset_transactions(self):
+        pass
+
     def _load_cash_transactions(self):
         self.load_cash_transactions()
         self.load_coupons()

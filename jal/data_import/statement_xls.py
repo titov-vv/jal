@@ -63,6 +63,7 @@ class StatementXLS(Statement):
         self._load_money()
         self._load_assets()
         self._load_deals()
+        self._load_asset_transactions()
         self._load_cash_transactions()
         self._strip_unused_data()
 
@@ -243,6 +244,9 @@ class StatementXLS(Statement):
         return new_id
 
     def _load_deals(self):
+        raise NotImplementedError("load_deals() method is not defined in subclass of StatementXLS")
+
+    def _load_asset_transactions(self):
         raise NotImplementedError("load_deals() method is not defined in subclass of StatementXLS")
 
     def _load_cash_transactions(self):
