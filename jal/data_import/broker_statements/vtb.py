@@ -9,9 +9,8 @@ JAL_STATEMENT_CLASS = "StatementVTB"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementVTB(StatementXLS):
-    # VTB changed header placment and it may be shifted left or right
-    PeriodPattern = ([5, 7], 1, r"Отчет Банка ВТБ \(ПАО\) за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d) о сделках, .*")
-    AccountPattern = (9, 7, None)
+    AccountPattern = None  # to be set during validation
+    PeriodPattern = None  # to be set during validation
     HeaderCol = 1
     money_section = "^Отчет об остатках денежных средств"
     money_columns = {
@@ -30,6 +29,27 @@ class StatementVTB(StatementXLS):
         self.icon_name = "vtb.ico"
         self.filename_filter = self.tr("VTB statement (*.xls)")
         self.account_end_balance = {}
+
+    def _validate(self):
+        shift = 0   # Check how header is shifted to the right
+        for i in range(self._statement.shape[1]):
+            if self._statement[i][4].startswith("Клиент"):  # Starting cell is found
+                shift = 1
+                continue
+            if self._statement[i][4].startswith("ИНН"):   # Next header reached - something went wrong
+                shift = 0
+                break
+            if not shift:
+                continue
+            if self._statement[i][4]:  # Client name found - we may break here
+                break
+            shift += 1
+        if not shift:
+            raise Statement_ImportError(self.tr("Can't determine VTB statement header format"))
+        shift = shift - 6
+        self.AccountPattern = (7 + shift, 7, None)
+        self.PeriodPattern = (5 + shift, 1, r"Отчет Банка ВТБ \(ПАО\) за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d) о сделках, .*")
+        super()._validate()
 
     def _load_currencies(self):
         cnt = 0
@@ -230,6 +250,7 @@ class StatementVTB(StatementXLS):
         asset_id = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', dividend_data['reg_number'])['asset']
         try:
             tax = float(dividend_data['tax'])
+            amount += tax
         except ValueError:
             raise Statement_ImportError(self.tr("Failed to convert dividend tax ") + f"'{description}'")
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
