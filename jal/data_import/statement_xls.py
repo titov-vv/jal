@@ -117,16 +117,13 @@ class StatementXLS(Statement):
                 self.tr("Can't find expected report header: ") + f"'{self.Header[2]}'")
 
     def _get_statement_period(self):
-        column_list = self.PeriodPattern[0] if type(self.PeriodPattern[0]) == list else [self.PeriodPattern[0]]
-        for column in column_list:
-            parts = re.match(self.PeriodPattern[2], self._statement[column][self.PeriodPattern[1]], re.IGNORECASE)
-            if parts is not None:
-                statement_dates = parts.groupdict()
-                start_day = int(datetime.strptime(statement_dates['S'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-                end_day = int(datetime.strptime(statement_dates['E'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-                self._data[FOF.PERIOD] = [start_day, self._end_of_date(end_day)]
-                return
-        raise Statement_ImportError(self.tr("Can't read report period from XLS statement"))
+        parts = re.match(self.PeriodPattern[2], self._statement[self.PeriodPattern[0]][self.PeriodPattern[1]], re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't read report period"))
+        statement_dates = parts.groupdict()
+        start_day = int(datetime.strptime(statement_dates['S'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+        end_day = int(datetime.strptime(statement_dates['E'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+        self._data[FOF.PERIOD] = [start_day, self._end_of_date(end_day)]
 
     def _get_account_number(self):
         if self.AccountPattern[2] is None:
