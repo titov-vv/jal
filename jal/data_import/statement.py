@@ -638,6 +638,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
                 symbol = {"id": symbol_id, "asset": -db_asset.id(), 'symbol': db_asset.symbol(asset_info['currency']), 'currency': asset_info['currency']}
                 self._data[FOF.SYMBOLS].append(symbol)
+                if 'reg_number' in asset_info:
+                    data_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS_DATA]]) + 1
+                    reg_number = {"id": data_id, "asset": -db_asset.id(), "reg_number": asset_info['reg_number']}
+                    self._data[FOF.ASSETS_DATA].append(reg_number)
                 return asset['id']
         if asset is None and 'search_online' in asset_info:
             if asset_info['search_online'] == "MOEX":
