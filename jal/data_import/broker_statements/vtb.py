@@ -168,7 +168,8 @@ class StatementVTB(StatementXLS):
             'Списание денежных средств': self.transfer_out,
             'Купонный доход': self.interest,
             'Сальдо расчётов по сделкам с ценными бумагами': None,  # These operations are results of trades
-            'Вознаграждение Брокера': None
+            'Вознаграждение Брокера': None,
+            'Дивиденды': self.dividend
         }
         row, headers = self.find_section_start("^Движение денежных средств", columns)
         if row < 0:
@@ -218,4 +219,20 @@ class StatementVTB(StatementXLS):
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                    "asset": asset_id, "amount": amount, "description": description}
+        self._data[FOF.ASSET_PAYMENTS].append(payment)
+
+    def dividend(self, timestamp, account_id, amount, description):
+        DividendPattern = r"^Дивиденды .* (?P<reg_number>\S*), .*. Удержан налог в размере (?P<tax>\d+\.\d\d) руб.$"
+        parts = re.match(DividendPattern, description, re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't parse dividend description ") + f"'{description}'")
+        dividend_data = parts.groupdict()
+        asset_id = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', dividend_data['reg_number'])['asset']
+        try:
+            tax = float(dividend_data['tax'])
+        except ValueError:
+            raise Statement_ImportError(self.tr("Failed to convert dividend tax ") + f"'{description}'")
+        new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
+                   "asset": asset_id, "amount": amount, "tax": tax, "description": description}
         self._data[FOF.ASSET_PAYMENTS].append(payment)
