@@ -235,7 +235,10 @@ class StatementVTB(StatementXLS):
             'Погашение ценных бумаг': self.bond_maturity,
             'Сальдо расчётов по сделкам с ценными бумагами': None,  # These operations are results of trades
             'Вознаграждение Брокера': None,
-            'Дивиденды': self.dividend
+            'Дивиденды': self.dividend,
+            'Сальдо расчётов по сделкам с иностранной валютой': None,  # These operation are results of currency exchange
+            'Перевод денежных средств': None,   # TODO - to be implemented
+            'Вариационная маржа': None
         }
         row, headers = self.find_section_start("^Движение денежных средств", columns)
         if row < 0:

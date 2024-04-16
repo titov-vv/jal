@@ -30,12 +30,13 @@
     {"id": 10, "asset": 9, "symbol": "CHMF", "currency": 1, "note": "MOEX"}
   ],
   "assets_data": [
-    {"id": 1, "asset": 4, "reg_number": "4B020702673B", "principal": 1000.0, "expiry": 1624492800},
-    {"id": 2, "asset": 5, "reg_number": "10401000B", "principal": 0.01},
-    {"id": 3, "asset": 6, "expiry": 1639612800},
-    {"id": 4, "asset": 7, "reg_number": "1-05-08443-H", "principal": 1.0},
-    {"id": 5, "asset": 8, "principal": 0.03},
-    {"id": 6, "asset": 9, "reg_number": "1-02-00143-A", "principal": 0.01}
+    {"id": 1, "asset": -8, "reg_number": "1-01-00010-A"},
+    {"id": 2, "asset": 4, "reg_number": "4B020702673B", "principal": 1000.0, "expiry": 1624492800},
+    {"id": 3, "asset": 5, "reg_number": "10401000B", "principal": 0.01},
+    {"id": 4, "asset": 6, "expiry": 1639612800},
+    {"id": 5, "asset": 7, "reg_number": "1-05-08443-H", "principal": 1.0},
+    {"id": 6, "asset": 8, "principal": 0.03},
+    {"id": 7, "asset": 9, "reg_number": "1-02-00143-A", "principal": 0.01}
   ],
   "trades": [
     {"id": 1, "number": "3312348787", "timestamp": 1615647620, "settlement": 1615766400, "account": 1, "asset": 3, "quantity": 10, "price": 987.65, "fee": 1.23},
