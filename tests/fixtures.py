@@ -1,6 +1,7 @@
 import pytest
 import os
 from shutil import copyfile
+from PySide6.QtWidgets import QApplication
 from PySide6.QtSql import QSqlDatabase
 
 from constants import Setup, PredefinedCategory, PredefinedAsset
@@ -27,6 +28,12 @@ def prepare_db(project_root, tmp_path, data_path):
     src_path = project_root + os.sep + 'jal' + os.sep + Setup.INIT_SCRIPT_PATH
     target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
     copyfile(src_path, target_path)
+
+    # Application object should exist before QSqlDatabase otherwise it will end up with Segmentation fault
+    if not QApplication.instance():
+        app = QApplication([])
+    else:
+        app = QApplication.instance()
 
     # Activate db connection
     error = JalDB().init_db()
