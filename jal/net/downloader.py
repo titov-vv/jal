@@ -265,7 +265,8 @@ class QuoteDownloader(QObject):
             'stock_bonds': PredefinedAsset.Bond,
             'stock_etf': PredefinedAsset.ETF,
             'stock_ppif': PredefinedAsset.ETF,
-            'futures_forts': PredefinedAsset.Derivative
+            'futures_forts': PredefinedAsset.Derivative,
+            'currency_metal': PredefinedAsset.Commodity
         }
         asset = {}
         if not asset_code:

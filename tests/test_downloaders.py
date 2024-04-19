@@ -99,6 +99,10 @@ def test_MOEX_details():
                                                                    'reg_number': '1-02-00010-A',
                                                                    'principal': 1.0,
                                                                    'type': PredefinedAsset.Stock}
+    assert QuoteDownloader.MOEX_info(symbol='GLDRUB_TOM') == {'symbol': 'GLDRUB_TOM',
+                                                              'name': 'GLD/RUB_TOM - GLD/РУБ',
+                                                              'principal': 1.0,
+                                                              'type': PredefinedAsset.Commodity}
 
 def test_CBR_downloader(prepare_db):
     create_stocks([('TRY', '')], currency_id=1)   # id = 4
@@ -129,9 +133,10 @@ def test_ECB_downloader(prepare_db):
     assert_frame_equal(rates_usd, rates_downloaded)
 
 def test_MOEX_downloader(prepare_db_moex):
-    create_assets([('ЗПИФ ПНК', 'ЗПИФ ПНК Рентал', 'RU000A1013V9', 1, PredefinedAsset.ETF, 0)])
-    create_assets([('TEST', 'TEST', '', 1, PredefinedAsset.Stock, 0)])
-    create_assets([('БДеньги-02', 'МФК Быстроденьги 02', 'RU000A102ZT7', 1, PredefinedAsset.Bond, 0)])
+    create_assets([('ЗПИФ ПНК', 'ЗПИФ ПНК Рентал', 'RU000A1013V9', 1, PredefinedAsset.ETF, 0),         # ID 9
+                   ('TEST', 'TEST', '', 1, PredefinedAsset.Stock, 0),                                  # ID 10
+                   ('БДеньги-02', 'МФК Быстроденьги 02', 'RU000A102ZT7', 1, PredefinedAsset.Bond, 0),  # ID 11
+                   ('GLDRUB_TOM', 'GLD/RUB_TOM - GLD/РУБ', '', 1, PredefinedAsset.Commodity, 0)])      # ID 12
 
     stock_quotes = pd.DataFrame({'Close': [Decimal('287.95'), Decimal('287.18')],
                                  'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
@@ -148,6 +153,9 @@ def test_MOEX_downloader(prepare_db_moex):
     bond_quotes2 = pd.DataFrame({'Close': [Decimal('984.30'), Decimal('981.50')],
                                 'Date': [datetime(2023, 9, 13), datetime(2023, 9, 14)]})
     bond_quotes2 = bond_quotes2.set_index('Date')
+    metal_quotes = pd.DataFrame({'Close': [Decimal('5890.8'), Decimal('5870.03')],
+                                 'Date': [datetime(2024, 2, 6), datetime(2024, 2, 7)]})
+    metal_quotes = metal_quotes.set_index('Date')
 
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(4), 1, 1618272000, 1618358400)
@@ -189,6 +197,9 @@ def test_MOEX_downloader(prepare_db_moex):
     # Bond with high risk
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(11), 1, d2t(230913), d2t(230914), update_symbol=False)
     assert_frame_equal(bond_quotes2, quotes_downloaded)
+    # Metal
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(12), 1, d2t(240206), d2t(240207), update_symbol=False)
+    assert_frame_equal(metal_quotes, quotes_downloaded)
 
 
 def test_MOEX_downloader_USD(prepare_db_moex):
