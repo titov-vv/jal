@@ -206,7 +206,7 @@ class StatementVTB(StatementXLS):
             asset_id = assets[0]['id']
             timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
             try:
-                qty = abs(float(self._statement[headers['qty']][row]))  #
+                qty = float(self._statement[headers['qty']][row])
             except ValueError:
                 raise Statement_ImportError(self.tr("Failed to convert asset amount ") + f"'{self._statement[headers['qty']][row]}'")
             if operations[operation] is not None:
@@ -321,7 +321,7 @@ class StatementVTB(StatementXLS):
         if len(match) != 1:
             raise Statement_ImportError(self.tr("Multiple asset cancellation match for ") + f"'{description}'")
         asset_cancel = match[0]
-        qty = asset_cancel['quantity']  # Expected to be negative
+        qty = asset_cancel['quantity']
         price = abs(amount / qty)  # Price is always positive
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
         trade = {"id": new_id, "timestamp": timestamp, "settlement": timestamp, "account": account_id,

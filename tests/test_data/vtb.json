@@ -38,7 +38,9 @@
   "trades": [
     {"id": 1, "number": "B9340571485", "timestamp": 1704799653, "settlement": 1704877200, "account": 1, "asset": 7, "quantity": 200, "price": 1.3252, "fee": 0},
     {"id": 2, "number": "B9392407465", "timestamp": 1704979595, "settlement": 1705050000, "account": 1, "asset": 5, "quantity": 23, "price": 970.1, "fee": 11.35},
-    {"id": 3, "number": "S9392676025", "timestamp": 1704993223, "settlement": 1705050000, "account": 1, "asset": 7, "quantity": -24, "price": 1.3283333333333334, "fee": 0}
+    {"id": 3, "number": "S9392676025", "timestamp": 1704993223, "settlement": 1705050000, "account": 1, "asset": 7, "quantity": -24, "price": 1.3283333333333334, "fee": 0},
+    {"id": 4, "timestamp": 1707955200, "settlement": 1707955200, "account": 1, "asset": 6, "quantity": -51.0, "price": 1000.0, "fee": 0.0, "note": "Ден.ср-ва от погаш. номин.ст-ти обл. ООО МФК ЦФП 4-01-00009-L, Е918036.   НДС не обл. Налог не удерживается."},
+    {"id": 5, "timestamp": 1708473600, "settlement": 1708473600, "account": 1, "asset": 4, "quantity": -30.0, "price": 1000.0, "fee": 0.0, "note": "Ден.ср-ва от погаш. номин.ст-ти обл. АО МФК Займер 4-01-00587-R, Е918036.   НДС не обл. Налог не удерживается."}
   ],
   "income_spending": [],
   "transfers": [
@@ -49,7 +51,8 @@
   "asset_payments": [
     {"id": 1, "type": "interest", "account": 1, "timestamp": 1704979595, "number": "B9392407465", "asset": 5, "amount": -616.86, "description": "НКД"},
     {"id": 2, "type": "interest", "account": 1, "timestamp": 1705449600, "asset": 6, "amount": 610.5, "description": "Куп. дох. по обл. ООО МФК ЦФП 4-01-00009-L, Е918036. Размер куп. на 1 обл. 11.1 руб.  НДС не обл. Налог не удерживается."},
-    {"id": 3, "type": "dividend", "account": 1, "timestamp": 1712620800, "asset": 9, "amount": 2053.8, "tax": 267.0, "description": "Дивиденды ПАО Группа Черкизово 1-02-10797-A, Е739805 2023 год. НДС не обл. Удержан налог в размере 267.00 руб."}
+    {"id": 3, "type": "interest", "account": 1, "timestamp": 1707955200, "asset": 6, "amount": 226.1, "description": "Куп. дох. по обл. ООО МФК ЦФП 4-01-00009-L, Е918036. Размер куп. на 1 обл. 11.1 руб.  НДС не обл. Налог не удерживается."},
+    {"id": 4, "type": "dividend", "account": 1, "timestamp": 1712620800, "asset": 9, "amount": 2053.8, "tax": 267.0, "description": "Дивиденды ПАО Группа Черкизово 1-02-10797-A, Е739805 2023 год. НДС не обл. Удержан налог в размере 267.00 руб."}
   ],
   "corporate_actions": []
 }
