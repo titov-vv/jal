@@ -54,6 +54,10 @@ class StatementVTB(StatementXLS):
         self.PeriodPattern = (5 + shift, 1, r"Отчет Банка ВТБ \(ПАО\) за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d) о сделках, .*")
         super()._validate()
 
+    def _strip_unused_data(self):
+        for asset in self._data[FOF.ASSETS]:
+            self.drop_extra_fields(asset, ['broker_name'])
+
     def _load_currencies(self):
         cnt = 0
         row, headers = self.find_section_start(self.money_section, self.money_columns, header_height=3)
@@ -85,7 +89,7 @@ class StatementVTB(StatementXLS):
         cnt = 0
         row, headers = self.find_section_start(self.asset_section, self.asset_columns)
         if row < 0:
-            return False
+            return
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row].startswith('ИТОГО') or self._statement[self.HeaderCol][row] == '':
                 break
@@ -118,6 +122,10 @@ class StatementVTB(StatementXLS):
             self.drop_extra_fields(asset, ['broker_name'])
 
     def _load_deals(self):
+        self._load_deals_main_market()
+        self._load_deals_derivatives_market()
+
+    def _load_deals_main_market(self):
         cnt = 0
         columns = {
             "asset_name": "Наименование ценной бумаги, \n№ гос\. Регистрации, ISIN",
@@ -173,6 +181,46 @@ class StatementVTB(StatementXLS):
                 payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                            "number": deal_number, "asset": asset_id, "amount": bond_interest, "description": "НКД"}
                 self._data[FOF.ASSET_PAYMENTS].append(payment)
+            cnt += 1
+            row += 1
+        logging.info(self.tr("Trades loaded: ") + f"{cnt}")
+
+    def _load_deals_derivatives_market(self):
+        cnt = 0
+        columns = {
+            "symbol": " Фьючерсный контракт / опцион, код",
+            "number": "№ сделки",
+            "datetime": "Дата и время заключения сделки",
+            "B/S": "Вид сделки",
+            "price": "Цена контракта /\n размер премии \n\(пункты\)",
+            "qty": "Количество \n\(шт\)",
+            "fee1": "Комиссия Банка за расчет по сделке",
+            "fee2": "Комиссия Банка за заключение сделки"
+        }
+        row, headers = self.find_section_start(r"^Сделки с Производными финансовыми инструментами в отчетном периоде", columns)
+        if row < 0:
+            return
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row] == '':
+                break
+            asset_id = self.asset_id({'symbol': self._statement[headers['symbol']][row], 'search_online': "MOEX"})
+            if self._statement[headers['B/S']][row] == 'Покупка':
+                qty = self._statement[headers['qty']][row]
+            elif self._statement[headers['B/S']][row] == 'Продажа':
+                qty = -self._statement[headers['qty']][row]
+            else:
+                row += 1
+                logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
+                continue
+            deal_number = self._statement[headers['number']][row]
+            price = self._statement[headers['price']][row]
+            fee = self._statement[headers['fee1']][row] + self._statement[headers['fee2']][row]
+            timestamp = int(self._statement[headers['datetime']][row].replace(tzinfo=timezone.utc).timestamp())
+            account_id = self._find_account_id(self._account_number, 'RUR')
+            new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+            trade = {"id": new_id, "number": deal_number, "timestamp": timestamp,
+                     "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "fee": fee}
+            self._data[FOF.TRADES].append(trade)
             cnt += 1
             row += 1
         logging.info(self.tr("Trades loaded: ") + f"{cnt}")
