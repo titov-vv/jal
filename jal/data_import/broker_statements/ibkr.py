@@ -855,23 +855,33 @@ class StatementIBKR(StatementXML):
         return 1
 
     def load_granted_stocks(self, granted_stocks):
-        VestingPattern = r"^Stock Award (?P<operation>Grant for Cash Deposit|Vesting|Withholding)$"
         cnt = 0
+        # Get each operation type
+        VestingPattern = r"^Stock Award (?P<operation>Grant for Cash Deposit|Vesting|Withholding)$"
         for vesting in granted_stocks:
             try:
                 vesting['operation'] = re.match(VestingPattern, vesting['description']).groupdict()['operation']
             except AttributeError:
                 raise Statement_ImportError(self.tr("Can't parse granted stock description ") + f"'{vesting}'")
-        vestings = [x for x in granted_stocks if x['operation'] != "Grant for Cash Deposit"]  # exclude non-vested stocks
+        # Subtract withholding from vesting value
+        vestings = [x for x in deepcopy(granted_stocks) if x['operation'] == "Vesting"]
+        withholdings = [x for x in deepcopy(granted_stocks) if x['operation'] == "Withholding"]
+        for withholding in withholdings:
+            main_data = lambda x: {i: x[i] for i in x if i not in ['description', 'operation', 'amount']}
+            matched_vesting = [x for x in vestings if main_data(x) == main_data(withholding)]
+            if len(matched_vesting) == 1:
+                matched_vesting[0]['amount'] += withholding['amount']
+            if len(matched_vesting) > 1:
+                raise Statement_ImportError(self.tr("Multiple vesting matched withholding ") + f"'{matched_vesting}' / '{withholding}'")
         asset_payments_base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         for i, vesting in enumerate(vestings):
             vesting['id'] = asset_payments_base + i
             vesting['type'] = FOF.PAYMENT_STOCK_VESTING
             vesting['timestamp'] = vesting['vesting_date']
-            self.drop_extra_fields(vesting, ["award_date", "vesting_date"])
+            self.drop_extra_fields(vesting, ["operation", "award_date", "vesting_date"])
             self._data[FOF.ASSET_PAYMENTS].append(vesting)
             cnt += 1
-        logging.info(self.tr("Stock vestings loaded: ") + f"{cnt} ({len(granted_stocks)})")
+        logging.info(self.tr("Stock grant operations loaded: ") + f"{cnt} ({len(granted_stocks)})")
 
     def load_cash_transactions(self, cash):
         drop_fields = lambda x, y: {i: x[i] for i in x if i not in y}  # removes from dict(x) fields listed in [y]

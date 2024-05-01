@@ -159,7 +159,8 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     test_dividends = [
         [1, 2, 1592770800, 0, '', 1, 1, 6, '16.76', '0.21', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
         [2, 2, 1596054000, 0, '', 1, 1, 9, '51.0', '0.01', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'],
-        [3, 2, 1588191600, 0, '', 1, 1, 10, '25.0', '1.04', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)']
+        [3, 2, 1588191600, 0, '', 1, 1, 10, '25.0', '1.04', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)'],
+        [4, 2, 1659484800, 0, '', 4, 1, 11, '0.3052', '0', 'Stock Award Vesting']
     ]
     payments = JalAccount(1).dump_asset_payments()
     assert len(payments) == len(test_dividends)
