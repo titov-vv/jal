@@ -37,7 +37,7 @@
     {"id": 12, "type": "dividend", "account": 1, "timestamp": 1611087600, "number": "", "asset": 4, "amount": 0.39, "tax": 0.03, "description": "ORCC(US69121K1043) CASH DIVIDEND USD 0.39 PER SHARE (Ordinary Dividend)"},
     {"id": 13, "type": "dividend", "account": 1, "timestamp": 1621023600, "number": "", "asset": 4, "amount": 20.46, "tax": 2.05, "description": "ORCC(US69121K1043) CASH DIVIDEND USD 0.31 PER SHARE (Ordinary Dividend)"},
     {"id": 14, "type": "dividend", "account": 1, "timestamp": 1628886000, "number": "", "asset": 4, "amount": 31.0, "tax": 3.1, "description": "ORCC(US69121K1043) CASH DIVIDEND USD 0.31 PER SHARE (Ordinary Dividend)"},
-    {"id": 15, "type": "dividend", "account": 1, "timestamp": 1611087600, "number": "", "asset": 4, "amount": 38.61, "tax": 3.58, "description": "ORCC(US69121K1043) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"},
+    {"id": 15, "type": "dividend", "account": 1, "timestamp": 1611087600, "number": "", "asset": 4, "amount": 38.61, "tax": 3.5799999999999996, "description": "ORCC(US69121K1043) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"},
     {"id": 16, "type": "dividend", "account": 1, "timestamp": 1621023600, "number": "", "asset": 4, "amount": 10.54, "tax": 1.05,"description": "ORCC(US69121K1043) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"},
     {"id": 17, "type": "dividend", "account": 1, "timestamp": 1675455600, "number": "", "asset": 5, "amount": 5.25, "tax": 1.94, "description": "USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE (Ordinary Dividend)"},
     {"id": 18, "type": "dividend", "account": 1, "timestamp": 1683318000, "number": "", "asset": 5, "amount": 5.25, "tax": 1.94, "description": "USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE (Ordinary Dividend)"},

@@ -32,11 +32,9 @@
 <CashTransaction accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="NRZ" description="NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE - US TAX" conid="169688387" securityID="US64828T2015" securityIDType="ISIN" cusip="64828T201" isin="US64828T2015" listingExchange="NYSE" underlyingConid="" underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" dateTime="20200429;202000" settleDate="20200429" amount="-2.5" type="Withholding Tax" tradeID="" code="" transactionID="20335448957" reportDate="20200429" clientReference="" levelOfDetail="DETAIL" />
 <CashTransaction accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="NRZ" description="NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)" conid="169688387" securityID="US64828T2015" securityIDType="ISIN" cusip="64828T201" isin="US64828T2015" listingExchange="NYSE" underlyingConid="" underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" dateTime="20200429;202000" settleDate="20200429" amount="25" type="Dividends" tradeID="" code="" transactionID="20335448954" reportDate="20200429" clientReference="" levelOfDetail="DETAIL" />
 </CashTransactions>
-<!--
 <StockGrantActivities>
 <StockGrantActivity accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" subCategory="COMMON" symbol="IBKR" description="INTERACTIVE BROKERS GRO-CL A" conid="43645865" securityID="US45841N1072" securityIDType="ISIN" cusip="45841N107" isin="US45841N1072" figi="" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange="" issuer="" issuerCountryCode="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" reportDate="20210803" activityDescription="Stock Award Grant for Cash Deposit" awardDate="20210803" vestingDate="20220803" quantity="0.4359" price="62.86" value="27.4" serialNumber="" deliveryType="" commodityType="" fineness="0.0" weight="0.0" />
 </StockGrantActivities>
--->
 </FlexStatement>
 </FlexStatements>
 </FlexQueryResponse>

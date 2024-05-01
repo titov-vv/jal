@@ -218,8 +218,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [7, 2, 1633033200, 0, '', 1, 1, 4, '158.6', '15.86', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
         [8, 2, 1590595065, 0, '2882737839', 2, 1, 12, '-25.69', '0', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
         [9, 2, 1600128000, 0, '', 2, 1, 12, '62.5', '0', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
-        [10, 2, 1620345600, 0, '', 4, 1, 8, '2.0', '0', 'Stock Award Grant for Cash Deposit'],
-        [11, 2, 1549843200, 0, '', 6, 1, 9, '-0.249018', '0', 'French Transaction Tax']
+        [10, 2, 1549843200, 0, '', 6, 1, 9, '-0.249018', '0', 'French Transaction Tax']
     ]
     payments = JalAccount(1).dump_asset_payments()
     assert len(payments) == len(test_payments)
@@ -231,7 +230,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     assert JalAsset(4).quote(d2t(230101), 2) == (1633033200, Decimal('25.73'))
     assert JalAsset(18).quote(d2t(230101), 2) == (1595017200, Decimal('4.73'))
     assert JalAsset(34).quote(d2t(230101), 2) == (1591215600, Decimal('8.59'))
-    assert JalAsset(8).quote(d2t(230101), 2) == (1620345600, Decimal('678'))
+    assert JalAsset(8).quote(d2t(230101), 2) == (0, Decimal('0'))  # Stock granted but not vested
 
     # validate corp actions
     test_asset_actions = [

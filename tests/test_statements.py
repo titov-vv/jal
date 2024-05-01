@@ -21,11 +21,11 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
     IBKR.load(data_path + 'ibkr.xml')
     assert IBKR._data == statement
 
-    # Test rights issue and vesting
-    with open(data_path + 'ibkr_rights_vesting.json', 'r', encoding='utf-8') as json_file:
+    # Test rights issue
+    with open(data_path + 'ibkr_rights.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
     IBKR = StatementIBKR()
-    IBKR.load(data_path + 'ibkr_rights_vesting.xml')
+    IBKR.load(data_path + 'ibkr_rights.xml')
     assert IBKR._data == statement
 
 

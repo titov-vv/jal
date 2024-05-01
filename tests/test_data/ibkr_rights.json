@@ -20,8 +20,6 @@
              {"id": 6, "asset": 6, "currency": 1, "symbol": "2965", "note": "CORPACT"}
  ],
  "asset_payments": [
-    {"id": 1, "type": "stock_vesting", "account": 2, "timestamp": 1620345600, "asset": 5, "amount": 0.677, "price": "69.62", "description": "Stock Award Grant for Cash Deposit" },
-    {"id": 2, "type": "stock_vesting", "account": 2, "timestamp": 1630886400, "asset": 5, "amount": 0.2129, "price": "64.5", "description": "Stock Award Grant for Cash Deposit" }
  ],
  "corporate_actions": [
  ],
