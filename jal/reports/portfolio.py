@@ -78,10 +78,10 @@ class PortfolioReportWindow(MdiWidget):
             contextMenu.addAction(actionShowChart)
             tax_submenu = contextMenu.addMenu(JalIcon[JalIcon.TAX], self.tr("Estimate tax"))
             actionEstimateTaxPt = QAction(icon=JalIcon.country_flag('pt'), text=self.tr("Portugal"), parent=self.ui.PortfolioTreeView)
-            actionEstimateTaxPt.triggered.connect(partial(self.estimateRussianTax, index, 'pt'))
+            actionEstimateTaxPt.triggered.connect(partial(self.estimateSaleTax, index, 'pt'))
             tax_submenu.addAction(actionEstimateTaxPt)
             actionEstimateTaxRu = QAction(icon=JalIcon.country_flag('ru'), text=self.tr("Russia"), parent=self.ui.PortfolioTreeView)
-            actionEstimateTaxRu.triggered.connect(partial(self.estimateRussianTax, index, 'ru'))
+            actionEstimateTaxRu.triggered.connect(partial(self.estimateSaleTax, index, 'ru'))
             tax_submenu.addAction(actionEstimateTaxRu)
             contextMenu.addSeparator()
             actionSetTag = QAction(icon=JalIcon[JalIcon.TAG], text=self.tr("Set asset tag"), parent=self.ui.PortfolioTreeView)
@@ -103,7 +103,7 @@ class PortfolioReportWindow(MdiWidget):
         self._parent.mdi_area().addSubWindow(ChartWindow(account, asset, currency, self.ui.PortfolioDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch()))
 
     @Slot()
-    def estimateRussianTax(self, index, country_code):
+    def estimateSaleTax(self, index, country_code):
         if self.ui.PortfolioDate.date() != QDate().currentDate():
             QMessageBox().warning(self, self.tr("Warning"), self.tr("Tax estimation is possible for today only. Please correct date of the report"), QMessageBox.Ok)
             return
