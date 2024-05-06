@@ -7,47 +7,42 @@
       "Account: {parameters[account]}"
     ],
   "columns": [  
-    {"name": "Stock symbol", "width": 8},
+    {"name": "Symbol", "width": 8},
     {"name": "ISIN", "width": 11},
-    {"name": "Qty.", "width": 8},
-    {"name": "Operation", "width": 8},
-    {"name": "Date", "width": 10},
     {"name": "#", "width": 10},
-    {"name": "EUR/{parameters[currency]} rate for operation", "width": 9},
-    {"name": "Settlement", "width": 10},
-    {"name": "EUR/{parameters[currency]} rate for settlement", "width": 9},
+    {"name": "Operation", "width": 8},
+    {"name": "Operation date", "width": 10},
+    {"name": "Settlement date", "width": 10},
+    {"name": "Qty.", "width": 8},
     {"name": "Price, {parameters[currency]}", "width": 12},
-    {"name": "Value, {parameters[currency]}", "width": 12},
-    {"name": "Value, EUR", "width": 12},
     {"name": "Fee, {parameters[currency]}", "width": 12},
-    {"name": "Fee, EUR", "width": 9},
-    {"name": "Income, EUR", "width": 12},
-    {"name": "Spent, EUR", "width": 12},
-    {"name": "Profit/Loss, EUR", "width": 12},
-    {"name": "Profit/Loss, {parameters[currency]}", "width": 12},
-    {"name": "Note", "width": 17}
+    {"name": "Value, {parameters[currency]}", "width": 12},
+    {"name": "Profit/Loss, {parameters[currency]}", "width": 10},
+    {"name": "Profit/Loss, EUR", "width": 10},
+    {"name": "EUR/{parameters[currency]} rate", "width": 9},
+    {"name": "Note", "width": 25}
   ],
   "columns_numbered": true,
   "trade": {
     "rows": [
-      ["symbol", "isin", "qty", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_eur", "o_fee", "o_fee_eur", "income_eur", "spending_eur", "profit_eur", "profit", "note"],
-      [null,     null,   null,  "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_eur", "c_fee", "c_fee_eur", null,         null,           null,         null,     null]
+      ["symbol", "isin", "o_number", "o_type", "o_date", "os_date", "qty", "o_price", "o_fee", "o_amount", "profit", "profit_eur", "rate", "note"],
+      [null,     null,   "c_number", "c_type", "c_date", "cs_date", null,  "c_price", "c_fee", "c_amount", null,     null,         null,   null]
     ],
     "formats": [
-      ["T", "T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2", "T"],
-      [null, null, null, "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", null, null, null, null, null]
+      ["T", "N:0", "T", "T", "D", "D", "T",  "N:6", "N:6", "N:2", "N:2", "N:2", "N:4", "T"],
+      [null, null, "T", "T", "D", "D", null, "N:6", "N:6", "N:2", null,  null,  null,  null]
     ],
     "span": [
-      [{"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, null, null, null, null, null, null, null, null, null, null, null, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}],
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
+      [{"h": 0, "v":  1}, {"h": 0, "v":  1}, null, null, null, null, {"h": 0, "v":  1}, null, null, null, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}],
+      [null,              null,              null, null, null, null, null,              null, null, null, null,              null,              null,              null, null, null]
     ]
   },
   "totals": {
     "rows": [
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, "TOTAL", "income_eur", "spending_eur", "profit_eur", "profit", null]
+      [null, null, null, null, null, null, null, null, null, "TOTAL", "profit", "profit_eur", null, null]
     ],
     "formats": [
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, "F", "F", "F", "F", "F", null]
+      [null, null, null, null, null, null, null, null, null, "F",     "F",      "F",          null, null]
     ]
   },
   "footers": []
