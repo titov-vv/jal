@@ -77,20 +77,20 @@ def db_row2dict(model, row) -> dict:
 # Returns timestamp of the first second of the year of given timestamp
 def year_begin(timestamp: int) -> int:
     begin = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(month=1, day=1, hour=0, minute=0, second=0)
-    return int(begin.replace(tzinfo=timezone.utc).timestamp())
+    return int(begin.timestamp())
 
 # Returns timestamp of the last second of the year of given timestamp
 def year_end(timestamp: int) -> int:
     end = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(month=1, day=1, hour=0, minute=0, second=0)
     end = end.replace(year=end.year + 1) - timedelta(seconds=1)
-    return int(end.replace(tzinfo=timezone.utc).timestamp())
+    return int(end.timestamp())
 
 # Returns current timestamp
 def now_ts() -> int:
-    return int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
+    return int(datetime.now(tz=timezone.utc).timestamp())
 
 # Returns timestamp of the last second of the day of given timestamp
 def day_end(timestamp: int) -> int:
     end = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(hour=23, minute=59, second=59)
-    return int(end.replace(tzinfo=timezone.utc).timestamp())
+    return int(end.timestamp())
 # -------------------------------------------------------------------------------------------------------------------
