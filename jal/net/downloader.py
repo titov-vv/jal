@@ -188,7 +188,7 @@ class QuoteDownloader(QObject):
             s_multiplier = node.find("Nominal").text if node is not None else 1
             rows.append({"Date": s_date, "Rate": s_val, "Multiplier": s_multiplier})
         data = pd.DataFrame(rows, columns=["Date", "Rate", "Multiplier"])
-        data['Date'] = pd.to_datetime(data['Date'], format="%d.%m.%Y")
+        data['Date'] = pd.to_datetime(data['Date'], format="%d.%m.%Y", utc=True)
         data['Rate'] = [x.replace(',', '.') for x in data['Rate']]
         data['Rate'] = data['Rate'].apply(Decimal)
         data['Multiplier'] = data['Multiplier'].apply(Decimal)
@@ -208,7 +208,7 @@ class QuoteDownloader(QObject):
             return None
         data.rename(columns={'TIME_PERIOD': 'Date', 'OBS_VALUE': 'Rate'}, inplace=True)
         data = data[['Date', 'Rate']]  # Keep only required columns
-        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
+        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d", utc=True)
         data['Rate'] = data['Rate'].apply(Decimal)   # Convert from str to Decimal
         data['Rate'] = Decimal('1') / data['Rate']
         data['Rate'] = data['Rate'].apply(round, args=(10, ))
@@ -390,7 +390,7 @@ class QuoteDownloader(QObject):
                 else:
                     quotes.append({"Date": row.attrib['TRADEDATE'], "Close": row.attrib['CLOSE']})
         data = pd.DataFrame(quotes, columns=["Date", "Close"])
-        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
+        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d", utc=True)
         data['Close'] = data['Close'].apply(Decimal)
         close = data.set_index("Date")
         return close
@@ -404,7 +404,7 @@ class QuoteDownloader(QObject):
             data = pd.read_csv(file, dtype={'Date': str, 'Close': str})
         except ParserError:
             return None
-        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
+        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d", utc=True)
         data['Close'] = data['Close'].apply(Decimal)
         data = data.drop(columns=['Open', 'High', 'Low', 'Adj Close', 'Volume'])
         close = data.set_index("Date")
@@ -478,7 +478,7 @@ class QuoteDownloader(QObject):
             return None
         data = pd.DataFrame(price_array)
         data.rename(columns={'datetime': 'Date', 'closePrice': 'Close'}, inplace=True)
-        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
+        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d", utc=True)
         data['Close'] = data['Close'].apply(str)   # Convert from float to str
         data['Close'] = data['Close'].apply(Decimal)   # Convert from str to Decimal
         close = data.set_index("Date")

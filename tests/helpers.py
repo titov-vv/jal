@@ -16,9 +16,15 @@ def pop2minor_digits(x: int) -> (int, int):
 # converts YYMMDD integer into unix timestamp that corresponds to DD/MM/20YY 00:00:00
 def d2t(date_value: int) -> int:
     d, date_value = pop2minor_digits(date_value)
-    m, y = pop2minor_digits( date_value)
+    m, y = pop2minor_digits(date_value)
     ts = int(datetime.strptime(f"{d:02d}/{m:02d}/{y:02d}", "%d/%m/%y").replace(tzinfo=timezone.utc).timestamp())
     return ts
+
+# converts YYMMDD integer into python datetime(20YY, MM, DD, tzinfo=timezone.utc)
+def d2dt(date_value: int) -> datetime:
+    d, date_value = pop2minor_digits(date_value)
+    m, y = pop2minor_digits(date_value)
+    return datetime(2000+y, m, d, tzinfo=timezone.utc)
 
 # converts YYMMDDHHMM integer into unix timestamp that corresponds to DD/MM/20YY HH:MM:00
 def dt2t(datetime_value: int) -> int:

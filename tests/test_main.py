@@ -2,6 +2,7 @@ import os
 from shutil import copyfile
 import sqlite3
 from decimal import Decimal
+from datetime import datetime, timezone
 
 from tests.fixtures import project_root
 from constants import Setup
@@ -10,7 +11,7 @@ from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
 from jal.db.helpers import localize_decimal
 from jal.db.backup_restore import JalBackup
-from tests.helpers import pop2minor_digits, d2t, dt2t
+from tests.helpers import pop2minor_digits, d2t, d2dt, dt2t
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -32,6 +33,7 @@ def test_number_formatting():
 def test_helpers():
     assert pop2minor_digits(12345) == (45, 123)
     assert d2t(230107) == 1673049600
+    assert d2dt(240501) == datetime(2024, 5, 1, tzinfo=timezone.utc)
     assert dt2t(1806212020) == 1529612400
 
 
