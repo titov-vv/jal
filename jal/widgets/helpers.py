@@ -50,12 +50,12 @@ def str2int(value: str) -> int:
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date and time
 def ts2dt(timestamp: int) -> str:
-    return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
+    return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%d/%m/%Y %H:%M:%S')
 
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date
 def ts2d(timestamp: int) -> str:
-    return datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y')
+    return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%d/%m/%Y')
 
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given datetime value into unix-timestamp
@@ -92,9 +92,9 @@ def week_end_ts(year: int, week: int) -> int:
 # -----------------------------------------------------------------------------------------------------------------------
 # returns an iterator that represents beginning of each day between start_ts unix-timestamp and end_ts unix-timestamp
 def timestamp_range(start_ts, end_ts):
-    start_date = datetime.utcfromtimestamp(start_ts)
+    start_date = datetime.fromtimestamp(start_ts, tz=timezone.utc)
     start_date = datetime.combine(start_date, time.min).replace(tzinfo=timezone.utc)
-    end_date = datetime.utcfromtimestamp(end_ts)
+    end_date = datetime.fromtimestamp(end_ts, tz=timezone.utc)
     end_date = datetime.combine(end_date, time.max).replace(tzinfo=timezone.utc)
     for n in range(int((end_date - start_date).days)+1):
         day_n = start_date + timedelta(n)
@@ -106,10 +106,10 @@ def timestamp_range(start_ts, end_ts):
 # where number is a month number from 1 to 12
 def month_list(begin: int, end: int) -> list:
     result = []
-    year_begin = int(datetime.utcfromtimestamp(begin).strftime('%Y'))
-    month_begin = str2int(datetime.utcfromtimestamp(begin).strftime('%m'))
-    year_end = int(datetime.utcfromtimestamp(end).strftime('%Y'))
-    month_end = str2int(datetime.utcfromtimestamp(end).strftime('%m'))
+    year_begin = int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%Y'))
+    month_begin = str2int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%m'))
+    year_end = int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%Y'))
+    month_end = str2int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%m'))
     for year in range(year_begin, year_end+1):
         month1 = month_begin if year == year_begin else 1
         month2 = month_end + 1 if year == year_end else 13
@@ -123,13 +123,13 @@ def month_list(begin: int, end: int) -> list:
 # where number is a week number in year from 1 to 53
 def week_list(begin: int, end: int) -> list:
     result = []
-    year_begin = int(datetime.utcfromtimestamp(begin).strftime('%Y'))
-    week_begin = str2int(datetime.utcfromtimestamp(begin).strftime('%W'))
+    year_begin = int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%Y'))
+    week_begin = str2int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%W'))
     if week_begin == 0:
         year_begin -= 1
         week_begin = 53
-    year_end = int(datetime.utcfromtimestamp(end).strftime('%Y'))
-    week_end = int(datetime.utcfromtimestamp(end).strftime('%W'))
+    year_end = int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%Y'))
+    week_end = int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%W'))
     if week_end == 0:
         year_end -= 1
         week_end = 53

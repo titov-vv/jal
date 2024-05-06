@@ -1,5 +1,5 @@
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, timezone
 
 from jal.db.operations import AssetPayment
 from jal.data_export.taxes import TaxReport
@@ -48,7 +48,7 @@ class TaxesPortugal(TaxReport):
         return dividends_report
 
     def inflation(self, timestamp: int) -> Decimal:
-        year = datetime.utcfromtimestamp(timestamp).strftime('%Y')
+        year = datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%Y')
         inflation_coefficients = self._parameters['currency_devaluation']
         try:
             coefficient = Decimal(inflation_coefficients[year])

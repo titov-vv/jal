@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from pandas._testing import assert_frame_equal
 
@@ -245,7 +245,7 @@ def test_LSE_downloader(prepare_db):
 def test_Euronext_downloader(prepare_db):
     create_assets([('NOK', 'Nokia', 'FI0009000681', 3, PredefinedAsset.Stock, 0)])   # ID = 4
     quotes = pd.DataFrame({'Close': [Decimal('4.483'), Decimal('4.481'), Decimal('4.5115')],
-                           'Date': [datetime(2023, 4, 12), datetime(2023, 4, 13), datetime(2023, 4, 14)]})
+                           'Date': [datetime(2023, 4, 12, tzinfo=timezone.utc), datetime(2023, 4, 13, tzinfo=timezone.utc), datetime(2023, 4, 14, tzinfo=timezone.utc)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
@@ -277,7 +277,7 @@ def test_Frankfurt_downloader(prepare_db):
 def test_Coinbase_downloader(prepare_db):
     create_assets([('ALGO', 'Algorand', '', 3, PredefinedAsset.Crypto, 0)])  # ID = 4
     quotes = pd.DataFrame({'Close': [Decimal('0.20171559017841111516'), Decimal('0.19595558582536402655'), Decimal('0.20032663919036912874')],
-                           'Date': [datetime(2023, 4, 12), datetime(2023, 4, 13), datetime(2023, 4, 14)]})
+                           'Date': [datetime(2023, 4, 12, tzinfo=timezone.utc), datetime(2023, 4, 13, tzinfo=timezone.utc), datetime(2023, 4, 14, tzinfo=timezone.utc)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()

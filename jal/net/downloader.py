@@ -171,9 +171,9 @@ class QuoteDownloader(QObject):
         return None
 
     def CBR_DataReader(self, currency, start_timestamp, end_timestamp):
-        date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
+        date1 = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%d/%m/%Y')
         # add 1 day to end_timestamp as CBR sets rate are a day ahead
-        date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')
+        date2 = (datetime.fromtimestamp(end_timestamp, tz=timezone.utc) + timedelta(days=1)).strftime('%d/%m/%Y')
         try:
             code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency.symbol(), "CBR_code"].values[0]).strip()
         except IndexError:
@@ -198,8 +198,8 @@ class QuoteDownloader(QObject):
         return rates
 
     def ECB_DataReader(self, currency, start_timestamp, end_timestamp):
-        date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
-        date2 = datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')
+        date1 = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
+        date2 = datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
         url = f"https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.{currency.symbol()}.EUR.SP00.A?startPeriod={date1}&endPeriod={date2}"
         file = StringIO(get_web_data(url, headers={'Accept': 'text/csv'}))
         try:
@@ -375,8 +375,8 @@ class QuoteDownloader(QObject):
             asset.update_data(details)
 
         # Get price history
-        date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
-        date2 = datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')
+        date1 = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
+        date2 = datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
         url = f"http://iss.moex.com/iss/history/engines/{moex_info['engine']}/markets/{moex_info['market']}/" \
               f"boards/{moex_info['board']}/securities/{asset_code}.xml?from={date1}&till={date2}"
         xml_root = xml_tree.fromstring(get_web_data(url))
@@ -421,8 +421,8 @@ class QuoteDownloader(QObject):
     # noinspection PyMethodMayBeStatic
     def Euronext_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
         params = {'format': 'csv', 'decimal_separator': '.', 'date_form': 'd/m/Y', 'op': '', 'adjusted': 'N',
-                  'base100': '', 'startdate': datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d'),
-                  'enddate': datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')}
+                  'base100': '', 'startdate': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
+                  'enddate': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')}
         suffix = "ETFP" if asset.type() == PredefinedAsset.ETF else "XPAR"  # Dates don't work for ETFP due to glitch on their site
         url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-{suffix}"
         quotes = post_web_data(url, params=params)
@@ -441,9 +441,9 @@ class QuoteDownloader(QObject):
             data = pd.read_csv(file, header=3, sep=';', dtype={'Date': str, 'Close': str}, index_col=False)
         except ParserError:
             return None
-        data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
-        data = data[data.Date >= datetime.utcfromtimestamp(start_timestamp)]   # There is a bug on Euronext side - it returns full set regardless of date
-        data = data[data.Date <= datetime.utcfromtimestamp(end_timestamp)]
+        data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y", utc=True)
+        data = data[data.Date >= datetime.fromtimestamp(start_timestamp, tz=timezone.utc)]   # There is a bug on Euronext side - it returns full set regardless of date
+        data = data[data.Date <= datetime.fromtimestamp(end_timestamp, tz=timezone.utc)]
         data['Close'] = data['Close'].apply(Decimal)
         data = data.drop(columns=['Open', 'High', 'Low', 'Last', 'Number of Shares', 'Number of Trades', 'Turnover', 'vwap'],
                          errors='ignore')  # Ignore errors as some columns might be missing
@@ -459,8 +459,8 @@ class QuoteDownloader(QObject):
             "variables":
                 {
                     "symbol": asset.symbol(),
-                    "start": datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d'),
-                    "end": datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d'),
+                    "start": datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
+                    "end": datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
                     "adjusted": False,
                     "adjustmentType": None,
                     "unadjusted": True
@@ -533,7 +533,7 @@ class QuoteDownloader(QObject):
         # Get quotation lines from the file
         quotes = []
         for line in lines:
-            match = re.match("(.*) EUR (\d+[,.]\d+)", line)
+            match = re.match(r"(.*) EUR (\d+[,.]\d+)", line)
             if match is None:
                 continue
             fund_name, price = match.groups()
@@ -552,13 +552,13 @@ class QuoteDownloader(QObject):
         base_url = f"https://api.coinbase.com/v2/prices/{asset.symbol()}-{currency_symbol}/spot?date="
         quotes = []
         for ts in timestamp_range(start_timestamp, end_timestamp):
-            url = base_url + datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d')
+            url = base_url + datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
             result_data = json.loads(get_web_data(url))
             try:
                 quote = result_data['data']['amount']
             except:
                 continue
-            quotes.append({"Date": datetime.utcfromtimestamp(ts), "Close": quote})
+            quotes.append({"Date": datetime.fromtimestamp(ts, tz=timezone.utc), "Close": quote})
         data = pd.DataFrame(quotes, columns=["Date", "Close"])
         data['Close'] = data['Close'].apply(Decimal)
         close = data.set_index("Date")

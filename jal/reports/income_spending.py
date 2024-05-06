@@ -1,5 +1,5 @@
 from functools import partial
-from datetime import datetime
+from datetime import datetime, timezone
 from PySide6.QtCore import Qt, Slot, QObject, QAbstractItemModel, QModelIndex
 from PySide6.QtGui import QAction, QBrush
 from PySide6.QtWidgets import QMenu
@@ -33,17 +33,17 @@ class ReportTreeItem(QObject):
         self.name = name
         self._begin = begin
         self._end = end
-        self._y_s = int(datetime.utcfromtimestamp(begin).strftime('%Y'))
-        self._y_e = int(datetime.utcfromtimestamp(end).strftime('%Y'))
+        self._y_s = int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%Y'))
+        self._y_e = int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%Y'))
         if self._periods == MONTHLY:
-            self._p_s = str2int(datetime.utcfromtimestamp(begin).strftime('%m'))
-            self._p_e = str2int(datetime.utcfromtimestamp(end).strftime('%m'))
+            self._p_s = str2int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%m'))
+            self._p_e = str2int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%m'))
         elif self._periods == WEEKLY:
-            self._p_s = str2int(datetime.utcfromtimestamp(begin).strftime('%W'))
+            self._p_s = str2int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%W'))
             if self._p_s == 0:  # This is a week that starts a year before
                 self._y_s -= 1
                 self._p_s = 53
-            self._p_e = str2int(datetime.utcfromtimestamp(end).strftime('%W'))
+            self._p_e = str2int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%W'))
         else:
             assert False, "Wrong period for Income/Spending report"
         # amounts is 2D-array of per month amounts:

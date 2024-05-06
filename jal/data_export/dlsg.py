@@ -1,6 +1,6 @@
 import logging
 from copy import deepcopy
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 
@@ -255,8 +255,8 @@ class DLSG:
             income = (14, '1010', 'Дивиденды', income_source, income_iso_country)
         else:
             income = (0, '1010', 'Дивиденды', income_source, income_iso_country, self.broker_iso_country)
-        income += (datetime.utcfromtimestamp(dividend['payment_date']),  # Income date
-                   datetime.utcfromtimestamp(dividend['payment_date']))  # Tax payment date
+        income += (datetime.fromtimestamp(dividend['payment_date'], tz=timezone.utc),  # Income date
+                   datetime.fromtimestamp(dividend['payment_date'], tz=timezone.utc))  # Tax payment date
         income += self.currency_rates_record(dividend['rate'])
         income += (dividend['amount'], dividend['amount_rub'], dividend['tax'], dividend['tax_rub'])
         if self._year == 2020:
@@ -284,8 +284,8 @@ class DLSG:
         else:
             income = (0, '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)',
                       income_source, income_iso_country, income_iso_country)
-        income += (datetime.utcfromtimestamp(trade['cs_date']),  # Income date
-                   datetime.utcfromtimestamp(trade['cs_date']))  # Tax payment date
+        income += (datetime.fromtimestamp(trade['cs_date'], tz=timezone.utc),  # Income date
+                   datetime.fromtimestamp(trade['cs_date'], tz=timezone.utc))  # Tax payment date
         income += self.currency_rates_record(trade['cs_rate'])
         income += (trade['income'], trade['income_rub'], 0, 0, '201', trade['spending_rub'])
         if self._year == 2020:
@@ -310,8 +310,8 @@ class DLSG:
         else:
             income = (0, '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)',
                       income_source, income_iso_country, income_iso_country)
-        income += (datetime.utcfromtimestamp(interest['o_date']),  # Income date
-                   datetime.utcfromtimestamp(interest['o_date']))  # Tax payment date
+        income += (datetime.fromtimestamp(interest['o_date'], tz=timezone.utc),  # Income date
+                   datetime.fromtimestamp(interest['o_date'], tz=timezone.utc))  # Tax payment date
         income += self.currency_rates_record(interest['rate'])
         income += (interest['interest'], interest['interest_rub'])
         if self._year == 2020:
@@ -341,8 +341,8 @@ class DLSG:
             income = (0, '1532',
                       '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ',
                       income_source, income_iso_country, income_iso_country)
-        income += (datetime.utcfromtimestamp(trade['cs_date']),  # Income date
-                   datetime.utcfromtimestamp(trade['cs_date']))  # Tax payment date
+        income += (datetime.fromtimestamp(trade['cs_date'], tz=timezone.utc),  # Income date
+                   datetime.fromtimestamp(trade['cs_date'], tz=timezone.utc))  # Tax payment date
         income += self.currency_rates_record(trade['cs_rate'])
         income += (trade['income'], trade['income_rub'], 0, 0, '206', trade['spending_rub'])
         if self._year == 2020:
@@ -362,8 +362,8 @@ class DLSG:
             income = (13, '4800', 'Иные доходы', income_source, income_iso_country)
         else:
             income = (0, '4800', 'Иные доходы', income_source, income_iso_country, income_iso_country)
-        income += (datetime.utcfromtimestamp(payment['payment_date']),  # Income date
-                   datetime.utcfromtimestamp(payment['payment_date']))  # Tax payment date
+        income += (datetime.fromtimestamp(payment['payment_date'], tz=timezone.utc),  # Income date
+                   datetime.fromtimestamp(payment['payment_date'], tz=timezone.utc))  # Tax payment date
         income += self.currency_rates_record(payment['rate'])
         income += (payment['amount'], payment['amount_rub'])
         if self._year == 2020:

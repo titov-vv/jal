@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from PySide6.QtCore import Qt, Property, QDateTime, QTimeZone, QLocale
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
@@ -216,7 +216,7 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
             if datatype == "str":
                 return value
             elif datatype == "date":
-                return datetime.utcfromtimestamp(int(value)).strftime("%d/%m/%Y")
+                return datetime.fromtimestamp(int(value), tz=timezone.utc).strftime("%d/%m/%Y")
             elif datatype == "float":
                 return f"{value:.2f}"
             elif datatype == "tag":

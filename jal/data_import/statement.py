@@ -162,7 +162,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     # returns timestamp that is equal to the last second of initial timestamp
     def _end_of_date(self, timestamp) -> int:   #FIXME - something similar is in helpers.py -> refactor
-        end_of_day = datetime.utcfromtimestamp(timestamp).replace(hour=23, minute=59, second=59)
+        end_of_day = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(hour=23, minute=59, second=59)
         return int(end_of_day.replace(tzinfo=timezone.utc).timestamp())
 
     # Finds an account in jal database and returns its id

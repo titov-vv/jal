@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView, QComboBox
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime, QTimeZone
@@ -100,7 +100,7 @@ class TimestampDelegate(GridLinesDelegate):
     def displayText(self, value, locale):
         if isinstance(value, str):  # int value comes here in form of string in case of SQL aggregate function results
             value = int(value)
-        text = datetime.utcfromtimestamp(value).strftime(self._format) if value else ''
+        text = datetime.fromtimestamp(value, tz=timezone.utc).strftime(self._format) if value else ''
         return text
 
     def createEditor(self, aParent, option, index):

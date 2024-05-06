@@ -76,12 +76,12 @@ def db_row2dict(model, row) -> dict:
 # -------------------------------------------------------------------------------------------------------------------
 # Returns timestamp of the first second of the year of given timestamp
 def year_begin(timestamp: int) -> int:
-    begin = datetime.utcfromtimestamp(timestamp).replace(month=1, day=1, hour=0, minute=0, second=0)
+    begin = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(month=1, day=1, hour=0, minute=0, second=0)
     return int(begin.replace(tzinfo=timezone.utc).timestamp())
 
 # Returns timestamp of the last second of the year of given timestamp
 def year_end(timestamp: int) -> int:
-    end = datetime.utcfromtimestamp(timestamp).replace(month=1, day=1, hour=0, minute=0, second=0)
+    end = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(month=1, day=1, hour=0, minute=0, second=0)
     end = end.replace(year=end.year + 1) - timedelta(seconds=1)
     return int(end.replace(tzinfo=timezone.utc).timestamp())
 
@@ -91,6 +91,6 @@ def now_ts() -> int:
 
 # Returns timestamp of the last second of the day of given timestamp
 def day_end(timestamp: int) -> int:
-    end = datetime.utcfromtimestamp(timestamp).replace(hour=23, minute=59, second=59)
+    end = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(hour=23, minute=59, second=59)
     return int(end.replace(tzinfo=timezone.utc).timestamp())
 # -------------------------------------------------------------------------------------------------------------------

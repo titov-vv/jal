@@ -1,7 +1,7 @@
 import logging
 import re
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 from itertools import groupby
 from decimal import Decimal
 from lxml import etree
@@ -451,8 +451,8 @@ class StatementIBKR(StatementXML):
         self._data[FOF.PERIOD][0] = header['period_start']
         self._data[FOF.PERIOD][1] = self._end_of_date(header['period_end'])
         logging.info(self.tr("Load IB Flex-statement for account ") +
-                     f"{header['account']}: {datetime.utcfromtimestamp(header['period_start']).strftime('%Y-%m-%d')}" +
-                     f" - {datetime.utcfromtimestamp(header['period_end']).strftime('%Y-%m-%d')}")
+                     f"{header['account']}: {datetime.fromtimestamp(header['period_start'], tz=timezone.utc).strftime('%Y-%m-%d')}" +
+                     f" - {datetime.fromtimestamp(header['period_end'], tz=timezone.utc).strftime('%Y-%m-%d')}")
 
     def load_accounts(self, balances):
         for i, balance in enumerate(sorted(balances, key=lambda x: x['currency'])):
@@ -1140,9 +1140,9 @@ class StatementIBKR(StatementXML):
                     "tax": float(db_dividend.tax()),
                     "description": db_dividend.note()
                 })
-        if datetime.utcfromtimestamp(timestamp).timetuple().tm_yday < 75:
+        if datetime.fromtimestamp(timestamp, tz=timezone.utc).timetuple().tm_yday < 75:
             # We may have wrong date in taxes before March, 15 due to tax correction
-            range_start, _range_end = ManipulateDate.PreviousYear(day=datetime.utcfromtimestamp(timestamp))
+            range_start, _range_end = ManipulateDate.PreviousYear(day=datetime.fromtimestamp(timestamp, tz=timezone.utc))
             dividends = [x for x in dividends if x['timestamp'] >= range_start]
         else:
             # For any other day - use exact time match

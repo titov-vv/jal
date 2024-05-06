@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
 from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset
@@ -224,8 +224,8 @@ class JalAsset(JalDB):
     def days2expiration(self) -> int:
         if self._expiry == 0:
             return 0
-        expiry_date = datetime.utcfromtimestamp(self._expiry)
-        days_remaining = int((expiry_date - datetime.utcnow()).total_seconds() / 86400)
+        expiry_date = datetime.fromtimestamp(self._expiry, tz=timezone.utc)
+        days_remaining = int((expiry_date - datetime.now(tz=timezone.utc)).total_seconds() / 86400)
         return days_remaining
 
     def reg_number(self):

@@ -1,7 +1,7 @@
 import logging
 import re
 import difflib
-from datetime import datetime
+from datetime import datetime, timezone
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory, PredefinedAsset
@@ -252,8 +252,8 @@ class StatementOpenBroker(StatementXML):
         self._data[FOF.PERIOD][1] = self._end_of_date(header['period_end'])
         self._account_number = header['account']
         logging.info(self.tr("Load Open Broker statement for account ") +
-                     f"{self._account_number}: {datetime.utcfromtimestamp(header['period_start']).strftime('%Y-%m-%d')}"
-                     + f" - {datetime.utcfromtimestamp(header['period_end']).strftime('%Y-%m-%d')}")
+                     f"{self._account_number}: {datetime.fromtimestamp(header['period_start'], tz=timezone.utc).strftime('%Y-%m-%d')}"
+                     + f" - {datetime.fromtimestamp(header['period_end'], tz=timezone.utc).strftime('%Y-%m-%d')}")
 
     def load_assets(self, assets):
         cnt = 0
@@ -508,7 +508,7 @@ class StatementOpenBroker(StatementXML):
             raise Statement_ImportError(self.tr("Multiple asset cancellation match for ")
                                         + f"'{description}'")
         asset_cancel = match[0]
-        number = datetime.utcfromtimestamp(timestamp).strftime('%Y%m%d') + f"-{asset_cancel['id']}"
+        number = datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%Y%m%d') + f"-{asset_cancel['id']}"
         qty = asset_cancel['quantity']
         price = abs(amount / qty)  # Price is always positive
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
