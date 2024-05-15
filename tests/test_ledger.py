@@ -341,10 +341,9 @@ def test_fifo(prepare_db_fifo):
     trades = JalAccount(1).closed_trades_list()
     # totals
     assert len(trades) == 50
-    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade and x.close_operation().type() == LedgerTransaction.Trade]) == 36
+    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade and x.close_operation().type() == LedgerTransaction.Trade]) == 38
     assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction or x.close_operation().type() != LedgerTransaction.CorporateAction]) == 46
     assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.CorporateAction and x.close_operation().type() == LedgerTransaction.CorporateAction]) == 4
-    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Transfer or x.close_operation().type() == LedgerTransaction.Transfer]) == 2
 
     # Check single deal
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(4))
@@ -433,7 +432,7 @@ def test_fifo(prepare_db_fifo):
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(20))
     assert len(trades) == 4
     assert all([x.qty() == Decimal('5') for x in [trade for trade in trades]])
-    assert [x.profit() for x in trades] == [Decimal('0'), Decimal('0'), Decimal('500'), Decimal('500')]  # FIXME - actually we need to sell transferred stocks first (i.e. should be 500, 500, 0, 0)
+    assert [x.profit() for x in trades] == [Decimal('500'), Decimal('500'), Decimal('0'), Decimal('0')]
 
     # validate final amounts
     # validate book amounts and values
@@ -463,9 +462,9 @@ def test_asset_transfer(prepare_db):
     create_stocks([('A.USD', 'A SHARE')], currency_id=2)   # id = 4
     JalAsset(4).add_symbol('A.RUB', 1, '')
 
-    create_trades(1, [(d2t(220201), d2t(220203), 4, 2.0, 100.0, 1.0)])
+    create_trades(1, [(d2t(220201), d2t(220203), 4, 2.0, 100.0, 1.0)])  # Buy A on account.USD in 2 transactions
     create_trades(1, [(d2t(220205), d2t(220207), 4, 3.0, 100.0, 1.0)])
-    create_trades(2, [(d2t(220211), d2t(220213), 4, -5.0, 8000.0, 5.0)])
+    create_trades(2, [(d2t(220211), d2t(220213), 4, -5.0, 8000.0, 5.0)]) # Sell A from account.RUB in one shot
 
     create_transfers([(d2t(220207), 1, 5.0, 2, 37500.0, 4)])   # Move A from account.USD to account.RUB with new cost basis of 37500 RUB
 
@@ -481,10 +480,10 @@ def test_asset_transfer(prepare_db):
     assert value[BookAccount.Transfers, 2, 4] == Decimal('-3.75E+4')
     trades = JalAccount(1).closed_trades_list()
     assert len(trades) == 2
-    assert sum([x.profit() for x in trades]) == Decimal('-2')   # sum of open trades fee
+    assert sum([x.profit() for x in trades]) == Decimal('0')   # sum of open trades fee
     trades = JalAccount(2).closed_trades_list()
-    assert len(trades) == 1
-    assert sum([x.profit() for x in trades]) == Decimal('2495')
+    assert len(trades) == 2
+    assert sum([x.profit() for x in trades]) == Decimal('2493')
 
     # Modify closing deal quantity
     LedgerTransaction.get_operation(LedgerTransaction.Trade, 3).update_price(Decimal('7700'))
@@ -495,7 +494,7 @@ def test_asset_transfer(prepare_db):
 
     trades = JalAccount(1).closed_trades_list()
     assert len(trades) == 2
-    assert sum([x.profit() for x in trades]) == Decimal('-2')
+    assert sum([x.profit() for x in trades]) == Decimal('0')
     trades = JalAccount(2).closed_trades_list()
-    assert len(trades) == 1
-    assert sum([x.profit() for x in trades]) == Decimal('995')
+    assert len(trades) == 2
+    assert sum([x.profit() for x in trades]) == Decimal('993')

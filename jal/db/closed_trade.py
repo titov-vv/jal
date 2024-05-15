@@ -71,6 +71,12 @@ class JalClosedTrade(JalDB):
     def qty(self) -> Decimal:
         return self._qty
 
+    def open_timestamp(self) -> int:
+        return self._open_op.timestamp()
+
+    def close_timestamp(self) -> int:
+        return self._close_op.timestamp()
+
     def open_price(self) -> Decimal:
         return self._open_price
 
@@ -122,7 +128,10 @@ class JalClosedTrade(JalDB):
         return self.open_fee(currency_id) + self.close_fee(currency_id)
 
     def profit(self, percent=False) -> Decimal:
-        profit = self._qty * (self._close_price - self._open_price) - self.fee()
-        if percent:
-            profit = Decimal('100') * profit / (self._qty * self._open_price) if self._open_price else Decimal('0')
-        return profit
+        if self._close_op.type() == jal.db.operations.LedgerTransaction.Trade:
+            profit = self._qty * (self._close_price - self._open_price) - self.fee()
+            if percent:
+                profit = Decimal('100') * profit / (self._qty * self._open_price) if self._open_price else Decimal('0')
+            return profit
+        else:
+            return Decimal('0')

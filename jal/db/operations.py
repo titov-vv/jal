@@ -967,19 +967,27 @@ class Transfer(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
             ledger.appendTransaction(self, BookAccount.Transfers, transfer_amount, asset_id=self._asset.id(), value=processed_value)
         elif self._display_type == Transfer.Incoming:
+            transfer_trades = self._withdrawal_account.closed_trades_list(asset=self._asset)
+            # get initial value of withdrawn asset
+            value = self._read("SELECT value FROM ledger "
+                               "WHERE book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
+                               [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype),
+                                (":id", self._oid)], check_unique=True)
+            if not value:
+                raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
             if self._withdrawal_account.currency() == self._deposit_account.currency():
-                # get initial value of withdrawn asset
-                value = self._read("SELECT value FROM ledger "
-                                   "WHERE book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
-                                   [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype),
-                                    (":id", self._oid)], check_unique=True)
-                if not value:
-                    raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
                 transfer_value = Decimal(value)
+                # Move open trades from previous account to new
+                for trade in transfer_trades:
+                    self._deposit_account.open_trade(trade.open_timestamp(), trade.open_operation().type(), trade.open_operation().id(),
+                                                     self._asset, trade.open_price(), trade.qty())
             else:
                 transfer_value = self._deposit
-            price = transfer_value / transfer_amount
-            self._deposit_account.open_trade(self._deposit_timestamp, self._otype, self._oid, self._asset, price, transfer_amount)
+                rate = transfer_value/Decimal(value)
+                # Move open trades from previous account to new and adjust price
+                for trade in transfer_trades:
+                    self._deposit_account.open_trade(trade.open_timestamp(), trade.open_operation().type(), trade.open_operation().id(),
+                                                     self._asset, trade.open_price()*rate, trade.qty())
             ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=-transfer_value)
             ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=transfer_value)
         else:
