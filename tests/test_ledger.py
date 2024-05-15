@@ -32,7 +32,7 @@ def test_ledger(prepare_db_ledger):
 
     # validate book amounts
     amounts = LedgerAmounts("amount_acc")
-    expected_book_amounts ={
+    expected_book_amounts = {
         BookAccount.Costs: Decimal('130'),
         BookAccount.Incomes: Decimal('-139'),
         BookAccount.Money: Decimal('9'),

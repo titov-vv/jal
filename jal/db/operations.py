@@ -969,14 +969,14 @@ class Transfer(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Transfers, transfer_amount,
                                      asset_id=self._asset.id(), value=processed_value)
         elif self._display_type == Transfer.Incoming:
-            # get initial value of withdrawn asset
-            value = self._read("SELECT value FROM ledger "
-                               "WHERE book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
-                               [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype),
-                                (":id", self._oid)], check_unique=True)
-            if not value:
-                raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
             if self._withdrawal_account.currency() == self._deposit_account.currency():
+                # get initial value of withdrawn asset
+                value = self._read("SELECT value FROM ledger "
+                                   "WHERE book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
+                                   [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype),
+                                    (":id", self._oid)], check_unique=True)
+                if not value:
+                    raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
                 transferred_value = Decimal(value)
             else:
                 transferred_value = self._deposit
