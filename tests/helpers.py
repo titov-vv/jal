@@ -150,6 +150,6 @@ def create_corporate_actions(account_id, actions):
 def create_transfers(transfers):
     for transfer in transfers:
         data = {'withdrawal_timestamp': transfer[0], 'withdrawal_account': transfer[1], 'withdrawal': transfer[2],
-                'deposit_timestamp': transfer[0],'deposit_account': transfer[3], 'deposit': transfer[4],
+                'deposit_timestamp': transfer[0], 'deposit_account': transfer[3], 'deposit': transfer[4],
                 'asset': transfer[5]}
         LedgerTransaction.create_new(LedgerTransaction.Transfer, data)

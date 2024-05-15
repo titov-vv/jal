@@ -3,7 +3,7 @@ from decimal import Decimal
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_quotes, \
     create_corporate_actions, create_stock_dividends, create_transfers
-from constants import BookAccount
+from constants import BookAccount, PredefinedCategory
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -222,9 +222,15 @@ def test_stock_dividend_change(prepare_db_fifo):
 
 
 def test_fifo(prepare_db_fifo):
+    # Prepare an account to transfer asset from
+    transfer_account = JalAccount(
+        data={'name': 'Transfer Acc.', 'number': '12345', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1, 'precision': 10},
+        create=True)
+    assert transfer_account.id() == 2
+    create_actions([(d2t(240101), 2, 1, [(PredefinedCategory.StartingBalance, 1000.0)])])
     # Prepare trades and corporate actions setup
     test_assets = [
-        ('A', 'A SHARE'),   # id 4 -> 18
+        ('A', 'A SHARE'),   # id == 4
         ('B', 'B SHARE'),
         ('C', 'C SHARE'),
         ('D', 'D SHARE'),
@@ -239,7 +245,8 @@ def test_fifo(prepare_db_fifo):
         ('N', 'N WITH STOCK DIVIDEND'),
         ('O', 'O SHARE'),
         ('P', 'P SHARE'),
-        ('V', 'V SHARE')
+        ('Q', 'Q SHARE'),
+        ('R', 'WITH ASSET TRANSFER')  # id == 20
     ]
     create_stocks(test_assets, currency_id=2)
 
@@ -314,8 +321,18 @@ def test_fifo(prepare_db_fifo):
         (d2t(210409), d2t(210410), 19, -5.0, 200, 0.0),
         (d2t(210501), d2t(210502), 19, +10.0, 200, 0.0),
         (d2t(210510), d2t(210511), 19, -10.0, 100, 0.0),
+        (d2t(240503), d2t(210504), 20, +10.0, 200, 0.0),  # Buy the same asset R after transfer
+        (d2t(240507), d2t(210508), 20, -5.0, 200, 0.0),   # Sell asset R after transfer in 3 different operations
+        (d2t(240509), d2t(210510), 20, -10.0, 200, 0.0),
+        (d2t(240511), d2t(210512), 20, -5.0, 200, 0.0)
     ]
     create_trades(1, test_trades)
+
+    transfer_trades = [
+        (d2t(240501), d2t(240502), 20, +10.0, 100, 0.0)   # Buy asset R for further transfer to another account
+    ]
+    create_trades(2, transfer_trades)
+    create_transfers([(d2t(240505), 2, 10.0, 1, 0.0, 20)])  # Move asset R from acc.id2 to acc.id1 (with no currency/value change)
 
     # Build ledger
     ledger = Ledger()
@@ -323,10 +340,11 @@ def test_fifo(prepare_db_fifo):
 
     trades = JalAccount(1).closed_trades_list()
     # totals
-    assert len(trades) == 46
-    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade and x.close_operation().type() == LedgerTransaction.Trade]) == 34
-    assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction or x.close_operation().type() != LedgerTransaction.CorporateAction]) == 42
+    assert len(trades) == 50
+    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade and x.close_operation().type() == LedgerTransaction.Trade]) == 36
+    assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction or x.close_operation().type() != LedgerTransaction.CorporateAction]) == 46
     assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.CorporateAction and x.close_operation().type() == LedgerTransaction.CorporateAction]) == 4
+    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Transfer or x.close_operation().type() == LedgerTransaction.Transfer]) == 2
 
     # Check single deal
     trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 4]
@@ -411,12 +429,18 @@ def test_fifo(prepare_db_fifo):
     assert sum([x.qty() for x in trades]) == Decimal('-2')
     assert sum([x.profit() for x in trades]) == Decimal('200')
 
+    # Deals with transfer
+    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 20]
+    assert len(trades) == 4
+    assert all([x.qty() == Decimal('5') for x in [trade for trade in trades]])
+    assert [x.profit() for x in trades] == [Decimal('0'), Decimal('0'), Decimal('500'), Decimal('500')]  # FIXME - actually we need to sell transferred stocks first (i.e. should be 500, 500, 0, 0)
+
     # validate final amounts
     # validate book amounts and values
     amounts = LedgerAmounts("amount_acc")
     values = LedgerAmounts("value_acc")
     assert amounts[BookAccount.Money, 1, 1] == Decimal('0')
-    assert amounts[BookAccount.Money, 1, 2] == Decimal('18200')
+    assert amounts[BookAccount.Money, 1, 2] == Decimal('20200')
     for asset_id in range(4, 18):
         assert values[BookAccount.Assets, 1, asset_id] == Decimal('0')
 
@@ -429,6 +453,8 @@ def test_asset_transfer(prepare_db):
     account2 = JalAccount(
         data={'name': 'account.RUB', 'number': 'U7654321', 'currency': 1, 'active': 1, 'investing': 1, 'organization': 1, 'precision': 10},
         create=True)
+    assert account1.id() == 1
+    assert account2.id() == 2
 
     # Create starting balance
     create_actions([(d2t(220101), 1, 1, [(4, 1000.0)])])

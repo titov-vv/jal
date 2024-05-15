@@ -288,7 +288,7 @@ class JalAccount(JalDB):
 
     # Returns a list of {"operation": LedgerTransaction, "price": Decimal, "remaining_qty": Decimal}
     # that represents all trades that were opened for given asset on this account at given timestamp
-    # LedgerTransaction might be Trade, CorporateAction or Transfer
+    # LedgerTransaction might be Trade, AssetPayment, CorporateAction or Transfer
     # Returns the latest open trades if timestamp is omitted.
     def open_trades_list(self, asset, timestamp=None) -> list:
         if timestamp is None:
@@ -299,14 +299,14 @@ class JalAccount(JalDB):
                            "ROW_NUMBER() OVER (PARTITION BY op_type, operation_id ORDER BY timestamp DESC, id DESC) AS row_no "
                            "FROM trades_opened WHERE account_id=:account AND asset_id=:asset AND timestamp<=:timestamp) "
                            "SELECT op_type, operation_id, price, remaining_qty "
-                           "FROM open_trades_numbered WHERE row_no=1 AND remaining_qty!=:zero "
-                           "ORDER BY timestamp, op_type DESC",
+                           "FROM open_trades_numbered WHERE row_no=1 AND remaining_qty!=:zero ",
                            [(":account", self._id), (":asset", asset.id()),
                             (":timestamp", timestamp), (":zero", format_decimal(Decimal('0')))])
         while query.next():
             op_type, oid, price, qty = self._read_record(query, cast=[int, int, Decimal, Decimal])
             operation = jal.db.operations.LedgerTransaction().get_operation(op_type, oid, jal.db.operations.Transfer.Incoming)
             trades.append({"operation": operation, "price": price, "remaining_qty": qty})
+        trades = sorted(trades, key=lambda op: op['operation'].timestamp())
         return trades
 
     # Returns amount that was paid for an asset that was hold on the account during time between start_ts and end_ts
