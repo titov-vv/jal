@@ -347,90 +347,90 @@ def test_fifo(prepare_db_fifo):
     assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Transfer or x.close_operation().type() == LedgerTransaction.Transfer]) == 2
 
     # Check single deal
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 4]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(4))
     assert len(trades) == 1
     assert trades[0].profit() == Decimal('994.0')
     assert trades[0].fee() == Decimal('6.0')
 
     # One buy multiple sells
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 5]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(5))
     assert len(trades) == 2
     assert sum([x.profit() for x in trades]) == Decimal('-56')
     assert sum([x.fee() for x in trades]) == Decimal('6')
 
     # Multiple buy one sell
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 6]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(6))
     assert len(trades) == 2
     assert sum([x.profit() for x in trades]) == Decimal('-1306')
     assert sum([x.fee() for x in trades]) == Decimal('6')
 
     # One sell multiple buys
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 7]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(7))
     assert len(trades) == 2
     assert sum([x.profit() for x in trades]) == Decimal('-78')
     assert sum([x.fee() for x in trades]) == Decimal('3')
 
     # Multiple sells one buy
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 8]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(8))
     assert len(trades) == 2
     assert sum([x.profit() for x in trades]) == Decimal('317')
     assert sum([x.fee() for x in trades]) == Decimal('3')
 
     # Multiple buys and sells
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 9]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(9))
     assert len(trades) == 11
     assert sum([x.profit() for x in trades]) == Decimal('3500')
     assert sum([x.fee() for x in trades]) == Decimal('0')
 
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 19]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(19))
     assert len(trades) == 5
     assert [x.qty() for x in trades if x.asset().id() == 19] == [Decimal('5'), Decimal('12'), Decimal('3'), Decimal('5'), Decimal('10')]
 
     # Symbol change
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 10]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(10))
     assert len(trades) == 1
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 11]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(11))
     assert len(trades) == 2
     assert sum([x.profit() for x in trades]) == Decimal('1200')
 
     # Spin-off
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 12]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(12))
     assert len(trades) == 1
     assert sum([x.profit() for x in trades]) == Decimal('0')
 
     # Multiple corp actions
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 13]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(13))
     assert len(trades) == 1
     assert trades[0].close_operation().type() == LedgerTransaction.CorporateAction
     assert sum([x.profit() for x in trades]) == Decimal('0')
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 14]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(14))
     assert len(trades) == 4
     assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction]) == 3
     assert len([x for x in trades if x.close_operation().type() != LedgerTransaction.CorporateAction]) == 1
     assert [x.profit() for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction] == [Decimal('75'), Decimal('0'), Decimal('0')]
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 15]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(15))
     assert len(trades) == 3
     assert len([x for x in trades if x.close_operation().type() != LedgerTransaction.CorporateAction]) == 1
     assert [x.profit() for x in trades] == [Decimal('0'), Decimal('0'), Decimal('274')]
 
     # Stock dividend
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 16]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(16))
     assert len(trades) == 3
     assert sum([x.profit() for x in trades]) == Decimal('450')
     assert sum([x.profit() for x in trades if x.close_operation().timestamp() == 1608454800]) == Decimal('0')
     assert sum([x.profit() for x in trades if x.open_operation().timestamp() == 1608368400]) == Decimal('50')
 
     # Order of buy/sell
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 17]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(17))
     assert len(trades) == 2
     assert sum([x.profit() for x in trades]) == Decimal('140')
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 18]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(18))
     assert len(trades) == 4
     assert sum([x.qty() for x in trades]) == Decimal('-2')
     assert sum([x.profit() for x in trades]) == Decimal('200')
 
     # Deals with transfer
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.asset().id() == 20]
+    trades = JalAccount(1).closed_trades_list(asset=JalAsset(20))
     assert len(trades) == 4
     assert all([x.qty() == Decimal('5') for x in [trade for trade in trades]])
     assert [x.profit() for x in trades] == [Decimal('0'), Decimal('0'), Decimal('500'), Decimal('500')]  # FIXME - actually we need to sell transferred stocks first (i.e. should be 500, 500, 0, 0)
