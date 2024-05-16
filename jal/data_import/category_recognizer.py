@@ -6,17 +6,17 @@ from jal.db.category import JalCategory
 
 
 def clean_text(text):
-    text=re.sub(r'\(.* x .*\)$', '', str(text))   # remove (quantity x price) at the end if it was addded during import
+    text=re.sub(r"\(.* x .*\)$", "", str(text))   # remove (quantity x price) at the end if it was addded during import
     text = text.lower() + " "                     # lower and add extra space in order not to be cut at end of string
-    text=re.sub("^\d*.?:? ?\d* ", "", text)       # drop any leading position numbers in slip and/or product numbers
-    text=re.sub(r'\d+ ?шт\b'," QTYPCS ", text)    # replace any quantity in peaces by tag
-    text=re.sub(r'\d+ ?к?гр?\b'," QTYWGTH ", text)               # replace any quantity in grams/kilograms by tag
-    text=re.sub(r'(\d+(\.|,))?\d+ ?м?(л|l)\b'," QTYVOL ", text)  # replace any quantity in litres/millilitres by tag
-    text=re.sub(r'(\d+(\.|,))?\d+ ?(с|м)?м\b'," SIZE ", text)    # replace any quantity in legth units by tag
-    text=re.sub(r'(\d+(\.|,))?\d+ ?%(?P<tail>\W)'," PERCENT \g<tail>", text)  # replace percentages by tag
-    text=re.sub(r'\b\d+((\.|,)\d+)?\b', " NUMBER ", text)        # put numbers as tags
-    text = re.sub(r'\.|\,|\"|\#|\*|\=|\+|\(|\)'," ", text)       # Remove punctuation (keep '-', '/')
-    text = re.sub(r'\s\S\s', " ", text)            # remove any single separate standing non-space character
+    text=re.sub(r"^\d*.?:? ?\d* ", "", text)       # drop any leading position numbers in slip and/or product numbers
+    text=re.sub(r"\d+ ?шт\b"," QTYPCS ", text)    # replace any quantity in peaces by tag
+    text=re.sub(r"\d+ ?к?гр?\b"," QTYWGTH ", text)               # replace any quantity in grams/kilograms by tag
+    text=re.sub(r"(\d+(\.|,))?\d+ ?м?(л|l)\b"," QTYVOL ", text)  # replace any quantity in litres/millilitres by tag
+    text=re.sub(r"(\d+(\.|,))?\d+ ?(с|м)?м\b"," SIZE ", text)    # replace any quantity in legth units by tag
+    text=re.sub(r"(\d+(\.|,))?\d+ ?%(?P<tail>\W)",r" PERCENT \g<tail>", text)  # replace percentages by tag
+    text=re.sub(r"\b\d+((\.|,)\d+)?\b", " NUMBER ", text)        # put numbers as tags
+    text = re.sub(r"\.|\,|\"|\#|\*|\=|\+|\(|\)"," ", text)       # Remove punctuation (keep "-", "/")
+    text = re.sub(r"\s\S\s", " ", text)            # remove any single separate standing non-space character
     return text
 
 #----------------------------------------------------------------------------------------------------------------------

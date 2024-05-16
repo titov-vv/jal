@@ -42,7 +42,7 @@ class StatementKIT(StatementXLS):
             "amount": "Сумма сделки",
             "currency": " Валюта\nзаключения\nсделки",
             "accrued_int": " НКД",
-            "settlement": "Дата поставки\n\(план.\)",
+            "settlement": r"Дата поставки\n\(план.\)",
             "fee_ex": "Комиссия\nТС",
             "fee_broker": "Комиссия\nброкера"
         }
