@@ -193,7 +193,7 @@ class HoldingsModel(ReportTreeModel):
 
     # Returns tuple of two values for open position in 'asset' for 'account' on given date 'end_ts':
     # 1st (int) - the earliest timestamp of open position
-    # 2nd (Decimal) = 0 (not implemented - the amount of payments that were accumulated for given asset)
+    # 2nd (Decimal) - the amount of payments that were accumulated for given asset
     def get_asset_history_payments(self, account: JalAccount, asset: JalAsset, end_ts: int) -> (int, Decimal):
         trades = account.open_trades_list(asset, end_ts)
         if len(trades) == 0:
@@ -207,7 +207,7 @@ class HoldingsModel(ReportTreeModel):
                 transfer_out = LedgerTransaction().get_operation(operation.type(), operation.id(), Transfer.Outgoing)
                 since_new, amount_new = self.get_asset_history_payments(transfer_out.account(), asset, transfer_out.timestamp()-1)  # get position just before the transfer
             elif operation.type() == LedgerTransaction.CorporateAction and operation.subtype() == CorporateAction.Split:
-                since_new, amount_new = self.get_asset_history_payments(account, asset, operation.timestamp()-1)  # get position just before the split
+                since_new, amount_new = self.get_asset_history_payments(operation.account(), asset, operation.timestamp()-1)  # get position just before the split
             else:
                 continue
             since = min(since, since_new)
