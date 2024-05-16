@@ -968,6 +968,7 @@ class Transfer(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Transfers, transfer_amount, asset_id=self._asset.id(), value=processed_value)
         elif self._display_type == Transfer.Incoming:
             transfer_trades = self._withdrawal_account.closed_trades_list(asset=self._asset)
+            transfer_trades = [x for x in transfer_trades if x.close_operation().id() == self._oid]  # Keep only trades that were closed with current operation
             # get initial value of withdrawn asset
             value = self._read("SELECT value FROM ledger "
                                "WHERE book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
