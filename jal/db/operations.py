@@ -97,7 +97,7 @@ class LedgerTransaction(JalDB):
 
     # Deletes operation from database
     def delete(self) -> None:
-        _ = self._exec(f"DELETE FROM {self._db_table} WHERE id={self._oid}")
+        _ = self._exec(f"DELETE FROM {self._db_table} WHERE oid={self._oid}")
         self._oid = 0
         self._otype = 0
         self._data = None
@@ -280,7 +280,7 @@ class IncomeSpending(LedgerTransaction):
         self._otype = LedgerTransaction.IncomeSpending
         self._data = self._read("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
                                 "a.alt_currency_id AS currency FROM actions AS a "
-                                "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.id=:oid",
+                                "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
         self._account = jal.db.account.JalAccount(self._data['account_id'])
@@ -423,8 +423,8 @@ class AssetPayment(LedgerTransaction):
                                 "p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
                                 "FROM asset_payments AS p "
                                 "LEFT JOIN assets AS a ON p.asset_id = a.id "
-                                "LEFT JOIN ledger_totals AS l ON l.otype=p.otype AND l.oid=p.id "
-                                "AND l.book_account = :book_assets WHERE p.id=:oid",
+                                "LEFT JOIN ledger_totals AS l ON l.otype=p.otype AND l.oid=p.oid "
+                                "AND l.book_account = :book_assets WHERE p.oid=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
         self._subtype = self._data['type']
         self._oname = self.names[self._subtype]
@@ -452,11 +452,11 @@ class AssetPayment(LedgerTransaction):
     def get_list(cls, account_id: int, asset_id: int = 0, subtype: int = 0, skip_accrued: bool = False) -> list:
         payments = []
         if skip_accrued:
-            query = "SELECT p.id FROM asset_payments p LEFT JOIN trades t ON p.account_id=t.account_id "\
+            query = "SELECT p.oid FROM asset_payments p LEFT JOIN trades t ON p.account_id=t.account_id "\
                     "AND p.asset_id=t.asset_id AND p.number=t.number AND t.number!='' "\
-                    "WHERE p.account_id=:account AND t.id IS NULL"
+                    "WHERE p.account_id=:account AND t.oid IS NULL"
         else:
-            query = "SELECT p.id FROM asset_payments p WHERE p.account_id=:account"
+            query = "SELECT p.oid FROM asset_payments p WHERE p.account_id=:account"
         params = [(":account", account_id)]
         if asset_id:
             query += " AND p.asset_id=:asset"
@@ -558,12 +558,12 @@ class AssetPayment(LedgerTransaction):
         return balance
 
     def update_amount(self, amount: Decimal) -> None:
-        self._exec("UPDATE asset_payments SET amount=:amount WHERE id=:id",
-                   [(":id", self._oid), (":amount", format_decimal(amount))])
+        self._exec("UPDATE asset_payments SET amount=:amount WHERE oid=:oid",
+                   [(":oid", self._oid), (":amount", format_decimal(amount))])
 
     def update_tax(self, new_tax) -> None:   # FIXME method should take Decimal value, not float
-        _ = self._exec("UPDATE asset_payments SET tax=:tax WHERE id=:dividend_id",
-                       [(":dividend_id", self._oid), (":tax", new_tax)], commit=True)
+        _ = self._exec("UPDATE asset_payments SET tax=:tax WHERE oid=:oid",
+                       [(":oid", self._oid), (":tax", new_tax)], commit=True)
 
     def processLedger(self, ledger):
         if not self._broker:
@@ -643,7 +643,7 @@ class Trade(LedgerTransaction):
         self._otype = LedgerTransaction.Trade
         self._view_rows = 2
         self._data = self._read("SELECT t.timestamp, t.settlement, t.number, t.account_id, t.asset_id, t.qty, "
-                                "t.price, t.fee, t.note FROM trades AS t WHERE t.id=:oid",
+                                "t.price, t.fee, t.note FROM trades AS t WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
         self._settlement = self._data['settlement']
@@ -672,14 +672,13 @@ class Trade(LedgerTransaction):
         return self._price
 
     def update_price(self, price: Decimal) -> None:
-        self._exec("UPDATE trades SET price=:price WHERE id=:id", [(":id", self._oid),
-                                                                   (":price", format_decimal(price))])
+        self._exec("UPDATE trades SET price=:price WHERE oid=:oid", [(":oid", self._oid), (":price", format_decimal(price))])
 
     def qty(self) -> Decimal:
         return self._qty
 
     def update_qty(self, qty: Decimal) -> None:
-        self._exec("UPDATE trades SET qty=:qty WHERE id=:id", [(":id", self._oid), (":qty", format_decimal(qty))])
+        self._exec("UPDATE trades SET qty=:qty WHERE oid=:oid", [(":oid", self._oid), (":qty", format_decimal(qty))])
 
     def fee(self) -> Decimal:
         return self._fee
@@ -713,11 +712,11 @@ class Trade(LedgerTransaction):
     # This dividend represents accrued interest for this operation.
     # Returns value of accrued interest or 0 if such isn't found
     def accrued_interest(self,currency_id: int = 0) -> Decimal:
-        id = self._read("SELECT id FROM asset_payments WHERE timestamp=:timestamp AND account_id=:account "
-                        "AND asset_id=:asset AND number=:number AND type=:interest",
-                        [(":timestamp", self._timestamp), (":account", self._account.id()), (":number", self._number),
-                         (":asset", self._asset.id()), (":interest", AssetPayment.BondInterest)])
-        value = AssetPayment(id).amount() if id else Decimal('0')
+        oid = self._read("SELECT oid FROM asset_payments WHERE timestamp=:timestamp AND account_id=:account "
+                         "AND asset_id=:asset AND number=:number AND type=:interest",
+                         [(":timestamp", self._timestamp), (":account", self._account.id()), (":number", self._number),
+                          (":asset", self._asset.id()), (":interest", AssetPayment.BondInterest)])
+        value = AssetPayment(oid).amount() if oid else Decimal('0')
         if currency_id and currency_id != self._account.currency():
             return value * JalAsset(self._account.currency()).quote(self.timestamp(), currency_id)[1]
         else:
@@ -799,7 +798,7 @@ class Transfer(LedgerTransaction):
         self._display_type = display_type
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
                                 "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, "
-                                "t.number, t.note FROM transfers AS t WHERE t.id=:oid",
+                                "t.number, t.note FROM transfers AS t WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         self._withdrawal_account = jal.db.account.JalAccount(self._data['withdrawal_account'])
         self._withdrawal_account_name = self._withdrawal_account.name()
@@ -1043,7 +1042,7 @@ class CorporateAction(LedgerTransaction):
         super().__init__(oid)
         self._otype = LedgerTransaction.CorporateAction
         self._data = self._read("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
-                                "FROM asset_actions AS a WHERE a.id=:oid", [(":oid", self._oid)], named=True)
+                                "FROM asset_actions AS a WHERE a.oid=:oid", [(":oid", self._oid)], named=True)
         results_query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
                                    [(":oid", self._oid)])
         self._results = []
@@ -1149,7 +1148,7 @@ class CorporateAction(LedgerTransaction):
     def get_payments(cls, account) -> list:
         payments = []
         query = cls._exec("SELECT a.timestamp, r.qty, a.note FROM asset_actions AS a "
-                          "LEFT JOIN action_results AS r ON r.action_id=a.id "
+                          "LEFT JOIN action_results AS r ON r.action_id=a.oid "
                           "WHERE a.account_id=:account_id AND r.asset_id=:account_currency",
                           [(":account_id", account.id()), (":account_currency", account.currency())])
         while query.next():
@@ -1233,8 +1232,8 @@ class TermDeposit(LedgerTransaction):
         self._otype = LedgerTransaction.TermDeposit
         self._aid = display_type   # action id
         self._data = self._read("SELECT da.timestamp, td.account_id, da.action_type, da.amount, td.note "
-                                "FROM term_deposits td LEFT JOIN deposit_actions da ON td.id=da.deposit_id "
-                                "WHERE td.id=:oid AND da.id=:aid",
+                                "FROM term_deposits td LEFT JOIN deposit_actions da ON td.oid=da.deposit_id "
+                                "WHERE td.oid=:oid AND da.id=:aid",
                                 [(":oid", self._oid), (":aid", self._aid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)

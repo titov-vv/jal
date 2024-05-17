@@ -11,8 +11,8 @@ class JalDeposit(JalDB):
     def __init__(self, id: int = 0):
         super().__init__()
         self._id = id
-        self._data = self._read("SELECT account_id, note FROM term_deposits WHERE id=:deposit_id",
-                                [(":deposit_id", self._id)], named=True)
+        self._data = self._read("SELECT account_id, note FROM term_deposits WHERE oid=:oid",
+                                [(":oid", self._id)], named=True)
         self._account_id = 0 if self._data is None else self._data['account_id']
         self._account = JalAccount(self._account_id)
         self._currency = JalAsset(self._account.currency())

@@ -4,11 +4,17 @@ PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
 DROP VIEW IF EXISTS operation_sequence;
 --------------------------------------------------------------------------------
+ALTER TABLE actions RENAME COLUMN id TO oid;
 ALTER TABLE actions RENAME COLUMN op_type TO otype;
+ALTER TABLE asset_payments RENAME COLUMN id TO oid;
 ALTER TABLE asset_payments RENAME COLUMN op_type TO otype;
+ALTER TABLE asset_actions RENAME COLUMN id TO oid;
 ALTER TABLE asset_actions RENAME COLUMN op_type TO otype;
+ALTER TABLE trades RENAME COLUMN id TO oid;
 ALTER TABLE trades RENAME COLUMN op_type TO otype;
+ALTER TABLE transfers RENAME COLUMN id TO oid;
 ALTER TABLE transfers RENAME COLUMN op_type TO otype;
+ALTER TABLE term_deposits RENAME COLUMN id TO oid;
 ALTER TABLE term_deposits RENAME COLUMN op_type TO otype;
 --------------------------------------------------------------------------------
 ALTER TABLE ledger RENAME COLUMN op_type TO otype;
@@ -54,21 +60,21 @@ CREATE VIEW operation_sequence AS
 SELECT m.otype, m.oid, m.timestamp, m.account_id, subtype
 FROM
 (
-    SELECT otype, 1 AS seq, id AS oid, timestamp, account_id, 0 AS subtype FROM actions
+    SELECT otype, 1 AS seq, oid, timestamp, account_id, 0 AS subtype FROM actions
     UNION ALL
-    SELECT otype, 2 AS seq, id AS oid, timestamp, account_id, type AS subtype FROM asset_payments
+    SELECT otype, 2 AS seq, oid, timestamp, account_id, type AS subtype FROM asset_payments
     UNION ALL
-    SELECT otype, 3 AS seq, id AS oid, timestamp, account_id, type AS subtype FROM asset_actions
+    SELECT otype, 3 AS seq, oid, timestamp, account_id, type AS subtype FROM asset_actions
     UNION ALL
-    SELECT otype, 4 AS seq, id AS oid, timestamp, account_id, 0 AS subtype FROM trades
+    SELECT otype, 4 AS seq, oid, timestamp, account_id, 0 AS subtype FROM trades
     UNION ALL
-    SELECT otype, 5 AS seq, id AS oid, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id, -1 AS subtype FROM transfers
+    SELECT otype, 5 AS seq, oid, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id, -1 AS subtype FROM transfers
     UNION ALL
-    SELECT otype, 5 AS seq, id AS oid, withdrawal_timestamp AS timestamp, fee_account AS account_id, 0 AS subtype FROM transfers WHERE NOT fee IS NULL
+    SELECT otype, 5 AS seq, oid, withdrawal_timestamp AS timestamp, fee_account AS account_id, 0 AS subtype FROM transfers WHERE NOT fee IS NULL
     UNION ALL
-    SELECT otype, 5 AS seq, id AS oid, deposit_timestamp AS timestamp, deposit_account AS account_id, 1 AS subtype FROM transfers
+    SELECT otype, 5 AS seq, oid, deposit_timestamp AS timestamp, deposit_account AS account_id, 1 AS subtype FROM transfers
     UNION ALL
-    SELECT td.otype, 6 AS seq, td.id AS oid, da.timestamp, td.account_id, da.id AS subtype FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.id WHERE da.action_type<=100
+    SELECT td.otype, 6 AS seq, td.oid, da.timestamp, td.account_id, da.id AS subtype FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid WHERE da.action_type<=100
 ) AS m
 ORDER BY m.timestamp, m.seq, m.subtype, m.oid;
 --------------------------------------------------------------------------------

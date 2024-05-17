@@ -23,7 +23,7 @@ CREATE TABLE accounts (
 DROP TABLE IF EXISTS action_details;
 CREATE TABLE action_details (
     id          INTEGER    PRIMARY KEY NOT NULL UNIQUE,
-    pid         INTEGER    REFERENCES actions (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    pid         INTEGER    REFERENCES actions (oid) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     category_id INTEGER    REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,
     amount      TEXT       NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE action_details (
 -- Table: actions
 DROP TABLE IF EXISTS actions;
 CREATE TABLE actions (
-    id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    oid             INTEGER PRIMARY KEY UNIQUE NOT NULL,
     otype           INTEGER NOT NULL DEFAULT (1),
     timestamp       INTEGER NOT NULL,
     account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
@@ -148,7 +148,7 @@ CREATE UNIQUE INDEX country_name_by_language ON country_names (country_id, langu
 -- Table: asset_payments
 DROP TABLE IF EXISTS asset_payments;
 CREATE TABLE asset_payments (
-    id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    oid        INTEGER PRIMARY KEY UNIQUE NOT NULL,
     otype      INTEGER NOT NULL DEFAULT (2),
     timestamp  INTEGER NOT NULL,
     ex_date    INTEGER NOT NULL DEFAULT (0),
@@ -271,7 +271,7 @@ CREATE TABLE tags (
 -- Table to store about corporate actions that transform one asset into another
 DROP TABLE IF EXISTS asset_actions;
 CREATE TABLE asset_actions (
-    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,
     otype      INTEGER     NOT NULL DEFAULT (5),
     timestamp  INTEGER     NOT NULL,
     number     TEXT        DEFAULT (''),
@@ -286,7 +286,7 @@ CREATE TABLE asset_actions (
 DROP TABLE IF EXISTS action_results;
 CREATE TABLE action_results (
     id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    action_id   INTEGER NOT NULL REFERENCES asset_actions (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    action_id   INTEGER NOT NULL REFERENCES asset_actions (oid) ON DELETE CASCADE ON UPDATE CASCADE,
     asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     qty         TEXT    NOT NULL,
     value_share TEXT    NOT NULL
@@ -295,7 +295,7 @@ CREATE TABLE action_results (
 -- Table: trades
 DROP TABLE IF EXISTS trades;
 CREATE TABLE trades (
-    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,
     otype      INTEGER     NOT NULL DEFAULT (3),
     timestamp  INTEGER     NOT NULL,
     settlement INTEGER     DEFAULT (0),
@@ -329,7 +329,7 @@ CREATE TABLE trades_closed (
 -- Table: transfers
 DROP TABLE IF EXISTS transfers;
 CREATE TABLE transfers (
-    id                   INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    oid                  INTEGER     PRIMARY KEY UNIQUE NOT NULL,
     otype                INTEGER     NOT NULL DEFAULT (4),
     withdrawal_timestamp INTEGER     NOT NULL,
     withdrawal_account   INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -347,8 +347,8 @@ CREATE TABLE transfers (
 
 DROP TABLE IF EXISTS term_deposits;
 CREATE TABLE term_deposits (
-    id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    otype    INTEGER NOT NULL DEFAULT (6),
+    oid        INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    otype      INTEGER NOT NULL DEFAULT (6),
     account_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
     note       TEXT
 );
@@ -357,7 +357,7 @@ CREATE TABLE term_deposits (
 DROP TABLE IF EXISTS deposit_actions;
 CREATE TABLE deposit_actions (
     id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    deposit_id  INTEGER REFERENCES term_deposits (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    deposit_id  INTEGER REFERENCES term_deposits (oid) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     timestamp   INTEGER NOT NULL,
     action_type INTEGER NOT NULL,
     amount      TEXT    NOT NULL
@@ -372,21 +372,21 @@ CREATE VIEW operation_sequence AS
 SELECT m.otype, m.oid, m.timestamp, m.account_id, subtype
 FROM
 (
-    SELECT otype, 1 AS seq, id AS oid, timestamp, account_id, 0 AS subtype FROM actions
+    SELECT otype, 1 AS seq, oid, timestamp, account_id, 0 AS subtype FROM actions
     UNION ALL
-    SELECT otype, 2 AS seq, id AS oid, timestamp, account_id, type AS subtype FROM asset_payments
+    SELECT otype, 2 AS seq, oid, timestamp, account_id, type AS subtype FROM asset_payments
     UNION ALL
-    SELECT otype, 3 AS seq, id AS oid, timestamp, account_id, type AS subtype FROM asset_actions
+    SELECT otype, 3 AS seq, oid, timestamp, account_id, type AS subtype FROM asset_actions
     UNION ALL
-    SELECT otype, 4 AS seq, id AS oid, timestamp, account_id, 0 AS subtype FROM trades
+    SELECT otype, 4 AS seq, oid, timestamp, account_id, 0 AS subtype FROM trades
     UNION ALL
-    SELECT otype, 5 AS seq, id AS oid, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id, -1 AS subtype FROM transfers
+    SELECT otype, 5 AS seq, oid, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id, -1 AS subtype FROM transfers
     UNION ALL
-    SELECT otype, 5 AS seq, id AS oid, withdrawal_timestamp AS timestamp, fee_account AS account_id, 0 AS subtype FROM transfers WHERE NOT fee IS NULL
+    SELECT otype, 5 AS seq, oid, withdrawal_timestamp AS timestamp, fee_account AS account_id, 0 AS subtype FROM transfers WHERE NOT fee IS NULL
     UNION ALL
-    SELECT otype, 5 AS seq, id AS oid, deposit_timestamp AS timestamp, deposit_account AS account_id, 1 AS subtype FROM transfers
+    SELECT otype, 5 AS seq, oid, deposit_timestamp AS timestamp, deposit_account AS account_id, 1 AS subtype FROM transfers
     UNION ALL
-    SELECT td.otype, 6 AS seq, td.id AS oid, da.timestamp, td.account_id, da.id AS subtype FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.id WHERE da.action_type<=100
+    SELECT td.otype, 6 AS seq, td.oid, da.timestamp, td.account_id, da.id AS subtype FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid WHERE da.action_type<=100
 ) AS m
 ORDER BY m.timestamp, m.seq, m.subtype, m.oid;
 
@@ -441,7 +441,7 @@ CREATE TRIGGER action_details_after_delete
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = OLD.pid);
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE oid = OLD.pid);
 END;
 
 
@@ -452,7 +452,7 @@ CREATE TRIGGER action_details_after_insert
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = NEW.pid);
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE oid = NEW.pid);
 END;
 
 -- Trigger: action_details_after_update
@@ -462,7 +462,7 @@ CREATE TRIGGER action_details_after_update
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = OLD.pid );
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE oid = OLD.pid );
 END;
 
 -- Trigger: actions_after_delete
@@ -595,7 +595,7 @@ CREATE TRIGGER asset_result_after_delete
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE id = OLD.action_id);
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = OLD.action_id);
 END;
 
 DROP TRIGGER IF EXISTS asset_result_after_insert;
@@ -604,7 +604,7 @@ CREATE TRIGGER asset_result_after_insert
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE id = NEW.action_id);
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = NEW.action_id);
 END;
 
 DROP TRIGGER IF EXISTS asset_result_after_update;
@@ -613,7 +613,7 @@ CREATE TRIGGER asset_result_after_update
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE id = OLD.action_id);
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = OLD.action_id);
 END;
 
 DROP TRIGGER IF EXISTS transfers_after_delete;

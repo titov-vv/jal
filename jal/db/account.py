@@ -96,7 +96,7 @@ class JalAccount(JalDB):
         while query.next():
             actions.append(self._read_record(query))
         for action in actions:
-            query = self._exec("SELECT * FROM action_details WHERE pid=:id", [(":id", action[0])])
+            query = self._exec("SELECT * FROM action_details WHERE pid=:oid", [(":oid", action[0])])
             while query.next():
                 action.append(self._read_record(query))
         return actions

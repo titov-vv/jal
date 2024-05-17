@@ -67,7 +67,7 @@ class JalCategory(JalDB):
     # Returns a list of operations that include this category
     def get_operations(self, begin: int, end: int) -> list:
         operations = []
-        query = self._exec("SELECT DISTINCT a.id FROM actions a LEFT JOIN action_details d ON a.id=d.pid "
+        query = self._exec("SELECT DISTINCT a.oid FROM actions a LEFT JOIN action_details d ON a.oid=d.pid "
                            "WHERE d.category_id=:category AND a.timestamp>=:begin AND a.timestamp<:end",
                            [(":category", self._id), (":begin", begin), (":end", end)])
         while query.next():
