@@ -11,14 +11,14 @@ class JalClosedTrade(JalDB):
     def __init__(self, id: int = 0) -> None:
         super().__init__()
         self._id = id
-        self._data = self._read("SELECT account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
-                                "close_op_type, close_op_id, close_timestamp, close_price, qty "
+        self._data = self._read("SELECT account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
+                                "close_otype, close_oid, close_timestamp, close_price, qty "
                                 "FROM trades_closed WHERE id=:id", [(":id", self._id)], named=True)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
             self._asset = jal.db.asset.JalAsset(self._data['asset_id'])
-            self._open_op = jal.db.operations.LedgerTransaction.get_operation(self._data['open_op_type'], self._data['open_op_id'], jal.db.operations.Transfer.Incoming)
-            self._close_op = jal.db.operations.LedgerTransaction.get_operation(self._data['close_op_type'], self._data['close_op_id'], jal.db.operations.Transfer.Outgoing)
+            self._open_op = jal.db.operations.LedgerTransaction.get_operation(self._data['open_otype'], self._data['open_oid'], jal.db.operations.Transfer.Incoming)
+            self._close_op = jal.db.operations.LedgerTransaction.get_operation(self._data['close_otype'], self._data['close_oid'], jal.db.operations.Transfer.Outgoing)
             self._open_price = Decimal(self._data['open_price'])
             self._close_price = Decimal(self._data['close_price'])
             self._qty = Decimal(self._data['qty'])
@@ -29,14 +29,14 @@ class JalClosedTrade(JalDB):
     @classmethod
     def create_from_trades(cls, open_trade, close_trade, qty, open_price, close_price):
         _ = cls._exec(
-            "INSERT INTO trades_closed(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
-            "close_op_type, close_op_id, close_timestamp, close_price, qty) "
-            "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
-            ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
+            "INSERT INTO trades_closed(account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
+            "close_otype, close_oid, close_timestamp, close_price, qty) "
+            "VALUES(:account_id, :asset_id, :open_otype, :open_oid, :open_timestamp, :open_price, "
+            ":close_otype, :close_oid, :close_timestamp, :close_price, :qty)",
             [(":account_id", close_trade.account().id()), (":asset_id", close_trade.asset().id()),
-             (":open_op_type", open_trade.type()), (":open_op_id", open_trade.id()),
+             (":open_otype", open_trade.type()), (":open_oid", open_trade.id()),
              (":open_timestamp", open_trade.timestamp()), (":open_price", format_decimal(open_price)),
-             (":close_op_type", close_trade.type()), (":close_op_id", close_trade.id()),
+             (":close_otype", close_trade.type()), (":close_oid", close_trade.id()),
              (":close_timestamp", close_trade.timestamp()), (":close_price", format_decimal(close_price)),
              (":qty", format_decimal(qty))])
 

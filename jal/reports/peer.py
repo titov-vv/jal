@@ -34,7 +34,7 @@ class PeerOperationsModel(ReportOperationsModel):
         self._data = []
         self._total = Decimal('0')
         self._data = Ledger.get_operations_by_peer(self._begin, self._end, self._peer_id)
-        operations = [LedgerTransaction().get_operation(x['op_type'], x['id'], x['subtype']) for x in self._data]
+        operations = [LedgerTransaction().get_operation(x['otype'], x['oid'], x['subtype']) for x in self._data]
         # Take only Income/Spending data as we expect Asset operations to be not relevant for this kind of report
         operations = [x for x in operations if x.type() == LedgerTransaction.IncomeSpending]
         for op in operations:
@@ -98,7 +98,7 @@ class PeerReportWindow(MdiWidget):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
-            operation_type, operation_id = self.ui.ReportTableView.model().get_operation(selected_row)
-            self.ui.OperationDetails.show_operation(operation_type, operation_id)
+            operation_type, oid = self.ui.ReportTableView.model().get_operation(selected_row)
+            self.ui.OperationDetails.show_operation(operation_type, oid)
         else:
             self.ui.OperationDetails.show_operation(LedgerTransaction.NA, 0)

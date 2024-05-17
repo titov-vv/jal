@@ -27,7 +27,7 @@ class JalOperationsTabs(QStackedWidget):
             self.addWidget(widget)
         self.setCurrentIndex(0)
 
-    # Returns a dictionary of {op_type, op_name} of operations that widget is able to handle
+    # Returns a dictionary of {type, name} of operations that widget is able to handle
     def get_operations_list(self) -> dict:
         operations = {}
         for key, widget in self.widgets.items():
@@ -49,21 +49,21 @@ class JalOperationsTabs(QStackedWidget):
                 else:
                     widget.revertChanges()
 
-    def show_operation(self, op_type, operation_id):
+    def show_operation(self, otype, oid):
         self._check_for_changes()
-        self.setCurrentIndex(op_type)
-        if op_type != LedgerTransaction.NA:
-            self.widgets[op_type].set_id(operation_id)
+        self.setCurrentIndex(otype)
+        if otype != LedgerTransaction.NA:
+            self.widgets[otype].set_id(oid)
 
-    def new_operation(self, op_type, account_id):
+    def new_operation(self, otype, account_id):
         self._check_for_changes()
-        self.widgets[op_type].createNew(account_id=account_id)
-        self.setCurrentIndex(op_type)
+        self.widgets[otype].createNew(account_id=account_id)
+        self.setCurrentIndex(otype)
 
     @Slot()
     def copy_operation(self):
-        op_type = self.currentIndex()
-        if op_type == LedgerTransaction.NA:
+        otype = self.currentIndex()
+        if otype == LedgerTransaction.NA:
             return
         self._check_for_changes()
-        self.widgets[op_type].copyNew()
+        self.widgets[otype].copyNew()

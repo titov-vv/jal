@@ -36,7 +36,7 @@ CREATE TABLE action_details (
 DROP TABLE IF EXISTS actions;
 CREATE TABLE actions (
     id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    op_type         INTEGER NOT NULL DEFAULT (1),
+    otype           INTEGER NOT NULL DEFAULT (1),
     timestamp       INTEGER NOT NULL,
     account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
@@ -149,7 +149,7 @@ CREATE UNIQUE INDEX country_name_by_language ON country_names (country_id, langu
 DROP TABLE IF EXISTS asset_payments;
 CREATE TABLE asset_payments (
     id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    op_type    INTEGER NOT NULL DEFAULT (2),
+    otype      INTEGER NOT NULL DEFAULT (2),
     timestamp  INTEGER NOT NULL,
     ex_date    INTEGER NOT NULL DEFAULT (0),
     number     TEXT    NOT NULL DEFAULT (''),
@@ -174,8 +174,8 @@ DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY NOT NULL UNIQUE,
     timestamp    INTEGER NOT NULL,
-    op_type      INTEGER NOT NULL,
-    operation_id INTEGER NOT NULL,
+    otype        INTEGER NOT NULL,   -- Operation type that recorded transaction
+    oid          INTEGER NOT NULL,   -- Operation ID that recorded transaction
     book_account INTEGER NOT NULL,
     asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE SET NULL,
     account_id   INTEGER NOT NULL REFERENCES accounts (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -192,8 +192,8 @@ CREATE TABLE ledger (
 DROP TABLE IF EXISTS ledger_totals;
 CREATE TABLE ledger_totals (
     id           INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    op_type      INTEGER NOT NULL,
-    operation_id INTEGER NOT NULL,
+    otype        INTEGER NOT NULL,  -- Operation type that recorded transaction
+    oid          INTEGER NOT NULL,  -- Operation ID that recorded transaction
     timestamp    INTEGER NOT NULL,
     book_account INTEGER NOT NULL,
     asset_id     INTEGER NOT NULL,
@@ -204,7 +204,7 @@ CREATE TABLE ledger_totals (
 DROP INDEX IF EXISTS ledger_totals_by_timestamp;
 CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
 DROP INDEX IF EXISTS ledger_totals_by_operation_book;
-CREATE INDEX ledger_totals_by_operation_book ON ledger_totals (op_type, operation_id, book_account);
+CREATE INDEX ledger_totals_by_operation_book ON ledger_totals (otype, oid, book_account);
 
 -- Table: map_category
 DROP TABLE IF EXISTS map_category;
@@ -229,16 +229,16 @@ DROP TABLE IF EXISTS trades_opened;
 CREATE TABLE trades_opened (
     id            INTEGER PRIMARY KEY UNIQUE NOT NULL,
     timestamp     INTEGER NOT NULL,
-    op_type       INTEGER NOT NULL,
-    operation_id  INTEGER NOT NULL,
+    otype         INTEGER NOT NULL,    -- Operation type that created transaction initially
+    oid           INTEGER NOT NULL,    -- Operation ID that created transaction initially
     account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     asset_id      INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
     price         TEXT    NOT NULL,
     remaining_qty TEXT    NOT NULL
 );
 
-DROP INDEX IF EXISTS open_trades_by_operation_idx;
-CREATE INDEX open_trades_by_operation_idx ON trades_opened (timestamp, op_type, operation_id);
+DROP INDEX IF EXISTS open_trades_by_oid;
+CREATE INDEX open_trades_by_oid ON trades_opened (timestamp, otype, oid);
 
 -- Table: quotes
 DROP TABLE IF EXISTS quotes;
@@ -272,7 +272,7 @@ CREATE TABLE tags (
 DROP TABLE IF EXISTS asset_actions;
 CREATE TABLE asset_actions (
     id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
-    op_type    INTEGER     NOT NULL DEFAULT (5),
+    otype      INTEGER     NOT NULL DEFAULT (5),
     timestamp  INTEGER     NOT NULL,
     number     TEXT        DEFAULT (''),
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
@@ -296,7 +296,7 @@ CREATE TABLE action_results (
 DROP TABLE IF EXISTS trades;
 CREATE TABLE trades (
     id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
-    op_type    INTEGER     NOT NULL DEFAULT (3),
+    otype      INTEGER     NOT NULL DEFAULT (3),
     timestamp  INTEGER     NOT NULL,
     settlement INTEGER     DEFAULT (0),
     number     TEXT        DEFAULT (''),
@@ -314,12 +314,12 @@ CREATE TABLE trades_closed (
     id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
     account_id      INTEGER NOT NULL,
     asset_id        INTEGER NOT NULL,
-    open_op_type    INTEGER NOT NULL,
-    open_op_id      INTEGER NOT NULL,
+    open_otype      INTEGER NOT NULL,   -- Operation type that already initiated the trade
+    open_oid        INTEGER NOT NULL,   -- Operation ID that already initiated the trade
     open_timestamp  INTEGER NOT NULL,
     open_price      TEXT    NOT NULL,
-    close_op_type   INTEGER NOT NULL,
-    close_op_id     INTEGER NOT NULL,
+    close_otype     INTEGER NOT NULL,   -- Operation type that finalized the trade
+    close_oid       INTEGER NOT NULL,   -- Operation ID that finalized the trade
     close_timestamp INTEGER NOT NULL,
     close_price     TEXT    NOT NULL,
     qty             TEXT    NOT NULL
@@ -330,7 +330,7 @@ CREATE TABLE trades_closed (
 DROP TABLE IF EXISTS transfers;
 CREATE TABLE transfers (
     id                   INTEGER     PRIMARY KEY UNIQUE NOT NULL,
-    op_type              INTEGER     NOT NULL DEFAULT (4),
+    otype                INTEGER     NOT NULL DEFAULT (4),
     withdrawal_timestamp INTEGER     NOT NULL,
     withdrawal_account   INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
     withdrawal           TEXT        NOT NULL,
@@ -348,7 +348,7 @@ CREATE TABLE transfers (
 DROP TABLE IF EXISTS term_deposits;
 CREATE TABLE term_deposits (
     id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    op_type    INTEGER NOT NULL DEFAULT (6),
+    otype    INTEGER NOT NULL DEFAULT (6),
     account_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
     note       TEXT
 );
@@ -369,26 +369,26 @@ CREATE UNIQUE INDEX deposit_actions_idx ON deposit_actions (deposit_id, timestam
 -- View: operation_sequence
 DROP VIEW IF EXISTS operation_sequence;
 CREATE VIEW operation_sequence AS
-SELECT m.op_type, m.id, m.timestamp, m.account_id, subtype
+SELECT m.otype, m.oid, m.timestamp, m.account_id, subtype
 FROM
 (
-    SELECT op_type, 1 AS seq, id, timestamp, account_id, 0 AS subtype FROM actions
+    SELECT otype, 1 AS seq, id AS oid, timestamp, account_id, 0 AS subtype FROM actions
     UNION ALL
-    SELECT op_type, 2 AS seq, id, timestamp, account_id, type AS subtype FROM asset_payments
+    SELECT otype, 2 AS seq, id AS oid, timestamp, account_id, type AS subtype FROM asset_payments
     UNION ALL
-    SELECT op_type, 3 AS seq, id, timestamp, account_id, type AS subtype FROM asset_actions
+    SELECT otype, 3 AS seq, id AS oid, timestamp, account_id, type AS subtype FROM asset_actions
     UNION ALL
-    SELECT op_type, 4 AS seq, id, timestamp, account_id, 0 AS subtype FROM trades
+    SELECT otype, 4 AS seq, id AS oid, timestamp, account_id, 0 AS subtype FROM trades
     UNION ALL
-    SELECT op_type, 5 AS seq, id, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id, -1 AS subtype FROM transfers
+    SELECT otype, 5 AS seq, id AS oid, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id, -1 AS subtype FROM transfers
     UNION ALL
-    SELECT op_type, 5 AS seq, id, withdrawal_timestamp AS timestamp, fee_account AS account_id, 0 AS subtype FROM transfers WHERE NOT fee IS NULL
+    SELECT otype, 5 AS seq, id AS oid, withdrawal_timestamp AS timestamp, fee_account AS account_id, 0 AS subtype FROM transfers WHERE NOT fee IS NULL
     UNION ALL
-    SELECT op_type, 5 AS seq, id, deposit_timestamp AS timestamp, deposit_account AS account_id, 1 AS subtype FROM transfers
+    SELECT otype, 5 AS seq, id AS oid, deposit_timestamp AS timestamp, deposit_account AS account_id, 1 AS subtype FROM transfers
     UNION ALL
-    SELECT td.op_type, 6 AS seq, td.id, da.timestamp, td.account_id, da.id AS subtype FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.id WHERE da.action_type<=100
+    SELECT td.otype, 6 AS seq, td.id AS oid, da.timestamp, td.account_id, da.id AS subtype FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.id WHERE da.action_type<=100
 ) AS m
-ORDER BY m.timestamp, m.seq, m.subtype, m.id;
+ORDER BY m.timestamp, m.seq, m.subtype, m.oid;
 
 
 -- View: currencies

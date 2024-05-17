@@ -48,7 +48,7 @@ class JalDeposit(JalDB):
     def balance(self, timestamp: int) -> Decimal:
         balance = Decimal('0')
         query = self._exec("SELECT amount FROM ledger "
-                           "WHERE book_account=:book AND op_type=:type AND operation_id=:id AND timestamp<=:timestamp",
+                           "WHERE book_account=:book AND otype=:type AND oid=:id AND timestamp<=:timestamp",
                            [(":book", BookAccount.Savings), (":type", LedgerTransaction.TermDeposit),
                             (":id", self._id), (":timestamp", timestamp)])
         while query.next():

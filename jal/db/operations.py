@@ -34,10 +34,10 @@ class LedgerTransaction(JalDB):
     def __init__(self, operation_data=None):
         super().__init__()
         if type(operation_data) == dict:
-            operation_id = self.create_operation(self._db_table, self._db_fields, operation_data)
+            oid = self.create_operation(self._db_table, self._db_fields, operation_data)
         else:
-            operation_id = operation_data
-        self._oid = operation_id
+            oid = operation_data
+        self._oid = oid
         self._otype = 0
         self._oname = ''
         self._subtype = 0
@@ -64,19 +64,19 @@ class LedgerTransaction(JalDB):
         return str(self._data)
 
     @staticmethod
-    def get_operation(operation_type, operation_id, display_type=None):
+    def get_operation(operation_type, oid, display_type=None):
         if operation_type == LedgerTransaction.IncomeSpending:
-            return IncomeSpending(operation_id)
+            return IncomeSpending(oid)
         elif operation_type == LedgerTransaction.AssetPayment:
-            return AssetPayment(operation_id)
+            return AssetPayment(oid)
         elif operation_type == LedgerTransaction.Trade:
-            return Trade(operation_id)
+            return Trade(oid)
         elif operation_type == LedgerTransaction.Transfer:
-            return Transfer(operation_id, display_type)
+            return Transfer(oid, display_type)
         elif operation_type == LedgerTransaction.CorporateAction:
-            return CorporateAction(operation_id)
+            return CorporateAction(oid)
         elif operation_type == LedgerTransaction.TermDeposit:
-            return TermDeposit(operation_id, display_type)
+            return TermDeposit(oid, display_type)
         else:
             raise ValueError(f"An attempt to select unknown operation type: {operation_type}")
 
@@ -132,13 +132,13 @@ class LedgerTransaction(JalDB):
         return self._view_rows
 
     def _money_total(self, account_id) -> Decimal:
-        money = self._read("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
+        money = self._read("SELECT amount_acc FROM ledger_totals WHERE otype=:otype AND oid=:oid AND "
                            "account_id = :account_id AND book_account=:book",
-                           [(":op_type", self._otype), (":oid", self._oid),
+                           [(":otype", self._otype), (":oid", self._oid),
                             (":account_id", account_id), (":book", BookAccount.Money)])
-        debt = self._read("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
+        debt = self._read("SELECT amount_acc FROM ledger_totals WHERE otype=:otype AND oid=:oid AND "
                           "account_id = :account_id AND book_account=:book",
-                          [(":op_type", self._otype), (":oid", self._oid),
+                          [(":otype", self._otype), (":oid", self._oid),
                            (":account_id", account_id), (":book", BookAccount.Liabilities)])
         if money is None and debt is None:
             return Decimal('NaN')
@@ -147,9 +147,9 @@ class LedgerTransaction(JalDB):
         return money + debt
 
     def _asset_total(self, account_id, asset_id) -> Decimal:
-        amount = self._read("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
+        amount = self._read("SELECT amount_acc FROM ledger_totals WHERE otype=:otype AND oid=:oid AND "
                             "account_id=:account_id AND asset_id=:asset_id AND book_account=:book",
-                            [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
+                            [(":otype", self._otype), (":oid", self._oid), (":account_id", account_id),
                              (":asset_id", asset_id), (":book", BookAccount.Assets)])
         amount = Decimal('NaN') if amount is None else Decimal(amount)
         return amount
@@ -275,8 +275,8 @@ class IncomeSpending(LedgerTransaction):
         }
     }
 
-    def __init__(self, operation_id=None):
-        super().__init__(operation_id)
+    def __init__(self, oid=None):
+        super().__init__(oid)
         self._otype = LedgerTransaction.IncomeSpending
         self._data = self._read("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
                                 "a.alt_currency_id AS currency FROM actions AS a "
@@ -398,7 +398,7 @@ class AssetPayment(LedgerTransaction):
         "note": {"mandatory": False, "validation": True}
     }
 
-    def __init__(self, operation_id=None):
+    def __init__(self, oid=None):
         icons = {
             AssetPayment.Dividend: JalIcon.DIVIDEND,
             AssetPayment.BondInterest: JalIcon.BOND_INTEREST,
@@ -416,14 +416,14 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.BondAmortization: self.tr("Bond Amortization"),
             AssetPayment.Fee: self.tr("Asset fee/tax")
         }
-        super().__init__(operation_id)
+        super().__init__(oid)
         self._otype = LedgerTransaction.AssetPayment
         self._view_rows = 2
         self._data = self._read("SELECT p.type, p.timestamp, p.ex_date, p.number, p.account_id, p.asset_id, "
                                 "p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
                                 "FROM asset_payments AS p "
                                 "LEFT JOIN assets AS a ON p.asset_id = a.id "
-                                "LEFT JOIN ledger_totals AS l ON l.op_type=p.op_type AND l.operation_id=p.id "
+                                "LEFT JOIN ledger_totals AS l ON l.otype=p.otype AND l.oid=p.id "
                                 "AND l.book_account = :book_assets WHERE p.id=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
         self._subtype = self._data['type']
@@ -776,7 +776,7 @@ class Transfer(LedgerTransaction):
         "note": {"mandatory": False, "validation": False}
     }
 
-    def __init__(self, operation_id=None, display_type=None):
+    def __init__(self, oid=None, display_type=None):
         assert display_type in [Transfer.Outgoing, Transfer.Incoming, Transfer.Fee], "Unknown transfer type"
         icons = {
             (Transfer.Outgoing, True): JalIcon.TRANSFER_OUT,
@@ -794,7 +794,7 @@ class Transfer(LedgerTransaction):
             (Transfer.Incoming, False): self.tr("Incoming asset transfer"),
             (Transfer.Fee, False): self.tr("Asset transfer fee"),
         }
-        super().__init__(operation_id)
+        super().__init__(oid)
         self._otype = LedgerTransaction.Transfer
         self._display_type = display_type
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
@@ -971,8 +971,8 @@ class Transfer(LedgerTransaction):
             transfer_trades = [x for x in transfer_trades if x.close_operation().id() == self._oid]  # Keep only trades that were closed with current operation
             # get initial value of withdrawn asset
             value = self._read("SELECT value FROM ledger "
-                               "WHERE book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
-                               [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype),
+                               "WHERE book_account=:book_transfers AND otype=:otype AND oid=:id",
+                               [(":book_transfers", BookAccount.Transfers), (":otype", self._otype),
                                 (":id", self._oid)], check_unique=True)
             if not value:
                 raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
@@ -1023,7 +1023,7 @@ class CorporateAction(LedgerTransaction):
         }
     }
 
-    def __init__(self, operation_id=None):
+    def __init__(self, oid=None):
         icons = {
             CorporateAction.NA: JalIcon.NONE,
             CorporateAction.Merger: JalIcon.MERGER,
@@ -1040,7 +1040,7 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.Merger: self.tr("Merger"),
             CorporateAction.Delisting: self.tr("Delisting")
         }
-        super().__init__(operation_id)
+        super().__init__(oid)
         self._otype = LedgerTransaction.CorporateAction
         self._data = self._read("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
                                 "FROM asset_actions AS a WHERE a.id=:oid", [(":oid", self._oid)], named=True)
@@ -1219,7 +1219,7 @@ class TermDeposit(LedgerTransaction):
         }
     }
 
-    def __init__(self, operation_id=None, display_type=None):
+    def __init__(self, oid=None, display_type=None):
         icons = {
             DepositActions.Opening: JalIcon.DEPOSIT_OPEN,
             DepositActions.TopUp: JalIcon.DEPOSIT_OPEN,
@@ -1229,7 +1229,7 @@ class TermDeposit(LedgerTransaction):
             DepositActions.InterestAccrued: JalIcon.INTEREST,
             DepositActions.TaxWithheld: JalIcon.TAX
         }
-        super().__init__(operation_id)
+        super().__init__(oid)
         self._otype = LedgerTransaction.TermDeposit
         self._aid = display_type   # action id
         self._data = self._read("SELECT da.timestamp, td.account_id, da.action_type, da.amount, td.note "
@@ -1251,9 +1251,9 @@ class TermDeposit(LedgerTransaction):
 
     def _get_deposit_amount(self) -> Decimal:
         amount = Decimal('0')
-        query = self._exec("SELECT amount FROM ledger WHERE op_type=:op_type AND operation_id=:oid AND "
+        query = self._exec("SELECT amount FROM ledger WHERE otype=:otype AND oid=:oid AND "
                            "book_account=:book AND account_id=:account_id AND timestamp<=:timestamp",
-                           [(":op_type", self._otype), (":oid", self._oid), (":timestamp", self._timestamp),
+                           [(":otype", self._otype), (":oid", self._oid), (":timestamp", self._timestamp),
                             (":account_id", self._account.id()), (":book", BookAccount.Savings)])
         while query.next():
             amount += self._read_record(query, cast=[Decimal])
@@ -1274,13 +1274,13 @@ class TermDeposit(LedgerTransaction):
         return f" {self._account_currency}"
 
     def value_total(self) -> list:
-        money = self._read("SELECT amount_acc FROM ledger WHERE op_type=:op_type AND operation_id=:oid AND "
+        money = self._read("SELECT amount_acc FROM ledger WHERE otype=:otype AND oid=:oid AND "
                            "account_id = :account_id AND book_account=:book AND timestamp=:timestamp",
-                           [(":op_type", self._otype), (":oid", self._oid),
+                           [(":otype", self._otype), (":oid", self._oid),
                             (":account_id", self._account.id()), (":book", BookAccount.Money), (":timestamp", self._timestamp)])
-        debt = self._read("SELECT amount_acc FROM ledger WHERE op_type=:op_type AND operation_id=:oid AND "
+        debt = self._read("SELECT amount_acc FROM ledger WHERE otype=:otype AND oid=:oid AND "
                           "account_id = :account_id AND book_account=:book AND timestamp=:timestamp",
-                          [(":op_type", self._otype), (":oid", self._oid),
+                          [(":otype", self._otype), (":oid", self._oid),
                            (":account_id", self._account.id()), (":book", BookAccount.Liabilities), (":timestamp", self._timestamp)])
         if money is None and debt is None:
             return []

@@ -61,7 +61,7 @@ class JalPeer(JalDB):
 
     # returns number of operations that uses this Peer
     def number_of_documents(self) -> int:
-        return self._read("SELECT COUNT(*) FROM (SELECT DISTINCT op_type, operation_id FROM ledger WHERE peer_id=:id)",
+        return self._read("SELECT COUNT(*) FROM (SELECT DISTINCT otype, oid FROM ledger WHERE peer_id=:id)",
                           [(":id", self._id)])
 
     # if old_name isn't empty then it is put in non-empty notes of action

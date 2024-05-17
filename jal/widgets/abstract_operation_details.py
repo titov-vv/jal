@@ -91,7 +91,7 @@ class AbstractOperationDetails(QWidget):
     def prepareNew(self, account_id):
         new_record = self.model.record()
         new_record.setNull("id")
-        new_record.setValue("op_type", self.operation_type)
+        new_record.setValue("otype", self.operation_type)
         return new_record
 
     def copyNew(self):

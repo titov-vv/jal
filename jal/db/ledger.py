@@ -106,7 +106,7 @@ class Ledger(QObject, JalDB):
     @classmethod
     def get_operations_sequence(cls, begin: int, end: int, account_id: int = 0) -> list:
         sequence = []
-        query_text = "SELECT op_type, id, timestamp, account_id, subtype " \
+        query_text = "SELECT otype, oid, timestamp, account_id, subtype " \
                      "FROM operation_sequence WHERE timestamp>=:begin AND timestamp<=:end"
         params = [(":begin", begin), (":end", end)]
         if account_id:
@@ -118,33 +118,33 @@ class Ledger(QObject, JalDB):
         return sequence
 
     @classmethod
-    # Returns a list of [op_type, op_id, timestamp, account_id, subtype] ordered by timestamp
+    # Returns a list of [otype, oid, timestamp, account_id, subtype] ordered by timestamp
     # collected from 'ledger' table with given WHERE statement set as condition and parameters
     def _get_operations_by_filter(cls, condition, parameters) -> list:
         operations = []
         query = cls._exec(
-            f"SELECT DISTINCT op_type, operation_id AS id, timestamp, account_id, 0 AS subtype FROM ledger "
+            f"SELECT DISTINCT otype, oid AS id, timestamp, account_id, 0 AS subtype FROM ledger "
             f"{condition} ORDER BY timestamp", parameters, forward_only=True)
         while query.next():
             operations.append(cls._read_record(query, named=True))
         return operations
 
     @classmethod
-    # Return a list of [op_type, op_id, timestamp, account_id, subtype] of operations that have peer_id involved
+    # Return a list of [otype, oid, timestamp, account_id, subtype] of operations that have peer_id involved
     def get_operations_by_peer(cls, begin: int, end: int, peer_id: int) -> list:
         condition = "WHERE peer_id=:peer AND timestamp>=:begin AND timestamp<=:end"
         parameters = [(":begin", begin), (":end", end), (":peer", peer_id)]
         return cls._get_operations_by_filter(condition, parameters)
 
     @classmethod
-    # Return a list of [op_type, op_id, timestamp, account_id, subtype] of operations that have category_id involved
+    # Return a list of [otype, oid, timestamp, account_id, subtype] of operations that have category_id involved
     def get_operations_by_category(cls, begin: int, end: int, category_id: int) -> list:
         condition = "WHERE category_id=:category AND timestamp>=:begin AND timestamp<=:end"
         parameters = [(":begin", begin), (":end", end), (":category", category_id)]
         return cls._get_operations_by_filter(condition, parameters)
 
     @classmethod
-    # Return a list of [op_type, op_id, timestamp, account_id, subtype] of operations that have tag_id involved
+    # Return a list of [otype, oid, timestamp, account_id, subtype] of operations that have tag_id involved
     def get_operations_by_tag(cls, begin: int, end: int, tag_id: int) -> list:
         condition = "WHERE tag_id=:tag AND timestamp>=:begin AND timestamp<=:end"
         parameters = [(":begin", begin), (":end", end), (":tag", tag_id)]
@@ -178,12 +178,12 @@ class Ledger(QObject, JalDB):
                 (self.values[(book, operation.account_id(), asset_id)] != Decimal('0')):
             rounding_error = Decimal('0') - self.values[(book, operation.account_id(), asset_id)]
             self.values[(book, operation.account_id(), asset_id)] += rounding_error
-        _ = self._exec("INSERT INTO ledger (timestamp, op_type, operation_id, book_account, asset_id, "
+        _ = self._exec("INSERT INTO ledger (timestamp, otype, oid, book_account, asset_id, "
                        "account_id, amount, value, amount_acc, value_acc, peer_id, category_id, tag_id) "
-                       "VALUES(:timestamp, :op_type, :operation_id, :book, :asset_id, :account_id, "
+                       "VALUES(:timestamp, :otype, :oid, :book, :asset_id, :account_id, "
                        ":amount, :value, :amount_acc, :value_acc, :peer_id, :category_id, :tag_id)",
-                       [(":timestamp", operation.timestamp()), (":op_type", operation.type()),
-                        (":operation_id", operation.oid()), (":book", book), (":asset_id", asset_id),
+                       [(":timestamp", operation.timestamp()), (":otype", operation.type()),
+                        (":oid", operation.oid()), (":book", book), (":asset_id", asset_id),
                         (":account_id", operation.account_id()),
                         (":amount", format_decimal(amount)), (":value", format_decimal(value)),
                         (":amount_acc", format_decimal(self.amounts[(book, operation.account_id(), asset_id)])),
@@ -230,11 +230,11 @@ class Ledger(QObject, JalDB):
         self.values.clear()
         if from_timestamp >= 0:
             frontier = from_timestamp
-            operations_count = self._read("SELECT COUNT(id) FROM operation_sequence WHERE timestamp >= :frontier",
+            operations_count = self._read("SELECT COUNT(oid) FROM operation_sequence WHERE timestamp >= :frontier",
                                           [(":frontier", frontier)])
         else:
             frontier = self.getCurrentFrontier()
-            operations_count = self._read("SELECT COUNT(id) FROM operation_sequence WHERE timestamp >= :frontier",
+            operations_count = self._read("SELECT COUNT(oid) FROM operation_sequence WHERE timestamp >= :frontier",
                                           [(":frontier", frontier)])
             if operations_count > self.SILENT_REBUILD_THRESHOLD:
                 if QMessageBox().warning(None, self.tr("Confirmation"), f"{operations_count}" +
@@ -259,12 +259,12 @@ class Ledger(QObject, JalDB):
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
             self.set_synchronous(False)
         try:
-            query = self._exec("SELECT op_type, id, timestamp, account_id, subtype FROM operation_sequence "
+            query = self._exec("SELECT otype, oid, timestamp, account_id, subtype FROM operation_sequence "
                                "WHERE timestamp >= :frontier", [(":frontier", frontier)])
             while query.next():
                 data = self._read_record(query, named=True)
                 last_timestamp = data['timestamp']
-                operation = LedgerTransaction().get_operation(data['op_type'], data['id'], data['subtype'])
+                operation = LedgerTransaction().get_operation(data['otype'], data['oid'], data['subtype'])
                 operation.processLedger(self)
                 if self.progress_bar is not None:
                     self.progress_bar.setValue(query.at())
@@ -287,11 +287,11 @@ class Ledger(QObject, JalDB):
         # this view won't have indices for optimal performance
         _ = self._exec(
             "INSERT INTO ledger_totals"
-            "(op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc) "
-            "SELECT op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc "
+            "(otype, oid, timestamp, book_account, asset_id, account_id, amount_acc, value_acc) "
+            "SELECT otype, oid, timestamp, book_account, asset_id, account_id, amount_acc, value_acc "
             "FROM ledger "
             "WHERE id IN (SELECT MAX(id) FROM ledger WHERE timestamp >= :frontier "
-            "GROUP BY op_type, operation_id, book_account, account_id, asset_id)", [(":frontier", frontier)])
+            "GROUP BY otype, oid, book_account, account_id, asset_id)", [(":frontier", frontier)])
         JalSettings().setValue('RebuildDB', 0)
         if exception_happened:
             logging.error(self.tr("Exception happened. Ledger is incomplete. Please correct errors listed in log"))

@@ -286,9 +286,9 @@ class JalAccount(JalDB):
     # Creates a record in 'trades_open' table that manifests current asset position
     def open_trade(self, timestamp, otype, oid, asset, price, qty):
         _ = self._exec(
-            "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
-            "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-            [(":timestamp", timestamp), (":type", otype), (":operation_id", oid), (":account_id", self._id),
+            "INSERT INTO trades_opened(timestamp, otype, oid, account_id, asset_id, price, remaining_qty) "
+            "VALUES(:timestamp, :type, :oid, :account_id, :asset_id, :price, :remaining_qty)",
+            [(":timestamp", timestamp), (":type", otype), (":oid", oid), (":account_id", self._id),
              (":asset_id", asset.id()), (":price", format_decimal(price)), (":remaining_qty", format_decimal(qty))])
 
     # Returns a list of {"operation": LedgerTransaction, "price": Decimal, "remaining_qty": Decimal}
@@ -300,16 +300,16 @@ class JalAccount(JalDB):
             timestamp = Setup.MAX_TIMESTAMP
         trades = []
         query = self._exec("WITH open_trades_numbered AS "
-                           "(SELECT timestamp, op_type, operation_id, price, remaining_qty, "
-                           "ROW_NUMBER() OVER (PARTITION BY op_type, operation_id ORDER BY timestamp DESC, id DESC) AS row_no "
+                           "(SELECT timestamp, otype, oid, price, remaining_qty, "
+                           "ROW_NUMBER() OVER (PARTITION BY otype, oid ORDER BY timestamp DESC, id DESC) AS row_no "
                            "FROM trades_opened WHERE account_id=:account AND asset_id=:asset AND timestamp<=:timestamp) "
-                           "SELECT op_type, operation_id, price, remaining_qty "
+                           "SELECT otype, oid, price, remaining_qty "
                            "FROM open_trades_numbered WHERE row_no=1 AND remaining_qty!=:zero ",
                            [(":account", self._id), (":asset", asset.id()),
                             (":timestamp", timestamp), (":zero", format_decimal(Decimal('0')))])
         while query.next():
-            op_type, oid, price, qty = self._read_record(query, cast=[int, int, Decimal, Decimal])
-            operation = jal.db.operations.LedgerTransaction().get_operation(op_type, oid, jal.db.operations.Transfer.Incoming)
+            otype, oid, price, qty = self._read_record(query, cast=[int, int, Decimal, Decimal])
+            operation = jal.db.operations.LedgerTransaction().get_operation(otype, oid, jal.db.operations.Transfer.Incoming)
             trades.append({"operation": operation, "price": price, "remaining_qty": qty})
         trades = sorted(trades, key=lambda op: op['operation'].timestamp())
         return trades
@@ -378,7 +378,7 @@ class JalAccount(JalDB):
         sign = signs[direction]
         sql = {
             self.MONEY_FLOW: f"SELECT SUM(:sign*amount) FROM ledger WHERE (:sign*amount)>0 AND (book_account={BookAccount.Money} OR book_account={BookAccount.Liabilities})",
-            self.ASSETS_FLOW: f"SELECT SUM(:sign*value) FROM ledger WHERE (:sign*value)>0 AND book_account={BookAccount.Assets} AND op_type!={jal.db.operations.LedgerTransaction.CorporateAction}"
+            self.ASSETS_FLOW: f"SELECT SUM(:sign*value) FROM ledger WHERE (:sign*value)>0 AND book_account={BookAccount.Assets} AND otype!={jal.db.operations.LedgerTransaction.CorporateAction}"
         }
         value = self._read(sql[flow_type] + " AND account_id=:account_id AND timestamp>=:begin AND timestamp<=:end",
                            [(":sign", sign), (":account_id", self._id), (":begin", begin), (":end", end)])

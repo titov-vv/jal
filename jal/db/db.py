@@ -367,7 +367,7 @@ class JalDB:
             if fields[field]['mandatory'] and field not in data:
                 raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
 
-    # Returns operation_id if given operation is present in 'table_name' already and 0 if not
+    # Returns oid if given operation is present in 'table_name' already and 0 if not
     # Check happens based on field values that marked with 'validation'=True in 'fields' dict
     def locate_operation(self, table_name, fields, data) -> int:
         query_text = f"SELECT id FROM {table_name} WHERE "

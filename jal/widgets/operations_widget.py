@@ -105,14 +105,14 @@ class OperationsWidget(MdiWidget):
 
     @Slot()
     def operation_selection_change(self, selected, _deselected):
-        op_type = LedgerTransaction.NA
-        op_id = 0
+        otype = LedgerTransaction.NA
+        oid = 0
         if len(self.ui.OperationsTableView.selectionModel().selectedRows()) == 1:
             idx = selected.indexes()
             if idx:
                 selected_row = self.operations_filtered_model.mapToSource(idx[0]).row()
-                op_type, op_id = self.operations_model.get_operation(selected_row)
-        self.ui.OperationsTabs.show_operation(op_type, op_id)
+                otype, oid = self.operations_model.get_operation(selected_row)
+        self.ui.OperationsTabs.show_operation(otype, oid)
 
     @Slot()
     def operation_context_menu(self, pos):
