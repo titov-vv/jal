@@ -2,6 +2,8 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
+DROP VIEW IF EXISTS operation_sequence;
+--------------------------------------------------------------------------------
 ALTER TABLE actions RENAME COLUMN op_type TO otype;
 ALTER TABLE asset_payments RENAME COLUMN op_type TO otype;
 ALTER TABLE asset_actions RENAME COLUMN op_type TO otype;
@@ -10,9 +12,9 @@ ALTER TABLE transfers RENAME COLUMN op_type TO otype;
 ALTER TABLE term_deposits RENAME COLUMN op_type TO otype;
 --------------------------------------------------------------------------------
 ALTER TABLE ledger RENAME COLUMN op_type TO otype;
-ALTER TABLE ledger RENAME COLUMN operation_id TO otype;
+ALTER TABLE ledger RENAME COLUMN operation_id TO oid;
 ALTER TABLE ledger_totals RENAME COLUMN op_type TO otype;
-ALTER TABLE ledger_totals RENAME COLUMN operation_id TO otype;
+ALTER TABLE ledger_totals RENAME COLUMN operation_id TO oid;
 DROP INDEX IF EXISTS ledger_totals_by_timestamp;
 CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
 DROP INDEX IF EXISTS ledger_totals_by_operation_book;
@@ -48,7 +50,6 @@ CREATE TABLE trades_closed (
     qty             TEXT    NOT NULL
 );
 --------------------------------------------------------------------------------
-DROP VIEW IF EXISTS operation_sequence;
 CREATE VIEW operation_sequence AS
 SELECT m.otype, m.oid, m.timestamp, m.account_id, subtype
 FROM
