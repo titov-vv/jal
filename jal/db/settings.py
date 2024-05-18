@@ -40,11 +40,13 @@ class JalSettings(JalDB):
         value = self._read("SELECT value FROM settings WHERE name=:key", [(":key", key)])
         if value is None:
             value = default
-        return value
+        try:
+            return int(value)   # Try to provide integer if conversion is possible
+        except ValueError:
+            return value
 
     def setValue(self, key, value):
-        self._exec("INSERT OR REPLACE INTO settings(id, name, value) "
-                   "VALUES((SELECT id FROM settings WHERE name=:key), :key, :value)",
+        self._exec("INSERT OR REPLACE INTO settings(name, value) VALUES(:key, :value)",
                    [(":key", key), (":value", value)], commit=True)
 
     # Returns 2-letter language code that corresponds to current 'Language' settings in DB

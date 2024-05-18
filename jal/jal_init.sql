@@ -251,15 +251,13 @@ CREATE TABLE quotes (
 );
 CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
 
--- Table: settings
+-- Table to store application settings
 DROP TABLE IF EXISTS settings;
 CREATE TABLE settings (
-    id    INTEGER   PRIMARY KEY NOT NULL UNIQUE,
-    name  TEXT (32) NOT NULL UNIQUE,
-    value INTEGER
+    name  TEXT (128) NOT NULL UNIQUE PRIMARY KEY,  -- Key name to access the value
+    value TEXT       NOT NULL                      -- Value stored for a given key
 );
 
--- Table: tags
 DROP TABLE IF EXISTS tags;
 CREATE TABLE tags (
     id         INTEGER   PRIMARY KEY UNIQUE NOT NULL,
@@ -419,7 +417,7 @@ DROP VIEW IF EXISTS countries_ext;
 CREATE VIEW countries_ext AS
     SELECT c.id, c.code, c.iso_code, n.name
     FROM countries AS c
-    LEFT JOIN country_names AS n ON n.country_id = c.id AND n.language_id = (SELECT value FROM settings WHERE id = 3);
+    LEFT JOIN country_names AS n ON n.country_id = c.id AND n.language_id = (SELECT value FROM settings WHERE name='Language');
 
 
 --------------------------------------------------------------------------------
@@ -602,40 +600,38 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 56);
--- INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);  -- Deprecated and ID shouldn't be re-used
--- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
-INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
-INSERT INTO settings(id, name, value) VALUES (4, 'RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
-INSERT INTO settings(id, name, value) VALUES (5, 'RuTaxSessionId', '');
-INSERT INTO settings(id, name, value) VALUES (6, 'RuTaxRefreshToken', '');
-INSERT INTO settings(id, name, value) VALUES (7, 'RebuildDB', 0);
-INSERT INTO settings(id, name, value) VALUES (8, 'WindowGeometry', '');
-INSERT INTO settings(id, name, value) VALUES (9, 'WindowState', '');
-INSERT INTO settings(id, name, value) VALUES (10, 'MessageOnce', '');
-INSERT INTO settings(id, name, value) VALUES (11, 'RecentFolder_Statement', '.');
-INSERT INTO settings(id, name, value) VALUES (12, 'RecentFolder_Report', '.');
-INSERT INTO settings(id, name, value) VALUES (13, 'CleanDB', 0);
-INSERT INTO settings(id, name, value) VALUES (14, 'EuLidlClientSecret', 'TGlkbFBsdXNOYXRpdmVDbGllbnQ6c2VjcmV0');
-INSERT INTO settings(id, name, value) VALUES (15, 'EuLidlAccessToken', '');
-INSERT INTO settings(id, name, value) VALUES (16, 'EuLidlRefreshToken', '');
-INSERT INTO settings(id, name, value) VALUES (17, 'PtPingoDoceAccessToken', '');
-INSERT INTO settings(id, name, value) VALUES (18, 'PtPingoDoceRefreshToken', '');
-INSERT INTO settings(id, name, value) VALUES (19, 'PtPingoDoceUserProfile', '{}');
-INSERT INTO settings(id, name, value) VALUES (20, 'DlgGeometry_Accounts', '');
-INSERT INTO settings(id, name, value) VALUES (21, 'DlgViewState_Accounts', '');
-INSERT INTO settings(id, name, value) VALUES (22, 'DlgGeometry_Assets', '');
-INSERT INTO settings(id, name, value) VALUES (23, 'DlgViewState_Assets', '');
-INSERT INTO settings(id, name, value) VALUES (24, 'DlgGeometry_Peers', '');
-INSERT INTO settings(id, name, value) VALUES (25, 'DlgViewState_Peers', '');
-INSERT INTO settings(id, name, value) VALUES (26, 'DlgGeometry_Categories', '');
-INSERT INTO settings(id, name, value) VALUES (27, 'DlgViewState_Categories', '');
-INSERT INTO settings(id, name, value) VALUES (28, 'DlgGeometry_Tags', '');
-INSERT INTO settings(id, name, value) VALUES (29, 'DlgViewState_Tags', '');
-INSERT INTO settings(id, name, value) VALUES (30, 'DlgGeometry_Quotes', '');
-INSERT INTO settings(id, name, value) VALUES (31, 'DlgViewState_Quotes', '');
-INSERT INTO settings(id, name, value) VALUES (32, 'DlgGeometry_Base currency', '');
-INSERT INTO settings(id, name, value) VALUES (33, 'DlgViewState_Base currency', '');
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 56);
+INSERT INTO settings(name, value) VALUES('Language', 1);
+INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
+INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
+INSERT INTO settings(name, value) VALUES('RuTaxRefreshToken', '');
+INSERT INTO settings(name, value) VALUES('RebuildDB', 0);
+INSERT INTO settings(name, value) VALUES('WindowGeometry', '');
+INSERT INTO settings(name, value) VALUES('WindowState', '');
+INSERT INTO settings(name, value) VALUES('MessageOnce', '');
+INSERT INTO settings(name, value) VALUES('RecentFolder_Statement', '.');
+INSERT INTO settings(name, value) VALUES('RecentFolder_Report', '.');
+INSERT INTO settings(name, value) VALUES('CleanDB', 0);
+INSERT INTO settings(name, value) VALUES('EuLidlClientSecret', 'TGlkbFBsdXNOYXRpdmVDbGllbnQ6c2VjcmV0');
+INSERT INTO settings(name, value) VALUES('EuLidlAccessToken', '');
+INSERT INTO settings(name, value) VALUES('EuLidlRefreshToken', '');
+INSERT INTO settings(name, value) VALUES('PtPingoDoceAccessToken', '');
+INSERT INTO settings(name, value) VALUES('PtPingoDoceRefreshToken', '');
+INSERT INTO settings(name, value) VALUES('PtPingoDoceUserProfile', '{}');
+INSERT INTO settings(name, value) VALUES('DlgGeometry_Accounts', '');
+INSERT INTO settings(name, value) VALUES('DlgViewState_Accounts', '');
+INSERT INTO settings(name, value) VALUES('DlgGeometry_Assets', '');
+INSERT INTO settings(name, value) VALUES('DlgViewState_Assets', '');
+INSERT INTO settings(name, value) VALUES('DlgGeometry_Peers', '');
+INSERT INTO settings(name, value) VALUES('DlgViewState_Peers', '');
+INSERT INTO settings(name, value) VALUES('DlgGeometry_Categories', '');
+INSERT INTO settings(name, value) VALUES('DlgViewState_Categories', '');
+INSERT INTO settings(name, value) VALUES('DlgGeometry_Tags', '');
+INSERT INTO settings(name, value) VALUES('DlgViewState_Tags', '');
+INSERT INTO settings(name, value) VALUES('DlgGeometry_Quotes', '');
+INSERT INTO settings(name, value) VALUES('DlgViewState_Quotes', '');
+INSERT INTO settings(name, value) VALUES('DlgGeometry_Base currency', '');
+INSERT INTO settings(name, value) VALUES('DlgViewState_Base currency', '');
 
 -- Initialize available languages
 INSERT INTO languages (id, language) VALUES (1, 'en');
