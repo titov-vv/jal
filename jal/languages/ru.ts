@@ -343,6 +343,157 @@
     </message>
 </context>
 <context>
+    <name>AssetPaymentOperation</name>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="14"/>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="35"/>
+        <source>Date/Time</source>
+        <translation>Дата/Время</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="45"/>
+        <source>#</source>
+        <translation>№</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="58"/>
+        <source>Commit changes</source>
+        <translation>Сохранить изменения</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="78"/>
+        <source>Type</source>
+        <translation>Тип</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="88"/>
+        <source>Tax</source>
+        <translation>Налог</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="101"/>
+        <source>Asset</source>
+        <translation>ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="129"/>
+        <source>Asset Payment</source>
+        <translation>Выплата по ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="136"/>
+        <source>CUR</source>
+        <translation>ВАЛ</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="163"/>
+        <source>unknown</source>
+        <translation>неизвестно</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="180"/>
+        <source>dd/MM/yyyy</source>
+        <translation>dd/MM/yyyy</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="196"/>
+        <source>Note</source>
+        <translation>Примечание</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="206"/>
+        <source>Account</source>
+        <translation>Счет</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="216"/>
+        <source>Ex-Date</source>
+        <translation>Дата отсечки</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="229"/>
+        <source>Cancel changes</source>
+        <translation>Отменить изменения</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="239"/>
+        <source>Dividend</source>
+        <translation>Дивиденд</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="259"/>
+        <source>dd/MM/yyyy hh:mm:ss</source>
+        <translation>dd/MM/yyyy hh:mm:ss</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="272"/>
+        <source>Price</source>
+        <translation>Цена</translation>
+    </message>
+</context>
+<context>
+    <name>AssetPaymentWidget</name>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="29"/>
+        <source>N/A</source>
+        <translation>N/A</translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="30"/>
+        <source>Dividend</source>
+        <translation>Дивиденд</translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="31"/>
+        <source>Bond Interest</source>
+        <translation>Купон</translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="32"/>
+        <source>Stock Dividend</source>
+        <translation>Дивиденд акциями</translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="33"/>
+        <source>Stock Vesting</source>
+        <translation>Передача акций</translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="34"/>
+        <source>Bond Amortization</source>
+        <translation>Амортизация облигации</translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="35"/>
+        <source>Fee / Tax</source>
+        <translation>Комиссия / Налог</translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="91"/>
+        <source>No quote</source>
+        <translation>Нет котировки</translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="94"/>
+        <source>You should set quote via Data-&gt;Quotes menu for Date/Time of the dividend</source>
+        <translation>Вам нужно указать котировку через меню Данные-&gt;Котировки для Даты/Времени, совпадающими с выплатой</translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="99"/>
+        <source>Incomplete data</source>
+        <translation>Неполные данные</translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="99"/>
+        <source>Please set a type of the dividend.</source>
+        <translation>Пожалуйста укажите тип выплаты.</translation>
+    </message>
+</context>
+<context>
     <name>AssetPortfolioReport</name>
     <message>
         <location filename="../reports/portfolio.py" line="24"/>
@@ -1948,52 +2099,52 @@ do you want to save it?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="160"/>
+        <location filename="../db/ledger.py" line="157"/>
         <source>No asset defined for: </source>
         <translation>Не указана ЦБ для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="164"/>
+        <location filename="../db/ledger.py" line="161"/>
         <source>No category set for: </source>
         <translation>Ну указана категория для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="166"/>
+        <location filename="../db/ledger.py" line="163"/>
         <source>No peer set for: </source>
         <translation>Не указан контрагент для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="240"/>
+        <location filename="../db/ledger.py" line="237"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="241"/>
+        <location filename="../db/ledger.py" line="238"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="293"/>
+        <location filename="../db/ledger.py" line="290"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation>Произошла ошибка. Расчёт итогов не окончен. Проверьте сообщения об ошибках</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="295"/>
+        <location filename="../db/ledger.py" line="292"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="296"/>
+        <location filename="../db/ledger.py" line="293"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="246"/>
+        <location filename="../db/ledger.py" line="243"/>
         <source>Leger is empty</source>
         <translation>Транзакции отсутствуют</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="251"/>
+        <location filename="../db/ledger.py" line="248"/>
         <source>Re-building ledger since: </source>
         <translation>Пересчёт итогов с: </translation>
     </message>
@@ -4248,7 +4399,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="539"/>
         <source>Incoming money transfer not implemented yet</source>
-        <translation type="unfinished"></translation>
+        <translation>Входящий перевод пока не реализован</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="548"/>
@@ -4293,7 +4444,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="770"/>
         <source>Symbol Change description miss some data </source>
-        <translation type="unfinished"></translation>
+        <translation>Нехватает данных в описании смены символа</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="788"/>
@@ -4313,17 +4464,17 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="865"/>
         <source>Can&apos;t parse granted stock description </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно разобрать описание начисления акций </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="875"/>
         <source>Multiple vesting matched withholding </source>
-        <translation type="unfinished"></translation>
+        <translation>Множественное совпадение начисления акций для удержания налога </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="884"/>
         <source>Stock grant operations loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Нацисления акций загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="948"/>
@@ -4353,7 +4504,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="1033"/>
         <source>Too many records for MLP tax: </source>
-        <translation type="unfinished"></translation>
+        <translation>Слишком много записей для налога по MLP: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="1051"/>
@@ -4898,7 +5049,7 @@ Please select an account for import:</source>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="51"/>
         <source>Can&apos;t determine VTB statement header format</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно определить формат заголовка ВТБ</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="78"/>
@@ -4940,22 +5091,22 @@ Please select an account for import:</source>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="249"/>
         <source>Unsuppported asset transaction </source>
-        <translation type="unfinished"></translation>
+        <translation>Неподдерживаемая транзакция с ЦБ </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="253"/>
         <source>No asset match in asset transactions </source>
-        <translation type="unfinished"></translation>
+        <translation>Нет найдена ЦБ для транзакции с ценной бумагой </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="259"/>
         <source>Failed to convert asset amount </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно сконвертировать количество ЦБ </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="264"/>
         <source>Asset transactions loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Транзакции с ЦБ загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="302"/>
@@ -4975,27 +5126,27 @@ Please select an account for import:</source>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="345"/>
         <source>Can&apos;t parse dividend description </source>
-        <translation type="unfinished">Невозможно распознать описание дивиденда </translation>
+        <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="352"/>
         <source>Failed to convert dividend tax </source>
-        <translation type="unfinished">Ошибка при конвертации суммы налога </translation>
+        <translation>Ошибка при конвертации суммы налога </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="362"/>
         <source>Can&apos;t parse bond maturity description </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно разобрать описание погашения облигации </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="368"/>
         <source>Can&apos;t find asset cancellation record for </source>
-        <translation type="unfinished">Невозможно найти запись списания ЦБ для </translation>
+        <translation>Невозможно найти запись списания ЦБ для </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="370"/>
         <source>Multiple asset cancellation match for </source>
-        <translation type="unfinished">Найдены несколько записей погашения ЦБ для </translation>
+        <translation>Найдены несколько записей погашения ЦБ для </translation>
     </message>
 </context>
 <context>
@@ -5028,7 +5179,7 @@ Please select an account for import:</source>
     <message>
         <location filename="../data_import/statement_xls.py" line="139"/>
         <source>Empty account number</source>
-        <translation type="unfinished"></translation>
+        <translation>Пустой номер счёта</translation>
     </message>
     <message>
         <location filename="../data_import/statement_xls.py" line="148"/>

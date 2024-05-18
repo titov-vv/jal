@@ -343,6 +343,157 @@
     </message>
 </context>
 <context>
+    <name>AssetPaymentOperation</name>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="35"/>
+        <source>Date/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="45"/>
+        <source>#</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="58"/>
+        <source>Commit changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="78"/>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="88"/>
+        <source>Tax</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="101"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="129"/>
+        <source>Asset Payment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="136"/>
+        <source>CUR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="163"/>
+        <source>unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="180"/>
+        <source>dd/MM/yyyy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="196"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="206"/>
+        <source>Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="216"/>
+        <source>Ex-Date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="229"/>
+        <source>Cancel changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="239"/>
+        <source>Dividend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="259"/>
+        <source>dd/MM/yyyy hh:mm:ss</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="272"/>
+        <source>Price</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AssetPaymentWidget</name>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="29"/>
+        <source>N/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="30"/>
+        <source>Dividend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="31"/>
+        <source>Bond Interest</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="32"/>
+        <source>Stock Dividend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="33"/>
+        <source>Stock Vesting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="34"/>
+        <source>Bond Amortization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="35"/>
+        <source>Fee / Tax</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="91"/>
+        <source>No quote</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="94"/>
+        <source>You should set quote via Data-&gt;Quotes menu for Date/Time of the dividend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="99"/>
+        <source>Incomplete data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_payment_widget.py" line="99"/>
+        <source>Please set a type of the dividend.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AssetPortfolioReport</name>
     <message>
         <location filename="../reports/portfolio.py" line="24"/>
@@ -1945,52 +2096,52 @@ do you want to save it?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="160"/>
+        <location filename="../db/ledger.py" line="157"/>
         <source>No asset defined for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="164"/>
+        <location filename="../db/ledger.py" line="161"/>
         <source>No category set for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="166"/>
+        <location filename="../db/ledger.py" line="163"/>
         <source>No peer set for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="240"/>
+        <location filename="../db/ledger.py" line="237"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="241"/>
+        <location filename="../db/ledger.py" line="238"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="293"/>
+        <location filename="../db/ledger.py" line="290"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="295"/>
+        <location filename="../db/ledger.py" line="292"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="296"/>
+        <location filename="../db/ledger.py" line="293"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="246"/>
+        <location filename="../db/ledger.py" line="243"/>
         <source>Leger is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="251"/>
+        <location filename="../db/ledger.py" line="248"/>
         <source>Re-building ledger since: </source>
         <translation></translation>
     </message>
