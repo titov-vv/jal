@@ -173,7 +173,7 @@ class LedgerTransaction(JalDB):
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
             open_price = operation['price']
             close_price = operation['price'] if price is None else price
-            self._account.open_trade(self.timestamp(), operation['operation'].type(), operation['operation'].id(), self._asset, open_price, remaining_qty - next_deal_qty)
+            self._account.open_trade(operation['operation'], self._asset, open_price, remaining_qty - next_deal_qty, modified_by=self)
             JalClosedTrade.create_from_trades(operation['operation'], self, (-deal_sign) * next_deal_qty, open_price, close_price)
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * open_price)
@@ -603,7 +603,7 @@ class AssetPayment(LedgerTransaction):
         if asset_amount < Decimal('0'):
             raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
-        self._account.open_trade(self._timestamp, self._otype, self._oid, self._asset, self.price(), self._amount)
+        self._account.open_trade(self, self._asset, self.price(), self._amount)
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
                                  asset_id=self._asset.id(), value=self._amount * self.price())
         if self._tax:
@@ -748,7 +748,7 @@ class Trade(LedgerTransaction):
                                      deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
                                      category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have a reminder that opens a new position
-            self._account.open_trade(self._timestamp, self._otype, self._oid, self._asset, self._price, (qty - processed_qty))
+            self._account.open_trade(self, self._asset, self._price, (qty - processed_qty))
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty),
                                      asset_id=self._asset.id(), value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
@@ -979,15 +979,13 @@ class Transfer(LedgerTransaction):
                 transfer_value = Decimal(value)
                 # Move open trades from previous account to new
                 for trade in transfer_trades:
-                    self._deposit_account.open_trade(self._deposit_timestamp, trade.open_operation().type(), trade.open_operation().id(),
-                                                     self._asset, trade.open_price(), trade.qty())
+                    self._deposit_account.open_trade(trade.open_operation(), self._asset, trade.open_price(), trade.qty(), modified_by=self)
             else:
                 transfer_value = self._deposit
                 rate = transfer_value/Decimal(value)
                 # Move open trades from previous account to new and adjust price
                 for trade in transfer_trades:
-                    self._deposit_account.open_trade(self._deposit_timestamp, trade.open_operation().type(), trade.open_operation().id(),
-                                                     self._asset, trade.open_price()*rate, trade.qty())
+                    self._deposit_account.open_trade(trade.open_operation(), self._asset, trade.open_price()*rate, trade.qty(), modified_by=self)
             ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=-transfer_value)
             ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=transfer_value)
         else:
@@ -1197,7 +1195,7 @@ class CorporateAction(LedgerTransaction):
             else:
                 value = share * processed_value
                 price = value / qty
-                self._account.open_trade(self._timestamp, self._otype, self._oid, asset, price, qty)
+                self._account.open_trade(self, asset, price, qty)
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)
 
 # ----------------------------------------------------------------------------------------------------------------------

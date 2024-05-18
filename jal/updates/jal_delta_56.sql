@@ -71,13 +71,15 @@ CREATE TABLE trades_opened (
     timestamp     INTEGER NOT NULL,
     otype         INTEGER NOT NULL,
     oid           INTEGER NOT NULL,
+    m_otype       INTEGER NOT NULL,
+    m_oid         INTEGER NOT NULL,
     account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     asset_id      INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
     price         TEXT    NOT NULL,
     remaining_qty TEXT    NOT NULL
 );
 DROP INDEX IF EXISTS open_trades_by_oid;
-CREATE INDEX open_trades_by_oid ON trades_opened (timestamp, otype, oid);
+CREATE INDEX open_trades_by_time ON trades_opened (timestamp, id);
 --------------------------------------------------------------------------------
 DROP TABLE IF EXISTS trades_closed;
 CREATE TABLE trades_closed (

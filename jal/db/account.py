@@ -284,11 +284,16 @@ class JalAccount(JalDB):
         return trades
 
     # Creates a record in 'trades_open' table that manifests current asset position
-    def open_trade(self, timestamp, otype, oid, asset, price, qty):
+    # operation - original operation that opened position in asset
+    # price, qty - size of position and price for accounting
+    # modified_by - indicate operation that modifies the original position
+    def open_trade(self, operation, asset, price, qty, modified_by=None):
+        modified_by = operation if modified_by is None else modified_by
         _ = self._exec(
-            "INSERT INTO trades_opened(timestamp, otype, oid, account_id, asset_id, price, remaining_qty) "
-            "VALUES(:timestamp, :type, :oid, :account_id, :asset_id, :price, :remaining_qty)",
-            [(":timestamp", timestamp), (":type", otype), (":oid", oid), (":account_id", self._id),
+            "INSERT INTO trades_opened(timestamp, otype, oid, m_otype, m_oid, account_id, asset_id, price, remaining_qty) "
+            "VALUES(:timestamp, :otype, :oid, :m_otype, :m_oid, :account_id, :asset_id, :price, :remaining_qty)",
+            [(":timestamp", modified_by.timestamp()), (":otype", operation.type()), (":oid", operation.id()),
+             (":m_otype", modified_by.type()), (":m_oid", modified_by.id()), (":account_id", self._id),
              (":asset_id", asset.id()), (":price", format_decimal(price)), (":remaining_qty", format_decimal(qty))])
 
     # Returns a list of {"operation": LedgerTransaction, "price": Decimal, "remaining_qty": Decimal}
@@ -311,7 +316,7 @@ class JalAccount(JalDB):
             otype, oid, price, qty = self._read_record(query, cast=[int, int, Decimal, Decimal])
             operation = jal.db.operations.LedgerTransaction().get_operation(otype, oid, jal.db.operations.Transfer.Incoming)
             trades.append({"operation": operation, "price": price, "remaining_qty": qty})
-        trades = sorted(trades, key=lambda op: op['operation'].timestamp())
+        trades = sorted(trades, key=lambda op: op['operation'].timestamp())  # For correct FIFO we need to take operations in order of original operation, not last modification
         return trades
 
     # Returns amount that was paid for an asset that was hold on the account during time between start_ts and end_ts

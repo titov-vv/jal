@@ -228,17 +228,19 @@ CREATE TABLE map_peer (
 DROP TABLE IF EXISTS trades_opened;
 CREATE TABLE trades_opened (
     id            INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    timestamp     INTEGER NOT NULL,    -- Timestamp when this position change happened
+    timestamp     INTEGER NOT NULL,    -- Timestamp when this position change happened (which time corresponds to record creation in the table)
     otype         INTEGER NOT NULL,    -- Operation type that created transaction initially
     oid           INTEGER NOT NULL,    -- Operation ID that created transaction initially
+    m_otype       INTEGER NOT NULL,    -- Operation type that inserted this record into the table (may differ from original one if position was modified by another operation)
+    m_oid         INTEGER NOT NULL,    -- Operation ID that inserted this record into the table (may differ from original one if position was modified by another operation)
     account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     asset_id      INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
     price         TEXT    NOT NULL,    -- Accounting price of current position (may be different from original operation)
     remaining_qty TEXT    NOT NULL     -- Quantity of asset that still remains held (may be different from original operation quantity)
 );
 
-DROP INDEX IF EXISTS open_trades_by_oid;
-CREATE INDEX open_trades_by_oid ON trades_opened (timestamp, otype, oid);
+DROP INDEX IF EXISTS open_trades_by_time;
+CREATE INDEX open_trades_by_time ON trades_opened (timestamp, id);
 
 -- Table: quotes
 DROP TABLE IF EXISTS quotes;
