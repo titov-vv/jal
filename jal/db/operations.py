@@ -1186,11 +1186,11 @@ class CorporateAction(LedgerTransaction):
         # Process assets after corporate action
         query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
                            [(":oid", self._oid)])
+        closed_trades = self._account.closed_trades_list(asset=self._asset)
+        closed_trades = [x for x in closed_trades if x.close_operation().id() == self._oid]  # Keep only trades that were closed with current operation
         while query.next():
             asset, qty, share = self._read_record(query, cast=[JalAsset, Decimal, Decimal])
             value = share * processed_value
-            closed_trades = self._account.closed_trades_list(asset=asset)
-            closed_trades = [x for x in closed_trades if x.close_operation().id() == self._oid]  # Keep only trades that were closed with current operation
             if asset.type() == PredefinedAsset.Money:
                 ledger.appendTransaction(self, BookAccount.Money, qty)
                 ledger.appendTransaction(self, BookAccount.Incomes, -qty, category=PredefinedCategory.Interest, peer=self._broker)
