@@ -322,9 +322,9 @@ def test_fifo(prepare_db_fifo):
         (d2t(210501), d2t(210502), 19, +10.0, 200, 0.0),
         (d2t(210510), d2t(210511), 19, -10.0, 100, 0.0),
         (d2t(240503), d2t(210504), 20, +10.0, 200, 0.0),  # Buy the same asset R after transfer
-        (d2t(240507), d2t(210508), 20, -5.0, 200, 0.0),   # Sell asset R after transfer in 3 different operations
+        (d2t(240507), d2t(210508), 20, -3.0, 200, 0.0),   # Sell asset R after transfer in 3 different operations
         (d2t(240509), d2t(210510), 20, -10.0, 200, 0.0),
-        (d2t(240511), d2t(210512), 20, -5.0, 200, 0.0)
+        (d2t(240511), d2t(210512), 20, -7.0, 200, 0.0)
     ]
     create_trades(1, test_trades)
 
@@ -431,8 +431,8 @@ def test_fifo(prepare_db_fifo):
     # Deals with transfer
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(20))
     assert len(trades) == 4
-    assert all([x.qty() == Decimal('5') for x in [trade for trade in trades]])
-    assert [x.profit() for x in trades] == [Decimal('500'), Decimal('500'), Decimal('0'), Decimal('0')]
+    assert [x.qty() for x in trades] == [Decimal('3'), Decimal('7'), Decimal('3'), Decimal('7')]
+    assert [x.profit() for x in trades] == [Decimal('300'), Decimal('700'), Decimal('0'), Decimal('0')]
 
     # validate final amounts
     # validate book amounts and values

@@ -979,14 +979,14 @@ class Transfer(LedgerTransaction):
                 transfer_value = Decimal(value)
                 # Move open trades from previous account to new
                 for trade in transfer_trades:
-                    self._deposit_account.open_trade(trade.open_timestamp(), trade.open_operation().type(), trade.open_operation().id(),
+                    self._deposit_account.open_trade(self._deposit_timestamp, trade.open_operation().type(), trade.open_operation().id(),
                                                      self._asset, trade.open_price(), trade.qty())
             else:
                 transfer_value = self._deposit
                 rate = transfer_value/Decimal(value)
                 # Move open trades from previous account to new and adjust price
                 for trade in transfer_trades:
-                    self._deposit_account.open_trade(trade.open_timestamp(), trade.open_operation().type(), trade.open_operation().id(),
+                    self._deposit_account.open_trade(self._deposit_timestamp, trade.open_operation().type(), trade.open_operation().id(),
                                                      self._asset, trade.open_price()*rate, trade.qty())
             ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=-transfer_value)
             ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=transfer_value)
