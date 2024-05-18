@@ -73,10 +73,12 @@ class TaxesPortugal(TaxReport):
                 inflation = self.inflation(trade.open_operation().timestamp())
                 if inflation != Decimal('1'):
                     spending = spending * inflation
-                    note = f"Acquisition inflation coefficient {inflation:.2f} for year {datetime.fromtimestamp(trade.open_operation().timestamp(), tz=timezone.utc).strftime('%Y')}"
+                    note = f"Acquisition inflation coefficient {inflation:.2f} for year {datetime.fromtimestamp(trade.open_operation().timestamp(), tz=timezone.utc).strftime('%Y')}\n"
             else:  # Short trade
                 income = round(trade.open_amount(no_settlement=ns) - trade.open_fee(), 2)
                 spending = round(trade.close_amount(no_settlement=ns) + trade.close_fee(), 2)
+            for modifier in trade.modified_by():
+                note = note + modifier.description() + "\n"
             line = {
                 'report_template': "trade",
                 'symbol': trade.asset().symbol(self.account_currency.id()),

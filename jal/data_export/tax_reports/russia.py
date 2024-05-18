@@ -106,11 +106,13 @@ class TaxesRussia(TaxReport):
                     short_dividend -= dividend.amount()
                     short_dividend_rub -= dividend.amount(self._currency_id)  # amount is negative
                 dividends_withdrawn = [x for x in dividends_withdrawn if not x in div_list]
-                note = f"Удержан дивиденд: {short_dividend_rub:.2f} RUB ({short_dividend:.2f} {self.account_currency.symbol()})" if short_dividend_rub > Decimal('0') else ''
+                note = f"Удержан дивиденд: {short_dividend_rub:.2f} RUB ({short_dividend:.2f} {self.account_currency.symbol()})\n" if short_dividend_rub > Decimal('0') else ''
                 income = round(trade.open_amount(no_settlement=ns), 2)
                 income_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2)
                 spending = round(trade.close_amount(no_settlement=ns), 2) + trade.fee() + short_dividend
                 spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) + short_dividend_rub
+            for modifier in trade.modified_by():
+                note = note + modifier.description() + "\n"
             line = {
                 'report_template': "trade",
                 'symbol': trade.asset().symbol(self.account_currency.id()),

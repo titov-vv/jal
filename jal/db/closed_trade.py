@@ -135,3 +135,16 @@ class JalClosedTrade(JalDB):
             return profit
         else:
             return Decimal('0')
+
+    # Returns a list of LedgerTransactions that modified position after its opening
+    # (i.e. transfers or corporate actions that happened during position lifetime)
+    def modified_by(self) -> list:
+        query = self._exec("SELECT DISTINCT m_otype, m_oid FROM trades_opened "
+                           "WHERE otype=:otype AND oid=:oid AND m_otype!=:trade",
+                           [(":otype", self._open_op.type()), (":oid", self._open_op.id()),
+                            (":trade", jal.db.operations.LedgerTransaction.Trade)])
+        modifiers = []
+        while query.next():
+            otype, oid = self._read_record(query)
+            modifiers.append(jal.db.operations.LedgerTransaction.get_operation(otype, oid, jal.db.operations.Transfer.Outgoing))
+        return modifiers
