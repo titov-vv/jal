@@ -424,254 +424,167 @@ CREATE VIEW countries_ext AS
 
 --------------------------------------------------------------------------------
 -- TRIGGERS
-
--- Deletion should happen on base table
+-- Deletion should happen on base table of the view
 DROP TRIGGER IF EXISTS on_asset_ext_delete;
-CREATE TRIGGER on_asset_ext_delete
-    INSTEAD OF DELETE ON assets_ext FOR EACH ROW WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER on_asset_ext_delete INSTEAD OF DELETE ON assets_ext FOR EACH ROW
 BEGIN
     DELETE FROM assets WHERE id = OLD.id;
 END;
-
-
--- Trigger: action_details_after_delete
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS action_details_after_delete;
-CREATE TRIGGER action_details_after_delete
-      AFTER DELETE ON action_details
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER action_details_after_delete AFTER DELETE ON action_details FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE oid = OLD.pid);
 END;
-
-
--- Trigger: action_details_after_insert
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS action_details_after_insert;
-CREATE TRIGGER action_details_after_insert
-      AFTER INSERT ON action_details
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER action_details_after_insert AFTER INSERT ON action_details FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE oid = NEW.pid);
 END;
-
--- Trigger: action_details_after_update
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS action_details_after_update;
-CREATE TRIGGER action_details_after_update
-      AFTER UPDATE ON action_details
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER action_details_after_update AFTER UPDATE ON action_details FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE oid = OLD.pid );
 END;
-
--- Trigger: actions_after_delete
+-- Ledger cleanup after modification and deletion of detailed records
 DROP TRIGGER IF EXISTS actions_after_delete;
-CREATE TRIGGER actions_after_delete
-      AFTER DELETE ON actions
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER actions_after_delete AFTER DELETE ON actions FOR EACH ROW
 BEGIN
     DELETE FROM action_details WHERE pid = OLD.id;
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
 END;
-
--- Trigger: actions_after_insert
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS actions_after_insert;
-CREATE TRIGGER actions_after_insert
-      AFTER INSERT ON actions
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER actions_after_insert AFTER INSERT ON actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
 END;
-
--- Trigger: actions_after_update
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS actions_after_update;
-CREATE TRIGGER actions_after_update
-      AFTER UPDATE OF timestamp, account_id, peer_id ON actions
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER actions_after_update AFTER UPDATE OF timestamp, account_id, peer_id ON actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
-
--- Trigger: asset_payments_after_delete
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_payments_after_delete;
-CREATE TRIGGER asset_payments_after_delete
-      AFTER DELETE ON asset_payments
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER asset_payments_after_delete AFTER DELETE ON asset_payments FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
-
--- Trigger: asset_payments_after_insert
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_payments_after_insert;
-CREATE TRIGGER asset_payments_after_insert
-      AFTER INSERT ON asset_payments
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER asset_payments_after_insert AFTER INSERT ON asset_payments FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
-
--- Trigger: asset_payments_after_update
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_payments_after_update;
-CREATE TRIGGER asset_payments_after_update
-      AFTER UPDATE OF timestamp, type, account_id, asset_id, amount, tax ON asset_payments
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, account_id, asset_id, amount, tax ON asset_payments FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
-
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS trades_after_delete;
-CREATE TRIGGER trades_after_delete
-         AFTER DELETE ON trades
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER trades_after_delete AFTER DELETE ON trades FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
-
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS trades_after_insert;
-CREATE TRIGGER trades_after_insert
-      AFTER INSERT ON trades
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER trades_after_insert AFTER INSERT ON trades FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
-
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS trades_after_update;
-CREATE TRIGGER trades_after_update
-      AFTER UPDATE OF timestamp, account_id, asset_id, qty, price, fee ON trades
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, asset_id, qty, price, fee ON trades FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
-
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_action_after_delete;
-CREATE TRIGGER asset_action_after_delete
-      AFTER DELETE ON asset_actions
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER asset_action_after_delete AFTER DELETE ON asset_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
-
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_action_after_insert;
-CREATE TRIGGER asset_action_after_insert
-      AFTER INSERT ON asset_actions
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER asset_action_after_insert AFTER INSERT ON asset_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
-
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_action_after_update;
-CREATE TRIGGER asset_action_after_update
-      AFTER UPDATE OF timestamp, account_id, type, asset_id, qty ON asset_actions
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER asset_action_after_update AFTER UPDATE OF timestamp, account_id, type, asset_id, qty ON asset_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
 END;
-
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS asset_result_after_delete;
-CREATE TRIGGER asset_result_after_delete
-      AFTER DELETE ON action_results
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER asset_result_after_delete AFTER DELETE ON action_results FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = OLD.action_id);
 END;
-
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS asset_result_after_insert;
-CREATE TRIGGER asset_result_after_insert
-      AFTER INSERT ON action_results
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER asset_result_after_insert AFTER INSERT ON action_results FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = NEW.action_id);
 END;
-
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS asset_result_after_update;
-CREATE TRIGGER asset_result_after_update
-      AFTER UPDATE OF asset_id, qty, value_share ON action_results
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER asset_result_after_update AFTER UPDATE OF asset_id, qty, value_share ON action_results FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = OLD.action_id);
 END;
-
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS transfers_after_delete;
-CREATE TRIGGER transfers_after_delete
-      AFTER DELETE ON transfers
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER transfers_after_delete AFTER DELETE ON transfers FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
 END;
-
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS transfers_after_insert;
-CREATE TRIGGER transfers_after_insert
-      AFTER INSERT ON transfers
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER transfers_after_insert AFTER INSERT ON transfers FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
-
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS transfers_after_update;
-CREATE TRIGGER transfers_after_update
-      AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, fee_account,
-                      withdrawal, deposit, fee, asset ON transfers
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER transfers_after_update AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, fee_account, withdrawal, deposit, fee, asset ON transfers FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
-
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS deposit_action_after_delete;
-CREATE TRIGGER deposit_action_after_delete
-      AFTER DELETE ON deposit_actions
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER deposit_action_after_delete AFTER DELETE ON deposit_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
 END;
-
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS deposit_action_after_insert;
-CREATE TRIGGER deposit_action_after_insert
-      AFTER INSERT ON deposit_actions
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER deposit_action_after_insert AFTER INSERT ON deposit_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
 END;
-
+-- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS deposit_action_after_update;
-CREATE TRIGGER deposit_action_after_update
-      AFTER UPDATE OF timestamp, account_id, type, asset_id, qty ON deposit_actions
-      FOR EACH ROW
-      WHEN (SELECT value FROM settings WHERE id = 1)
+CREATE TRIGGER deposit_action_after_update AFTER UPDATE OF timestamp, account_id, type, asset_id, qty ON deposit_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
-
 
 -- Trigger to keep predefinded agents from deletion
 DROP TRIGGER IF EXISTS keep_predefined_agents;
@@ -679,7 +592,6 @@ CREATE TRIGGER keep_predefined_agents BEFORE DELETE ON agents FOR EACH ROW WHEN 
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
 END;
-
 
 -- Trigger to keep predefinded categories from deletion
 DROP TRIGGER IF EXISTS keep_predefined_categories;
@@ -691,8 +603,8 @@ END;
 
 -- Initialize default values for settings
 INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 56);
-INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
--- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1); -- Deprecated and ID shouldn't be re-used
+-- INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);  -- Deprecated and ID shouldn't be re-used
+-- INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
 INSERT INTO settings(id, name, value) VALUES (4, 'RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(id, name, value) VALUES (5, 'RuTaxSessionId', '');
