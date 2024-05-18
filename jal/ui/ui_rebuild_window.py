@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'rebuild_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.7.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,17 +15,17 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDateEdit,
-    QDialog, QDialogButtonBox, QFormLayout, QGroupBox,
-    QLabel, QLayout, QRadioButton, QSizePolicy,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QDateEdit, QDialog,
+    QDialogButtonBox, QFormLayout, QGroupBox, QLabel,
+    QLayout, QRadioButton, QSizePolicy, QVBoxLayout,
+    QWidget)
 
 class Ui_ReBuildDialog(object):
     def setupUi(self, ReBuildDialog):
         if not ReBuildDialog.objectName():
             ReBuildDialog.setObjectName(u"ReBuildDialog")
-        ReBuildDialog.setWindowModality(Qt.ApplicationModal)
-        ReBuildDialog.resize(268, 150)
+        ReBuildDialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        ReBuildDialog.resize(298, 156)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -47,8 +47,8 @@ class Ui_ReBuildDialog(object):
         self.TypeGroup.setSizePolicy(sizePolicy1)
         self.formLayout = QFormLayout(self.TypeGroup)
         self.formLayout.setObjectName(u"formLayout")
-        self.formLayout.setSizeConstraint(QLayout.SetMinimumSize)
-        self.formLayout.setFieldGrowthPolicy(QFormLayout.FieldsStayAtSizeHint)
+        self.formLayout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
+        self.formLayout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.FieldsStayAtSizeHint)
         self.formLayout.setHorizontalSpacing(15)
         self.formLayout.setVerticalSpacing(0)
         self.formLayout.setContentsMargins(2, 0, 2, 0)
@@ -75,25 +75,19 @@ class Ui_ReBuildDialog(object):
         self.CustomDateEdit = QDateEdit(self.TypeGroup)
         self.CustomDateEdit.setObjectName(u"CustomDateEdit")
         self.CustomDateEdit.setCalendarPopup(True)
-        self.CustomDateEdit.setTimeSpec(Qt.UTC)
+        self.CustomDateEdit.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.formLayout.setWidget(2, QFormLayout.FieldRole, self.CustomDateEdit)
 
 
         self.verticalLayout.addWidget(self.TypeGroup)
 
-        self.FastAndDirty = QCheckBox(ReBuildDialog)
-        self.FastAndDirty.setObjectName(u"FastAndDirty")
-        self.FastAndDirty.setChecked(True)
-
-        self.verticalLayout.addWidget(self.FastAndDirty)
-
         self.DialogButtonBox = QDialogButtonBox(ReBuildDialog)
         self.DialogButtonBox.setObjectName(u"DialogButtonBox")
         sizePolicy1.setHeightForWidth(self.DialogButtonBox.sizePolicy().hasHeightForWidth())
         self.DialogButtonBox.setSizePolicy(sizePolicy1)
-        self.DialogButtonBox.setOrientation(Qt.Horizontal)
-        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.DialogButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
         self.verticalLayout.addWidget(self.DialogButtonBox)
 
@@ -113,6 +107,5 @@ class Ui_ReBuildDialog(object):
         self.FrontierDateLabel.setText(QCoreApplication.translate("ReBuildDialog", u"FrontierDate", None))
         self.DateRadionButton.setText(QCoreApplication.translate("ReBuildDialog", u"Since &Date:", None))
         self.CustomDateEdit.setDisplayFormat(QCoreApplication.translate("ReBuildDialog", u"dd/MM/yyyy", None))
-        self.FastAndDirty.setText(QCoreApplication.translate("ReBuildDialog", u"Fast, &unreliable", None))
     # retranslateUi
 

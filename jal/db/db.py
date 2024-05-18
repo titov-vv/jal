@@ -147,6 +147,9 @@ class JalDB:
             db.close()
             return JalDBError(JalDBError.NewerDbSchema,
                               details=f"(expected: {Setup.DB_REQUIRED_VERSION}, got: {schema_version})")
+        # Switching of synchronous speeds up execution 6-7 times and is safe for application crash.
+        # Database may be corrupted in case of power loss of OS crash.
+        self.set_synchronous(False)
         self.enable_fk(True)
         self.enable_triggers(True)
 
@@ -279,10 +282,10 @@ class JalDB:
             _ = self._exec("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
 
     # ------------------------------------------------------------------------------------------------------------------
-    # Set synchronous mode ON if synchronous == True and OFF it otherwise
+    # Set synchronous mode NORMAL if synchronous == True and OFF it otherwise
     def set_synchronous(self, synchronous):
         if synchronous:
-            _ = self._exec("PRAGMA synchronous = ON")
+            _ = self._exec("PRAGMA synchronous = NORMAL")
         else:
             _ = self._exec("PRAGMA synchronous = OFF")
 

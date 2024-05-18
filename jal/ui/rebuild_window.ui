@@ -3,14 +3,14 @@
  <class>ReBuildDialog</class>
  <widget class="QDialog" name="ReBuildDialog">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::WindowModality::ApplicationModal</enum>
   </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>268</width>
-    <height>150</height>
+    <width>298</width>
+    <height>156</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -56,10 +56,10 @@
      </property>
      <layout class="QFormLayout" name="formLayout">
       <property name="sizeConstraint">
-       <enum>QLayout::SetMinimumSize</enum>
+       <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
       </property>
       <property name="fieldGrowthPolicy">
-       <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+       <enum>QFormLayout::FieldGrowthPolicy::FieldsStayAtSizeHint</enum>
       </property>
       <property name="horizontalSpacing">
        <number>15</number>
@@ -116,21 +116,11 @@
          <bool>true</bool>
         </property>
         <property name="timeSpec">
-         <enum>Qt::UTC</enum>
+         <enum>Qt::TimeSpec::UTC</enum>
         </property>
        </widget>
       </item>
      </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="FastAndDirty">
-     <property name="text">
-      <string>Fast, &amp;unreliable</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
     </widget>
    </item>
    <item>
@@ -142,10 +132,10 @@
       </sizepolicy>
      </property>
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'login_fns_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.7.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -130,8 +130,8 @@ class Ui_LoginFNSDialog(object):
 
         self.line = QFrame(self.SMSButtonFrame)
         self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.HLine)
-        self.line.setFrameShadow(QFrame.Sunken)
+        self.line.setFrameShape(QFrame.Shape.HLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.verticalLayout_10.addWidget(self.line)
 
@@ -217,8 +217,8 @@ class Ui_LoginFNSDialog(object):
 
         self.FNSSplitLine = QFrame(self.FNSButtonFrame)
         self.FNSSplitLine.setObjectName(u"FNSSplitLine")
-        self.FNSSplitLine.setFrameShape(QFrame.HLine)
-        self.FNSSplitLine.setFrameShadow(QFrame.Sunken)
+        self.FNSSplitLine.setFrameShape(QFrame.Shape.HLine)
+        self.FNSSplitLine.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.verticalLayout_4.addWidget(self.FNSSplitLine)
 
@@ -256,8 +256,8 @@ class Ui_LoginFNSDialog(object):
         self.verticalLayout_6.setContentsMargins(0, 0, 0, 6)
         self.ESIASplitLine = QFrame(self.ESIAButtonFrame)
         self.ESIASplitLine.setObjectName(u"ESIASplitLine")
-        self.ESIASplitLine.setFrameShape(QFrame.HLine)
-        self.ESIASplitLine.setFrameShadow(QFrame.Sunken)
+        self.ESIASplitLine.setFrameShape(QFrame.Shape.HLine)
+        self.ESIASplitLine.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.verticalLayout_6.addWidget(self.ESIASplitLine)
 

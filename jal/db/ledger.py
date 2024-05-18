@@ -34,9 +34,6 @@ class RebuildDialog(QDialog):
         y = parent.y() + parent.height()/2 - self.height()/2
         self.setGeometry(x, y, self.width(), self.height())
 
-    def isFastAndDirty(self):
-        return self.ui.FastAndDirty.isChecked()
-
     def getTimestamp(self):
         if self.ui.LastRadioButton.isChecked():
             return self.frontier
@@ -223,7 +220,7 @@ class Ledger(QObject, JalDB):
     #      will asks for confirmation if we have more than SILENT_REBUILD_THRESHOLD operations require rebuild
     # 0 - re-build from scratch
     # any - re-build all operations after given timestamp
-    def rebuild(self, from_timestamp=-1, fast_and_dirty=False):
+    def rebuild(self, from_timestamp=-1):
         exception_happened = False
         last_timestamp = 0
         self.amounts.clear()
@@ -256,8 +253,6 @@ class Ledger(QObject, JalDB):
         _ = self._exec("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
 
         self.enable_triggers(False)
-        if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
-            self.set_synchronous(False)
         try:
             query = self._exec("SELECT otype, oid, timestamp, account_id, subtype FROM operation_sequence "
                                "WHERE timestamp >= :frontier", [(":frontier", frontier)])
@@ -277,8 +272,6 @@ class Ledger(QObject, JalDB):
             else:
                 logging.error(f"{traceback.format_exc()}")  # and full log for anything unexpected
         finally:
-            if fast_and_dirty:
-                self.set_synchronous(True)
             self.enable_triggers(True)
             if self.progress_bar is not None:
                 self.main_window.showProgressBar(False)
@@ -304,5 +297,4 @@ class Ledger(QObject, JalDB):
     def showRebuildDialog(self, parent):
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
         if rebuild_dialog.exec():
-            self.rebuild(from_timestamp=rebuild_dialog.getTimestamp(),
-                         fast_and_dirty=rebuild_dialog.isFastAndDirty())
+            self.rebuild(from_timestamp=rebuild_dialog.getTimestamp())

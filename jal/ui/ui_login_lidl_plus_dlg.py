@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'login_lidl_plus_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.7.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -48,8 +48,8 @@ class Ui_LoginLidlPlusDialog(object):
         self.verticalLayout_6.setContentsMargins(0, 0, 0, 6)
         self.SplitLine = QFrame(self.ButtonFrame)
         self.SplitLine.setObjectName(u"SplitLine")
-        self.SplitLine.setFrameShape(QFrame.HLine)
-        self.SplitLine.setFrameShadow(QFrame.Sunken)
+        self.SplitLine.setFrameShape(QFrame.Shape.HLine)
+        self.SplitLine.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.verticalLayout_6.addWidget(self.SplitLine)
 
