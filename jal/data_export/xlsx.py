@@ -69,7 +69,7 @@ class XLSX:
             try:
                 row_template = template[row_template_name]
             except KeyError:
-                raise RuntimeError(self.tr("Report row template not found: ") + row_template_name)
+                raise RuntimeError(self.tr("Report row template not found: ") + row_template_name + f" ({template_file})")
             even_odd = values['report_group'] if "report_group" in values else (i + 1)
             row += self.add_data_row(sheet, row, values, row_template, even_odd=even_odd)
         self.add_report_footers(sheet, template['footers'], start_row=row + 1)
