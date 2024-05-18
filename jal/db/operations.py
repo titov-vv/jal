@@ -977,7 +977,7 @@ class Transfer(LedgerTransaction):
                 raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
             if self._withdrawal_account.currency() == self._deposit_account.currency():
                 transfer_value = Decimal(value)
-                # Move open trades from previous account to new
+                # Move open trades from previous account to new account
                 for trade in transfer_trades:
                     self._deposit_account.open_trade(trade.open_operation(), self._asset, trade.open_price(), trade.qty(), modified_by=self)
             else:
@@ -1162,8 +1162,8 @@ class CorporateAction(LedgerTransaction):
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
         if asset_amount < self._qty:
             raise LedgerError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
-                             + f"{ts2dt(self._timestamp)}, "
-                             + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
+                              + f"{ts2dt(self._timestamp)}, "
+                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         if asset_amount > self._qty:
             raise LedgerError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
                               + f"{ts2dt(self._timestamp)}, "
@@ -1175,12 +1175,11 @@ class CorporateAction(LedgerTransaction):
             allocation += self._read_record(query, cast=[Decimal])
         if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
             raise LedgerError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
-                                      + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, " 
-                                        f"Distributed: {100.0 * float(allocation)}%, Operation: {self.dump()}")
+                              + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, "
+                              + f"Distributed: {100.0 * float(allocation)}%, Operation: {self.dump()}")
         processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._qty, None)
         # Withdraw value with old quantity of old asset
-        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
-                                 asset_id=self._asset.id(), value=-processed_value)
+        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
         if self._subtype == CorporateAction.Delisting:  # Map value to costs and exit - nothing more for delisting
             ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=PredefinedCategory.Profit, peer=self._broker)
             return
@@ -1189,13 +1188,28 @@ class CorporateAction(LedgerTransaction):
                            [(":oid", self._oid)])
         while query.next():
             asset, qty, share = self._read_record(query, cast=[JalAsset, Decimal, Decimal])
+            value = share * processed_value
+            closed_trades = self._account.closed_trades_list(asset=asset)
+            closed_trades = [x for x in closed_trades if x.close_operation().id() == self._oid]  # Keep only trades that were closed with current operation
             if asset.type() == PredefinedAsset.Money:
                 ledger.appendTransaction(self, BookAccount.Money, qty)
                 ledger.appendTransaction(self, BookAccount.Incomes, -qty, category=PredefinedCategory.Interest, peer=self._broker)
             else:
-                value = share * processed_value
-                price = value / qty
-                self._account.open_trade(self, asset, price, qty)
+                if self._subtype == CorporateAction.SymbolChange:
+                    for trade in closed_trades:  # Re-create initial positions with new asset
+                        self._account.open_trade(trade.open_operation(), asset, trade.open_price(), trade.qty(), modified_by=self)
+                elif self._asset.id() == asset.id():
+                    if self._subtype == CorporateAction.Split:
+                        c = self._qty / qty   # 1:N cost basis adjustment for split
+                    elif self._subtype == CorporateAction.SpinOff or self._subtype == CorporateAction.Merger:
+                        c = share             # Cost basis adjustment according to corporate action data
+                    else:
+                        assert False, f"Unexpected corporate action type {self._subtype}"
+                    for trade in closed_trades:
+                        self._account.open_trade(trade.open_operation(), asset, c * trade.open_price(), qty, modified_by=self)
+                else:   # Newly created positions as result of corporate action
+                    price = value / qty
+                    self._account.open_trade(self, asset, price, qty)
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)
 
 # ----------------------------------------------------------------------------------------------------------------------
