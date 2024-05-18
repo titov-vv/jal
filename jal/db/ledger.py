@@ -251,8 +251,6 @@ class Ledger(QObject, JalDB):
         _ = self._exec("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = self._exec("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = self._exec("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
-
-        self.enable_triggers(False)
         try:
             query = self._exec("SELECT otype, oid, timestamp, account_id, subtype FROM operation_sequence "
                                "WHERE timestamp >= :frontier", [(":frontier", frontier)])
@@ -272,7 +270,6 @@ class Ledger(QObject, JalDB):
             else:
                 logging.error(f"{traceback.format_exc()}")  # and full log for anything unexpected
         finally:
-            self.enable_triggers(True)
             if self.progress_bar is not None:
                 self.main_window.showProgressBar(False)
         # Fill ledger totals values

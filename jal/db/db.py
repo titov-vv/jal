@@ -151,7 +151,6 @@ class JalDB:
         # Database may be corrupted in case of power loss of OS crash.
         self.set_synchronous(False)
         self.enable_fk(True)
-        self.enable_triggers(True)
 
         return JalDBError(JalDBError.NoError)
 
@@ -272,14 +271,6 @@ class JalDB:
     @classmethod
     def class_cache(cls) -> True:
         return False
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # Enables DB triggers if enable == True and disables it otherwise
-    def enable_triggers(self, enable):
-        if enable:
-            _ = self._exec("UPDATE settings SET value=1 WHERE name='TriggersEnabled'", commit=True)
-        else:
-            _ = self._exec("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Set synchronous mode NORMAL if synchronous == True and OFF it otherwise
