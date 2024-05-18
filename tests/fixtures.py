@@ -13,6 +13,11 @@ from tests.helpers import d2t, dt2t, create_assets, create_actions, create_divid
 
 @pytest.fixture
 def project_root() -> str:
+    # Application object should exist before QSqlDatabase otherwise it will end up with Segmentation fault
+    if not QApplication.instance():
+        app = QApplication([])
+    else:
+        app = QApplication.instance()
     yield os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
