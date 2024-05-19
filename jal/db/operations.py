@@ -1184,8 +1184,7 @@ class CorporateAction(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=PredefinedCategory.Profit, peer=self._broker)
             return
         # Process assets after corporate action
-        query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
-                           [(":oid", self._oid)])
+        query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         closed_trades = self._account.closed_trades_list(asset=self._asset)
         closed_trades = [x for x in closed_trades if x.close_operation().id() == self._oid]  # Keep only trades that were closed with current operation
         while query.next():

@@ -481,9 +481,9 @@ def test_open_price(prepare_db_fifo):
     positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(5))]
     assert positions == [(Decimal('3'), Decimal('150'))]
     positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(6))]
-    assert positions == [(Decimal('1'), Decimal('100'))]
+    assert positions == [(Decimal('1'), Decimal('400'))]
     positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(7))]
-    assert positions == [(Decimal('2'), Decimal('75'))]
+    assert positions == [(Decimal('2'), Decimal('225'))]
 
 
 def test_asset_transfer(prepare_db):
