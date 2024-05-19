@@ -103,7 +103,7 @@ class CorporateActionWidget(AbstractOperationDetails):
         try:
             if not self.model.submitAll():
                 raise RuntimeError(self.tr("Operation submit failed: ") + self.model.lastError().text())
-            oid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
+            oid = self.model.data(self.model.index(0, self.model.fieldIndex("oid")))
             if oid is None:  # we just have saved new action record and need last inserted id
                 oid = self.model.last_insert_id()
             for row in range(self.results_model.rowCount()):
@@ -156,7 +156,7 @@ class CorporateActionWidget(AbstractOperationDetails):
 
     def copyToNew(self, row):
         new_record = self.model.record(row)
-        new_record.setNull("id")
+        new_record.setNull("oid")
         new_record.setValue("timestamp", now_ts())
         new_record.setValue("number", '')
         return new_record

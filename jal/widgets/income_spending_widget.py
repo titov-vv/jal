@@ -131,7 +131,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         try:
             if not self.model.submitAll():
                 raise RuntimeError(self.tr("Operation submit failed: ") + self.model.lastError().text())
-            pid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
+            pid = self.model.data(self.model.index(0, self.model.fieldIndex("oid")))
             if pid is None:  # we just have saved new action record and need last inserted id
                 pid = self.model.last_insert_id()
             for row in range(self.details_model.rowCount()):   # Set PID for all child records
@@ -184,7 +184,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
     def copyToNew(self, row):
         new_record = self.model.record(row)
-        new_record.setNull("id")
+        new_record.setNull("oid")
         new_record.setValue("timestamp", now_ts())
         return new_record
 

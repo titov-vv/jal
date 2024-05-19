@@ -97,7 +97,7 @@ class AbstractOperationDetails(QWidget):
     def copyNew(self):
         row = self.mapper.currentIndex()
         new_record = self.copyToNew(row)
-        self.model.setFilter(f"{self.table_name}.id = 0")
+        self.model.setFilter(f"{self.table_name}.oid = 0")
         assert self.model.insertRows(0, 1)
         self.model.setRecord(0, new_record)
         self.mapper.toLast()

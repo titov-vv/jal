@@ -104,7 +104,7 @@ class TransferWidget(AbstractOperationDetails):
 
     def copyToNew(self, row):
         new_record = self.model.record(row)
-        new_record.setNull("id")
+        new_record.setNull("oid")
         new_record.setValue("withdrawal_timestamp", now_ts())
         new_record.setValue("deposit_timestamp", now_ts())
         return new_record

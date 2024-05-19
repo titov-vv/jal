@@ -115,7 +115,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
 
     def copyToNew(self, row):
         new_record = self.model.record(row)
-        new_record.setNull("id")
+        new_record.setNull("oid")
         new_record.setValue("timestamp", now_ts())
         new_record.setValue("ex_date", 0)
         new_record.setValue("number", '')

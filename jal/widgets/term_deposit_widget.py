@@ -101,7 +101,7 @@ class TermDepositWidget(AbstractOperationDetails):
         try:
             if not self.model.submitAll():
                 raise RuntimeError(self.tr("Operation submit failed: ") + self.model.lastError().text())
-            oid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
+            oid = self.model.data(self.model.index(0, self.model.fieldIndex("oid")))
             if oid is None:  # we just have saved new action record and need last inserted id
                 oid = self.model.last_insert_id()
             for row in range(self.actions_model.rowCount()):   # Set PID for all child records
@@ -150,7 +150,7 @@ class TermDepositWidget(AbstractOperationDetails):
 
     def copyToNew(self, row):
         new_record = self.model.record(row)
-        new_record.setNull("id")
+        new_record.setNull("oid")
         return new_record
 
 
