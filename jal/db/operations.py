@@ -1206,7 +1206,7 @@ class CorporateAction(LedgerTransaction):
                     else:
                         assert False, f"Unexpected corporate action type {self._subtype}"
                     for trade in closed_trades:
-                        self._account.open_trade(trade.open_operation(), asset, c * trade.open_price(), qty, modified_by=self)
+                        self._account.open_trade(trade.open_operation(), asset, c * trade.open_price(), trade.qty() / c, modified_by=self)
                 else:   # Newly created positions as result of corporate action
                     price = value / qty
                     self._account.open_trade(self, asset, price, qty)
