@@ -68,13 +68,13 @@ def test_symbol_change(prepare_db_fifo):
     create_stocks(test_assets, currency_id=2)
 
     test_corp_actions = [
-        (1622548800, CorporateAction.SymbolChange, 4, 100.0, 'Symbol change 100 A -> 100 B', [(5, 100.0, 1.0)])
+        (d2t(210601), CorporateAction.SymbolChange, 4, 100.0, 'Symbol change 100 A -> 100 B', [(5, 100.0, 1.0)])
     ]
     create_corporate_actions(1, test_corp_actions)
 
     test_trades = [
-        (1619870400, 1619870400, 4, 100.0, 10.0, 0.0),      # Buy  100 A x 10.00 01/05/2021
-        (1625140800, 1625140800, 5, -100.0, 20.0, 0.0)      # Sell 100 B x 20.00 01/07/2021
+        (d2t(210501), d2t(210501), 4, 100.0, 10.0, 0.0),      # Buy  100 A x 10.00 01/05/2021
+        (d2t(210701), d2t(210701), 5, -100.0, 20.0, 0.0)      # Sell 100 B x 20.00 01/07/2021
     ]
     create_trades(1, test_trades)
 
@@ -83,8 +83,8 @@ def test_symbol_change(prepare_db_fifo):
     ledger.rebuild(from_timestamp=0)
 
     trades = JalAccount(1).closed_trades_list()
-    assert trades[0].dump() == ['A', 1619870400, 1622548800, Decimal('1E+1'), Decimal('1E+1'), Decimal('1E+2'), Decimal('0'), Decimal('0'), Decimal('0')]
-    assert trades[1].dump() == ['B', 1622548800, 1625140800, Decimal('1E+1'), Decimal('2E+1'), Decimal('1E+2'), Decimal('0'), Decimal('1000'), Decimal('100')]
+    assert trades[0].dump() == ['A', d2t(210501), d2t(210601), Decimal('1E+1'), Decimal('1E+1'), Decimal('1E+2'), Decimal('0'), Decimal('0'), Decimal('0')]
+    assert trades[1].dump() == ['B', d2t(210501), d2t(210701), Decimal('1E+1'), Decimal('2E+1'), Decimal('1E+2'), Decimal('0'), Decimal('1000'), Decimal('100')]
 
 
 def test_delisting(prepare_db_fifo):
