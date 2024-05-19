@@ -444,6 +444,48 @@ def test_fifo(prepare_db_fifo):
         assert values[BookAccount.Assets, 1, asset_id] == Decimal('0')
 
 
+def test_open_price(prepare_db_fifo):
+    test_assets = [
+        ('A', 'A SHARE'),  # id == 4
+        ('B', 'B SHARE'),
+        ('C', 'C SHARE'),
+        ('D', 'D SHARE')   # id == 7
+    ]
+    create_stocks(test_assets, currency_id=2)
+
+    test_trades = [
+        (d2t(240501), d2t(240501), 4, 20.0, 100.0, 0),
+        (d2t(240502), d2t(240502), 4, 20.0, 120.0, 0),
+        (d2t(240503), d2t(240503), 4, 10.0, 110.0, 0),
+        (d2t(240504), d2t(240504), 4, -5.0, 110.0, 0),
+        (d2t(240505), d2t(240505), 4, -5.0, 110.0, 0),
+        (d2t(240501), d2t(240501), 5, 20.0, 100.0, 0),
+        (d2t(240503), d2t(240503), 5, -1.0, 400.0, 0),
+        (d2t(240505), d2t(240505), 5, -1.0, 300.0, 0)
+    ]
+    create_trades(1, test_trades)
+
+    test_corp_actions = [
+        (d2t(240502), 4, 5, 20.0, 'Split 20 B -> 5 B', [(5, 5.0, 1.0)]),
+        (d2t(240504), 2, 5, 4.0, 'Spin-off 1 C from 4 B', [(5, 4.0, 0.75), (6, 1.0, 0.25)]),
+        (d2t(240506), 2, 5, 3.0, 'Spin-off 2 D from 3 B', [(5, 3.0, 0.5), (7, 2.0, 0.5)])
+    ]
+    create_corporate_actions(1, test_corp_actions)
+
+    # Build ledger
+    ledger = Ledger()
+    ledger.rebuild(from_timestamp=0)
+
+    positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(4))]
+    assert positions == [(Decimal('10'), Decimal('100')), (Decimal('20'), Decimal('120')), (Decimal('10'), Decimal('110'))]
+    positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(5))]
+    assert positions == [(Decimal('3'), Decimal('150'))]
+    positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(6))]
+    assert positions == [(Decimal('1'), Decimal('100'))]
+    positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(7))]
+    assert positions == [(Decimal('2'), Decimal('75'))]
+
+
 def test_asset_transfer(prepare_db):
     peer = JalPeer(data={'name': 'Test Peer', 'parent': 0}, create=True)
     account1 = JalAccount(
