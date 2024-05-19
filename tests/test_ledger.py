@@ -230,33 +230,33 @@ def test_fifo(prepare_db_fifo):
     create_actions([(d2t(240101), 2, 1, [(PredefinedCategory.StartingBalance, 1000.0)])])
     # Prepare trades and corporate actions setup
     test_assets = [
-        ('A', 'A SHARE'),   # id == 4
-        ('B', 'B SHARE'),
-        ('C', 'C SHARE'),
-        ('D', 'D SHARE'),
-        ('E', 'E SHARE'),
-        ('F', 'F SHARE'),
-        ('G1', 'G SHARE BEFORE'),
-        ('G2', 'G SHARE AFTER'),
-        ('H', 'H SPIN-OFF FROM G'),
-        ('K', 'K SHARE'),
-        ('L', 'L SHARE'),
-        ('M', 'M SHARE'),
-        ('N', 'N WITH STOCK DIVIDEND'),
-        ('O', 'O SHARE'),
-        ('P', 'P SHARE'),
-        ('Q', 'Q SHARE'),
-        ('R', 'WITH ASSET TRANSFER')  # id == 20
+        ('A', 'A SHARE'),   # asset_id == 4, single buy and sell operation
+        ('B', 'B SHARE'),   # 1 buy operation closed with 2 sells
+        ('C', 'C SHARE'),   # 2 buy operations closed with 1 sell
+        ('D', 'D SHARE'),   # 1 short sell with 2 buy operations
+        ('E', 'E SHARE'),   # 2 short sells closed with 1 buy operation
+        ('F', 'F SHARE'),   # multiple buy-sell operations with 11 deals as result
+        ('G1', 'G SHARE BEFORE'),    # 1 buy operation that is closed with symbol change
+        ('G2', 'G SHARE AFTER'),     # this stock appears after symbol change, then spins-off H and closed with 1 sell
+        ('H', 'H SPIN-OFF FROM G'),  # spun-off from G2 and closed with single sell
+        ('K', 'K SHARE'),   # 1 buy closed with symbol change to M
+        ('L', 'L SHARE'),   # buy, buy, sell in 1 day (1 deal), split 1:2, conversion to M
+        ('M', 'M SHARE'),   # symbol change from K and 2 conversions from L, then split 5:1, 1 sell (3 deals)
+        ('N', 'N WITH STOCK DIVIDEND'),  # 5 buy, then 1 stock dividend, then sell 1 and 5 (3 deals)
+        ('O', 'O SHARE'),   # buy/sell, buy/sell
+        ('P', 'P SHARE'),   # buy/sell, sell/buy, sell/sell/buy (4 deals)
+        ('Q', 'Q SHARE'),   # 3 buy via 2 sells and buy/sell (5 deals in total)
+        ('R', 'WITH ASSET TRANSFER')  # id == 20, buy on 2 different accounts, transfer and sell (3 deals)
     ]
     create_stocks(test_assets, currency_id=2)
 
     test_corp_actions = [
         (1606899600, 3, 10, 100.0, 'Symbol change G1 -> G2', [(11, 100.0, 1.0)]),
         (1606986000, 2, 11, 100.0, 'Spin-off H from G2', [(11, 100.0, 0.8), (12, 20.0, 0.2)]),
-        (1607763600, 4, 14, 15.0, 'Split L 15 -> 30', [(14, 30.0, 1.0)]),
-        (1607850000, 3, 13, 5.0, 'Another symbol change K -> M', [(15, 5.0, 1.0)]),
-        (1607936412, 1, 14, 30.0, 'Merger 30 L into 20 M', [(15, 20.0, 1.0)]),
-        (1608022800, 4, 15, 25.0, 'Split M 25 -> 5', [(15, 5.0, 1.0)])
+        (d2t(201214), 4, 14, 15.0, 'Split L 15 -> 30', [(14, 30.0, 1.0)]),
+        (d2t(201215), 3, 13, 5.0, 'Another symbol change K -> M', [(15, 5.0, 1.0)]),
+        (d2t(201216), 1, 14, 30.0, 'Merger 30 L into 20 M', [(15, 20.0, 1.0)]),
+        (d2t(201217), 4, 15, 25.0, 'Split M 25 -> 5', [(15, 5.0, 1.0)])
     ]
     create_corporate_actions(1, test_corp_actions)
 
@@ -295,10 +295,10 @@ def test_fifo(prepare_db_fifo):
         (1606813200, 1606856400, 10, 100.0, 10.0, 0.0),
         (1607072400, 1607115600, 11, -100.0, 20.0, 0.0),
         (1607158800, 1607202000, 12, -20.0, 10.0, 0.0),
-        (1607580000, 1607634000, 13, 5.0, 20.0, 0.0),
-        (1607666400, 1607720400, 14, 10.0, 25.0, 0.0),
-        (1607673600, 1607720400, 14, 10.0, 50.0, 0.0),
-        (1607680800, 1607720400, 14, -5.0, 40.0, 0.0),
+        (d2t(201210), d2t(201210), 13, 5.0, 20.0, 0.0),
+        (d2t(201211), d2t(201211), 14, 10.0, 25.0, 0.0),
+        (d2t(201212), d2t(201212), 14, 10.0, 50.0, 0.0),
+        (d2t(201213), d2t(201213), 14, -5.0, 40.0, 0.0),
         (1608195600, 1608238800, 15, -5.0, 200.0, 1.0),
         (1608282000, 1608325200, 16, 5.0, 1000.0, 0.0),
         (1608454800, 1608498000, 16, -1.0, 1000.0, 0.0),
@@ -340,10 +340,10 @@ def test_fifo(prepare_db_fifo):
 
     trades = JalAccount(1).closed_trades_list()
     # totals
-    assert len(trades) == 50
-    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade and x.close_operation().type() == LedgerTransaction.Trade]) == 38
-    assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction or x.close_operation().type() != LedgerTransaction.CorporateAction]) == 46
-    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.CorporateAction and x.close_operation().type() == LedgerTransaction.CorporateAction]) == 4
+    assert len(trades) == 52
+    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade and x.close_operation().type() == LedgerTransaction.Trade]) == 40
+    assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction or x.close_operation().type() != LedgerTransaction.CorporateAction]) == 51
+    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.CorporateAction and x.close_operation().type() == LedgerTransaction.CorporateAction]) == 1
 
     # Check single deal
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(4))
@@ -403,14 +403,14 @@ def test_fifo(prepare_db_fifo):
     assert trades[0].close_operation().type() == LedgerTransaction.CorporateAction
     assert sum([x.profit() for x in trades]) == Decimal('0')
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(14))
-    assert len(trades) == 4
-    assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction]) == 3
+    assert len(trades) == 5  # 1 sell, 2 split, 2 merger
+    assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction]) == 5
     assert len([x for x in trades if x.close_operation().type() != LedgerTransaction.CorporateAction]) == 1
-    assert [x.profit() for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction] == [Decimal('75'), Decimal('0'), Decimal('0')]
+    assert [x.profit() for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction] == [Decimal('75'), Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0')]
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(15))
-    assert len(trades) == 3
-    assert len([x for x in trades if x.close_operation().type() != LedgerTransaction.CorporateAction]) == 1
-    assert [x.profit() for x in trades] == [Decimal('0'), Decimal('0'), Decimal('274')]
+    assert len(trades) == 4
+    assert len([x for x in trades if x.close_operation().type() != LedgerTransaction.CorporateAction]) == 2
+    assert [x.profit() for x in trades] == [Decimal('0'), Decimal('0'), Decimal('99.80'), Decimal('174.20')]
 
     # Stock dividend
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(16))
