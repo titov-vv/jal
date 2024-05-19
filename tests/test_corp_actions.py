@@ -78,7 +78,7 @@ def test_symbol_change(prepare_db_fifo):
     ]
     create_trades(1, test_trades)
 
-    # Build ledgerye
+    # Build ledger
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
@@ -91,12 +91,12 @@ def test_delisting(prepare_db_fifo):
     create_stocks([('A', 'A SHARE')], currency_id=2)  # ID = 4
 
     test_corp_actions = [
-        (1622548800, CorporateAction.Delisting, 4, 100.0, 'Delisting 100 A', [])
+        (d2t(210801), CorporateAction.Delisting, 4, 100.0, 'Delisting 100 A', [])
     ]
     create_corporate_actions(1, test_corp_actions)
 
     test_trades = [
-        (1619870400, 1619870400, 4, 100.0, 10.0, 0.0)      # Buy  100 A x 10.00 01/05/2021
+        (d2t(210501), d2t(210501), 4, 100.0, 10.0, 0.0)      # Buy  100 A x 10.00 01/05/2021
     ]
     create_trades(1, test_trades)
 
@@ -106,7 +106,7 @@ def test_delisting(prepare_db_fifo):
 
     trades = JalAccount(1).closed_trades_list()
     assert len(trades) == 1
-    assert trades[0].dump() == ['A', 1619870400, 1622548800, Decimal('1E+1'), Decimal('1E+1'), Decimal('1E+2'), Decimal('0'), Decimal('0'), Decimal('0')]
+    assert trades[0].dump() == ['A', d2t(210501), d2t(210801), Decimal('1E+1'), Decimal('1E+1'), Decimal('1E+2'), Decimal('0'), Decimal('0'), Decimal('0')]
 
     amounts = LedgerAmounts("amount_acc")
     assert amounts[(BookAccount.Costs, 1, 2)] == Decimal('1E+3')
