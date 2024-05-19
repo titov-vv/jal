@@ -83,7 +83,8 @@ def test_symbol_change(prepare_db_fifo):
     ledger.rebuild(from_timestamp=0)
 
     trades = JalAccount(1).closed_trades_list()
-    assert trades[0].dump() == ['B', d2t(210501), d2t(210701), Decimal('1E+1'), Decimal('2E+1'), Decimal('1E+2'), Decimal('0'), Decimal('1000'), Decimal('100')]
+    assert trades[0].dump() == ['A', d2t(210501), d2t(210601), Decimal('1E+1'), Decimal('1E+1'), Decimal('1E+2'), Decimal('0'), Decimal('0'), Decimal('0')]
+    assert trades[1].dump() == ['B', d2t(210501), d2t(210701), Decimal('1E+1'), Decimal('2E+1'), Decimal('1E+2'), Decimal('0'), Decimal('1000'), Decimal('100')]
 
 
 def test_delisting(prepare_db_fifo):
@@ -104,7 +105,8 @@ def test_delisting(prepare_db_fifo):
     ledger.rebuild(from_timestamp=0)
 
     trades = JalAccount(1).closed_trades_list()
-    assert len(trades) == 0
+    assert len(trades) == 1
+    assert trades[0].dump() == ['A', d2t(210501), d2t(210801), Decimal('1E+1'), Decimal('1E+1'), Decimal('1E+2'), Decimal('0'), Decimal('0'), Decimal('0')]
 
     amounts = LedgerAmounts("amount_acc")
     assert amounts[(BookAccount.Costs, 1, 2)] == Decimal('1E+3')

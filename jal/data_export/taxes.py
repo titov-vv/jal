@@ -121,17 +121,26 @@ class TaxReport:
     def shares_trades_list(self) -> list:
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() in [PredefinedAsset.Stock, PredefinedAsset.ETF]]
+        trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
+        trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade or (
+                x.open_operation().type() == LedgerTransaction.AssetPayment and (
+                x.open_operation().subtype() == AssetPayment.StockDividend or
+                x.open_operation().subtype() == AssetPayment.StockVesting))]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         return trades
 
     def derivatives_trades_list(self) -> list:
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() == PredefinedAsset.Derivative]
+        trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
+        trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         return trades
 
     def bonds_trades_list(self) -> list:
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() == PredefinedAsset.Bond]
+        trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
+        trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         return trades
