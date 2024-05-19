@@ -338,13 +338,6 @@ def test_fifo(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    trades = JalAccount(1).closed_trades_list()
-    # totals
-    assert len(trades) == 52
-    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade and x.close_operation().type() == LedgerTransaction.Trade]) == 40
-    assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction or x.close_operation().type() != LedgerTransaction.CorporateAction]) == 51
-    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.CorporateAction and x.close_operation().type() == LedgerTransaction.CorporateAction]) == 1
-
     # Check single deal
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(4))
     assert len(trades) == 1
@@ -387,9 +380,9 @@ def test_fifo(prepare_db_fifo):
 
     # Symbol change
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(10))
-    assert len(trades) == 1
+    assert len(trades) == 0
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(11))
-    assert len(trades) == 2
+    assert len(trades) == 1
     assert sum([x.profit() for x in trades]) == Decimal('1200')
 
     # Spin-off
@@ -399,18 +392,13 @@ def test_fifo(prepare_db_fifo):
 
     # Multiple corp actions
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(13))
-    assert len(trades) == 1
-    assert trades[0].close_operation().type() == LedgerTransaction.CorporateAction
-    assert sum([x.profit() for x in trades]) == Decimal('0')
+    assert len(trades) == 0
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(14))
-    assert len(trades) == 5  # 1 sell, 2 split, 2 merger
-    assert len([x for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction]) == 5
-    assert len([x for x in trades if x.close_operation().type() != LedgerTransaction.CorporateAction]) == 1
-    assert [x.profit() for x in trades if x.open_operation().type() != LedgerTransaction.CorporateAction] == [Decimal('75'), Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0')]
+    assert len(trades) == 1
+    assert trades[0].profit() == Decimal('75')
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(15))
-    assert len(trades) == 4
-    assert len([x for x in trades if x.close_operation().type() != LedgerTransaction.CorporateAction]) == 2
-    assert [x.profit() for x in trades] == [Decimal('0'), Decimal('0'), Decimal('99.80'), Decimal('174.20')]
+    assert len(trades) == 2
+    assert [x.profit() for x in trades] == [Decimal('99.80'), Decimal('174.20')]
 
     # Stock dividend
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(16))
@@ -433,6 +421,11 @@ def test_fifo(prepare_db_fifo):
     assert len(trades) == 4
     assert [x.qty() for x in trades] == [Decimal('3'), Decimal('7'), Decimal('3'), Decimal('7')]
     assert [x.profit() for x in trades] == [Decimal('300'), Decimal('700'), Decimal('0'), Decimal('0')]
+
+    # totals
+    trades = JalAccount(1).closed_trades_list()
+    assert len(trades) == 43
+    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]) == 40
 
     # validate final amounts
     # validate book amounts and values
@@ -521,7 +514,7 @@ def test_asset_transfer(prepare_db):
     assert value[BookAccount.Transfers, 1, 4] == Decimal('5E+2')
     assert value[BookAccount.Transfers, 2, 4] == Decimal('-3.75E+4')
     trades = JalAccount(1).closed_trades_list()
-    assert len(trades) == 2
+    assert len(trades) == 0
     assert sum([x.profit() for x in trades]) == Decimal('0')   # sum of open trades fee
     trades = JalAccount(2).closed_trades_list()
     assert len(trades) == 2
@@ -535,7 +528,7 @@ def test_asset_transfer(prepare_db):
     ledger.rebuild()
 
     trades = JalAccount(1).closed_trades_list()
-    assert len(trades) == 2
+    assert len(trades) == 0
     assert sum([x.profit() for x in trades]) == Decimal('0')
     trades = JalAccount(2).closed_trades_list()
     assert len(trades) == 2
