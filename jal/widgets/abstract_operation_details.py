@@ -82,7 +82,7 @@ class AbstractOperationDetails(QWidget):
         if self.modified:
             self.revertChanges()
             logging.warning(self.tr("Unsaved changes were reverted to create new operation"))
-        self.model.setFilter(f"{self.table_name}.id = 0")
+        self.model.setFilter(f"{self.table_name}.oid = 0")
         new_record = self.prepareNew(account_id)
         assert self.model.insertRows(0, 1)
         self.model.setRecord(0, new_record)
@@ -90,7 +90,7 @@ class AbstractOperationDetails(QWidget):
 
     def prepareNew(self, account_id):
         new_record = self.model.record()
-        new_record.setNull("id")
+        new_record.setNull("oid")
         new_record.setValue("otype", self.operation_type)
         return new_record
 
