@@ -150,7 +150,7 @@ END;
 -- Ledger cleanup after modification and deletion of detailed records
 CREATE TRIGGER actions_after_delete AFTER DELETE ON actions FOR EACH ROW
 BEGIN
-    DELETE FROM action_details WHERE pid = OLD.id;
+    DELETE FROM action_details WHERE pid = OLD.oid;
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
 END;
 -- Ledger cleanup after modification
@@ -202,6 +202,7 @@ END;
 -- Ledger and trades cleanup after modification
 CREATE TRIGGER asset_action_after_delete AFTER DELETE ON asset_actions FOR EACH ROW
 BEGIN
+    DELETE FROM action_results WHERE action_id = OLD.oid;
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
