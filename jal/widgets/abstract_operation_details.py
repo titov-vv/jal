@@ -45,7 +45,7 @@ class AbstractOperationDetails(QWidget):
         self.ui.revert_button.clicked.connect(self.revertChanges)
 
     def set_id(self, oid):
-        self.model.setFilter(f"id={oid}")
+        self.model.setFilter(f"oid={oid}")
         self.mapper.setCurrentModelIndex(self.model.index(0, 0))
 
     @Slot()

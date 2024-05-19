@@ -17,7 +17,8 @@ class JalOperationsTabs(QStackedWidget):
         super().__init__(parent)
         self.widgets = {LedgerTransaction.NA: QWidget(self),
                         LedgerTransaction.IncomeSpending: IncomeSpendingWidget(self),
-                        LedgerTransaction.AssetPayment: AssetPaymentWidget(self), LedgerTransaction.Trade: TradeWidget(self),
+                        LedgerTransaction.AssetPayment: AssetPaymentWidget(self),
+                        LedgerTransaction.Trade: TradeWidget(self),
                         LedgerTransaction.Transfer: TransferWidget(self),
                         LedgerTransaction.CorporateAction: CorporateActionWidget(self),
                         LedgerTransaction.TermDeposit: TermDepositWidget(self)}
