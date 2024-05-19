@@ -181,6 +181,15 @@ class LedgerTransaction(JalDB):
                 break
         return processed_qty, processed_value
 
+    # Returns a list of JalClosedTrade objects that were closed by calling operation (used in Transfer and CorporateAction)
+    def _deals_closed_by_operation(self):
+        trades = []
+        query = self._exec("SELECT id FROM trades_closed WHERE close_otype=:otype AND close_oid=:oid AND account_id=:account AND asset_id=:asset",
+                [(":otype", self._otype), (":oid", self._oid), (":account", self._account.id()), (":asset", self._asset.id())])
+        while query.next():
+            trades.append(jal.db.closed_trade.JalClosedTrade(self._read_record(query, cast=[int])))
+        return trades
+
     def id(self):
         return self._oid
 
@@ -966,8 +975,7 @@ class Transfer(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
             ledger.appendTransaction(self, BookAccount.Transfers, transfer_amount, asset_id=self._asset.id(), value=processed_value)
         elif self._display_type == Transfer.Incoming:
-            transfer_trades = self._withdrawal_account.closed_trades_list(asset=self._asset)
-            transfer_trades = [x for x in transfer_trades if x.close_operation().id() == self._oid]  # Keep only trades that were closed with current operation
+            transfer_trades = self._deals_closed_by_operation()
             # get initial value of withdrawn asset
             value = self._read("SELECT value FROM ledger "
                                "WHERE book_account=:book_transfers AND otype=:otype AND oid=:id",
@@ -1185,8 +1193,7 @@ class CorporateAction(LedgerTransaction):
             return
         # Process assets after corporate action
         query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
-        closed_trades = self._account.closed_trades_list(asset=self._asset)
-        closed_trades = [x for x in closed_trades if x.close_operation().id() == self._oid]  # Keep only trades that were closed with current operation
+        closed_trades = self._deals_closed_by_operation()
         while query.next():
             asset, qty, share = self._read_record(query, cast=[JalAsset, Decimal, Decimal])
             value = share * processed_value

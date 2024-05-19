@@ -270,15 +270,15 @@ class JalAccount(JalDB):
         value = Decimal(value) if value else Decimal('0')
         return value
 
-    # Returns a list of JalClosedTrade objects recorded for the account
+    # Returns a list of JalClosedTrade objects recorded for the account which represents normally closed trades
     def closed_trades_list(self, asset=None) -> list:
         trades = []
         if asset is None:
-            query = self._exec("SELECT id FROM trades_closed WHERE account_id=:account",
-                               [(":account", self._id)])
+            query = self._exec("SELECT id FROM trades_closed WHERE close_otype=:trade AND account_id=:account",
+                               [(":trade", jal.db.operations.LedgerTransaction.Trade), (":account", self._id)])
         else:
-            query = self._exec("SELECT id FROM trades_closed WHERE account_id=:account AND asset_id=:asset",
-                               [(":account", self._id), (":asset", asset.id())])
+            query = self._exec("SELECT id FROM trades_closed WHERE close_otype=:trade AND account_id=:account AND asset_id=:asset",
+                               [(":trade", jal.db.operations.LedgerTransaction.Trade), (":account", self._id), (":asset", asset.id())])
         while query.next():
             trades.append(jal.db.closed_trade.JalClosedTrade(self._read_record(query, cast=[int])))
         return trades
