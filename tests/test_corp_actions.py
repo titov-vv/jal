@@ -12,22 +12,22 @@ def test_spin_off(prepare_db_fifo):
     create_stocks([('A', 'A SHARE'), ('B', 'B SHARE')], currency_id=2)  # id = 4, 5
 
     test_corp_actions = [
-        (1622548800, CorporateAction.SpinOff, 4, 100.0, 'Spin-off 5 B from 100 A', [(4, 100.0, 1.0), (5, 5.0, 0.0)]),   # 01/06/2021
-        (1627819200, CorporateAction.Split, 4, 104.0, 'Split A 104 -> 13', [(4, 13.0, 1.0)])           # 01/08/2021
+        (dt2t(2106011200), CorporateAction.SpinOff, 4, 100.0, 'Spin-off 5 B from 100 A', [(4, 100.0, 1.0), (5, 5.0, 0.0)]),
+        (dt2t(2108011200), CorporateAction.Split, 4, 104.0, 'Split A 104 -> 13', [(4, 13.0, 1.0)])
     ]
     create_corporate_actions(1, test_corp_actions)
 
     test_trades = [
-        (1619870400, 1619870400, 4, 100.0, 14.0, 0.0),   # Buy 100 A x 14.00 01/05/2021
-        (1625140800, 1625140800, 4, 4.0, 13.0, 0.0),     # Buy   4 A x 13.00 01/07/2021
-        (1629047520, 1629047520, 4, -13.0, 150.0, 0.0)   # Sell 13 A x 150.00 15/08/2021
+        (d2t(210501), d2t(210503), 4, 100.0, 14.0, 0.0),        # Buy 100 A x 14.00 01/05/2021
+        (d2t(210701), d2t(210703), 4, 4.0, 13.0, 0.0),          # Buy   4 A x 13.00 01/07/2021
+        (dt2t(2108151700), d2t(210817), 4, -13.0, 150.0, 0.0)   # Sell 13 A x 150.00 15/08/2021
     ]
     create_trades(1, test_trades)
 
-    create_quotes(2, 2, [(1614600000, 70.0)])
-    create_quotes(4, 2, [(1617278400, 15.0)])
-    create_quotes(5, 2, [(1617278400, 2.0)])
-    create_quotes(4, 2, [(1628683200, 100.0)])
+    create_quotes(2, 2, [(d2t(210301), 70.0)])
+    create_quotes(4, 2, [(d2t(210401), 15.0)])
+    create_quotes(5, 2, [(d2t(210401), 2.0)])
+    create_quotes(4, 2, [(d2t(210811), 100.0)])
 
     # Build ledger
     ledger = Ledger()
@@ -39,7 +39,7 @@ def test_spin_off(prepare_db_fifo):
     total_amount = LedgerAmounts("amount_acc", timestamp=d2t(210810))
     total_value = LedgerAmounts("value_acc", timestamp=d2t(210810))
 
-    assert op_timestamp[(BookAccount.Money, 1, 2)] == dt2t(2107011200)
+    assert op_timestamp[(BookAccount.Money, 1, 2)] == d2t(210701)
     assert amount[(BookAccount.Money, 1, 2)] == Decimal('-52')
     assert total_amount[(BookAccount.Money, 1, 2)] == Decimal('8548')
     assert total_value[(BookAccount.Money, 1, 2)] == Decimal('0')
@@ -54,9 +54,9 @@ def test_spin_off(prepare_db_fifo):
     assert total_amount[(BookAccount.Assets, 1, 5)] == Decimal('5')
     assert total_value[(BookAccount.Assets, 1, 5)] == Decimal('0')
 
-    trades = [x for x in JalAccount(1).closed_trades_list() if x.close_operation().timestamp()>=1629047520]
-    assert len(trades) == 1
-    assert trades[0].profit() == Decimal('497.9999999999999999999999999')
+    trades = [x for x in JalAccount(1).closed_trades_list() if x.close_operation().timestamp() >= dt2t(2108151700)]
+    assert len(trades) == 2
+    assert [x.profit() for x in trades] == [Decimal('475'), Decimal('23')]
 
 
 def test_symbol_change(prepare_db_fifo):
