@@ -348,7 +348,7 @@ def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
     # templates = {
-    #     "Корп.события": "tax_rus_corporate_actions.json",
+    #     "Акции": "tax_rus_trades.json",
     #     "ПФИ": "tax_rus_derivatives.json"
     # }
     # parameters = {
