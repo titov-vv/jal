@@ -993,7 +993,8 @@ class Transfer(LedgerTransaction):
                 rate = transfer_value/Decimal(value)
                 # Move open trades from previous account to new and adjust price
                 for trade in transfer_trades:
-                    self._deposit_account.open_trade(trade.open_operation(), self._asset, trade.open_price()*rate, trade.qty(), modified_by=self)
+                    self._deposit_account.open_trade(trade.open_operation(), self._asset, trade.open_price(),
+                                                     trade.qty(), modified_by=self, adjustment=(rate, Decimal('1')))
             ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=-transfer_value)
             ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=transfer_value)
         else:
@@ -1206,14 +1207,16 @@ class CorporateAction(LedgerTransaction):
                         self._account.open_trade(trade.open_operation(), asset, trade.open_price(), trade.qty(), modified_by=self)
                 elif self._asset.id() == asset.id():
                     if self._subtype == CorporateAction.Split:
-                        c_p = c_q = self._qty / qty   # Price and quantity 1:N adjustment for split
+                        c_p = self._qty / qty   # Price and quantity 1:N adjustment for split
+                        c_q = qty / self._qty
                     elif self._subtype == CorporateAction.SpinOff or self._subtype == CorporateAction.Merger:
                         c_p = share             # Cost basis adjustment according to corporate action data
                         c_q = Decimal('1')      # But number of shares remains the same
                     else:
                         assert False, f"Unexpected corporate action type {self._subtype}"
                     for trade in closed_trades:
-                        self._account.open_trade(trade.open_operation(), asset, c_p * trade.open_price(), trade.qty() / c_q, modified_by=self)
+                        self._account.open_trade(trade.open_operation(), asset, trade.open_price(), trade.qty(),
+                                                 modified_by=self, adjustment=(c_p, c_q))
                 else:   # Newly created positions as result of corporate action
                     price = value / qty
                     self._account.open_trade(self, asset, price, qty)

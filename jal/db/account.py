@@ -287,14 +287,19 @@ class JalAccount(JalDB):
     # operation - original operation that opened position in asset
     # price, qty - size of position and price for accounting
     # modified_by - indicate operation that modifies the original position
-    def open_trade(self, operation, asset, price, qty, modified_by=None):
+    # adjustment = (price, qty) - coefficients for price and quantity adjustments for operation
+    def open_trade(self, operation, asset, price, qty, modified_by=None, adjustment=(Decimal('1'), Decimal('1'))):
         modified_by = operation if modified_by is None else modified_by
         _ = self._exec(
-            "INSERT INTO trades_opened(timestamp, otype, oid, m_otype, m_oid, account_id, asset_id, price, remaining_qty) "
-            "VALUES(:timestamp, :otype, :oid, :m_otype, :m_oid, :account_id, :asset_id, :price, :remaining_qty)",
+            "INSERT INTO trades_opened(timestamp, otype, oid, m_otype, m_oid, account_id, asset_id, "
+            "price, remaining_qty, c_price, c_qty) "
+            "VALUES(:timestamp, :otype, :oid, :m_otype, :m_oid, :account_id, :asset_id, :price, "
+            ":remaining_qty, :c_price, :c_qty)",
             [(":timestamp", modified_by.timestamp()), (":otype", operation.type()), (":oid", operation.id()),
              (":m_otype", modified_by.type()), (":m_oid", modified_by.id()), (":account_id", self._id),
-             (":asset_id", asset.id()), (":price", format_decimal(price)), (":remaining_qty", format_decimal(qty))])
+             (":asset_id", asset.id()), (":price", format_decimal(adjustment[0]*price)),
+             (":remaining_qty", format_decimal(adjustment[1]*qty)), (":c_price", format_decimal(adjustment[0])),
+             (":c_qty", format_decimal(adjustment[1]))])
 
     # Returns a list of {"operation": LedgerTransaction, "price": Decimal, "remaining_qty": Decimal}
     # that represents all trades that were opened for given asset on this account at given timestamp
