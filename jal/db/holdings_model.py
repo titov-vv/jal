@@ -199,10 +199,10 @@ class HoldingsModel(ReportTreeModel):
         if len(trades) == 0:
             logging.warning(self.tr("Open position was expected but not found for (account-asset-date): ") + f"'{account.name()}' - {asset.symbol()} - {ts2d(end_ts)}")
             return end_ts, Decimal('0')
-        since = min([x['operation'].timestamp() for x in trades])
+        since = min([x.open_operation().timestamp() for x in trades])
         amount = account.asset_payments_amount(asset, since, end_ts)
         for trade in trades:
-            operation = trade['operation']
+            operation = trade.open_operation()
             if operation.type() == LedgerTransaction.Transfer:
                 transfer_out = LedgerTransaction().get_operation(operation.type(), operation.id(), Transfer.Outgoing)
                 since_new, amount_new = self.get_asset_history_payments(transfer_out.account(), asset, transfer_out.timestamp()-1)  # get position just before the transfer

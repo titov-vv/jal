@@ -301,8 +301,7 @@ class JalAccount(JalDB):
              (":remaining_qty", format_decimal(adjustment[1]*qty)), (":c_price", format_decimal(adjustment[0])),
              (":c_qty", format_decimal(adjustment[1]))])
 
-    # Returns a list of {"operation": LedgerTransaction, "price": Decimal, "remaining_qty": Decimal}
-    # that represents all trades that were opened for given asset on this account at given timestamp
+    # Returns a list of JalOpenTrades that represents all trades that were opened for given asset at given timestamp
     # LedgerTransaction might be Trade, AssetPayment, CorporateAction or Transfer
     # Returns the latest open trades if timestamp is omitted.
     def open_trades_list(self, asset, timestamp=None) -> list:
@@ -320,8 +319,8 @@ class JalAccount(JalDB):
         while query.next():
             otype, oid, price, qty = self._read_record(query, cast=[int, int, Decimal, Decimal])
             operation = jal.db.operations.LedgerTransaction().get_operation(otype, oid, jal.db.operations.Transfer.Incoming)
-            trades.append({"operation": operation, "price": price, "remaining_qty": qty})
-        trades = sorted(trades, key=lambda op: op['operation'].timestamp())  # For correct FIFO we need to take operations in order of original operation, not last modification
+            trades.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty))
+        trades = sorted(trades, key=lambda op: op.open_operation().timestamp())  # For correct FIFO we need to take operations in order of original operation, not last modification
         return trades
 
     # Returns amount that was paid for an asset that was hold on the account during time between start_ts and end_ts

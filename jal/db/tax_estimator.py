@@ -138,14 +138,14 @@ class TaxEstimator(MdiWidget):
         profit_rub = Decimal('0')
         value_rub = Decimal('0')
         for position in positions:
-            qty = position['remaining_qty']
-            price = position['price']
-            o_rate = account_currency.quote(position['operation'].settlement(), tax_currency)[1]
+            qty = position.qty()
+            price = position.open_price()
+            o_rate = account_currency.quote(position.open_operation().settlement(), tax_currency)[1]
             position_profit = qty * (self.quote - price)
             position_profit_rub = qty * (self.quote * self.rate - price * o_rate)
             tax = tax_rate * position_profit_rub if position_profit_rub > Decimal('0') else Decimal('0')
             table.append({
-                'timestamp': ts2d(position['operation'].timestamp()),
+                'timestamp': ts2d(position.open_operation().timestamp()),
                 'qty': qty,
                 'o_price': price,
                 'o_rate': o_rate,

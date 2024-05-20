@@ -469,13 +469,13 @@ def test_open_price(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(4))]
+    positions = [(x.qty(), x.open_price()) for x in JalAccount(1).open_trades_list(asset=JalAsset(4))]
     assert positions == [(Decimal('10'), Decimal('100')), (Decimal('20'), Decimal('120')), (Decimal('10'), Decimal('110'))]
-    positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(5))]
+    positions = [(x.qty(), x.open_price()) for x in JalAccount(1).open_trades_list(asset=JalAsset(5))]
     assert positions == [(Decimal('3'), Decimal('150'))]
-    positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(6))]
+    positions = [(x.qty(), x.open_price()) for x in JalAccount(1).open_trades_list(asset=JalAsset(6))]
     assert positions == [(Decimal('1'), Decimal('400'))]
-    positions = [(x['remaining_qty'], x['price']) for x in JalAccount(1).open_trades_list(asset=JalAsset(7))]
+    positions = [(x.qty(), x.open_price()) for x in JalAccount(1).open_trades_list(asset=JalAsset(7))]
     assert positions == [(Decimal('2'), Decimal('225'))]
 
 

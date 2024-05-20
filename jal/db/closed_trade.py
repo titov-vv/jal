@@ -7,6 +7,26 @@ import jal.db.operations
 from jal.db.asset import JalAsset
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Class that represents open trade and provides some methods equal to JalClosedTrades to make compatible calls
+class JalOpenTrade(JalDB):
+    def __init__(self, operation, price, qty) -> None:
+        super().__init__()
+        self._op = operation
+        self._price = price
+        self._qty = qty
+
+    def open_operation(self):
+        return self._op
+
+    def open_price(self) -> Decimal:
+        return self._price
+
+    def qty(self) -> Decimal:
+        return self._qty
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class JalClosedTrade(JalDB):
     def __init__(self, id: int = 0) -> None:
         super().__init__()
