@@ -242,7 +242,7 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'taxes_merger_complex_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
     json_decimal2float(tax_report)
-    assert tax_report == report
+    assert tax_report == report    # FIXME - Should be kept as FIFO after merger?
 
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
     # templates = {
@@ -410,10 +410,11 @@ def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'taxes_merger_spinoff_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
     json_decimal2float(tax_report)
-    assert tax_report == report
-
+    assert tax_report == report   # FIXME - Report notes don't contain all history of corp.actions
+                                  # FIXME - Should be kept as FIFO after merger?
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
     # templates = {
+    #     "Акции": "tax_rus_trades.json",
     #     "Корп.события": "tax_rus_corporate_actions.json",
     # }
     # parameters = {
