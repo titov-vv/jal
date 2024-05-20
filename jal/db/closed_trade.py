@@ -10,11 +10,13 @@ from jal.db.asset import JalAsset
 # ----------------------------------------------------------------------------------------------------------------------
 # Class that represents open trade and provides some methods equal to JalClosedTrades to make compatible calls
 class JalOpenTrade(JalDB):
-    def __init__(self, operation, price, qty) -> None:
+    def __init__(self, operation, price, qty, adjustments=(Decimal('1'), Decimal('1'))) -> None:
         super().__init__()
         self._op = operation
         self._price = price
         self._qty = qty
+        self._adj_price = adjustments[0]   # Historical adjustments of price and quantity that happened
+        self._adj_qty = adjustments[1]     # during holding of this position
 
     def open_operation(self):
         return self._op
@@ -28,6 +30,12 @@ class JalOpenTrade(JalDB):
     def set_qty(self, new_qty: Decimal):
         self._qty = new_qty
 
+    def p_adjustment(self) -> Decimal:
+        return self._adj_price
+
+    def q_adjustment(self) -> Decimal:
+        return self._adj_qty
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class JalClosedTrade(JalDB):
@@ -35,7 +43,7 @@ class JalClosedTrade(JalDB):
         super().__init__()
         self._id = id
         self._data = self._read("SELECT account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
-                                "close_otype, close_oid, close_timestamp, close_price, qty "
+                                "close_otype, close_oid, close_timestamp, close_price, qty, c_price, c_qty "
                                 "FROM trades_closed WHERE id=:id", [(":id", self._id)], named=True)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
@@ -45,23 +53,28 @@ class JalClosedTrade(JalDB):
             self._open_price = Decimal(self._data['open_price'])
             self._close_price = Decimal(self._data['close_price'])
             self._qty = Decimal(self._data['qty'])
+            self._adj_price = Decimal(self._data['c_price'])
+            self._adj_qty = Decimal(self._data['c_qty'])
         else:
             self._account = self._asset = self._open_op = self._close_op = None
             self._open_price = self._close_price = self._qty = Decimal('0')
+            self._adj_price = self._adj_qty = Decimal('1')
 
     @classmethod
-    def create_from_trades(cls, open_trade, close_trade, qty, open_price, close_price):
+    def create_from_trades(cls, open_trade: JalOpenTrade, c_operation, qty, open_price, close_price):
+        o_operation = open_trade.open_operation()
         _ = cls._exec(
             "INSERT INTO trades_closed(account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
-            "close_otype, close_oid, close_timestamp, close_price, qty) "
+            "close_otype, close_oid, close_timestamp, close_price, qty, c_price, c_qty) "
             "VALUES(:account_id, :asset_id, :open_otype, :open_oid, :open_timestamp, :open_price, "
-            ":close_otype, :close_oid, :close_timestamp, :close_price, :qty)",
-            [(":account_id", close_trade.account().id()), (":asset_id", close_trade.asset().id()),
-             (":open_otype", open_trade.type()), (":open_oid", open_trade.id()),
-             (":open_timestamp", open_trade.timestamp()), (":open_price", format_decimal(open_price)),
-             (":close_otype", close_trade.type()), (":close_oid", close_trade.id()),
-             (":close_timestamp", close_trade.timestamp()), (":close_price", format_decimal(close_price)),
-             (":qty", format_decimal(qty))])
+            ":close_otype, :close_oid, :close_timestamp, :close_price, :qty, :c_price, :c_qty)",
+            [(":account_id", c_operation.account().id()), (":asset_id", c_operation.asset().id()),
+             (":open_otype", o_operation.type()), (":open_oid", o_operation.id()),
+             (":open_timestamp", o_operation.timestamp()), (":open_price", format_decimal(open_price)),
+             (":close_otype", c_operation.type()), (":close_oid", c_operation.id()),
+             (":close_timestamp", c_operation.timestamp()), (":close_price", format_decimal(close_price)),
+             (":qty", format_decimal(qty)),(":c_price", format_decimal(open_trade.p_adjustment())),
+             (":c_qty", format_decimal(open_trade.q_adjustment()))])
 
     def dump(self) -> list:
         return [
@@ -105,6 +118,12 @@ class JalClosedTrade(JalDB):
 
     def close_price(self) -> Decimal:
         return self._close_price
+
+    def p_adjustment(self) -> Decimal:
+        return self._adj_price
+
+    def q_adjustment(self) -> Decimal:
+        return self._adj_qty
 
     # If currency_id is different from trade account currency then adjusts value to the rate of currency for
     # given timestamp and returns it. Otherwise, simply returns unchanged value

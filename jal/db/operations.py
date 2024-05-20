@@ -175,7 +175,7 @@ class LedgerTransaction(JalDB):
             open_price = trade.open_price()
             close_price = trade.open_price() if price is None else price
             self._account.open_trade(trade, self._asset, modified_by=self)
-            JalClosedTrade.create_from_trades(trade.open_operation(), self, (-deal_sign) * next_deal_qty, open_price, close_price)
+            JalClosedTrade.create_from_trades(trade, self, (-deal_sign) * next_deal_qty, open_price, close_price)
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * open_price)
             if processed_qty == qty:
@@ -1207,15 +1207,13 @@ class CorporateAction(LedgerTransaction):
                         self._account.open_trade(trade, asset, modified_by=self)
                 elif self._asset.id() == asset.id():
                     if self._subtype == CorporateAction.Split:
-                        c_p = self._qty / qty   # Price and quantity 1:N adjustment for split
-                        c_q = qty / self._qty
+                        adj_coef = (self._qty / qty, qty / self._qty)  # Price and quantity 1:N adjustment for split
                     elif self._subtype == CorporateAction.SpinOff or self._subtype == CorporateAction.Merger:
-                        c_p = share             # Cost basis adjustment according to corporate action data
-                        c_q = Decimal('1')      # But number of shares remains the same
+                        adj_coef = (share, Decimal('1'))  # Cost basis adjustment according to corporate action data
                     else:
                         assert False, f"Unexpected corporate action type {self._subtype}"
                     for trade in closed_trades:
-                        self._account.open_trade(trade, asset, modified_by=self, adjustment=(c_p, c_q))
+                        self._account.open_trade(trade, asset, modified_by=self, adjustment=adj_coef)
                 else:   # Newly created positions as result of corporate action
                     price = value / qty
                     self._account.open_trade(JalOpenTrade(self, price, qty), asset)

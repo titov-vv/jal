@@ -287,7 +287,7 @@ class JalAccount(JalDB):
     # trade - JalOpenTrade that should be stored as open trade (may represent existing position or be a new object)
     # asset - JalAsset for which trade is recorded
     # modified_by - indicate operation that modifies the original position
-    # adjustment = (price, qty) - coefficients for price and quantity adjustments for operation
+    # adjustment = (price_adj, qty_adj) - coefficients for price and quantity adjustments for operation
     def open_trade(self, trade, asset, modified_by=None, adjustment=(Decimal('1'), Decimal('1'))):
         operation = trade.open_operation()
         modified_by = operation if modified_by is None else modified_by
@@ -299,8 +299,9 @@ class JalAccount(JalDB):
             [(":timestamp", modified_by.timestamp()), (":otype", operation.type()), (":oid", operation.id()),
              (":m_otype", modified_by.type()), (":m_oid", modified_by.id()), (":account_id", self._id),
              (":asset_id", asset.id()), (":price", format_decimal(adjustment[0]*trade.open_price())),
-             (":remaining_qty", format_decimal(adjustment[1]*trade.qty())), (":c_price", format_decimal(adjustment[0])),
-             (":c_qty", format_decimal(adjustment[1]))])
+             (":remaining_qty", format_decimal(adjustment[1]*trade.qty())),
+             (":c_price", format_decimal(trade.p_adjustment() * adjustment[0])),
+             (":c_qty", format_decimal(trade.q_adjustment() * adjustment[1]))])
 
     # Returns a list of JalOpenTrades that represents all trades that were opened for given asset at given timestamp
     # LedgerTransaction might be Trade, AssetPayment, CorporateAction or Transfer
@@ -310,17 +311,17 @@ class JalAccount(JalDB):
             timestamp = Setup.MAX_TIMESTAMP
         trades = []
         query = self._exec("WITH open_trades_numbered AS "
-                           "(SELECT timestamp, otype, oid, price, remaining_qty, "
+                           "(SELECT timestamp, otype, oid, price, remaining_qty, c_price, c_qty, "
                            "ROW_NUMBER() OVER (PARTITION BY otype, oid ORDER BY timestamp DESC, id DESC) AS row_no "
                            "FROM trades_opened WHERE account_id=:account AND asset_id=:asset AND timestamp<=:timestamp) "
-                           "SELECT otype, oid, price, remaining_qty "
+                           "SELECT otype, oid, price, remaining_qty, c_price, c_qty "
                            "FROM open_trades_numbered WHERE row_no=1 AND remaining_qty!=:zero ",
                            [(":account", self._id), (":asset", asset.id()),
                             (":timestamp", timestamp), (":zero", format_decimal(Decimal('0')))])
         while query.next():
-            otype, oid, price, qty = self._read_record(query, cast=[int, int, Decimal, Decimal])
+            otype, oid, price, qty, p, q = self._read_record(query, cast=[int, int, Decimal, Decimal, Decimal, Decimal])
             operation = jal.db.operations.LedgerTransaction().get_operation(otype, oid, jal.db.operations.Transfer.Incoming)
-            trades.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty))
+            trades.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q)))
         trades = sorted(trades, key=lambda op: op.open_operation().timestamp())  # For correct FIFO we need to take operations in order of original operation, not last modification
         return trades
 
