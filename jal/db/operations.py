@@ -169,11 +169,11 @@ class LedgerTransaction(JalDB):
         for trade in open_trades:
             remaining_qty = trade.qty()
             next_deal_qty = remaining_qty
-            if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
+            if (processed_qty + next_deal_qty) > qty:  # We can't close full quantity with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
             trade.set_qty(remaining_qty - next_deal_qty)
             self._account.open_trade(trade, self._asset, modified_by=self)
-            JalClosedTrade.create_from_trades(trade, trade.qty(), self, (-deal_sign) * next_deal_qty)
+            JalClosedTrade.create_from_trades(trade, self, (-deal_sign) * next_deal_qty)
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * trade.open_price())
             if processed_qty == qty:
