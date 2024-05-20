@@ -172,12 +172,10 @@ class LedgerTransaction(JalDB):
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
             trade.set_qty(remaining_qty - next_deal_qty)
-            open_price = trade.open_price()
-            close_price = trade.open_price() if price is None else price
             self._account.open_trade(trade, self._asset, modified_by=self)
-            JalClosedTrade.create_from_trades(trade, self, (-deal_sign) * next_deal_qty, open_price, close_price)
+            JalClosedTrade.create_from_trades(trade, trade.qty(), self, (-deal_sign) * next_deal_qty)
             processed_qty += next_deal_qty
-            processed_value += (next_deal_qty * open_price)
+            processed_value += (next_deal_qty * trade.open_price())
             if processed_qty == qty:
                 break
         return processed_qty, processed_value
@@ -887,6 +885,10 @@ class Transfer(LedgerTransaction):
                     return self._note + " " + self.tr("Error. Zero rate")
         return self._note
 
+    # Price is undefined for transfer but method is required in FIFO processing of asset transfer
+    def price(self):
+        return None
+
     def value_change(self) -> list:
         if self._display_type == Transfer.Outgoing:
             return [-self._withdrawal]
@@ -1126,6 +1128,10 @@ class CorporateAction(LedgerTransaction):
 
     def qty(self) -> Decimal:
         return self._qty
+
+    # Price is undefined for corporate action but method is required in FIFO processing
+    def price(self):
+        return None
 
     # Returns a list of all results of corporate action. Elements are {"asset_id, qty, value_share}
     def get_results(self) -> list:

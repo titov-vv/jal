@@ -66,8 +66,13 @@ class JalClosedTrade(JalDB):
             self._adj_price = self._adj_qty = Decimal('1')
 
     @classmethod
-    def create_from_trades(cls, open_trade: JalOpenTrade, c_operation, qty, open_price, close_price):
-        o_operation = open_trade.open_operation()
+    # Creates a record in 'trades_closed' table based on given data:
+    # o_trade - trade JalClosedTrade that initiates the trade (may also be AssetPayment as Stock Dividend or Vesting)
+    # c_operation - LedgerTransaction that closed current trade
+    # o_qty and c_qty - how many items were used from opening and closing trades respectively
+    def create_from_trades(cls, o_trade: JalOpenTrade, o_qty, c_operation, c_qty):
+        o_operation = o_trade.open_operation()
+        c_price = o_trade.open_price() if c_operation.price() is None else c_operation.price()
         _ = cls._exec(
             "INSERT INTO trades_closed(account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
             "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty) "
@@ -75,11 +80,11 @@ class JalClosedTrade(JalDB):
             ":close_otype, :close_oid, :close_timestamp, :close_price, :close_qty, :c_price, :c_qty)",
             [(":account_id", c_operation.account().id()), (":asset_id", c_operation.asset().id()),
              (":open_otype", o_operation.type()), (":open_oid", o_operation.id()),
-             (":open_timestamp", o_operation.timestamp()), (":open_price", format_decimal(open_price)), (":open_qty", format_decimal(qty)),
-             (":close_otype", c_operation.type()), (":close_oid", c_operation.id()),
-             (":close_timestamp", c_operation.timestamp()), (":close_price", format_decimal(close_price)),
-             (":close_qty", format_decimal(qty)),(":c_price", format_decimal(open_trade.p_adjustment())),
-             (":c_qty", format_decimal(open_trade.q_adjustment()))])
+             (":open_timestamp", o_operation.timestamp()), (":open_price", format_decimal(o_trade.open_price())),
+             (":open_qty", format_decimal(o_qty)), (":close_otype", c_operation.type()),
+             (":close_oid", c_operation.id()), (":close_timestamp", c_operation.timestamp()),
+             (":close_price", format_decimal(c_price)), (":close_qty", format_decimal(c_qty)),
+             (":c_price", format_decimal(o_trade.p_adjustment())), (":c_qty", format_decimal(o_trade.q_adjustment()))])
 
     def dump(self) -> list:
         return [
