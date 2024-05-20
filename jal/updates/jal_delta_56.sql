@@ -92,11 +92,12 @@ CREATE TABLE trades_closed (
     open_oid        INTEGER NOT NULL,
     open_timestamp  INTEGER NOT NULL,
     open_price      TEXT    NOT NULL,
+    open_qty        TEXT    NOT NULL,
     close_otype     INTEGER NOT NULL,
     close_oid       INTEGER NOT NULL,
     close_timestamp INTEGER NOT NULL,
     close_price     TEXT    NOT NULL,
-    qty             TEXT    NOT NULL,
+    close_qty       TEXT    NOT NULL,
     c_price         TEXT    NOT NULL DEFAULT ('1'),
     c_qty           TEXT    NOT NULL DEFAULT ('1')
 );

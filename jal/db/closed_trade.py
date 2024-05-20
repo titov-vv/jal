@@ -48,7 +48,7 @@ class JalClosedTrade(JalDB):
         super().__init__()
         self._id = id
         self._data = self._read("SELECT account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
-                                "close_otype, close_oid, close_timestamp, close_price, qty, c_price, c_qty "
+                                "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty "
                                 "FROM trades_closed WHERE id=:id", [(":id", self._id)], named=True)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
@@ -57,7 +57,7 @@ class JalClosedTrade(JalDB):
             self._close_op = jal.db.operations.LedgerTransaction.get_operation(self._data['close_otype'], self._data['close_oid'], jal.db.operations.Transfer.Outgoing)
             self._open_price = Decimal(self._data['open_price'])
             self._close_price = Decimal(self._data['close_price'])
-            self._qty = Decimal(self._data['qty'])
+            self._qty = Decimal(self._data['close_qty'])
             self._adj_price = Decimal(self._data['c_price'])
             self._adj_qty = Decimal(self._data['c_qty'])
         else:
@@ -70,15 +70,15 @@ class JalClosedTrade(JalDB):
         o_operation = open_trade.open_operation()
         _ = cls._exec(
             "INSERT INTO trades_closed(account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
-            "close_otype, close_oid, close_timestamp, close_price, qty, c_price, c_qty) "
-            "VALUES(:account_id, :asset_id, :open_otype, :open_oid, :open_timestamp, :open_price, "
-            ":close_otype, :close_oid, :close_timestamp, :close_price, :qty, :c_price, :c_qty)",
+            "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty) "
+            "VALUES(:account_id, :asset_id, :open_otype, :open_oid, :open_timestamp, :open_price, :open_qty, "
+            ":close_otype, :close_oid, :close_timestamp, :close_price, :close_qty, :c_price, :c_qty)",
             [(":account_id", c_operation.account().id()), (":asset_id", c_operation.asset().id()),
              (":open_otype", o_operation.type()), (":open_oid", o_operation.id()),
-             (":open_timestamp", o_operation.timestamp()), (":open_price", format_decimal(open_price)),
+             (":open_timestamp", o_operation.timestamp()), (":open_price", format_decimal(open_price)), (":open_qty", format_decimal(qty)),
              (":close_otype", c_operation.type()), (":close_oid", c_operation.id()),
              (":close_timestamp", c_operation.timestamp()), (":close_price", format_decimal(close_price)),
-             (":qty", format_decimal(qty)),(":c_price", format_decimal(open_trade.p_adjustment())),
+             (":close_qty", format_decimal(qty)),(":c_price", format_decimal(open_trade.p_adjustment())),
              (":c_qty", format_decimal(open_trade.q_adjustment()))])
 
     def dump(self) -> list:

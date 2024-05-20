@@ -320,11 +320,12 @@ CREATE TABLE trades_closed (
     open_oid        INTEGER NOT NULL,   -- Operation ID that already initiated the trade
     open_timestamp  INTEGER NOT NULL,
     open_price      TEXT    NOT NULL,
+    open_qty        TEXT    NOT NULL,   -- Part of open operation that was used in this trade
     close_otype     INTEGER NOT NULL,   -- Operation type that finalized the trade
     close_oid       INTEGER NOT NULL,   -- Operation ID that finalized the trade
     close_timestamp INTEGER NOT NULL,
     close_price     TEXT    NOT NULL,
-    qty             TEXT    NOT NULL,
+    close_qty       TEXT    NOT NULL,   -- Part of close operation that was used in this trade
     c_price         TEXT    NOT NULL DEFAULT ('1'),  -- Historical adjustment coefficient of open price
     c_qty           TEXT    NOT NULL DEFAULT ('1')   -- Historical adjustment coefficient of open quantity
 );
