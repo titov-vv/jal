@@ -297,7 +297,7 @@ def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
 
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
     # templates = {
-    #     "Корп.события": "tax_rus_corporate_actions.json"
+    #     "Акции": "tax_rus_trades.json"
     # }
     # parameters = {
     #     "period": "01.01.2021 - 31.12.2021",
