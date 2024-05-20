@@ -246,6 +246,8 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
 
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
     # templates = {
+    #     "Акции": "tax_rus_trades.json",
+    #     "ПФИ": "tax_rus_derivatives.json",
     #     "Корп.события": "tax_rus_corporate_actions.json"
     # }
     # parameters = {
