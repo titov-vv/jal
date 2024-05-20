@@ -88,7 +88,7 @@ class TaxesPortugal(TaxReport):
                 'o_number': trade.open_operation().number(),
                 'o_date': trade.open_operation().timestamp(),
                 'os_date': trade.open_operation().settlement(),
-                'o_price': trade.open_operation().price(),
+                'o_price': trade.open_price(),
                 'o_fee': trade.open_fee(),
                 'o_amount': spending,
                 'c_type': "Sell" if trade.qty() >= Decimal('0') else "Buy",

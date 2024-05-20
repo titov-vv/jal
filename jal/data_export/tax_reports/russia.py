@@ -125,7 +125,7 @@ class TaxesRussia(TaxReport):
                 'o_rate': self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1],
                 'os_date': trade.open_operation().settlement(),
                 'os_rate': os_rate,
-                'o_price': trade.open_operation().price(),
+                'o_price': trade.open_price(),
                 'o_amount':  round(trade.open_amount(no_settlement=ns), 2),
                 'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=ns), 2),
                 'o_fee': trade.open_fee(),
@@ -193,7 +193,7 @@ class TaxesRussia(TaxReport):
                 'o_rate': self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1],
                 'os_date': trade.open_operation().settlement(),
                 'os_rate': os_rate,
-                'o_price': Decimal('100') * trade.open_operation().price() / trade.asset().principal(),
+                'o_price': Decimal('100') * trade.open_price() / trade.asset().principal(),
                 'o_int': -trade.open_operation().accrued_interest(),
                 'o_int_rub': -round(trade.open_operation().accrued_interest(self._currency_id), 2),
                 'o_amount':  round(trade.open_amount(no_settlement=ns), 2),
@@ -271,7 +271,7 @@ class TaxesRussia(TaxReport):
             else:
                 os_rate = o_rate
                 cs_rate = c_rate
-            o_amount = round(trade.open_operation().price() * abs(trade.qty()), 2)
+            o_amount = round(trade.open_price() * abs(trade.qty()), 2)
             o_amount_rub = round(o_amount * os_rate, 2)
             c_amount = round(trade.close_operation().price() * abs(trade.qty()), 2)
             c_amount_rub = round(c_amount * cs_rate, 2)
@@ -294,7 +294,7 @@ class TaxesRussia(TaxReport):
                 'o_rate': o_rate,
                 'os_date': trade.open_operation().settlement(),
                 'os_rate': os_rate,
-                'o_price': trade.open_operation().price(),
+                'o_price': trade.open_price(),
                 'o_amount': o_amount,
                 'o_amount_rub': o_amount_rub,
                 'o_fee': o_fee,
