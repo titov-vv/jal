@@ -1,5 +1,5 @@
 import json
-import os     # used in commented parts of tests
+import os
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
@@ -13,7 +13,7 @@ from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, CorporateAction, AssetPayment
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.taxes_flow import TaxesFlowRus
-from jal.data_export.xlsx import XLSX    # used in commented parts of tests
+from jal.data_export.xlsx import XLSX
 
 
 # ----------------------------------------------------------------------------------------------------------------------

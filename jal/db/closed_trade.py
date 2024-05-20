@@ -25,9 +25,6 @@ class JalOpenTrade(JalDB):
     def qty(self) -> Decimal:
         return self._qty
 
-    def set_qty(self, new_qty: Decimal):
-        self._qty = new_qty
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 class JalClosedTrade(JalDB):

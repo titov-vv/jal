@@ -7,7 +7,7 @@ from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
 from jal.db.asset import JalAsset
-from jal.db.closed_trade import JalClosedTrade, JalOpenTrade
+from jal.db.closed_trade import JalClosedTrade
 from jal.widgets.helpers import ts2dt
 from jal.widgets.icons import JalIcon
 
@@ -171,10 +171,9 @@ class LedgerTransaction(JalDB):
             next_deal_qty = remaining_qty
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
-            trade.set_qty(remaining_qty - next_deal_qty)
             open_price = trade.open_price()
             close_price = trade.open_price() if price is None else price
-            self._account.open_trade(trade, self._asset, modified_by=self)
+            self._account.open_trade(trade.open_operation(), self._asset, open_price, remaining_qty - next_deal_qty, modified_by=self)
             JalClosedTrade.create_from_trades(trade.open_operation(), self, (-deal_sign) * next_deal_qty, open_price, close_price)
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * open_price)
@@ -613,7 +612,7 @@ class AssetPayment(LedgerTransaction):
         if asset_amount < Decimal('0'):
             raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
-        self._account.open_trade(JalOpenTrade(self, self.price(), self._amount), self._asset)
+        self._account.open_trade(self, self._asset, self.price(), self._amount)
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
                                  asset_id=self._asset.id(), value=self._amount * self.price())
         if self._tax:
@@ -758,7 +757,7 @@ class Trade(LedgerTransaction):
                                      deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
                                      category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have a reminder that opens a new position
-            self._account.open_trade(JalOpenTrade(self, self._price, (qty - processed_qty)), self._asset)
+            self._account.open_trade(self, self._asset, self._price, (qty - processed_qty))
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty),
                                      asset_id=self._asset.id(), value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
@@ -988,13 +987,14 @@ class Transfer(LedgerTransaction):
                 transfer_value = Decimal(value)
                 # Move open trades from previous account to new account
                 for trade in transfer_trades:
-                    self._deposit_account.open_trade(trade, self._asset, modified_by=self)
+                    self._deposit_account.open_trade(trade.open_operation(), self._asset, trade.open_price(), trade.qty(), modified_by=self)
             else:
                 transfer_value = self._deposit
                 rate = transfer_value/Decimal(value)
                 # Move open trades from previous account to new and adjust price
                 for trade in transfer_trades:
-                    self._deposit_account.open_trade(trade, self._asset, modified_by=self, adjustment=(rate, Decimal('1')))
+                    self._deposit_account.open_trade(trade.open_operation(), self._asset, trade.open_price(),
+                                                     trade.qty(), modified_by=self, adjustment=(rate, Decimal('1')))
             ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=-transfer_value)
             ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=transfer_value)
         else:
@@ -1204,7 +1204,7 @@ class CorporateAction(LedgerTransaction):
             else:
                 if self._subtype == CorporateAction.SymbolChange:
                     for trade in closed_trades:  # Re-create initial positions with new asset
-                        self._account.open_trade(trade, asset, modified_by=self)
+                        self._account.open_trade(trade.open_operation(), asset, trade.open_price(), trade.qty(), modified_by=self)
                 elif self._asset.id() == asset.id():
                     if self._subtype == CorporateAction.Split:
                         c_p = self._qty / qty   # Price and quantity 1:N adjustment for split
@@ -1215,10 +1215,11 @@ class CorporateAction(LedgerTransaction):
                     else:
                         assert False, f"Unexpected corporate action type {self._subtype}"
                     for trade in closed_trades:
-                        self._account.open_trade(trade, asset, modified_by=self, adjustment=(c_p, c_q))
+                        self._account.open_trade(trade.open_operation(), asset, trade.open_price(), trade.qty(),
+                                                 modified_by=self, adjustment=(c_p, c_q))
                 else:   # Newly created positions as result of corporate action
                     price = value / qty
-                    self._account.open_trade(JalOpenTrade(self, price, qty), asset)
+                    self._account.open_trade(self, asset, price, qty)
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)
 
 # ----------------------------------------------------------------------------------------------------------------------
