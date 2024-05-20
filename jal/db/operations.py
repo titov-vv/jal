@@ -160,7 +160,7 @@ class LedgerTransaction(JalDB):
     # qty - quantity of asset that closes previous open positions
     # price is None if we process corporate action or transfer where we keep initial value and don't have profit or loss
     # Returns total qty, value of deals created.
-    def _close_deals_fifo(self, deal_sign, qty, price):
+    def _close_deals_fifo(self, deal_sign, qty):
         assert self._asset.id() == self.asset().id()   # The function works with these assumptions as any operation may take only one incoming asset
         assert self._account.id() == self.account().id()
         processed_qty = Decimal('0')
@@ -741,7 +741,7 @@ class Trade(LedgerTransaction):
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
         if ((-deal_sign) * asset_amount) > Decimal('0'):  # Match trade if we have asset that is opposite to operation
-            processed_qty, processed_value = self._close_deals_fifo(deal_sign, qty, self._price)
+            processed_qty, processed_value = self._close_deals_fifo(deal_sign, qty)
         if deal_sign > 0:
             credit_value = ledger.takeCredit(self, self._account.id(), trade_value)
         else:
@@ -970,7 +970,7 @@ class Transfer(LedgerTransaction):
                 raise LedgerError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
                                   + f"{ts2dt(self._withdrawal_timestamp)}, Asset amount: {asset_amount}, "
                                   + f"Required: {transfer_amount}, Operation: {self.dump()}")
-            processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), transfer_amount, None)
+            processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), transfer_amount)
             if processed_qty < transfer_amount:
                 raise LedgerError(self.tr("Processed asset amount is less than transfer amount. Date: ")
                                   + f"{ts2dt(self._withdrawal_timestamp)}, Processed amount: {processed_qty}, "
@@ -1192,7 +1192,7 @@ class CorporateAction(LedgerTransaction):
             raise LedgerError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
                               + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, "
                               + f"Distributed: {100.0 * float(allocation)}%, Operation: {self.dump()}")
-        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._qty, None)
+        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._qty)
         # Withdraw value with old quantity of old asset
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
         if self._subtype == CorporateAction.Delisting:  # Map value to costs and exit - nothing more for delisting
