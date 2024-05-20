@@ -284,11 +284,12 @@ class JalAccount(JalDB):
         return trades
 
     # Creates a record in 'trades_open' table that manifests current asset position
-    # operation - original operation that opened position in asset
-    # price, qty - size of position and price for accounting
+    # trade - JalOpenTrade that should be stored as open trade (may represent existing position or be a new object)
+    # asset - JalAsset for which trade is recorded
     # modified_by - indicate operation that modifies the original position
     # adjustment = (price, qty) - coefficients for price and quantity adjustments for operation
-    def open_trade(self, operation, asset, price, qty, modified_by=None, adjustment=(Decimal('1'), Decimal('1'))):
+    def open_trade(self, trade, asset, modified_by=None, adjustment=(Decimal('1'), Decimal('1'))):
+        operation = trade.open_operation()
         modified_by = operation if modified_by is None else modified_by
         _ = self._exec(
             "INSERT INTO trades_opened(timestamp, otype, oid, m_otype, m_oid, account_id, asset_id, "
@@ -297,8 +298,8 @@ class JalAccount(JalDB):
             ":remaining_qty, :c_price, :c_qty)",
             [(":timestamp", modified_by.timestamp()), (":otype", operation.type()), (":oid", operation.id()),
              (":m_otype", modified_by.type()), (":m_oid", modified_by.id()), (":account_id", self._id),
-             (":asset_id", asset.id()), (":price", format_decimal(adjustment[0]*price)),
-             (":remaining_qty", format_decimal(adjustment[1]*qty)), (":c_price", format_decimal(adjustment[0])),
+             (":asset_id", asset.id()), (":price", format_decimal(adjustment[0]*trade.open_price())),
+             (":remaining_qty", format_decimal(adjustment[1]*trade.qty())), (":c_price", format_decimal(adjustment[0])),
              (":c_qty", format_decimal(adjustment[1]))])
 
     # Returns a list of JalOpenTrades that represents all trades that were opened for given asset at given timestamp
