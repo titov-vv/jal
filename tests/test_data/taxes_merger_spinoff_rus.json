@@ -80,94 +80,9 @@
   ],
   "Дивиденды": [],
   "Комиссии": [],
-  "Корп.события": [
-    {
-      "description": "Сделки по бумаге: PTPI - PETROS PHARMACEUTICALS INC",
-      "report_group": 0,
-      "report_template": "symbol_header"
-    },
-    {
-      "amount": 0.82,
-      "amount_rub": 50.08,
-      "basis_ratio": 100.0,
-      "fee": 0.0,
-      "fee_rub": 0.0,
-      "income_rub": 50.08,
-      "isin": "US71678J2096",
-      "operation": "Продажа",
-      "price": 4.111,
-      "qty": 0.2,
-      "report_group": 1,
-      "report_template": "trade",
-      "s_date": 1669839900,
-      "s_rate": 61.0742,
-      "spending_rub": 0.0,
-      "symbol": "PTPI",
-      "t_date": 1669839900,
-      "t_rate": 61.0742,
-      "trade_number": ""
-    },
-    {
-      "action_date": 1669839900,
-      "action_number": "22349072094",
-      "description": "Сплит PTPI (US71678J1007) 2 в 0.2 PTPI (US71678J2096)",
-      "isin": "US71678J1007",
-      "operation": "   Корп. действие",
-      "qty": 22.0,
-      "report_group": 1,
-      "report_template": "action",
-      "symbol": "PTPI"
-    },
-    {
-      "income_rub": 50.08,
-      "report_template": "totals",
-      "spending_rub": 0.0
-    },
-    {
-      "description": "Сделки по бумаге: SNPXD - SYNAPTOGENIX INC",
-      "report_group": 0,
-      "report_template": "symbol_header"
-    },
-    {
-      "amount": 3.12,
-      "amount_rub": 198.25,
-      "basis_ratio": 100.0,
-      "fee": 0.0,
-      "fee_rub": 0.0,
-      "income_rub": 198.25,
-      "isin": "US87167T2015",
-      "operation": "Продажа",
-      "price": 6.24,
-      "qty": 0.5,
-      "report_group": 2,
-      "report_template": "trade",
-      "s_date": 1652905500,
-      "s_rate": 63.5428,
-      "spending_rub": 0.0,
-      "symbol": "SNPXD",
-      "t_date": 1652905500,
-      "t_rate": 63.5428,
-      "trade_number": ""
-    },
-    {
-      "action_date": 1652905500,
-      "action_number": "16441206180",
-      "description": "Сплит SNPX (US87167T1025) 2 в 0.5 SNPXD (US87167T2015)",
-      "isin": "US87167T1025",
-      "operation": "   Корп. действие",
-      "qty": 22.0,
-      "report_group": 2,
-      "report_template": "action",
-      "symbol": "SNPX"
-    },
-    {
-      "income_rub": 198.25,
-      "report_template": "totals",
-      "spending_rub": 0.0
-    }
-  ],
- "Криптовалюты": [],
- "Облигации": [],
- "ПФИ": [],
- "Проценты": []
+  "Корп.события": [],
+  "Криптовалюты": [],
+  "Облигации": [],
+  "ПФИ": [],
+  "Проценты": []
 }

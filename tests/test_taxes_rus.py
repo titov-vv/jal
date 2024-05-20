@@ -385,10 +385,10 @@ def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
     create_quotes(2, 1, usd_rates)
 
     # Adjust share of resulting assets:
-    # 100% NTRP -> 100% PTPI
+    # Merger: 100% NTRP -> 100% PTPI
     action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 1)
     action.set_result_share(JalAsset(5), Decimal('1.0'))
-    # 100% NTRP -> 100% NTRP + 0% SNPX
+    # Spin-off: 100% NTRP -> 100% NTRP + 0% SNPX
     action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 2)
     action.set_result_share(JalAsset(4), Decimal('1.0'))
 

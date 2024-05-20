@@ -80,52 +80,9 @@
   ],
   "Дивиденды": [],
   "Комиссии": [],
-  "Корп.события": [
-    {
-      "description": "Сделки по бумаге: WAB - WABTEC CORP",
-      "report_group": 0,
-      "report_template": "symbol_header"
-    },
-    {
-      "amount": 0.64,
-      "amount_rub": 46.54,
-      "basis_ratio": 100.0,
-      "fee": 0.0,
-      "fee_rub": 0.0,
-      "income_rub": 46.54,
-      "isin": "",
-      "operation": "Продажа",
-      "price": 1.2,
-      "qty": 0.5371,
-      "report_group": 1,
-      "report_template": "trade",
-      "s_date": 1637798400,
-      "s_rate": 72.7171,
-      "spending_rub": 0.0,
-      "symbol": "WAB",
-      "t_date": 1637679039,
-      "t_rate": 72.76,
-      "trade_number": "22222"
-    },
-    {
-      "action_date": 1637353500,
-      "action_number": "10302900848",
-      "description": "Выделение компании WAB () из GE (US3696041033); доля выделяемого актива 10.00%",
-      "isin": "US3696041033",
-      "operation": "   Корп. действие",
-      "qty": 100.0,
-      "report_group": 1,
-      "report_template": "action",
-      "symbol": "GE"
-    },
-    {
-      "income_rub": 46.54,
-      "report_template": "totals",
-      "spending_rub": 0.0
-    }
-  ],
- "Криптовалюты": [],
- "Облигации": [],
- "ПФИ": [],
- "Проценты": []
+  "Корп.события": [],
+  "Криптовалюты": [],
+  "Облигации": [],
+  "ПФИ": [],
+  "Проценты": []
 }

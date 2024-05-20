@@ -1202,21 +1202,17 @@ class CorporateAction(LedgerTransaction):
                 ledger.appendTransaction(self, BookAccount.Money, qty)
                 ledger.appendTransaction(self, BookAccount.Incomes, -qty, category=PredefinedCategory.Interest, peer=self._broker)
             else:
-                if self._subtype == CorporateAction.SymbolChange:
-                    for trade in closed_trades:  # Re-create initial positions with new asset
-                        self._account.open_trade(trade, asset, modified_by=self)
-                elif self._asset.id() == asset.id():
-                    if self._subtype == CorporateAction.Split:
-                        adj_coef = (self._qty / qty, qty / self._qty)  # Price and quantity 1:N adjustment for split
-                    elif self._subtype == CorporateAction.SpinOff or self._subtype == CorporateAction.Merger:
-                        adj_coef = (share, Decimal('1'))  # Cost basis adjustment according to corporate action data
+                for trade in closed_trades:
+                    if self._asset.id() == asset.id():
+                        if self._subtype == CorporateAction.Split:
+                            adj_coef = (self._qty / qty, qty / self._qty)  # Price and quantity 1:N adjustment for split
+                        elif self._subtype == CorporateAction.SpinOff or self._subtype == CorporateAction.Merger:
+                            adj_coef = (share, Decimal('1'))  # Cost basis adjustment according to corporate action data
+                        else:
+                            assert False, f"Unexpected corporate action type {self._subtype}"
                     else:
-                        assert False, f"Unexpected corporate action type {self._subtype}"
-                    for trade in closed_trades:
-                        self._account.open_trade(trade, asset, modified_by=self, adjustment=adj_coef)
-                else:   # Newly created positions as result of corporate action
-                    price = value / qty
-                    self._account.open_trade(JalOpenTrade(self, price, qty), asset)
+                        adj_coef = (share, qty / self._qty)
+                    self._account.open_trade(trade, asset, modified_by=self, adjustment=adj_coef)
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -27,6 +27,11 @@ class JalOpenTrade(JalDB):
     def qty(self) -> Decimal:
         return self._qty
 
+    # Method to adjust price of open position
+    def set_price(self, new_price: Decimal):
+        self._price = new_price
+
+    # Method to adjust size of open position
     def set_qty(self, new_qty: Decimal):
         self._qty = new_qty
 
