@@ -151,7 +151,7 @@ class JalClosedTrade(JalDB):
     # if currency_id isn't 0 then returns fee converted into given currency
     def open_fee(self, currency_id: int = 0) -> Decimal:
         if self._open_op.type() == jal.db.operations.LedgerTransaction.Trade:
-            o_fee = self._open_op.fee() * abs(self._qty / self._open_op.qty())
+            o_fee = self._open_op.fee() * abs(self._qty / (self._open_op.qty() * self.q_adjustment()))
             return self.adjusted(o_fee, currency_id, self._open_op.timestamp())
         else:
             return Decimal('0')
