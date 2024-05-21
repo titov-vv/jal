@@ -84,6 +84,8 @@ class TaxesRussia(TaxReport):
         dividends_withdrawn = [x for x in dividends_withdrawn if self.year_begin <= x.timestamp() <= self.year_end]
         dividends_withdrawn = [x for x in dividends_withdrawn if x.amount() < Decimal('0')]
         for trade in trades_list:
+            corporate_actions = trade.modified_by()
+            report_template = "corporate_action" if corporate_actions else "trade"
             if ns:
                 os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
                 cs_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
@@ -111,13 +113,16 @@ class TaxesRussia(TaxReport):
                 income_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2)
                 spending = round(trade.close_amount(no_settlement=ns), 2) + trade.fee() + short_dividend
                 spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) + short_dividend_rub
-            for modifier in trade.modified_by():
+            for modifier in corporate_actions:
                 note = note + modifier.description() + "\n"
             line = {
-                'report_template': "trade",
-                'symbol': trade.asset().symbol(self.account_currency.id()),
-                'isin': trade.asset().isin(),  # May be not used in template (for derivatives as example)
-                'qty': trade.qty(),
+                'report_template': report_template,
+                'c_symbol': trade.asset().symbol(self.account_currency.id()),
+                'c_isin': trade.asset().isin(),  # May be not used in template (for derivatives as example)
+                'c_qty': trade.qty(),
+                'o_symbol': trade.open_operation().asset().symbol(),
+                'o_isin': trade.open_operation().asset().isin(),
+                'o_qty': trade.open_qty(),
                 'country_iso': self.account.country().iso_code(),  # this field is required for DLSG
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
                 'o_number': trade.open_operation().number(),
@@ -126,6 +131,7 @@ class TaxesRussia(TaxReport):
                 'os_date': trade.open_operation().settlement(),
                 'os_rate': os_rate,
                 'o_price': trade.open_price(),
+                'cost_basis': Decimal('100') * trade.p_adjustment() * trade.q_adjustment(),
                 'o_amount':  round(trade.open_amount(no_settlement=ns), 2),
                 'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=ns), 2),
                 'o_fee': trade.open_fee(),
