@@ -191,13 +191,10 @@ class JalClosedTrade(JalDB):
         return self.open_fee(currency_id) + self.close_fee(currency_id)
 
     def profit(self, percent=False) -> Decimal:
-        if self._close_op.type() == jal.db.operations.LedgerTransaction.Trade:
-            profit = self._qty * (self._close_price - self._open_price) - self.fee()
-            if percent:
-                profit = Decimal('100') * profit / (self._qty * self._open_price) if self._open_price else Decimal('0')
-            return profit
-        else:
-            return Decimal('0')
+        profit = self._qty * self._close_price - self._open_qty * self._open_price - self.fee()
+        if percent:
+            profit = Decimal('100') * profit / (self._open_qty * self._open_price) if self._open_price else Decimal('0')
+        return profit
 
     # Returns a list of LedgerTransactions that modified position after its opening
     # (i.e. transfers or corporate actions that happened during position lifetime)
