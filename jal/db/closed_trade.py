@@ -122,8 +122,11 @@ class JalClosedTrade(JalDB):
     def close_operation(self):
         return self._close_op
 
-    def open_qty(self):
-        return self._open_qty
+    def open_qty(self, adjusted=False) -> Decimal:
+        if adjusted:
+            return self._open_qty * self._adj_qty
+        else:
+            return self._open_qty
 
     def qty(self) -> Decimal:
         return self._qty
@@ -134,8 +137,11 @@ class JalClosedTrade(JalDB):
     def close_timestamp(self) -> int:
         return self._close_op.timestamp()
 
-    def open_price(self) -> Decimal:
-        return self._open_price
+    def open_price(self, adjusted=False) -> Decimal:
+        if adjusted:
+            return self._open_price * self._adj_price
+        else:
+            return self._open_price
 
     def close_price(self) -> Decimal:
         return self._close_price
@@ -191,9 +197,9 @@ class JalClosedTrade(JalDB):
         return self.open_fee(currency_id) + self.close_fee(currency_id)
 
     def profit(self, percent=False) -> Decimal:
-        profit = self._qty * self._close_price - self._open_qty * self._open_price - self.fee()
+        profit = self._qty * self._close_price - self.open_price(adjusted=True) * self.open_qty(adjusted=True) - self.fee()
         if percent:
-            profit = Decimal('100') * profit / (self._open_qty * self._open_price) if self._open_price else Decimal('0')
+            profit = Decimal('100') * profit / (self.open_price(adjusted=True) * self.open_qty(adjusted=True)) if self._open_price else Decimal('0')
         return profit
 
     # Returns a list of LedgerTransactions that modified position after its opening
