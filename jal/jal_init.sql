@@ -237,8 +237,8 @@ CREATE TABLE trades_opened (
     asset_id      INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
     price         TEXT    NOT NULL,    -- Accounting price of current position (may be different from original operation)
     remaining_qty TEXT    NOT NULL,    -- Quantity of asset that still remains held (may be different from original operation quantity)
-    c_price       TEXT    NOT NULL DEFAULT ('1'),  -- How price was adjusted since initial operation
-    c_qty         TEXT    NOT NULL DEFAULT ('1')   -- How quantity was adjusted since initial operation
+    c_price       TEXT    NOT NULL DEFAULT ('1'),  -- Coefficient that was used to adjust price of initial operation (price = c_price * original_price)
+    c_qty         TEXT    NOT NULL DEFAULT ('1')   -- Coefficient that was used to adjust qty of initial operation (qty = c_qty * original_qty)
 );
 
 DROP INDEX IF EXISTS open_trades_by_time;

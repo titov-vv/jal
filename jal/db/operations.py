@@ -161,21 +161,21 @@ class LedgerTransaction(JalDB):
     # price is None if we process corporate action or transfer where we keep initial value and don't have profit or loss
     # Returns total qty, value of deals created.
     def _close_deals_fifo(self, deal_sign, qty):
-        assert self._asset.id() == self.asset().id()   # The function works with these assumptions as any operation may take only one incoming asset
-        assert self._account.id() == self.account().id()
+        assert self._asset.id() == self.asset().id()      # The function works with these assumptions as any operation
+        assert self._account.id() == self.account().id()  # takes only one incoming asset and account
         processed_qty = Decimal('0')
         processed_value = Decimal('0')
         open_trades = self._account.open_trades_list(self._asset)
         for trade in open_trades:
-            remaining_qty = trade.qty()
+            remaining_qty = trade.open_qty(adjusted=True)
             next_deal_qty = remaining_qty
             if (processed_qty + next_deal_qty) > qty:  # We can't close full quantity with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
-            trade.set_qty(remaining_qty - next_deal_qty)
+            trade.set_qty((remaining_qty - next_deal_qty)/trade.q_adjustment())
             self._account.open_trade(trade, self._asset, modified_by=self)
             JalClosedTrade.create_from_trades(trade, self, (-deal_sign) * next_deal_qty)
             processed_qty += next_deal_qty
-            processed_value += (next_deal_qty * trade.open_price())
+            processed_value += (next_deal_qty * trade.open_price(adjusted=True))
             if processed_qty == qty:
                 break
         return processed_qty, processed_value
@@ -1153,7 +1153,7 @@ class CorporateAction(LedgerTransaction):
                        [(":share", format_decimal(share)), (":action_id", self._oid), (":asset_id", asset.id())])
             out[0]['value_share'] = format_decimal(share)
         else:
-            raise  LedgerError(self.tr("Asset isn't a part of corporate action results: ") + f"{asset.name()}")
+            raise LedgerError(self.tr("Asset isn't a part of corporate action results: ") + f"{asset.name()}")
 
     # Returns a list {"timestamp", "amount", "note"} that represents payments out of corporate actions to given account
     # in given account currency
@@ -1199,7 +1199,7 @@ class CorporateAction(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=PredefinedCategory.Profit, peer=self._broker)
             return
         # Process assets after corporate action
-        query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])  # FIXME - replace with get_results() call
         closed_trades = self._deals_closed_by_operation()
         while query.next():
             asset, qty, share = self._read_record(query, cast=[JalAsset, Decimal, Decimal])
@@ -1217,7 +1217,7 @@ class CorporateAction(LedgerTransaction):
                         else:
                             assert False, f"Unexpected corporate action type {self._subtype}"
                     else:
-                        adj_coef = (share, qty / self._qty)
+                        adj_coef = (share * self._qty / qty, qty / self._qty)
                     self._account.open_trade(trade, asset, modified_by=self, adjustment=adj_coef)
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)
 

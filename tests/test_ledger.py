@@ -469,14 +469,19 @@ def test_open_price(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    positions = [(x.qty(), x.open_price()) for x in JalAccount(1).open_trades_list(asset=JalAsset(4))]
-    assert positions == [(Decimal('10'), Decimal('100')), (Decimal('20'), Decimal('120')), (Decimal('10'), Decimal('110'))]
-    positions = [(x.qty(), x.open_price()) for x in JalAccount(1).open_trades_list(asset=JalAsset(5))]
-    assert positions == [(Decimal('3'), Decimal('150'))]
-    positions = [(x.qty(), x.open_price()) for x in JalAccount(1).open_trades_list(asset=JalAsset(6))]
-    assert positions == [(Decimal('1'), Decimal('400'))]
-    positions = [(x.qty(), x.open_price()) for x in JalAccount(1).open_trades_list(asset=JalAsset(7))]
-    assert positions == [(Decimal('2'), Decimal('225'))]
+    values = lambda x: (x.open_qty(adjusted=True), x.open_price(adjusted=True), x.open_qty(), x.open_price())
+    positions = [values(x) for x in JalAccount(1).open_trades_list(asset=JalAsset(4))]
+    assert positions == [
+        (Decimal('10'), Decimal('100'), Decimal('10'), Decimal('100')),
+        (Decimal('20'), Decimal('120'), Decimal('20'), Decimal('120')),
+        (Decimal('10'), Decimal('110'), Decimal('10'), Decimal('110'))
+    ]
+    positions = [values(x) for x in JalAccount(1).open_trades_list(asset=JalAsset(5))]
+    assert positions == [(Decimal('3'), Decimal('150'), Decimal('12'), Decimal('100'))]
+    positions = [values(x) for x in JalAccount(1).open_trades_list(asset=JalAsset(6))]
+    assert positions == [(Decimal('1'), Decimal('400'), Decimal('16'), Decimal('100'))]
+    positions = [values(x) for x in JalAccount(1).open_trades_list(asset=JalAsset(7))]
+    assert positions == [(Decimal('2'), Decimal('225'), Decimal('12'), Decimal('100'))]
 
 
 def test_asset_transfer(prepare_db):
