@@ -298,8 +298,8 @@ class JalAccount(JalDB):
             ":remaining_qty, :c_price, :c_qty)",
             [(":timestamp", modified_by.timestamp()), (":otype", operation.type()), (":oid", operation.id()),
              (":m_otype", modified_by.type()), (":m_oid", modified_by.id()), (":account_id", self._id),
-             (":asset_id", asset.id()), (":price", format_decimal(adjustment[0]*trade.open_price())),
-             (":remaining_qty", format_decimal(adjustment[1]*trade.qty())),
+             (":asset_id", asset.id()), (":price", format_decimal(trade.open_price())),
+             (":remaining_qty", format_decimal(trade.open_qty())),
              (":c_price", format_decimal(trade.p_adjustment() * adjustment[0])),
              (":c_qty", format_decimal(trade.q_adjustment() * adjustment[1]))])
 

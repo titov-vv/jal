@@ -21,11 +21,17 @@ class JalOpenTrade(JalDB):
     def open_operation(self):
         return self._op
 
-    def open_price(self) -> Decimal:
-        return self._price
+    def open_price(self, adjusted=False) -> Decimal:
+        if adjusted:
+            return self._price * self._adj_price
+        else:
+            return self._price
 
-    def qty(self) -> Decimal:
-        return self._qty
+    def open_qty(self, adjusted=False) -> Decimal:
+        if adjusted:
+            return self._qty * self._adj_qty
+        else:
+            return self._qty
 
     # Method to adjust price of open position
     def set_price(self, new_price: Decimal):
@@ -56,13 +62,14 @@ class JalClosedTrade(JalDB):
             self._open_op = jal.db.operations.LedgerTransaction.get_operation(self._data['open_otype'], self._data['open_oid'], jal.db.operations.Transfer.Incoming)
             self._close_op = jal.db.operations.LedgerTransaction.get_operation(self._data['close_otype'], self._data['close_oid'], jal.db.operations.Transfer.Outgoing)
             self._open_price = Decimal(self._data['open_price'])
+            self._open_qty = Decimal(self._data['open_qty'])
             self._close_price = Decimal(self._data['close_price'])
             self._qty = Decimal(self._data['close_qty'])
             self._adj_price = Decimal(self._data['c_price'])
             self._adj_qty = Decimal(self._data['c_qty'])
         else:
             self._account = self._asset = self._open_op = self._close_op = None
-            self._open_price = self._close_price = self._qty = Decimal('0')
+            self._open_price = self._open_qty = self._close_price = self._qty = Decimal('0')
             self._adj_price = self._adj_qty = Decimal('1')
 
     @classmethod
@@ -114,6 +121,9 @@ class JalClosedTrade(JalDB):
 
     def close_operation(self):
         return self._close_op
+
+    def open_qty(self):
+        return self._open_qty
 
     def qty(self) -> Decimal:
         return self._qty
