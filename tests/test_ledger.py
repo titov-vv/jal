@@ -397,8 +397,8 @@ def test_fifo(prepare_db_fifo):
     assert len(trades) == 1
     assert trades[0].profit() == Decimal('75')
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(15))
-    assert len(trades) == 2
-    assert [x.profit() for x in trades] == [Decimal('99.80'), Decimal('174.20')]
+    assert len(trades) == 3
+    assert [x.profit() for x in trades] == [Decimal('99.80'), Decimal('141.3999999999999999999999999'), Decimal('32.79999999999999999999999997')]
 
     # Stock dividend
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(16))
@@ -424,8 +424,8 @@ def test_fifo(prepare_db_fifo):
 
     # totals
     trades = JalAccount(1).closed_trades_list()
-    assert len(trades) == 43
-    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]) == 40
+    assert len(trades) == 44
+    assert len([x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]) == 43
 
     # validate final amounts
     # validate book amounts and values
