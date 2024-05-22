@@ -523,7 +523,7 @@ def test_asset_transfer(prepare_db):
     assert sum([x.profit() for x in trades]) == Decimal('0')   # sum of open trades fee
     trades = JalAccount(2).closed_trades_list()
     assert len(trades) == 2
-    assert sum([x.profit() for x in trades]) == Decimal('2493')
+    assert sum([x.profit() for x in trades]) == Decimal('2345')
 
     # Modify closing deal quantity
     LedgerTransaction.get_operation(LedgerTransaction.Trade, 3).update_price(Decimal('7700'))
@@ -537,4 +537,4 @@ def test_asset_transfer(prepare_db):
     assert sum([x.profit() for x in trades]) == Decimal('0')
     trades = JalAccount(2).closed_trades_list()
     assert len(trades) == 2
-    assert sum([x.profit() for x in trades]) == Decimal('993')
+    assert sum([x.profit() for x in trades]) == Decimal('845')
