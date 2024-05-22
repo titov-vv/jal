@@ -152,6 +152,9 @@ class JalClosedTrade(JalDB):
     def q_adjustment(self) -> Decimal:
         return self._adj_qty
 
+    def cost_basis(self) -> Decimal:
+        return self._adj_price * self._adj_qty
+
     # If currency_id is different from trade account currency then adjusts value to the rate of currency for
     # given timestamp and returns it. Otherwise, simply returns unchanged value
     def adjusted(self, value: Decimal, currency_id: int, timestamp: int) -> Decimal:
@@ -163,9 +166,11 @@ class JalClosedTrade(JalDB):
     # Returns opening amount of the trade (open price x qty)
     # If currency_id isn't 0 then converts amount into given currency using settlement date rate
     # If no_settlement is set to True then transaction date is used for conversion
-    def open_amount(self, currency_id: int = 0, no_settlement=False) -> Decimal:
+    # If full==True, then provide full amount of opening trade (without correction due to corporate actions)
+    def open_amount(self, currency_id: int = 0, no_settlement=False, full=False) -> Decimal:
+        cost_basis = Decimal('1') if full else self.cost_basis()
         timestamp = self._open_op.timestamp() if no_settlement else self._open_op.settlement()
-        return self.adjusted(self._open_price * abs(self._qty), currency_id, timestamp)
+        return self.adjusted(cost_basis * self.open_price() * abs(self.open_qty()), currency_id, timestamp)
 
     # Returns closing amount of the trade (close price x qty)
     # If currency_id isn't 0 then converts amount into given currency using settlement date rate
@@ -176,9 +181,11 @@ class JalClosedTrade(JalDB):
 
     # Fee of opening part of the deal
     # if currency_id isn't 0 then returns fee converted into given currency
-    def open_fee(self, currency_id: int = 0) -> Decimal:
+    # If full==True, then provide full fee of opening trade (without correction due to corporate actions)
+    def open_fee(self, currency_id: int = 0, full=False) -> Decimal:
+        cost_basis = Decimal('1') if full else self.cost_basis()
         if self._open_op.type() == jal.db.operations.LedgerTransaction.Trade:
-            o_fee = self._open_op.fee() * abs(self._qty / (self._open_op.qty() * self.q_adjustment()))
+            o_fee = cost_basis * self._open_op.fee() * abs(self._qty / (self._open_op.qty() * self.q_adjustment()))
             return self.adjusted(o_fee, currency_id, self._open_op.timestamp())
         else:
             return Decimal('0')

@@ -96,7 +96,7 @@ class TaxesRussia(TaxReport):
                 note = ''
                 income = round(trade.close_amount(no_settlement=ns), 2)
                 income_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2)
-                spending = round(trade.open_amount(no_settlement=ns), 2) + trade.fee()
+                spending = round(trade.open_amount(no_settlement=ns), 2) + round(trade.fee(), 2)
                 spending_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2)
             else:                            # Short trade
                 # Check were there any dividends during short position holding
@@ -111,8 +111,8 @@ class TaxesRussia(TaxReport):
                 note = f"Удержан дивиденд: {short_dividend_rub:.2f} RUB ({short_dividend:.2f} {self.account_currency.symbol()})\n" if short_dividend_rub > Decimal('0') else ''
                 income = round(trade.open_amount(no_settlement=ns), 2)
                 income_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2)
-                spending = round(trade.close_amount(no_settlement=ns), 2) + trade.fee() + short_dividend
-                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) + short_dividend_rub
+                spending = round(trade.open_amount(no_settlement=ns), 2) + round(trade.fee(), 2) + short_dividend
+                spending_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) + short_dividend_rub
             for modifier in corporate_actions:
                 note = note + modifier.description() + "\n"
             line = {
@@ -131,11 +131,11 @@ class TaxesRussia(TaxReport):
                 'os_date': trade.open_operation().settlement(),
                 'os_rate': os_rate,
                 'o_price': trade.open_price(),
-                'cost_basis': Decimal('100') * trade.p_adjustment() * trade.q_adjustment(),
-                'o_amount':  round(trade.open_amount(no_settlement=ns), 2),
-                'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=ns), 2),
-                'o_fee': trade.open_fee(),
-                'o_fee_rub': round(trade.open_fee(self._currency_id), 2),
+                'cost_basis': Decimal('100') * trade.cost_basis(),
+                'o_amount':  round(trade.open_amount(no_settlement=ns, full=True), 2),
+                'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=ns, full=True), 2),
+                'o_fee': trade.open_fee(full=True),
+                'o_fee_rub': round(trade.open_fee(self._currency_id, full=True), 2),
                 'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
                 'c_number': trade.close_operation().number(),
                 'c_date': trade.close_operation().timestamp(),
