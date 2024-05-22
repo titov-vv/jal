@@ -240,26 +240,9 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'taxes_merger_complex_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
     json_decimal2float(tax_report)
-    assert tax_report == report    # FIXME - Should be kept as FIFO after merger?
+    assert tax_report == report
 
-    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
-    # templates = {
-    #     "Акции": "tax_rus_trades.json",
-    #     "ПФИ": "tax_rus_derivatives.json",
-    #     "Корп.события": "tax_rus_corporate_actions.json"
-    # }
-    # parameters = {
-    #     "period": "01.01.2021 - 31.12.2021",
-    #     "account": "TEST U7654321 (USD)",
-    #     "currency": "USD",
-    #     "broker_name": "IBKR",
-    #     "broker_iso_country": "840"
-    # }
-    # for section in tax_report:
-    #     if section not in templates:
-    #         continue
-    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
-    # reports_xls.save()
+    # save_test_xls_report(tmp_path, tax_report)
 
 
 def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
