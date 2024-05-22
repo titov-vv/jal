@@ -1,8 +1,10 @@
+import os
 from decimal import Decimal
 from datetime import datetime, timezone
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, AssetPayment
 from constants import PredefinedAsset
+from jal.data_export.xlsx import XLSX
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -153,3 +155,24 @@ def create_transfers(transfers):
                 'deposit_timestamp': transfer[0], 'deposit_account': transfer[3], 'deposit': transfer[4],
                 'asset': transfer[5]}
         LedgerTransaction.create_new(LedgerTransaction.Transfer, data)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def save_test_xls_report(path, tax_report):
+    reports_xls = XLSX(str(path) + os.sep + "taxes.xls")
+    templates = {
+        "Акции": "tax_rus_trades.json",
+        "ПФИ": "tax_rus_derivatives.json"
+    }
+    parameters = {
+        "period": "01.01.2022 - 31.12.2022",
+        "account": "TEST U7654321 (USD)",
+        "currency": "USD",
+        "broker_name": "IBKR",
+        "broker_iso_country": "840"
+    }
+    for section in tax_report:
+        if section not in templates:
+            continue
+        reports_xls.output_data(tax_report[section], templates[section], parameters)
+    reports_xls.save()

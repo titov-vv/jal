@@ -1,11 +1,10 @@
 import json
-import os
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import d2t, create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
-    create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float
+    create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float, save_test_xls_report
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount
@@ -13,7 +12,6 @@ from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, CorporateAction, AssetPayment
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.taxes_flow import TaxesFlowRus
-from jal.data_export.xlsx import XLSX
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -297,22 +295,7 @@ def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
     json_decimal2float(tax_report)
     assert tax_report == report
 
-    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
-    # templates = {
-    #     "Акции": "tax_rus_trades.json"
-    # }
-    # parameters = {
-    #     "period": "01.01.2021 - 31.12.2021",
-    #     "account": "TEST U7654321 (USD)",
-    #     "currency": "USD",
-    #     "broker_name": "IBKR",
-    #     "broker_iso_country": "840"
-    # }
-    # for section in tax_report:
-    #     if section not in templates:
-    #         continue
-    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
-    # reports_xls.save()
+    # save_test_xls_report(tmp_path, tax_report)
 
 
 def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
@@ -348,23 +331,8 @@ def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
         report = json.load(json_file)
     assert tax_report == report
 
-    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
-    # templates = {
-    #     "Акции": "tax_rus_trades.json",
-    #     "ПФИ": "tax_rus_derivatives.json"
-    # }
-    # parameters = {
-    #     "period": "01.01.2021 - 31.12.2021",
-    #     "account": "TEST U7654321 (USD)",
-    #     "currency": "USD",
-    #     "broker_name": "IBKR",
-    #     "broker_iso_country": "840"
-    # }
-    # for section in tax_report:
-    #     if section not in templates:
-    #         continue
-    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
-    # reports_xls.save()
+    # save_test_xls_report(tmp_path, tax_report)
+
 
 # Load double IBKR statement with mergers and spin-offs
 def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
@@ -410,8 +378,8 @@ def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'taxes_merger_spinoff_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
     json_decimal2float(tax_report)
-    assert tax_report == report   # FIXME - Report notes don't contain all history of corp.actions
-                                  # FIXME - Should be kept as FIFO after merger?
+    assert tax_report == report
+
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
     # templates = {
     #     "Акции": "tax_rus_trades.json",
