@@ -162,7 +162,8 @@ def save_test_xls_report(path, tax_report):
     reports_xls = XLSX(str(path) + os.sep + "taxes.xls")
     templates = {
         "Акции": "tax_rus_trades.json",
-        "ПФИ": "tax_rus_derivatives.json"
+        "ПФИ": "tax_rus_derivatives.json",
+        "Комиссии": "tax_rus_fees.json"
     }
     parameters = {
         "period": "01.01.2022 - 31.12.2022",
