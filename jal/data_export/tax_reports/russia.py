@@ -31,7 +31,6 @@ class TaxesRussia(TaxReport):
             "Облигации": (self.prepare_bonds, "tax_rus_bonds.json"),
             "ПФИ": (self.prepare_derivatives, "tax_rus_derivatives.json"),
             "Криптовалюты": (self.prepare_crypto, "tax_rus_crypto.json"),
-            "Корп.события": (self.prepare_corporate_actions, "tax_rus_corporate_actions.json"),
             "Комиссии": (self.prepare_broker_fees, "tax_rus_fees.json"),
             "Проценты": (self.prepare_broker_interest, "tax_rus_interests.json")
         }

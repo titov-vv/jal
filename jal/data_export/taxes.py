@@ -8,7 +8,7 @@ from jal.constants import Setup, PredefinedAsset
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, AssetPayment
+from jal.db.operations import AssetPayment
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
