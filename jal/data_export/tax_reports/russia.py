@@ -111,8 +111,8 @@ class TaxesRussia(TaxReport):
                 note = f"Удержан дивиденд: {short_dividend_rub:.2f} RUB ({short_dividend:.2f} {self.account_currency.symbol()})\n" if short_dividend_rub > Decimal('0') else ''
                 income = round(trade.open_amount(no_settlement=ns), 2)
                 income_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2)
-                spending = round(trade.open_amount(no_settlement=ns), 2) + round(trade.fee(), 2) + short_dividend
-                spending_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) + short_dividend_rub
+                spending = round(trade.close_amount(no_settlement=ns), 2) + round(trade.fee(), 2) + short_dividend
+                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) + short_dividend_rub
             for modifier in corporate_actions:
                 note = note + modifier.description() + "\n"
             line = {
