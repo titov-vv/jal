@@ -1,6 +1,6 @@
 from decimal import Decimal
 from datetime import datetime, timezone
-
+from jal.constants import PredefinedAsset
 from jal.db.operations import AssetPayment
 from jal.data_export.taxes import TaxReport
 
@@ -60,7 +60,7 @@ class TaxesPortugal(TaxReport):
     def prepare_stocks_and_etf(self):
         deals_report = []
         ns = not self.use_settlement
-        trades = self.shares_trades_list()
+        trades = self.trades_list([PredefinedAsset.Stock, PredefinedAsset.ETF])
         for trade in trades:
             note = ''
             if ns:

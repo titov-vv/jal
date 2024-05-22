@@ -118,20 +118,8 @@ class TaxReport:
         return dividends
 
     # Returns a list of closed stock/ETF trades that should be included into the report for given year
-    def shares_trades_list(self) -> list:
+    def trades_list(self, asset_type) -> list:
         trades = self.account.closed_trades_list()
-        trades = [x for x in trades if x.asset().type() in [PredefinedAsset.Stock, PredefinedAsset.ETF]]
-        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
-        return trades
-
-    def derivatives_trades_list(self) -> list:
-        trades = self.account.closed_trades_list()
-        trades = [x for x in trades if x.asset().type() == PredefinedAsset.Derivative]
-        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
-        return trades
-
-    def bonds_trades_list(self) -> list:
-        trades = self.account.closed_trades_list()
-        trades = [x for x in trades if x.asset().type() == PredefinedAsset.Bond]
+        trades = [x for x in trades if x.asset().type() in asset_type]
         trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
         return trades

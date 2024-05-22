@@ -160,7 +160,7 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_stocks_and_etf(self):
-        trades = self.shares_trades_list()
+        trades = self.trades_list([PredefinedAsset.Stock, PredefinedAsset.ETF])
         return self.prepare_trades_report(trades)
 
     # -----------------------------------------------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ class TaxesRussia(TaxReport):
         country = self.account.country()
         bonds_report = []
         ns = not self.use_settlement
-        trades = self.bonds_trades_list()
+        trades = self.trades_list([PredefinedAsset.Bond])
         for trade in trades:
             if ns:
                 os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
@@ -258,7 +258,7 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self):
-        trades = self.derivatives_trades_list()
+        trades = self.trades_list([PredefinedAsset.Derivative])
         return self.prepare_trades_report(trades)
 
     # -----------------------------------------------------------------------------------------------------------------------
