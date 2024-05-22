@@ -85,7 +85,7 @@ class TaxesRussia(TaxReport):
         dividends_withdrawn = [x for x in dividends_withdrawn if x.amount() < Decimal('0')]
         for trade in trades_list:
             corporate_actions = trade.modified_by()
-            report_template = "corporate_action" if corporate_actions else "trade"
+            report_template = "corporate_action" if any([x.type()==LedgerTransaction.CorporateAction for x in corporate_actions]) else "trade"
             if ns:
                 os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
                 cs_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]

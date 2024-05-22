@@ -1,6 +1,10 @@
 {
  "Акции": [
    {
+     "c_isin": "US92556V1061",
+     "c_symbol": "VTRS",
+     "c_qty": 11.0,
+     "cost_basis": 100.0,
      "c_amount": 298.54,
      "c_amount_rub": 21950.63,
      "c_date": 1632528000,
@@ -15,7 +19,9 @@
      "cs_rate": 73.5266,
      "income": 298.54,
      "income_rub": 21950.63,
-     "isin": "US92556V1061",
+     "o_isin": "US92556V1061",
+     "o_symbol": "VTRS",
+     "o_qty": 11.0,
      "o_amount": 247.83,
      "o_amount_rub": 18235.41,
      "o_date": 1621641600,
@@ -29,11 +35,9 @@
      "os_rate": 73.5803,
      "profit": 49.71,
      "profit_rub": 3641.82,
-     "qty": 11.0,
      "report_template": "trade",
      "note": "Stock vesting\n\n",
-     "spending_rub": 18308.81,
-     "symbol": "VTRS"
+     "spending_rub": 18308.81
    },
    {
      "income_rub": 21950.63,
