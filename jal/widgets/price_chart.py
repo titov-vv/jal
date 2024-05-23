@@ -109,23 +109,13 @@ class ChartWindow(MdiWidget):
         trades = []
         positions = account.open_trades_list(asset, end_time)
         for trade in positions:
-            marker_color = CustomColor.LightYellow
-            text = ''
             operation = trade.open_operation()
-            if operation.type() == LedgerTransaction.Trade:
-                if trade.open_qty() >= 0:
-                    marker_color = CustomColor.LightGreen
-                    text = self.tr("Buy")
-                else:
-                    marker_color = CustomColor.LightRed
-                    text = self.tr("Sell")
-            if operation.type() == LedgerTransaction.Transfer:
-                transfer_out = LedgerTransaction().get_operation(operation.type(), operation.id(), Transfer.Outgoing)
-                trades += self.load_open_trades(transfer_out.account(), asset, transfer_out.timestamp()-1)  # get position just before the transfer
-                text = self.tr("Transfer ") + f"{transfer_out.account_name()}"
-            if operation.type() == LedgerTransaction.CorporateAction and operation.subtype() == CorporateAction.Split:
-                trades += self.load_open_trades(account, asset, operation.timestamp()-1)  # get position just before the split
-                text = operation.description().split('\n')[0]
+            if trade.open_qty() >= 0:
+                marker_color = CustomColor.LightGreen
+                text = self.tr("Buy")
+            else:
+                marker_color = CustomColor.LightRed
+                text = self.tr("Sell")
             if operation.type() == LedgerTransaction.AssetPayment:
                 text = operation.name() + "\n" + operation.description().split('\n')[0]
             trades.append({
