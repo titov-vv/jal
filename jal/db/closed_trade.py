@@ -2,7 +2,6 @@ from decimal import Decimal
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal
 import jal.db.account
-import jal.db.asset
 import jal.db.operations
 from jal.db.asset import JalAsset
 
@@ -58,7 +57,7 @@ class JalClosedTrade(JalDB):
                                 "FROM trades_closed WHERE id=:id", [(":id", self._id)], named=True)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
-            self._asset = jal.db.asset.JalAsset(self._data['asset_id'])
+            self._asset = JalAsset(self._data['asset_id'])
             self._open_op = jal.db.operations.LedgerTransaction.get_operation(self._data['open_otype'], self._data['open_oid'], jal.db.operations.Transfer.Incoming)
             self._close_op = jal.db.operations.LedgerTransaction.get_operation(self._data['close_otype'], self._data['close_oid'], jal.db.operations.Transfer.Outgoing)
             self._open_price = Decimal(self._data['open_price'])
@@ -110,7 +109,7 @@ class JalClosedTrade(JalDB):
     def id(self) -> int:
         return self._id
 
-    def asset(self) -> jal.db.asset.JalAsset:
+    def asset(self) -> JalAsset:
         return self._asset
 
     def symbol(self) -> str:

@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout
 from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis, QXYSeries
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, Transfer, CorporateAction
+from jal.db.operations import LedgerTransaction
 from jal.constants import CustomColor
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d
