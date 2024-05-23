@@ -113,7 +113,7 @@ class ChartWindow(MdiWidget):
             text = ''
             operation = trade.open_operation()
             if operation.type() == LedgerTransaction.Trade:
-                if trade.qty() >= 0:
+                if trade.open_qty() >= 0:
                     marker_color = CustomColor.LightGreen
                     text = self.tr("Buy")
                 else:
@@ -131,7 +131,7 @@ class ChartWindow(MdiWidget):
             trades.append({
                 'timestamp': operation.timestamp() * 1000,  # timestamp to ms
                 'price': trade.open_price(),
-                'qty': trade.qty(),
+                'qty': trade.open_qty(),
                 'color': marker_color,
                 'text': text
             })

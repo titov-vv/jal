@@ -1,6 +1,5 @@
 from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory
-from jal.db.helpers import remove_exponent
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory

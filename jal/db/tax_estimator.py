@@ -138,7 +138,7 @@ class TaxEstimator(MdiWidget):
         profit_rub = Decimal('0')
         value_rub = Decimal('0')
         for position in positions:
-            qty = position.qty()
+            qty = position.open_qty()
             price = position.open_price()
             o_rate = account_currency.quote(position.open_operation().settlement(), tax_currency)[1]
             position_profit = qty * (self.quote - price)
