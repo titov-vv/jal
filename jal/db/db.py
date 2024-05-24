@@ -374,7 +374,10 @@ class JalDB:
             return 0
         for field in validation_fields:
             if field not in data:
-                data[field] = fields[field]['default']   # set to default value
+                if 'default' in fields[field]:
+                    data[field] = fields[field]['default']   # set to default value
+                else:
+                    raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data} and have no default value")
             if data[field] is None:
                 query_text += f"{field} IS NULL AND "
             else:

@@ -635,7 +635,7 @@ class Trade(LedgerTransaction):
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "settlement": {"mandatory": False, "validation": False},
-        "number": {"mandatory": False, "validation": True},
+        "number": {"mandatory": False, "validation": True, "default": ''},
         "account_id": {"mandatory": True, "validation": True},
         "asset_id": {"mandatory": True, "validation": True},
         "qty": {"mandatory": True, "validation": True},
