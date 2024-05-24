@@ -420,12 +420,13 @@ class QuoteDownloader(QObject):
 
     # noinspection PyMethodMayBeStatic
     def Euronext_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
-        params = {'format': 'csv', 'decimal_separator': '.', 'date_form': 'd/m/Y', 'op': '', 'adjusted': 'N',
-                  'base100': '', 'startdate': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
-                  'enddate': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')}
+        start_date = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
+        end_date = datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
         suffix = "ETFP" if asset.type() == PredefinedAsset.ETF else "XPAR"  # Dates don't work for ETFP due to glitch on their site
-        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-{suffix}"
-        quotes = post_web_data(url, params=params)
+        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-{suffix}?"\
+              f"format=csv&decimal_separator=.&date_form=d%2Fm%2FY&op=&adjusted=N&base100=&"\
+              f"startdate={start_date}&enddate={end_date}"
+        quotes = get_web_data(url)
         quotes_text = quotes.replace(u'\ufeff', '').splitlines()    # Remove BOM from the beginning
         if len(quotes_text) < 4:
             logging.warning(self.tr("Euronext quotes history reply is too short: ") + quotes)
@@ -436,6 +437,8 @@ class QuoteDownloader(QObject):
         if quotes_text[2] != asset.isin():
             logging.warning(self.tr("Euronext quotes ISIN mismatch in: ") + quotes)
             return None
+        quotes_text = [x.lstrip("'") for x in quotes_text]   # Some lines have occasional quote at first position
+        quotes = "\n".join(quotes_text)
         file = StringIO(quotes)
         try:
             data = pd.read_csv(file, header=3, sep=';', dtype={'Date': str, 'Close': str}, index_col=False)
