@@ -270,13 +270,13 @@ class DLSG:
         self._tax_form['sections']['@DeclForeign'][next_label] = income
 
     def append_stock_trade(self, trade):
-        if trade['qty'] < 0:  # short position - swap close/open dates/rates
+        if trade['c_qty'] < 0:  # short position - swap close/open dates/rates
             trade['cs_date'] = trade['os_date']
             trade['cs_rate'] = trade['os_rate']
         if self._broker_as_income:
             income_source = self.broker_name
         else:
-            income_source = f"Доход от сделки с {trade['symbol']} ({trade['isin']})"
+            income_source = f"Доход от сделки с {trade['c_symbol']} ({trade['c_isin']})"
         income_iso_country = self.broker_iso_country
         if self._year == 2020:
             income = (13, '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)',
@@ -325,13 +325,13 @@ class DLSG:
         self._tax_form['sections']['@DeclForeign'][next_label] = income
 
     def append_derivative_trade(self, trade):
-        if trade['qty'] < 0:  # short position - swap close/open dates/rates
+        if trade['c_qty'] < 0:  # short position - swap close/open dates/rates
             trade['cs_date'] = trade['os_date']
             trade['cs_rate'] = trade['os_rate']
         if self._broker_as_income:
             income_source = self.broker_name
         else:
-            income_source = f"Доход от сделки с {trade['symbol']}"
+            income_source = f"Доход от сделки с {trade['c_symbol']}"
         income_iso_country = self.broker_iso_country
         if self._year == 2020:
             income = (13, '1532',

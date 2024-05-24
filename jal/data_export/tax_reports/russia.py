@@ -186,9 +186,12 @@ class TaxesRussia(TaxReport):
                 spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) - round(trade.close_operation().accrued_interest(self._currency_id), 2)
             line = {
                 'report_template': "bond_trade",
-                'symbol': trade.asset().symbol(self.account_currency.id()),
-                'isin': trade.asset().isin(),
-                'qty': trade.qty(),
+                'c_symbol': trade.asset().symbol(self.account_currency.id()),
+                'c_isin': trade.asset().isin(),  # May be not used in template (for derivatives as example)
+                'c_qty': trade.qty(),
+                'o_symbol': trade.open_operation().asset().symbol(),
+                'o_isin': trade.open_operation().asset().isin(),
+                'o_qty': trade.open_qty(),
                 'principal': trade.asset().principal(),
                 'country_iso': country.iso_code(),
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
