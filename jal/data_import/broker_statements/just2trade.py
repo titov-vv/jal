@@ -17,16 +17,16 @@ class StatementJ2T(StatementXLS):
     HeaderCol = 1
     money_section = "Средства, доступные на конец периода"
     money_columns = {
-        "settled_end": "Value \(Сумма\)",
-        "bonus": "Bonus \(Сумма\)",
-        "currency": "Account currency \(Валюта счета\)"
+        "settled_end": r"Value \(Сумма\)",
+        "bonus": r"Bonus \(Сумма\)",
+        "currency": r"Account currency \(Валюта счета\)"
     }
     asset_section = "Открытые позиции на конец периода"
     asset_columns = {
-        "name": "Instrument description \(Название инструмента\)",
+        "name": r"Instrument description \(Название инструмента\)",
         "isin": "ISIN",
-        "symbol": "Symbol \(Символ\)",
-        "currency": "Instrument сurrency \(валюта инструмента\)"
+        "symbol": r"Symbol \(Символ\)",
+        "currency": r"Instrument сurrency \(валюта инструмента\)"
     }
 
     def __init__(self):
@@ -146,19 +146,19 @@ class StatementJ2T(StatementXLS):
     def _load_crypto_deals(self):
         cnt = 0
         columns = {
-            "number": "Trade number \(Номер сделки\)",
-            "timestamp": "Trade date \(Дата сделки\)",
-            "settlement": "Settle date \(дата расчетов\)",
-            "account_currency": "Account currency \(Валюта счета\)",
+            "number": r"Trade number \(Номер сделки\)",
+            "timestamp": r"Trade date \(Дата сделки\)",
+            "settlement": r"Settle date \(дата расчетов\)",
+            "account_currency": r"Account currency \(Валюта счета\)",
             "asset_name": "Description",
-            "B/S": "Type of Transaction\(Тип сделки\)",
-            "qty": "Quantity \(Кол-во\)",
-            "fee": "Broker fees in account currency \(комиссия брокера в валюте счета\)",
-            "amount": "Net Value in account currency \(Итого в валюте счета\)",
-            "fee_ex": "Other fees in account currency \(прочие комиссии в валюте счета\)"
+            "B/S": r"Type of Transaction\(Тип сделки\)",
+            "qty": r"Quantity \(Кол-во\)",
+            "fee": r"Broker fees in account currency \(комиссия брокера в валюте счета\)",
+            "amount": r"Net Value in account currency \(Итого в валюте счета\)",
+            "fee_ex": r"Other fees in account currency \(прочие комиссии в валюте счета\)"
         }
 
-        row, headers = self.find_section_start("Сделки c виртуальными \(крипто\) инструментами", columns,
+        row, headers = self.find_section_start(r"Сделки c виртуальными \(крипто\) инструментами", columns,
                                                header_height=3)
         if row < 0:
             return
