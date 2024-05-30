@@ -1,8 +1,9 @@
 from decimal import Decimal
 from datetime import datetime, timezone
-from jal.constants import PredefinedAsset
-from jal.db.operations import AssetPayment
+from jal.constants import PredefinedAsset, PredefinedCategory
+from jal.db.operations import AssetPayment, CorporateAction
 from jal.data_export.taxes import TaxReport
+from jal.db.category import JalCategory
 
 
 class TaxesPortugal(TaxReport):
@@ -14,7 +15,8 @@ class TaxesPortugal(TaxReport):
         self._processed_trade_qty = {}  # It will handle {trade_id: qty} records to keep track of already processed qty
         self.reports = {
             "Dividends": (self.prepare_dividends, "tax_prt_dividends.json"),
-            "Shares": (self.prepare_stocks_and_etf, "tax_prt_shares.json")
+            "Shares": (self.prepare_stocks_and_etf, "tax_prt_shares.json"),
+            "Interest": (self.prepare_broker_interest, "tax_prt_interests.json")
         }
 
     def prepare_dividends(self):
@@ -106,3 +108,39 @@ class TaxesPortugal(TaxReport):
             deals_report.append(line)
         self.insert_totals(deals_report, ["income_eur", "spending_eur", "profit_eur", "profit"])
         return deals_report
+
+# ----------------------------------------------------------------------------------------------------------------------
+    def prepare_broker_interest(self):
+        interests_report = []
+        interest_operations = JalCategory(PredefinedCategory.Interest).get_operations(self.year_begin, self.year_end)
+        interest_operations = [x for x in interest_operations if x.account_id() == self.account.id()]
+        for operation in interest_operations:
+            rate = self.account_currency.quote(operation.timestamp(), self._currency_id)[1]
+            interests = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Interest]
+            for interest in interests:
+                amount = Decimal(interest['amount'])
+                line = {
+                    'report_template': "interest",
+                    'payment_date': operation.timestamp(),
+                    'rate': rate,
+                    'amount': amount,
+                    'amount_eur': round(amount * rate, 2),
+                    'note': interest['note']
+                }
+                interests_report.append(line)
+        # Process cash payments out of corporate actions
+        payments = CorporateAction.get_payments(self.account)
+        payments = [x for x in payments if self.year_begin <= x['timestamp'] <= self.year_end]
+        for payment in payments:
+            rate = self.account_currency.quote(payment['timestamp'], self._currency_id)[1]
+            line = {
+                'report_template': "interest",
+                'payment_date': payment['timestamp'],
+                'rate': rate,
+                'amount': payment['amount'],
+                'amount_eur': round(payment['amount'] * rate, 2),
+                'note': payment['note']
+            }
+            interests_report.append(line)
+        self.insert_totals(interests_report, ["amount", "amount_eur"])
+        return interests_report

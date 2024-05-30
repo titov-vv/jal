@@ -1,0 +1,34 @@
+{
+  "page": "Interest",
+  "title": "Interests report",
+  "headers": [
+      "Period: {parameters[period]}",
+      "Account owner: ",
+      "Account: {parameters[account]}"
+    ],
+  "columns": [  
+    {"name": "Description", "width": 50},
+    {"name": "Payment date", "width": 10},
+    {"name": "EUR/{parameters[currency]} rate for payment date", "width": 10},
+    {"name": "СAmount, {parameters[currency]}", "width": 10},
+    {"name": "Amount, EUR", "width": 10}
+  ],
+  "columns_numbered": true,
+  "interest": {
+    "rows": [
+      ["note", "payment_date", "rate", "amount", "amount_eur"]
+    ],
+    "formats": [
+      ["T", "D", "N:4", "N:2", "N:2"]
+    ]
+  },
+  "totals": {
+    "rows": [
+      [null, null, "ИТОГО", "amount", "amount_eur"]
+    ],
+    "formats": [
+      [null, null, "F", "F", "F"]
+    ]
+  },
+  "footers": []
+}
