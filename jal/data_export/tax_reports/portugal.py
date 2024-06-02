@@ -70,17 +70,18 @@ class TaxesPortugal(TaxReport):
             else:
                 rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
             if trade.qty() >= Decimal('0'):  # Long trade
-                income = round(trade.close_amount(no_settlement=ns) - trade.close_fee(), 2)
-                spending = round(trade.open_amount(no_settlement=ns) + trade.open_fee(), 2)
-                inflation = self.inflation(trade.open_operation().timestamp())
+                value_realization = round(trade.close_amount(no_settlement=ns), 2)
+                value_acquisition = round(trade.open_amount(no_settlement=ns), 2)
+                inflation = self.inflation(trade.open_operation().settlement())
                 if inflation != Decimal('1'):
-                    spending = spending * inflation
-                    note = f"Acquisition inflation coefficient {inflation:.2f} for year {datetime.fromtimestamp(trade.open_operation().timestamp(), tz=timezone.utc).strftime('%Y')}\n"
+                    value_acquisition = value_acquisition * inflation
+                    note = f"Acquisition inflation coefficient {inflation:.2f} for year {datetime.fromtimestamp(trade.open_operation().settlement(), tz=timezone.utc).strftime('%Y')}\n"
             else:  # Short trade
-                income = round(trade.open_amount(no_settlement=ns) - trade.open_fee(), 2)
-                spending = round(trade.close_amount(no_settlement=ns) + trade.close_fee(), 2)
+                value_realization = round(trade.open_amount(no_settlement=ns), 2)
+                value_acquisition = round(trade.close_amount(no_settlement=ns), 2)
             for modifier in trade.modified_by():
                 note = note + modifier.description() + "\n"
+            profit = value_realization - value_acquisition - trade.close_fee() - trade.open_fee()
             line = {
                 'report_template': "trade",
                 'symbol': trade.asset().symbol(self.account_currency.id()),
@@ -92,16 +93,20 @@ class TaxesPortugal(TaxReport):
                 'os_date': trade.open_operation().settlement(),
                 'o_price': trade.open_price(),
                 'o_fee': trade.open_fee(),
-                'o_amount': spending,
+                'o_fee_eur': trade.open_fee() * rate,
+                'o_amount': value_acquisition,
+                'o_amount_eur': value_acquisition * rate,
                 'c_type': "Sell" if trade.qty() >= Decimal('0') else "Buy",
                 'c_number': trade.close_operation().number(),
                 'c_date': trade.close_operation().timestamp(),
                 'cs_date': trade.close_operation().settlement(),
                 'c_price': trade.close_operation().price(),
                 'c_fee': trade.close_fee(),
-                'c_amount': income,
-                'profit': income - spending,
-                'profit_eur': round((income - spending) * rate, 2),
+                'c_fee_eur': trade.close_fee() * rate,
+                'c_amount': value_realization,
+                'c_amount_eur': value_realization * rate,
+                'profit': round(profit, 2),
+                'profit_eur': round(profit * rate, 2),
                 'rate': rate,
                 'note': note
             }
