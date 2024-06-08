@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>618</width>
-    <height>321</height>
+    <height>397</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -19,69 +19,22 @@
   <property name="windowTitle">
    <string>Taxes</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="MainLayout">
    <property name="leftMargin">
-    <number>0</number>
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>2</number>
    </property>
    <property name="spacing">
     <number>2</number>
    </property>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="XlsFileName">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>File where to store tax report in Excel format</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="CountryLbl">
-     <property name="text">
-      <string>Country:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1" colspan="2">
-    <widget class="AccountSelector" name="AccountWidget" native="true">
-     <property name="toolTip">
-      <string>Foreign account to prepare tax report for</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QComboBox" name="Country"/>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="XlsFileLbl">
-     <property name="text">
-      <string>Excel file:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1" colspan="2">
-    <widget class="QSpinBox" name="Year">
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-     <property name="suffix">
-      <string/>
-     </property>
-     <property name="minimum">
-      <number>2010</number>
-     </property>
-     <property name="maximum">
-      <number>2030</number>
-     </property>
-     <property name="value">
-      <number>2020</number>
-     </property>
-    </widget>
-   </item>
    <item row="3" column="2">
     <widget class="QPushButton" name="XlsSelectBtn">
      <property name="sizePolicy">
@@ -98,40 +51,101 @@
      </property>
     </widget>
    </item>
-   <item row="11" column="2">
-    <widget class="QPushButton" name="SaveButton">
-     <property name="text">
-      <string>Save Report</string>
+   <item row="1" column="1" colspan="2">
+    <widget class="QSpinBox" name="Year">
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="suffix">
+      <string/>
+     </property>
+     <property name="minimum">
+      <number>2010</number>
+     </property>
+     <property name="maximum">
+      <number>2030</number>
+     </property>
+     <property name="value">
+      <number>2020</number>
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="YearLbl">
-     <property name="text">
-      <string>Year:</string>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="XlsFileName">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>File where to store tax report in Excel format</string>
      </property>
     </widget>
    </item>
-   <item row="12" column="2">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+   <item row="4" column="0" colspan="3">
+    <widget class="QCheckBox" name="NoSettlement">
+     <property name="text">
+      <string>Do not use settlement date for currency rates</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
+    </widget>
+   </item>
+   <item row="8" column="0" colspan="3">
+    <widget class="QGroupBox" name="PtBox">
+     <property name="title">
+      <string>Additional parameters (Portugal)</string>
      </property>
-    </spacer>
+     <layout class="QVBoxLayout" name="PtLayout">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QCheckBox" name="Pt_OneCurrencyRate">
+        <property name="text">
+         <string>Use Sell currency rate for Buy and Sell operations</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="AccountSelector" name="AccountWidget" native="true">
+     <property name="toolTip">
+      <string>Foreign account to prepare tax report for</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="AccountLbl">
+     <property name="text">
+      <string>Account:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="XlsFileLbl">
+     <property name="text">
+      <string>Excel file:</string>
+     </property>
+    </widget>
    </item>
    <item row="7" column="0" colspan="3">
-    <widget class="QFrame" name="RussianSpecificFrame">
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+    <widget class="QGroupBox" name="RuBox">
+     <property name="title">
+      <string>Additional parameters (Russia)</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
@@ -151,6 +165,9 @@
       </property>
       <item>
        <widget class="QGroupBox" name="DlsgGroup">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -185,15 +202,15 @@
          <property name="spacing">
           <number>2</number>
          </property>
-         <item row="0" column="0">
+         <item row="1" column="0">
           <widget class="QLabel" name="DlsgFileLbl">
            <property name="text">
             <string>Output file:</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0" colspan="3">
-          <widget class="QCheckBox" name="IncomeSourceBroker">
+         <item row="3" column="0" colspan="3">
+          <widget class="QCheckBox" name="DlsgIncomeSourceBroker">
            <property name="text">
             <string>Use broker name as income source</string>
            </property>
@@ -202,14 +219,21 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0" colspan="3">
-          <widget class="QCheckBox" name="DividendsOnly">
+         <item row="4" column="0" colspan="3">
+          <widget class="QCheckBox" name="DlsgDividendsOnly">
            <property name="text">
             <string>Update only information about dividends</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="2">
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="DlsgFileName">
+           <property name="toolTip">
+            <string>File where to store russian tax form</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
           <widget class="QPushButton" name="DlsgSelectBtn">
            <property name="toolTip">
             <string>Select file</string>
@@ -219,49 +243,33 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="DlsgFileName">
-           <property name="toolTip">
-            <string>File where to store russian tax form</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="AccountLbl">
+   <item row="0" column="1" colspan="2">
+    <widget class="QComboBox" name="Country"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="CountryLbl">
      <property name="text">
-      <string>Account:</string>
+      <string>Country:</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="WarningLbl">
-     <property name="font">
-      <font>
-       <italic>true</italic>
-      </font>
-     </property>
+   <item row="1" column="0">
+    <widget class="QLabel" name="YearLbl">
      <property name="text">
-      <string>Below functions are experimental - use it with care</string>
+      <string>Year:</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="0" colspan="3">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QCheckBox" name="NoSettlement">
+   <item row="11" column="2">
+    <widget class="QPushButton" name="SaveButton">
      <property name="text">
-      <string>Do not use settlement date for currency rates</string>
+      <string>Save Report</string>
      </property>
     </widget>
    </item>

@@ -37,9 +37,11 @@ class TaxWidget(MdiWidget):
 
     def OnCountryChange(self, item_id):
         if item_id == TaxReport.PORTUGAL:
-            self.ui.RussianSpecificFrame.setVisible(False)
+            self.ui.RuBox.setVisible(False)
+            self.ui.PtBox.setVisible(True)
         elif item_id == TaxReport.RUSSIA:
-            self.ui.RussianSpecificFrame.setVisible(True)
+            self.ui.RuBox.setVisible(True)
+            self.ui.PtBox.setVisible(False)
         else:
             raise ValueError("Selected item has no country handler in code")
         # Refresh and adjust MDI-window size
@@ -90,10 +92,13 @@ class TaxWidget(MdiWidget):
         return self.ui.DlsgFileName.text()
 
     def getBrokerAsIncomeName(self):
-        return self.ui.IncomeSourceBroker.isChecked()
+        return self.ui.DlsgIncomeSourceBroker.isChecked()
 
     def getDividendsOnly(self):
-        return self.ui.DividendsOnly.isChecked()
+        return self.ui.DlsgDividendsOnly.isChecked()
+
+    def getUseOneRate(self):
+        return self.ui.Pt_OneCurrencyRate.isChecked()
 
     def getNoSettlement(self):
         return self.ui.NoSettlement.isChecked()
@@ -105,6 +110,7 @@ class TaxWidget(MdiWidget):
     dlsg_filename = Property(str, fget=getDslgFilename)
     dlsg_broker_as_income = Property(bool, fget=getBrokerAsIncomeName)
     dlsg_dividends_only = Property(bool, fget=getDividendsOnly)
+    use_one_rate = Property(bool, fget=getUseOneRate)
     no_settelement = Property(bool, fget=getNoSettlement)
 
     @Slot()
@@ -115,7 +121,9 @@ class TaxWidget(MdiWidget):
             return
         taxes = TaxReport.create_report(self.ui.Country.currentIndex())
 
-        tax_report = taxes.prepare_tax_report(self.year, self.account, use_settlement=(not self.no_settelement))
+        tax_report = taxes.prepare_tax_report(self.year, self.account,
+                                              use_one_currency_rate=self.use_one_rate,
+                                              use_settlement=(not self.no_settelement))
         if not tax_report:
             logging.warning(self.tr("Tax report is empty"))
             return
