@@ -77,6 +77,7 @@ class Ui_TaxWidget(object):
         self.PtLayout.setContentsMargins(0, 0, 0, 0)
         self.Pt_OneCurrencyRate = QCheckBox(self.PtBox)
         self.Pt_OneCurrencyRate.setObjectName(u"Pt_OneCurrencyRate")
+        self.Pt_OneCurrencyRate.setChecked(True)
 
         self.PtLayout.addWidget(self.Pt_OneCurrencyRate)
 
@@ -189,7 +190,7 @@ class Ui_TaxWidget(object):
 #endif // QT_CONFIG(tooltip)
         self.NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))
         self.PtBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Portugal)", None))
-        self.Pt_OneCurrencyRate.setText(QCoreApplication.translate("TaxWidget", u"Use Sell currency rate for Buy and Sell operations", None))
+        self.Pt_OneCurrencyRate.setText(QCoreApplication.translate("TaxWidget", u"Use Realization currency rate for Acquisition (one currency rate for all)", None))
 #if QT_CONFIG(tooltip)
         self.AccountWidget.setToolTip(QCoreApplication.translate("TaxWidget", u"Foreign account to prepare tax report for", None))
 #endif // QT_CONFIG(tooltip)

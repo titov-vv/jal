@@ -5468,22 +5468,22 @@ Please select an account for import:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="58"/>
+        <location filename="../data_export/taxes.py" line="59"/>
         <source>No report template found for section: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="71"/>
+        <location filename="../data_export/taxes.py" line="72"/>
         <source>Can&apos;t load tax report parameters from file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="74"/>
+        <location filename="../data_export/taxes.py" line="75"/>
         <source>There are no parameters found for tax report year: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="105"/>
+        <location filename="../data_export/taxes.py" line="108"/>
         <source>There are no information about tax treaty in tax report parameters</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5496,32 +5496,27 @@ Please select an account for import:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="265"/>
+        <location filename="../ui/tax_export_widget.ui" line="268"/>
         <source>Year:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="117"/>
-        <source>Use Sell currency rate for Buy and Sell operations</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/tax_export_widget.ui" line="134"/>
+        <location filename="../ui/tax_export_widget.ui" line="137"/>
         <source>Account:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="127"/>
+        <location filename="../ui/tax_export_widget.ui" line="130"/>
         <source>Foreign account to prepare tax report for</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="178"/>
+        <location filename="../ui/tax_export_widget.ui" line="181"/>
         <source>Create tax form in &quot;Декларация&quot; program format (*.dcX)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="141"/>
+        <location filename="../ui/tax_export_widget.ui" line="144"/>
         <source>Excel file:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5531,13 +5526,13 @@ Please select an account for import:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="272"/>
+        <location filename="../ui/tax_export_widget.ui" line="275"/>
         <source>Save Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="47"/>
-        <location filename="../ui/tax_export_widget.ui" line="239"/>
+        <location filename="../ui/tax_export_widget.ui" line="242"/>
         <source>Select file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5547,12 +5542,12 @@ Please select an account for import:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="258"/>
+        <location filename="../ui/tax_export_widget.ui" line="261"/>
         <source>Country:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="232"/>
+        <location filename="../ui/tax_export_widget.ui" line="235"/>
         <source>File where to store russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5562,27 +5557,32 @@ Please select an account for import:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="148"/>
+        <location filename="../ui/tax_export_widget.ui" line="117"/>
+        <source>Use Realization currency rate for Acquisition (one currency rate for all)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="151"/>
         <source>Additional parameters (Russia)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="208"/>
+        <location filename="../ui/tax_export_widget.ui" line="211"/>
         <source>Output file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="225"/>
+        <location filename="../ui/tax_export_widget.ui" line="228"/>
         <source>Update only information about dividends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="242"/>
+        <location filename="../ui/tax_export_widget.ui" line="245"/>
         <source> ... </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="215"/>
+        <location filename="../ui/tax_export_widget.ui" line="218"/>
         <source>Use broker name as income source</source>
         <translation type="unfinished"></translation>
     </message>

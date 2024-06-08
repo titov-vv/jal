@@ -114,7 +114,10 @@
       <item>
        <widget class="QCheckBox" name="Pt_OneCurrencyRate">
         <property name="text">
-         <string>Use Sell currency rate for Buy and Sell operations</string>
+         <string>Use Realization currency rate for Acquisition (one currency rate for all)</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
