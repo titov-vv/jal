@@ -1,5 +1,4 @@
 from decimal import Decimal
-from datetime import datetime, timezone
 from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.operations import AssetPayment, CorporateAction
 from jal.data_export.taxes import TaxReport
@@ -49,15 +48,6 @@ class TaxesPortugal(TaxReport):
         self.insert_totals(dividends_report, ["amount", "amount_eur", "tax", "tax_eur"])
         return dividends_report
 
-    def inflation(self, timestamp: int) -> Decimal:
-        year = datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%Y')
-        inflation_coefficients = self._parameters['currency_devaluation']
-        try:
-            coefficient = Decimal(inflation_coefficients[year])
-        except KeyError:
-            coefficient = Decimal('1')
-        return coefficient
-
 # ----------------------------------------------------------------------------------------------------------------------
     def prepare_stocks_and_etf(self):
         deals_report = []
@@ -72,10 +62,6 @@ class TaxesPortugal(TaxReport):
             if trade.qty() >= Decimal('0'):  # Long trade
                 value_realization = round(trade.close_amount(no_settlement=ns), 2)
                 value_acquisition = round(trade.open_amount(no_settlement=ns), 2)
-                inflation = self.inflation(trade.open_operation().settlement())
-                if inflation != Decimal('1'):
-                    value_acquisition = value_acquisition * inflation
-                    note = f"Acquisition inflation coefficient {inflation:.2f} for year {datetime.fromtimestamp(trade.open_operation().settlement(), tz=timezone.utc).strftime('%Y')}\n"
             else:  # Short trade
                 value_realization = round(trade.open_amount(no_settlement=ns), 2)
                 value_acquisition = round(trade.close_amount(no_settlement=ns), 2)
