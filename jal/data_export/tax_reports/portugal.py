@@ -56,18 +56,21 @@ class TaxesPortugal(TaxReport):
         for trade in trades:
             note = ''
             if ns:
-                rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
+                rate_ts = trade.close_operation().timestamp() if self.one_currency_rate else 0
             else:
-                rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
+                rate_ts = trade.close_operation().settlement() if self.one_currency_rate else 0
             if trade.qty() >= Decimal('0'):  # Long trade
                 value_realization = round(trade.close_amount(no_settlement=ns), 2)
-                value_acquisition = round(trade.open_amount(no_settlement=ns), 2)
+                value_realization_eur = round(trade.close_amount(self._currency_id, rate_ts=rate_ts, no_settlement=ns), 2)
+                value_acquisition = round(trade.open_amount(no_settlement=ns), 2) + round(trade.fee(), 2)
+                value_acquisition_eur = round(trade.open_amount(self._currency_id, rate_ts=rate_ts, no_settlement=ns), 2) + round(trade.fee(self._currency_id, rate_ts=rate_ts), 2)
             else:  # Short trade
                 value_realization = round(trade.open_amount(no_settlement=ns), 2)
-                value_acquisition = round(trade.close_amount(no_settlement=ns), 2)
+                value_realization_eur = round(trade.open_amount(self._currency_id, rate_ts=rate_ts, no_settlement=ns), 2)
+                value_acquisition = round(trade.close_amount(no_settlement=ns), 2) + round(trade.fee(), 2)
+                value_acquisition_eur = round(trade.close_amount(self._currency_id, rate_ts=rate_ts, no_settlement=ns), 2) + round(trade.fee(self._currency_id, rate_ts=rate_ts), 2)
             for modifier in trade.modified_by():
                 note = note + modifier.description() + "\n"
-            profit = value_realization - value_acquisition - trade.close_fee() - trade.open_fee()
             line = {
                 'report_template': "trade",
                 'symbol': trade.asset().symbol(self.account_currency.id()),
@@ -79,21 +82,21 @@ class TaxesPortugal(TaxReport):
                 'os_date': trade.open_operation().settlement(),
                 'o_price': trade.open_price(),
                 'o_fee': trade.open_fee(),
-                'o_fee_eur': trade.open_fee() * rate,
-                'o_amount': value_acquisition,
-                'o_amount_eur': value_acquisition * rate,
+                'o_fee_eur': trade.open_fee(self._currency_id, rate_ts=rate_ts),
+                'o_amount': round(trade.open_amount(no_settlement=ns), 2),
+                'o_amount_eur': round(trade.open_amount(self._currency_id, rate_ts=rate_ts, no_settlement=ns), 2),
                 'c_type': "Sell" if trade.qty() >= Decimal('0') else "Buy",
                 'c_number': trade.close_operation().number(),
                 'c_date': trade.close_operation().timestamp(),
                 'cs_date': trade.close_operation().settlement(),
                 'c_price': trade.close_operation().price(),
                 'c_fee': trade.close_fee(),
-                'c_fee_eur': trade.close_fee() * rate,
-                'c_amount': value_realization,
-                'c_amount_eur': value_realization * rate,
-                'profit': round(profit, 2),
-                'profit_eur': round(profit * rate, 2),
-                'rate': rate,
+                'c_fee_eur': trade.close_fee(self._currency_id, rate_ts=rate_ts),
+                'c_amount': round(trade.close_amount(no_settlement=ns), 2),
+                'c_amount_eur': round(trade.close_amount(self._currency_id, rate_ts=rate_ts, no_settlement=ns), 2),
+                'profit': value_realization - value_acquisition,
+                'profit_eur': value_realization_eur - value_acquisition_eur,
+                'rate': self.account_currency.quote(rate_ts, self._currency_id)[1],
                 'note': note
             }
             deals_report.append(line)

@@ -163,44 +163,52 @@ class JalClosedTrade(JalDB):
             return value
 
     # Returns opening amount of the trade (open price x qty)
-    # If currency_id isn't 0 then converts amount into given currency using settlement date rate
-    # If no_settlement is set to True then transaction date is used for conversion
-    # If full==True, then provide full amount of opening trade (without correction due to corporate actions)
-    def open_amount(self, currency_id: int = 0, no_settlement=False, full=False) -> Decimal:
+    # currency_id != 0 - convert amount into given currency (using settlement date rate by default)
+    # rate_ts - defines timestamp of currency rate if not zero
+    # no_settlement - transaction date is used for currency conversion, not settlement date
+    # full==True - provide full amount of opening trade (without correction due to corporate actions)
+    def open_amount(self, currency_id: int = 0, rate_ts: int = 0, no_settlement=False, full=False) -> Decimal:
         cost_basis = Decimal('1') if full else self.cost_basis()
         timestamp = self._open_op.timestamp() if no_settlement else self._open_op.settlement()
+        timestamp = rate_ts if rate_ts else timestamp
         return self.adjusted(cost_basis * self.open_price() * abs(self.open_qty()), currency_id, timestamp)
 
     # Returns closing amount of the trade (close price x qty)
-    # If currency_id isn't 0 then converts amount into given currency using settlement date rate
-    # If no_settlement is set to True then transaction date is used for conversion
-    def close_amount(self, currency_id: int = 0, no_settlement=False) -> Decimal:
+    # currency_id != 0 - convert amount into given currency (using settlement date rate by default)
+    # rate_ts - defines timestamp of currency rate if not zero
+    # no_settlement - transaction date is used for currency conversion, not settlement date
+    def close_amount(self, currency_id: int = 0, rate_ts: int = 0, no_settlement=False) -> Decimal:
         timestamp = self._close_op.timestamp() if no_settlement else self._close_op.settlement()
+        timestamp = rate_ts if rate_ts else timestamp
         return self.adjusted(self._close_price * abs(self._qty), currency_id, timestamp)
 
     # Fee of opening part of the deal
     # if currency_id isn't 0 then returns fee converted into given currency
     # If full==True, then provide full fee of opening trade (without correction due to corporate actions)
-    def open_fee(self, currency_id: int = 0, full=False) -> Decimal:
+    # rate_ts - defines timestamp of currency rate if not zero
+    def open_fee(self, currency_id: int = 0, rate_ts: int = 0, full: bool = False) -> Decimal:
         cost_basis = Decimal('1') if full else self.cost_basis()
         if self._open_op.type() == jal.db.operations.LedgerTransaction.Trade:
             o_fee = cost_basis * self._open_op.fee() * abs(self._qty / (self._open_op.qty() * self.q_adjustment()))
-            return self.adjusted(o_fee, currency_id, self._open_op.timestamp())
+            timestamp = rate_ts if rate_ts else self._open_op.timestamp()
+            return self.adjusted(o_fee, currency_id, timestamp)
         else:
             return Decimal('0')
 
     # Fee of closing part of the deal
     # if currency_id isn't 0 then returns fee converted into given currency
-    def close_fee(self, currency_id: int = 0) -> Decimal:
+    # rate_ts - defines timestamp of currency rate if not zero
+    def close_fee(self, currency_id: int = 0, rate_ts: int = 0) -> Decimal:
         if self._close_op.type() == jal.db.operations.LedgerTransaction.Trade:
             c_fee = self._close_op.fee() * abs(self._qty / self._close_op.qty())
-            return self.adjusted(c_fee, currency_id, self._close_op.timestamp())
+            timestamp = rate_ts if rate_ts else self._close_op.timestamp()
+            return self.adjusted(c_fee, currency_id, timestamp)
         else:
             return Decimal('0')
 
     # Total fee for the trade
-    def fee(self, currency_id: int = 0) -> Decimal:
-        return self.open_fee(currency_id) + self.close_fee(currency_id)
+    def fee(self, currency_id: int = 0, rate_ts: int = 0) -> Decimal:
+        return self.open_fee(currency_id, rate_ts) + self.close_fee(currency_id, rate_ts)
 
     def profit(self, percent=False) -> Decimal:
         profit = self._qty * self._close_price - self.open_price(adjusted=True) * self.open_qty(adjusted=True) - self.fee()

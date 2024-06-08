@@ -35,6 +35,7 @@ class TaxReport:
         self.year_begin = 0
         self.year_end = 0
         self.use_settlement = True
+        self.one_currency_rate = False
         self._parameters = {}
 
     def tr(self, text):
@@ -94,6 +95,8 @@ class TaxReport:
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         if 'use_settlement' in kwargs:
             self.use_settlement = kwargs['use_settlement']
+        if 'use_one_currency_rate' in kwargs:
+            self.one_currency_rate = kwargs['use_one_currency_rate']
         self.load_parameters(year)
         for report in self.reports:
             tax_report[report] = self.reports[report][REPORT_METHOD]()
