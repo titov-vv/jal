@@ -437,7 +437,7 @@ class QuoteDownloader(QObject):
         if quotes_text[2] != asset.isin():
             logging.warning(self.tr("Euronext quotes ISIN mismatch in: ") + quotes)
             return None
-        quotes_text = [x.lstrip("'") for x in quotes_text]   # Some lines have occasional quote at first position
+        quotes_text = [x.replace("'", "") for x in quotes_text]   # Some lines have occasional quote in some places
         quotes = "\n".join(quotes_text)
         file = StringIO(quotes)
         try:
