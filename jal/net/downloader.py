@@ -101,7 +101,7 @@ class QuoteDownloader(QObject):
             data.dropna(inplace=True)
             quotations = []
             for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
-                quotations.append({'timestamp': int(date.timestamp()), 'quote': quote[0]})
+                quotations.append({'timestamp': int(date.timestamp()), 'quote': quote['Close']})
             asset.set_quotes(quotations, currency_id)
 
     def download_currency_rates(self, start_timestamp, end_timestamp):
