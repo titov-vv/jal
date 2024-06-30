@@ -44,7 +44,9 @@ class TransferWidget(AbstractOperationDetails):
         self.mapper.setItemDelegate(TransferWidgetDelegate(self.mapper))
 
         self.ui.from_account_widget.changed.connect(self.mapper.submit)
+        self.ui.from_account_widget.changed.connect(self.account_changed)
         self.ui.to_account_widget.changed.connect(self.mapper.submit)
+        self.ui.to_account_widget.changed.connect(self.account_changed)
         self.ui.fee_account_widget.changed.connect(self.mapper.submit)
         self.ui.asset_widget.changed.connect(self.mapper.submit)
         self.mapper.currentIndexChanged.connect(self.record_changed)
@@ -153,6 +155,7 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.value_label.setVisible(visible)
         self.ui.copy_amount_btn.setVisible(not visible)
         self.ui.from_currency.setVisible(not visible)
+        self.account_changed()   # Display right combination of visible widget
 
     @Slot()
     def asset_toggled(self, _state):
@@ -161,3 +164,15 @@ class TransferWidget(AbstractOperationDetails):
         if not asset_transfer:
             self.ui.asset_widget.selected_id = 0
         self.mapper.submit()
+
+    @Slot()
+    # Method shows/hides asset data that is relevant to current to/from account combination
+    def account_changed(self):
+        if self.ui.asset_check.isChecked():
+            visible = not JalAccount(self.ui.from_account_widget.selected_id).currency() == JalAccount(self.ui.to_account_widget.selected_id).currency()
+            self.ui.value_label.setVisible(visible)
+            self.ui.to_currency.setVisible(visible)
+            self.ui.deposit.setVisible(visible)
+        else:
+            self.ui.to_currency.setVisible(True)
+            self.ui.deposit.setVisible(True)
