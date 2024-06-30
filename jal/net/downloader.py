@@ -186,13 +186,13 @@ class QuoteDownloader(QObject):
             s_date = node.attrib['Date'] if node is not None else None
             s_val = node.find("Value").text if node is not None else None
             s_multiplier = node.find("Nominal").text if node is not None else 1
-            rows.append({"Date": s_date, "Rate": s_val, "Multiplier": s_multiplier})
-        data = pd.DataFrame(rows, columns=["Date", "Rate", "Multiplier"])
+            rows.append({"Date": s_date, "Close": s_val, "Multiplier": s_multiplier})
+        data = pd.DataFrame(rows, columns=["Date", "Close", "Multiplier"])
         data['Date'] = pd.to_datetime(data['Date'], format="%d.%m.%Y", utc=True)
-        data['Rate'] = [x.replace(',', '.') for x in data['Rate']]
-        data['Rate'] = data['Rate'].apply(Decimal)
+        data['Close'] = [x.replace(',', '.') for x in data['Close']]
+        data['Close'] = data['Close'].apply(Decimal)
         data['Multiplier'] = data['Multiplier'].apply(Decimal)
-        data['Rate'] = data['Rate'] / data['Multiplier']
+        data['Close'] = data['Close'] / data['Multiplier']
         data.drop('Multiplier', axis=1, inplace=True)
         rates = data.set_index("Date")
         return rates
@@ -200,18 +200,18 @@ class QuoteDownloader(QObject):
     def ECB_DataReader(self, currency, start_timestamp, end_timestamp):
         date1 = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
         date2 = datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
-        url = f"https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.{currency.symbol()}.EUR.SP00.A?startPeriod={date1}&endPeriod={date2}"
+        url = f"https://data-api.ecb.europa.eu/service/data/EXR/D.{currency.symbol()}.EUR.SP00.A?startPeriod={date1}&endPeriod={date2}"
         file = StringIO(get_web_data(url, headers={'Accept': 'text/csv'}))
         try:
             data = pd.read_csv(file, dtype={'TIME_PERIOD': str, 'OBS_VALUE': str})
         except ParserError:
             return None
-        data.rename(columns={'TIME_PERIOD': 'Date', 'OBS_VALUE': 'Rate'}, inplace=True)
-        data = data[['Date', 'Rate']]  # Keep only required columns
+        data.rename(columns={'TIME_PERIOD': 'Date', 'OBS_VALUE': 'Close'}, inplace=True)
+        data = data[['Date', 'Close']]  # Keep only required columns
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d", utc=True)
-        data['Rate'] = data['Rate'].apply(Decimal)   # Convert from str to Decimal
-        data['Rate'] = Decimal('1') / data['Rate']
-        data['Rate'] = data['Rate'].apply(round, args=(10, ))
+        data['Close'] = data['Close'].apply(Decimal)   # Convert from str to Decimal
+        data['Close'] = Decimal('1') / data['Close']
+        data['Close'] = data['Close'].apply(round, args=(10, ))
         rates = data.set_index("Date")
         return rates
 
