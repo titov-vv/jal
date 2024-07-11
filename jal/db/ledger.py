@@ -119,9 +119,11 @@ class Ledger(QObject, JalDB):
     # collected from 'ledger' table with given WHERE statement set as condition and parameters
     def _get_operations_by_filter(cls, condition, parameters) -> list:
         operations = []
+        parameters += [(":deposit", LedgerTransaction.TermDeposit)]
         query = cls._exec(
-            f"SELECT DISTINCT otype, oid AS id, timestamp, account_id, 0 AS subtype FROM ledger "
-            f"{condition} ORDER BY timestamp", parameters, forward_only=True)
+            f"SELECT DISTINCT otype, oid, l.timestamp, account_id, coalesce(a.id, 0) AS subtype FROM ledger AS l "
+            f"LEFT JOIN deposit_actions AS a ON l.oid=a.deposit_id AND l.otype=:deposit AND l.timestamp=a.timestamp "
+            f"{condition} ORDER BY l.timestamp", parameters, forward_only=True)
         while query.next():
             operations.append(cls._read_record(query, named=True))
         return operations
@@ -129,21 +131,21 @@ class Ledger(QObject, JalDB):
     @classmethod
     # Return a list of [otype, oid, timestamp, account_id, subtype] of operations that have peer_id involved
     def get_operations_by_peer(cls, begin: int, end: int, peer_id: int) -> list:
-        condition = "WHERE peer_id=:peer AND timestamp>=:begin AND timestamp<=:end"
+        condition = "WHERE peer_id=:peer AND l.timestamp>=:begin AND l.timestamp<=:end"
         parameters = [(":begin", begin), (":end", end), (":peer", peer_id)]
         return cls._get_operations_by_filter(condition, parameters)
 
     @classmethod
     # Return a list of [otype, oid, timestamp, account_id, subtype] of operations that have category_id involved
     def get_operations_by_category(cls, begin: int, end: int, category_id: int) -> list:
-        condition = "WHERE category_id=:category AND timestamp>=:begin AND timestamp<=:end"
+        condition = "WHERE category_id=:category AND l.timestamp>=:begin AND l.timestamp<=:end"
         parameters = [(":begin", begin), (":end", end), (":category", category_id)]
         return cls._get_operations_by_filter(condition, parameters)
 
     @classmethod
     # Return a list of [otype, oid, timestamp, account_id, subtype] of operations that have tag_id involved
     def get_operations_by_tag(cls, begin: int, end: int, tag_id: int) -> list:
-        condition = "WHERE tag_id=:tag AND timestamp>=:begin AND timestamp<=:end"
+        condition = "WHERE tag_id=:tag AND l.timestamp>=:begin AND l.timestamp<=:end"
         parameters = [(":begin", begin), (":end", end), (":tag", tag_id)]
         return cls._get_operations_by_filter(condition, parameters)
 
