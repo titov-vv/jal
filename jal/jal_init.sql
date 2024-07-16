@@ -161,21 +161,20 @@ CREATE TABLE asset_payments (
     note       TEXT
 );
 
-
--- Table: languages
 DROP TABLE IF EXISTS languages;
 CREATE TABLE languages (
     id       INTEGER  PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
     language CHAR (2) UNIQUE NOT NULL
 );
 
--- Table: ledger
+-- This is the main table that keeps all double-record accounting
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
-    id           INTEGER PRIMARY KEY NOT NULL UNIQUE,
-    timestamp    INTEGER NOT NULL,
+    id           INTEGER PRIMARY KEY NOT NULL UNIQUE,  -- Unique row id for indexing
+    timestamp    INTEGER NOT NULL,   -- Timestamp of this operation
     otype        INTEGER NOT NULL,   -- Operation type that recorded transaction
     oid          INTEGER NOT NULL,   -- Operation ID that recorded transaction
+    opart        INTEGER NOT NULL,   -- Identifies a part of operation that is responsible for this exact line
     book_account INTEGER NOT NULL,
     asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE SET NULL,
     account_id   INTEGER NOT NULL REFERENCES accounts (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -608,7 +607,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 56);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 57);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

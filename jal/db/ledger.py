@@ -150,10 +150,15 @@ class Ledger(QObject, JalDB):
         return cls._get_operations_by_filter(condition, parameters)
 
     # Add one more transaction to 'book' of ledger.
+    # Parameters:
+    # operation - ledger operation that is being processed
+    # book - ledger accounting book that is being modified by operation
+    # amount - money or asset amount that is being processed
+    # part - identifier of operation part, specific for each operation type and may have different meaning (0 is default value)
     # If book is Assets and value is not None then amount contains Asset Quantity and Value contains amount
     #    of money in current account currency. Otherwise, Amount contains only money value.
     # Returns non-zero value if accumulated_value differs from 0.0 when accumulated account is 0.0
-    def appendTransaction(self, operation, book, amount, asset_id=None, value=None, category=None, peer=None, tag=None) -> Decimal:
+    def appendTransaction(self, operation, book, amount, part=0, asset_id=None, value=None, category=None, peer=None, tag=None) -> Decimal:
         rounding_error = Decimal('0')
         if book == BookAccount.Assets and asset_id is None:
             raise ValueError(self.tr("No asset defined for: ") + f"{operation.dump()}")
@@ -177,12 +182,12 @@ class Ledger(QObject, JalDB):
                 (self.values[(book, operation.account_id(), asset_id)] != Decimal('0')):
             rounding_error = Decimal('0') - self.values[(book, operation.account_id(), asset_id)]
             self.values[(book, operation.account_id(), asset_id)] += rounding_error
-        _ = self._exec("INSERT INTO ledger (timestamp, otype, oid, book_account, asset_id, "
+        _ = self._exec("INSERT INTO ledger (timestamp, otype, oid, opart, book_account, asset_id, "
                        "account_id, amount, value, amount_acc, value_acc, peer_id, category_id, tag_id) "
-                       "VALUES(:timestamp, :otype, :oid, :book, :asset_id, :account_id, "
+                       "VALUES(:timestamp, :otype, :oid, :opart, :book, :asset_id, :account_id, "
                        ":amount, :value, :amount_acc, :value_acc, :peer_id, :category_id, :tag_id)",
                        [(":timestamp", operation.timestamp()), (":otype", operation.type()),
-                        (":oid", operation.oid()), (":book", book), (":asset_id", asset_id),
+                        (":oid", operation.oid()), (":opart", part), (":book", book), (":asset_id", asset_id),
                         (":account_id", operation.account_id()),
                         (":amount", format_decimal(amount)), (":value", format_decimal(value)),
                         (":amount_acc", format_decimal(self.amounts[(book, operation.account_id(), asset_id)])),
