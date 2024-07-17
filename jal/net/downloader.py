@@ -18,7 +18,7 @@ from jal.db.asset import JalAsset
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
 from jal.widgets.helpers import dependency_present
 try:
-    from pypdf import PdfReader
+    from pypdf import PdfReader, PdfStreamError
 except ImportError:
     pass  # PDF files won't be downloaded without dependency
 
@@ -499,7 +499,11 @@ class QuoteDownloader(QObject):
         pdf_data = get_web_data(url, binary=True, verify='victoria-seguros.pem')
         if not pdf_data:
             return None
-        pdf = PdfReader(BytesIO(pdf_data))
+        try:
+            pdf = PdfReader(BytesIO(pdf_data))
+        except PdfStreamError:
+            logging.error(self.tr("Can't parse server response as pdf: ") + pdf_data)
+            return None
         if len(pdf.pages) != 1:
             logging.warning(self.tr("Unexpected number of pages in Victoria Seguros document: ") + len(pdf.pages))
             return None
