@@ -298,7 +298,7 @@ class IncomeSpending(LedgerTransaction):
         self._peer_id = self._data['peer_id']
         self._peer = self._data['peer']
         self._currency = self._data['currency']
-        details_query = self._exec("SELECT d.category_id, c.name AS category, d.tag_id, t.tag, "
+        details_query = self._exec("SELECT d.id, d.category_id, c.name AS category, d.tag_id, t.tag, "
                                    "d.amount, d.amount_alt, d.note FROM action_details AS d "
                                    "LEFT JOIN categories AS c ON c.id=d.category_id "
                                    "LEFT JOIN tags AS t ON t.id=d.tag_id "
@@ -381,7 +381,7 @@ class IncomeSpending(LedgerTransaction):
                 ledger.appendTransaction(self, BookAccount.Money, self._amount - credit_returned)
         for detail in self._details:
             book = BookAccount.Costs if Decimal(detail['amount']) < Decimal('0') else BookAccount.Incomes
-            ledger.appendTransaction(self, book, -Decimal(detail['amount']),
+            ledger.appendTransaction(self, book, -Decimal(detail['amount']), part=detail['id'],
                                      category=detail['category_id'], peer=self._peer_id, tag=detail['tag_id'])
 
 
@@ -1321,10 +1321,10 @@ class TermDeposit(LedgerTransaction):
         elif self._action == DepositActions.TaxWithheld:
             ledger.appendTransaction(self, BookAccount.Savings, -self._amount)
             ledger.appendTransaction(self, BookAccount.Costs, self._amount,
-                                     category=PredefinedCategory.Taxes, peer=self._bank)
+                                     category=PredefinedCategory.Taxes, peer=self._bank, part=self._aid)
         elif self._action == DepositActions.InterestAccrued:
             ledger.appendTransaction(self, BookAccount.Savings, self._amount)
             ledger.appendTransaction(self, BookAccount.Incomes, -self._amount,
-                                     category=PredefinedCategory.Interest, peer=self._bank)
+                                     category=PredefinedCategory.Interest, peer=self._bank, part=self._aid)
         else:
             assert False, "Not implemented deposit action"
