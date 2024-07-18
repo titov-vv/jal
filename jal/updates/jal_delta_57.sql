@@ -22,6 +22,14 @@ CREATE TABLE ledger (
 );
 
 --------------------------------------------------------------------------------
+-- Error correction in trigger definition
+DROP TRIGGER IF EXISTS deposit_action_after_update;
+CREATE TRIGGER deposit_action_after_update AFTER UPDATE OF timestamp, action_type, amount ON deposit_actions FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;
+
+--------------------------------------------------------------------------------
 -- Modify view
 DROP VIEW IF EXISTS operation_sequence;
 CREATE VIEW operation_sequence AS SELECT m.otype, m.oid, opart, m.timestamp, m.account_id

@@ -586,7 +586,7 @@ BEGIN
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS deposit_action_after_update;
-CREATE TRIGGER deposit_action_after_update AFTER UPDATE OF timestamp, account_id, type, asset_id, qty ON deposit_actions FOR EACH ROW
+CREATE TRIGGER deposit_action_after_update AFTER UPDATE OF timestamp, action_type, amount ON deposit_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
