@@ -60,7 +60,7 @@ class OperationsModel(QAbstractTableModel):
         try:
             operation = LedgerTransaction().get_operation(self._data[row]['otype'],
                                                           self._data[row]['oid'],
-                                                          self._data[row]['subtype'])
+                                                          self._data[row]['opart'])
         except IndexError as e:
             if str(e) == LedgerTransaction.NoOpException:
                 return None
@@ -165,14 +165,14 @@ class OperationsModel(QAbstractTableModel):
         for row in rows:
             if (row >= 0) and (row < len(self._data)):
                 LedgerTransaction.get_operation(self._data[row]['otype'], self._data[row]['oid'],
-                                                display_type=self._data[row]['subtype']).delete()
+                                                self._data[row]['opart']).delete()
         self.prepareData()
 
     def assign_tag_to_rows(self, rows, tag_id):
         for row in rows:
             if (row >= 0) and (row < len(self._data)):
                 LedgerTransaction.get_operation(self._data[row]['otype'], self._data[row]['oid'],
-                                                display_type=self._data[row]['subtype']).assign_tag(tag_id)
+                                                self._data[row]['opart']).assign_tag(tag_id)
         self.prepareData()
 
 

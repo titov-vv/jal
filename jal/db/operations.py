@@ -64,7 +64,7 @@ class LedgerTransaction(JalDB):
         return str(self._data)
 
     @staticmethod
-    def get_operation(operation_type, oid, display_type=None):
+    def get_operation(operation_type, oid, opart=0):
         if operation_type == LedgerTransaction.IncomeSpending:
             return IncomeSpending(oid)
         elif operation_type == LedgerTransaction.AssetPayment:
@@ -72,11 +72,11 @@ class LedgerTransaction(JalDB):
         elif operation_type == LedgerTransaction.Trade:
             return Trade(oid)
         elif operation_type == LedgerTransaction.Transfer:
-            return Transfer(oid, display_type)
+            return Transfer(oid, opart)
         elif operation_type == LedgerTransaction.CorporateAction:
             return CorporateAction(oid)
         elif operation_type == LedgerTransaction.TermDeposit:
-            return TermDeposit(oid, display_type)
+            return TermDeposit(oid, opart)
         else:
             raise ValueError(f"An attempt to select unknown operation type: {operation_type}")
 
@@ -783,8 +783,8 @@ class Transfer(LedgerTransaction):
         "note": {"mandatory": False, "validation": False}
     }
 
-    def __init__(self, oid=None, display_type=None):
-        assert display_type in [Transfer.Outgoing, Transfer.Incoming, Transfer.Fee], "Unknown transfer type"
+    def __init__(self, oid=None, opart=0):
+        assert opart in [Transfer.Outgoing, Transfer.Incoming, Transfer.Fee], "Unknown transfer type"
         icons = {
             (Transfer.Outgoing, True): JalIcon.TRANSFER_OUT,
             (Transfer.Incoming, True): JalIcon.TRANSFER_IN,
@@ -803,7 +803,7 @@ class Transfer(LedgerTransaction):
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.Transfer
-        self._display_type = display_type
+        self._opart = opart
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
                                 "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, "
                                 "t.number, t.note FROM transfers AS t WHERE t.oid=:oid",
@@ -826,17 +826,17 @@ class Transfer(LedgerTransaction):
         self._number = self._data['number']
         self._account = self._withdrawal_account
         self._note = self._data['note']
-        self._icon = JalIcon[icons[(display_type, self._asset.id() == 0)]]
-        self._oname = self.names[(display_type, self._asset.id() == 0)]
-        if self._display_type == Transfer.Outgoing:
+        self._icon = JalIcon[icons[(opart, self._asset.id() == 0)]]
+        self._oname = self.names[(opart, self._asset.id() == 0)]
+        if self._opart == Transfer.Outgoing:
             self._reconciled = self._withdrawal_account.reconciled_at() >= self._withdrawal_timestamp
-        if self._display_type == Transfer.Incoming:
+        if self._opart == Transfer.Incoming:
             self._reconciled = self._deposit_account.reconciled_at() >= self._deposit_timestamp
-        if self._display_type == Transfer.Fee:
+        if self._opart == Transfer.Fee:
             self._reconciled = self._fee_account.reconciled_at() >= self._withdrawal_timestamp
 
     def timestamp(self):
-        if self._display_type == Transfer.Incoming:
+        if self._opart == Transfer.Incoming:
             return self._deposit_timestamp
         else:
             return self._withdrawal_timestamp
@@ -846,28 +846,28 @@ class Transfer(LedgerTransaction):
         return self._deposit_timestamp
 
     def account_name(self):
-        if self._display_type == Transfer.Fee:
+        if self._opart == Transfer.Fee:
             return self._fee_account_name
-        elif self._display_type == Transfer.Outgoing:
+        elif self._opart == Transfer.Outgoing:
             return self._withdrawal_account_name + " -> " + self._deposit_account_name
-        elif self._display_type == Transfer.Incoming:
+        elif self._opart == Transfer.Incoming:
             return self._deposit_account_name + " <- " + self._withdrawal_account_name
         else:
             assert False, "Unknown transfer type"
 
     def account_id(self):
-        if self._display_type == Transfer.Fee:
+        if self._opart == Transfer.Fee:
             return self._fee_account.id()
-        elif self._display_type == Transfer.Outgoing:
+        elif self._opart == Transfer.Outgoing:
             return self._withdrawal_account.id()
-        elif self._display_type == Transfer.Incoming:
+        elif self._opart == Transfer.Incoming:
             return self._deposit_account.id()
         else:
             assert False, "Unknown transfer type"
 
     def description(self) -> str:
         if self._asset.id():
-            if self._display_type == Transfer.Incoming and self._withdrawal_currency != self._deposit_currency:
+            if self._opart == Transfer.Incoming and self._withdrawal_currency != self._deposit_currency:
                 return self._note + " [" + self.tr("Cost basis:") + f" @{self._deposit:.2f} {self._deposit_currency}]"
         else:
             try:
@@ -890,60 +890,60 @@ class Transfer(LedgerTransaction):
         return None
 
     def value_change(self) -> list:
-        if self._display_type == Transfer.Outgoing:
+        if self._opart == Transfer.Outgoing:
             return [-self._withdrawal]
-        elif self._display_type == Transfer.Incoming:
+        elif self._opart == Transfer.Incoming:
             if self._asset.id():
                 return [self._withdrawal]  # amount of asset doesn't change and self._deposit contains a cost basis
             else:
                 return [self._deposit]
-        elif self._display_type == Transfer.Fee:
+        elif self._opart == Transfer.Fee:
             return [-self._fee]
         else:
             assert False, "Unknown transfer type"
 
     def value_currency(self) -> str:
-        if self._display_type == Transfer.Outgoing:
+        if self._opart == Transfer.Outgoing:
             if self._asset.id():
                 return self._asset.symbol(self._withdrawal_account.currency())
             else:
                 return self._withdrawal_currency
-        elif self._display_type == Transfer.Incoming:
+        elif self._opart == Transfer.Incoming:
             if self._asset.id():
                 return self._asset.symbol(self._deposit_account.currency())
             else:
                 return self._deposit_currency
-        elif self._display_type == Transfer.Fee:
+        elif self._opart == Transfer.Fee:
             return self._fee_currency
         else:
             assert False, "Unknown transfer type"
 
     def value_total(self) -> list:
-        if self._display_type == Transfer.Outgoing:
+        if self._opart == Transfer.Outgoing:
             if self._asset.id():
                 amount = self._asset_total(self._withdrawal_account.id(), self._asset.id())
             else:
                 amount = self._money_total(self._withdrawal_account.id())
-        elif self._display_type == Transfer.Incoming:
+        elif self._opart == Transfer.Incoming:
             if self._asset.id():
                 amount = self._asset_total(self._deposit_account.id(), self._asset.id())
             else:
                 amount = self._money_total(self._deposit_account.id())
-        elif self._display_type == Transfer.Fee:
+        elif self._opart == Transfer.Fee:
             amount = self._money_total(self._fee_account.id())
         else:
             assert False, "Unknown transfer type"
         return [amount]
 
     def processLedger(self, ledger):
-        if self._display_type == Transfer.Outgoing:
+        if self._opart == Transfer.Outgoing:
             if self._asset.id():
                 self.processAssetTransfer(ledger)
             else:
                 credit_taken = ledger.takeCredit(self, self._withdrawal_account.id(), self._withdrawal)
                 ledger.appendTransaction(self, BookAccount.Money, -(self._withdrawal - credit_taken))
                 ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal)
-        elif self._display_type == Transfer.Fee:
+        elif self._opart == Transfer.Fee:
             if not self._fee_account.organization():
                 raise LedgerError(self.tr("Can't collect fee from the account '{}' ({}) as organization isn't set for it. Date: {}").format(
                     self._fee_account.name(), self._fee_account.number(), ts2dt(self._withdrawal_timestamp)))
@@ -951,7 +951,7 @@ class Transfer(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Money, -(self._fee - credit_taken))
             ledger.appendTransaction(self, BookAccount.Costs, self._fee,
                                      category=PredefinedCategory.Fees, peer=self._fee_account.organization())
-        elif self._display_type == Transfer.Incoming:
+        elif self._opart == Transfer.Incoming:
             if self._asset.id():
                 self.processAssetTransfer(ledger)
             else:
@@ -964,7 +964,7 @@ class Transfer(LedgerTransaction):
 
     def processAssetTransfer(self, ledger):
         transfer_amount = self._withdrawal
-        if self._display_type == Transfer.Outgoing:   # Withdraw asset from source account
+        if self._opart == Transfer.Outgoing:   # Withdraw asset from source account
             asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account.id(), self._asset.id())
             if asset_amount < transfer_amount:
                 raise LedgerError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
@@ -977,7 +977,7 @@ class Transfer(LedgerTransaction):
                                   + f"Required: {transfer_amount}, Operation: {self.dump()}")
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
             ledger.appendTransaction(self, BookAccount.Transfers, transfer_amount, asset_id=self._asset.id(), value=processed_value)
-        elif self._display_type == Transfer.Incoming:
+        elif self._opart == Transfer.Incoming:
             transfer_trades = self._deals_closed_by_operation()
             # get initial value of withdrawn asset
             value = self._read("SELECT value FROM ledger "
@@ -1231,7 +1231,7 @@ class TermDeposit(LedgerTransaction):
         }
     }
 
-    def __init__(self, oid=None, display_type=None):
+    def __init__(self, oid=None, opart=0):
         icons = {
             DepositActions.Opening: JalIcon.DEPOSIT_OPEN,
             DepositActions.TopUp: JalIcon.DEPOSIT_OPEN,
@@ -1243,7 +1243,7 @@ class TermDeposit(LedgerTransaction):
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.TermDeposit
-        self._aid = display_type   # action id
+        self._aid = opart   # action id
         self._data = self._read("SELECT da.timestamp, td.account_id, da.action_type, da.amount, td.note "
                                 "FROM term_deposits td LEFT JOIN deposit_actions da ON td.oid=da.deposit_id "
                                 "WHERE td.oid=:oid AND da.id=:aid",

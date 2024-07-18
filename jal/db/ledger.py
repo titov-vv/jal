@@ -103,7 +103,7 @@ class Ledger(QObject, JalDB):
     @classmethod
     def get_operations_sequence(cls, begin: int, end: int, account_id: int = 0) -> list:
         sequence = []
-        query_text = "SELECT otype, oid, timestamp, account_id, subtype " \
+        query_text = "SELECT otype, oid, opart, timestamp, account_id " \
                      "FROM operation_sequence WHERE timestamp>=:begin AND timestamp<=:end"
         params = [(":begin", begin), (":end", end)]
         if account_id:
@@ -257,12 +257,12 @@ class Ledger(QObject, JalDB):
         _ = self._exec("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = self._exec("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
         try:
-            query = self._exec("SELECT otype, oid, timestamp, account_id, subtype FROM operation_sequence "
+            query = self._exec("SELECT otype, oid, opart, timestamp, account_id FROM operation_sequence "
                                "WHERE timestamp >= :frontier", [(":frontier", frontier)])
             while query.next():
                 data = self._read_record(query, named=True)
                 last_timestamp = data['timestamp']
-                operation = LedgerTransaction().get_operation(data['otype'], data['oid'], data['subtype'])
+                operation = LedgerTransaction().get_operation(data['otype'], data['oid'], data['opart'])
                 operation.processLedger(self)
                 if self.progress_bar is not None:
                     self.progress_bar.setValue(query.at())

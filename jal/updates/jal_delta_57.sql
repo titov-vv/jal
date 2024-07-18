@@ -20,6 +20,30 @@ CREATE TABLE ledger (
     category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
+
+--------------------------------------------------------------------------------
+-- Modify view
+DROP VIEW IF EXISTS operation_sequence;
+CREATE VIEW operation_sequence AS SELECT m.otype, m.oid, opart, m.timestamp, m.account_id
+FROM
+(
+    SELECT otype, 1 AS seq, oid, 0 AS opart, timestamp, account_id FROM actions
+    UNION ALL
+    SELECT otype, 2 AS seq, oid, 0 AS opart, timestamp, account_id FROM asset_payments
+    UNION ALL
+    SELECT otype, 3 AS seq, oid, 0 AS opart, timestamp, account_id FROM asset_actions
+    UNION ALL
+    SELECT otype, 4 AS seq, oid, 0 AS opart, timestamp, account_id FROM trades
+    UNION ALL
+    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers
+    UNION ALL
+    SELECT otype, 5 AS seq, oid, 0 AS opart, withdrawal_timestamp AS timestamp, fee_account AS account_id FROM transfers WHERE NOT fee IS NULL
+    UNION ALL
+    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers
+    UNION ALL
+    SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
+) AS m
+ORDER BY m.timestamp, m.seq, m.opart, m.oid;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------
