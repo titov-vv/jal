@@ -28,7 +28,7 @@ def main():
     app.installTranslator(translator)
 
     if error.code == JalDBError.OutdatedDbSchema:
-        error = JalDB().update_db_schema()
+        error = JalDB().update_db_schema()   # this call isn't a part of JalDB.init_db() intentionally - to provide translation of UI message
 
     if error.code != JalDBError.NoError:
         window = QMessageBox()

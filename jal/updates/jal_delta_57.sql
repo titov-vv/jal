@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
-PRAGMA foreign_keys = 0;
+PRAGMA foreign_keys = OFF;
 --------------------------------------------------------------------------------
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
@@ -52,8 +52,6 @@ FROM
     SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
 ) AS m
 ORDER BY m.timestamp, m.seq, m.opart, m.oid;
---------------------------------------------------------------------------------
-PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=57 WHERE name='SchemaVersion';

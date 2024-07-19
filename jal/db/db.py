@@ -151,10 +151,9 @@ class JalDB:
             return JalDBError(JalDBError.NewerDbSchema,
                               details=f"(expected: {Setup.DB_REQUIRED_VERSION}, got: {schema_version})")
         # Switching of synchronous speeds up execution 6-7 times and is safe for application crash.
-        # Database may be corrupted in case of power loss of OS crash.
+        # Database may be corrupted in case of power loss or OS crash.
         self.set_synchronous(False)
         self.enable_fk(True)
-
         return JalDBError(JalDBError.NoError)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -327,6 +326,8 @@ class JalDB:
             if error.code != JalDBError.NoError:
                 db.close()
                 return error
+        self.set_synchronous(False)
+        self.enable_fk(True)
         return JalDBError(JalDBError.NoError)
 
     def commit(self):
