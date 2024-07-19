@@ -2,6 +2,56 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = OFF;
 --------------------------------------------------------------------------------
+-- Insert root elements for tree-structure supported by foreign key
+INSERT INTO agents (id, pid, name) VALUES (0, 0, '<ROOT>');
+INSERT INTO categories (id, pid, name, often) VALUES (0, 0, '<ROOT>', 0);
+INSERT INTO tags (id, pid, tag) VALUES (0, 0, '<ROOT>');
+--------------------------------------------------------------------------------
+-- Introduce foreign keys into tables that have data structured as a tree
+-- Fix any possible problems with NULL
+UPDATE agents SET location='' WHERE location IS NULL;
+UPDATE tags SET icon_file='' WHERE icon_file IS NULL;
+-- Update Agents table
+DROP TABLE IF EXISTS temp_agents;
+CREATE TABLE temp_agents AS SELECT * FROM agents;
+DROP TABLE agents;
+CREATE TABLE agents (
+    id       INTEGER    PRIMARY KEY UNIQUE NOT NULL,
+    pid      INTEGER    NOT NULL DEFAULT (0) REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    name     TEXT (64)  UNIQUE NOT NULL,
+    location TEXT (128) NOT NULL DEFAULT ('')
+);
+INSERT INTO agents (id, pid, name, location) SELECT id, pid, name, location FROM temp_agents;
+DROP TABLE temp_agents;
+-- Update Categories table
+DROP TABLE IF EXISTS temp_categories;
+CREATE TABLE temp_categories AS SELECT * FROM categories;
+DROP TABLE categories;
+CREATE TABLE categories (
+    id      INTEGER   PRIMARY KEY UNIQUE NOT NULL,
+    pid     INTEGER   NOT NULL DEFAULT (0) REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    name    TEXT (64) UNIQUE NOT NULL
+);
+INSERT INTO categories (id, pid, name) SELECT id, pid, name FROM temp_categories;
+DROP TABLE temp_categories;
+-- Update Tags table
+DROP TABLE IF EXISTS temp_tags;
+CREATE TABLE temp_tags AS SELECT * FROM tags;
+DROP TABLE tags;
+CREATE TABLE tags (
+    id         INTEGER   PRIMARY KEY UNIQUE NOT NULL,
+    pid        INTEGER   NOT NULL DEFAULT (0) REFERENCES tags (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    tag        TEXT (64) NOT NULL UNIQUE,
+    icon_file  TEXT      DEFAULT ('') NOT NULL
+);
+INSERT INTO tags (id, pid, tag, icon_file) SELECT id, pid, tag, icon_file FROM temp_tags;
+DROP TABLE temp_tags;
+-- Restore index
+CREATE INDEX agents_by_name_idx ON agents (name);
+-- Restore triggers
+CREATE TRIGGER keep_predefined_agents BEFORE DELETE ON agents FOR EACH ROW WHEN OLD.id <= 1 BEGIN SELECT RAISE (ABORT, 'JAL_SQL_MSG_0001'); END;
+CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.id <= 9 BEGIN SELECT RAISE (ABORT, 'JAL_SQL_MSG_0002'); END;
+--------------------------------------------------------------------------------
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY NOT NULL UNIQUE,

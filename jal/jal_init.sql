@@ -112,9 +112,9 @@ CREATE UNIQUE INDEX asset_data_uniqueness ON asset_data ( asset_id, datatype);
 DROP TABLE IF EXISTS agents;
 CREATE TABLE agents (
     id       INTEGER    PRIMARY KEY UNIQUE NOT NULL,
-    pid      INTEGER    NOT NULL DEFAULT (0),
+    pid      INTEGER    NOT NULL DEFAULT (0) REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE,
     name     TEXT (64)  UNIQUE NOT NULL,
-    location TEXT (128) 
+    location TEXT (128) NOT NULL DEFAULT ('')
 );
 
 DROP INDEX IF EXISTS agents_by_name_idx;
@@ -124,9 +124,8 @@ CREATE INDEX agents_by_name_idx ON agents (name);
 DROP TABLE IF EXISTS categories;
 CREATE TABLE categories (
     id      INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    pid     INTEGER   NOT NULL DEFAULT (0),
-    name    TEXT (64) UNIQUE NOT NULL,
-    often   INTEGER
+    pid     INTEGER   NOT NULL DEFAULT (0) REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    name    TEXT (64) UNIQUE NOT NULL
 );
 
 -- Create new table with list of countries
@@ -264,9 +263,9 @@ CREATE TABLE settings (
 DROP TABLE IF EXISTS tags;
 CREATE TABLE tags (
     id         INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    pid        INTEGER   NOT NULL DEFAULT (0),
+    pid        INTEGER   NOT NULL DEFAULT (0) REFERENCES tags (id) ON DELETE CASCADE ON UPDATE CASCADE,
     tag        TEXT (64) NOT NULL UNIQUE,
-    icon_file  TEXT DEFAULT ('')
+    icon_file  TEXT      DEFAULT ('') NOT NULL
 );
 
 -- Table to store about corporate actions that transform one asset into another
@@ -645,20 +644,23 @@ INSERT INTO languages (id, language) VALUES (1, 'en');
 INSERT INTO languages (id, language) VALUES (2, 'ru');
 
 -- Initialize predefined peer agents
+INSERT INTO agents (id, pid, name) VALUES (0, 0, '<ROOT>');
 INSERT INTO agents (id, pid, name) VALUES (1, 0, 'None');
 
 -- Initialize predefined categories
-INSERT INTO categories (id, pid, name, often) VALUES (1, 0, 'Income', 0);
-INSERT INTO categories (id, pid, name, often) VALUES (2, 0, 'Spending', 0);
-INSERT INTO categories (id, pid, name, often) VALUES (3, 0, 'Profits', 0);
-INSERT INTO categories (id, pid, name, often) VALUES (4, 1, 'Starting balance', 0);
-INSERT INTO categories (id, pid, name, often) VALUES (5, 2, 'Fees', 0);
-INSERT INTO categories (id, pid, name, often) VALUES (6, 2, 'Taxes', 0);
-INSERT INTO categories (id, pid, name, often) VALUES (7, 3, 'Dividends', 0);
-INSERT INTO categories (id, pid, name, often) VALUES (8, 3, 'Interest', 0);
-INSERT INTO categories (id, pid, name, often) VALUES (9, 3, 'Results of investments', 0);
+INSERT INTO categories (id, pid, name) VALUES (0, 0, '<ROOT>');
+INSERT INTO categories (id, pid, name) VALUES (1, 0, 'Income');
+INSERT INTO categories (id, pid, name) VALUES (2, 0, 'Spending');
+INSERT INTO categories (id, pid, name) VALUES (3, 0, 'Profits');
+INSERT INTO categories (id, pid, name) VALUES (4, 1, 'Starting balance');
+INSERT INTO categories (id, pid, name) VALUES (5, 2, 'Fees');
+INSERT INTO categories (id, pid, name) VALUES (6, 2, 'Taxes');
+INSERT INTO categories (id, pid, name) VALUES (7, 3, 'Dividends');
+INSERT INTO categories (id, pid, name) VALUES (8, 3, 'Interest');
+INSERT INTO categories (id, pid, name) VALUES (9, 3, 'Results of investments');
 
 -- Initialize predefined tags
+INSERT INTO tags (id, pid, tag) VALUES (0, 0, '<ROOT>');
 INSERT INTO tags (id, pid, tag) VALUES (1, 0, 'Account type');
 INSERT INTO tags (id, pid, tag, icon_file) VALUES (2, 1, 'Cash', 'tag_cash.ico');
 INSERT INTO tags (id, pid, tag, icon_file) VALUES (3, 1, 'Bank account', 'tag_bank.ico');

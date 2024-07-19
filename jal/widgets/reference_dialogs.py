@@ -271,8 +271,7 @@ class PeerListDialog(ReferenceDataDialog):
 class CategoryTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
-        self._columns = [("name", self.tr("Name")),
-                         ("often", self.tr("Often"))]
+        self._columns = [("name", self.tr("Name"))]
         self._sort_by = "name"
         self._stretch = "name"
         self._bool_delegate = None
@@ -282,8 +281,6 @@ class CategoryTreeModel(SqlTreeModel):
         super().configureView()
         self._grid_delegate = GridLinesDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
-        self._bool_delegate = BoolDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("often"), self._bool_delegate)
 
 
 class CategoryListDialog(ReferenceDataDialog):
