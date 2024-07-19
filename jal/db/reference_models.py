@@ -353,11 +353,9 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
     def getFieldValue(self, item_id, field_name):
         return self._read(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
-    def deleteWithChilderen(self, parent_id: int) -> None:
-        query = self._exec(f"SELECT id FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
-        while query.next():
-            self.deleteWithChilderen(query.value(0))
-        _ = self._exec(f"DELETE FROM {self._table} WHERE id=:id", [(":id", parent_id)])
+    # deletes element identified by item_id (and all its children due to foreign key reinforcement in database)
+    def delete(self, item_id: int) -> None:
+        _ = self._exec(f"DELETE FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
     def insertRows(self, row, count, parent=None):
         if parent is None:
@@ -393,7 +391,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         query = self._exec(f"SELECT id FROM {self._table} WHERE pid=:pid {order_by} LIMIT :row_c OFFSET :row_n",
                            [(":pid", parent_id), (":row_c", count), (":row_n", row)])
         while query.next():
-            self.deleteWithChilderen(query.value(0))
+            self.delete(query.value(0))
         self.endRemoveRows()
         self.layoutChanged.emit()
         return True
