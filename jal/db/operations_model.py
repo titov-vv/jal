@@ -14,7 +14,10 @@ from jal.widgets.helpers import ts2dt
 def long_fraction(x: Decimal) -> bool:
     if x is None:
         return False
-    if x.is_nan():
+    try:
+        if x.is_nan():
+            return False
+    except AttributeError:
         return False
     return abs(x - round(x, Setup.DEFAULT_ACCOUNT_PRECISION)) > Decimal('0')
 #-----------------------------------------------------------------------------------------------------------------------
@@ -93,7 +96,7 @@ class OperationsModel(QAbstractTableModel):
     def data_text(self, operation, column):
         if column == 0:
             date_time = ts2dt(operation.timestamp())
-            if operation.number()  and operation.type() != LedgerTransaction.Transfer:  # Transfer is 1-liner
+            if operation.number() and operation.type() != LedgerTransaction.Transfer:  # Transfer is 1-liner
                 date_time += f"\n# {operation.number()}"
             return date_time
         elif column == 1:
