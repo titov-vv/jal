@@ -371,7 +371,8 @@ class IncomeSpending(LedgerTransaction):
 
     def processLedger(self, ledger):
         if len(self._details) == 0:
-            raise LedgerError(self.tr("Can't process operation without details") + f"  Operation: {self.dump()}")
+            logging.warning(self.tr("Income/Spending transaction has no details: ") + f" {self.dump()}")
+            return
         if self._amount < Decimal('0'):
             credit_taken = ledger.takeCredit(self, self._account.id(), -self._amount)
             ledger.appendTransaction(self, BookAccount.Money, -(-self._amount - credit_taken))
