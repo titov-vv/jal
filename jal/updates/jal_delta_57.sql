@@ -56,9 +56,9 @@ DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY NOT NULL UNIQUE,
     timestamp    INTEGER NOT NULL,
-    otype        INTEGER NOT NULL,   -- Operation type that recorded transaction
-    oid          INTEGER NOT NULL,   -- Operation ID that recorded transaction
-    opart        INTEGER NOT NULL,   -- Identifies a part of operation that is responsible for this exact line
+    otype        INTEGER NOT NULL,
+    oid          INTEGER NOT NULL,
+    opart        INTEGER NOT NULL,
     book_account INTEGER NOT NULL,
     asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE SET NULL,
     account_id   INTEGER NOT NULL REFERENCES accounts (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -70,9 +70,20 @@ CREATE TABLE ledger (
     category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-
 --------------------------------------------------------------------------------
+-- Actions cleanup if all details were deleted
+DROP TRIGGER IF EXISTS action_details_parent_clean;
+CREATE TRIGGER action_details_parent_clean
+AFTER DELETE ON action_details WHEN (SELECT COUNT(id) FROM action_details WHERE pid = OLD.pid) = 0
+BEGIN
+    DELETE FROM actions WHERE oid = OLD.pid;
+END;
 -- Add new triggers for ledger update after change in reference data
+DROP TRIGGER IF EXISTS categories_after_delete;
+CREATE TRIGGER categories_after_delete AFTER DELETE ON tags FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE category_id=OLD.id);
+END;
 DROP TRIGGER IF EXISTS tags_after_delete;
 CREATE TRIGGER tags_after_delete AFTER DELETE ON tags FOR EACH ROW
 BEGIN

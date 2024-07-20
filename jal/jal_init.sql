@@ -436,6 +436,13 @@ CREATE TRIGGER action_details_after_delete AFTER DELETE ON action_details FOR EA
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE oid = OLD.pid);
 END;
+-- Actions cleanup if all details were deleted
+DROP TRIGGER IF EXISTS action_details_parent_clean;
+CREATE TRIGGER action_details_parent_clean
+AFTER DELETE ON action_details WHEN (SELECT COUNT(id) FROM action_details WHERE pid = OLD.pid) = 0
+BEGIN
+    DELETE FROM actions WHERE oid = OLD.pid;
+END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS action_details_after_insert;
 CREATE TRIGGER action_details_after_insert AFTER INSERT ON action_details FOR EACH ROW
@@ -585,6 +592,12 @@ DROP TRIGGER IF EXISTS deposit_action_after_update;
 CREATE TRIGGER deposit_action_after_update AFTER UPDATE OF timestamp, action_type, amount ON deposit_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;
+-- Trigger ledger update and category cleanup after category deletion
+DROP TRIGGER IF EXISTS categories_after_delete;
+CREATE TRIGGER categories_after_delete AFTER DELETE ON tags FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE category_id=OLD.id);
 END;
 -- Trigger ledger update and tag cleanup after tag deletion
 DROP TRIGGER IF EXISTS tags_after_delete;
