@@ -306,7 +306,7 @@ class IncomeSpending(LedgerTransaction):
         self._details = []
         while details_query.next():
             self._details.append(self._read_record(details_query, named=True))
-        self._amount = sum(Decimal(line['amount']) for line in self._details) if self._details else Decimal('0')
+        self._amount = sum(Decimal(line['amount']) for line in self._details)
         if self._amount < 0:
             self._icon = JalIcon[JalIcon.MINUS]
             self._oname = self.tr("Spending")
@@ -316,7 +316,7 @@ class IncomeSpending(LedgerTransaction):
         if self._currency:
             self._view_rows = 2
             self._currency_name = JalAsset(self._currency).symbol()
-        self._amount_alt = sum(Decimal(line['amount_alt']) for line in self._details) if self._details else Decimal('0')
+        self._amount_alt = sum(Decimal(line['amount_alt']) for line in self._details)
 
     def description(self) -> str:
         description = self._peer

@@ -167,10 +167,10 @@ CREATE TABLE languages (
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY NOT NULL UNIQUE,  -- Unique row id for indexing
-    timestamp    INTEGER NOT NULL,                     -- Timestamp of this operation
-    otype        INTEGER NOT NULL,                     -- Operation type that recorded transaction
-    oid          INTEGER NOT NULL,                     -- Operation ID that recorded transaction
-    opart        INTEGER NOT NULL,                     -- Identifies a part of operation that is responsible for this exact line
+    timestamp    INTEGER NOT NULL,   -- Timestamp of this operation
+    otype        INTEGER NOT NULL,   -- Operation type that recorded transaction
+    oid          INTEGER NOT NULL,   -- Operation ID that recorded transaction
+    opart        INTEGER NOT NULL,   -- Identifies a part of operation that is responsible for this exact line
     book_account INTEGER NOT NULL,
     asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE SET NULL,
     account_id   INTEGER NOT NULL REFERENCES accounts (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -179,8 +179,8 @@ CREATE TABLE ledger (
     amount_acc   TEXT,
     value_acc    TEXT,
     peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION,  -- category associated with the operation
-    tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION         -- tag associated with the operation
+    category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 -- Table: ledger_totals to keep last accumulated amount value for each transaction
@@ -585,12 +585,6 @@ DROP TRIGGER IF EXISTS deposit_action_after_update;
 CREATE TRIGGER deposit_action_after_update AFTER UPDATE OF timestamp, action_type, amount ON deposit_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
-END;
--- Trigger ledger update and category cleanup after category deletion
-DROP TRIGGER IF EXISTS categories_after_delete;
-CREATE TRIGGER categories_after_delete AFTER DELETE ON tags FOR EACH ROW
-BEGIN
-    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE category_id=OLD.id);
 END;
 -- Trigger ledger update and tag cleanup after tag deletion
 DROP TRIGGER IF EXISTS tags_after_delete;
