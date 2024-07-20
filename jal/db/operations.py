@@ -290,6 +290,8 @@ class IncomeSpending(LedgerTransaction):
                                 "a.alt_currency_id AS currency FROM actions AS a "
                                 "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.oid=:oid",
                                 [(":oid", self._oid)], named=True)
+        if self._data is None:
+            raise IndexError(LedgerTransaction.NoOpException)
         self._timestamp = self._data['timestamp']
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
@@ -435,6 +437,8 @@ class AssetPayment(LedgerTransaction):
                                 "LEFT JOIN ledger_totals AS l ON l.otype=p.otype AND l.oid=p.oid "
                                 "AND l.book_account = :book_assets WHERE p.oid=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
+        if self._data is None:
+            raise IndexError(LedgerTransaction.NoOpException)
         self._subtype = self._data['type']
         self._oname = self.names[self._subtype]
         try:
@@ -809,6 +813,8 @@ class Transfer(LedgerTransaction):
                                 "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, "
                                 "t.number, t.note FROM transfers AS t WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
+        if self._data is None:
+            raise IndexError(LedgerTransaction.NoOpException)
         self._withdrawal_account = jal.db.account.JalAccount(self._data['withdrawal_account'])
         self._withdrawal_account_name = self._withdrawal_account.name()
         self._withdrawal_timestamp = int(self._data['withdrawal_timestamp'])
@@ -1053,6 +1059,8 @@ class CorporateAction(LedgerTransaction):
         self._otype = LedgerTransaction.CorporateAction
         self._data = self._read("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
                                 "FROM asset_actions AS a WHERE a.oid=:oid", [(":oid", self._oid)], named=True)
+        if self._data is None:
+            raise IndexError(LedgerTransaction.NoOpException)
         results_query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
                                    [(":oid", self._oid)])
         self._results = []
