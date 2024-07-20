@@ -287,8 +287,14 @@ class CategoryTreeModel(SqlTreeModel):
         if category.is_predefined():
             QMessageBox().warning(None, self.tr("Warning"), self.tr("You can't delete a predefined category."), QMessageBox.Ok)
             return False
-        super().removeElement(index)
-        return True
+        if category.is_in_use():
+            reply = QMessageBox().warning(None, self.tr("Warning"), self.tr("Category or one of its subcategories are in use.\n"
+                                                                            "All related transactions will be deleted together with the category.\n"
+                                                                            "Do you want to delete the category anyway?"),
+                                          QMessageBox.Yes, QMessageBox.No)
+            if reply != QMessageBox.Yes:
+                return False
+        return super().removeElement(index)
 
 
 class CategoryListDialog(ReferenceDataDialog):

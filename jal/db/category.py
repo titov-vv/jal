@@ -27,6 +27,17 @@ class JalCategory(JalDB):
     def is_predefined(self) -> bool:
         return self._id in PredefinedCategory()
 
+    # Returns True if category or its sub-categories are used in any transactions
+    def is_in_use(self) -> bool:
+        use_count = int(self._read("SELECT COUNT(id) FROM action_details WHERE category_id=:category_id",
+                                   [(":category_id", self._id)]))
+        if use_count:
+            return True
+        for subcategory in self.get_child_categories():
+            if subcategory.is_in_use():
+                return True
+        return False
+
     # Returns a list of JalCategory objects that represent child categories of the current category
     def get_child_categories(self) -> list:
         children = []
