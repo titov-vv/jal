@@ -14,7 +14,10 @@ from jal.widgets.helpers import ts2dt
 def long_fraction(x: Decimal) -> bool:
     if x is None:
         return False
-    if x.is_nan():
+    try:
+        if x.is_nan():
+            return False
+    except AttributeError:
         return False
     return abs(x - round(x, Setup.DEFAULT_ACCOUNT_PRECISION)) > Decimal('0')
 #-----------------------------------------------------------------------------------------------------------------------
