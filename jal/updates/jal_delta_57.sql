@@ -72,6 +72,15 @@ CREATE TABLE ledger (
 );
 
 --------------------------------------------------------------------------------
+-- Add new triggers for ledger update after change in reference data
+DROP TRIGGER IF EXISTS tags_after_delete;
+CREATE TRIGGER tags_after_delete AFTER DELETE ON tags FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE tag_id=OLD.id);
+    DELETE FROM asset_data WHERE datatype=4 AND value=OLD.id;
+END;
+
+--------------------------------------------------------------------------------
 -- Error correction in trigger definition
 DROP TRIGGER IF EXISTS deposit_action_after_update;
 CREATE TRIGGER deposit_action_after_update AFTER UPDATE OF timestamp, action_type, amount ON deposit_actions FOR EACH ROW

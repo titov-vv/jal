@@ -193,7 +193,7 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
         if not data:
             return
         painter.save()
-        color = index.model().data(index, role = Qt.ForegroundRole)
+        color = index.model().data(index, role=Qt.ForegroundRole)
         rect = option.rect
         H = rect.height()
         Y = rect.top()

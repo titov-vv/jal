@@ -1,38 +1,35 @@
 PRAGMA foreign_keys = off;
 BEGIN TRANSACTION;
-
--- Table: accounts
+------------------------------------------------------------------------------------------------------------------------
+-- accounts - describes accounts that hold money and/or assets
 DROP TABLE IF EXISTS accounts;
-
 CREATE TABLE accounts (
     id              INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    name            TEXT (64) NOT NULL UNIQUE,   -- human-readable name of the account
-    currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
-    active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,  -- 1 = account is active, 0 = inactive (hidden in UI)
-    investing       INTEGER   NOT NULL DEFAULT (0),   -- 1 if account can hold investment assets, 0 otherwise
-    tag_id          INTEGER   REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,
-    number          TEXT (32),                   -- human-readable number of account (as a reference to bank/broker documents)
-    reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,   -- timestamp of last confirmed operation
-    organization_id INTEGER   REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL DEFAULT (1),
-    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,
-    precision       INTEGER   NOT NULL DEFAULT (2)  -- number of digits after decimal points that is used by this account
+    name            TEXT (64) NOT NULL UNIQUE,                                                                     -- human-readable name of the account
+    currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,                -- accounting currency for the account
+    active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,                                            -- 1 = account is active, 0 = inactive (hidden in UI)
+    investing       INTEGER   NOT NULL DEFAULT (0),                                                                -- 1 if account can hold investment assets, 0 otherwise
+    tag_id          INTEGER   REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,                           -- optional tag of the account
+    number          TEXT (32),                                                                                     -- human-readable number of account (as a reference to bank/broker documents)
+    reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,                                            -- timestamp of last confirmed operation
+    organization_id INTEGER   REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL DEFAULT (1),     -- Bank/Broker that handles account
+    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,  -- Location of the account
+    precision       INTEGER   NOT NULL DEFAULT (2)                                                                 -- number of digits after decimal points that is used by this account
 );
-
-
--- Table: action_details
+------------------------------------------------------------------------------------------------------------------------
+-- tables to store information about Income/Spending transactions
+-- action_details keeps details about each transaction
 DROP TABLE IF EXISTS action_details;
 CREATE TABLE action_details (
     id          INTEGER    PRIMARY KEY NOT NULL UNIQUE,
-    pid         INTEGER    REFERENCES actions (oid) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    category_id INTEGER    REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,
-    amount      TEXT       NOT NULL,
-    amount_alt  TEXT       DEFAULT ('0') NOT NULL,
-    note        TEXT
+    pid         INTEGER    REFERENCES actions (oid) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,    -- id of transaction from 'actions' table where this part belongs too
+    category_id INTEGER    REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- category assigned to the given part
+    tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,                -- tag, if it is assigned to the given part
+    amount      TEXT       NOT NULL,                                                                 -- amount in account currency (decimal value)
+    amount_alt  TEXT       DEFAULT ('0') NOT NULL,                                                   -- amount in alternative currency if it is set for transaction in 'actions' table
+    note        TEXT                                                                                 -- free-text description of this part
 );
-
-
--- Table: actions
+-- actions - describes common information about transaction
 DROP TABLE IF EXISTS actions;
 CREATE TABLE actions (
     oid             INTEGER PRIMARY KEY UNIQUE NOT NULL,
@@ -43,7 +40,7 @@ CREATE TABLE actions (
     alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE,
     note            TEXT
 );
-
+------------------------------------------------------------------------------------------------------------------------
 -- Table: assets
 DROP TABLE IF EXISTS assets;
 CREATE TABLE assets (
@@ -588,6 +585,13 @@ DROP TRIGGER IF EXISTS deposit_action_after_update;
 CREATE TRIGGER deposit_action_after_update AFTER UPDATE OF timestamp, action_type, amount ON deposit_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;
+-- Trigger ledger update and tag cleanup after tag deletion
+DROP TRIGGER IF EXISTS tags_after_delete;
+CREATE TRIGGER tags_after_delete AFTER DELETE ON tags FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE tag_id=OLD.id);
+    DELETE FROM asset_data WHERE datatype=4 AND value=OLD.id;
 END;
 
 -- Trigger to keep predefinded agents from deletion

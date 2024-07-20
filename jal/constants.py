@@ -183,7 +183,7 @@ class AssetData:
     RegistrationCode = 1
     ExpiryDate = 2
     PrincipalValue = 3
-    Tag = 4
+    Tag = 4   # This value is used in database trigger(s) after tag deletion
 
 
 class MarketDataFeed(PredefinedList, QObject):
