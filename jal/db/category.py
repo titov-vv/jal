@@ -1,5 +1,5 @@
 from decimal import Decimal
-from jal.constants import BookAccount
+from jal.constants import BookAccount, PredefinedCategory
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.operations import IncomeSpending
@@ -22,6 +22,10 @@ class JalCategory(JalDB):
 
     def name(self) -> str:
         return self._name
+
+    # Returns True if it is a predefined category (that can't be removed)
+    def is_predefined(self) -> bool:
+        return self._id in PredefinedCategory()
 
     # Returns a list of JalCategory objects that represent child categories of the current category
     def get_child_categories(self) -> list:

@@ -613,15 +613,7 @@ CREATE TRIGGER keep_predefined_agents BEFORE DELETE ON agents FOR EACH ROW WHEN 
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
 END;
-
--- Trigger to keep predefinded categories from deletion
-DROP TRIGGER IF EXISTS keep_predefined_categories;
-CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.id <= 9
-BEGIN
-    SELECT RAISE(ABORT, "JAL_SQL_MSG_0002");
-END;
-
-
+------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
 INSERT INTO settings(name, value) VALUES('SchemaVersion', 57);
 INSERT INTO settings(name, value) VALUES('Language', 1);

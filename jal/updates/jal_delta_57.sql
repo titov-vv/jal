@@ -7,6 +7,9 @@ INSERT INTO agents (id, pid, name) VALUES (0, 0, '<ROOT>');
 INSERT INTO categories (id, pid, name, often) VALUES (0, 0, '<ROOT>', 0);
 INSERT INTO tags (id, pid, tag) VALUES (0, 0, '<ROOT>');
 --------------------------------------------------------------------------------
+-- Remove outdated trigger
+DROP TRIGGER IF EXISTS keep_predefined_categories;
+--------------------------------------------------------------------------------
 -- Introduce foreign keys into tables that have data structured as a tree
 -- Fix any possible problems with NULL
 UPDATE agents SET location='' WHERE location IS NULL;

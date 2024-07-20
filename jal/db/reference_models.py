@@ -404,9 +404,11 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         assert self.insertRows(0, 1, index)
         self._view.expand(index)
 
-    def removeElement(self, index):
+    # Returns True if deletion was executed successfully, otherwise - False
+    def removeElement(self, index) -> bool:
         row = index.row()
         assert self.removeRows(row, 1, index.parent())
+        return True
 
     def submitAll(self):
         _ = self._exec("COMMIT")

@@ -282,6 +282,14 @@ class CategoryTreeModel(SqlTreeModel):
         self._grid_delegate = GridLinesDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
 
+    def removeElement(self, index) -> bool:
+        category = JalCategory(self.getId(index))
+        if category.is_predefined():
+            QMessageBox().warning(None, self.tr("Warning"), self.tr("You can't delete a predefined category."), QMessageBox.Ok)
+            return False
+        super().removeElement(index)
+        return True
+
 
 class CategoryListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):

@@ -164,9 +164,9 @@ class ReferenceDataDialog(QDialog):
     def OnRemove(self):
         idx = self._view.selectionModel().selection().indexes()
         current_index = idx[0] if idx else self.model.index(0, 0)
-        self.model.removeElement(current_index)
-        self.ui.CommitBtn.setEnabled(True)
-        self.ui.RevertBtn.setEnabled(True)
+        if self.model.removeElement(current_index):
+            self.ui.CommitBtn.setEnabled(True)
+            self.ui.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnCommit(self):

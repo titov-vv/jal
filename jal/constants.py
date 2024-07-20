@@ -62,6 +62,9 @@ class PredefinedList:
     def __init(self):
         self._names = {}
 
+    def __contains__(self, key) -> bool:  # Overriding 'in' operator
+        return key in self._names
+
     def get_name(self, name_id, default='') -> str:
         try:
             return self._names[name_id]
