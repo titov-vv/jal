@@ -212,6 +212,13 @@ class PeerTreeModel(SqlTreeModel):
         self._int_delegate = FloatDelegate(0, parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
 
+    def removeElement(self, index) -> bool:
+        peer = JalPeer(self.getId(index))
+        if peer.is_predefined():
+            QMessageBox().warning(None, self.tr("Warning"), self.tr("You can't delete a predefined peer."), QMessageBox.Ok)
+            return False
+        return super().removeElement(index)
+
 
 class PeerListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):

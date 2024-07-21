@@ -7,7 +7,8 @@ INSERT INTO agents (id, pid, name) VALUES (0, 0, '<ROOT>');
 INSERT INTO categories (id, pid, name, often) VALUES (0, 0, '<ROOT>', 0);
 INSERT INTO tags (id, pid, tag) VALUES (0, 0, '<ROOT>');
 --------------------------------------------------------------------------------
--- Remove outdated trigger
+-- Remove outdated triggers
+DROP TRIGGER IF EXISTS keep_predefined_agents;
 DROP TRIGGER IF EXISTS keep_predefined_categories;
 --------------------------------------------------------------------------------
 -- Introduce foreign keys into tables that have data structured as a tree
@@ -51,8 +52,6 @@ INSERT INTO tags (id, pid, tag, icon_file) SELECT id, pid, tag, icon_file FROM t
 DROP TABLE temp_tags;
 -- Restore index
 CREATE INDEX agents_by_name_idx ON agents (name);
--- Restore triggers
-CREATE TRIGGER keep_predefined_agents BEFORE DELETE ON agents FOR EACH ROW WHEN OLD.id <= 1 BEGIN SELECT RAISE (ABORT, 'JAL_SQL_MSG_0001'); END;
 --------------------------------------------------------------------------------
 CREATE TABLE temp_accounts AS SELECT * FROM accounts;
 DROP TABLE IF EXISTS accounts;

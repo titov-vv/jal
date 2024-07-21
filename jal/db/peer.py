@@ -1,4 +1,5 @@
 from jal.db.db import JalDB
+from jal.constants import PredefinedAgents
 
 
 class JalPeer(JalDB):
@@ -24,6 +25,10 @@ class JalPeer(JalDB):
 
     def name(self) -> str:
         return self._name
+
+    # Returns True if it is a predefined peer (that can't be removed)
+    def is_predefined(self) -> bool:
+        return self._id in PredefinedAgents()
 
     # Returns a list of all available peers
     @classmethod

@@ -612,13 +612,6 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE tag_id=OLD.id);
     DELETE FROM asset_data WHERE datatype=4 AND value=OLD.id;
 END;
-
--- Trigger to keep predefinded agents from deletion
-DROP TRIGGER IF EXISTS keep_predefined_agents;
-CREATE TRIGGER keep_predefined_agents BEFORE DELETE ON agents FOR EACH ROW WHEN OLD.id <= 1
-BEGIN
-    SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
-END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
 INSERT INTO settings(name, value) VALUES('SchemaVersion', 57);
