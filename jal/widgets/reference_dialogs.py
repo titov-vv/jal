@@ -73,6 +73,14 @@ class AccountListModel(AbstractReferenceListModel):
         self._tag_delegate = TagSelectorDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("tag_id"), self._tag_delegate)
 
+    def removeElement(self, index) -> bool:
+        reply = QMessageBox().warning(None, self.tr("Warning"), self.tr("All transactions related with this account will be deleted.\n"
+                                                                        "Do you want to delete the account anyway?"),
+                                      QMessageBox.Yes, QMessageBox.No)
+        if reply != QMessageBox.Yes:
+            return False
+        return super().removeElement(index)
+
 
 class AccountListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
