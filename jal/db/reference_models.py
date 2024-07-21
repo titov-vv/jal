@@ -108,13 +108,15 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
             new_record.setValue(self.fieldIndex(self._filter_by), self._filter_value)
         self.setRecord(row, new_record)
 
-    def removeElement(self, index):
+    # Returns True if deletion was executed successfully, otherwise - False
+    def removeElement(self, index) -> bool:
         if index.isValid():
             row = index.row()
         else:
-            return
+            return False
         assert self.removeRow(row)
         self._deleted_rows.append(row)
+        return True
 
     def submitAll(self):
         result = super().submitAll()
