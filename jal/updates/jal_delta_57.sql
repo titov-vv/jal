@@ -82,7 +82,7 @@ BEGIN
 END;
 -- Add new triggers for ledger update after change in reference data
 DROP TRIGGER IF EXISTS categories_after_delete;
-CREATE TRIGGER categories_after_delete AFTER DELETE ON tags FOR EACH ROW
+CREATE TRIGGER categories_after_delete AFTER DELETE ON categories FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE category_id=OLD.id);
 END;
