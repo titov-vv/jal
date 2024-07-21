@@ -75,13 +75,18 @@ class JalAccount(JalDB):
     # Method returns a list of JalAccount objects with given filters (combined with AND):
     # investing_only - return only investing accounts (false by default)
     # active_only - return only active accounts (true by default)
+    # currency_id - return only accounts with given currency (or all if 0)
     @classmethod
-    def get_all_accounts(cls, investing_only: bool = False, active_only: bool = True) -> list:
+    def get_all_accounts(cls, investing_only: bool = False, active_only: bool = True, currency_id: int = 0) -> list:
         accounts = []
-        all = 0 if active_only else 1
+        all_activity = 0 if active_only else 1
         all_types = 0 if investing_only else 1
-        query = cls._exec("SELECT id FROM accounts WHERE investing >= (1-:all_types) AND active >= (1-:all)",
-                          [(":all_types", all_types), (":all", all)])
+        sql_txt = "SELECT id FROM accounts WHERE investing >= (1-:all_types) AND active >= (1-:all)"
+        sql_parameters = [(":all_types", all_types), (":all", all_activity)]
+        if currency_id:
+            sql_txt += " AND currency_id=:currency_id"
+            sql_parameters += [(":currency_id", currency_id)]
+        query = cls._exec(sql_txt, sql_parameters)
         while query.next():
             account_id = cls._read_record(query, cast=[int])
             accounts.append(JalAccount(account_id))

@@ -151,6 +151,16 @@ class AssetListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._constant_lookup_delegate)
 
+    def removeElement(self, index) -> bool:
+        used_by_accounts = JalAccount().get_all_accounts(active_only=False, currency_id=self.getId(index))
+        if len(used_by_accounts):
+            QMessageBox().warning(None, self.tr("Warning"),
+                                  self.tr("You can't delete currency that is used by account:\n") +
+                                  '\n'.join([x.name() for i, x in enumerate(used_by_accounts) if i < 10]),  # Display first 10 accounts that use the currency
+                                  QMessageBox.Ok)
+            return False
+        return super().removeElement(index)
+
 
 class AssetListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
