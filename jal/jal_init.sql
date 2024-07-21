@@ -48,7 +48,7 @@ CREATE TABLE assets (
     type_id    INTEGER    NOT NULL,
     full_name  TEXT (128) NOT NULL,
     isin       TEXT (12)  DEFAULT ('') NOT NULL,
-    country_id INTEGER    REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL DEFAULT (0),
+    country_id INTEGER    REFERENCES countries (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (0),
     base_asset INTEGER    REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 

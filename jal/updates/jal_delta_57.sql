@@ -53,6 +53,7 @@ DROP TABLE temp_tags;
 -- Restore index
 CREATE INDEX agents_by_name_idx ON agents (name);
 --------------------------------------------------------------------------------
+-- Correct foreign keys in accounts table
 CREATE TABLE temp_accounts AS SELECT * FROM accounts;
 DROP TABLE IF EXISTS accounts;
 CREATE TABLE accounts (
@@ -71,6 +72,19 @@ CREATE TABLE accounts (
 INSERT INTO accounts (id, name, currency_id, active, investing, tag_id, number, reconciled_on, organization_id, country_id, precision)
   SELECT id, name, currency_id, active, investing, tag_id, number, reconciled_on, organization_id, country_id, precision FROM temp_accounts;
 DROP TABLE temp_accounts;
+-- Correct foreign keys in assets table
+CREATE TABLE temp_assets AS SELECT * FROM assets;
+DROP TABLE IF EXISTS assets;
+CREATE TABLE assets (
+    id         INTEGER    PRIMARY KEY UNIQUE NOT NULL,
+    type_id    INTEGER    NOT NULL,
+    full_name  TEXT (128) NOT NULL,
+    isin       TEXT (12)  DEFAULT ('') NOT NULL,
+    country_id INTEGER    REFERENCES countries (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (0),
+    base_asset INTEGER    REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+INSERT INTO assets (id, type_id, full_name, isin, country_id, base_asset) SELECT id, type_id, full_name, isin, country_id, base_asset FROM temp_assets;
+DROP TABLE temp_assets;
 --------------------------------------------------------------------------------
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
