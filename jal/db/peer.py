@@ -30,6 +30,24 @@ class JalPeer(JalDB):
     def is_predefined(self) -> bool:
         return self._id in PredefinedAgents()
 
+    # Returns True if peer or its children are used in any transactions
+    def is_in_use(self) -> bool:
+        use_count = int(self._read("SELECT COUNT(oid) FROM actions WHERE peer_id=:peer_id", [(":peer_id", self._id)]))
+        if use_count:
+            return True
+        for child_peer in self.get_child_peers():
+            if child_peer.is_in_use():
+                return True
+        return False
+
+    # Returns a list of JalPeers objects that represent child peers of the current peer
+    def get_child_peers(self) -> list:   # FIXME - the code is similar to JalCategory.get_child_categories()
+        children = []
+        query = self._exec("SELECT id FROM agents WHERE pid=:peer_id", [(":peer_id", self._id)])
+        while query.next():
+            children.append(JalPeer(self._read_record(query)))
+        return children
+
     # Returns a list of all available peers
     @classmethod
     def get_all_peers(cls):
