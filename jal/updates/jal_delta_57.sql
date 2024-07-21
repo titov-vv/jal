@@ -81,6 +81,11 @@ BEGIN
     DELETE FROM actions WHERE oid = OLD.pid;
 END;
 -- Add new triggers for ledger update after change in reference data
+DROP TRIGGER IF EXISTS agents_after_delete;
+CREATE TRIGGER agents_after_delete AFTER DELETE ON agents FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE peer_id=OLD.id);
+END;
 DROP TRIGGER IF EXISTS categories_after_delete;
 CREATE TRIGGER categories_after_delete AFTER DELETE ON categories FOR EACH ROW
 BEGIN

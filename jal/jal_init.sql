@@ -593,6 +593,12 @@ CREATE TRIGGER deposit_action_after_update AFTER UPDATE OF timestamp, action_typ
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
+-- Trigger ledger update and peers cleanup after peer(agent) deletion
+DROP TRIGGER IF EXISTS agents_after_delete;
+CREATE TRIGGER agents_after_delete AFTER DELETE ON agents FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE peer_id=OLD.id);
+END;
 -- Trigger ledger update and category cleanup after category deletion
 DROP TRIGGER IF EXISTS categories_after_delete;
 CREATE TRIGGER categories_after_delete AFTER DELETE ON categories FOR EACH ROW
