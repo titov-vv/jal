@@ -85,6 +85,25 @@ CREATE TABLE assets (
 );
 INSERT INTO assets (id, type_id, full_name, isin, country_id, base_asset) SELECT id, type_id, full_name, isin, country_id, base_asset FROM temp_assets;
 DROP TABLE temp_assets;
+-- Correct foreign key in actions table
+CREATE TABLE temp_actions AS SELECT * FROM actions;
+DROP TABLE IF EXISTS actions;
+CREATE TABLE actions (
+    oid             INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    otype           INTEGER NOT NULL DEFAULT (1),
+    timestamp       INTEGER NOT NULL,
+    account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,   -- agent that is related with this transaction
+    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE CASCADE,           -- if transaction actually happened in another currency
+    note            TEXT
+);
+INSERT INTO actions (oid, otype, timestamp, account_id, peer_id, alt_currency_id, note)
+  SELECT oid, otype, timestamp, account_id, peer_id, alt_currency_id, note FROM temp_actions;
+DROP TABLE temp_actions;
+-- Restore triggers
+CREATE TRIGGER actions_after_delete AFTER DELETE ON actions FOR EACH ROW BEGIN DELETE FROM action_details WHERE pid = OLD.oid; DELETE FROM ledger WHERE timestamp >= OLD.timestamp; END;
+CREATE TRIGGER actions_after_insert AFTER INSERT ON actions FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= NEW.timestamp; END;
+CREATE TRIGGER actions_after_update AFTER UPDATE OF timestamp, account_id, peer_id ON actions FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; END;
 --------------------------------------------------------------------------------
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (

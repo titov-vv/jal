@@ -37,7 +37,7 @@ CREATE TABLE actions (
     timestamp       INTEGER NOT NULL,
     account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,   -- agent that is related with this transaction
-    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE CASCADE,           -- if transaction actually happened in another currency
     note            TEXT
 );
 ------------------------------------------------------------------------------------------------------------------------
