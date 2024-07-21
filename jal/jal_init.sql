@@ -49,7 +49,7 @@ CREATE TABLE assets (
     full_name  TEXT (128) NOT NULL,
     isin       TEXT (12)  DEFAULT ('') NOT NULL,
     country_id INTEGER    REFERENCES countries (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (0),
-    base_asset INTEGER    REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE
+    base_asset INTEGER    REFERENCES assets (id) ON DELETE SET NULL ON UPDATE CASCADE                             -- base asset for derivatives
 );
 
 -- Table to keep asset symbols

@@ -81,7 +81,7 @@ CREATE TABLE assets (
     full_name  TEXT (128) NOT NULL,
     isin       TEXT (12)  DEFAULT ('') NOT NULL,
     country_id INTEGER    REFERENCES countries (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (0),
-    base_asset INTEGER    REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE
+    base_asset INTEGER    REFERENCES assets (id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 INSERT INTO assets (id, type_id, full_name, isin, country_id, base_asset) SELECT id, type_id, full_name, isin, country_id, base_asset FROM temp_assets;
 DROP TABLE temp_assets;
