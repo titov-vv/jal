@@ -54,6 +54,25 @@ CREATE INDEX agents_by_name_idx ON agents (name);
 -- Restore triggers
 CREATE TRIGGER keep_predefined_agents BEFORE DELETE ON agents FOR EACH ROW WHEN OLD.id <= 1 BEGIN SELECT RAISE (ABORT, 'JAL_SQL_MSG_0001'); END;
 --------------------------------------------------------------------------------
+CREATE TABLE temp_accounts AS SELECT * FROM accounts;
+DROP TABLE IF EXISTS accounts;
+CREATE TABLE accounts (
+    id              INTEGER   PRIMARY KEY UNIQUE NOT NULL,
+    name            TEXT (64) NOT NULL UNIQUE,                                                                     -- human-readable name of the account
+    currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,                -- accounting currency for the account
+    active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,                                            -- 1 = account is active, 0 = inactive (hidden in UI)
+    investing       INTEGER   NOT NULL DEFAULT (0),                                                                -- 1 if account can hold investment assets, 0 otherwise
+    tag_id          INTEGER   REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,                           -- optional tag of the account
+    number          TEXT (32),                                                                                     -- human-readable number of account (as a reference to bank/broker documents)
+    reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,                                            -- timestamp of last confirmed operation
+    organization_id INTEGER   REFERENCES agents (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (1), -- Bank/Broker that handles account
+    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,  -- Location of the account
+    precision       INTEGER   NOT NULL DEFAULT (2)                                                                 -- number of digits after decimal points that is used by this account
+);
+INSERT INTO accounts (id, name, currency_id, active, investing, tag_id, number, reconciled_on, organization_id, country_id, precision)
+  SELECT id, name, currency_id, active, investing, tag_id, number, reconciled_on, organization_id, country_id, precision FROM temp_accounts;
+DROP TABLE temp_accounts;
+--------------------------------------------------------------------------------
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY NOT NULL UNIQUE,

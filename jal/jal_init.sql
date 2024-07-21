@@ -12,7 +12,7 @@ CREATE TABLE accounts (
     tag_id          INTEGER   REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,                           -- optional tag of the account
     number          TEXT (32),                                                                                     -- human-readable number of account (as a reference to bank/broker documents)
     reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,                                            -- timestamp of last confirmed operation
-    organization_id INTEGER   REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL DEFAULT (1),     -- Bank/Broker that handles account
+    organization_id INTEGER   REFERENCES agents (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (1), -- Bank/Broker that handles account
     country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,  -- Location of the account
     precision       INTEGER   NOT NULL DEFAULT (2)                                                                 -- number of digits after decimal points that is used by this account
 );
@@ -36,7 +36,7 @@ CREATE TABLE actions (
     otype           INTEGER NOT NULL DEFAULT (1),
     timestamp       INTEGER NOT NULL,
     account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,   -- agent that is related with this transaction
     alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE,
     note            TEXT
 );
@@ -178,9 +178,9 @@ CREATE TABLE ledger (
     value        TEXT,
     amount_acc   TEXT,
     value_acc    TEXT,
-    peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION ON UPDATE NO ACTION,     -- peer that is related with transaction. No FK enforcement as table is cleaned by agents_after_delete trigger
+    category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION, -- category that is related with transaction. No FK enforcement as table is cleaned by categories_after_delete trigger
+    tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION        -- tag that is related with transaction. No FK enforcement as table is cleaned by tags_after_delete trigger
 );
 
 -- Table: ledger_totals to keep last accumulated amount value for each transaction
