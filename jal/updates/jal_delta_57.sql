@@ -53,7 +53,6 @@ DROP TABLE temp_tags;
 CREATE INDEX agents_by_name_idx ON agents (name);
 -- Restore triggers
 CREATE TRIGGER keep_predefined_agents BEFORE DELETE ON agents FOR EACH ROW WHEN OLD.id <= 1 BEGIN SELECT RAISE (ABORT, 'JAL_SQL_MSG_0001'); END;
-CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.id <= 9 BEGIN SELECT RAISE (ABORT, 'JAL_SQL_MSG_0002'); END;
 --------------------------------------------------------------------------------
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
