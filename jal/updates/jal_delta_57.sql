@@ -119,6 +119,42 @@ CREATE TABLE asset_payments (
 INSERT INTO asset_payments (oid, otype, timestamp, ex_date, number, type, account_id, asset_id, amount, tax, note)
   SELECT oid, otype, timestamp, ex_date, number, type, account_id, asset_id, amount, tax, note FROM temp_asset_payments;
 DROP TABLE temp_asset_payments;
+-- Correct foreign key in asset_actions table
+CREATE TABLE temp_asset_actions AS SELECT * FROM asset_actions;
+DROP TABLE IF EXISTS asset_actions;
+CREATE TABLE asset_actions (
+    oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    otype      INTEGER     NOT NULL DEFAULT (5),
+    timestamp  INTEGER     NOT NULL,
+    number     TEXT        DEFAULT (''),
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    type       INTEGER     NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    qty        TEXT        NOT NULL,
+    note       TEXT
+);
+INSERT INTO asset_actions (oid, otype, timestamp, number, account_id, type, asset_id, qty, note)
+  SELECT oid, otype, timestamp, number, account_id, type, asset_id, qty, note FROM temp_asset_actions;
+DROP TABLE temp_asset_actions;
+-- Correct foreign key in trades table
+CREATE TABLE temp_trades AS SELECT * FROM trades;
+DROP TABLE IF EXISTS trades;
+CREATE TABLE trades (
+    oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    otype      INTEGER     NOT NULL DEFAULT (3),
+    timestamp  INTEGER     NOT NULL,
+    settlement INTEGER     DEFAULT (0),
+    number     TEXT        DEFAULT (''),
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    qty        TEXT        NOT NULL DEFAULT ('0'),
+    price      TEXT        NOT NULL DEFAULT ('0'),
+    fee        TEXT        DEFAULT ('0'),
+    note       TEXT
+);
+INSERT INTO trades (oid, otype, timestamp, settlement, number, account_id, asset_id, qty, price, fee, note)
+  SELECT oid, otype, timestamp, settlement, number, account_id, asset_id, qty, price, fee, note FROM temp_trades;
+DROP TABLE temp_trades;
 -- Restore triggers
 CREATE TRIGGER actions_after_delete AFTER DELETE ON actions FOR EACH ROW BEGIN DELETE FROM action_details WHERE pid = OLD.oid; DELETE FROM ledger WHERE timestamp >= OLD.timestamp; END;
 CREATE TRIGGER actions_after_insert AFTER INSERT ON actions FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= NEW.timestamp; END;
@@ -126,6 +162,12 @@ CREATE TRIGGER actions_after_update AFTER UPDATE OF timestamp, account_id, peer_
 CREATE TRIGGER asset_payments_after_delete AFTER DELETE ON asset_payments FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= OLD.timestamp; DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp; END;
 CREATE TRIGGER asset_payments_after_insert AFTER INSERT ON asset_payments FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= NEW.timestamp; DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp; END;
 CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, account_id, asset_id, amount, tax ON asset_payments FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; END;
+CREATE TRIGGER asset_action_after_delete AFTER DELETE ON asset_actions FOR EACH ROW BEGIN DELETE FROM action_results WHERE action_id = OLD.oid; DELETE FROM ledger WHERE timestamp >= OLD.timestamp; DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp; END;
+CREATE TRIGGER asset_action_after_insert AFTER INSERT ON asset_actions FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= NEW.timestamp; DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp; END;
+CREATE TRIGGER asset_action_after_update AFTER UPDATE OF timestamp, account_id, type, asset_id, qty ON asset_actions FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; END;
+CREATE TRIGGER trades_after_delete AFTER DELETE ON trades FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= OLD.timestamp; DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp; END;
+CREATE TRIGGER trades_after_insert AFTER INSERT ON trades FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= NEW.timestamp; DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp; END;
+CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, asset_id, qty, price, fee ON trades FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; END;
 --------------------------------------------------------------------------------
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (

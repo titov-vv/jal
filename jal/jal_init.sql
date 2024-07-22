@@ -274,7 +274,7 @@ CREATE TABLE asset_actions (
     number     TEXT        DEFAULT (''),
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     type       INTEGER     NOT NULL,
-    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     qty        TEXT        NOT NULL,
     note       TEXT
 );
@@ -298,7 +298,7 @@ CREATE TABLE trades (
     settlement INTEGER     DEFAULT (0),
     number     TEXT        DEFAULT (''),
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     qty        TEXT        NOT NULL DEFAULT ('0'),
     price      TEXT        NOT NULL DEFAULT ('0'),
     fee        TEXT        DEFAULT ('0'),
