@@ -2966,7 +2966,7 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="247"/>
-        <source>Peer or one of its chile peers are in use.
+        <source>Peer or one of its child peers are in use.
 All related transactions will be deleted together with the peer.
 Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
@@ -5748,7 +5748,7 @@ Please select an account for import:</source>
 <context>
     <name>TermDeposit</name>
     <message>
-        <location filename="../db/operations.py" line="1317"/>
+        <location filename="../db/operations.py" line="1318"/>
         <source>Can&apos;t process deposit as bank isn&apos;t set for account: </source>
         <translation type="unfinished"></translation>
     </message>

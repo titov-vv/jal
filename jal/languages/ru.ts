@@ -157,13 +157,14 @@
     <message>
         <location filename="../widgets/reference_dialogs.py" line="77"/>
         <source>Warning</source>
-        <translation type="unfinished">Предупреждение</translation>
+        <translation>Предупреждение</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="78"/>
         <source>All transactions related with this account will be deleted.
 Do you want to delete the account anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>Все транзакции связанные с этим счётом будут удалены.
+Вы точно хотите продолжить удаление счёта?</translation>
     </message>
 </context>
 <context>
@@ -288,19 +289,21 @@ Do you want to delete the account anyway?</source>
         <location filename="../widgets/reference_dialogs.py" line="157"/>
         <location filename="../widgets/reference_dialogs.py" line="162"/>
         <source>Warning</source>
-        <translation type="unfinished">Предупреждение</translation>
+        <translation>Предупреждение</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="159"/>
         <source>You can&apos;t delete currency that is used by account:
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Вы не можете удалить валюту, которая используется для счёта:
+</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="164"/>
         <source>All transactions related with this asset will be deleted.
 Do you want to delete the asset anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>Все транзакции связанные с данной ценной бумагой будут удалены.
+Вы точно хотите удалить данную ценную бумагу?</translation>
     </message>
 </context>
 <context>
@@ -802,19 +805,21 @@ Do you want to delete the asset anyway?</source>
         <location filename="../widgets/reference_dialogs.py" line="326"/>
         <location filename="../widgets/reference_dialogs.py" line="329"/>
         <source>Warning</source>
-        <translation type="unfinished">Предупреждение</translation>
+        <translation>Предупреждение</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="326"/>
         <source>You can&apos;t delete a predefined category.</source>
-        <translation type="unfinished"></translation>
+        <translation>Нельзя удалить предопределённую категорию.</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="331"/>
         <source>Category or one of its subcategories are in use.
 All related transactions will be deleted together with the category.
 Do you want to delete the category anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>Категория или одна из её подкатегорий используется.
+Все транзакции связанные с данной категорией будут удалены.
+Вы точно хотите удалить данную категорию?</translation>
     </message>
 </context>
 <context>
@@ -1079,50 +1084,51 @@ Do you want to delete the category anyway?</source>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="103"/>
         <source>There can&apos;t be results of Delisting</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы не можете задать результаты действия для Делистинга</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="104"/>
         <source>Spin-off should have exactly 2 result rows:
 one for ParentCo and second for Subsidiary</source>
-        <translation type="unfinished"></translation>
+        <translation>Спин-офф должен иметь ровно 2 результата:
+один для родительской компании и второй для дочерней</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="105"/>
         <source>Split should have only 1 result row</source>
-        <translation type="unfinished"></translation>
+        <translation>Сплит должен иметь только 1 ценную бумагу в результате</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="106"/>
         <source>Symbol change should have only 1 result row</source>
-        <translation type="unfinished"></translation>
+        <translation>Смена символа дожна иметь только 1 ценную бумагу в результате</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="112"/>
         <location filename="../widgets/corporate_action_widget.py" line="115"/>
         <location filename="../widgets/corporate_action_widget.py" line="119"/>
         <source>Wrong data</source>
-        <translation type="unfinished"></translation>
+        <translation>Неверные данные</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="112"/>
         <source>You can&apos;t have zero results unless it is Delisting</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы не можете указать пустой результат, если это не Делистинг</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="119"/>
         <source>You can&apos;t have asset changed during Split</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы не можете сменить ценную бумагу в ходе Сплита</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="124"/>
         <source>Incomplete data</source>
-        <translation type="unfinished">Неполные данные</translation>
+        <translation>Неполные данные</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="124"/>
         <source>Total results share doesn&apos;t sum up to 100%</source>
-        <translation type="unfinished"></translation>
+        <translation>Сумма результирующих долей не равна 100%</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="132"/>
@@ -1713,7 +1719,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../db/operations.py" line="376"/>
         <source>Income/Spending transaction has no details: </source>
-        <translation type="unfinished"></translation>
+        <translation>Доход/Расход не имеет детальных записей: </translation>
     </message>
 </context>
 <context>
@@ -2964,19 +2970,21 @@ Application will be terminated now.</source>
         <location filename="../widgets/reference_dialogs.py" line="242"/>
         <location filename="../widgets/reference_dialogs.py" line="245"/>
         <source>Warning</source>
-        <translation type="unfinished">Предупреждение</translation>
+        <translation>Предупреждение</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="242"/>
         <source>You can&apos;t delete a predefined peer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы не можете удалить предопределённого контрагента </translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="247"/>
-        <source>Peer or one of its chile peers are in use.
+        <source>Peer or one of its child peers are in use.
 All related transactions will be deleted together with the peer.
 Do you want to delete the peer anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>Контрагент или один из его дочерних контрагентов используется.
+Все транзакции, связанные с данным контрагентом будут удалены.
+Вы точно хотите удалить контрагента?</translation>
     </message>
 </context>
 <context>
@@ -3467,7 +3475,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../net/downloader.py" line="505"/>
         <source>Can&apos;t parse server response as pdf: </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно прочитать полученные от сервера данные как pdf: </translation>
     </message>
     <message>
         <location filename="../net/downloader.py" line="508"/>
@@ -5755,7 +5763,7 @@ Please select an account for import:</source>
 <context>
     <name>TermDeposit</name>
     <message>
-        <location filename="../db/operations.py" line="1317"/>
+        <location filename="../db/operations.py" line="1318"/>
         <source>Can&apos;t process deposit as bank isn&apos;t set for account: </source>
         <translation>Невозможно обработать депозит, т.к. не задан банк для счёта: </translation>
     </message>
