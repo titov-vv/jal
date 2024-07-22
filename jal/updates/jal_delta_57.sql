@@ -100,10 +100,32 @@ CREATE TABLE actions (
 INSERT INTO actions (oid, otype, timestamp, account_id, peer_id, alt_currency_id, note)
   SELECT oid, otype, timestamp, account_id, peer_id, alt_currency_id, note FROM temp_actions;
 DROP TABLE temp_actions;
+-- Correct foreign key in asset_payments table
+CREATE TABLE temp_asset_payments AS SELECT * FROM asset_payments;
+DROP TABLE IF EXISTS asset_payments;
+CREATE TABLE asset_payments (
+    oid        INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    otype      INTEGER NOT NULL DEFAULT (2),
+    timestamp  INTEGER NOT NULL,
+    ex_date    INTEGER NOT NULL DEFAULT (0),
+    number     TEXT    NOT NULL DEFAULT (''),
+    type       INTEGER NOT NULL,
+    account_id INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    amount     TEXT    NOT NULL DEFAULT ('0'),
+    tax        TEXT    NOT NULL DEFAULT ('0'),
+    note       TEXT
+);
+INSERT INTO asset_payments (oid, otype, timestamp, ex_date, number, type, account_id, asset_id, amount, tax, note)
+  SELECT oid, otype, timestamp, ex_date, number, type, account_id, asset_id, amount, tax, note FROM temp_asset_payments;
+DROP TABLE temp_asset_payments;
 -- Restore triggers
 CREATE TRIGGER actions_after_delete AFTER DELETE ON actions FOR EACH ROW BEGIN DELETE FROM action_details WHERE pid = OLD.oid; DELETE FROM ledger WHERE timestamp >= OLD.timestamp; END;
 CREATE TRIGGER actions_after_insert AFTER INSERT ON actions FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= NEW.timestamp; END;
 CREATE TRIGGER actions_after_update AFTER UPDATE OF timestamp, account_id, peer_id ON actions FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; END;
+CREATE TRIGGER asset_payments_after_delete AFTER DELETE ON asset_payments FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= OLD.timestamp; DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp; END;
+CREATE TRIGGER asset_payments_after_insert AFTER INSERT ON asset_payments FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= NEW.timestamp; DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp; END;
+CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, account_id, asset_id, amount, tax ON asset_payments FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; END;
 --------------------------------------------------------------------------------
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (

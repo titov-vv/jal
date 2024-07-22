@@ -151,7 +151,7 @@ CREATE TABLE asset_payments (
     number     TEXT    NOT NULL DEFAULT (''),
     type       INTEGER NOT NULL,
     account_id INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    asset_id   INTEGER REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     amount     TEXT    NOT NULL DEFAULT ('0'),
     tax        TEXT    NOT NULL DEFAULT ('0'),
     note       TEXT
