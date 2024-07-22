@@ -1269,6 +1269,7 @@ class TermDeposit(LedgerTransaction):
         self._icon = JalIcon[icons[self._action]]
         self._oname = f'{DepositActions().get_name(self._action)}'
         self._bank = self._account.organization()
+        self._reconciled = self._account.reconciled_at() >= self._timestamp
 
     def _get_deposit_amount(self) -> Decimal:
         amount = Decimal('0')
