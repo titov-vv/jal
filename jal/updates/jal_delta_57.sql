@@ -3,9 +3,9 @@ BEGIN TRANSACTION;
 PRAGMA foreign_keys = OFF;
 --------------------------------------------------------------------------------
 -- Insert root elements for tree-structure supported by foreign key
-INSERT INTO agents (id, pid, name) VALUES (0, 0, '<ROOT>');
-INSERT INTO categories (id, pid, name, often) VALUES (0, 0, '<ROOT>', 0);
-INSERT INTO tags (id, pid, tag) VALUES (0, 0, '<ROOT>');
+INSERT INTO agents (id, pid, name) VALUES (0, 0, '');
+INSERT INTO categories (id, pid, name, often) VALUES (0, 0, '', 0);
+INSERT INTO tags (id, pid, tag) VALUES (0, 0, '');
 --------------------------------------------------------------------------------
 -- Remove outdated triggers
 DROP TRIGGER IF EXISTS keep_predefined_agents;

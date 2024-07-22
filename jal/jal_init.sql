@@ -652,11 +652,11 @@ INSERT INTO languages (id, language) VALUES (1, 'en');
 INSERT INTO languages (id, language) VALUES (2, 'ru');
 
 -- Initialize predefined peer agents
-INSERT INTO agents (id, pid, name) VALUES (0, 0, '<ROOT>');
+INSERT INTO agents (id, pid, name) VALUES (0, 0, '');
 INSERT INTO agents (id, pid, name) VALUES (1, 0, 'None');
 
 -- Initialize predefined categories
-INSERT INTO categories (id, pid, name) VALUES (0, 0, '<ROOT>');
+INSERT INTO categories (id, pid, name) VALUES (0, 0, '');
 INSERT INTO categories (id, pid, name) VALUES (1, 0, 'Income');
 INSERT INTO categories (id, pid, name) VALUES (2, 0, 'Spending');
 INSERT INTO categories (id, pid, name) VALUES (3, 0, 'Profits');
@@ -668,7 +668,7 @@ INSERT INTO categories (id, pid, name) VALUES (8, 3, 'Interest');
 INSERT INTO categories (id, pid, name) VALUES (9, 3, 'Results of investments');
 
 -- Initialize predefined tags
-INSERT INTO tags (id, pid, tag) VALUES (0, 0, '<ROOT>');
+INSERT INTO tags (id, pid, tag) VALUES (0, 0, '');
 INSERT INTO tags (id, pid, tag) VALUES (1, 0, 'Account type');
 INSERT INTO tags (id, pid, tag, icon_file) VALUES (2, 1, 'Cash', 'tag_cash.ico');
 INSERT INTO tags (id, pid, tag, icon_file) VALUES (3, 1, 'Bank account', 'tag_bank.ico');
