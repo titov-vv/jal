@@ -242,7 +242,7 @@ class PeerTreeModel(SqlTreeModel):
             QMessageBox().warning(None, self.tr("Warning"), self.tr("You can't delete a predefined peer."), QMessageBox.Ok)
             return False
         if peer.is_in_use():
-            reply = QMessageBox().warning(None, self.tr("Warning"), self.tr("Peer or one of its chile peers are in use.\n"
+            reply = QMessageBox().warning(None, self.tr("Warning"), self.tr("Peer or one of its child peers are in use.\n"
                                                                             "All related transactions will be deleted together with the peer.\n"
                                                                             "Do you want to delete the peer anyway?"),
                                           QMessageBox.Yes, QMessageBox.No)
