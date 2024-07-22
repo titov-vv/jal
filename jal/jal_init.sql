@@ -309,8 +309,8 @@ CREATE TABLE trades (
 DROP TABLE IF EXISTS trades_closed;
 CREATE TABLE trades_closed (
     id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    account_id      INTEGER NOT NULL,
-    asset_id        INTEGER NOT NULL,
+    account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id        INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     open_otype      INTEGER NOT NULL,   -- Operation type that already initiated the trade
     open_oid        INTEGER NOT NULL,   -- Operation ID that already initiated the trade
     open_timestamp  INTEGER NOT NULL,

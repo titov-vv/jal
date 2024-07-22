@@ -169,6 +169,7 @@ CREATE TRIGGER trades_after_delete AFTER DELETE ON trades FOR EACH ROW BEGIN DEL
 CREATE TRIGGER trades_after_insert AFTER INSERT ON trades FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= NEW.timestamp; DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp; END;
 CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, asset_id, qty, price, fee ON trades FOR EACH ROW BEGIN DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; END;
 --------------------------------------------------------------------------------
+-- re-create ledger table with updated FKs
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY NOT NULL UNIQUE,
@@ -186,6 +187,26 @@ CREATE TABLE ledger (
     peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+--------------------------------------------------------------------------------
+-- re-create trades_closed table with updated FKs
+DROP TABLE IF EXISTS trades_closed;
+CREATE TABLE trades_closed (
+    id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id        INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    open_otype      INTEGER NOT NULL,   -- Operation type that already initiated the trade
+    open_oid        INTEGER NOT NULL,   -- Operation ID that already initiated the trade
+    open_timestamp  INTEGER NOT NULL,
+    open_price      TEXT    NOT NULL,
+    open_qty        TEXT    NOT NULL,   -- Part of open operation that was used in this trade
+    close_otype     INTEGER NOT NULL,   -- Operation type that finalized the trade
+    close_oid       INTEGER NOT NULL,   -- Operation ID that finalized the trade
+    close_timestamp INTEGER NOT NULL,
+    close_price     TEXT    NOT NULL,
+    close_qty       TEXT    NOT NULL,   -- Part of close operation that was used in this trade
+    c_price         TEXT    NOT NULL DEFAULT ('1'),  -- Historical adjustment coefficient of open price
+    c_qty           TEXT    NOT NULL DEFAULT ('1')   -- Historical adjustment coefficient of open quantity
 );
 --------------------------------------------------------------------------------
 -- Actions cleanup if all details were deleted
