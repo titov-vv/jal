@@ -159,6 +159,12 @@ class AssetListModel(AbstractReferenceListModel):
                                   '\n'.join([x.name() for i, x in enumerate(used_by_accounts) if i < 10]),  # Display first 10 accounts that use the currency
                                   QMessageBox.Ok)
             return False
+        reply = QMessageBox().warning(None, self.tr("Warning"),
+                                      self.tr("All transactions related with this asset will be deleted.\n"
+                                              "Do you want to delete the asset anyway?"),
+                                      QMessageBox.Yes, QMessageBox.No)
+        if reply != QMessageBox.Yes:
+            return False
         return super().removeElement(index)
 
 
