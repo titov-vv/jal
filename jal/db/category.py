@@ -40,8 +40,8 @@ class JalCategory(JalDB):
 
     # Returns a list of JalCategory objects that represent child categories of the current category
     def get_child_categories(self) -> list:
-        children = []
-        query = self._exec("SELECT id FROM categories WHERE pid=:category_id", [(":category_id", self._id)])
+        children = []   # Not equal 0 because it is ID of root category
+        query = self._exec("SELECT id FROM categories WHERE pid=:category_id AND id<>0", [(":category_id", self._id)])
         while query.next():
             children.append(JalCategory(self._read_record(query)))
         return children
