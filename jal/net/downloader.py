@@ -18,7 +18,8 @@ from jal.db.asset import JalAsset
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
 from jal.widgets.helpers import dependency_present
 try:
-    from pypdf import PdfReader, PdfStreamError
+    from pypdf import PdfReader
+    from pypdf.errors import PdfStreamError
 except ImportError:
     pass  # PDF files won't be downloaded without dependency
 
