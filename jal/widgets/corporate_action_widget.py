@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
-from PySide6.QtWidgets import QHeaderView
+from PySide6.QtWidgets import QMessageBox, QHeaderView
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
 from jal.ui.widgets.ui_corporate_action_operation import Ui_CorporateActionOperation
@@ -10,8 +10,8 @@ from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.icons import JalIcon
 from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
 from jal.db.view_model import JalViewModel
-from jal.db.helpers import localize_decimal, now_ts
-from jal.db.operations import LedgerTransaction
+from jal.db.helpers import localize_decimal, db_row2dict, now_ts
+from jal.db.operations import LedgerTransaction, CorporateAction
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -97,6 +97,33 @@ class CorporateActionWidget(AbstractOperationDetails):
         for idx in selection:
             self.results_model.removeRow(idx.row())
             self.onDataChange(idx, idx, None)
+
+    def _validated(self):
+        constraints = {  # number of mandatory records in results_model for given action type
+            CorporateAction.Delisting:    (0, self.tr("There can't be results of Delisting")),
+            CorporateAction.SpinOff:      (2, self.tr("Spin-off should have exactly 2 result rows:\none for ParentCo and second for Subsidiary")),
+            CorporateAction.Split:        (1, self.tr("Split should have only 1 result row")),
+            CorporateAction.SymbolChange: (1, self.tr("Symbol change should have only 1 result row"))
+        }
+        fields = db_row2dict(self.model, 0)
+        results = [db_row2dict(self.results_model, x) for x in range(self.results_model.rowCount()) if not self.results_model.row_is_deleted(x)]
+        # Validate that number of result records is correct for a given action type
+        if len(results) == 0 and fields['type'] != CorporateAction.Delisting:
+            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't have zero results unless it is Delisting"), QMessageBox.Ok)
+            return False
+        if fields['type'] in constraints and constraints[fields['type']][0] != len(results):
+            QMessageBox().warning(self, self.tr("Wrong data"), constraints[fields['type']][1], QMessageBox.Ok)
+            return False
+        # Split should have the same asset before and after the operation
+        if fields['type'] == CorporateAction.Split and fields['asset_id'] == results[0]['asset_id']:
+            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't have asset changed during Split"), QMessageBox.Ok)
+            return False
+        # Everything after corporate action should add up to 100% of initial asset value
+        total_share = sum([Decimal(x['value_share']) for x in results])
+        if total_share != Decimal('1'):
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Total results share doesn't sum up to 100%"), QMessageBox.Ok)
+            return False
+        return True
 
     def _save(self):
         self.model.database().transaction()
