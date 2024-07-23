@@ -503,7 +503,7 @@ class QuoteDownloader(QObject):
         try:
             pdf = PdfReader(BytesIO(pdf_data))
         except PdfStreamError:
-            logging.error(self.tr("Can't parse server response as pdf: ") + pdf_data)
+            logging.error(self.tr("Can't parse server response as pdf: ") + str(pdf_data))
             return None
         if len(pdf.pages) != 1:
             logging.warning(self.tr("Unexpected number of pages in Victoria Seguros document: ") + len(pdf.pages))
