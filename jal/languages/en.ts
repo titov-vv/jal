@@ -1111,7 +1111,7 @@ one for ParentCo and second for Subsidiary</source>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="119"/>
-        <source>You can&apos;t have asset changed during Split</source>
+        <source>You can&apos;t change asset during Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1696,17 +1696,17 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>IncomeSpending</name>
     <message>
-        <location filename="../db/operations.py" line="315"/>
+        <location filename="../db/operations.py" line="319"/>
         <source>Spending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="318"/>
+        <location filename="../db/operations.py" line="322"/>
         <source>Income</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="333"/>
+        <location filename="../db/operations.py" line="337"/>
         <source>Rate: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2451,12 +2451,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="298"/>
+        <location filename="../net/downloader.py" line="299"/>
         <source>Unsupported MOEX security type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="349"/>
+        <location filename="../net/downloader.py" line="350"/>
         <source>Multiple MOEX assets found for: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2685,32 +2685,32 @@ Application will be terminated now.</source>
 <context>
     <name>OperationsModel</name>
     <message>
-        <location filename="../db/operations_model.py" line="28"/>
+        <location filename="../db/operations_model.py" line="17"/>
         <source>Timestamp</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="28"/>
+        <location filename="../db/operations_model.py" line="17"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="28"/>
+        <location filename="../db/operations_model.py" line="17"/>
         <source>Notes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="29"/>
+        <location filename="../db/operations_model.py" line="18"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="29"/>
+        <location filename="../db/operations_model.py" line="18"/>
         <source>Balance</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="30"/>
+        <location filename="../db/operations_model.py" line="19"/>
         <source>Currency</source>
         <translation></translation>
     </message>
@@ -3413,67 +3413,67 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="87"/>
+        <location filename="../net/downloader.py" line="88"/>
         <source>Download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="124"/>
+        <location filename="../net/downloader.py" line="125"/>
         <source>No rates were downloaded for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="153"/>
+        <location filename="../net/downloader.py" line="154"/>
         <source>No quotes were downloaded for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="180"/>
+        <location filename="../net/downloader.py" line="181"/>
         <source>There are no CBR data for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="432"/>
+        <location filename="../net/downloader.py" line="433"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="435"/>
+        <location filename="../net/downloader.py" line="436"/>
         <source>Euronext quotes header not found in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="438"/>
+        <location filename="../net/downloader.py" line="439"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="480"/>
+        <location filename="../net/downloader.py" line="481"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="495"/>
+        <location filename="../net/downloader.py" line="496"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="505"/>
+        <location filename="../net/downloader.py" line="506"/>
         <source>Can&apos;t parse server response as pdf: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="508"/>
+        <location filename="../net/downloader.py" line="509"/>
         <source>Unexpected number of pages in Victoria Seguros document: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="536"/>
+        <location filename="../net/downloader.py" line="537"/>
         <source>Can&apos;t parse date from Victoria Seguros file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="551"/>
+        <location filename="../net/downloader.py" line="552"/>
         <source>Can&apos;t find quote for Victoria Seguros fund: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3874,6 +3874,39 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/reference_data_dlg.ui" line="178"/>
         <source>Search:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ReportOperationsModel</name>
+    <message>
+        <location filename="../reports/operations_base.py" line="18"/>
+        <source>Timestamp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/operations_base.py" line="18"/>
+        <source>Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/operations_base.py" line="18"/>
+        <source>Peer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/operations_base.py" line="19"/>
+        <source>Notes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/operations_base.py" line="19"/>
+        <source>Amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/operations_base.py" line="20"/>
+        <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

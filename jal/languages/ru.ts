@@ -1117,8 +1117,8 @@ one for ParentCo and second for Subsidiary</source>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="119"/>
-        <source>You can&apos;t have asset changed during Split</source>
-        <translation>Вы не можете сменить ценную бумагу в ходе Сплита</translation>
+        <source>You can&apos;t change asset during Split</source>
+        <translation>Вы не можете сменить ценную бумагу при сплите</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="124"/>
@@ -1702,17 +1702,17 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>IncomeSpending</name>
     <message>
-        <location filename="../db/operations.py" line="315"/>
+        <location filename="../db/operations.py" line="319"/>
         <source>Spending</source>
         <translation>Расход</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="318"/>
+        <location filename="../db/operations.py" line="322"/>
         <source>Income</source>
         <translation>Приход</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="333"/>
+        <location filename="../db/operations.py" line="337"/>
         <source>Rate: </source>
         <translation>Курс: </translation>
     </message>
@@ -2460,12 +2460,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="298"/>
+        <location filename="../net/downloader.py" line="299"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="349"/>
+        <location filename="../net/downloader.py" line="350"/>
         <source>Multiple MOEX assets found for: </source>
         <translation>Найдено несколько ЦБ на MOEX для: </translation>
     </message>
@@ -2698,32 +2698,32 @@ Application will be terminated now.</source>
 <context>
     <name>OperationsModel</name>
     <message>
-        <location filename="../db/operations_model.py" line="28"/>
+        <location filename="../db/operations_model.py" line="17"/>
         <source>Timestamp</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="28"/>
+        <location filename="../db/operations_model.py" line="17"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="28"/>
+        <location filename="../db/operations_model.py" line="17"/>
         <source>Notes</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="29"/>
+        <location filename="../db/operations_model.py" line="18"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="29"/>
+        <location filename="../db/operations_model.py" line="18"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="30"/>
+        <location filename="../db/operations_model.py" line="19"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
@@ -3428,67 +3428,67 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="87"/>
+        <location filename="../net/downloader.py" line="88"/>
         <source>Download completed</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="124"/>
+        <location filename="../net/downloader.py" line="125"/>
         <source>No rates were downloaded for </source>
         <translation>Не загружены курсы для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="153"/>
+        <location filename="../net/downloader.py" line="154"/>
         <source>No quotes were downloaded for </source>
         <translation>Не загружены котировки для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="180"/>
+        <location filename="../net/downloader.py" line="181"/>
         <source>There are no CBR data for: </source>
         <translation>Нет данных ЦБ РФ для: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="432"/>
+        <location filename="../net/downloader.py" line="433"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="435"/>
+        <location filename="../net/downloader.py" line="436"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="438"/>
+        <location filename="../net/downloader.py" line="439"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="480"/>
+        <location filename="../net/downloader.py" line="481"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="495"/>
+        <location filename="../net/downloader.py" line="496"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation>Не обнаружен пакет pypdf, необходимый для чтения PDF файлов.</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="505"/>
+        <location filename="../net/downloader.py" line="506"/>
         <source>Can&apos;t parse server response as pdf: </source>
         <translation>Невозможно прочитать полученные от сервера данные как pdf: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="508"/>
+        <location filename="../net/downloader.py" line="509"/>
         <source>Unexpected number of pages in Victoria Seguros document: </source>
         <translation>Неожиданное количество страниц в документе Victoria Seguros: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="536"/>
+        <location filename="../net/downloader.py" line="537"/>
         <source>Can&apos;t parse date from Victoria Seguros file</source>
         <translation>Невозможно получить дату из файла Victoria Seguros</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="551"/>
+        <location filename="../net/downloader.py" line="552"/>
         <source>Can&apos;t find quote for Victoria Seguros fund: </source>
         <translation>Не удалось найти котировку для фонда Victoria Seguros: </translation>
     </message>
@@ -3890,6 +3890,39 @@ Do you want to delete the peer anyway?</source>
         <location filename="../ui/reference_data_dlg.ui" line="141"/>
         <source>Revert changes</source>
         <translation>Отменить изменения</translation>
+    </message>
+</context>
+<context>
+    <name>ReportOperationsModel</name>
+    <message>
+        <location filename="../reports/operations_base.py" line="18"/>
+        <source>Timestamp</source>
+        <translation>Дата/Время</translation>
+    </message>
+    <message>
+        <location filename="../reports/operations_base.py" line="18"/>
+        <source>Account</source>
+        <translation>Счет</translation>
+    </message>
+    <message>
+        <location filename="../reports/operations_base.py" line="18"/>
+        <source>Peer</source>
+        <translation>Контрагент</translation>
+    </message>
+    <message>
+        <location filename="../reports/operations_base.py" line="19"/>
+        <source>Notes</source>
+        <translation>Описание</translation>
+    </message>
+    <message>
+        <location filename="../reports/operations_base.py" line="19"/>
+        <source>Amount</source>
+        <translation>Сумма</translation>
+    </message>
+    <message>
+        <location filename="../reports/operations_base.py" line="20"/>
+        <source>Currency</source>
+        <translation>Валюта</translation>
     </message>
 </context>
 <context>

@@ -115,8 +115,8 @@ class CorporateActionWidget(AbstractOperationDetails):
             QMessageBox().warning(self, self.tr("Wrong data"), constraints[fields['type']][1], QMessageBox.Ok)
             return False
         # Split should have the same asset before and after the operation
-        if fields['type'] == CorporateAction.Split and fields['asset_id'] == results[0]['asset_id']:
-            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't have asset changed during Split"), QMessageBox.Ok)
+        if fields['type'] == CorporateAction.Split and fields['asset_id'] != results[0]['asset_id']:
+            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't change asset during Split"), QMessageBox.Ok)
             return False
         # Everything after corporate action should add up to 100% of initial asset value
         total_share = sum([Decimal(x['value_share']) for x in results])
