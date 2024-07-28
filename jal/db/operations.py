@@ -67,9 +67,9 @@ class LedgerTransaction(JalDB):
     @staticmethod
     def get_operation(operation_type, oid, opart=0):
         if operation_type == LedgerTransaction.IncomeSpending:
-            return IncomeSpending(oid)
+            return IncomeSpending(oid, opart=opart)
         elif operation_type == LedgerTransaction.AssetPayment:
-            return AssetPayment(oid)
+            return AssetPayment(oid, opart=opart)
         elif operation_type == LedgerTransaction.Trade:
             return Trade(oid)
         elif operation_type == LedgerTransaction.Transfer:
@@ -245,7 +245,7 @@ class LedgerTransaction(JalDB):
     def description(self) -> str:
         return ''
 
-    def value_change(self) -> list:
+    def value_change(self, part_only=False) -> list:
         return []
 
     def value_total(self) -> list:
@@ -287,9 +287,10 @@ class IncomeSpending(LedgerTransaction):
         }
     }
 
-    def __init__(self, oid=None):
+    def __init__(self, oid=None, opart=None):
         super().__init__(oid)
         self._otype = LedgerTransaction.IncomeSpending
+        self._opart = opart
         self._data = self._read("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
                                 "a.alt_currency_id AS currency FROM actions AS a "
                                 "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.oid=:oid",
@@ -340,7 +341,9 @@ class IncomeSpending(LedgerTransaction):
                 description += f"{1/rate:.4f} {self._account_currency}/{self._currency_name}"
         return description
 
-    def value_change(self) -> list:
+    def value_change(self, part_only=False) -> list:
+        if part_only and self._opart is not None:
+            return [Decimal(x['amount']) for x in self._details if x['id'] == self._opart]
         if self._currency:
             return [self._amount, self._amount_alt]
         else:
@@ -408,8 +411,10 @@ class AssetPayment(LedgerTransaction):
         "tax": {"mandatory": False, "validation": False},
         "note": {"mandatory": False, "validation": True}
     }
+    PART_VALUE = 1
+    PART_TAX = 2
 
-    def __init__(self, oid=None):
+    def __init__(self, oid=None, opart=None):
         icons = {
             AssetPayment.Dividend: JalIcon.DIVIDEND,
             AssetPayment.BondInterest: JalIcon.BOND_INTEREST,
@@ -429,6 +434,7 @@ class AssetPayment(LedgerTransaction):
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.AssetPayment
+        self._opart = opart
         self._view_rows = 2
         self._data = self._read("SELECT p.type, p.timestamp, p.ex_date, p.number, p.account_id, p.asset_id, "
                                 "p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
@@ -541,7 +547,14 @@ class AssetPayment(LedgerTransaction):
             description += self.tr("Tax: ") + self._asset.country_name()
         return description
 
-    def value_change(self) -> list:
+    def value_change(self, part_only=False) -> list:
+        if part_only and self._opart is not None:
+            if self._opart == self.PART_VALUE:
+                return [self._amount]
+            elif self._opart == self.PART_TAX:
+                return [-self._tax]
+            else:
+                return [Decimal('NaN')]
         if self._tax:
             return [self._amount, -self._tax]
         else:
@@ -605,11 +618,11 @@ class AssetPayment(LedgerTransaction):
             if credit_taken < -operation_value:
                 ledger.appendTransaction(self, BookAccount.Money, operation_value + credit_taken)
         if self._amount > Decimal('0'):
-            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount, category=category, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount, part=self.PART_VALUE, category=category, peer=self._broker)
         else:   # This branch is valid for accrued bond interest payments for bond buying trades
-            ledger.appendTransaction(self, BookAccount.Costs, -self._amount, category=category, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, -self._amount, part=self.PART_VALUE, category=category, peer=self._broker)
         if self._tax:
-            ledger.appendTransaction(self, BookAccount.Costs, self._tax, category=PredefinedCategory.Taxes, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, self._tax, part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._broker)
 
     def processStockDividendOrVesting(self, ledger):
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
@@ -707,7 +720,7 @@ class Trade(LedgerTransaction):
         text += self._note
         return text
 
-    def value_change(self) -> list:
+    def value_change(self, part_only=False) -> list:
         return [-(self._price * self._qty), self._qty]
 
     def value_currency(self) -> str:
@@ -896,7 +909,7 @@ class Transfer(LedgerTransaction):
     def price(self):
         return None
 
-    def value_change(self) -> list:
+    def value_change(self, part_only=False) -> list:
         if self._opart == Transfer.Outgoing:
             return [-self._withdrawal]
         elif self._opart == Transfer.Incoming:
@@ -1102,7 +1115,7 @@ class CorporateAction(LedgerTransaction):
                 description += f" ({result['value_share'] * Decimal('100')} %)"
         return description
 
-    def value_change(self) -> list:
+    def value_change(self, part_only=False) -> list:
         result = []
         if self._subtype != CorporateAction.SpinOff:
             result.append(Decimal(-self._qty))
@@ -1284,7 +1297,7 @@ class TermDeposit(LedgerTransaction):
     def description(self) -> str:
         return f'{DepositActions().get_name(self._action)}: "{self._note}"'
 
-    def value_change(self) -> list:
+    def value_change(self, part_only=False) -> list:
         if self._action == DepositActions.Opening or self._action == DepositActions.TaxWithheld:
             return [-self._amount]
         elif self._action == DepositActions.Closing or self._action == DepositActions.InterestAccrued:
