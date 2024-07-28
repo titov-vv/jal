@@ -36,7 +36,6 @@ class OperationsModel(QAbstractTableModel):
         self._account = 0
         self._bold_font = QFontDatabase.systemFont(QFontDatabase.GeneralFont)
         self._bold_font.setBold(True)
-
         self.prepareData()
 
     def rowCount(self, parent=None):
@@ -58,12 +57,11 @@ class OperationsModel(QAbstractTableModel):
 
     def data(self, index, role=Qt.DisplayRole, field=''):
         row = index.row()
+        odata = self._data[row]
         if not index.isValid():
             return None
         try:
-            operation = LedgerTransaction().get_operation(self._data[row]['otype'],
-                                                          self._data[row]['oid'],
-                                                          self._data[row]['opart'])
+            operation = LedgerTransaction().get_operation(odata['otype'], odata['oid'], odata['opart'])
         except IndexError as e:
             if str(e) == LedgerTransaction.NoOpException:
                 return None
@@ -91,7 +89,7 @@ class OperationsModel(QAbstractTableModel):
                 return int(Qt.AlignRight)
             return int(Qt.AlignLeft)
         if role == Qt.UserRole:  # return underlying data for given field extra parameter
-            return self._data[index.row()][field]
+            return odata[field]
 
     def data_text(self, operation, column):
         if column == 0:
