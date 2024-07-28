@@ -1,25 +1,14 @@
-from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel, QModelIndex
 from PySide6.QtGui import QFontDatabase
-from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
-from jal.constants import CustomColor, Setup
+from PySide6.QtWidgets import QHeaderView
+from jal.constants import CustomColor
 from jal.db.ledger import Ledger
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2dt
+from jal.widgets.delegates import ColoredAmountsDelegate
 
 
-#-----------------------------------------------------------------------------------------------------------------------
-# Function returns True if given number has move decimal places than Setup.DEFAULT_ACCOUNT_PRECISION
-def long_fraction(x: Decimal) -> bool:
-    if x is None:
-        return False
-    try:
-        if x.is_nan():
-            return False
-    except AttributeError:
-        return False
-    return abs(x - round(x, Setup.DEFAULT_ACCOUNT_PRECISION)) > Decimal('0')
 #-----------------------------------------------------------------------------------------------------------------------
 
 class OperationsModel(QAbstractTableModel):
@@ -174,54 +163,3 @@ class OperationsModel(QAbstractTableModel):
                 LedgerTransaction.get_operation(self._data[row]['otype'], self._data[row]['oid'],
                                                 self._data[row]['opart']).assign_tag(tag_id)
         self.prepareData()
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Display several numbers that provided by the model in form of a list
-# Each number is displayed on its own line
-# colors - display positive/negative values with green/red color
-# signs - display +/- sign before the number if True or only "-" if False
-class ColoredAmountsDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None, colors=True, signs=True):
-        self._view = parent
-        self._colors = colors
-        self._signs = signs
-        super().__init__(parent=parent)
-
-    def paint(self, painter, option, index):
-        data = index.model().data(index)
-        if not data:
-            return
-        painter.save()
-        color = index.model().data(index, role=Qt.ForegroundRole)
-        rect = option.rect
-        H = rect.height()
-        Y = rect.top()
-        rect.setHeight(H / len(data))
-        for i, item in enumerate(data):
-            rect.moveTop(Y + i * (H / len(data)))
-            self.draw_value(option.rect, painter, item, color)
-        painter.restore()
-
-    # Displays given value as formatted number with required color (or Green/Red if self._colors is True)
-    # If value is None - displays nothing, If value is NaN - displays Setup.NULL_VALUE
-    def draw_value(self, rect, painter, value, color=None):
-        text = localize_decimal(value, precision=2, sign=self._signs)
-        pen = painter.pen()
-        try:
-            if self._view.isEnabled():
-                if self._colors:
-                    if value >= 0:
-                        pen.setColor(CustomColor.DarkGreen)
-                    else:
-                        pen.setColor(CustomColor.DarkRed)
-                else:
-                    if color is not None:
-                        pen.setColor(color)
-            painter.setPen(pen)
-            painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, text)
-            if long_fraction(value):  # Underline decimal part
-                shift = painter.fontMetrics().horizontalAdvance(text[-Setup.DEFAULT_ACCOUNT_PRECISION:])
-                painter.drawLine(rect.right() - shift, rect.bottom(), rect.right(), rect.bottom())
-        except TypeError:
-            pass
