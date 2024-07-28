@@ -388,10 +388,11 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
         try:
             if self._view.isEnabled():
                 if self._colors:
-                    if value >= 0:
-                        pen.setColor(CustomColor.DarkGreen)
-                    else:
-                        pen.setColor(CustomColor.DarkRed)
+                    if not value.is_nan():
+                        if value >= 0:
+                            pen.setColor(CustomColor.DarkGreen)
+                        else:
+                            pen.setColor(CustomColor.DarkRed)
                 else:
                     if color is not None:
                         pen.setColor(color)
