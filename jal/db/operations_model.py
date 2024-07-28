@@ -94,7 +94,7 @@ class OperationsModel(QAbstractTableModel):
     def data_text(self, operation, column):
         if column == 0:
             date_time = ts2dt(operation.timestamp())
-            if operation.number()  and operation.type() != LedgerTransaction.Transfer:  # Transfer is 1-liner
+            if operation.number() and operation.type() != LedgerTransaction.Transfer:  # Transfer is 1-liner
                 date_time += f"\n# {operation.number()}"
             return date_time
         elif column == 1:
@@ -122,7 +122,6 @@ class OperationsModel(QAbstractTableModel):
         self._total_delegate = ColoredAmountsDelegate(self._view, colors=False, signs=False)
         self._view.setItemDelegateForColumn(3, self._amount_delegate)
         self._view.setItemDelegateForColumn(4, self._total_delegate)
-
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)  # row size is adjusted in data() method
 
     @Slot()

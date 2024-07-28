@@ -49,6 +49,7 @@ class LedgerTransaction(JalDB):
         self._account_name = ''
         self._account_currency = ''
         self._asset = None
+        self._peer_id = 0
         self._number = ''
         self._reconciled = False
 
@@ -213,6 +214,9 @@ class LedgerTransaction(JalDB):
     def account(self):
         return self._account
 
+    def peer(self) -> int:   # Return peer_id of current operation
+        return self._peer_id
+
     def account_name(self):
         if self._account is None:
             return ''
@@ -353,10 +357,6 @@ class IncomeSpending(LedgerTransaction):
         if self._currency:
             total.append(None)
         return total
-
-    # Return peer_id of current operation
-    def peer(self) -> int:
-        return self._peer_id
 
     # Returns a list of income/spending lines in form of
     # {"category_id", "category", "tag_id", "tag", "amount", "amount_alt", "note"}
