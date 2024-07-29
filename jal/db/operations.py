@@ -242,7 +242,7 @@ class LedgerTransaction(JalDB):
     def amount(self):
         return 0
 
-    def description(self) -> str:
+    def description(self, part_only=False) -> str:
         return ''
 
     def value_change(self, part_only=False) -> list:
@@ -325,7 +325,9 @@ class IncomeSpending(LedgerTransaction):
             self._currency_name = JalAsset(self._currency).symbol()
         self._amount_alt = sum(Decimal(line['amount_alt']) for line in self._details) if self._details else Decimal('0')
 
-    def description(self) -> str:
+    def description(self, part_only=False) -> str:
+        if part_only and self._opart is not None:
+            return next(iter([x['note'] for x in self._details if x['id'] == self._opart]), '')
         description = self._peer
         if self._currency:
             if self._amount_alt == Decimal('0'):
@@ -541,11 +543,18 @@ class AssetPayment(LedgerTransaction):
     def note(self) -> str:
         return self._note
 
-    def description(self) -> str:
-        description = self._note + "\n"
-        if self._tax:
-            description += self.tr("Tax: ") + self._asset.country_name()
-        return description
+    def description(self, part_only=False) -> str:
+        text = self._note if self._note else self.tr("Dividend payment for:") + f" {self._asset.symbol()} ({self._asset.name()})"
+        tax_text = self.tr("Tax: ") + self._asset.country_name()
+        if part_only and self._opart is not None:
+            if self._opart == self.PART_VALUE:
+                return text
+            elif self._opart == self.PART_TAX:
+                return tax_text
+            else:
+                return ''
+        text = f"{text}\n{tax_text}" if self._tax else f"{text}\n"
+        return text
 
     def value_change(self, part_only=False) -> list:
         if part_only and self._opart is not None:
@@ -712,7 +721,7 @@ class Trade(LedgerTransaction):
     def amount(self) -> Decimal:
         return self._price * self._qty
 
-    def description(self) -> str:
+    def description(self, part_only=False) -> str:
         if self._fee != Decimal('0'):
             text = f"{self._qty:+.2f} @ {self._price:.4f}\n({self._fee:.2f}) "
         else:
@@ -885,7 +894,7 @@ class Transfer(LedgerTransaction):
         else:
             assert False, "Unknown transfer type"
 
-    def description(self) -> str:
+    def description(self, part_only=False) -> str:
         if self._asset.id():
             if self._opart == Transfer.Incoming and self._withdrawal_currency != self._deposit_currency:
                 return self._note + " [" + self.tr("Cost basis:") + f" @{self._deposit:.2f} {self._deposit_currency}]"
@@ -1100,7 +1109,7 @@ class CorporateAction(LedgerTransaction):
     def settlement(self) -> int:
         return self._timestamp
 
-    def description(self) -> str:
+    def description(self, part_only=False) -> str:
         description = self.names[self._subtype]
         if self._note:
             description += ": " + self._note
@@ -1294,7 +1303,7 @@ class TermDeposit(LedgerTransaction):
             amount += self._read_record(query, cast=[Decimal])
         return amount
 
-    def description(self) -> str:
+    def description(self, part_only=False) -> str:
         return f'{DepositActions().get_name(self._action)}: "{self._note}"'
 
     def value_change(self, part_only=False) -> list:

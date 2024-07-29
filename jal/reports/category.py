@@ -20,7 +20,7 @@ class CategoryOperationsModel(ReportOperationsModel):
 
     def footerData(self, section: int, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and section == 3:
-            return self.tr("Total with peer ") + f"'{JalCategory(self._category_id).name()}':"
+            return self.tr("Total with category ") + f"'{JalCategory(self._category_id).name()}':"
         return super().footerData(section, role)
 
     def updateView(self, category_id: int, dates_range: tuple, total_currency_id: int):

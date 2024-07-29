@@ -78,7 +78,7 @@ class ReportOperationsModel(QAbstractTableModel):
         elif column == 2:
             return JalPeer(operation.peer()).name()
         elif column == 3:
-            return operation.description()
+            return operation.description(part_only=True)
         elif column == 4:
             return operation.value_change(part_only=True)
         elif column == 5:
