@@ -71,7 +71,7 @@ class LedgerTransaction(JalDB):
         elif operation_type == LedgerTransaction.AssetPayment:
             return AssetPayment(oid, opart=opart)
         elif operation_type == LedgerTransaction.Trade:
-            return Trade(oid)
+            return Trade(oid, opart=opart)
         elif operation_type == LedgerTransaction.Transfer:
             return Transfer(oid, opart)
         elif operation_type == LedgerTransaction.CorporateAction:
@@ -672,12 +672,15 @@ class Trade(LedgerTransaction):
         "fee": {"mandatory": True, "validation": False},
         "note": {"mandatory": False, "validation": False}
     }
+    PART_PROFIT = 1
+    PART_FEE = 2
 
     # operation_data is either an integer to select operation from database or a dict with operation data that is used
     # to create a new operation in database and then select it
-    def __init__(self, operation_data=None):
+    def __init__(self, operation_data=None, opart=None):
         super().__init__(operation_data)
         self._otype = LedgerTransaction.Trade
+        self._opart = opart
         self._view_rows = 2
         self._data = self._read("SELECT t.timestamp, t.settlement, t.number, t.account_id, t.asset_id, t.qty, "
                                 "t.price, t.fee, t.note FROM trades AS t WHERE t.oid=:oid",
@@ -701,6 +704,15 @@ class Trade(LedgerTransaction):
         else:
             self._icon = JalIcon[JalIcon.BUY]
             self._oname = self.tr("Buy")
+        if self._opart is not None and self._opart == self.PART_PROFIT:  # FIXME this query slows down UI a lot - make db index? or change
+            profit = self._read("SELECT amount FROM ledger WHERE otype=:otype AND oid=:oid AND opart=:opart AND book_account=:book",
+                                [(":otype", self._otype), (":oid", self._oid), (":opart", self._opart), (":book", BookAccount.Incomes)])
+            try:
+                self._profit = -Decimal(profit)
+            except:
+                self._profit = Decimal('NaN')
+        else:
+            self._profit = Decimal('NaN')
 
     def settlement(self) -> int:
         return self._settlement
@@ -724,14 +736,21 @@ class Trade(LedgerTransaction):
         return self._price * self._qty
 
     def description(self, part_only=False) -> str:
-        if self._fee != Decimal('0'):
-            text = f"{self._qty:+.2f} @ {self._price:.4f}\n({self._fee:.2f}) "
-        else:
-            text = f"{self._qty:+.2f} @ {self._price:.4f}\n"
-        text += self._note
-        return text
+        deal_text = f"{self._qty:+.2f} {self._asset.symbol()} @ {self._price:.4f}"
+        fee_text = f"({self._fee:.2f})"
+        text = deal_text + " " + fee_text if self._fee != Decimal('0') else deal_text
+        if part_only and self._opart is not None:
+            return text
+        return text + "\n" + self._note
 
     def value_change(self, part_only=False) -> list:
+        if part_only and self._opart is not None:
+            if self._opart == self.PART_FEE:
+                return [self._fee]
+            elif self._opart == self.PART_PROFIT:
+                return [self._profit]
+            else:
+                return [Decimal('NaN')]
         return [-(self._price * self._qty), self._qty]
 
     def value_currency(self) -> str:
@@ -783,13 +802,14 @@ class Trade(LedgerTransaction):
                                                       asset_id=self._asset.id(), value=deal_sign * processed_value)
             ledger.appendTransaction(self, BookAccount.Incomes,
                                      deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
-                                     category=PredefinedCategory.Profit, peer=self._broker)
+                                     part=self.PART_PROFIT, category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have a reminder that opens a new position
             self._account.open_trade(JalOpenTrade(self, self._price, (qty - processed_qty)), self._asset)
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty),
                                      asset_id=self._asset.id(), value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
-            ledger.appendTransaction(self, BookAccount.Costs, self._fee, category=PredefinedCategory.Fees, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, self._fee,
+                                     part=self.PART_FEE, category=PredefinedCategory.Fees, peer=self._broker)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
