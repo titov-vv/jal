@@ -917,6 +917,9 @@ class Transfer(LedgerTransaction):
             assert False, "Unknown transfer type"
 
     def description(self, part_only=False) -> str:
+        if self._opart == Transfer.Fee:
+            note = f" ({self._note})" if self._note else ''
+            return self.tr("Transfer fee") + note
         if self._asset.id():
             if self._opart == Transfer.Incoming and self._withdrawal_currency != self._deposit_currency:
                 return self._note + " [" + self.tr("Cost basis:") + f" @{self._deposit:.2f} {self._deposit_currency}]"
