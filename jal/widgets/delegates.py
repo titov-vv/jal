@@ -381,14 +381,14 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
         painter.restore()
 
     # Displays given value as formatted number with required color (or Green/Red if self._colors is True)
-    # If value is None - displays nothing, If value is NaN - displays Setup.NULL_VALUE
+    # If value is None - do nothing, If value is Decimal.NaN - displays Setup.NULL_VALUE
     def draw_value(self, rect, painter, value, color=None):
         text = localize_decimal(value, precision=2, sign=self._signs)
         pen = painter.pen()
         try:
             if self._view.isEnabled():
                 if self._colors:
-                    if not value.is_nan():
+                    if value is not None and not value.is_nan():
                         if value >= 0:
                             pen.setColor(CustomColor.DarkGreen)
                         else:
@@ -401,5 +401,5 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
             if long_fraction(value):  # Underline decimal part
                 shift = painter.fontMetrics().horizontalAdvance(text[-Setup.DEFAULT_ACCOUNT_PRECISION:])
                 painter.drawLine(rect.right() - shift, rect.bottom(), rect.right(), rect.bottom())
-        except TypeError:
+        except (TypeError, AttributeError):
             pass
