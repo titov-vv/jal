@@ -327,7 +327,7 @@ class IncomeSpending(LedgerTransaction):
 
     def description(self, part_only=False) -> str:
         if part_only and self._opart is not None:
-            return next(iter([x['note'] for x in self._details if x['id'] == self._opart]), '')
+            return n[0] if (n := [x['note'] for x in self._details if x['id'] == self._opart]) else ''
         description = self._peer
         if self._currency:
             if self._amount_alt == Decimal('0'):
@@ -643,7 +643,8 @@ class AssetPayment(LedgerTransaction):
                                  asset_id=self._asset.id(), value=self._amount * self.price())
         if self._tax:
             ledger.appendTransaction(self, BookAccount.Money, -self._tax)
-            ledger.appendTransaction(self, BookAccount.Costs, self._tax, category=PredefinedCategory.Taxes, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, self._tax,
+                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._broker)
 
     def processBondAmortization(self, ledger):
         operation_value = (self._amount - self._tax)
@@ -652,7 +653,8 @@ class AssetPayment(LedgerTransaction):
         if credit_returned < operation_value:
             ledger.appendTransaction(self, BookAccount.Money, operation_value - credit_returned)
         if self._tax:
-            ledger.appendTransaction(self, BookAccount.Costs, self._tax, category=PredefinedCategory.Taxes, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, self._tax,
+                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._broker)
         ledger.appendTransaction(self, BookAccount.Assets, Decimal('0'), asset_id=self._asset.id(), value=-self._amount)
 
 
@@ -692,7 +694,7 @@ class Trade(LedgerTransaction):
         self._price = Decimal(self._data['price'])
         self._fee = Decimal(self._data['fee'])
         self._note = self._data['note']
-        self._broker = self._account.organization()
+        self._peer_id = self._broker = self._account.organization()
         if self._qty < Decimal('0'):
             self._icon = JalIcon[JalIcon.SELL]
             self._oname = self.tr("Sell")
