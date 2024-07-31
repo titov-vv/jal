@@ -1,4 +1,3 @@
-from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QObject
 from jal.db.ledger import Ledger
 from jal.db.asset import JalAsset
@@ -32,26 +31,8 @@ class CategoryOperationsModel(ReportOperationsModel):
 
     def prepareData(self):
         self._data = []
-        self._total = Decimal('0')
         self._data = Ledger.get_operations_by_category(self._begin, self._end, self._category_id)
-        operations = [LedgerTransaction().get_operation(x['otype'], x['oid'], x['opart']) for x in self._data]
-        # Take only Income/Spending data as we expect Asset operations to be not relevant for this kind of report
-        operations = [x for x in operations if x.type() == LedgerTransaction.IncomeSpending]
-        for op in operations:
-            op_amount = Decimal('0')
-            for line in op.lines():
-                if line['category_id'] == self._category_id:
-                    try:
-                        op_amount += Decimal(line['amount'])
-                    except:
-                        pass
-            account_currency = op.account().currency()
-            if account_currency == self._total_currency:
-                self._total += op_amount
-            else:
-                rate = JalAsset(account_currency).quote(op.timestamp(), self._total_currency)[1]
-                self._total += op_amount * rate
-        self.modelReset.emit()
+        super().prepareData()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

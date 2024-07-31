@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt, QAbstractTableModel
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QHeaderView
 from jal.db.asset import JalAsset
+from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
@@ -127,5 +128,15 @@ class ReportOperationsModel(QAbstractTableModel):
             self.prepareData()
             self.configureView()
 
+    # self._data array should be populated by child classes.
+    # Then they call this method to calculate total value.
     def prepareData(self):
-        raise NotImplementedError(f"Method prepareData is not defined in {type(self).__name__} class")
+        self._total = Decimal('0')
+        for line in self._data:
+            account_currency = JalAccount(line['account_id']).currency()
+            amount = -Decimal(line['amount'])
+            if account_currency == self._total_currency:
+                self._total += amount
+            else:
+                self._total += amount * JalAsset(account_currency).quote(line['timestamp'], self._total_currency)[1]
+        self.modelReset.emit()

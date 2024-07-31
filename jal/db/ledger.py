@@ -115,12 +115,12 @@ class Ledger(QObject, JalDB):
         return sequence
 
     @classmethod
-    # Returns a list of [otype, oid, subtype, timestamp, account_id] ordered by timestamp
+    # Returns a list of [otype, oid, opart, timestamp, account_id, amount] ordered by timestamp
     # collected from 'ledger' table with given WHERE statement set as condition and parameters
     def _get_operations_by_filter(cls, condition, parameters) -> list:
         operations = []
         query = cls._exec(
-            f"SELECT DISTINCT otype, oid, opart, timestamp, account_id FROM ledger "
+            f"SELECT DISTINCT otype, oid, opart, timestamp, account_id, amount FROM ledger "
             f"{condition} ORDER BY timestamp", parameters, forward_only=True)
         while query.next():
             operations.append(cls._read_record(query, named=True))
