@@ -1318,7 +1318,7 @@ class TermDeposit(LedgerTransaction):
         self._amount = Decimal(self._data['amount'])
         self._icon = JalIcon[icons[self._action]]
         self._oname = f'{DepositActions().get_name(self._action)}'
-        self._bank = self._account.organization()
+        self._peer_id = self._account.organization()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
 
     def _get_deposit_amount(self) -> Decimal:
@@ -1364,7 +1364,7 @@ class TermDeposit(LedgerTransaction):
         return self._amount
 
     def processLedger(self, ledger):
-        if not self._bank:
+        if not self._peer_id:
             raise LedgerError(self.tr("Can't process deposit as bank isn't set for account: ") + self._account_name)
         if self._action in [DepositActions.Opening, DepositActions.TopUp, DepositActions.Closing, DepositActions.PartialWithdrawal]:
             amount = self._get_deposit_amount() if self._action == DepositActions.Closing else self._amount
@@ -1381,10 +1381,10 @@ class TermDeposit(LedgerTransaction):
         elif self._action == DepositActions.TaxWithheld:
             ledger.appendTransaction(self, BookAccount.Savings, -self._amount)
             ledger.appendTransaction(self, BookAccount.Costs, self._amount,
-                                     category=PredefinedCategory.Taxes, peer=self._bank, part=self._aid)
+                                     category=PredefinedCategory.Taxes, peer=self._peer_id, part=self._aid)
         elif self._action == DepositActions.InterestAccrued:
             ledger.appendTransaction(self, BookAccount.Savings, self._amount)
             ledger.appendTransaction(self, BookAccount.Incomes, -self._amount,
-                                     category=PredefinedCategory.Interest, peer=self._bank, part=self._aid)
+                                     category=PredefinedCategory.Interest, peer=self._peer_id, part=self._aid)
         else:
             assert False, "Not implemented deposit action"
