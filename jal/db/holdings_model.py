@@ -30,6 +30,8 @@ class AssetTreeItem(AbstractTreeItem):
                 'value': Decimal('0'), 'value_common': Decimal('0'), 'p/l': Decimal('0'), 'p/l%': Decimal('0'),
                 'font': 'bold', 'quote_age': 0, 'share': Decimal('0')
             }
+            if self._group == 'asset_id':   # Asset grouping will calculate average price and total qty
+                self._data['qty'] = self._data['open_quote'] = self._data['quote'] = Decimal('0')
         else:
             self._data = data.copy()
             self._data['value'] = self._data['quote'] * self._data['qty']
@@ -49,6 +51,15 @@ class AssetTreeItem(AbstractTreeItem):
         self._data['value_common'] += child_data['value_common']
         self._data['p/l'] += child_data['p/l']
         self._data['p/l%'] = Decimal('100') * self._data['p/l'] / (self._data['value'] - self._data['p/l']) if self._data['value'] != self._data['p/l'] else Decimal('0')
+        if self._group == 'asset_id':    # Average price and total quantity calculation for asset groups
+            if not child_data['asset_is_currency']:
+                if not self._data['since'] or child_data['since'] < self._data['since']:
+                    self._data['since'] = child_data['since']
+                self._data['open_quote'] = (self._data['open_quote'] * self._data['qty'] + child_data['open_quote'] * child_data['qty']) / (self._data['qty'] + child_data['qty'])
+                self._data['quote'] = child_data['quote']
+            else:
+                self._data['quote'] = self._data['open_quote'] = None
+            self._data['qty'] += child_data['qty']
 
     def _afterParentGroupUpdate(self, group_data):
         self._data['share'] = Decimal('100') * self._data['value_common'] / group_data['value_common'] if group_data['value_common'] else Decimal('0')
