@@ -60,6 +60,7 @@ class AssetTreeItem(AbstractTreeItem):
             else:
                 self._data['quote'] = self._data['open_quote'] = None
             self._data['qty'] += child_data['qty']
+            self._data['asset_name'] = child_data['asset_name']
 
     def _afterParentGroupUpdate(self, group_data):
         self._data['share'] = Decimal('100') * self._data['value_common'] / group_data['value_common'] if group_data['value_common'] else Decimal('0')
