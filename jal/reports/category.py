@@ -15,10 +15,10 @@ JAL_REPORT_CLASS = "CategoryReport"
 class CategoryOperationsModel(ReportOperationsModel):
     def __init__(self, parent_view):
         self._category_id = 0
-        super().__init__(parent_view)
+        super().__init__(parent_view, hidden_column=3)
 
     def footerData(self, section: int, role=Qt.DisplayRole):
-        if role == Qt.DisplayRole and section == 3:
+        if role == Qt.DisplayRole and section == 5:
             return self.tr("Total with category ") + f"'{JalCategory(self._category_id).name()}':"
         return super().footerData(section, role)
 

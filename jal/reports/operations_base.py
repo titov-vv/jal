@@ -5,6 +5,8 @@ from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QHeaderView
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
+from jal.db.category import JalCategory
+from jal.db.tag import JalTag
 from jal.db.peer import JalPeer
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
@@ -12,13 +14,14 @@ from jal.widgets.helpers import ts2dt
 from jal.widgets.delegates import ColoredAmountsDelegate
 
 
-# FIXME - check if it can have a common base class with OperationsModel
 class ReportOperationsModel(QAbstractTableModel):
-    def __init__(self, parent_view):
+    # hidden_column indicates which column to hide from display in the view
+    def __init__(self, parent_view, hidden_column=None):
         super().__init__(parent_view)
-        self._columns = [self.tr("Timestamp"), self.tr("Account"), self.tr("Peer"),
+        self._columns = [self.tr("Timestamp"), self.tr("Account"), self.tr("Peer"), self.tr("Category"), self.tr("Tag"),
                          self.tr("Notes"), self.tr("Amount"), self.tr("Currency")]
         self._view = parent_view
+        self._hidden = hidden_column
         self._amount_delegate = None
         self._data = []
         self._begin = 0
@@ -59,19 +62,11 @@ class ReportOperationsModel(QAbstractTableModel):
                 return None
             raise e
         if role == Qt.DisplayRole:
-            return self.data_text(operation, index.column())
+            return self.data_text(operation, index.column(), odata)
         if role == Qt.DecorationRole and index.column() == 0:
             return operation.icon()
-        # if role == Qt.FontRole and index.column() == 0:
-        #     # below line isn't related with font, it is put here to be called for each row minimal times (ideally 1)
-        #     self._view.setRowHeight(row, self._view.verticalHeader().fontMetrics().height() * operation.view_rows())
-        #     return self._view.font()
-        if role == Qt.TextAlignmentRole:
-            if index.column() == 4:
-                return int(Qt.AlignRight)
-            return int(Qt.AlignLeft)
 
-    def data_text(self, operation, column):
+    def data_text(self, operation, column, odata):
         if column == 0:
             return ts2dt(operation.timestamp())
         elif column == 1:
@@ -79,10 +74,14 @@ class ReportOperationsModel(QAbstractTableModel):
         elif column == 2:
             return JalPeer(operation.peer()).name()
         elif column == 3:
-            return operation.description(part_only=True)
+            return JalCategory(odata['category_id']).name()
         elif column == 4:
-            return operation.value_change(part_only=True)
+            return JalTag(odata['tag_id']).name()
         elif column == 5:
+            return operation.description(part_only=True)
+        elif column == 6:
+            return operation.value_change(part_only=True)
+        elif column == 7:
             return operation.value_currency()
         else:
             assert False, "Unexpected column number"
@@ -90,27 +89,31 @@ class ReportOperationsModel(QAbstractTableModel):
     # Is used by view to display footer Title, Total amount and Total currency with right font and alignment in columns 3-5
     def footerData(self, section: int, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
-            if section == 4:
+            if section == 6:
                 return localize_decimal(self._total, precision=2)
-            elif section == 5:
+            elif section == 7:
                 return self._total_currency_name
         elif role == Qt.FontRole:
             return self._bold_font
         elif role == Qt.TextAlignmentRole:
-            if section == 4:
+            if section == 6:
                 return Qt.AlignRight | Qt.AlignVCenter
             return Qt.AlignLeft | Qt.AlignVCenter
         return None
 
     def configureView(self):
         self._view.setColumnWidth(0, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.2)
-        self._view.setColumnWidth(1, 200)
-        self._view.setColumnWidth(1, 200)
-        self._view.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
+        self._view.setColumnWidth(1, 150)
+        self._view.setColumnWidth(2, 150)
+        self._view.setColumnWidth(3, 150)
+        self._view.setColumnWidth(4, 150)
+        self._view.horizontalHeader().setSectionResizeMode(5, QHeaderView.Stretch)
         self._view.horizontalHeader().setFont(self._bold_font)
         self._amount_delegate = ColoredAmountsDelegate(self._view)
-        self._view.setItemDelegateForColumn(4, self._amount_delegate)
+        self._view.setItemDelegateForColumn(6, self._amount_delegate)
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)  # row size is adjusted in data() method
+        if self._hidden is not None:
+            self._view.setColumnHidden(self._hidden, True)
 
     # Triggers view update if display parameters were changed
     def updateView(self, update: bool, dates_range: tuple, total_currency_id: int):

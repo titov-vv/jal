@@ -15,10 +15,10 @@ JAL_REPORT_CLASS = "PeerReport"
 class PeerOperationsModel(ReportOperationsModel):
     def __init__(self, parent_view):
         self._peer_id = 0
-        super().__init__(parent_view)
+        super().__init__(parent_view, hidden_column=2)
 
     def footerData(self, section: int, role=Qt.DisplayRole):
-        if role == Qt.DisplayRole and section == 3:
+        if role == Qt.DisplayRole and section == 5:
             return self.tr("Total with peer ") + f"'{JalPeer(self._peer_id).name()}':"
         return super().footerData(section, role)
 
