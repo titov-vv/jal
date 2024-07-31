@@ -293,20 +293,20 @@ CREATE TABLE action_results (
     value_share TEXT    NOT NULL
 );
 
--- Table: trades
+-- Table 'trade' records all buy/sell operations with assets
 DROP TABLE IF EXISTS trades;
 CREATE TABLE trades (
-    oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,
-    otype      INTEGER     NOT NULL DEFAULT (3),
-    timestamp  INTEGER     NOT NULL,
-    settlement INTEGER     DEFAULT (0),
-    number     TEXT        DEFAULT (''),
-    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    asset_id   INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    qty        TEXT        NOT NULL DEFAULT ('0'),
-    price      TEXT        NOT NULL DEFAULT ('0'),
-    fee        TEXT        DEFAULT ('0'),
-    note       TEXT
+    oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,  -- Unique operation id
+    otype      INTEGER     NOT NULL DEFAULT (3),         -- Operation type (3 = trade)
+    timestamp  INTEGER     NOT NULL,                     -- Timestamp when trade happened
+    settlement INTEGER     NOT NULL DEFAULT (0),         -- Timestamp of settlement if known (otherwise 0)
+    number     TEXT        NOT NULL DEFAULT (''),        -- Number of trade in broker/exchange systems
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- where trade is accounted
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,    -- which asset was bought/sold
+    qty        TEXT        NOT NULL DEFAULT ('0'),       -- Quantity of asset (>0 - Buy, <0 - Sell)
+    price      TEXT        NOT NULL DEFAULT ('0'),       -- Price of the trade
+    fee        TEXT        NOT NULL DEFAULT ('0'),       -- Total fee (broker, exchange, other) of the trade
+    note       TEXT        NOT NULL DEFAULT ('')         -- Free text comment
 );
 
 -- Table for closed deals storage
@@ -618,7 +618,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 57);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 58);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
