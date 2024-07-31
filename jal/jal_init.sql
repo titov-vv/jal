@@ -182,6 +182,10 @@ CREATE TABLE ledger (
     category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION, -- category that is related with transaction. No FK enforcement as table is cleaned by categories_after_delete trigger
     tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION        -- tag that is related with transaction. No FK enforcement as table is cleaned by tags_after_delete trigger
 );
+DROP INDEX IF EXISTS ledger_by_operation;
+CREATE INDEX ledger_by_operation ON ledger (otype, oid, opart, book_account);
+DROP INDEX IF EXISTS ledger_by_time;
+CREATE INDEX ledger_by_time ON ledger (timestamp, asset_id, account_id);
 
 -- Table: ledger_totals to keep last accumulated amount value for each transaction
 DROP TABLE IF EXISTS ledger_totals;

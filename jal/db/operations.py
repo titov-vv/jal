@@ -704,7 +704,7 @@ class Trade(LedgerTransaction):
         else:
             self._icon = JalIcon[JalIcon.BUY]
             self._oname = self.tr("Buy")
-        if self._opart is not None and self._opart == self.PART_PROFIT:  # FIXME this query slows down UI a lot - make db index? or change
+        if self._opart is not None and self._opart == self.PART_PROFIT:
             profit = self._read("SELECT amount FROM ledger WHERE otype=:otype AND oid=:oid AND opart=:opart AND book_account=:book",
                                 [(":otype", self._otype), (":oid", self._oid), (":opart", self._opart), (":book", BookAccount.Incomes)])
             try:
