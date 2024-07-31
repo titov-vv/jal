@@ -464,7 +464,7 @@ class AssetPayment(LedgerTransaction):
         self._amount = Decimal(self._data['amount'])
         self._tax = Decimal(self._data['tax'])
         self._note = self._data['note']
-        self._broker = self._account.organization()
+        self._peer_id = self._account.organization()
 
     # Returns a list of Dividend objects for given asset, account and subtype
     # if asset_id is 0 - return for all assets, if subtype is 0 - return all types
@@ -550,7 +550,7 @@ class AssetPayment(LedgerTransaction):
             if self._opart == self.PART_VALUE:
                 return text
             elif self._opart == self.PART_TAX:
-                return tax_text
+                return f"{tax_text} [{text}]"
             else:
                 return ''
         text = f"{text}\n{tax_text}" if self._tax else f"{text}\n"
@@ -601,7 +601,7 @@ class AssetPayment(LedgerTransaction):
                        [(":oid", self._oid), (":tax", new_tax)], commit=True)
 
     def processLedger(self, ledger):
-        if not self._broker:
+        if not self._peer_id:
             raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
         if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
             self.processStockDividendOrVesting(ledger)
@@ -627,11 +627,11 @@ class AssetPayment(LedgerTransaction):
             if credit_taken < -operation_value:
                 ledger.appendTransaction(self, BookAccount.Money, operation_value + credit_taken)
         if self._amount > Decimal('0'):
-            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount, part=self.PART_VALUE, category=category, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount, part=self.PART_VALUE, category=category, peer=self._peer_id, tag=self._asset.tag().id())
         else:   # This branch is valid for accrued bond interest payments for bond buying trades
-            ledger.appendTransaction(self, BookAccount.Costs, -self._amount, part=self.PART_VALUE, category=category, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, -self._amount, part=self.PART_VALUE, category=category, peer=self._peer_id, tag=self._asset.tag().id())
         if self._tax:
-            ledger.appendTransaction(self, BookAccount.Costs, self._tax, part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, self._tax, part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
 
     def processStockDividendOrVesting(self, ledger):
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
@@ -644,7 +644,7 @@ class AssetPayment(LedgerTransaction):
         if self._tax:
             ledger.appendTransaction(self, BookAccount.Money, -self._tax)
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
-                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._broker)
+                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
 
     def processBondAmortization(self, ledger):
         operation_value = (self._amount - self._tax)
@@ -654,7 +654,7 @@ class AssetPayment(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Money, operation_value - credit_returned)
         if self._tax:
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
-                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._broker)
+                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
         ledger.appendTransaction(self, BookAccount.Assets, Decimal('0'), asset_id=self._asset.id(), value=-self._amount)
 
 
@@ -736,7 +736,7 @@ class Trade(LedgerTransaction):
         return self._price * self._qty
 
     def description(self, part_only=False) -> str:
-        deal_text = f"{self._qty:+.2f} {self._asset.symbol()} @ {self._price:.4f}"
+        deal_text = f"{self._qty:+.2f} {self._asset.symbol(self._account.currency())} @ {self._price:.4f}"
         fee_text = f"({self._fee:.2f})"
         text = deal_text + " " + fee_text if self._fee != Decimal('0') else deal_text
         if part_only and self._opart is not None:
@@ -805,14 +805,14 @@ class Trade(LedgerTransaction):
                                                       asset_id=self._asset.id(), value=deal_sign * processed_value)
             ledger.appendTransaction(self, BookAccount.Incomes,
                                      deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
-                                     part=self.PART_PROFIT, category=PredefinedCategory.Profit, peer=self._broker)
+                                     part=self.PART_PROFIT, category=PredefinedCategory.Profit, peer=self._broker, tag=self._asset.tag().id())
         if processed_qty < qty:  # We have a reminder that opens a new position
             self._account.open_trade(JalOpenTrade(self, self._price, (qty - processed_qty)), self._asset)
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty),
                                      asset_id=self._asset.id(), value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
             ledger.appendTransaction(self, BookAccount.Costs, self._fee,
-                                     part=self.PART_FEE, category=PredefinedCategory.Fees, peer=self._broker)
+                                     part=self.PART_FEE, category=PredefinedCategory.Fees, peer=self._broker, tag=self._asset.tag().id())
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1255,7 +1255,7 @@ class CorporateAction(LedgerTransaction):
         # Withdraw value with old quantity of old asset
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
         if self._subtype == CorporateAction.Delisting:  # Map value to costs and exit - nothing more for delisting
-            ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=PredefinedCategory.Profit, peer=self._broker)
+            ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=PredefinedCategory.Profit, peer=self._broker, tag=self._asset.tag().id())
             return
         # Process assets after corporate action
         query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])  # FIXME - replace with get_results() call
