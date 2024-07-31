@@ -34,4 +34,5 @@ CREATE INDEX ledger_by_time ON ledger (timestamp, asset_id, account_id);
 --------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=58 WHERE name='SchemaVersion';
+INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);
 COMMIT;
