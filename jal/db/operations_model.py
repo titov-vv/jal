@@ -6,7 +6,7 @@ from jal.db.ledger import Ledger
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2dt
-from jal.widgets.delegates import ColoredAmountsDelegate
+from jal.widgets.delegates import ColoredAmountsDelegate, long_fraction
 
 
 #-----------------------------------------------------------------------------------------------------------------------

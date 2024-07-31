@@ -352,7 +352,7 @@ class IncomeSpending(LedgerTransaction):
             return [self._amount]
 
     def value_currency(self) -> str:
-        if self._currency:
+        if self._currency and not self._opart:
             return f" {self._account_currency}\n {self._currency_name}"
         else:
             return f" {self._account_currency}"
@@ -570,7 +570,7 @@ class AssetPayment(LedgerTransaction):
             return [self._amount, None]
 
     def value_currency(self) -> str:
-        if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
+        if (self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting) and not self._opart:
             if self._tax:
                 return f" {self._asset.symbol(self._account.currency())}\n {self._account_currency}"
             else:
@@ -685,8 +685,8 @@ class Trade(LedgerTransaction):
         self._data = self._read("SELECT t.timestamp, t.settlement, t.number, t.account_id, t.asset_id, t.qty, "
                                 "t.price, t.fee, t.note FROM trades AS t WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
-        self._timestamp = self._data['timestamp']
-        self._settlement = self._data['settlement']
+        self._timestamp = int(self._data['timestamp'])
+        self._settlement = int(self._data['settlement'])
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
@@ -746,7 +746,7 @@ class Trade(LedgerTransaction):
     def value_change(self, part_only=False) -> list:
         if part_only and self._opart is not None:
             if self._opart == self.PART_FEE:
-                return [self._fee]
+                return [-self._fee]
             elif self._opart == self.PART_PROFIT:
                 return [self._profit]
             else:
@@ -754,7 +754,10 @@ class Trade(LedgerTransaction):
         return [-(self._price * self._qty), self._qty]
 
     def value_currency(self) -> str:
-        return f" {self._account_currency}\n {self._asset.symbol(self._account.currency())}"
+        if self._opart:
+            return f" {self._account_currency}"
+        else:
+            return f" {self._account_currency}\n {self._asset.symbol(self._account.currency())}"
 
     def value_total(self) -> list:
         amount = self._money_total(self._account.id())
