@@ -4,6 +4,7 @@ from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView, QMessageBox, QAbstractItemView
 from jal.db.db import JalDB, JalSqlError
+from jal.constants import Setup
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -185,6 +186,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         self._drag_and_drop = False  # This is required to prevent deletion of initial element after drag&drop movement
         self._view = parent_view
         self._default_name = "name"
+        self._default_value = self.tr("New")
         self._stretch = None
         self._sort_by = None
         self._filter_text = ''
@@ -359,6 +361,16 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
     def delete(self, item_id: int) -> None:
         _ = self._exec(f"DELETE FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
+    # Helper function that generates new default name that is not present in the table yet
+    def valid_new_name(self) -> str:
+        for i in range(Setup.MAX_TIMESTAMP):
+            new_name = f"{self._default_value} {i}" if i else self._default_value
+            exists = self._read(f"SELECT id FROM {self._table} WHERE {self._default_name}=:default_value",
+                                [(":default_value", new_name)])
+            if exists is None:
+                return new_name
+        assert True, "Number of valid new name exhausted"
+
     def insertRows(self, row, count, parent=None):
         if parent is None:
             return False
@@ -366,10 +378,10 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
             parent_id = self.ROOT_PID
         else:
             parent_id = parent.internalId()
-
         self.beginInsertRows(parent, row, row + count - 1)
         self.connection().transaction()
-        _ = self._exec(f"INSERT INTO {self._table}(pid, {self._default_name}) VALUES (:pid, '')", [(":pid", parent_id)])
+        _ = self._exec(f"INSERT INTO {self._table}(pid, {self._default_name}) VALUES (:pid, :default_value)",
+                       [(":pid", parent_id), (":default_value", self.valid_new_name())])
         self.endInsertRows()
         self.layoutChanged.emit()
         return True

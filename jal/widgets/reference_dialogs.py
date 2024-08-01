@@ -212,6 +212,7 @@ class PeerTreeModel(SqlTreeModel):
         self._columns = [("name", self.tr("Name")),
                          ("location", self.tr("Location")),
                          ("actions_count", self.tr("Docs count"))]
+        self._default_value = self.tr("New peer")
         self._sort_by = "name"
         self._stretch = "name"
         self._int_delegate = None
@@ -310,6 +311,7 @@ class CategoryTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
         self._columns = [("name", self.tr("Name"))]
+        self._default_value = self.tr("New category")
         self._sort_by = "name"
         self._stretch = "name"
         self._bool_delegate = None
@@ -390,6 +392,7 @@ class TagTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
         self._columns = [("tag", self.tr("Tag")), ("icon_file", self.tr("Icon filename"))]
+        self._default_value = self.tr("New tag")
         self._default_name = "tag"
         self._sort_by = "tag"
         self._stretch = "tag"
