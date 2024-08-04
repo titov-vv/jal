@@ -392,7 +392,13 @@ class StatementTvoyBroker(StatementXLS):
         self._data[FOF.TRANSFERS].append(transfer)
 
     def dividend(self, timestamp, number, account_id, amount, description):
-        DividendPattern = r"> (?P<DESCR1>.*) \((?P<REG_NUMBER>.*)\)((?P<DESCR2> .*)?(?P<TAX_TEXT> налог (в размере (?P<TAX>\d+\.\d\d) )?.*удержан))?\. НДС не облагается\."
+        DividendPattern = r"> (?P<NOTE>.*) \((?P<REG_NUMBER>.*)\)"
+        if "за период" in description:
+            DividendPattern += r"(?P<PERIOD> за период.*)"
+        if "налог" in description:
+            DividendPattern += r"(?P<TAX_TEXT> налог (в размере (?P<TAX>\d+\.\d\d) )?.*удержан)"
+        DividendPattern += r"\. НДС не облагается\."
+        # DividendPattern = r"> (?P<NOTE>.*) \((?P<REG_NUMBER>.*)\)((?P<DESCR2> .*)?(?P<TAX_TEXT> налог (в размере (?P<TAX>\d+\.\d\d) )?.*удержан))?\. НДС не облагается\."
         ISINPattern = r"[A-Z]{2}.{9}\d"
 
         parts = re.match(DividendPattern, description, re.IGNORECASE)
@@ -402,23 +408,20 @@ class StatementTvoyBroker(StatementXLS):
         isin_match = re.match(ISINPattern, dividend_data['REG_NUMBER'])
         currency_code = self.currency_id('RUB')
         if isin_match:
-            asset_id = self.asset_id({'isin': dividend_data['REG_NUMBER'],
-                                      'currency': currency_code, 'search_online': "MOEX"})
+            asset_id = self.asset_id({'isin': dividend_data['REG_NUMBER'], 'currency': currency_code, 'search_online': "MOEX"})
         else:
-            asset_id = self.asset_id({'reg_number': dividend_data['REG_NUMBER'],
-                                      'currency': currency_code, 'search_online': "MOEX"})
-        if dividend_data['DESCR2']:
-            short_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2'].strip()
-        else:
-            short_description = dividend_data['DESCR1']
-        if dividend_data['TAX']:
+            asset_id = self.asset_id({'reg_number': dividend_data['REG_NUMBER'], 'currency': currency_code, 'search_online': "MOEX"})
+        short_description = dividend_data['NOTE']
+        if 'PERIOD' in dividend_data and dividend_data['PERIOD']:
+            short_description += ' ' + dividend_data['PERIOD'].strip()
+        if 'TAX' in dividend_data and dividend_data['TAX']:
             try:
                 tax = float(dividend_data['TAX'])
             except ValueError:
                 raise Statement_ImportError(self.tr("Failed to convert dividend tax ") + f"'{description}'")
         else:
             tax = 0
-            if dividend_data['TAX_TEXT']:
+            if 'TAX_TEXT' in dividend_data and dividend_data['TAX_TEXT']:
                 short_description += '; ' + dividend_data['TAX_TEXT'].strip()
         amount = amount + tax   # Statement contains value after taxation while JAL stores value before tax
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1

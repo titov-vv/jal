@@ -58,9 +58,10 @@
     {"id": 2, "type": "interest", "account": 1, "timestamp": 1615976923, "number": "3725000743", "asset": 4, "amount": 17.03, "description": "НКД"},
     {"id": 3, "type": "dividend", "account": 1, "timestamp": 1619568000, "number": "N/210528/9533196", "asset": 7, "amount": 1417.5, "tax": 184.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО Московская Биржа"},
     {"id": 4, "type": "dividend", "account": 2, "timestamp": 1620000000, "number": "N/210603/9546601", "asset": 8, "amount": 13.35, "tax": 0, "description": "Перечисление дивидендов по иностранным акциям POLYMETAL INTL PLC"},
-    {"id": 5, "type": "dividend", "account": 2, "timestamp": 1620000000, "number": "N/210603/9546481", "asset": 8, "amount": 8.9, "tax": 0, "description": "Перечисление дивидендов по иностранным акциям POLYMETAL INTL PLC"},
+    {"id": 5, "type": "dividend", "account": 2, "timestamp": 1620000000, "number": "N/210603/9546481", "asset": 8, "amount": 8.9, "tax": 0, "description": "Перечисление дивидендов по иностранным акциям POLYMETAL INTL PLC; налог удержан"},
     {"id": 6, "type": "dividend", "account": 1, "timestamp": 1620518400, "number": "N/210609/9561721", "asset": 9, "amount": 1403.1, "tax": 182.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО \"Северсталь\" за период за 1 кв 2021"},
     {"id": 7, "type": "dividend", "account": 1, "timestamp": 1620518400, "number": "N/210609/9562103", "asset": 9, "amount": 1088.1, "tax": 141.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО \"Северсталь\" за период за 2020 год"},
-    {"id": 8, "type": "interest", "account": 1, "timestamp": 1624492800, "number": "NC/210624/191213", "asset": 4, "amount": 385.32, "description": "Погашение купона № ТинькоффБ7"}
+    {"id": 8, "type": "dividend", "account": 1, "timestamp": 1690848000, "number": "N/230801/10216814", "asset": -8, "amount": 1234, "tax": 0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО \"Аэрофлот – российские авиалинии\" за период за 2022 год"},
+    {"id": 9, "type": "interest", "account": 1, "timestamp": 1624492800, "number": "NC/210624/191213", "asset": 4, "amount": 385.32, "description": "Погашение купона № ТинькоффБ7"}
   ]
 }
