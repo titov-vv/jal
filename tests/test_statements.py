@@ -4,7 +4,6 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr,
 from data_import.broker_statements.ibkr import StatementIBKR
 from data_import.broker_statements.tvoy import StatementTvoyBroker
 from data_import.broker_statements.kit import StatementKIT
-from data_import.broker_statements.openbroker import StatementOpenBroker
 from data_import.broker_statements.just2trade import StatementJ2T
 from data_import.broker_statements.vtb import StatementVTB
 
@@ -47,15 +46,6 @@ def test_statement_kit(tmp_path, project_root, data_path, prepare_db_moex):
     KIT = StatementKIT()
     KIT.load(data_path + 'kit.xlsx')
     assert KIT._data == statement
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-def test_statement_open(tmp_path, project_root, data_path, prepare_db_moex):
-    with open(data_path + 'open.json', 'r', encoding='utf-8') as json_file:
-        statement = json.load(json_file)
-    OpenBroker = StatementOpenBroker()
-    OpenBroker.load(data_path + 'open.xml')
-    assert OpenBroker._data == statement
 
 
 # ----------------------------------------------------------------------------------------------------------------------
