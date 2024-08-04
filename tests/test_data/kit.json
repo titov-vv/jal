@@ -10,7 +10,7 @@
     {"id": 3, "type": "stock", "name": "Аэрофлот-росс.авиалин(ПАО)ао", "isin": "RU0009062285"},
     {"id": 4, "type": "etf", "name": "FinEx Gold ETF USD", "isin": "IE00B8XB7377"},
     {"id": 5, "type": "bond", "name": "АО \"Тинькофф Банк\" БО-07", "isin": "RU000A0JWM31"},
-    {"id": 6, "type": "stock", "name": "Polymetal International plc", "isin": "JE00B6T5S470"}
+    {"id": 6, "type": "stock", "name": "Solidcore Resources plc", "isin": "JE00B6T5S470"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "RUB"},
