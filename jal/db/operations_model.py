@@ -153,8 +153,11 @@ class OperationsModel(QAbstractTableModel):
     def delete_rows(self, rows):
         for row in rows:
             if (row >= 0) and (row < len(self._data)):
-                LedgerTransaction.get_operation(self._data[row]['otype'], self._data[row]['oid'],
-                                                self._data[row]['opart']).delete()
+                try:
+                    LedgerTransaction.get_operation(self._data[row]['otype'], self._data[row]['oid'], self._data[row]['opart']).delete()
+                except IndexError as e:   # If row is already deleted (for example by another reference from 'opart')
+                    if str(e) == LedgerTransaction.NoOpException:
+                        pass
         self.prepareData()
 
     def assign_tag_to_rows(self, rows, tag_id):
