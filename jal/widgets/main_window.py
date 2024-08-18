@@ -51,7 +51,6 @@ class MainWindow(QMainWindow):
         self.ProgressBar = QProgressBar(self)  # Use default range 0 - 100
         self.ui.StatusBar.addPermanentWidget(self.ProgressBar)
         self.ProgressBar.setVisible(False)
-        self.ledger.setProgressBar(self, self.ProgressBar)
         self.ui.Logs.setStatusBar(self.ui.StatusBar)
         self.ui.Logs.startLogging()
 
@@ -108,6 +107,8 @@ class MainWindow(QMainWindow):
         self.downloader.show_progress.connect(self.on_display_long_operation)
         self.downloader.update_progress.connect(self.on_update_long_operation_progress)
         self.ledger.updated.connect(self.updateWidgets)
+        self.ledger.show_progress.connect(self.on_display_long_operation)
+        self.ledger.update_progress.connect(self.on_update_long_operation_progress)
         self.statements.load_completed.connect(self.onStatementImport)
 
     @Slot()

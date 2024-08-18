@@ -80,18 +80,14 @@ class LedgerAmounts(dict, JalDB):
 # ===================================================================================================================
 class Ledger(QObject, JalDB):
     updated = Signal()
+    show_progress = Signal(bool)     # Signal is emitted when ledger wants to start or stop display progress
+    update_progress = Signal(float)  # Signal is emitted to report current % of execution
     SILENT_REBUILD_THRESHOLD = 1000
 
     def __init__(self):
         super().__init__()
         self.amounts = LedgerAmounts("amount_acc")    # store last amount for [book, account, asset]
         self.values = LedgerAmounts("value_acc")      # together with corresponding value
-        self.main_window = None
-        self.progress_bar = None
-
-    def setProgressBar(self, main_window, progress_widget):
-        self.main_window = main_window
-        self.progress_bar = progress_widget
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
@@ -247,8 +243,7 @@ class Ledger(QObject, JalDB):
         if operations_count == 0:
             logging.info(self.tr("Leger is empty"))
             return
-        if self.progress_bar is not None:
-            self.main_window.showProgressBar(True)
+        self.show_progress.emit(True)
         logging.info(self.tr("Re-building ledger since: ") + f"{ts2dt(frontier)}")
         start_time = datetime.now()
         _ = self._exec("DELETE FROM trades_closed WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
@@ -263,8 +258,7 @@ class Ledger(QObject, JalDB):
                 last_timestamp = data['timestamp']
                 operation = LedgerTransaction().get_operation(data['otype'], data['oid'], data['opart'])
                 operation.processLedger(self)
-                if self.progress_bar is not None:
-                    self.progress_bar.setValue(int(100.0 * query.at() / operations_count))
+                self.update_progress.emit(100.0 * query.at() / operations_count)
         except Exception as e:
             if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
                 raise e
@@ -274,8 +268,7 @@ class Ledger(QObject, JalDB):
             else:
                 logging.error(f"{traceback.format_exc()}")  # and full log for anything unexpected
         finally:
-            if self.progress_bar is not None:
-                self.main_window.showProgressBar(False)
+            self.show_progress.emit(False)
         # Fill ledger totals values
         # NOFIXME: Table 'ledger_totals' may be replaced by a view. But it will impact performance heavily as
         # this view won't have indices for optimal performance

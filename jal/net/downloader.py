@@ -70,8 +70,8 @@ class QuotesUpdateDialog(QDialog):
 # noinspection SpellCheckingInspection
 class QuoteDownloader(QObject):
     download_completed = Signal()
-    show_progress = Signal(bool)     # Signal is emitted when downloaded want to start or stop display progress
-    update_progress = Signal(float)  # Signal is emmitted to report current % of execution
+    show_progress = Signal(bool)     # Signal is emitted when downloader wants to start or stop display progress
+    update_progress = Signal(float)  # Signal is emitted to report current % of execution
 
     def __init__(self):
         super().__init__()
