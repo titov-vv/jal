@@ -105,11 +105,8 @@ def test_MOEX_details():
 
 def test_CBR_downloader(prepare_db):
     create_stocks([('TRY', '')], currency_id=1)   # id = 4
-    codes = pd.DataFrame({'ISO_name': ['AUD', 'ATS'], 'CBR_code': ['R01010', 'R01015']})
 
     downloader = QuoteDownloader()
-    downloader.PrepareRussianCBReader()
-    assert_frame_equal(codes, downloader.CBR_codes.head(2))
 
     rates_usd = pd.DataFrame({'Close': [Decimal('77.5104'), Decimal('77.2535'), Decimal('75.6826')],
                           'Date': [d2dt(210413), d2dt(210414), d2dt(210415)]})

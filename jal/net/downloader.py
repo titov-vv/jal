@@ -117,8 +117,6 @@ class QuoteDownloader(QObject):
         for base in set([x[1] for x in JalAsset.get_base_currency_history(start_timestamp, end_timestamp)]):
             base_symbol = JalAsset(base).symbol()
             logging.info(self.tr("Loading currency rates for " + base_symbol))
-            if base_symbol == 'RUB':
-                self.PrepareRussianCBReader()
             currencies = JalAsset.get_currencies()
             for i, currency in enumerate(currencies):
                 if currency.id() == base or currency.quote_source(None) != MarketDataFeed.FX:
@@ -182,6 +180,8 @@ class QuoteDownloader(QObject):
         return None
 
     def CBR_DataReader(self, currency, start_timestamp, end_timestamp):
+        if self.CBR_codes is None:
+            self.PrepareRussianCBReader()
         date1 = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%d/%m/%Y')
         # add 1 day to end_timestamp as CBR sets rate are a day ahead
         date2 = (datetime.fromtimestamp(end_timestamp, tz=timezone.utc) + timedelta(days=1)).strftime('%d/%m/%Y')
