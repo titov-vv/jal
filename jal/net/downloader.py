@@ -9,7 +9,7 @@ import pandas as pd
 from pandas.errors import ParserError
 import re
 import json
-from PySide6.QtCore import Qt, QObject, Signal, QDate
+from PySide6.QtCore import Qt, QObject, Signal, Slot, QDate
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
@@ -75,7 +75,12 @@ class QuoteDownloader(QObject):
 
     def __init__(self):
         super().__init__()
+        self._cancelled = False
         self.CBR_codes = None
+
+    @Slot()
+    def on_cancel(self):
+        self._cancelled = True
 
     def showQuoteDownloadDialog(self, parent):
         dialog = QuotesUpdateDialog(parent)

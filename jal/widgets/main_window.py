@@ -7,7 +7,7 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QDir, QLocale, QMetaObject
 from PySide6.QtGui import QActionGroup, QAction
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressBar, QMenu
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressBar, QMenu, QPushButton
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
@@ -50,7 +50,10 @@ class MainWindow(QMainWindow):
         # Customize Status bar and logs
         self.ProgressBar = QProgressBar(self)  # Use default range 0 - 100
         self.ui.StatusBar.addPermanentWidget(self.ProgressBar)
+        self.CancelButton = QPushButton(self.tr("Stop"), parent=self)
+        self.ui.StatusBar.addPermanentWidget(self.CancelButton)
         self.ProgressBar.setVisible(False)
+        self.CancelButton.setVisible(False)
         self.ui.Logs.setStatusBar(self.ui.StatusBar)
         self.ui.Logs.startLogging()
 
@@ -103,6 +106,8 @@ class MainWindow(QMainWindow):
         self.ui.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, "base_currency"))
         self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInMDI, self.ui.mdiArea))
         self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInMDI, self.ui.mdiArea))
+        self.CancelButton.clicked.connect(self.downloader.on_cancel)
+        self.CancelButton.clicked.connect(self.ledger.on_cancel)
         self.downloader.download_completed.connect(self.updateWidgets)
         self.downloader.show_progress.connect(self.on_display_long_operation)
         self.downloader.update_progress.connect(self.on_update_long_operation_progress)
@@ -239,6 +244,7 @@ class MainWindow(QMainWindow):
 
     def showProgressBar(self, visible=False):
         self.ProgressBar.setVisible(visible)
+        self.CancelButton.setVisible(visible)
         self.ui.centralwidget.setEnabled(not visible)
         self.ui.MainMenu.setEnabled(not visible)
 

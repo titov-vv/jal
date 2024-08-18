@@ -3,8 +3,8 @@ import logging
 import traceback
 from datetime import datetime
 from decimal import Decimal
-from PySide6.QtCore import Signal, QObject, QDate
-from PySide6.QtWidgets import QDialog, QMessageBox
+from PySide6.QtCore import Signal, Slot, QObject, QDate
+from PySide6.QtWidgets import QDialog, QMessageBox, QApplication
 from jal.constants import BookAccount
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
@@ -86,6 +86,7 @@ class Ledger(QObject, JalDB):
 
     def __init__(self):
         super().__init__()
+        self._cancelled = False
         self.amounts = LedgerAmounts("amount_acc")    # store last amount for [book, account, asset]
         self.values = LedgerAmounts("value_acc")      # together with corresponding value
 
@@ -222,6 +223,7 @@ class Ledger(QObject, JalDB):
     # 0 - re-build from scratch
     # any - re-build all operations after given timestamp
     def rebuild(self, from_timestamp=-1):
+        self._cancelled = False
         exception_happened = False
         last_timestamp = 0
         self.amounts.clear()
@@ -259,6 +261,11 @@ class Ledger(QObject, JalDB):
                 operation = LedgerTransaction().get_operation(data['otype'], data['oid'], data['opart'])
                 operation.processLedger(self)
                 self.update_progress.emit(100.0 * query.at() / operations_count)
+                QApplication.processEvents()
+                if self._cancelled:
+                    exception_happened = True
+                    logging.warning(self.tr("Interrupted by user"))
+                    break
         except Exception as e:
             if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
                 raise e
@@ -292,3 +299,7 @@ class Ledger(QObject, JalDB):
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
         if rebuild_dialog.exec():
             self.rebuild(from_timestamp=rebuild_dialog.getTimestamp())
+
+    @Slot()
+    def on_cancel(self):
+        self._cancelled = True
