@@ -120,6 +120,9 @@ class JalDB:
         db.setDatabaseName(self.get_db_path())
         db.setConnectOptions("QSQLITE_ENABLE_REGEXP=1")
         db.open()
+        if db.isOpenError():
+            error = db.lastError()
+            return JalDBError(JalDBError.DbInitFailure, details=f"{error.driverText()}: {error.databaseText()}")
         sqlite_version = self.get_engine_version()
         if parse_version(sqlite_version) < parse_version(Setup.SQLITE_MIN_VERSION):
             db.close()

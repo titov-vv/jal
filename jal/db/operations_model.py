@@ -163,6 +163,5 @@ class OperationsModel(QAbstractTableModel):
     def assign_tag_to_rows(self, rows, tag_id):
         for row in rows:
             if (row >= 0) and (row < len(self._data)):
-                LedgerTransaction.get_operation(self._data[row]['otype'], self._data[row]['oid'],
-                                                self._data[row]['opart']).assign_tag(tag_id)
+                LedgerTransaction.get_operation(self._data[row]['otype'], self._data[row]['oid'],self._data[row]['opart']).assign_tag(tag_id)
         self.prepareData()
