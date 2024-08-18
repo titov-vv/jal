@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         self.ledger = Ledger()
 
         # Customize Status bar and logs
-        self.ProgressBar = QProgressBar(self)
+        self.ProgressBar = QProgressBar(self)  # Use default range 0 - 100
         self.ui.StatusBar.addPermanentWidget(self.ProgressBar)
         self.ProgressBar.setVisible(False)
         self.ledger.setProgressBar(self, self.ProgressBar)
@@ -105,6 +105,8 @@ class MainWindow(QMainWindow):
         self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInMDI, self.ui.mdiArea))
         self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInMDI, self.ui.mdiArea))
         self.downloader.download_completed.connect(self.updateWidgets)
+        self.downloader.show_progress.connect(self.on_display_long_operation)
+        self.downloader.update_progress.connect(self.on_update_long_operation_progress)
         self.ledger.updated.connect(self.updateWidgets)
         self.statements.load_completed.connect(self.onStatementImport)
 
@@ -293,3 +295,10 @@ class MainWindow(QMainWindow):
                         asset = JalAsset(asset_id).symbol(account.currency())
                         logging.warning(self.tr("Statement ending balance doesn't match: ") +
                                         f"{account.name()} / {asset} / {amount} (act) <> {totals[account_id][asset_id]} (exp)")
+
+    @Slot()
+    def on_display_long_operation(self, visible: bool):
+        self.showProgressBar(visible)
+
+    def on_update_long_operation_progress(self, progress_percent: float):
+        self.ProgressBar.setValue(int(progress_percent))

@@ -70,6 +70,8 @@ class QuotesUpdateDialog(QDialog):
 # noinspection SpellCheckingInspection
 class QuoteDownloader(QObject):
     download_completed = Signal()
+    show_progress = Signal(bool)     # Signal is emitted when downloaded want to start or stop display progress
+    update_progress = Signal(float)  # Signal is emmitted to report current % of execution
 
     def __init__(self):
         super().__init__()
@@ -82,9 +84,11 @@ class QuoteDownloader(QObject):
             self.download_completed.emit()
 
     def DownloadData(self, start_timestamp, end_timestamp, sources_list):
+        self.show_progress.emit(True)
         if MarketDataFeed.FX in sources_list:
             self.download_currency_rates(start_timestamp, end_timestamp)
         self.download_asset_prices(start_timestamp, end_timestamp, sources_list)
+        self.show_progress.emit(False)
         logging.info(self.tr("Download completed"))
 
     # Checks for present quotations of 'asset' in given 'currency' and adjusts 'start' timestamp to be at
@@ -110,21 +114,25 @@ class QuoteDownloader(QObject):
             "RUB": self.CBR_DataReader,
             "EUR": self.ECB_DataReader
         }
-        self.PrepareRussianCBReader()
         for base in set([x[1] for x in JalAsset.get_base_currency_history(start_timestamp, end_timestamp)]):
-            for currency in JalAsset.get_currencies():
+            base_symbol = JalAsset(base).symbol()
+            logging.info(self.tr("Loading currency rates for " + base_symbol))
+            if base_symbol == 'RUB':
+                self.PrepareRussianCBReader()
+            currencies = JalAsset.get_currencies()
+            for i, currency in enumerate(currencies):
                 if currency.id() == base or currency.quote_source(None) != MarketDataFeed.FX:
                     continue  # Skip as it is X/X ratio that is always 1
                 from_timestamp = self._adjust_start(currency, base, start_timestamp)
                 if end_timestamp < from_timestamp:
                     continue
                 try:
-                    data = data_loaders[JalAsset(base).symbol()](currency, from_timestamp, end_timestamp)
+                    data = data_loaders[base_symbol](currency, from_timestamp, end_timestamp)
                 except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
-                    logging.warning(self.tr("No rates were downloaded for ") +
-                                    f"{currency.symbol()}/{JalAsset(base).symbol()}")
+                    logging.warning(self.tr("No rates were downloaded for ") + f"{currency.symbol()}/{base_symbol}")
                     continue
                 self._store_quotations(currency, base, data)
+                self.update_progress.emit(100.0 * i / len(currencies))
 
     def download_asset_prices(self, start_timestamp, end_timestamp, sources_list):
         data_loaders = {
@@ -139,7 +147,8 @@ class QuoteDownloader(QObject):
             MarketDataFeed.COIN: self.Coinbase_Downloader
         }
         assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)  # append assets list
-        for asset_data in assets:
+        logging.info(self.tr("Loading asset quotations"))
+        for i, asset_data in enumerate(assets):
             asset = asset_data['asset']
             currency = asset_data['currency']
             from_timestamp = self._adjust_start(asset, currency, start_timestamp)
@@ -154,6 +163,7 @@ class QuoteDownloader(QObject):
                 logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.symbol()}")
                 continue
             self._store_quotations(asset, currency, data)
+            self.update_progress.emit(100.0 * i / len(assets))
 
     def PrepareRussianCBReader(self):
         rows = []

@@ -248,7 +248,6 @@ class Ledger(QObject, JalDB):
             logging.info(self.tr("Leger is empty"))
             return
         if self.progress_bar is not None:
-            self.progress_bar.setRange(0, operations_count)
             self.main_window.showProgressBar(True)
         logging.info(self.tr("Re-building ledger since: ") + f"{ts2dt(frontier)}")
         start_time = datetime.now()
@@ -265,7 +264,7 @@ class Ledger(QObject, JalDB):
                 operation = LedgerTransaction().get_operation(data['otype'], data['oid'], data['opart'])
                 operation.processLedger(self)
                 if self.progress_bar is not None:
-                    self.progress_bar.setValue(query.at())
+                    self.progress_bar.setValue(int(100.0 * query.at() / operations_count))
         except Exception as e:
             if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
                 raise e
