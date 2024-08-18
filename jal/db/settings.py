@@ -62,8 +62,10 @@ class JalSettings(JalDB):
 
     def getRecentFolder(self, folder_type: int, default: str=''):
         folder = self.getValue(self.__RECENT_PREFIX + self.__folders[folder_type])
-        if not folder: folder = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
-        if not folder: folder = default
+        if not folder:
+            folder = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
+        if not folder:
+            folder = default
         return folder
 
     def setRecentFolder(self, folder_type: int, folder: str):

@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QComboBox
 #-----------------------------------------------------------------------------------------------------------------------
 # This class contains a list of predefined constants used by JAL
 class Setup:
+    INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
     DB_REQUIRED_VERSION = 58

@@ -5,7 +5,9 @@ import sys
 import re
 import logging
 import sqlparse
+from configparser import ConfigParser
 from pkg_resources import parse_version
+from PySide6.QtCore import QStandardPaths
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlTableModel
 from jal.constants import Setup, PredefinedAgents, PredefinedCategory, PredefinedTags
@@ -103,8 +105,14 @@ class JalDB:
     def get_db_path() -> str:
         if "pytest" in sys.modules:
             return os.environ['JAL_TEST_PATH'] + os.sep + Setup.DB_PATH  # Use custom path if in test environment
-        else:
-            return JalDB.get_app_path() + Setup.DB_PATH
+        config_locations = QStandardPaths.standardLocations(QStandardPaths.ConfigLocation)
+        if config_locations:
+            ini_file = config_locations[0] + os.sep + Setup.INI_FILE
+            if os.path.isfile(ini_file):   # FIXME - probably it is better to merge somehow with Setup and JalSettings classes
+                config = ConfigParser()
+                config.read(ini_file)
+                return config.get("main", "database_path") + os.sep + Setup.DB_PATH
+        return JalDB.get_app_path() + Setup.DB_PATH
 
     # -------------------------------------------------------------------------------------------------------------------
     # This function:
@@ -117,12 +125,13 @@ class JalDB:
         db = QSqlDatabase.addDatabase("QSQLITE", Setup.DB_CONNECTION)
         if not db.isValid():
             return JalDBError(JalDBError.DbDriverFailure)
-        db.setDatabaseName(self.get_db_path())
+        db_file = self.get_db_path()
+        db.setDatabaseName(db_file)
         db.setConnectOptions("QSQLITE_ENABLE_REGEXP=1")
         db.open()
         if db.isOpenError():
             error = db.lastError()
-            return JalDBError(JalDBError.DbInitFailure, details=f"{error.driverText()}: {error.databaseText()}")
+            return JalDBError(JalDBError.DbInitFailure, details=f"{error.driverText()}: {error.databaseText()}, file: {db_file}")
         sqlite_version = self.get_engine_version()
         if parse_version(sqlite_version) < parse_version(Setup.SQLITE_MIN_VERSION):
             db.close()

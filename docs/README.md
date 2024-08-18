@@ -54,6 +54,15 @@ Database will be initialized automatically with minimal required set of data, an
 
 You may choose program language in menu *Languages*.
 
+## 🔧 Configuration
+JAL configuration is stored in `jal.sqlite` file together with all other data, that is created by default in `jal` folder.
+But you may configure location of this file with help of `database_path` parameter in `jal.ini` located in OS config directory (e.g. `$HOME/.config` on most Unix-like systems). 
+Here is an example of such file:
+```jal.ini
+[main]
+database_path=/home/user/some_folder
+```
+
 ## ❗️ Upgrades
 If you installed *jal* via *pip* then you may upgrade it to newer version with help of command `pip install jal -U`
 
