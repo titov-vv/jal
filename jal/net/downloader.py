@@ -189,16 +189,21 @@ class QuoteDownloader(QObject):
     def CBR_DataReader(self, currency, start_timestamp, end_timestamp):
         if self.CBR_codes is None:
             self.PrepareRussianCBReader()
-        date1 = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%d/%m/%Y')
-        # add 1 day to end_timestamp as CBR sets rate are a day ahead
-        date2 = (datetime.fromtimestamp(end_timestamp, tz=timezone.utc) + timedelta(days=1)).strftime('%d/%m/%Y')
         try:
             code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency.symbol(), "CBR_code"].values[0]).strip()
         except IndexError:
             logging.debug(self.tr("There are no CBR data for: ") + f"{currency.symbol()}")
             return None
-        url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
-        xml_root = xml_tree.fromstring(get_web_data(url))
+        params = {
+            'date_req1': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%d/%m/%Y'),
+            'date_req2': (datetime.fromtimestamp(end_timestamp, tz=timezone.utc) + timedelta(days=1)).strftime('%d/%m/%Y'), # add 1 day to end_timestamp as CBR sets rate are a day ahead
+            'VAL_NM_RQ': code
+        }
+        url = "http://www.cbr.ru/scripts/XML_dynamic.asp"
+        request = WebRequest(WebRequest.GET, url, params=params)
+        while not request.completed():
+            QApplication.processEvents()
+        xml_root = xml_tree.fromstring(request.data())
         rows = []
         for node in xml_root:
             s_date = node.attrib['Date'] if node is not None else None

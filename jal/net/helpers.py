@@ -4,18 +4,8 @@ from requests.exceptions import ConnectTimeout, ConnectionError
 import logging
 import platform
 from PySide6.QtWidgets import QApplication
-from jal import __version__
 from jal.constants import Setup
 from jal.db.settings import JalSettings
-
-
-# ===================================================================================================================
-# Function returns custom User Agent for web requests
-def make_user_agent(url='') -> str:
-    if "www.cbr.ru" in url:
-        return "curl/7.77.0"   # Workaround for DDoS-GUARD activation on www.cbr.ru
-    else:
-        return f"JAL/{__version__} ({platform.system()} {platform.release()})"
 
 
 # ===================================================================================================================
@@ -33,7 +23,6 @@ def isEnglish(text):
 # Retrieve URL from web with given method and params
 def request_url(method, url, params=None, json_params=None, headers=None, binary=False, verify=True):
     session = requests.Session()
-    session.headers['User-Agent'] = make_user_agent(url=url)
     if headers is not None:
         session.headers.update(headers)
     try:
