@@ -172,8 +172,11 @@ class QuoteDownloader(QObject):
 
     def PrepareRussianCBReader(self):
         rows = []
+        request = WebRequest(WebRequest.GET, "http://www.cbr.ru/scripts/XML_valFull.asp")
+        while not request.completed():
+            QApplication.processEvents()
         try:
-            xml_root = xml_tree.fromstring(get_web_data("http://www.cbr.ru/scripts/XML_valFull.asp"))
+            xml_root = xml_tree.fromstring(request.data())
             for node in xml_root:
                 code = node.find("ParentCode").text.strip() if node is not None else None
                 iso = node.find("ISO_Char_Code").text if node is not None else None
