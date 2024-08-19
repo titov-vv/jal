@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.asset import JalAsset
-from jal.net.helpers import post_web_data, isEnglish
+from jal.net.helpers import isEnglish
 from jal.net.web_request import WebRequest
 from jal.widgets.helpers import dependency_present
 try:
@@ -546,7 +546,9 @@ class QuoteDownloader(QObject):
                      "{getCompanyPriceHistoryForDownload(symbol: $symbol, start: $start, end: $end, adjusted: $adjusted, adjustmentType: $adjustmentType, unadjusted: $unadjusted) "
                      "{ datetime closePrice}}"
         }
-        json_content = json.loads(post_web_data(url, json_params=params))
+        self._request = WebRequest(WebRequest.POST_JSON, url, params=params)
+        self._wait_for_event()
+        json_content = json.loads(self._request.data())
         result_data = json_content['data'] if 'data' in json_content else None
         if 'getCompanyPriceHistoryForDownload' in result_data:
             price_array = result_data['getCompanyPriceHistoryForDownload']
