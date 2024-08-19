@@ -10,17 +10,6 @@ from jal.db.settings import JalSettings
 
 
 # ===================================================================================================================
-# Returns true if text does contain only English alphabet
-def isEnglish(text):
-    try:
-        text.encode(encoding='utf-8').decode(encoding='ascii')
-    except UnicodeDecodeError:
-        return False
-    else:
-        return True
-
-
-# ===================================================================================================================
 # Retrieve URL from web with given method and params
 def request_url(method, url, params=None, json_params=None, headers=None, binary=False, verify=True):
     session = requests.Session()

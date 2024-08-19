@@ -10,6 +10,7 @@ from jal.db.db import JalDB, JalDBError
 from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
 from jal.db.helpers import localize_decimal
+from jal.widgets.helpers import is_english
 from jal.db.backup_restore import JalBackup
 from tests.helpers import pop2minor_digits, d2t, d2dt, dt2t
 
@@ -35,6 +36,9 @@ def test_helpers():
     assert d2t(230107) == 1673049600
     assert d2dt(240501) == datetime(2024, 5, 1, tzinfo=timezone.utc)
     assert dt2t(1806212020) == 1529612400
+    assert is_english("asdfAF12!@#") == True
+    assert is_english("asdfБF12!@#") == False
+    assert is_english("asгfAF12!@#") == False
 
 
 # ----------------------------------------------------------------------------------------------------------------------

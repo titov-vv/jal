@@ -39,6 +39,16 @@ def center_window(window):
         window.setGeometry(x, y, window.width(), window.height())
 
 # -----------------------------------------------------------------------------------------------------------------------
+# Returns true if text does contain only English alphabet
+def is_english(text):
+    try:
+        text.encode(encoding='utf-8').decode(encoding='ascii')
+    except UnicodeDecodeError:
+        return False
+    else:
+        return True
+
+# -----------------------------------------------------------------------------------------------------------------------
 # converts string with leading zeros to integer (like '03'->3, '00'->0, ''->0)
 def str2int(value: str) -> int:
     value = value.lstrip('0')

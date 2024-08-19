@@ -310,7 +310,7 @@ def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
         {'id': 13, 'type_id': PredefinedAsset.Stock, 'full_name': 'ПАО Московская Биржа', 'isin': 'RU000A0JR4A1', 'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'MOEX', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}],
          'data': {AssetData.RegistrationCode: '1-05-08443-H'}},
-        {'id': 14, 'type_id': PredefinedAsset.Stock, 'full_name': 'Polymetal International plc', 'isin': 'JE00B6T5S470',
+        {'id': 14, 'type_id': PredefinedAsset.Stock, 'full_name': 'Solidcore Resources plc', 'isin': 'JE00B6T5S470',
          'country_id': 0, 'base_asset': '',
          'symbols': [{'symbol': 'POLY', 'description': 'MOEX', 'active': 1, 'currency_id': 1, 'quote_source': 1}]},
         {'id': 15, 'type_id': PredefinedAsset.Stock, 'full_name': 'Северсталь (ПАО)ао', 'isin': 'RU0009046510', 'country_id': 0, 'base_asset': '',

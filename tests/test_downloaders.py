@@ -6,15 +6,9 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
 from tests.helpers import d2t, d2dt, create_stocks, create_assets
 from jal.db.asset import JalAsset
 from jal.constants import PredefinedAsset
-from jal.net.helpers import isEnglish
 from jal.net.downloader import QuoteDownloader
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 
-
-def test_English():
-    assert isEnglish("asdfAF12!@#") == True
-    assert isEnglish("asdfБF12!@#") == False
-    assert isEnglish("asгfAF12!@#") == False
 
 def test_INN_resolution():
     fns_api = ReceiptRuFNS(qr_text='t=20230101T0000&fn=0&fd=0&fp=0&i=0&n=0&s=0')

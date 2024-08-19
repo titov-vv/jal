@@ -1,7 +1,7 @@
 import logging
 import xml.etree.ElementTree as xml_tree
 from datetime import datetime, timedelta, timezone
-from jal.widgets.helpers import timestamp_range
+from jal.widgets.helpers import timestamp_range, dependency_present, is_english
 from decimal import Decimal
 from io import StringIO, BytesIO
 
@@ -15,9 +15,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.asset import JalAsset
-from jal.net.helpers import isEnglish
 from jal.net.web_request import WebRequest
-from jal.widgets.helpers import dependency_present
 try:
     from pypdf import PdfReader
     from pypdf.errors import PdfStreamError
@@ -267,7 +265,7 @@ class QuoteDownloader(QObject):
     @staticmethod
     def MOEX_info(**kwargs) -> dict:
         data = {}
-        if 'symbol' in kwargs and not isEnglish(kwargs['symbol']):
+        if 'symbol' in kwargs and not is_english(kwargs['symbol']):
             del kwargs['symbol']
         currency = kwargs['currency'] if 'currency' in kwargs else ''
         # First try to load with symbol or isin from asset details API
