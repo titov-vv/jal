@@ -587,14 +587,17 @@ class QuoteDownloader(QObject):
 
     def Coinbase_Downloader(self, asset, currency_id, start_timestamp, end_timestamp):
         currency_symbol = JalAsset(currency_id).symbol()
-        base_url = f"https://api.coinbase.com/v2/prices/{asset.symbol()}-{currency_symbol}/spot?date="
+        url = f"https://api.coinbase.com/v2/prices/{asset.symbol()}-{currency_symbol}/spot"
         quotes = []
         for ts in timestamp_range(start_timestamp, end_timestamp):
-            url = base_url + datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
-            result_data = json.loads(get_web_data(url))
+            date_string = datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
+            request = WebRequest(WebRequest.GET, url, params={'date': date_string})
+            while not request.completed():
+                QApplication.processEvents()
             try:
+                result_data = json.loads(request.data())
                 quote = result_data['data']['amount']
-            except:
+            except (json.decoder.JSONDecodeError, KeyError):
                 continue
             quotes.append({"Date": datetime.fromtimestamp(ts, tz=timezone.utc), "Close": quote})
         data = pd.DataFrame(quotes, columns=["Date", "Close"])
