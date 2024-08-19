@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.asset import JalAsset
-from jal.net.helpers import get_web_data, post_web_data, isEnglish
+from jal.net.helpers import post_web_data, isEnglish
 from jal.net.web_request import WebRequest
 from jal.widgets.helpers import dependency_present
 try:
@@ -85,6 +85,7 @@ class QuoteDownloader(QObject):
     def on_cancel(self):
         self._cancelled = True
 
+    # this method waits for completion of downloading process or for user interrupt (in this case exception is raised)
     def _wait_for_event(self):
         while self._request.isRunning():
             QApplication.processEvents()
@@ -314,8 +315,10 @@ class QuoteDownloader(QObject):
         asset = {}
         if not asset_code:
             return asset
-        url = f"http://iss.moex.com/iss/securities/{asset_code}.xml"
-        xml_root = xml_tree.fromstring(get_web_data(url))
+        request = WebRequest(WebRequest.GET, f"http://iss.moex.com/iss/securities/{asset_code}.xml")
+        while request.isRunning():
+            QApplication.processEvents()
+        xml_root = xml_tree.fromstring(request.data())
         info_rows = xml_root.findall("data[@id='description']/rows/*")
         boards = xml_root.findall("data[@id='boards']/rows/*")
         if not boards:   # can't find boards -> not traded asset
@@ -364,21 +367,30 @@ class QuoteDownloader(QObject):
         secid = ''
         data = []
         if kwargs.get('reg_number', ''):
-            url = f"https://iss.moex.com/iss/securities.json?q={kwargs['reg_number']}&iss.meta=off&limit=10"
-            asset_data = json.loads(get_web_data(url))
+            request = WebRequest(WebRequest.GET, "https://iss.moex.com/iss/securities.json",
+                                 params={'q': kwargs['reg_number'], 'iss.meta': 'off', 'limit': '10'})
+            while request.isRunning():
+                QApplication.processEvents()
+            asset_data = json.loads(request.data())
             securities = asset_data['securities']
             columns = securities['columns']
             data = [x for x in securities['data'] if
                     x[columns.index('regnumber')] == kwargs['reg_number'] or x[columns.index('regnumber')] is None]
         if not data and kwargs.get('isin', ''):
-            url = f"https://iss.moex.com/iss/securities.json?q={kwargs['isin']}&iss.meta=off&limit=10"
-            asset_data = json.loads(get_web_data(url))
+            request = WebRequest(WebRequest.GET, "https://iss.moex.com/iss/securities.json",
+                                 params={'q': kwargs['isin'], 'iss.meta': 'off', 'limit': '10'})
+            while request.isRunning():
+                QApplication.processEvents()
+            asset_data = json.loads(request.data())
             securities = asset_data['securities']
             columns = securities['columns']
             data = securities['data']  # take the whole list if we search by isin
         if not data and 'name' in kwargs:
-            url = f"https://iss.moex.com/iss/securities.json?q={kwargs['name']}&iss.meta=off&limit=20"
-            asset_data = json.loads(get_web_data(url))
+            request = WebRequest(WebRequest.GET, "https://iss.moex.com/iss/securities.json",
+                                 params={'q': kwargs['name'], 'iss.meta': 'off', 'limit': '10'})
+            while request.isRunning():
+                QApplication.processEvents()
+            asset_data = json.loads(request.data())
             securities = asset_data['securities']
             columns = securities['columns']
             data = [x for x in securities['data'] if x[columns.index('name')] == kwargs['name']]
@@ -418,11 +430,15 @@ class QuoteDownloader(QObject):
             asset.update_data(details)
 
         # Get price history
-        date1 = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
-        date2 = datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
         url = f"http://iss.moex.com/iss/history/engines/{moex_info['engine']}/markets/{moex_info['market']}/" \
-              f"boards/{moex_info['board']}/securities/{asset_code}.xml?from={date1}&till={date2}"
-        xml_root = xml_tree.fromstring(get_web_data(url))
+              f"boards/{moex_info['board']}/securities/{asset_code}.xml"
+        params = {
+            'from': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
+            'till': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
+        }
+        self._request = WebRequest(WebRequest.GET, url, params=params)
+        self._wait_for_event()
+        xml_root = xml_tree.fromstring(self._request.data())
         history_rows = xml_root.findall("data[@id='history']/rows/*")
         quotes = []
         for row in history_rows:
@@ -470,13 +486,21 @@ class QuoteDownloader(QObject):
 
     # noinspection PyMethodMayBeStatic
     def Euronext_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
-        start_date = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
-        end_date = datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
         suffix = "ETFP" if asset.type() == PredefinedAsset.ETF else "XPAR"  # Dates don't work for ETFP due to glitch on their site
-        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-{suffix}?"\
-              f"format=csv&decimal_separator=.&date_form=d%2Fm%2FY&op=&adjusted=N&base100=&"\
-              f"startdate={start_date}&enddate={end_date}"
-        quotes = get_web_data(url)
+        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-{suffix}"
+        params = {
+            'format': 'csv',
+            'decimal_separator': '.',
+            'date_form': 'd%2Fm%2FY',
+            'op': '',
+            'adjusted': 'N',
+            'base100': '',
+            'startdate': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
+            'enddate': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
+        }
+        self._request = WebRequest(WebRequest.GET, url, params=params)
+        self._wait_for_event()
+        quotes = self._request.data()
         quotes_text = quotes.replace(u'\ufeff', '').splitlines()    # Remove BOM from the beginning
         if len(quotes_text) < 4:
             logging.warning(self.tr("Euronext quotes history reply is too short: ") + quotes)
@@ -545,8 +569,9 @@ class QuoteDownloader(QObject):
             logging.warning(self.tr("Package pypdf not found for PDF parsing."))
             return None
         # Download PDF-file with current quotes
-        url = "https://www.victoria-seguros.pt/cdu-services/UNIDADES_PARTICIPACAO_VIDA_OPC1_UP"
-        pdf_data = get_web_data(url, binary=True, verify='victoria-seguros.pem')
+        self._request = WebRequest(WebRequest.GET, "https://www.victoria-seguros.pt/cdu-services/UNIDADES_PARTICIPACAO_VIDA_OPC1_UP", binary=True)
+        self._wait_for_event()
+        pdf_data = self._request.data()
         if not pdf_data:
             return None
         try:
@@ -626,7 +651,10 @@ class QuoteDownloader(QObject):
     # Returns a list of currencies supported by Coinbase exchange as a list of {'symbol', 'name'}
     @staticmethod
     def Coinbase_GetCurrencyList() -> list:
-        result_data = json.loads(get_web_data("https://api.coinbase.com/v2/currencies/crypto"))
+        request = WebRequest(WebRequest.GET, "https://api.coinbase.com/v2/currencies/crypto")
+        while request.isRunning():
+            QApplication.processEvents()
+        result_data = json.loads(request.data())
         data = result_data['data']
         assets = [{'symbol': x['code'], 'name': x['name']} for x in data if x['type'] == 'crypto']
         return assets
