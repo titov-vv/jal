@@ -38,7 +38,6 @@ class WebRequest(QThread):
         headers = self._headers
         binary = self._binary
         self._mutex.unlock()
-        self.sleep(3)
         if json:
             result = request_url(method, url, json_params=params, headers=headers, binary=binary)
         else:

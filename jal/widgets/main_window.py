@@ -305,6 +305,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def on_display_long_operation(self, visible: bool):
+        self.ProgressBar.setValue(0)
         self.showProgressBar(visible)
 
     def on_update_long_operation_progress(self, progress_percent: float):

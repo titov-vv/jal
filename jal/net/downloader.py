@@ -85,6 +85,13 @@ class QuoteDownloader(QObject):
     def on_cancel(self):
         self._cancelled = True
 
+    def _wait_for_event(self):
+        while self._request.isRunning():
+            QApplication.processEvents()
+            if self._cancelled:
+                self._request.quit()
+                raise KeyboardInterrupt
+
     def showQuoteDownloadDialog(self, parent):
         dialog = QuotesUpdateDialog(parent)
         if dialog.exec():
@@ -94,9 +101,12 @@ class QuoteDownloader(QObject):
     def DownloadData(self, start_timestamp, end_timestamp, sources_list):
         self._cancelled = False
         self.show_progress.emit(True)
-        if MarketDataFeed.FX in sources_list:
-            self.download_currency_rates(start_timestamp, end_timestamp)
-        self.download_asset_prices(start_timestamp, end_timestamp, sources_list)
+        try:
+            if MarketDataFeed.FX in sources_list:
+                self.download_currency_rates(start_timestamp, end_timestamp)
+            self.download_asset_prices(start_timestamp, end_timestamp, sources_list)
+        except KeyboardInterrupt:
+            logging.warning(self.tr("Interrupted by user"))
         self.show_progress.emit(False)
         logging.info(self.tr("Download completed"))
 
@@ -142,7 +152,7 @@ class QuoteDownloader(QObject):
                     logging.warning(self.tr("No rates were downloaded for ") + f"{currency.symbol()}/{base_symbol}")
                     continue
                 self._store_quotations(currency, base, data)
-                self.update_progress.emit(100.0 * i / len(currencies))
+                self.update_progress.emit(100.0 * (i+1) / len(currencies))
 
     def download_asset_prices(self, start_timestamp, end_timestamp, sources_list):
         data_loaders = {
@@ -178,8 +188,7 @@ class QuoteDownloader(QObject):
     def PrepareRussianCBReader(self):
         rows = []
         self._request = WebRequest(WebRequest.GET, "http://www.cbr.ru/scripts/XML_valFull.asp")
-        while self._request.isRunning():
-            QApplication.processEvents()
+        self._wait_for_event()
         try:
             xml_root = xml_tree.fromstring(self._request.data())
             for node in xml_root:
@@ -209,8 +218,7 @@ class QuoteDownloader(QObject):
         }
         url = "http://www.cbr.ru/scripts/XML_dynamic.asp"
         self._request = WebRequest(WebRequest.GET, url, params=params)
-        while self._request.isRunning():
-            QApplication.processEvents()
+        self._wait_for_event()
         xml_root = xml_tree.fromstring(self._request.data())
         rows = []
         for node in xml_root:
@@ -235,11 +243,7 @@ class QuoteDownloader(QObject):
             'endPeriod': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
         }
         self._request = WebRequest(WebRequest.GET, url, params=params, headers={'Accept': 'text/csv'})
-        while self._request.isRunning():
-            QApplication.processEvents()
-            if self._cancelled:
-                self._request.quit()
-                return None
+        self._wait_for_event()
         file = StringIO(self._request.data())
         try:
             data = pd.read_csv(file, dtype={'TIME_PERIOD': str, 'OBS_VALUE': str})
@@ -444,11 +448,7 @@ class QuoteDownloader(QObject):
             'events': 'history'
         }
         self._request = WebRequest(WebRequest.GET, url, params=params)
-        while self._request.isRunning():
-            QApplication.processEvents()
-            if self._cancelled:
-                self._request.quit()
-                return None
+        self._wait_for_event()
         file = StringIO(self._request.data())
         try:
             data = pd.read_csv(file, dtype={'Date': str, 'Close': str})
@@ -611,8 +611,7 @@ class QuoteDownloader(QObject):
         for ts in timestamp_range(start_timestamp, end_timestamp):
             date_string = datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
             self._request = WebRequest(WebRequest.GET, url, params={'date': date_string})
-            while self._request.isRunning():
-                QApplication.processEvents()
+            self._wait_for_event()
             try:
                 result_data = json.loads(self._request.data())
                 quote = result_data['data']['amount']
