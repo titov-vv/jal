@@ -6,11 +6,11 @@ import time
 from urllib import parse
 from decimal import Decimal
 from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime, QTimeZone
-from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QApplication, QDialog
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.db.settings import JalSettings
-from jal.net.helpers import get_web_data, post_web_data
+from jal.net.web_request import WebRequest
 from jal.ui.ui_login_fns_dlg import Ui_LoginFNSDialog
 
 
@@ -179,10 +179,16 @@ class ReceiptRuFNS(ReceiptAPI):
                       "61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,79,83,86,87,89,91,92,99"
         params = {'vyp3CaptchaToken': '', 'page': '', 'query': inn, 'region': region_list,
                   'PreventChromeAutocomplete': ''}
-        token_data = json.loads(post_web_data('https://egrul.nalog.ru/', params))
+        request = WebRequest(WebRequest.POST, "https://egrul.nalog.ru/", params=params)
+        while request.isRunning():
+            QApplication.processEvents()
+        token_data = json.loads(request.data())
         if 't' not in token_data:
             return inn
-        result = json.loads(get_web_data('https://egrul.nalog.ru/search-result/' + token_data['t']))
+        request = WebRequest(WebRequest.GET, "https://egrul.nalog.ru/search-result/" + token_data['t'])
+        while request.isRunning():
+            QApplication.processEvents()
+        result = json.loads(request.data())
         try:
             return result['rows'][0]['c']   # Return short name if exists
         except:

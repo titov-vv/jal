@@ -1,6 +1,10 @@
+import logging
+import platform
 from enum import auto
-from jal.net.helpers import request_url
+import requests
+from requests.exceptions import ConnectTimeout, ConnectionError
 from PySide6.QtCore import QThread, QMutex
+from jal import __version__
 
 
 # Class that executes web-requests in a separate thread
@@ -39,9 +43,9 @@ class WebRequest(QThread):
         binary = self._binary
         self._mutex.unlock()
         if json:
-            result = request_url(method, url, json_params=params, headers=headers, binary=binary)
+            result = self._request(method, url, json_params=params, headers=headers, binary=binary)
         else:
-            result = request_url(method, url, params=params, headers=headers, binary=binary)
+            result = self._request(method, url, params=params, headers=headers, binary=binary)
         self._mutex.lock()
         self._data = result
         self._mutex.unlock()
@@ -51,3 +55,36 @@ class WebRequest(QThread):
         data = self._data
         self._mutex.unlock()
         return data
+
+    def _request(self, method, url, params=None, json_params=None, headers=None, binary=False, verify=True):
+        session = requests.Session()
+        session.headers['User-Agent'] = f"JAL/{__version__} ({platform.system()} {platform.release()})"
+        if headers is not None:
+            session.headers.update(headers)
+        try:
+            if method == "GET":
+                response = session.get(url, params=params, verify=verify)
+            elif method == "POST":
+                if params:
+                    response = session.post(url, data=params, verify=verify)
+                elif json_params:
+                    response = session.post(url, json=json_params, verify=verify)
+                else:
+                    response = session.post(url, verify=verify)
+            else:
+                raise ValueError("Unknown download method for URL")
+        except ConnectTimeout:
+            logging.error(f"URL {url}\nConnection timeout.")
+            return ''
+        except ConnectionError as e:
+            logging.error(f"URL {url}\nConnection error: {e}")
+            return ''
+        if response.status_code == 200:
+            if binary:
+                return response.content
+            else:
+                return response.text
+        else:
+            logging.error(f"URL {url}\nFailed [{response.status_code}] {response.text}")
+            return ''
+
