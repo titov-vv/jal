@@ -72,12 +72,12 @@ class WebRequest(QThread):
                 else:
                     response = session.post(url, verify=verify)
             else:
-                raise ValueError("Unknown download method for URL")
+                assert False
         except ConnectTimeout:
-            logging.error(f"Timeout, URL {url}")
+            logging.error(self.tr("Timeout") + " URL {url}")
             return ''
         except ConnectionError as e:
-            logging.error(f"Error, URL {url}\n{e}")
+            logging.error(self.tr("Error") + ", URL {url}\n{e}")
             return ''
         if response.status_code == 200:
             if binary:
@@ -85,5 +85,5 @@ class WebRequest(QThread):
             else:
                 return response.text
         else:
-            logging.error(f"Failed [{response.status_code}] URL {url}\n{response.text}")
+            logging.error(self.tr("Failed") + f" [{response.status_code}] URL {url}\n{response.text}")
             return ''

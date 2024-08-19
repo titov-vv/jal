@@ -17,17 +17,17 @@
 <context>
     <name>AbstractReferenceListModel</name>
     <message>
-        <location filename="../db/reference_models.py" line="131"/>
+        <location filename="../db/reference_models.py" line="132"/>
         <source>Data are incomplete</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
-        <location filename="../db/reference_models.py" line="132"/>
+        <location filename="../db/reference_models.py" line="133"/>
         <source>Column has no valid value: </source>
         <translation>Неверное значение в столбце: </translation>
     </message>
     <message>
-        <location filename="../db/reference_models.py" line="138"/>
+        <location filename="../db/reference_models.py" line="139"/>
         <source>Submit failed: </source>
         <translation>Ошибка сохранения: </translation>
     </message>
@@ -704,7 +704,7 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>BaseCurrencyDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="540"/>
+        <location filename="../widgets/reference_dialogs.py" line="543"/>
         <source>Base currency</source>
         <translation>Базовая валюта</translation>
     </message>
@@ -712,12 +712,12 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>BaseCurrencyListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="517"/>
+        <location filename="../widgets/reference_dialogs.py" line="520"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="518"/>
+        <location filename="../widgets/reference_dialogs.py" line="521"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
@@ -725,37 +725,37 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>CategoryListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="349"/>
+        <location filename="../widgets/reference_dialogs.py" line="351"/>
         <source>Show operations with Category</source>
         <translation>Показать операции с Категорией</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="350"/>
+        <location filename="../widgets/reference_dialogs.py" line="352"/>
         <source>Replace with...</source>
         <translation>Заменить на...</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="340"/>
+        <location filename="../widgets/reference_dialogs.py" line="342"/>
         <source>Categories</source>
         <translation>Категории</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="381"/>
+        <location filename="../widgets/reference_dialogs.py" line="383"/>
         <source>Replace category &apos;</source>
         <translation>Заменить категорию &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="381"/>
+        <location filename="../widgets/reference_dialogs.py" line="383"/>
         <source>&apos; with: </source>
         <translation>&apos; на: </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="385"/>
+        <location filename="../widgets/reference_dialogs.py" line="387"/>
         <source>Category &apos;</source>
         <translation>Категория &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="385"/>
+        <location filename="../widgets/reference_dialogs.py" line="387"/>
         <source>&apos; was successfully replaced</source>
         <translation>&apos; заменена успешно</translation>
     </message>
@@ -802,23 +802,28 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>CategoryTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="312"/>
+        <location filename="../widgets/reference_dialogs.py" line="313"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="326"/>
-        <location filename="../widgets/reference_dialogs.py" line="329"/>
+        <location filename="../widgets/reference_dialogs.py" line="315"/>
+        <source>New category</source>
+        <translation>Новая категория</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="328"/>
+        <location filename="../widgets/reference_dialogs.py" line="331"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="326"/>
+        <location filename="../widgets/reference_dialogs.py" line="328"/>
         <source>You can&apos;t delete a predefined category.</source>
         <translation>Нельзя удалить предопределённую категорию.</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="331"/>
+        <location filename="../widgets/reference_dialogs.py" line="333"/>
         <source>Category or one of its subcategories are in use.
 All related transactions will be deleted together with the category.
 Do you want to delete the category anyway?</source>
@@ -1149,12 +1154,12 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DB</name>
     <message>
-        <location filename="../db/db.py" line="310"/>
+        <location filename="../db/db.py" line="322"/>
         <source>Database format is outdated</source>
         <translation>Формат базы данных устарел</translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="311"/>
+        <location filename="../db/db.py" line="323"/>
         <source>Do you agree to upgrade your data to newer format?</source>
         <translation>Вы согласны сконвертировать данные в новый формат?</translation>
     </message>
@@ -1335,37 +1340,37 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DepositActions</name>
     <message>
-        <location filename="../constants.py" line="176"/>
+        <location filename="../constants.py" line="177"/>
         <source>Open term deposit</source>
         <translation>Открытие вклада</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="177"/>
+        <location filename="../constants.py" line="178"/>
         <source>Close term deposit</source>
         <translation>Закрытие вклада</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="178"/>
+        <location filename="../constants.py" line="179"/>
         <source>Top-up term deposit</source>
         <translation>Пополнение вклада</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="179"/>
+        <location filename="../constants.py" line="180"/>
         <source>Partial withdrawal from term deposit</source>
         <translation>Частичное изъятие вклада</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="180"/>
+        <location filename="../constants.py" line="181"/>
         <source>Term deposit renewal</source>
         <translation>Пролонгация вклада</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="181"/>
+        <location filename="../constants.py" line="182"/>
         <source>Interest accrued</source>
         <translation>Начисление процентов</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="185"/>
+        <location filename="../constants.py" line="186"/>
         <source>Tax withheld</source>
         <translation>Удержание налога</translation>
     </message>
@@ -1475,87 +1480,87 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="120"/>
+        <location filename="../db/holdings_model.py" line="121"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="121"/>
+        <location filename="../db/holdings_model.py" line="122"/>
         <source>Since</source>
         <translation>С</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="122"/>
+        <location filename="../db/holdings_model.py" line="123"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="123"/>
+        <location filename="../db/holdings_model.py" line="124"/>
         <source>Last</source>
         <translation>Цена закр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="124"/>
+        <location filename="../db/holdings_model.py" line="125"/>
         <source>Share, %</source>
         <translation>Доля, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="125"/>
+        <location filename="../db/holdings_model.py" line="126"/>
         <source>P/L, %</source>
         <translation>ПиУ, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="126"/>
+        <location filename="../db/holdings_model.py" line="127"/>
         <source>P/L</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="127"/>
+        <location filename="../db/holdings_model.py" line="128"/>
         <source>Paid</source>
         <translation>Выплачено</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="128"/>
+        <location filename="../db/holdings_model.py" line="129"/>
         <source>Value</source>
         <translation>Оценка</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="129"/>
+        <location filename="../db/holdings_model.py" line="130"/>
         <source>Value, </source>
         <translation>Оценка, </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="155"/>
+        <location filename="../db/holdings_model.py" line="156"/>
         <source>Last quote date: </source>
         <translation>Дата последней котировки: </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="211"/>
+        <location filename="../db/holdings_model.py" line="212"/>
         <source>Open position was expected but not found for (account-asset-date): </source>
         <translation>Открытая позиция ожидалась, но не была найдена для (счёт-ЦБ-дата): </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="258"/>
+        <location filename="../db/holdings_model.py" line="259"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="286"/>
+        <location filename="../db/holdings_model.py" line="287"/>
         <source>Money</source>
         <translation>Деньги</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="118"/>
+        <location filename="../db/holdings_model.py" line="119"/>
         <source>Currency/Account/Asset</source>
         <translation>Валюта/Счёт/ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="119"/>
+        <location filename="../db/holdings_model.py" line="120"/>
         <source>Asset Name</source>
         <translation>Ценная бумага</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="246"/>
+        <location filename="../db/holdings_model.py" line="247"/>
         <source>Exp:</source>
         <translation>Эксп:</translation>
     </message>
@@ -2136,7 +2141,7 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/db.py" line="342"/>
+        <location filename="../db/db.py" line="354"/>
         <source>Operation already present in db and was skipped: </source>
         <translation>Операция уже есть в базе данных и была пропущена: </translation>
     </message>
@@ -2167,17 +2172,17 @@ do you want to save it?</source>
 <context>
     <name>JalSqlError</name>
     <message>
-        <location filename="../db/db.py" line="48"/>
+        <location filename="../db/db.py" line="50"/>
         <source>Incorrect currency assignment for an asset</source>
         <translation>Неверно выбрана валюта для ценной бумаги</translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="51"/>
+        <location filename="../db/db.py" line="53"/>
         <source>Data are referenced in another place and can&apos;t be modified</source>
         <translation>Эти данные не могут быть модифицированы, т.к. на них есть ссылка в другом месте</translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="67"/>
+        <location filename="../db/db.py" line="69"/>
         <source>Database error</source>
         <translation>Ошибка в данных</translation>
     </message>
@@ -2185,52 +2190,57 @@ do you want to save it?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="162"/>
+        <location filename="../db/ledger.py" line="159"/>
         <source>No asset defined for: </source>
         <translation>Не указана ЦБ для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="166"/>
+        <location filename="../db/ledger.py" line="163"/>
         <source>No category set for: </source>
         <translation>Ну указана категория для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="168"/>
+        <location filename="../db/ledger.py" line="165"/>
         <source>No peer set for: </source>
         <translation>Не указан контрагент для: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="242"/>
+        <location filename="../db/ledger.py" line="240"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="243"/>
+        <location filename="../db/ledger.py" line="241"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="292"/>
+        <location filename="../db/ledger.py" line="267"/>
+        <source>Interrupted by user</source>
+        <translation>Прервано пользователем</translation>
+    </message>
+    <message>
+        <location filename="../db/ledger.py" line="291"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation>Произошла ошибка. Расчёт итогов не окончен. Проверьте сообщения об ошибках</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="294"/>
+        <location filename="../db/ledger.py" line="293"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="295"/>
+        <location filename="../db/ledger.py" line="294"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="248"/>
+        <location filename="../db/ledger.py" line="246"/>
         <source>Leger is empty</source>
         <translation>Транзакции отсутствуют</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="253"/>
+        <location filename="../db/ledger.py" line="249"/>
         <source>Re-building ledger since: </source>
         <translation>Пересчёт итогов с: </translation>
     </message>
@@ -2238,27 +2248,27 @@ do you want to save it?</source>
 <context>
     <name>LogViewer</name>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="47"/>
+        <location filename="../widgets/custom/log_viewer.py" line="45"/>
         <source>▶ logs</source>
         <translation>▶ logs</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="49"/>
+        <location filename="../widgets/custom/log_viewer.py" line="47"/>
         <source>▲ logs</source>
         <translation>▲ logs</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="50"/>
+        <location filename="../widgets/custom/log_viewer.py" line="48"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="51"/>
+        <location filename="../widgets/custom/log_viewer.py" line="49"/>
         <source>Select all</source>
         <translation>Выбрать всё</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="52"/>
+        <location filename="../widgets/custom/log_viewer.py" line="50"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
@@ -2266,35 +2276,35 @@ do you want to save it?</source>
 <context>
     <name>LoginFNS</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="260"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="273"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="292"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="266"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="279"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="298"/>
         <source>FNS login failed: </source>
         <translation>ФНС логин неуспешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="262"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="268"/>
         <source>SMS was requested successfully</source>
         <translation>SMS было успешно запрошено</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="275"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="294"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="281"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="300"/>
         <source>FNS login successful: </source>
         <translation>ФНС логин выполнен успешно: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="306"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="312"/>
         <source>Get ESIA URL failed: </source>
         <translation>Не удалось получить URL ЕСИА: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="319"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="325"/>
         <source>ESIA login failed: </source>
         <translation>ЕСИА логин не успешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="321"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="327"/>
         <source>ESIA login successful: </source>
         <translation>ЕСИА логин выполнен успешно: </translation>
     </message>
@@ -2465,12 +2475,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="299"/>
+        <location filename="../net/downloader.py" line="342"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="350"/>
+        <location filename="../net/downloader.py" line="402"/>
         <source>Multiple MOEX assets found for: </source>
         <translation>Найдено несколько ЦБ на MOEX для: </translation>
     </message>
@@ -2478,97 +2488,102 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="165"/>
-        <location filename="../widgets/main_window.py" line="180"/>
+        <location filename="../widgets/main_window.py" line="174"/>
+        <location filename="../widgets/main_window.py" line="189"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="167"/>
+        <location filename="../widgets/main_window.py" line="176"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="129"/>
+        <location filename="../widgets/main_window.py" line="138"/>
         <source>Info</source>
         <translation>Информация</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="133"/>
+        <location filename="../widgets/main_window.py" line="142"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="67"/>
-        <location filename="../widgets/main_window.py" line="224"/>
+        <location filename="../widgets/main_window.py" line="70"/>
+        <location filename="../widgets/main_window.py" line="233"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="133"/>
+        <location filename="../widgets/main_window.py" line="53"/>
+        <source>Stop</source>
+        <translation>Стоп</translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="142"/>
         <source>Database data may be inconsistent after recent update. Rebuild it now?</source>
         <translation>База данных может содержать неверные итоги после недавнего апдейта. Пересчитать сейчас?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="161"/>
+        <location filename="../widgets/main_window.py" line="170"/>
         <source>Translation</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="162"/>
+        <location filename="../widgets/main_window.py" line="171"/>
         <source>Translate predefined names in the database?
 (Default answer is &apos;yes&apos;, if haven&apos;t renamed manually before)</source>
         <translation>Перевести предопределённые названия в базе данных?
 (Ответ по умолчанию &apos;да&apos;, если вы не переименовывали их ранее вручную)</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="169"/>
+        <location filename="../widgets/main_window.py" line="178"/>
         <source>You should restart application to apply changes.
 Application will be terminated now.</source>
         <translation>Нужно перезапустить приложение для применения изменений.
 Сейчас приложение будет закрыто.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="175"/>
+        <location filename="../widgets/main_window.py" line="184"/>
         <source>Full clean-up</source>
         <translation>Полная очистка</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="176"/>
+        <location filename="../widgets/main_window.py" line="185"/>
         <source>All data will be deleted. The actions can&apos;t be undone.
 Are you sure?</source>
         <translation>Все данные будут удалены без возможности восстановления.
 Вы уверены?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="182"/>
+        <location filename="../widgets/main_window.py" line="191"/>
         <source>Database will be removed at next JAL start.
 Application will be terminated now.</source>
         <translation>База данных будет очищена при следующем запуске JAL.
 Сейчас приложение будет закрыто.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="226"/>
+        <location filename="../widgets/main_window.py" line="235"/>
         <source>version</source>
         <translation>версия</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="230"/>
+        <location filename="../widgets/main_window.py" line="239"/>
         <source>github home page</source>
         <translation>домашней странице github</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="230"/>
+        <location filename="../widgets/main_window.py" line="239"/>
         <source>More information, manuals and problem reports are at </source>
         <translation>Дополнительная информация, инструкции, сообщения о проблемах на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="232"/>
+        <location filename="../widgets/main_window.py" line="241"/>
         <source>Questions, comments, help or donations:</source>
         <translation>Вопросы, комментарии, помощь или донаты:</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="295"/>
+        <location filename="../widgets/main_window.py" line="305"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
     </message>
@@ -2576,52 +2591,52 @@ Application will be terminated now.</source>
 <context>
     <name>MarketDataFeed</name>
     <message>
-        <location filename="../constants.py" line="207"/>
+        <location filename="../constants.py" line="208"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="208"/>
+        <location filename="../constants.py" line="209"/>
         <source>Central banks</source>
         <translation>Центральные банки</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="209"/>
+        <location filename="../constants.py" line="210"/>
         <source>MOEX</source>
         <translation>МосБиржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="210"/>
+        <location filename="../constants.py" line="211"/>
         <source>NYSE/Nasdaq</source>
         <translation>NYSE/Nasdaq</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="211"/>
+        <location filename="../constants.py" line="212"/>
         <source>Euronext</source>
         <translation>Euronext</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="212"/>
+        <location filename="../constants.py" line="213"/>
         <source>TMX TSX</source>
         <translation>TMX TSX</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="213"/>
+        <location filename="../constants.py" line="214"/>
         <source>LSE</source>
         <translation>LSE</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="214"/>
+        <location filename="../constants.py" line="215"/>
         <source>Frankfurt Borse</source>
         <translation>Франкфунтская биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="215"/>
+        <location filename="../constants.py" line="216"/>
         <source>Victoria Seguros</source>
         <translation>Victoria Seguros</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="220"/>
+        <location filename="../constants.py" line="221"/>
         <source>Coinbase</source>
         <translation>Coinbase</translation>
     </message>
@@ -2677,27 +2692,6 @@ Application will be terminated now.</source>
         <location filename="../widgets/tax_widget.py" line="205"/>
         <source>Money flow report saved to file </source>
         <translation>ОоДДС сохранён в файле </translation>
-    </message>
-</context>
-<context>
-    <name>Net</name>
-    <message>
-        <location filename="../net/helpers.py" line="64"/>
-        <source> failed: </source>
-        <translation> неуспешный запрос: </translation>
-    </message>
-</context>
-<context>
-    <name>OpenBroker</name>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="33"/>
-        <source>Asset type isn&apos;t supported: </source>
-        <translation>Тип ЦБ не поддерживается: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="62"/>
-        <source>Exchange isn&apos;t supported: </source>
-        <translation>Биржа не поддерживается: </translation>
     </message>
 </context>
 <context>
@@ -2875,42 +2869,42 @@ Application will be terminated now.</source>
 <context>
     <name>PeerListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="265"/>
+        <location filename="../widgets/reference_dialogs.py" line="266"/>
         <source>Show operations with Peer</source>
         <translation>Показать операции с Контрагентом</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="266"/>
+        <location filename="../widgets/reference_dialogs.py" line="267"/>
         <source>Replace with...</source>
         <translation>Заменить на...</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="256"/>
+        <location filename="../widgets/reference_dialogs.py" line="257"/>
         <source>Peers</source>
         <translation>Контрагенты</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="296"/>
+        <location filename="../widgets/reference_dialogs.py" line="297"/>
         <source>Replace peer &apos;</source>
         <translation>Заменить контрагента &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="296"/>
+        <location filename="../widgets/reference_dialogs.py" line="297"/>
         <source>&apos; with: </source>
         <translation>&apos; на: </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="299"/>
+        <location filename="../widgets/reference_dialogs.py" line="300"/>
         <source>Keep old name in notes?</source>
         <translation>Сохранить старое название в примечании?</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="304"/>
+        <location filename="../widgets/reference_dialogs.py" line="305"/>
         <source>Peer &apos;</source>
         <translation>Контрагент &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="304"/>
+        <location filename="../widgets/reference_dialogs.py" line="305"/>
         <source>&apos; was successfully replaced</source>
         <translation>&apos; заменена успешно</translation>
     </message>
@@ -2972,18 +2966,23 @@ Application will be terminated now.</source>
         <translation>Кол-во док.</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="242"/>
-        <location filename="../widgets/reference_dialogs.py" line="245"/>
+        <location filename="../widgets/reference_dialogs.py" line="216"/>
+        <source>New peer</source>
+        <translation>Новый контрагент</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="243"/>
+        <location filename="../widgets/reference_dialogs.py" line="246"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="242"/>
+        <location filename="../widgets/reference_dialogs.py" line="243"/>
         <source>You can&apos;t delete a predefined peer.</source>
         <translation>Вы не можете удалить предопределённого контрагента </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="247"/>
+        <location filename="../widgets/reference_dialogs.py" line="248"/>
         <source>Peer or one of its child peers are in use.
 All related transactions will be deleted together with the peer.
 Do you want to delete the peer anyway?</source>
@@ -3116,7 +3115,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>PredefinedAgents</name>
     <message>
-        <location filename="../constants.py" line="93"/>
+        <location filename="../constants.py" line="94"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
@@ -3124,47 +3123,47 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="152"/>
+        <location filename="../constants.py" line="153"/>
         <source>Money</source>
         <translation>Валюты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="153"/>
+        <location filename="../constants.py" line="154"/>
         <source>Shares</source>
         <translation>Акции</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="154"/>
+        <location filename="../constants.py" line="155"/>
         <source>Bonds</source>
         <translation>Облигации</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="155"/>
+        <location filename="../constants.py" line="156"/>
         <source>ETFs</source>
         <translation>БПИФ</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="156"/>
+        <location filename="../constants.py" line="157"/>
         <source>Commodities</source>
         <translation>Товары</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="157"/>
+        <location filename="../constants.py" line="158"/>
         <source>Derivatives</source>
         <translation>Деривативы</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="158"/>
+        <location filename="../constants.py" line="159"/>
         <source>Forex</source>
         <translation>Форекс</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="159"/>
+        <location filename="../constants.py" line="160"/>
         <source>Funds</source>
         <translation>Фонды</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="164"/>
+        <location filename="../constants.py" line="165"/>
         <source>Crypto-currency</source>
         <translation>Криптовалюты</translation>
     </message>
@@ -3172,47 +3171,47 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>PredefinedCategory</name>
     <message>
-        <location filename="../constants.py" line="108"/>
+        <location filename="../constants.py" line="109"/>
         <source>Income</source>
         <translation>Приход</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="109"/>
+        <location filename="../constants.py" line="110"/>
         <source>Spending</source>
         <translation>Расход</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="110"/>
+        <location filename="../constants.py" line="111"/>
         <source>Profits</source>
         <translation>Прибыли</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="111"/>
+        <location filename="../constants.py" line="112"/>
         <source>Starting balance</source>
         <translation>Начальный баланс</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="112"/>
+        <location filename="../constants.py" line="113"/>
         <source>Fees</source>
         <translation>Комиссии</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="113"/>
+        <location filename="../constants.py" line="114"/>
         <source>Taxes</source>
         <translation>Налоги</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="114"/>
+        <location filename="../constants.py" line="115"/>
         <source>Dividends</source>
         <translation>Дивиденды</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="115"/>
+        <location filename="../constants.py" line="116"/>
         <source>Interest</source>
         <translation>Проценты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="119"/>
+        <location filename="../constants.py" line="120"/>
         <source>Results of investments</source>
         <translation>Результат инвестирования</translation>
     </message>
@@ -3220,27 +3219,27 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>PredefinedTags</name>
     <message>
-        <location filename="../constants.py" line="130"/>
+        <location filename="../constants.py" line="131"/>
         <source>Account type</source>
         <translation>Тип счёта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="131"/>
+        <location filename="../constants.py" line="132"/>
         <source>Cash</source>
         <translation>Наличные</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="132"/>
+        <location filename="../constants.py" line="133"/>
         <source>Bank account</source>
         <translation>Банковский счёт</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="133"/>
+        <location filename="../constants.py" line="134"/>
         <source>Card</source>
         <translation>Карта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="138"/>
+        <location filename="../constants.py" line="139"/>
         <source>Broker account</source>
         <translation>Брокерский счёт</translation>
     </message>
@@ -3443,67 +3442,83 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="88"/>
+        <location filename="../net/downloader.py" line="108"/>
+        <location filename="../net/downloader.py" line="141"/>
+        <source>Interrupted by user</source>
+        <translation>Прервано пользователем</translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="110"/>
         <source>Download completed</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="125"/>
+        <location filename="../net/downloader.py" line="137"/>
+        <source>Loading currency rates for </source>
+        <translation>Загрузка курса валюты для </translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="151"/>
         <source>No rates were downloaded for </source>
         <translation>Не загружены курсы для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="154"/>
+        <location filename="../net/downloader.py" line="169"/>
+        <source>Loading asset quotations</source>
+        <translation>Загрузка котировок</translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="182"/>
         <source>No quotes were downloaded for </source>
         <translation>Не загружены котировки для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="181"/>
+        <location filename="../net/downloader.py" line="211"/>
         <source>There are no CBR data for: </source>
         <translation>Нет данных ЦБ РФ для: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="433"/>
+        <location filename="../net/downloader.py" line="504"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="436"/>
+        <location filename="../net/downloader.py" line="507"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="439"/>
+        <location filename="../net/downloader.py" line="510"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="481"/>
+        <location filename="../net/downloader.py" line="554"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="496"/>
+        <location filename="../net/downloader.py" line="569"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation>Не обнаружен пакет pypdf, необходимый для чтения PDF файлов.</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="506"/>
+        <location filename="../net/downloader.py" line="580"/>
         <source>Can&apos;t parse server response as pdf: </source>
         <translation>Невозможно прочитать полученные от сервера данные как pdf: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="509"/>
+        <location filename="../net/downloader.py" line="583"/>
         <source>Unexpected number of pages in Victoria Seguros document: </source>
         <translation>Неожиданное количество страниц в документе Victoria Seguros: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="537"/>
+        <location filename="../net/downloader.py" line="611"/>
         <source>Can&apos;t parse date from Victoria Seguros file</source>
         <translation>Невозможно получить дату из файла Victoria Seguros</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="552"/>
+        <location filename="../net/downloader.py" line="626"/>
         <source>Can&apos;t find quote for Victoria Seguros fund: </source>
         <translation>Не удалось найти котировку для фонда Victoria Seguros: </translation>
     </message>
@@ -3511,7 +3526,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QuotesListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="498"/>
+        <location filename="../widgets/reference_dialogs.py" line="501"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
@@ -3519,22 +3534,22 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QuotesListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="466"/>
+        <location filename="../widgets/reference_dialogs.py" line="469"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="467"/>
+        <location filename="../widgets/reference_dialogs.py" line="470"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="468"/>
+        <location filename="../widgets/reference_dialogs.py" line="471"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="469"/>
+        <location filename="../widgets/reference_dialogs.py" line="472"/>
         <source>Quote</source>
         <translation>Котировка</translation>
     </message>
@@ -3814,7 +3829,7 @@ Do you want to delete the peer anyway?</source>
         <translation>Чек загружен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="211"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="217"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
@@ -3839,7 +3854,7 @@ Do you want to delete the peer anyway?</source>
         <translation>Неверная длина ИНН. Невозможно загрузить наименвание компании.</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="193"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="199"/>
         <source>Can&apos;t get company name from: </source>
         <translation>Невозможно получить имя компании: </translation>
     </message>
@@ -4057,7 +4072,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>RequestInterceptor</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="349"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="355"/>
         <source>ESIA login completed</source>
         <translation>ЕСИА логин успешен</translation>
     </message>
@@ -4210,6 +4225,14 @@ Do you want to delete the peer anyway?</source>
         <location filename="../widgets/selection_dialog.py" line="69"/>
         <source>Please select tag</source>
         <translation>Выберите метку</translation>
+    </message>
+</context>
+<context>
+    <name>SqlTreeModel</name>
+    <message>
+        <location filename="../db/reference_models.py" line="190"/>
+        <source>New</source>
+        <translation>Новый</translation>
     </message>
 </context>
 <context>
@@ -4849,159 +4872,6 @@ Do you want to delete the peer anyway?</source>
     </message>
 </context>
 <context>
-    <name>StatementOpenBroker</name>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="74"/>
-        <source>Open Broker</source>
-        <translation>Открытие брокер</translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="77"/>
-        <source>Open Broker statement (*.xml)</source>
-        <translation>Отчёт брокера Открытие (*.xml)</translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="174"/>
-        <source>Open broker report title not found</source>
-        <translation>Заголовок отчёта Открытие брокер не найден</translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="176"/>
-        <source>Unexpected Open broker report header: </source>
-        <translation>Неподдерживаемый заголовок отчёта для Открытие брокер: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="214"/>
-        <source>Multiple match for broker symbol: </source>
-        <translation>Несколько совпадений для символа, используемого брокером: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="221"/>
-        <source>Multiple match for symbol: </source>
-        <translation>Несколько совпадений для символа: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="255"/>
-        <source>Load Open Broker statement for account </source>
-        <translation>Загрузка отчёта Открытие брокер для счёта </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="281"/>
-        <source>Securities loaded: </source>
-        <translation>ЦБ загружены: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="294"/>
-        <source>Accounts loaded: </source>
-        <translation>Счета загружены: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="303"/>
-        <source>Can&apos;t find account for trade: </source>
-        <translation>Невозможно найти счёт для сделки: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="305"/>
-        <source>Can&apos;t determine trade type/quantity: </source>
-        <translation>Невозможно определить тип/количество для сделки: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="332"/>
-        <source>Unknown non-trade operation: </source>
-        <translation>Неизвестная неторговая операция: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="340"/>
-        <source>Can&apos;t parse bond repayment description </source>
-        <translation>Невозможно распознать описание погашения облигации </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="344"/>
-        <source>Can&apos;t detect bond name from description </source>
-        <translation>Невозможно распознать название облигации в описании </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="390"/>
-        <source>Operation not supported: </source>
-        <translation>Операция не поддерживается: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="397"/>
-        <source>Can&apos;t find account for cash operation: </source>
-        <translation>Невозможно определить счёт для денежной транзакции: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="400"/>
-        <source>Cash operations loaded: </source>
-        <translation>Денежных операций загружено: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="433"/>
-        <source>Unknown payment description: </source>
-        <translation>Неподдерживаемое описание платежа: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="442"/>
-        <source>Unknown payment type in description: </source>
-        <translation>Неизвестный тип платежа в описании: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="478"/>
-        <source>Can&apos;t parse Interest description </source>
-        <translation>Невозможно распознать описание купона </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="481"/>
-        <source>Interest description miss some data </source>
-        <translation>Отсутствуют данные в описани купона </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="485"/>
-        <source>Can&apos;t find asset for bond interest </source>
-        <translation>Не найдена ЦБ для купона </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="497"/>
-        <source>Can&apos;t parse Bond Mature description </source>
-        <translation>Невозможно распознать описание погашения облигации </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="501"/>
-        <source>Bond repayment description miss some data </source>
-        <translation>Отсутствуют данные в описании погашения облигации </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="506"/>
-        <source>Can&apos;t find asset cancellation record for </source>
-        <translation>Невозможно найти запись списания ЦБ для </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="509"/>
-        <source>Multiple asset cancellation match for </source>
-        <translation>Найдены несколько записей погашения ЦБ для </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="524"/>
-        <source>Can&apos;t parse Bond Amortization description </source>
-        <translation>Невозможно распознать описание амортизации </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="527"/>
-        <source>Bond Amortization description miss some data </source>
-        <translation>Отсутствуют данные в описании амортизации облигации </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="531"/>
-        <source>Can&apos;t find asset for Bond Amortization </source>
-        <translation>Не найдена ЦБ для амортизации облигации </translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="567"/>
-        <source>Can&apos;t match asset for </source>
-        <translation>Невозможно сопоставить ЦБ для </translation>
-    </message>
-</context>
-<context>
     <name>StatementPSB</name>
     <message>
         <location filename="../data_import/broker_statements/psb.py" line="34"/>
@@ -5168,32 +5038,32 @@ Please select an account for import:</source>
         <translation>Отсутствуют ожидаемые данные в описании денежного перевода </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="400"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="406"/>
         <source>Can&apos;t parse dividend description </source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="418"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="421"/>
         <source>Failed to convert dividend tax </source>
         <translation>Ошибка при конвертации суммы налога </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="434"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="437"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation>Невозможно распознать описание купона </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="448"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="451"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation>Невозможно распознать описание погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="454"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="457"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation>Невозможно найти запись списания ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="456"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="459"/>
         <source>Multiple asset cancellation match for </source>
         <translation>Найдены несколько записей погашения ЦБ для </translation>
     </message>
@@ -5512,50 +5382,55 @@ Please select an account for import:</source>
 <context>
     <name>TagTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="392"/>
+        <location filename="../widgets/reference_dialogs.py" line="394"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="392"/>
+        <location filename="../widgets/reference_dialogs.py" line="394"/>
         <source>Icon filename</source>
         <translation>Файл иконки</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="396"/>
+        <source>New tag</source>
+        <translation>Новая метка</translation>
     </message>
 </context>
 <context>
     <name>TagsListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="421"/>
+        <location filename="../widgets/reference_dialogs.py" line="424"/>
         <source>Show operations with Tag</source>
         <translation>Показать операции с Меткой</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="422"/>
+        <location filename="../widgets/reference_dialogs.py" line="425"/>
         <source>Replace with...</source>
         <translation>Заменить на...</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="412"/>
+        <location filename="../widgets/reference_dialogs.py" line="415"/>
         <source>Tags</source>
         <translation>Тэги</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="453"/>
+        <location filename="../widgets/reference_dialogs.py" line="456"/>
         <source>Replace tag &apos;</source>
         <translation>Заменить метку &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="453"/>
+        <location filename="../widgets/reference_dialogs.py" line="456"/>
         <source>&apos; with: </source>
         <translation>&apos; на: </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="457"/>
+        <location filename="../widgets/reference_dialogs.py" line="460"/>
         <source>Tag &apos;</source>
         <translation>Метка &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="457"/>
+        <location filename="../widgets/reference_dialogs.py" line="460"/>
         <source>&apos; was successfully replaced</source>
         <translation>&apos; заменена успешно</translation>
     </message>
@@ -6273,6 +6148,24 @@ Please select an account for import:</source>
         <location filename="../ui/quotes_update.ui" line="59"/>
         <source>End date</source>
         <translation>По</translation>
+    </message>
+</context>
+<context>
+    <name>WebRequest</name>
+    <message>
+        <location filename="../net/web_request.py" line="77"/>
+        <source>Timeout</source>
+        <translation>Таймаут</translation>
+    </message>
+    <message>
+        <location filename="../net/web_request.py" line="80"/>
+        <source>Error</source>
+        <translation>Ошибка</translation>
+    </message>
+    <message>
+        <location filename="../net/web_request.py" line="88"/>
+        <source>Failed</source>
+        <translation>Неуспешно</translation>
     </message>
 </context>
 <context>
