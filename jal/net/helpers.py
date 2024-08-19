@@ -38,7 +38,7 @@ def request_url(method, url, params=None, json_params=None, headers=None, binary
         session.headers.update(headers)
     try:
         if method == "GET":
-            response = session.get(url, verify=verify)
+            response = session.get(url, params=params, verify=verify)
         elif method == "POST":
             if params:
                 response = session.post(url, data=params, verify=verify)

@@ -16,6 +16,7 @@ from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.asset import JalAsset
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
+from jal.net.web_request import WebRequest
 from jal.widgets.helpers import dependency_present
 try:
     from pypdf import PdfReader
@@ -76,6 +77,7 @@ class QuoteDownloader(QObject):
     def __init__(self):
         super().__init__()
         self._cancelled = False
+        self._waiting = False
         self.CBR_codes = None
 
     @Slot()
@@ -214,10 +216,15 @@ class QuoteDownloader(QObject):
         return rates
 
     def ECB_DataReader(self, currency, start_timestamp, end_timestamp):
-        date1 = datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
-        date2 = datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
-        url = f"https://data-api.ecb.europa.eu/service/data/EXR/D.{currency.symbol()}.EUR.SP00.A?startPeriod={date1}&endPeriod={date2}"
-        file = StringIO(get_web_data(url, headers={'Accept': 'text/csv'}))
+        url = f"https://data-api.ecb.europa.eu/service/data/EXR/D.{currency.symbol()}.EUR.SP00.A"
+        params = {
+            'startPeriod': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
+            'endPeriod': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
+        }
+        request = WebRequest(WebRequest.GET, url, params=params, headers={'Accept': 'text/csv'})
+        while not request.completed():
+            QApplication.processEvents()
+        file = StringIO(request.data())
         try:
             data = pd.read_csv(file, dtype={'TIME_PERIOD': str, 'OBS_VALUE': str})
         except ParserError:
