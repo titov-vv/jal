@@ -16,6 +16,8 @@ class LogHandler(logging.Handler):
         super().__init__()
 
     def emit(self, record, **kwargs):
+        if "urllib3" in record.name:  # This handler is not threadsafe, so it ignores messages that may be sent by another thread (from WebRequest class)
+            return
         message = self.format(record)
         colors = {
             logging.DEBUG: CustomColor.Grey,

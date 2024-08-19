@@ -76,6 +76,7 @@ class QuoteDownloader(QObject):
 
     def __init__(self):
         super().__init__()
+        self._request = None
         self._cancelled = False
         self._waiting = False
         self.CBR_codes = None
@@ -91,6 +92,7 @@ class QuoteDownloader(QObject):
             self.download_completed.emit()
 
     def DownloadData(self, start_timestamp, end_timestamp, sources_list):
+        self._cancelled = False
         self.show_progress.emit(True)
         if MarketDataFeed.FX in sources_list:
             self.download_currency_rates(start_timestamp, end_timestamp)
@@ -126,6 +128,9 @@ class QuoteDownloader(QObject):
             logging.info(self.tr("Loading currency rates for " + base_symbol))
             currencies = JalAsset.get_currencies()
             for i, currency in enumerate(currencies):
+                if self._cancelled:
+                    logging.warning(self.tr("Interrupted by user"))
+                    return
                 if currency.id() == base or currency.quote_source(None) != MarketDataFeed.FX:
                     continue  # Skip as it is X/X ratio that is always 1
                 from_timestamp = self._adjust_start(currency, base, start_timestamp)
@@ -172,11 +177,11 @@ class QuoteDownloader(QObject):
 
     def PrepareRussianCBReader(self):
         rows = []
-        request = WebRequest(WebRequest.GET, "http://www.cbr.ru/scripts/XML_valFull.asp")
-        while not request.completed():
+        self._request = WebRequest(WebRequest.GET, "http://www.cbr.ru/scripts/XML_valFull.asp")
+        while self._request.isRunning():
             QApplication.processEvents()
         try:
-            xml_root = xml_tree.fromstring(request.data())
+            xml_root = xml_tree.fromstring(self._request.data())
             for node in xml_root:
                 code = node.find("ParentCode").text.strip() if node is not None else None
                 iso = node.find("ISO_Char_Code").text if node is not None else None
@@ -203,10 +208,10 @@ class QuoteDownloader(QObject):
             'VAL_NM_RQ': code
         }
         url = "http://www.cbr.ru/scripts/XML_dynamic.asp"
-        request = WebRequest(WebRequest.GET, url, params=params)
-        while not request.completed():
+        self._request = WebRequest(WebRequest.GET, url, params=params)
+        while self._request.isRunning():
             QApplication.processEvents()
-        xml_root = xml_tree.fromstring(request.data())
+        xml_root = xml_tree.fromstring(self._request.data())
         rows = []
         for node in xml_root:
             s_date = node.attrib['Date'] if node is not None else None
@@ -229,10 +234,13 @@ class QuoteDownloader(QObject):
             'startPeriod': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
             'endPeriod': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
         }
-        request = WebRequest(WebRequest.GET, url, params=params, headers={'Accept': 'text/csv'})
-        while not request.completed():
+        self._request = WebRequest(WebRequest.GET, url, params=params, headers={'Accept': 'text/csv'})
+        while self._request.isRunning():
             QApplication.processEvents()
-        file = StringIO(request.data())
+            if self._cancelled:
+                self._request.quit()
+                return None
+        file = StringIO(self._request.data())
         try:
             data = pd.read_csv(file, dtype={'TIME_PERIOD': str, 'OBS_VALUE': str})
         except ParserError:
@@ -435,10 +443,13 @@ class QuoteDownloader(QObject):
             'interval': '1d',
             'events': 'history'
         }
-        request = WebRequest(WebRequest.GET, url, params=params)
-        while not request.completed():
+        self._request = WebRequest(WebRequest.GET, url, params=params)
+        while self._request.isRunning():
             QApplication.processEvents()
-        file = StringIO(request.data())
+            if self._cancelled:
+                self._request.quit()
+                return None
+        file = StringIO(self._request.data())
         try:
             data = pd.read_csv(file, dtype={'Date': str, 'Close': str})
         except ParserError:
@@ -599,11 +610,11 @@ class QuoteDownloader(QObject):
         quotes = []
         for ts in timestamp_range(start_timestamp, end_timestamp):
             date_string = datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
-            request = WebRequest(WebRequest.GET, url, params={'date': date_string})
-            while not request.completed():
+            self._request = WebRequest(WebRequest.GET, url, params={'date': date_string})
+            while self._request.isRunning():
                 QApplication.processEvents()
             try:
-                result_data = json.loads(request.data())
+                result_data = json.loads(self._request.data())
                 quote = result_data['data']['amount']
             except (json.decoder.JSONDecodeError, KeyError):
                 continue

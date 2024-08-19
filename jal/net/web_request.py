@@ -5,7 +5,7 @@ from PySide6.QtCore import QThread, QMutex
 
 # Class that executes web-requests in a separate thread
 # Request parameters are given in constructor and execution starts immediately after object creation
-# Status of execution may be checked with completed() method and received result is accessible via data() method
+# Result of execution is available via data() method after thread completion
 class WebRequest(QThread):
     GET = auto()        # Execute HTTP GET method
     POST = auto()       # Execute HTTP POST method with application/x-www-form-urlencoded
@@ -15,7 +15,6 @@ class WebRequest(QThread):
         super().__init__()
         self._mutex = QMutex()
         self._data = None
-        self._completed = False
         self._op = operation
         self._url = url
         self._params = params
@@ -39,20 +38,14 @@ class WebRequest(QThread):
         headers = self._headers
         binary = self._binary
         self._mutex.unlock()
+        self.sleep(3)
         if json:
             result = request_url(method, url, json_params=params, headers=headers, binary=binary)
         else:
             result = request_url(method, url, params=params, headers=headers, binary=binary)
         self._mutex.lock()
         self._data = result
-        self._completed = True
         self._mutex.unlock()
-
-    def completed(self) -> bool:
-        self._mutex.lock()
-        completed = self._completed
-        self._mutex.unlock()
-        return completed
 
     def data(self):
         self._mutex.lock()
