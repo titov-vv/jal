@@ -428,9 +428,17 @@ class QuoteDownloader(QObject):
 
     # noinspection PyMethodMayBeStatic
     def Yahoo_Downloader(self, asset, currency_id, start_timestamp, end_timestamp, suffix=''):
-        url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset.symbol(currency_id)+suffix}?" \
-              f"period1={start_timestamp}&period2={end_timestamp}&interval=1d&events=history"
-        file = StringIO(get_web_data(url))
+        url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset.symbol(currency_id)+suffix}"
+        params = {
+            'period1': start_timestamp,
+            'period2': end_timestamp,
+            'interval': '1d',
+            'events': 'history'
+        }
+        request = WebRequest(WebRequest.GET, url, params=params)
+        while not request.completed():
+            QApplication.processEvents()
+        file = StringIO(request.data())
         try:
             data = pd.read_csv(file, dtype={'Date': str, 'Close': str})
         except ParserError:

@@ -4,6 +4,7 @@ from requests.exceptions import ConnectTimeout, ConnectionError
 import logging
 import platform
 from PySide6.QtWidgets import QApplication
+from jal import __version__
 from jal.constants import Setup
 from jal.db.settings import JalSettings
 
@@ -23,6 +24,7 @@ def isEnglish(text):
 # Retrieve URL from web with given method and params
 def request_url(method, url, params=None, json_params=None, headers=None, binary=False, verify=True):
     session = requests.Session()
+    session.headers['User-Agent'] = f"JAL/{__version__} ({platform.system()} {platform.release()})"
     if headers is not None:
         session.headers.update(headers)
     try:
