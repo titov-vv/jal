@@ -3,43 +3,39 @@ import logging
 from datetime import datetime
 from jal.constants import CustomColor
 from jal.widgets.icons import JalIcon
-from PySide6.QtCore import Qt, Slot, qInstallMessageHandler, QtMsgType
+from PySide6.QtCore import Qt, Slot, Signal, QObject, qInstallMessageHandler, QtMsgType
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
 from PySide6.QtGui import QBrush
 
+# Code is based on example from https://docs.python.org/3/howto/logging-cookbook.html#a-qt-gui-for-logging
+
+
+# There is an error with multiple inheritance in Qt, that prevents subclassing LogHandler from both Handler and
+# QObject. Thus separate class is required.
+class SignalForwarder(QObject):
+    signal = Signal(int, str)    # Log level, Log message
+
 
 # Adapter class to have custom log handler that may be passed to logger.addHandler/logger.removeHandler methods and
-# then forward all messages parent view to display them
+# then forward all to the Viewer class for displaying
 class LogHandler(logging.Handler):
-    def __init__(self, parent_view):
-        self._parent_view = parent_view
+    def __init__(self, receiver):
         super().__init__()
+        self._forwarder = SignalForwarder()
+        self._forwarder.signal.connect(receiver)
 
     def emit(self, record, **kwargs):
-        if "urllib3" in record.name:  # This handler is not threadsafe, so it ignores messages that may be sent by another thread (from WebRequest class)
-            return                    # FIXME - need to make it threadsafe
         message = self.format(record)
-        colors = {
-            logging.DEBUG: CustomColor.Grey,
-            logging.INFO: None,
-            logging.WARNING: CustomColor.LightRed,
-            logging.ERROR: CustomColor.LightRed,
-            logging.CRITICAL: CustomColor.LightRed
-        }
-        try:
-            message_color = colors[record.levelno]
-        except KeyError:
-            message_color = CustomColor.LightRed
-        self._parent_view.displayMessage(message, message_color)
+        self._forwarder.signal.emit(record.levelno, message)
 
 
-# A GUI class to display messages from python logging unit in a normal multi-line text area
+# A GUI class to display messages forwarded from python logging unit in a normal multi-line text area
 class LogViewer(QPlainTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.app = QApplication.instance()
         self._logger = None     # Here an instance of current logger will be stored
-        self._log_handler = LogHandler(self)
+        self._log_handler = LogHandler(self.process_message)
         self.setReadOnly(True)
         self.status_bar = None    # Status bar where notifications and control are located
         self.expandButton = None  # Button that shows/hides log window
@@ -66,6 +62,10 @@ class LogViewer(QPlainTextEdit):
         self._log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         qInstallMessageHandler(self.qtLogHandler)
 
+    def stopLogging(self):
+        self._logger.removeHandler(self._log_handler)    # Removing handler (but it doesn't prevent exception at exit)
+        logging.raiseExceptions = False                  # Silencing logging module exceptions
+
     def qtLogHandler(self, mode, _context, message):
         colors = {
             QtMsgType.QtDebugMsg: CustomColor.Grey,
@@ -82,9 +82,20 @@ class LogViewer(QPlainTextEdit):
         message = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]} - Qt - {message}"
         self.displayMessage(message, message_color)
 
-    def stopLogging(self):
-        self._logger.removeHandler(self._log_handler)    # Removing handler (but it doesn't prevent exception at exit)
-        logging.raiseExceptions = False                  # Silencing logging module exceptions
+    @Slot(int, str)
+    def process_message(self, log_level, message):
+        colors = {
+            logging.DEBUG: CustomColor.Grey,
+            logging.INFO: None,
+            logging.WARNING: CustomColor.LightRed,
+            logging.ERROR: CustomColor.LightRed,
+            logging.CRITICAL: CustomColor.LightRed
+        }
+        try:
+            message_color = colors[log_level]
+        except KeyError:
+            message_color = CustomColor.LightRed
+        self.displayMessage(message, message_color)
 
     def displayMessage(self, message: str, color: CustomColor = None):
         color = self.clear_color if color is None else color
