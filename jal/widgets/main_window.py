@@ -49,8 +49,9 @@ class MainWindow(QMainWindow):
 
         # Customize Status bar and logs
         self.ProgressBar = QProgressBar(self)  # Use default range 0 - 100
-        self.ui.StatusBar.addPermanentWidget(self.ProgressBar)
+        self.ui.StatusBar.addPermanentWidget(self.ProgressBar, stretch=1)
         self.CancelButton = QPushButton(self.tr("Stop"), parent=self)
+        self.CancelButton.setFixedWidth(int(self.CancelButton.fontMetrics().horizontalAdvance(self.CancelButton.text()) * 1.5))
         self.ui.StatusBar.addPermanentWidget(self.CancelButton)
         self.ProgressBar.setVisible(False)
         self.CancelButton.setVisible(False)
