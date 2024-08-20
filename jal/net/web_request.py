@@ -18,8 +18,8 @@ class WebRequest(QThread):
     def __init__(self, operation, url, params=None, headers=None, binary=False):
         super().__init__()
         self._mutex = QMutex()
-        self._data = None
-        self._op = operation
+        self._data = ''
+        self._operation = operation
         self._url = url
         self._params = params
         self._headers = headers
@@ -28,24 +28,14 @@ class WebRequest(QThread):
             self.start()
 
     def run(self):
-        json = False
         self._mutex.lock()
-        if self._op == self.GET:
-            method = "GET"
-        elif self._op == self.POST:
-            method = "POST"
-        else:
-            method = "POST"
-            json = True
         url = self._url
+        operation = self._operation
         params = self._params
         headers = self._headers
         binary = self._binary
         self._mutex.unlock()
-        if json:
-            result = self._request(method, url, json_params=params, headers=headers, binary=binary)
-        else:
-            result = self._request(method, url, params=params, headers=headers, binary=binary)
+        result = self._request(operation, url, params=params, headers=headers, binary=binary)
         self._mutex.lock()
         self._data = result
         self._mutex.unlock()
@@ -56,21 +46,18 @@ class WebRequest(QThread):
         self._mutex.unlock()
         return data
 
-    def _request(self, method, url, params=None, json_params=None, headers=None, binary=False):
+    def _request(self, operation, url, params=None, headers=None, binary=False):
         session = requests.Session()
         session.headers['User-Agent'] = f"JAL/{__version__} ({platform.system()} {platform.release()})"
         if headers is not None:
             session.headers.update(headers)
         try:
-            if method == "GET":
+            if operation == WebRequest.GET:
                 response = session.get(url, params=params)
-            elif method == "POST":
-                if params:
-                    response = session.post(url, data=params)
-                elif json_params:
-                    response = session.post(url, json=json_params)
-                else:
-                    response = session.post(url)
+            elif operation == WebRequest.POST:
+                response = session.post(url, data=params)
+            elif operation == WebRequest.POST_JSON:
+                response = session.post(url, json=params)
             else:
                 assert False
         except ConnectTimeout:
