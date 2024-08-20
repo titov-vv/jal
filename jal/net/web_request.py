@@ -56,21 +56,21 @@ class WebRequest(QThread):
         self._mutex.unlock()
         return data
 
-    def _request(self, method, url, params=None, json_params=None, headers=None, binary=False, verify=True):
+    def _request(self, method, url, params=None, json_params=None, headers=None, binary=False):
         session = requests.Session()
         session.headers['User-Agent'] = f"JAL/{__version__} ({platform.system()} {platform.release()})"
         if headers is not None:
             session.headers.update(headers)
         try:
             if method == "GET":
-                response = session.get(url, params=params, verify=verify)
+                response = session.get(url, params=params)
             elif method == "POST":
                 if params:
-                    response = session.post(url, data=params, verify=verify)
+                    response = session.post(url, data=params)
                 elif json_params:
-                    response = session.post(url, json=json_params, verify=verify)
+                    response = session.post(url, json=json_params)
                 else:
-                    response = session.post(url, verify=verify)
+                    response = session.post(url)
             else:
                 assert False
         except ConnectTimeout:
