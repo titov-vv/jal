@@ -162,24 +162,25 @@ class QuoteDownloader(QObject):
             MarketDataFeed.SMA_VICTORIA: self.Victoria_Downloader,
             MarketDataFeed.COIN: self.Coinbase_Downloader
         }
-        assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)  # append assets list
-        logging.info(self.tr("Loading asset quotations"))
-        for i, asset_data in enumerate(assets):
-            asset = asset_data['asset']
-            currency = asset_data['currency']
-            from_timestamp = self._adjust_start(asset, currency, start_timestamp)
-            if end_timestamp < from_timestamp:
-                continue
-            try:
-                data_source = asset.quote_source(currency)
-                if data_source not in sources_list:   # skip sources that are not requested
-                    continue
-                data = data_loaders[data_source](asset, currency, from_timestamp, end_timestamp)
-            except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
-                logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.symbol()}")
-                continue
-            self._store_quotations(asset, currency, data)
-            self.update_progress.emit(100.0 * i / len(assets))
+        bulk_loaders = [MarketDataFeed.SMA_VICTORIA]
+        assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)
+        for source in sources_list:
+            logging.info(self.tr("Loading asset prices for") + f" {MarketDataFeed().get_name(source)}")
+            s_assets = [(x['asset'], x['currency']) for x in assets if x['asset'].quote_source(x['currency']) == source]
+            if source in bulk_loaders:
+                data = data_loaders[source](s_assets, start_timestamp, end_timestamp)
+                raise NotImplementedError
+            else:
+                for i, (asset, currency) in enumerate(s_assets):
+                    from_timestamp = self._adjust_start(asset, currency, start_timestamp)
+                    try:
+                        if from_timestamp <= end_timestamp:
+                            data = data_loaders[source](asset, currency, from_timestamp, end_timestamp)
+                            self._store_quotations(asset, currency, data)
+                    except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
+                        logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.symbol()}")
+                        continue
+                    self.update_progress.emit(100.0 * i / len(s_assets))
 
     def PrepareRussianCBReader(self):
         rows = []
