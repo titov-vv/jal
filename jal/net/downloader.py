@@ -107,7 +107,8 @@ class QuoteDownloader(QObject):
         except KeyboardInterrupt:
             logging.warning(self.tr("Interrupted by user"))
         self.show_progress.emit(False)
-        logging.info(self.tr("Download completed"))
+        if not self._cancelled:
+            logging.info(self.tr("Download completed"))
 
     # Checks for present quotations of 'asset' in given 'currency' and adjusts 'start' timestamp to be at
     # the end of available quotes interval if needed.
@@ -132,25 +133,21 @@ class QuoteDownloader(QObject):
             "RUB": self.CBR_DataReader,
             "EUR": self.ECB_DataReader
         }
+        currencies = [x for x in JalAsset.get_currencies() if x.quote_source(None) == MarketDataFeed.FX]
         for base in set([x[1] for x in JalAsset.get_base_currency_history(start_timestamp, end_timestamp)]):
             base_symbol = JalAsset(base).symbol()
             logging.info(self.tr("Loading currency rates for " + base_symbol))
-            currencies = JalAsset.get_currencies()
-            for i, currency in enumerate(currencies):
+            for i, currency in enumerate([x for x in currencies if x.id() != base]):  # base currency rate is always 1
                 if self._cancelled:
-                    logging.warning(self.tr("Interrupted by user"))
-                    return
-                if currency.id() == base or currency.quote_source(None) != MarketDataFeed.FX:
-                    continue  # Skip as it is X/X ratio that is always 1
+                    raise KeyboardInterrupt
                 from_timestamp = self._adjust_start(currency, base, start_timestamp)
-                if end_timestamp < from_timestamp:
-                    continue
                 try:
-                    data = data_loaders[base_symbol](currency, from_timestamp, end_timestamp)
+                    if from_timestamp <= end_timestamp:
+                        data = data_loaders[base_symbol](currency, from_timestamp, end_timestamp)
+                        self._store_quotations(currency, base, data)
                 except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
                     logging.warning(self.tr("No rates were downloaded for ") + f"{currency.symbol()}/{base_symbol}")
                     continue
-                self._store_quotations(currency, base, data)
                 self.update_progress.emit(100.0 * (i+1) / len(currencies))
 
     def download_asset_prices(self, start_timestamp, end_timestamp, sources_list):
