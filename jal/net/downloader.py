@@ -77,7 +77,9 @@ class QuoteDownloader(QObject):
         self._request = None
         self._cancelled = False
         self._waiting = False
-        self.CBR_codes = None
+        self._cbr_codes = None
+        self._victoria_quotes = []
+        self._victoria_date = None
 
     @Slot()
     def on_cancel(self):
@@ -162,25 +164,19 @@ class QuoteDownloader(QObject):
             MarketDataFeed.SMA_VICTORIA: self.Victoria_Downloader,
             MarketDataFeed.COIN: self.Coinbase_Downloader
         }
-        bulk_loaders = [MarketDataFeed.SMA_VICTORIA]
         assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)
-        for source in sources_list:
-            logging.info(self.tr("Loading asset prices for") + f" {MarketDataFeed().get_name(source)}")
-            s_assets = [(x['asset'], x['currency']) for x in assets if x['asset'].quote_source(x['currency']) == source]
-            if source in bulk_loaders:
-                data = data_loaders[source](s_assets, start_timestamp, end_timestamp)
-                raise NotImplementedError
-            else:
-                for i, (asset, currency) in enumerate(s_assets):
-                    from_timestamp = self._adjust_start(asset, currency, start_timestamp)
-                    try:
-                        if from_timestamp <= end_timestamp:
-                            data = data_loaders[source](asset, currency, from_timestamp, end_timestamp)
-                            self._store_quotations(asset, currency, data)
-                    except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
-                        logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.symbol()}")
-                        continue
-                    self.update_progress.emit(100.0 * i / len(s_assets))
+        assets = [(x['asset'], x['currency']) for x in assets if x['asset'].quote_source(x['currency']) in sources_list]
+        logging.info(self.tr("Loading assets prices"))
+        for i, (asset, currency) in enumerate(assets):
+            from_timestamp = self._adjust_start(asset, currency, start_timestamp)
+            try:
+                if from_timestamp <= end_timestamp:
+                    data = data_loaders[asset.quote_source(currency)](asset, currency, from_timestamp, end_timestamp)
+                    self._store_quotations(asset, currency, data)
+            except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
+                logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.symbol()}")
+                continue
+            self.update_progress.emit(100.0 * i / len(assets))
 
     def PrepareRussianCBReader(self):
         rows = []
@@ -194,17 +190,17 @@ class QuoteDownloader(QObject):
                 rows.append({"ISO_name": iso, "CBR_code": code})
         except xml_tree.ParseError:
             pass
-        self.CBR_codes = pd.DataFrame(rows, columns=["ISO_name", "CBR_code"])
+        self._cbr_codes = pd.DataFrame(rows, columns=["ISO_name", "CBR_code"])
 
     # Empty method to make a unified call for any asset
     def Dummy_DataReader(self, _asset, _currency_id, _start_timestamp, _end_timestamp):
         return None
 
     def CBR_DataReader(self, currency, start_timestamp, end_timestamp):
-        if self.CBR_codes is None:
+        if self._cbr_codes is None:
             self.PrepareRussianCBReader()
         try:
-            code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency.symbol(), "CBR_code"].values[0]).strip()
+            code = str(self._cbr_codes.loc[self._cbr_codes["ISO_name"] == currency.symbol(), "CBR_code"].values[0]).strip()
         except IndexError:
             logging.debug(self.tr("There are no CBR data for: ") + f"{currency.symbol()}")
             return None
@@ -561,25 +557,40 @@ class QuoteDownloader(QObject):
         return close
 
     def Victoria_Downloader(self, asset, _currency_id, _start_timestamp, _end_timestamp):
+        quotes = self._get_victoria_quotes()
+        if not quotes:
+            return None
+        # Filter asset price
+        asset_quotes = [x for x in quotes if x['name'] == asset.name()]
+        if len(asset_quotes) != 1:
+            logging.warning(self.tr("Can't find quote for Victoria Seguros fund: ") + asset.name())
+            return None
+        data = pd.DataFrame([{'Date': self._victoria_date, 'Close': asset_quotes[0]['price']}])
+        close = data.set_index("Date")
+        return close
+
+    def _get_victoria_quotes(self) -> list:
         months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro',
-                   'novembro', 'dezembro']
+                  'novembro', 'dezembro']
+        if self._victoria_quotes:
+            return self._victoria_quotes
         if not dependency_present(['pypdf']):
             logging.warning(self.tr("Package pypdf not found for PDF parsing."))
-            return None
+            return []
         # Download PDF-file with current quotes
         self._request = WebRequest(WebRequest.GET, "https://www.victoria-seguros.pt/cdu-services/UNIDADES_PARTICIPACAO_VIDA_OPC1_UP", binary=True)
         self._wait_for_event()
         pdf_data = self._request.data()
         if not pdf_data:
-            return None
+            return []
         try:
             pdf = PdfReader(BytesIO(pdf_data))
         except PdfStreamError:
             logging.error(self.tr("Can't parse server response as pdf: ") + str(pdf_data))
-            return None
+            return []
         if len(pdf.pages) != 1:
             logging.warning(self.tr("Unexpected number of pages in Victoria Seguros document: ") + len(pdf.pages))
-            return None
+            return []
         # Get text from downloaded PDF-file together with font type and font size of each text fragment
         parts = []
         def visitor_body(text, cm, tm, font_dict, font_size):
@@ -607,25 +618,18 @@ class QuoteDownloader(QObject):
         match = re.match(r"(\d\d?) de (\w+) de (\d\d\d\d)", lines[-1])
         if match is None:
             logging.warning(self.tr("Can't parse date from Victoria Seguros file"))
-            return None
+            return []
         day, month, year = match.groups()
-        quote_date = datetime(int(year), months.index(month) + 1, int(day))
+        self._victoria_date = datetime(int(year), months.index(month) + 1, int(day))
         # Get quotation lines from the file
-        quotes = []
+        self._victoria_quotes = []
         for line in lines:
             match = re.match(r"(.*) EUR (\d+[,.]\d+)", line)
             if match is None:
                 continue
             fund_name, price = match.groups()
-            quotes.append({'name': fund_name, 'price': Decimal(price.replace(',', '.'))})
-        # Filter asset price
-        asset_quotes = [x for x in quotes if x['name'] == asset.name()]
-        if len(asset_quotes) != 1:
-            logging.warning(self.tr("Can't find quote for Victoria Seguros fund: ") + asset.name())
-            return None
-        data = pd.DataFrame([{'Date': quote_date, 'Close': asset_quotes[0]['price']}])
-        close = data.set_index("Date")
-        return close
+            self._victoria_quotes.append({'name': fund_name, 'price': Decimal(price.replace(',', '.'))})
+        return self._victoria_quotes
 
     def Coinbase_Downloader(self, asset, currency_id, start_timestamp, end_timestamp):
         currency_symbol = JalAsset(currency_id).symbol()
