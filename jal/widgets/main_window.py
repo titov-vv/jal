@@ -110,11 +110,11 @@ class MainWindow(QMainWindow):
         self.CancelButton.clicked.connect(self.downloader.on_cancel)
         self.CancelButton.clicked.connect(self.ledger.on_cancel)
         self.downloader.download_completed.connect(self.updateWidgets)
-        self.downloader.show_progress.connect(self.on_display_long_operation)
-        self.downloader.update_progress.connect(self.on_update_long_operation_progress)
+        self.downloader.show_progress.connect(self.onToggleProgressDisplay)
+        self.downloader.update_progress.connect(self.onUpdatePorgressDisplay)
         self.ledger.updated.connect(self.updateWidgets)
-        self.ledger.show_progress.connect(self.on_display_long_operation)
-        self.ledger.update_progress.connect(self.on_update_long_operation_progress)
+        self.ledger.show_progress.connect(self.onToggleProgressDisplay)
+        self.ledger.update_progress.connect(self.onUpdatePorgressDisplay)
         self.statements.load_completed.connect(self.onStatementImport)
 
     @Slot()
@@ -304,10 +304,10 @@ class MainWindow(QMainWindow):
                         logging.warning(self.tr("Statement ending balance doesn't match: ") +
                                         f"{account.name()} / {asset} / {amount} (act) <> {totals[account_id][asset_id]} (exp)")
 
-    @Slot()
-    def on_display_long_operation(self, visible: bool):
+    @Slot(bool)
+    def onToggleProgressDisplay(self, visible):
         self.ProgressBar.setValue(0)
         self.showProgressBar(visible)
 
-    def on_update_long_operation_progress(self, progress_percent: float):
+    def onUpdatePorgressDisplay(self, progress_percent: float):
         self.ProgressBar.setValue(int(progress_percent))
