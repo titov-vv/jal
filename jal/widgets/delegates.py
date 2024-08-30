@@ -99,7 +99,10 @@ class TimestampDelegate(GridLinesDelegate):
 
     def displayText(self, value, locale):
         if isinstance(value, str):  # int value comes here in form of string in case of SQL aggregate function results
-            value = int(value)
+            try:
+                value = int(value)
+            except ValueError:
+                return self.tr("<invalid>")
         text = datetime.fromtimestamp(value, tz=timezone.utc).strftime(self._format) if value else ''
         return text
 
@@ -153,7 +156,7 @@ class FloatDelegate(GridLinesDelegate):
     def displayText(self, value, locale):
         try:
             amount = Decimal(value)
-        except ValueError:
+        except (TypeError, ValueError, InvalidOperation):
             amount = None
         if amount is None or amount.is_nan():
             return localize_decimal(amount)
