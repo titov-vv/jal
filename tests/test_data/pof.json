@@ -1,0 +1,44 @@
+{
+  "version":"1.1.0",
+  "start":1528528500,
+  "end":1656742002,
+  "generated":1656742002,
+  "generated-by":"izi-invest.ru",
+  "assets":
+  [
+    {"id":0,"type":"money","symbol":"RUB","name":"\u0420\u0443\u0431\u043b\u044c","exchange":""},
+    {"id":1,"type":"money","symbol":"USD","name":"\u0414\u043e\u043b\u043b\u0430\u0440","exchange":""},
+    {"id":44,"type":"stock","symbol":"SBER","name":"\u0421\u0431\u0435\u0440\u0431\u0430\u043d\u043a","exchange":"MOEX","isin":"RU0009029540"},
+    {"id":45,"type":"stock","symbol":"GAZP","name":"\u0413\u0410\u0417\u041f\u0420\u041e\u041c \u0430\u043e","exchange":"MOEX","isin":"RU0007661625"},
+    {"id":46,"type":"bond","symbol":"RU000A0JXU71","name":"\u0412\u042d\u0411 \u041f\u0411\u041e1\u04209","exchange":"MOEX","isin":"RU000A0JXU71"},
+    {"id":52,"type":"stock","symbol":"ROST","name":"Ross Stores Inc","exchange":"SPBEX","isin":"US7782961038"}
+  ],
+  "cash-balances":
+  [
+    {
+      "account":10,
+      "cash":
+      [
+        {"currency":"RUB","value":39763},
+        {"currency":"USD","value":408}
+      ]
+    }
+  ],
+  "trades":
+  [
+    {"id":1,"trade-id":"1313074529","timestamp":1539637200,"account":10,"asset":45,"count":150,"price":167.58000183105,"summa":-25137.000274658,"accrued-interest":0,"currency":"RUB","fee":0,"fee-currency":"RUB","description":"\"\u0413\u0430\u0437\u043f\u0440\u043e\u043c\" (\u041f\u0410\u041e) \u0430\u043e"},
+    {"id":2,"trade-id":"3407729597","timestamp":1582578000,"account":10,"asset":44,"count":-50,"price":245,"summa":12250,"accrued-interest":0,"currency":"RUB","fee":0,"fee-currency":"RUB","description":"\u0421\u0431\u0435\u0440\u0431\u0430\u043d\u043a \u0420\u043e\u0441\u0441\u0438\u0438 \u041f\u0410\u041e \u0430\u043e"},
+    {"id":3,"trade-id":"465e9b6f2c683de80b4d06480f49b1f1","timestamp":1593723600,"account":10,"asset":44,"count":30,"price":210.85,"summa":-6325.5,"accrued-interest":0,"currency":"RUB","fee":0,"fee-currency":"RUB","description":"\u0421\u0431\u0435\u0440\u0431\u0430\u043d\u043a \u0420\u043e\u0441\u0441\u0438\u0438 \u041f\u0410\u041e \u0430\u043e"}
+  ],
+  "payments": [],
+  "cash-flows":
+  [
+    {"id":1,"flow-id":"7422496605","timestamp":1548104400,"account":10,"amount":-149,"currency":"RUB","type":"fee","description":"\u0421\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u043a\u043e\u043c\u0438\u0441\u0441\u0438\u0439"},
+    {"id":2,"flow-id":"4168887259","timestamp":1562014800,"account":10,"amount":13000,"currency":"RUB","type":"other","description":"\u041d\u0430\u043b\u043e\u0433\u043e\u0432\u044b\u0439 \u0432\u044b\u0447\u0435\u0442"}
+  ],
+  "transfers":[],
+  "accounts":
+  [
+    {"id":10,"type":"investment","valuation":297350.27,"valuation-currency":"RUB"}
+  ]
+}

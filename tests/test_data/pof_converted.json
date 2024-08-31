@@ -1,0 +1,34 @@
+{
+  "period": [1528528500, 1656742002],
+  "accounts": [
+    {"id": 10, "currency": 0, "type": "investment", "number": "Imported #1"}
+  ],
+  "assets": [
+    {"id": 0, "type": "money", "name": "Рубль"},
+    {"id": 1, "type": "money", "name": "Доллар"},
+    {"id": 44, "type": "stock", "name": "Сбербанк", "isin": "RU0009029540"},
+    {"id": 45, "type": "stock", "name": "ГАЗПРОМ ао", "isin": "RU0007661625"},
+    {"id": 46, "type": "bond", "name": "ВЭБ ПБО1Р9", "isin": "RU000A0JXU71"},
+    {"id": 52, "type": "stock", "name": "Ross Stores Inc", "isin": "US7782961038"}
+  ],
+  "symbols": [
+    {"id": 1, "asset": 0, "note": "", "symbol": "RUB"},
+    {"id": 2, "asset": 1, "note": "", "symbol": "USD"},
+    {"id": 3, "asset": 44, "note": "MOEX", "symbol": "SBER", "currency": -1},
+    {"id": 4, "asset": 45, "note": "MOEX", "symbol": "GAZP", "currency": -1},
+    {"id": 5, "asset": 46, "note": "MOEX", "symbol": "RU000A0JXU71", "currency": -1},
+    {"id": 6, "asset": 52, "note": "SPBEX", "symbol": "ROST", "currency": -1}
+  ],
+  "assets_data": [
+
+  ],
+  "trades": [
+    {"id": 1, "number": "1313074529", "timestamp": 1539637200, "settlement": 0, "account": 10, "asset": 45, "quantity": 150, "price": 167.58000183105, "fee": 0,"note": "\"Газпром\" (ПАО) ао"},
+    {"id": 2, "number": "3407729597", "timestamp": 1582578000, "settlement": 0, "account": 10, "asset": 44, "quantity": -50, "price": 245, "fee": 0, "note": "Сбербанк России ПАО ао"},
+    {"id": 3, "number": "465e9b6f2c683de80b4d06480f49b1f1", "timestamp": 1593723600, "settlement": 0, "account": 10, "asset": 44, "quantity": 30, "price": 210.85, "fee": 0, "note": "Сбербанк России ПАО ао"}
+  ],
+  "income_spending": [
+    {"id": 1, "timestamp": 1548104400, "account": 10, "peer": 0, "lines": [{"amount": -149, "category": -5, "description": "Списание комиссий"}]},
+    {"id": 2, "timestamp": 1562014800, "account": 10, "peer": 0, "lines": [{"amount": 13000, "category": -1, "description": "Налоговый вычет"}]}
+  ]
+}
