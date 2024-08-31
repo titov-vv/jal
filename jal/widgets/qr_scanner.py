@@ -46,7 +46,7 @@ class QRScanner(QWidget):
         self.imageCapture = None
         self.captureTimer = None
 
-    def startScan(self):
+    def start(self):   # Start scanning process
         if self.started:
             return
         if len(QMediaDevices.videoInputs()) == 0:
@@ -76,7 +76,7 @@ class QRScanner(QWidget):
         self.started = True
         self.captureTimer.start(self.QR_SCAN_RATE)
 
-    def stopScan(self):
+    def stop(self):   # Stop scanning process
         if self.camera is None:
             return
         if not self.started:
@@ -202,15 +202,21 @@ class ScanDialog(QDialog):
 
     @Slot()
     def closeEvent(self, event):
-        self.scanner.stopScan()
+        # Direct call self.scanner.stopScan() crashes application with segmentation violation
+        QMetaObject().invokeMethod(self, "stop_scan", Qt.ConnectionType.QueuedConnection)
 
     @Slot()
     def start_scan(self):
-        self.scanner.startScan()
+        self.scanner.start()
+
+    @Slot()
+    def stop_scan(self):
+        self.scanner.stop()
 
     @Slot()
     def barcode_scanned(self, decoded_data):
-        self.scanner.stopScan()
+        # Direct call self.scanner.stopScan() crashes application with segmentation violation
+        QMetaObject().invokeMethod(self, "stop_scan", Qt.ConnectionType.QueuedConnection)
         self.data = decoded_data
         self.accept()
 
