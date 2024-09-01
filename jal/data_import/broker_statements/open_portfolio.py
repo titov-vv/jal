@@ -1,3 +1,4 @@
+import re
 import json
 import logging
 from pkg_resources import parse_version
@@ -32,6 +33,7 @@ class StatementOpenPortfolio(Statement):
             "trades": (False, self._load_trades),
             "cash-flows": (False, self._load_income_spending)
         }
+        self._currency_conversions = {}
 
     def load(self, filename: str) -> None:
         self._data = {}
@@ -72,9 +74,11 @@ class StatementOpenPortfolio(Statement):
         self._data["symbols"] = []
         self._data["assets_data"] = []
         for asset in self._data[section]:
-            if "id" not in asset:
-                raise Statement_ImportError(self.tr("Asset without id: ") + asset)
+            if "id" not in asset or "type" not in asset:
+                raise Statement_ImportError(self.tr("Incomplete asset data: ") + asset)
             if "symbol" in asset:
+                if asset['type'] == "fx-contract":
+                    self._transform_fx_contract(asset)
                 symbol = {"id": symbol_id, "asset": asset['id'], "symbol": asset['symbol'], "note": asset['exchange']}
                 if asset['type'] != FOF.ASSET_MONEY:
                     symbol['currency'] = -JalAsset(data={'symbol': 'RUB', 'type_id': PredefinedAsset.Money},
@@ -83,6 +87,27 @@ class StatementOpenPortfolio(Statement):
                 asset.pop("symbol")
                 asset.pop("exchange")
                 symbol_id += 1
+            else:
+                logging.warning(self.tr("Asset without symbol was skipped: ") + asset)
+
+    # Corrects asset data for fx-contract: it is either transformed into commodity (for gold, silver), or
+    # converted into simple currency (that will be tracked for an account)
+    def _transform_fx_contract(self, asset: dict):
+        parts = re.match(r"^(?P<dst>\w{3})(?P<src>\w{3})_(?P<set>TO[D|M])$", asset['name'], re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't parse fx-contract name ") + f'{asset}')
+        contract = parts.groupdict()
+        if len(contract) != 3:
+            raise Statement_ImportError(self.tr("FX-contract description incomplete ") + f'{asset}')
+        if contract['src'] != 'RUB':
+            raise Statement_ImportError(self.tr("Can't import fx-contract with base currency not RUB"))
+        if contract['dst'] in ['GLD', 'SLV']:
+            asset['type'] = FOF.ASSET_COMMODITY
+        else:
+            asset['type'] = FOF.ASSET_MONEY
+            asset['symbol'] = asset['name'] = contract['dst']
+            asset['exchange'] = ''
+            self._currency_conversions[asset['id']] = {"symbol": contract['dst'], "TOM": True if contract['set'] == 'TOM' else False}
 
     # Account section is mainly the same as internal JAL format, but some fields should be renamed and re-assigned.
     def _tweak_accounts(self, section):

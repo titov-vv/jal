@@ -9,7 +9,10 @@
     {"id": 44, "type": "stock", "name": "Сбербанк", "isin": "RU0009029540"},
     {"id": 45, "type": "stock", "name": "ГАЗПРОМ ао", "isin": "RU0007661625"},
     {"id": 46, "type": "bond", "name": "ВЭБ ПБО1Р9", "isin": "RU000A0JXU71"},
-    {"id": 52, "type": "stock", "name": "Ross Stores Inc", "isin": "US7782961038"}
+    {"id": 52, "type": "stock", "name": "Ross Stores Inc", "isin": "US7782961038"},
+    {"id": 14, "type": "commodity", "name": "GLDRUB_TOM"},
+    {"id": 34, "type": "money", "name": "HKD"},
+    {"id": 68, "type": "money", "name": "USD"}
   ],
   "symbols": [
     {"id": 1, "asset": 0, "note": "", "symbol": "RUB"},
@@ -17,7 +20,10 @@
     {"id": 3, "asset": 44, "note": "MOEX", "symbol": "SBER", "currency": -1},
     {"id": 4, "asset": 45, "note": "MOEX", "symbol": "GAZP", "currency": -1},
     {"id": 5, "asset": 46, "note": "MOEX", "symbol": "RU000A0JXU71", "currency": -1},
-    {"id": 6, "asset": 52, "note": "SPBEX", "symbol": "ROST", "currency": -1}
+    {"id": 6, "asset": 52, "note": "SPBEX", "symbol": "ROST", "currency": -1},
+    {"id": 7, "asset": 14, "note": "MOEX", "symbol": "GLDRUB_TOM", "currency": -1},
+    {"id": 8, "asset": 34, "note": "", "symbol": "HKD"},
+    {"id": 9, "asset": 68, "note": "", "symbol": "USD"}
   ],
   "assets_data": [
 

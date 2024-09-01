@@ -11,7 +11,10 @@
     {"id":44,"type":"stock","symbol":"SBER","name":"\u0421\u0431\u0435\u0440\u0431\u0430\u043d\u043a","exchange":"MOEX","isin":"RU0009029540"},
     {"id":45,"type":"stock","symbol":"GAZP","name":"\u0413\u0410\u0417\u041f\u0420\u041e\u041c \u0430\u043e","exchange":"MOEX","isin":"RU0007661625"},
     {"id":46,"type":"bond","symbol":"RU000A0JXU71","name":"\u0412\u042d\u0411 \u041f\u0411\u041e1\u04209","exchange":"MOEX","isin":"RU000A0JXU71"},
-    {"id":52,"type":"stock","symbol":"ROST","name":"Ross Stores Inc","exchange":"SPBEX","isin":"US7782961038"}
+    {"id":52,"type":"stock","symbol":"ROST","name":"Ross Stores Inc","exchange":"SPBEX","isin":"US7782961038"},
+    {"id": 14, "type": "fx-contract", "symbol": "GLDRUB_TOM", "name": "GLDRUB_TOM", "exchange": "MOEX"},
+    {"id": 34, "type": "fx-contract", "symbol": "HKDRUB_TOM", "name": "HKDRUB_TOM", "exchange": "MOEX"},
+    {"id": 68, "type": "fx-contract", "symbol": "USD000UTSTOM", "name": "USDRUB_TOM", "exchange": "MOEX"}
   ],
   "cash-balances":
   [
@@ -26,9 +29,12 @@
   ],
   "trades":
   [
-    {"id":1,"trade-id":"1313074529","timestamp":1539637200,"account":10,"asset":45,"count":150,"price":167.58000183105,"summa":-25137.000274658,"accrued-interest":0,"currency":"RUB","fee":0,"fee-currency":"RUB","description":"\"\u0413\u0430\u0437\u043f\u0440\u043e\u043c\" (\u041f\u0410\u041e) \u0430\u043e"},
-    {"id":2,"trade-id":"3407729597","timestamp":1582578000,"account":10,"asset":44,"count":-50,"price":245,"summa":12250,"accrued-interest":0,"currency":"RUB","fee":0,"fee-currency":"RUB","description":"\u0421\u0431\u0435\u0440\u0431\u0430\u043d\u043a \u0420\u043e\u0441\u0441\u0438\u0438 \u041f\u0410\u041e \u0430\u043e"},
-    {"id":3,"trade-id":"465e9b6f2c683de80b4d06480f49b1f1","timestamp":1593723600,"account":10,"asset":44,"count":30,"price":210.85,"summa":-6325.5,"accrued-interest":0,"currency":"RUB","fee":0,"fee-currency":"RUB","description":"\u0421\u0431\u0435\u0440\u0431\u0430\u043d\u043a \u0420\u043e\u0441\u0441\u0438\u0438 \u041f\u0410\u041e \u0430\u043e"}
+    {"id": 1, "trade-id": "1313074529", "timestamp":1539637200, "account":10,"asset":45,"count":150,"price":167.58000183105,"summa":-25137.000274658,"accrued-interest":0,"currency":"RUB","fee":0,"fee-currency":"RUB","description":"\"\u0413\u0430\u0437\u043f\u0440\u043e\u043c\" (\u041f\u0410\u041e) \u0430\u043e"},
+    {"id": 2, "trade-id": "3407729597", "timestamp":1582578000, "account":10,"asset":44,"count":-50,"price":245,"summa":12250,"accrued-interest":0,"currency":"RUB","fee":0,"fee-currency":"RUB","description":"\u0421\u0431\u0435\u0440\u0431\u0430\u043d\u043a \u0420\u043e\u0441\u0441\u0438\u0438 \u041f\u0410\u041e \u0430\u043e"},
+    {"id": 3, "trade-id": "465e9b6f2c683de80b4d06480f49b1f1", "timestamp":1593723600, "account":10,"asset":44,"count":30,"price":210.85,"summa":-6325.5,"accrued-interest":0,"currency":"RUB","fee":0,"fee-currency":"RUB","description":"\u0421\u0431\u0435\u0440\u0431\u0430\u043d\u043a \u0420\u043e\u0441\u0441\u0438\u0438 \u041f\u0410\u041e \u0430\u043e"},
+    {"id": 4, "trade-id": "38159322496", "timestamp": 1722866873, "account": 10, "asset": 14, "count": 1, "price": 6629.6, "summa": -6629.6, "accrued-interest": 0, "currency": "RUB", "fee": 59.67, "fee-currency": "RUB", "description": "GLD/RUB_TOM - GLD/РУБ"},
+    {"id": 5, "trade-id": "PP230319000000069703", "timestamp": 1723219200, "account": 10, "asset": 34, "count": -152, "price": 11.1291, "summa": 1692.18, "accrued-interest": 0, "currency": "RUB", "fee": 0, "fee-currency": "RUB", "description": "HKD/RUB_TOM - HKD/РУБ"},
+    {"id": 6, "trade-id": "33918678504", "timestamp": 1698306811, "account": 10, "asset": 68, "count": 50, "price": 93.41, "summa": -4670.5, "accrued-interest": 0, "currency": "RUB", "fee": 18.68, "fee-currency": "RUB", "description": "USDRUB_TOM - USD/РУБ"}
   ],
   "payments": [],
   "cash-flows":

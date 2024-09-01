@@ -44,6 +44,7 @@ class FOF:
     ASSET_CRYPTO = "crypto"
     ASSET_CFD = "cfd"
     ASSET_MLP = "mlp"
+    ASSET_COMMODITY = "commodity"
 
     ACTION_MERGER = "merger"
     ACTION_SPLIT = "split"
@@ -69,7 +70,8 @@ class FOF:
             PredefinedAsset.Stock: FOF.ASSET_STOCK,
             PredefinedAsset.Bond: FOF.ASSET_BOND,
             PredefinedAsset.ETF: FOF.ASSET_ETF,
-            PredefinedAsset.Derivative: FOF.ASSET_FUTURES
+            PredefinedAsset.Derivative: FOF.ASSET_FUTURES,
+            PredefinedAsset.Commodity: FOF.ASSET_COMMODITY
         }
         return asset_types[asset_type]
 
