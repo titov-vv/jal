@@ -66,6 +66,8 @@ class PandasLinesModel(QAbstractTableModel):
 class SlipLinesDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        self._category_selector = None  # Need to prevent object deletion in a middle
+        self._tag_selector = None
 
     def paint(self, painter, option, index):
         painter.save()
@@ -96,11 +98,11 @@ class SlipLinesDelegate(QStyledItemDelegate):
 
     def createEditor(self, aParent, option, index):
         if index.column() == 1:
-            category_selector = CategorySelector(aParent, validate=False)
-            return category_selector
+            self._category_selector = CategorySelector(aParent, validate=False)
+            return self._category_selector
         if index.column() == 3:
-            tag_selector = TagSelector(aParent, validate=False)
-            return tag_selector
+            self._tag_selector = TagSelector(aParent, validate=False)
+            return self._tag_selector
 
     def setModelData(self, editor, model, index):
         if index.column() == 1:
