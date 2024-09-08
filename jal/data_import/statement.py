@@ -88,6 +88,7 @@ class Statement_Capabilities:
 class Statement(QObject):   # derived from QObject to have proper string translation
     RU_PRICE_TOLERANCE = 1e-4   # TODO Probably need to switch imports to Decimal and remove it
 
+    currency_substitutions = {}
     _asset_types = {
         FOF.ASSET_MONEY: PredefinedAsset.Money,
         FOF.ASSET_STOCK: PredefinedAsset.Stock,
@@ -580,6 +581,23 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 self._previous_accounts[JalAccount(dialog.account_id).currency()] = dialog.account_id
             return dialog.account_id
 
+    def _find_account_id(self, number, currency):
+        try:
+            code = self.currency_substitutions[currency]
+        except KeyError:
+            code = currency
+        currency_id = self.currency_id(code)
+        match = [x for x in self._data[FOF.ACCOUNTS] if 'number' in x and x['number'] == number and x['currency'] == currency_id]
+        if match:
+            if len(match) == 1:
+                return match[0]['id']
+            else:
+                raise Statement_ImportError(self.tr("Multiple accounts found: ") + f"{number}/{currency}")
+        new_id = max([0] + [x['id'] for x in self._data[FOF.ACCOUNTS]]) + 1
+        new_account = {"id": new_id, "number": number, 'currency': currency_id}
+        self._data[FOF.ACCOUNTS].append(new_account)
+        return new_id
+
     # Returns asset dictionary by asset id
     def _asset(self, asset_id) -> dict:
         asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_id)
@@ -610,7 +628,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 raise Statement_ImportError(self.tr("Multiple currency match for ") + f"{currency_symbol}")
         else:
             asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-            self._data[FOF.ASSETS].append({"id": asset_id, "type": "money", "name": ""})
+            self._data[FOF.ASSETS].append({"id": asset_id, "type": "money", "name": currency_symbol})
             symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
             currency = {"id": symbol_id, "asset": asset_id, "symbol": currency_symbol}
             self._data[FOF.SYMBOLS].append(currency)

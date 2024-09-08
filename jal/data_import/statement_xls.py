@@ -225,24 +225,6 @@ class StatementXLS(Statement):
             row += 1
         logging.info(self.tr("Securities loaded: ") + f"{cnt}")
 
-    def _find_account_id(self, number, currency):
-        try:
-            code = self.currency_substitutions[currency]
-        except KeyError:
-            code = currency
-        currency_id = self.currency_id(code)
-        match = [x for x in self._data[FOF.ACCOUNTS] if
-                 'number' in x and x['number'] == number and x['currency'] == currency_id]
-        if match:
-            if len(match) == 1:
-                return match[0]['id']
-            else:
-                raise Statement_ImportError(self.tr("Multiple accounts found: ") + f"{number}/{currency}")
-        new_id = max([0] + [x['id'] for x in self._data[FOF.ACCOUNTS]]) + 1
-        new_account = {"id": new_id, "number": number, 'currency': currency_id}
-        self._data[FOF.ACCOUNTS].append(new_account)
-        return new_id
-
     def _load_deals(self):
         raise NotImplementedError("load_deals() method is not defined in subclass of StatementXLS")
 

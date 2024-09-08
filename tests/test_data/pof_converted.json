@@ -1,7 +1,9 @@
 {
   "period": [1528528500, 1656742002],
   "accounts": [
-    {"id": 10, "currency": 0, "type": "investment", "number": "Imported #1"}
+    {"id": 10, "currency": 0, "type": "investment", "number": "Imported #1"},
+    {"id": 11, "currency": 69, "number": "Imported #1"},
+    {"id": 12, "currency": 1, "number": "Imported #1"}
   ],
   "assets": [
     {"id": 0, "type": "money", "name": "Рубль"},
@@ -10,7 +12,8 @@
     {"id": 45, "type": "stock", "name": "ГАЗПРОМ ао", "isin": "RU0007661625"},
     {"id": 46, "type": "bond", "name": "ВЭБ ПБО1Р9", "isin": "RU000A0JXU71"},
     {"id": 52, "type": "stock", "name": "Ross Stores Inc", "isin": "US7782961038"},
-    {"id": 14, "type": "commodity", "name": "GLDRUB_TOM"}
+    {"id": 14, "type": "commodity", "name": "GLDRUB_TOM"},
+    {"id": 69, "type": "money", "name": "HKD"}
   ],
   "symbols": [
     {"id": 1, "asset": 0, "note": "", "symbol": "RUB"},
@@ -19,7 +22,8 @@
     {"id": 4, "asset": 45, "note": "MOEX", "symbol": "GAZP", "currency": 0},
     {"id": 5, "asset": 46, "note": "MOEX", "symbol": "RU000A0JXU71", "currency": 0},
     {"id": 6, "asset": 52, "note": "SPBEX", "symbol": "ROST", "currency": 0},
-    {"id": 7, "asset": 14, "note": "MOEX", "symbol": "GLDRUB_TOM", "currency": 0}
+    {"id": 7, "asset": 14, "note": "MOEX", "symbol": "GLDRUB_TOM", "currency": 0},
+    {"id": 10, "asset": 69, "symbol": "HKD"}
   ],
   "assets_data": [
 
@@ -33,5 +37,9 @@
   "income_spending": [
     {"id": 1, "timestamp": 1548104400, "account": 10, "peer": 0, "lines": [{"amount": -149, "category": -5, "description": "Списание комиссий"}]},
     {"id": 2, "timestamp": 1562014800, "account": 10, "peer": 0, "lines": [{"amount": 13000, "category": -1, "description": "Налоговый вычет"}]}
+  ],
+  "transfers": [
+    {"id": 1, "account": [10, 11, 10], "number": "PP230319000000069703", "asset": [0, 69], "timestamp": 1723219200, "withdrawal": 1692.18, "deposit": 152, "fee": 0, "description": "HKD/RUB_TOM - HKD/РУБ"},
+    {"id": 2, "account": [10, 12, 10], "number": "33918678504", "asset": [0, 1], "timestamp": 1698306811, "withdrawal": 4670.5, "deposit": 50, "fee": 18.68, "description": "USDRUB_TOM - USD/РУБ"}
   ]
 }

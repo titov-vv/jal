@@ -3,8 +3,7 @@ import json
 import logging
 from pkg_resources import parse_version
 from jal.data_import.statement import FOF, Statement, Statement_ImportError
-from jal.constants import PredefinedCategory, PredefinedAsset
-from jal.db.asset import JalAsset
+from jal.constants import PredefinedCategory
 
 JAL_STATEMENT_CLASS = "StatementOpenPortfolio"
 
@@ -31,7 +30,7 @@ class StatementOpenPortfolio(Statement):
             "assets": (True, self._load_assets),
             "accounts": (True, self._tweak_accounts),
             "cash-balances": (False, self._remove_section),
-            "transfers": (False, self._remove_section),
+            "transfers": (False, self._remove_section),  # should be removed before 'trades' as jal uses the same name
             "payments": (False, self._remove_section),
             "trades": (False, self._load_trades),
             "cash-flows": (False, self._load_income_spending)
@@ -124,19 +123,36 @@ class StatementOpenPortfolio(Statement):
             account.pop("valuation")
 
     def _load_trades(self, section):
+        self._data[FOF.TRANSFERS] = []  # Add section for transfers between accounts
         for trade in self._data[section]:
-            trade["number"] = trade["trade-id"]
-            trade["quantity"] = trade["count"]
-            trade["note"] = trade["description"]
-            if "settlement" not in trade:
-                trade["settlement"] = 0  # TODO Check, probably need to put "timestamp" instead
-            trade.pop("trade-id")
-            trade.pop("count")
-            trade.pop("description")
-            trade.pop("summa")
-            trade.pop("accrued-interest")  # FIXME - should be loaded as asset payment
-            trade.pop("currency")
-            trade.pop("fee-currency")
+            asset = self._asset(trade['asset'])
+            if asset['type'] == self.CURRENCY_CONVERSION:
+                new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+                account = self._find_in_list(self._data[FOF.ACCOUNTS], 'id', trade['account'])
+                currency_symbol = self._find_in_list(self._data[FOF.SYMBOLS], 'asset', asset['id'])
+                account_from = self._find_account_id(account['number'], trade['currency'])
+                account_to = self._find_account_id(account['number'], currency_symbol['symbol'])
+                account_fee = self._find_account_id(account['number'], trade['fee-currency'])
+                transfer = {"id": new_id, "account": [account_from, account_to, account_fee], "number": trade['trade-id'],
+                            "asset": [self.currency_id('RUB'), self.currency_id(currency_symbol['symbol'])],
+                            "timestamp": trade['timestamp'],
+                            "withdrawal": abs(trade['summa']), "deposit": abs(trade['count']), "fee": abs(trade['fee']),
+                            "description": trade['description']}
+                print(f"T: {transfer}")
+                self._data[FOF.TRANSFERS].append(transfer)
+            else:  # Create trade
+                trade["number"] = trade["trade-id"]
+                trade["quantity"] = trade["count"]
+                trade["note"] = trade["description"]
+                if "settlement" not in trade:
+                    trade["settlement"] = 0  # TODO Check, probably need to put "timestamp" instead
+                trade.pop("trade-id")
+                trade.pop("count")
+                trade.pop("description")
+                trade.pop("summa")
+                trade.pop("accrued-interest")  # FIXME - should be loaded as asset payment
+                trade.pop("currency")
+                trade.pop("fee-currency")
 
     def _load_income_spending(self, section):
         categories = {
