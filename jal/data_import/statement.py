@@ -303,7 +303,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         mutable_sections = [FOF.ACCOUNTS, FOF.ASSETS, FOF.SYMBOLS, FOF.ASSETS_DATA, FOF.TRADES, FOF.TRANSFERS,
                             FOF.CORP_ACTIONS, FOF.ASSET_PAYMENTS, FOF.INCOME_SPENDING]
         for section in mutable_sections:
-            self._data[section] = [x for x in self._data[section] if not self._key_match(x, tag_name, value)]
+            if section in self._data:
+                self._data[section] = [x for x in self._data[section] if not self._key_match(x, tag_name, value)]
 
     # returns True if dictionary 'element' has 'key' that matches 'value' or is a list with 'value'
     def _key_match(self, element, key, value):

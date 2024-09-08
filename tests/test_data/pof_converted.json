@@ -10,20 +10,16 @@
     {"id": 45, "type": "stock", "name": "ГАЗПРОМ ао", "isin": "RU0007661625"},
     {"id": 46, "type": "bond", "name": "ВЭБ ПБО1Р9", "isin": "RU000A0JXU71"},
     {"id": 52, "type": "stock", "name": "Ross Stores Inc", "isin": "US7782961038"},
-    {"id": 14, "type": "commodity", "name": "GLDRUB_TOM"},
-    {"id": 34, "type": "money", "name": "HKD"},
-    {"id": 68, "type": "money", "name": "USD"}
+    {"id": 14, "type": "commodity", "name": "GLDRUB_TOM"}
   ],
   "symbols": [
     {"id": 1, "asset": 0, "note": "", "symbol": "RUB"},
     {"id": 2, "asset": 1, "note": "", "symbol": "USD"},
-    {"id": 3, "asset": 44, "note": "MOEX", "symbol": "SBER", "currency": -1},
-    {"id": 4, "asset": 45, "note": "MOEX", "symbol": "GAZP", "currency": -1},
-    {"id": 5, "asset": 46, "note": "MOEX", "symbol": "RU000A0JXU71", "currency": -1},
-    {"id": 6, "asset": 52, "note": "SPBEX", "symbol": "ROST", "currency": -1},
-    {"id": 7, "asset": 14, "note": "MOEX", "symbol": "GLDRUB_TOM", "currency": -1},
-    {"id": 8, "asset": 34, "note": "", "symbol": "HKD"},
-    {"id": 9, "asset": 68, "note": "", "symbol": "USD"}
+    {"id": 3, "asset": 44, "note": "MOEX", "symbol": "SBER", "currency": 0},
+    {"id": 4, "asset": 45, "note": "MOEX", "symbol": "GAZP", "currency": 0},
+    {"id": 5, "asset": 46, "note": "MOEX", "symbol": "RU000A0JXU71", "currency": 0},
+    {"id": 6, "asset": 52, "note": "SPBEX", "symbol": "ROST", "currency": 0},
+    {"id": 7, "asset": 14, "note": "MOEX", "symbol": "GLDRUB_TOM", "currency": 0}
   ],
   "assets_data": [
 
@@ -31,7 +27,8 @@
   "trades": [
     {"id": 1, "number": "1313074529", "timestamp": 1539637200, "settlement": 0, "account": 10, "asset": 45, "quantity": 150, "price": 167.58000183105, "fee": 0,"note": "\"Газпром\" (ПАО) ао"},
     {"id": 2, "number": "3407729597", "timestamp": 1582578000, "settlement": 0, "account": 10, "asset": 44, "quantity": -50, "price": 245, "fee": 0, "note": "Сбербанк России ПАО ао"},
-    {"id": 3, "number": "465e9b6f2c683de80b4d06480f49b1f1", "timestamp": 1593723600, "settlement": 0, "account": 10, "asset": 44, "quantity": 30, "price": 210.85, "fee": 0, "note": "Сбербанк России ПАО ао"}
+    {"id": 3, "number": "465e9b6f2c683de80b4d06480f49b1f1", "timestamp": 1593723600, "settlement": 0, "account": 10, "asset": 44, "quantity": 30, "price": 210.85, "fee": 0, "note": "Сбербанк России ПАО ао"},
+    {"id": 4, "number": "38159322496", "timestamp": 1722866873, "settlement": 0, "account": 10, "asset": 14, "quantity": 1, "price": 6629.6, "fee": 59.67, "note": "GLD/RUB_TOM - GLD/РУБ"}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1548104400, "account": 10, "peer": 0, "lines": [{"amount": -149, "category": -5, "description": "Списание комиссий"}]},

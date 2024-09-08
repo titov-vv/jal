@@ -13,6 +13,9 @@ MANDATORY = 0
 LOADER = 1
 # -----------------------------------------------------------------------------------------------------------------------
 class StatementOpenPortfolio(Statement):
+    COMMODITY_SYMBOLS = ['GLD', 'SLV']
+    CURRENCY_CONVERSION = "MOEX_FX"
+
     def __init__(self):
         super().__init__()
         self.name = self.tr("Investbook / IZI-Invest")
@@ -33,7 +36,6 @@ class StatementOpenPortfolio(Statement):
             "trades": (False, self._load_trades),
             "cash-flows": (False, self._load_income_spending)
         }
-        self._currency_conversions = {}
 
     def load(self, filename: str) -> None:
         self._data = {}
@@ -51,6 +53,7 @@ class StatementOpenPortfolio(Statement):
             else:
                 if self._sections[section][MANDATORY]:
                     raise Statement_ImportError(self.tr("Mandatory section is missing: ") + str(section))
+        self.strip_unused_data()
 
     def _skip_section(self, section):
         pass # do nothing
@@ -81,8 +84,7 @@ class StatementOpenPortfolio(Statement):
                     self._transform_fx_contract(asset)
                 symbol = {"id": symbol_id, "asset": asset['id'], "symbol": asset['symbol'], "note": asset['exchange']}
                 if asset['type'] != FOF.ASSET_MONEY:
-                    symbol['currency'] = -JalAsset(data={'symbol': 'RUB', 'type_id': PredefinedAsset.Money},
-                                                   search=True, create=False).id()
+                    symbol['currency'] = self.currency_id('RUB')
                 self._data["symbols"].append(symbol)
                 asset.pop("symbol")
                 asset.pop("exchange")
@@ -101,13 +103,13 @@ class StatementOpenPortfolio(Statement):
             raise Statement_ImportError(self.tr("FX-contract description incomplete ") + f'{asset}')
         if contract['src'] != 'RUB':
             raise Statement_ImportError(self.tr("Can't import fx-contract with base currency not RUB"))
-        if contract['dst'] in ['GLD', 'SLV']:
+        if contract['dst'] in self.COMMODITY_SYMBOLS:
             asset['type'] = FOF.ASSET_COMMODITY
         else:
-            asset['type'] = FOF.ASSET_MONEY
+            asset['type'] = self.CURRENCY_CONVERSION
             asset['symbol'] = asset['name'] = contract['dst']
             asset['exchange'] = ''
-            self._currency_conversions[asset['id']] = {"symbol": contract['dst'], "TOM": True if contract['set'] == 'TOM' else False}
+            asset['TOM'] = True if contract['set'] == 'TOM' else False
 
     # Account section is mainly the same as internal JAL format, but some fields should be renamed and re-assigned.
     def _tweak_accounts(self, section):
@@ -156,3 +158,9 @@ class StatementOpenPortfolio(Statement):
             operation.pop("type")
         self._data["income_spending"] = self._data[section]
         self._data.pop(section)
+
+        # Drop any unused data that shouldn't be in output json
+    def strip_unused_data(self):
+        fx_conversions = [x['id'] for x in self._data[FOF.ASSETS] if x['type'] == self.CURRENCY_CONVERSION]
+        for asset_id in fx_conversions:
+            self.remove_asset(asset_id)
