@@ -3,7 +3,7 @@ from decimal import Decimal
 from pandas._testing import assert_frame_equal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
-from tests.helpers import d2t, d2dt, create_stocks, create_assets
+from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets
 from jal.db.asset import JalAsset
 from jal.constants import PredefinedAsset
 from jal.net.downloader import QuoteDownloader
@@ -212,23 +212,23 @@ def test_MOEX_downloader_USD(prepare_db_moex):
 
 def test_NYSE_downloader(prepare_db):
     create_stocks([('AAPL', '')], currency_id=2)   # id = 4
-    quotes = pd.DataFrame({'Close': [Decimal('134.429993'), Decimal('132.029999')],
-                           'Date': [d2dt(210413), d2dt(210414)]})
+    quotes = pd.DataFrame({'Close': [Decimal('134.42999267578125'), Decimal('132.029998779296875')],
+                           'Date': [dt2dt(2104131330), dt2dt(2104141330)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Yahoo_Downloader(JalAsset(4), 2, 1618272000, 1618444800)
+    quotes_downloaded = downloader.Yahoo_Downloader(JalAsset(4), 2, d2t(210413), d2t(210415))
     assert_frame_equal(quotes, quotes_downloaded)
 
 
 def test_LSE_downloader(prepare_db):
     create_stocks([('PSON', '')], currency_id=3)   # id = 4
-    quotes = pd.DataFrame({'Close': [Decimal('792.599976'), Decimal('800.799988')],
-                           'Date': [d2dt(210413), d2dt(210414)]})
+    quotes = pd.DataFrame({'Close': [Decimal('792.5999755859375'), Decimal('800.79998779296875')],
+                           'Date': [dt2dt(2104130700), dt2dt(2104140700)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.YahooLSE_Downloader(JalAsset(4), 3, 1618272000, 1618444800)
+    quotes_downloaded = downloader.YahooLSE_Downloader(JalAsset(4), 3, d2t(210413), d2t(210415))
     assert_frame_equal(quotes, quotes_downloaded)
 
 
@@ -256,8 +256,8 @@ def test_TMX_downloader(prepare_db):
 
 def test_Frankfurt_downloader(prepare_db):
     create_stocks([('VOW3', '')], currency_id=3)   # id = 4
-    quotes = pd.DataFrame({'Close': [Decimal('233.399994'), Decimal('234.250000')],
-                           'Date': [d2dt(210413), d2dt(210414)]})
+    quotes = pd.DataFrame({'Close': [Decimal('233.399993896484375'), Decimal('234.25')],
+                           'Date': [dt2dt(2104130600), dt2dt(2104140600)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()

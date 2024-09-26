@@ -38,6 +38,14 @@ def dt2t(datetime_value: int) -> int:
     ts = int(dt.replace(tzinfo=timezone.utc).timestamp())
     return ts
 
+# converts YYMMDDHHMM integer into python datetime(20YY, MM, DD, HH, MM, tzinfo=timezone.utc)
+def dt2dt(datetime_value: int) -> datetime:
+    mm, datetime_value = pop2minor_digits(datetime_value)
+    hh, datetime_value = pop2minor_digits(datetime_value)
+    d, datetime_value = pop2minor_digits(datetime_value)
+    m, y = pop2minor_digits(datetime_value)
+    return datetime(2000+y, m, d, hh, mm, tzinfo=timezone.utc)
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Helper functions to convert Decimals inside nested dictionaries into floats in order to compare with stored json
 def json_decimal2float(json_obj):

@@ -448,23 +448,29 @@ class QuoteDownloader(QObject):
 
     # noinspection PyMethodMayBeStatic
     def Yahoo_Downloader(self, asset, currency_id, start_timestamp, end_timestamp, suffix=''):
-        url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset.symbol(currency_id)+suffix}"
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{asset.symbol(currency_id)+suffix}"
         params = {
             'period1': start_timestamp,
             'period2': end_timestamp,
-            'interval': '1d',
-            'events': 'history'
+            'interval': '1d'
         }
         self._request = WebRequest(WebRequest.GET, url, params=params)
         self._wait_for_event()
-        file = StringIO(self._request.data())
+        web_data = json.loads(self._request.data())
+        web_data = web_data['chart']
+        if web_data['error'] is not None:
+            logging.error(self.tr("Yahoo returned and error: ") + web_data['error'])
+            return []
+        if len(web_data['result']) != 1:
+            logging.error(self.tr("Yahoo returned more then one result: ") + web_data['result'])
+            return []
+        timestamps = [datetime.fromtimestamp(x, tz=timezone.utc) for x in web_data['result'][0]['timestamp']]
+        closes = web_data['result'][0]['indicators']['quote'][0]['close']
         try:
-            data = pd.read_csv(file, dtype={'Date': str, 'Close': str})
+            data = pd.DataFrame({'Date': timestamps, 'Close': closes})
         except ParserError:
             return None
-        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d", utc=True)
         data['Close'] = data['Close'].apply(Decimal)
-        data = data.drop(columns=['Open', 'High', 'Low', 'Adj Close', 'Volume'])
         close = data.set_index("Date")
         return close
 
