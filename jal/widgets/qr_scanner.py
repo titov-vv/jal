@@ -137,6 +137,8 @@ class QRScanner(QWidget):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Implements bar-code scanner window.
+# Safe usage is by simple call to ScanDialog.execute_scan() class method - it will return scanned data and ensure that camera is released for next scans
 class ScanDialog(QDialog):
     def __init__(self, parent=None, code_type=QRScanner.TYPE_QR, message=''):
         super().__init__(parent)
@@ -177,6 +179,18 @@ class ScanDialog(QDialog):
         self.pasteQR_button.clicked.connect(self.paste_qr_image)
         self.enterText_button.clicked.connect(self.enter_qr_data)
         self.close_button.clicked.connect(self.close)
+
+    @classmethod
+    # Performs bar/QR code scan (code type is chosen by code_type parameter).
+    # You may specify parent window and custom scanner window title
+    # Returns scanned value or None if scan was cancelled.
+    def execute_scan(cls, parent=None, code_type=QRScanner.TYPE_QR, message='') -> str:
+        scanner = cls(parent=parent, message=message, code_type=code_type)
+        if scanner.exec() != QDialog.Accepted:
+            return None
+        code_data = scanner.data
+        scanner = None  # Release scanner to make camera available for next scan
+        return code_data
 
     @Slot()
     def showEvent(self, event):

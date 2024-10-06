@@ -42,11 +42,10 @@ class ReceiptAPIFactory(QObject):
         extra_data=''
         api_type = self._detect_api_id_by_qr(qr_text)
         if api_type == EU_LIDL_PLUS_API:
-            scanner = ScanDialog(code_type=QRScanner.TYPE_ITF,
-                                 message=self.tr("Please scan flat barcode from the receipt"))
-            if scanner.exec() == QDialog.Accepted:
-                extra_data = scanner.data
-            scanner = None  # Release scanner to make camera available for next scan
+            extra_data = ScanDialog.execute_scan(code_type=QRScanner.TYPE_ITF,
+                                                 message=self.tr("Please scan flat barcode from the receipt"))
+            if extra_data is None:
+                extra_data = ''  # keep empty value to allow manual input
         api = self._apis.get(api_type)
         return api(qr_text=qr_text, aux_data=extra_data)
 

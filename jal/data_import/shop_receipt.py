@@ -266,11 +266,9 @@ class ImportReceiptDialog(QDialog):
     # Then it downloads the slip if match found. Otherwise, shows warning message but allows to proceed
     @Slot()
     def processReceiptQR(self):
-        scanner = ScanDialog(parent=self, message=self.tr("Please scan main QR code from the receipt"))
-        if scanner.exec() != QDialog.Accepted:
+        qr_data = ScanDialog.execute_scan(parent=self, message=self.tr("Please scan main QR code from the receipt"))
+        if qr_data is None:
             return
-        qr_data = scanner.data
-        scanner = None  # Release scanner to make camera available for next scan
         logging.info(self.tr("QR: " + qr_data))
         try:
             self.receipt_api = ReceiptAPIFactory().get_api_for_qr(qr_data)
