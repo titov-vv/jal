@@ -46,6 +46,7 @@ class ReceiptAPIFactory(QObject):
                                  message=self.tr("Please scan flat barcode from the receipt"))
             if scanner.exec() == QDialog.Accepted:
                 extra_data = scanner.data
+            scanner = None  # Release scanner to make camera available for next scan
         api = self._apis.get(api_type)
         return api(qr_text=qr_text, aux_data=extra_data)
 

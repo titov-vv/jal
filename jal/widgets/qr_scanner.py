@@ -41,22 +41,6 @@ class QRScanner(QWidget):
         self.layout.addWidget(self.view)
         self.setLayout(self.layout)
 
-        self.camera = None
-        self.captureSession = None
-        self.imageCapture = None
-        self.captureTimer = None
-
-    def start(self):   # Start scanning process
-        if self.started:
-            return
-        if len(QMediaDevices.videoInputs()) == 0:
-            logging.warning(self.tr("There are no cameras available"))
-            return
-        if not dependency_present(['pyzbar']):
-            logging.warning(self.tr("Package pyzbar not found for QR recognition."))
-            return ''
-
-        self.processing = True   # disable any capture while camera is starting
         self.camera = QCamera(QMediaDevices.defaultVideoInput(), parent=self)
         self.captureSession = QMediaCaptureSession(self)
         self.imageCapture = QImageCapture(self)
@@ -71,24 +55,27 @@ class QRScanner(QWidget):
         self.viewfinder.nativeSizeChanged.connect(self.onVideoSizeChanged)
         self.captureTimer.timeout.connect(self.scanQR)
 
+    def start(self):   # Start scanning process
+        if self.started:
+            return
+        if len(QMediaDevices.videoInputs()) == 0:
+            logging.warning(self.tr("There are no cameras available"))
+            return
+        if not dependency_present(['pyzbar']):
+            logging.warning(self.tr("Package pyzbar not found for QR recognition."))
+            return ''
+        self.processing = True   # disable any capture while camera is starting
         self.camera.start()
         self.processing = False
         self.started = True
         self.captureTimer.start(self.QR_SCAN_RATE)
 
     def stop(self):   # Stop scanning process
-        if self.camera is None:
-            return
         if not self.started:
             return
         self.processing = True  # disable capture
         self.captureTimer.stop()
         self.camera.stop()
-
-        self.captureTimer.deleteLater()
-        self.captureSession.deleteLater()
-        self.imageCapture.deleteLater()
-        self.camera.deleteLater()
         self.started = False
 
     def onVideoSizeChanged(self, _size):
@@ -124,7 +111,7 @@ class QRScanner(QWidget):
 
     def onCaptureError(self, _id, error, error_str):
         self.processing = False
-        self.onCameraError(error, error_str)
+        logging.error(self.tr("Capture error: " + str(error) + " / " + error_str))
 
     def onCameraError(self, error, error_str):
         logging.error(self.tr("Camera error: " + str(error) + " / " + error_str))

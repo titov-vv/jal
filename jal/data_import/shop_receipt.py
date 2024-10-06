@@ -269,9 +269,11 @@ class ImportReceiptDialog(QDialog):
         scanner = ScanDialog(parent=self, message=self.tr("Please scan main QR code from the receipt"))
         if scanner.exec() != QDialog.Accepted:
             return
-        logging.info(self.tr("QR: " + scanner.data))
+        qr_data = scanner.data
+        scanner = None  # Release scanner to make camera available for next scan
+        logging.info(self.tr("QR: " + qr_data))
         try:
-            self.receipt_api = ReceiptAPIFactory().get_api_for_qr(scanner.data)
+            self.receipt_api = ReceiptAPIFactory().get_api_for_qr(qr_data)
         except ValueError as e:
             logging.warning(e)
             return
