@@ -1,6 +1,5 @@
 import re
 from PySide6.QtCore import QObject
-from PySide6.QtWidgets import QDialog
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.receipt_api.eu_lidl_plus import ReceiptEuLidlPlus
 from jal.data_import.receipt_api.pt_pingo_doce import ReceiptPtPingoDoce
