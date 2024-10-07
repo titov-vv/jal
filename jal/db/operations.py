@@ -521,8 +521,8 @@ class AssetPayment(LedgerTransaction):
         if not currency_id:
             return self._amount
         if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
-            price = self._asset.quote(self._timestamp, self._account.currency())[1]
-            if not price:
+            timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
+            if timestamp != self._timestamp:
                 logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
             amount = self._amount * price
         else:
