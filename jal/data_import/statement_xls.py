@@ -52,8 +52,8 @@ class StatementXLS(Statement):
                 contents = zip_file.namelist()
                 if len(contents) != 1:
                     raise Statement_ImportError(self.tr("Archive contains multiple files"))
-                with zip_file.open(contents[0]) as r_file:
-                    self._statement = pandas.read_excel(io=r_file.read(), header=None, na_filter=False)
+                with zip_file.open(contents[0]) as report_file:
+                    self._statement = pandas.read_excel(report_file, header=None, na_filter=False)
         else:
             self._statement = pandas.read_excel(filename, header=None, na_filter=False)
 
