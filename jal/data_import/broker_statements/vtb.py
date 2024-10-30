@@ -29,7 +29,7 @@ class StatementVTB(StatementXLS):
         super().__init__()
         self.name = self.tr("VTB Investments")
         self.icon_name = "vtb.ico"
-        self.filename_filter = self.tr("VTB statement (*.xls)")
+        self.filename_filter = self.tr("VTB statement (*.xlsx)")
         self.account_end_balance = {}
         self.asset_withdrawal = []
 
