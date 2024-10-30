@@ -13,7 +13,7 @@ JAL_STATEMENT_CLASS = "StatementTvoyBroker"
 class StatementTvoyBroker(StatementXLS):
     Header = (0, 0, '  Брокер: ООО "Твой Брокер"')
     PeriodPattern = (0, 2, r"  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
-    AccountPattern = (2, 6, None)
+    AccountPattern = (2, 6, r"(?P<ACCOUNT>[^_]*)(_invest)?")   # drop "_invest" if it is present
     SummaryHeader = "СОСТОЯНИЕ ДЕНЕЖНЫХ СРЕДСТВ НА СЧЕТЕ"
     trade_columns = {
         "number": "Номер сделки",
