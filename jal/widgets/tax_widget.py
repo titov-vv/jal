@@ -5,6 +5,8 @@ import traceback
 
 from PySide6.QtCore import Property, Slot
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication
+
+from db.account import JalAccount
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
 from jal.widgets.mdi import MdiWidget
@@ -17,6 +19,7 @@ from jal.data_export.taxes import TaxReport
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 from jal.data_export.dlsg import DLSG
+from widgets.helpers import dt2ts
 
 
 class TaxWidget(MdiWidget):
@@ -29,6 +32,7 @@ class TaxWidget(MdiWidget):
         for x in TaxReport.countries:
             self.ui.Country.addItem(JalIcon.country_flag(TaxReport.countries[x]['flag']), TaxReport.countries[x]['name'])
         self.ui.Country.currentIndexChanged.connect(self.OnCountryChange)
+        self.ui.Year.valueChanged.connect(self.OnYearChange)
         self.ui.Year.setValue(datetime.now().year - 1)   # Set previous year by default
         self.ui.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
         self.ui.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
@@ -50,6 +54,13 @@ class TaxWidget(MdiWidget):
             QApplication.processEvents()
             if not self.parent().isMaximized():  # Prevent size-change of maximized MDI
                 self.parent().adjustSize()
+
+    # Load account combobox with account names relevant for the given year
+    def OnYearChange(self, year):
+        self.ui.Account.clear()
+        accounts = JalAccount.get_taxable_accounts(dt2ts(datetime(year, 1, 1)))
+        for account in accounts:
+            self.ui.Account.addItem(account.name(), account.id())
 
     # Displays tax widget in a given MDI area.
     # It is implemented as a separate static method in order to prevent unexpected object deletion
@@ -83,7 +94,7 @@ class TaxWidget(MdiWidget):
         return self.ui.XlsFileName.text()
 
     def getAccount(self):
-        return self.ui.AccountWidget.selected_id
+        return self.ui.Account.currentData()
 
     def getDlsgState(self):
         return self.ui.DlsgGroup.isChecked()

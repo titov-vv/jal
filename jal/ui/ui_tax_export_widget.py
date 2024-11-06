@@ -19,8 +19,6 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
     QGroupBox, QLabel, QLineEdit, QPushButton,
     QSizePolicy, QSpinBox, QVBoxLayout, QWidget)
 
-from jal.widgets.reference_selector import AccountSelector
-
 class Ui_TaxWidget(object):
     def setupUi(self, TaxWidget):
         if not TaxWidget.objectName():
@@ -83,11 +81,6 @@ class Ui_TaxWidget(object):
 
 
         self.MainLayout.addWidget(self.PtBox, 8, 0, 1, 3)
-
-        self.AccountWidget = AccountSelector(TaxWidget)
-        self.AccountWidget.setObjectName(u"AccountWidget")
-
-        self.MainLayout.addWidget(self.AccountWidget, 2, 1, 1, 2)
 
         self.AccountLbl = QLabel(TaxWidget)
         self.AccountLbl.setObjectName(u"AccountLbl")
@@ -172,6 +165,11 @@ class Ui_TaxWidget(object):
 
         self.MainLayout.addWidget(self.SaveButton, 11, 2, 1, 1)
 
+        self.Account = QComboBox(TaxWidget)
+        self.Account.setObjectName(u"Account")
+
+        self.MainLayout.addWidget(self.Account, 2, 1, 1, 2)
+
 
         self.retranslateUi(TaxWidget)
 
@@ -179,7 +177,7 @@ class Ui_TaxWidget(object):
     # setupUi
 
     def retranslateUi(self, TaxWidget):
-        TaxWidget.setWindowTitle(QCoreApplication.translate("TaxWidget", u"Taxes", None))
+        TaxWidget.setWindowTitle(QCoreApplication.translate("TaxWidget", u"Select parameters of investment tax report", None))
 #if QT_CONFIG(tooltip)
         self.XlsSelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
@@ -191,9 +189,6 @@ class Ui_TaxWidget(object):
         self.NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))
         self.PtBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Portugal)", None))
         self.Pt_OneCurrencyRate.setText(QCoreApplication.translate("TaxWidget", u"Use Realization currency rate for Acquisition (one currency rate for all)", None))
-#if QT_CONFIG(tooltip)
-        self.AccountWidget.setToolTip(QCoreApplication.translate("TaxWidget", u"Foreign account to prepare tax report for", None))
-#endif // QT_CONFIG(tooltip)
         self.AccountLbl.setText(QCoreApplication.translate("TaxWidget", u"Account:", None))
         self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Excel file:", None))
         self.RuBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Russia)", None))

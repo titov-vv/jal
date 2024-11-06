@@ -6,7 +6,7 @@ import jal.db.closed_trade
 from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents
 from jal.db.tag import JalTag
 from jal.db.country import JalCountry
-from jal.db.helpers import format_decimal, now_ts
+from jal.db.helpers import format_decimal, now_ts, year_begin, year_end
 
 
 class JalAccount(JalDB):
@@ -87,6 +87,18 @@ class JalAccount(JalDB):
             sql_txt += " AND currency_id=:currency_id"
             sql_parameters += [(":currency_id", currency_id)]
         query = cls._exec(sql_txt, sql_parameters)
+        while query.next():
+            account_id = cls._read_record(query, cast=[int])
+            accounts.append(JalAccount(account_id))
+        return accounts
+
+    @classmethod
+    def get_taxable_accounts(cls, tax_date: int) -> list:
+        accounts = []
+        query = cls._exec("SELECT account_id FROM asset_payments WHERE timestamp>=:y_b AND timestamp<=:y_e "
+                          "UNION "
+                          "SELECT account_id FROM trades WHERE timestamp>=:y_b AND timestamp<=:y_e AND qty<0",
+                          [(":y_b", year_begin(tax_date)), (":y_e", year_end(tax_date))])
         while query.next():
             account_id = cls._read_record(query, cast=[int])
             accounts.append(JalAccount(account_id))
