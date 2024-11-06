@@ -3436,7 +3436,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../widgets/qr_scanner.py" line="114"/>
         <source>Capture error: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка захвата кадра: </translation>
     </message>
     <message>
         <location filename="../widgets/qr_scanner.py" line="117"/>
@@ -3469,7 +3469,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../net/downloader.py" line="169"/>
         <source>Loading assets prices</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка котировок</translation>
     </message>
     <message>
         <location filename="../net/downloader.py" line="177"/>
@@ -3484,12 +3484,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../net/downloader.py" line="462"/>
         <source>Yahoo returned and error: </source>
-        <translation type="unfinished"></translation>
+        <translation>Сервер Yahoo вернул ошибку: </translation>
     </message>
     <message>
         <location filename="../net/downloader.py" line="465"/>
         <source>Yahoo returned more then one result: </source>
-        <translation type="unfinished"></translation>
+        <translation>Сервер Yahoo вернул больше чем один результат: </translation>
     </message>
     <message>
         <location filename="../net/downloader.py" line="504"/>
@@ -4391,7 +4391,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/statement.py" line="595"/>
         <source>Multiple accounts found: </source>
-        <translation type="unfinished">Несколько счетов найдено: </translation>
+        <translation>Несколько счетов найдено: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="605"/>
@@ -5097,7 +5097,7 @@ Please select an account for import:</source>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="33"/>
         <source>VTB statement (*.xlsx)</source>
-        <translation type="unfinished"></translation>
+        <translation>Отчёт ВТБ (*.xlsx)</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="51"/>
@@ -5609,7 +5609,7 @@ Please select an account for import:</source>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="20"/>
         <source>Select parameters of investment tax report</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите параметры налогового отчёта</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="96"/>
@@ -5847,7 +5847,7 @@ Please select an account for import:</source>
     <message>
         <location filename="../widgets/delegates.py" line="106"/>
         <source>&lt;invalid&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;неверное&gt;</translation>
     </message>
 </context>
 <context>
