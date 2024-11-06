@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'operations_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.8.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -125,7 +125,7 @@ class Ui_OperationsWidget(object):
         self.horizontalLayout_3.setContentsMargins(2, 2, 2, 2)
         self.DateRange = DateRangeSelector(self.OperationConfigFrame)
         self.DateRange.setObjectName(u"DateRange")
-        self.DateRange.setProperty("ItemsList", u"week;month;quarter;year;all")
+        self.DateRange.setProperty(u"ItemsList", u"week;month;quarter;year;all")
 
         self.horizontalLayout_3.addWidget(self.DateRange)
 

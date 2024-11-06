@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'asset_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.8.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -248,9 +248,9 @@ class Ui_AssetDialog(object):
 
         self.CountryCombo = DbLookupComboBox(AssetDialog)
         self.CountryCombo.setObjectName(u"CountryCombo")
-        self.CountryCombo.setProperty("db_table", u"countries_ext")
-        self.CountryCombo.setProperty("key_field", u"id")
-        self.CountryCombo.setProperty("db_field", u"name")
+        self.CountryCombo.setProperty(u"db_table", u"countries_ext")
+        self.CountryCombo.setProperty(u"key_field", u"id")
+        self.CountryCombo.setProperty(u"db_field", u"name")
 
         self.gridLayout.addWidget(self.CountryCombo, 2, 4, 1, 1)
 

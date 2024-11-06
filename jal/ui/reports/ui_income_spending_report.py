@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'income_spending_report.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.8.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -42,7 +42,7 @@ class Ui_IncomeSpendingReportWidget(object):
         self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
-        self.ReportRange.setProperty("ItemsList", u"QTD;YTD;this_year;last_year")
+        self.ReportRange.setProperty(u"ItemsList", u"QTD;YTD;this_year;last_year")
 
         self.horizontalLayout.addWidget(self.ReportRange)
 

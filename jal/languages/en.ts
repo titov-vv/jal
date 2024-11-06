@@ -1580,32 +1580,32 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>ImportReceiptDialog</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="267"/>
+        <location filename="../data_import/shop_receipt.py" line="269"/>
         <source>Please scan main QR code from the receipt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="270"/>
+        <location filename="../data_import/shop_receipt.py" line="272"/>
         <source>QR: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="336"/>
+        <location filename="../data_import/shop_receipt.py" line="338"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="339"/>
+        <location filename="../data_import/shop_receipt.py" line="341"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="342"/>
+        <location filename="../data_import/shop_receipt.py" line="344"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="371"/>
+        <location filename="../data_import/shop_receipt.py" line="373"/>
         <source>Categories are not recognized: Tensorflow is not found</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2033,27 +2033,27 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>JalAsset</name>
     <message>
-        <location filename="../db/asset.py" line="159"/>
+        <location filename="../db/asset.py" line="160"/>
         <source>There are no quote/rate for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="217"/>
+        <location filename="../db/asset.py" line="218"/>
         <source>Quotations were updated: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="273"/>
+        <location filename="../db/asset.py" line="274"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="293"/>
+        <location filename="../db/asset.py" line="294"/>
         <source>Country updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="303"/>
+        <location filename="../db/asset.py" line="304"/>
         <source>Reg.number updated for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2466,12 +2466,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="342"/>
+        <location filename="../net/downloader.py" line="336"/>
         <source>Unsupported MOEX security type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="402"/>
+        <location filename="../net/downloader.py" line="396"/>
         <source>Multiple MOEX assets found for: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3409,17 +3409,22 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QRScanner</name>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="53"/>
+        <location filename="../widgets/qr_scanner.py" line="62"/>
         <source>There are no cameras available</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="56"/>
+        <location filename="../widgets/qr_scanner.py" line="65"/>
         <source>Package pyzbar not found for QR recognition.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="130"/>
+        <location filename="../widgets/qr_scanner.py" line="114"/>
+        <source>Capture error: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="117"/>
         <source>Camera error: </source>
         <translation></translation>
     </message>
@@ -3427,18 +3432,17 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="108"/>
-        <location filename="../net/downloader.py" line="141"/>
+        <location filename="../net/downloader.py" line="110"/>
         <source>Interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="110"/>
+        <location filename="../net/downloader.py" line="113"/>
         <source>Download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="137"/>
+        <location filename="../net/downloader.py" line="141"/>
         <source>Loading currency rates for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3449,17 +3453,27 @@ Do you want to delete the peer anyway?</source>
     </message>
     <message>
         <location filename="../net/downloader.py" line="169"/>
-        <source>Loading asset quotations</source>
+        <source>Loading assets prices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="182"/>
+        <location filename="../net/downloader.py" line="177"/>
         <source>No quotes were downloaded for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="211"/>
+        <location filename="../net/downloader.py" line="205"/>
         <source>There are no CBR data for: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="462"/>
+        <source>Yahoo returned and error: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="465"/>
+        <source>Yahoo returned more then one result: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3483,27 +3497,27 @@ Do you want to delete the peer anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="569"/>
+        <location filename="../net/downloader.py" line="584"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="580"/>
+        <location filename="../net/downloader.py" line="595"/>
         <source>Can&apos;t parse server response as pdf: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="583"/>
+        <location filename="../net/downloader.py" line="598"/>
         <source>Unexpected number of pages in Victoria Seguros document: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="611"/>
+        <location filename="../net/downloader.py" line="626"/>
         <source>Can&apos;t parse date from Victoria Seguros file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="626"/>
+        <location filename="../net/downloader.py" line="572"/>
         <source>Can&apos;t find quote for Victoria Seguros fund: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3580,32 +3594,32 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>ReceiptAPIFactory</name>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="27"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="26"/>
         <source>Russian receipt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="28"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="27"/>
         <source>European Lidl receipt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="31"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="30"/>
         <source>Portuguese Pingo Doce receipt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="46"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="45"/>
         <source>Please scan flat barcode from the receipt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="63"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="62"/>
         <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="64"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="63"/>
         <source>No API found for QR data: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4088,52 +4102,52 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>ScanDialog</name>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="160"/>
+        <location filename="../widgets/qr_scanner.py" line="149"/>
         <source>Barcode scanner</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="178"/>
+        <location filename="../widgets/qr_scanner.py" line="167"/>
         <source>Load image from file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="179"/>
+        <location filename="../widgets/qr_scanner.py" line="168"/>
         <source>Get image from clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="180"/>
+        <location filename="../widgets/qr_scanner.py" line="169"/>
         <source>Input data manually</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="181"/>
+        <location filename="../widgets/qr_scanner.py" line="170"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="222"/>
+        <location filename="../widgets/qr_scanner.py" line="229"/>
         <source>Select file with QR code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="229"/>
+        <location filename="../widgets/qr_scanner.py" line="236"/>
         <source>No QR codes were found in file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="239"/>
+        <location filename="../widgets/qr_scanner.py" line="246"/>
         <source>No QR codes found in clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="243"/>
+        <location filename="../widgets/qr_scanner.py" line="250"/>
         <source>Input code data manually</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="243"/>
+        <location filename="../widgets/qr_scanner.py" line="250"/>
         <source>Data:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4223,219 +4237,224 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>Statement</name>
     <message>
-        <location filename="../data_import/statement.py" line="192"/>
+        <location filename="../data_import/statement.py" line="195"/>
         <source>Failed to read JSON from file: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="194"/>
-        <location filename="../data_import/statement.py" line="328"/>
+        <location filename="../data_import/statement.py" line="197"/>
+        <location filename="../data_import/statement.py" line="332"/>
         <source>Failed to read file: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="376"/>
+        <location filename="../data_import/statement.py" line="380"/>
         <source>Can&apos;t create asset: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="381"/>
+        <location filename="../data_import/statement.py" line="385"/>
         <source>Symbol ticker isn&apos;t linked to asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="383"/>
+        <location filename="../data_import/statement.py" line="387"/>
         <source>Symbol currency isn&apos;t linked to asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="400"/>
+        <location filename="../data_import/statement.py" line="404"/>
         <source>Asset data aren&apos;t linked to asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="408"/>
+        <location filename="../data_import/statement.py" line="412"/>
         <source>Unmatched currency for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="417"/>
+        <location filename="../data_import/statement.py" line="421"/>
         <source>Can&apos;t create account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="422"/>
+        <location filename="../data_import/statement.py" line="426"/>
         <source>Unmatched account for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="425"/>
+        <location filename="../data_import/statement.py" line="429"/>
         <source>Unmatched peer for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="431"/>
+        <location filename="../data_import/statement.py" line="435"/>
         <source>Unmatched category for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="440"/>
+        <location filename="../data_import/statement.py" line="444"/>
         <source>Unmatched account for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="443"/>
+        <location filename="../data_import/statement.py" line="447"/>
         <source>Unmatched asset for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="446"/>
+        <location filename="../data_import/statement.py" line="450"/>
         <source>Impossible to convert asset type in transfer: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="451"/>
+        <location filename="../data_import/statement.py" line="455"/>
         <source>Deposit of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="454"/>
+        <location filename="../data_import/statement.py" line="458"/>
         <source>Select account to withdraw from:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="456"/>
+        <location filename="../data_import/statement.py" line="460"/>
         <source>Withdrawal of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="459"/>
+        <location filename="../data_import/statement.py" line="463"/>
         <source>Select account to deposit to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="465"/>
+        <location filename="../data_import/statement.py" line="469"/>
         <source>Account not selected</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="490"/>
+        <location filename="../data_import/statement.py" line="494"/>
         <source>Unmatched account for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="493"/>
+        <location filename="../data_import/statement.py" line="497"/>
         <source>Unmatched asset for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="508"/>
+        <location filename="../data_import/statement.py" line="512"/>
         <source>Unmatched account for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="511"/>
+        <location filename="../data_import/statement.py" line="515"/>
         <source>Unmatched asset for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="545"/>
+        <location filename="../data_import/statement.py" line="549"/>
         <source>Unsupported payment type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="550"/>
+        <location filename="../data_import/statement.py" line="554"/>
         <source>Unmatched account for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="553"/>
-        <location filename="../data_import/statement.py" line="559"/>
+        <location filename="../data_import/statement.py" line="557"/>
+        <location filename="../data_import/statement.py" line="563"/>
         <source>Unmatched asset for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="566"/>
+        <location filename="../data_import/statement.py" line="570"/>
         <source>Unsupported corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="584"/>
+        <location filename="../data_import/statement.py" line="595"/>
+        <source>Multiple accounts found: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement.py" line="605"/>
         <source>Asset id not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="596"/>
+        <location filename="../data_import/statement.py" line="617"/>
         <source>Multiple match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="607"/>
+        <location filename="../data_import/statement.py" line="628"/>
         <source>Multiple currency match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="658"/>
+        <location filename="../data_import/statement.py" line="679"/>
         <source>Can&apos;t find asset on moex.com: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="662"/>
+        <location filename="../data_import/statement.py" line="683"/>
         <source>Unsupported asset type from moex.com: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="667"/>
+        <location filename="../data_import/statement.py" line="688"/>
         <source>Unknown online search source: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="670"/>
+        <location filename="../data_import/statement.py" line="691"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="360"/>
+        <location filename="../data_import/statement.py" line="364"/>
         <source>Statement import was cancelled</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="350"/>
+        <location filename="../data_import/statement.py" line="354"/>
         <source>Statement period is invalid</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="199"/>
+        <location filename="../data_import/statement.py" line="202"/>
         <source>Some sections are not supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="147"/>
+        <location filename="../data_import/statement.py" line="150"/>
         <source>Debug information is saved in </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="149"/>
+        <location filename="../data_import/statement.py" line="152"/>
         <source>Failed to write statement dump into: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="326"/>
+        <location filename="../data_import/statement.py" line="330"/>
         <source>Failed to read JSON schema from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="332"/>
+        <location filename="../data_import/statement.py" line="336"/>
         <source>Statement validation failed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="357"/>
+        <location filename="../data_import/statement.py" line="361"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="358"/>
+        <location filename="../data_import/statement.py" line="362"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation></translation>
     </message>
@@ -5062,7 +5081,7 @@ Please select an account for import:</source>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="33"/>
-        <source>VTB statement (*.xls)</source>
+        <source>VTB statement (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5209,11 +5228,6 @@ Please select an account for import:</source>
         <location filename="../data_import/statement_xls.py" line="200"/>
         <source>Cash balances loaded: </source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/statement_xls.py" line="240"/>
-        <source>Multiple accounts found: </source>
-        <translation></translation>
     </message>
     <message>
         <location filename="../data_import/statement_xls.py" line="226"/>
@@ -5819,6 +5833,14 @@ Please select an account for import:</source>
     </message>
 </context>
 <context>
+    <name>TimestampDelegate</name>
+    <message>
+        <location filename="../widgets/delegates.py" line="106"/>
+        <source>&lt;invalid&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Trade</name>
     <message>
         <location filename="../db/operations.py" line="704"/>
@@ -6138,17 +6160,17 @@ Please select an account for import:</source>
 <context>
     <name>WebRequest</name>
     <message>
-        <location filename="../net/web_request.py" line="77"/>
+        <location filename="../net/web_request.py" line="64"/>
         <source>Timeout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/web_request.py" line="80"/>
+        <location filename="../net/web_request.py" line="67"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/web_request.py" line="88"/>
+        <location filename="../net/web_request.py" line="75"/>
         <source>Failed</source>
         <translation type="unfinished"></translation>
     </message>

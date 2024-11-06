@@ -1586,32 +1586,32 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>ImportReceiptDialog</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="267"/>
+        <location filename="../data_import/shop_receipt.py" line="269"/>
         <source>Please scan main QR code from the receipt</source>
         <translation>Отсканируйте основной QR-код с чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="270"/>
+        <location filename="../data_import/shop_receipt.py" line="272"/>
         <source>QR: </source>
         <translation>QR: </translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="336"/>
+        <location filename="../data_import/shop_receipt.py" line="338"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation>Невозможно импортировать чек: не выбран счёт для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="339"/>
+        <location filename="../data_import/shop_receipt.py" line="341"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation>Невозможно импортировать чек: не выбран контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="342"/>
+        <location filename="../data_import/shop_receipt.py" line="344"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation>Невозможно импортировать чек: некоторые категории не выбраны</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="371"/>
+        <location filename="../data_import/shop_receipt.py" line="373"/>
         <source>Categories are not recognized: Tensorflow is not found</source>
         <translation>Категории не распознаны: Tensorflow не найден</translation>
     </message>
@@ -2039,27 +2039,27 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>JalAsset</name>
     <message>
-        <location filename="../db/asset.py" line="159"/>
+        <location filename="../db/asset.py" line="160"/>
         <source>There are no quote/rate for </source>
         <translation>Нет котировки/курса для </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="217"/>
+        <location filename="../db/asset.py" line="218"/>
         <source>Quotations were updated: </source>
         <translation>Котировки обновлены: </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="273"/>
+        <location filename="../db/asset.py" line="274"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation>Неожиданная попытка обновить ISIN для </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="293"/>
+        <location filename="../db/asset.py" line="294"/>
         <source>Country updated for </source>
         <translation>Страна обновлёна для </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="303"/>
+        <location filename="../db/asset.py" line="304"/>
         <source>Reg.number updated for </source>
         <translation>Регистрационный номер обновлён для </translation>
     </message>
@@ -2475,12 +2475,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="342"/>
+        <location filename="../net/downloader.py" line="336"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="402"/>
+        <location filename="../net/downloader.py" line="396"/>
         <source>Multiple MOEX assets found for: </source>
         <translation>Найдено несколько ЦБ на MOEX для: </translation>
     </message>
@@ -3424,17 +3424,22 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QRScanner</name>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="53"/>
+        <location filename="../widgets/qr_scanner.py" line="62"/>
         <source>There are no cameras available</source>
         <translation>Нет доступных камер</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="56"/>
+        <location filename="../widgets/qr_scanner.py" line="65"/>
         <source>Package pyzbar not found for QR recognition.</source>
         <translation>Не обнаружен пакет pyzbar, необходимый для распознавания QR кодов.</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="130"/>
+        <location filename="../widgets/qr_scanner.py" line="114"/>
+        <source>Capture error: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="117"/>
         <source>Camera error: </source>
         <translation>Ошибка камеры: </translation>
     </message>
@@ -3442,18 +3447,17 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="108"/>
-        <location filename="../net/downloader.py" line="141"/>
+        <location filename="../net/downloader.py" line="110"/>
         <source>Interrupted by user</source>
         <translation>Прервано пользователем</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="110"/>
+        <location filename="../net/downloader.py" line="113"/>
         <source>Download completed</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="137"/>
+        <location filename="../net/downloader.py" line="141"/>
         <source>Loading currency rates for </source>
         <translation>Загрузка курса валюты для </translation>
     </message>
@@ -3464,18 +3468,28 @@ Do you want to delete the peer anyway?</source>
     </message>
     <message>
         <location filename="../net/downloader.py" line="169"/>
-        <source>Loading asset quotations</source>
-        <translation>Загрузка котировок</translation>
+        <source>Loading assets prices</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="182"/>
+        <location filename="../net/downloader.py" line="177"/>
         <source>No quotes were downloaded for </source>
         <translation>Не загружены котировки для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="211"/>
+        <location filename="../net/downloader.py" line="205"/>
         <source>There are no CBR data for: </source>
         <translation>Нет данных ЦБ РФ для: </translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="462"/>
+        <source>Yahoo returned and error: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/downloader.py" line="465"/>
+        <source>Yahoo returned more then one result: </source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../net/downloader.py" line="504"/>
@@ -3498,27 +3512,27 @@ Do you want to delete the peer anyway?</source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="569"/>
+        <location filename="../net/downloader.py" line="584"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation>Не обнаружен пакет pypdf, необходимый для чтения PDF файлов.</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="580"/>
+        <location filename="../net/downloader.py" line="595"/>
         <source>Can&apos;t parse server response as pdf: </source>
         <translation>Невозможно прочитать полученные от сервера данные как pdf: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="583"/>
+        <location filename="../net/downloader.py" line="598"/>
         <source>Unexpected number of pages in Victoria Seguros document: </source>
         <translation>Неожиданное количество страниц в документе Victoria Seguros: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="611"/>
+        <location filename="../net/downloader.py" line="626"/>
         <source>Can&apos;t parse date from Victoria Seguros file</source>
         <translation>Невозможно получить дату из файла Victoria Seguros</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="626"/>
+        <location filename="../net/downloader.py" line="572"/>
         <source>Can&apos;t find quote for Victoria Seguros fund: </source>
         <translation>Не удалось найти котировку для фонда Victoria Seguros: </translation>
     </message>
@@ -3595,32 +3609,32 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>ReceiptAPIFactory</name>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="27"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="26"/>
         <source>Russian receipt</source>
         <translation>Российский чек</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="28"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="27"/>
         <source>European Lidl receipt</source>
         <translation>Европейский чек Lidl</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="31"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="30"/>
         <source>Portuguese Pingo Doce receipt</source>
         <translation>Португальский чек Pingo Doce</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="46"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="45"/>
         <source>Please scan flat barcode from the receipt</source>
         <translation>Отсканируйте плоский штрих-код со чека</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="63"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="62"/>
         <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
         <translation>Португальский QR-код распознан, но магазин не поддерживается, NIF: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="64"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="63"/>
         <source>No API found for QR data: </source>
         <translation>На найдено API для QR-кода: </translation>
     </message>
@@ -4103,52 +4117,52 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>ScanDialog</name>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="160"/>
+        <location filename="../widgets/qr_scanner.py" line="149"/>
         <source>Barcode scanner</source>
         <translation>Сканнер штрихкодов</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="178"/>
+        <location filename="../widgets/qr_scanner.py" line="167"/>
         <source>Load image from file</source>
         <translation>Загрузить изображение из файла</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="179"/>
+        <location filename="../widgets/qr_scanner.py" line="168"/>
         <source>Get image from clipboard</source>
         <translation>Получить изображение из буфера</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="180"/>
+        <location filename="../widgets/qr_scanner.py" line="169"/>
         <source>Input data manually</source>
         <translation>Ввести данные вручную</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="181"/>
+        <location filename="../widgets/qr_scanner.py" line="170"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="222"/>
+        <location filename="../widgets/qr_scanner.py" line="229"/>
         <source>Select file with QR code</source>
         <translation>Выберите файл с QR-кодом</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="229"/>
+        <location filename="../widgets/qr_scanner.py" line="236"/>
         <source>No QR codes were found in file</source>
         <translation>QR-код в файле не обнаружен</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="239"/>
+        <location filename="../widgets/qr_scanner.py" line="246"/>
         <source>No QR codes found in clipboard</source>
         <translation>QR код не обнаружен в буфере обмена</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="243"/>
+        <location filename="../widgets/qr_scanner.py" line="250"/>
         <source>Input code data manually</source>
         <translation>Введите данные кода вручную</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="243"/>
+        <location filename="../widgets/qr_scanner.py" line="250"/>
         <source>Data:</source>
         <translation>Данные:</translation>
     </message>
@@ -4238,219 +4252,224 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>Statement</name>
     <message>
-        <location filename="../data_import/statement.py" line="192"/>
+        <location filename="../data_import/statement.py" line="195"/>
         <source>Failed to read JSON from file: </source>
         <translation>Невозможно прочитать JSON из файла: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="194"/>
-        <location filename="../data_import/statement.py" line="328"/>
+        <location filename="../data_import/statement.py" line="197"/>
+        <location filename="../data_import/statement.py" line="332"/>
         <source>Failed to read file: </source>
         <translation>Невозможно прочесть файл: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="376"/>
+        <location filename="../data_import/statement.py" line="380"/>
         <source>Can&apos;t create asset: </source>
         <translation>Невозможно создать ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="381"/>
+        <location filename="../data_import/statement.py" line="385"/>
         <source>Symbol ticker isn&apos;t linked to asset: </source>
         <translation>Символ не привязан к ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="383"/>
+        <location filename="../data_import/statement.py" line="387"/>
         <source>Symbol currency isn&apos;t linked to asset: </source>
         <translation>Символ валюты не привязан к ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="400"/>
+        <location filename="../data_import/statement.py" line="404"/>
         <source>Asset data aren&apos;t linked to asset: </source>
         <translation>Данные не привязаны к ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="408"/>
+        <location filename="../data_import/statement.py" line="412"/>
         <source>Unmatched currency for account: </source>
         <translation>Невозмоно сопоставить валюту для счёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="417"/>
+        <location filename="../data_import/statement.py" line="421"/>
         <source>Can&apos;t create account: </source>
         <translation>Невозможно создать счёт: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="422"/>
+        <location filename="../data_import/statement.py" line="426"/>
         <source>Unmatched account for income/spending: </source>
         <translation>Невозможно сопоставить счёт для операции прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="425"/>
+        <location filename="../data_import/statement.py" line="429"/>
         <source>Unmatched peer for income/spending: </source>
         <translation>Невозможно сопоставить контрагента для операции прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="431"/>
+        <location filename="../data_import/statement.py" line="435"/>
         <source>Unmatched category for income/spending: </source>
         <translation>Невозможно сопоставить категорию для прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="440"/>
+        <location filename="../data_import/statement.py" line="444"/>
         <source>Unmatched account for transfer: </source>
         <translation>Невзоможно сопоставить счёт для перевода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="443"/>
+        <location filename="../data_import/statement.py" line="447"/>
         <source>Unmatched asset for transfer: </source>
         <translation>Невозможно сопоставить ЦБ/валюту для перевода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="446"/>
+        <location filename="../data_import/statement.py" line="450"/>
         <source>Impossible to convert asset type in transfer: </source>
         <translation>Невозможно контвертировать тип актива в трансфере: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="451"/>
+        <location filename="../data_import/statement.py" line="455"/>
         <source>Deposit of </source>
         <translation>Депозит </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="454"/>
+        <location filename="../data_import/statement.py" line="458"/>
         <source>Select account to withdraw from:</source>
         <translation>Выберите счёт для списания:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="456"/>
+        <location filename="../data_import/statement.py" line="460"/>
         <source>Withdrawal of </source>
         <translation>Списание </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="459"/>
+        <location filename="../data_import/statement.py" line="463"/>
         <source>Select account to deposit to:</source>
         <translation>Выберите счёт для зачисления:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="465"/>
+        <location filename="../data_import/statement.py" line="469"/>
         <source>Account not selected</source>
         <translation>Счёт не выбран</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="490"/>
+        <location filename="../data_import/statement.py" line="494"/>
         <source>Unmatched account for trade: </source>
         <translation>Невозможно сопоставить счёт для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="493"/>
+        <location filename="../data_import/statement.py" line="497"/>
         <source>Unmatched asset for trade: </source>
         <translation>Невозможно сопоставить ЦБ для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="508"/>
+        <location filename="../data_import/statement.py" line="512"/>
         <source>Unmatched account for payment: </source>
         <translation>Невозможно сопоставить счёт для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="511"/>
+        <location filename="../data_import/statement.py" line="515"/>
         <source>Unmatched asset for payment: </source>
         <translation>Невозможно сопоставить ЦБ для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="545"/>
+        <location filename="../data_import/statement.py" line="549"/>
         <source>Unsupported payment type: </source>
         <translation>Неподдерживаемый тип выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="550"/>
+        <location filename="../data_import/statement.py" line="554"/>
         <source>Unmatched account for corporate action: </source>
         <translation>Невозможно сопоставить счёт для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="553"/>
-        <location filename="../data_import/statement.py" line="559"/>
+        <location filename="../data_import/statement.py" line="557"/>
+        <location filename="../data_import/statement.py" line="563"/>
         <source>Unmatched asset for corporate action: </source>
         <translation>Невозможно сопоставить ЦБ для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="566"/>
+        <location filename="../data_import/statement.py" line="570"/>
         <source>Unsupported corporate action: </source>
         <translation>Неподдерживаемое корпоративное действие: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="584"/>
+        <location filename="../data_import/statement.py" line="595"/>
+        <source>Multiple accounts found: </source>
+        <translation type="unfinished">Несколько счетов найдено: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement.py" line="605"/>
         <source>Asset id not found</source>
         <translation>ЦБ id не найден</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="596"/>
+        <location filename="../data_import/statement.py" line="617"/>
         <source>Multiple match for </source>
         <translation>Неоднозначное совпадение для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="607"/>
+        <location filename="../data_import/statement.py" line="628"/>
         <source>Multiple currency match for </source>
         <translation>Неоднозначное совпадение валюты для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="658"/>
+        <location filename="../data_import/statement.py" line="679"/>
         <source>Can&apos;t find asset on moex.com: </source>
         <translation>Не удалось найти ЦБ на moex.com: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="662"/>
+        <location filename="../data_import/statement.py" line="683"/>
         <source>Unsupported asset type from moex.com: </source>
         <translation>Неподдерживаемый тип ЦБ с moex.com: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="667"/>
+        <location filename="../data_import/statement.py" line="688"/>
         <source>Unknown online search source: </source>
         <translation>Неизвестный источник для онлайн поиска: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="670"/>
+        <location filename="../data_import/statement.py" line="691"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation>Невозможно найте ЦБ в отчёте: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="360"/>
+        <location filename="../data_import/statement.py" line="364"/>
         <source>Statement import was cancelled</source>
         <translation>Импорт отчёта прерван</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="350"/>
+        <location filename="../data_import/statement.py" line="354"/>
         <source>Statement period is invalid</source>
         <translation>Неверный период отчёта</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="199"/>
+        <location filename="../data_import/statement.py" line="202"/>
         <source>Some sections are not supported: </source>
         <translation>Некоторые секции не поддерживаются: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="147"/>
+        <location filename="../data_import/statement.py" line="150"/>
         <source>Debug information is saved in </source>
         <translation>Отладочная информация сохранена в </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="149"/>
+        <location filename="../data_import/statement.py" line="152"/>
         <source>Failed to write statement dump into: </source>
         <translation>Ошибка при сохранении отладочной информации: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="326"/>
+        <location filename="../data_import/statement.py" line="330"/>
         <source>Failed to read JSON schema from: </source>
         <translation>Не удалось прочитать схему JSON из: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="332"/>
+        <location filename="../data_import/statement.py" line="336"/>
         <source>Statement validation failed</source>
         <translation>Отчёт содержит ошибки</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="357"/>
+        <location filename="../data_import/statement.py" line="361"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="358"/>
+        <location filename="../data_import/statement.py" line="362"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation>Период отчёта начинается ранее последней операции для счёта (повторный импорт?). Продолжить импорт?</translation>
     </message>
@@ -5077,8 +5096,8 @@ Please select an account for import:</source>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="33"/>
-        <source>VTB statement (*.xls)</source>
-        <translation>Отчет ВТБ (*.xls)</translation>
+        <source>VTB statement (*.xlsx)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="51"/>
@@ -5224,11 +5243,6 @@ Please select an account for import:</source>
         <location filename="../data_import/statement_xls.py" line="200"/>
         <source>Cash balances loaded: </source>
         <translation>ДС загружены: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/statement_xls.py" line="240"/>
-        <source>Multiple accounts found: </source>
-        <translation>Несколько счетов найдено: </translation>
     </message>
     <message>
         <location filename="../data_import/statement_xls.py" line="226"/>
@@ -5834,6 +5848,14 @@ Please select an account for import:</source>
     </message>
 </context>
 <context>
+    <name>TimestampDelegate</name>
+    <message>
+        <location filename="../widgets/delegates.py" line="106"/>
+        <source>&lt;invalid&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Trade</name>
     <message>
         <location filename="../db/operations.py" line="704"/>
@@ -6153,17 +6175,17 @@ Please select an account for import:</source>
 <context>
     <name>WebRequest</name>
     <message>
-        <location filename="../net/web_request.py" line="77"/>
+        <location filename="../net/web_request.py" line="64"/>
         <source>Timeout</source>
         <translation>Таймаут</translation>
     </message>
     <message>
-        <location filename="../net/web_request.py" line="80"/>
+        <location filename="../net/web_request.py" line="67"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../net/web_request.py" line="88"/>
+        <location filename="../net/web_request.py" line="75"/>
         <source>Failed</source>
         <translation>Неуспешно</translation>
     </message>
