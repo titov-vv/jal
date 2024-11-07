@@ -6,12 +6,12 @@ import traceback
 from PySide6.QtCore import Property, Slot
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication
 
-from db.account import JalAccount
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import ts2d
+from jal.widgets.helpers import ts2d, dt2ts
 from jal.widgets.icons import JalIcon
+from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings, FolderFor
@@ -19,7 +19,6 @@ from jal.data_export.taxes import TaxReport
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 from jal.data_export.dlsg import DLSG
-from widgets.helpers import dt2ts
 
 
 class TaxWidget(MdiWidget):
