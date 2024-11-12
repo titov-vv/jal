@@ -34,19 +34,16 @@ def main():
     app = QApplication([])
 
     error = JalDB().init_db()
+    translator = QTranslator(app)
+    if translator.load(JalSettings.path(JalDB.PATH_LANG_FILE)):
+        if app.installTranslator(translator):
+            translator_installed = True
+    if error.code == JalDBError.OutdatedDbSchema:
+        error = JalDB().update_db_schema()   # this call isn't a part of JalDB.init_db() intentionally - to provide translation of UI message
     if error.code != JalDBError.NoError:
         window = make_error_window(error)
     else:
-        translator = QTranslator(app)
-        if translator.load(JalSettings.path(JalDB.PATH_LANG_FILE)):
-            if app.installTranslator(translator):
-                translator_installed = True
-        if error.code == JalDBError.OutdatedDbSchema:
-            error = JalDB().update_db_schema()   # this call isn't a part of JalDB.init_db() intentionally - to provide translation of UI message
-        if error.code != JalDBError.NoError:
-            window = make_error_window(error)
-        else:
-            window = MainWindow(translator)
+        window = MainWindow(translator)
     window.show()
     app.exec()
     if translator_installed:
