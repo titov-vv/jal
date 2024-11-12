@@ -663,37 +663,37 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="87"/>
+        <location filename="../db/balances_model.py" line="88"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="88"/>
+        <location filename="../db/balances_model.py" line="89"/>
         <source>Balance</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="89"/>
+        <location filename="../db/balances_model.py" line="90"/>
         <source> </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="90"/>
+        <location filename="../db/balances_model.py" line="91"/>
         <source>Balance, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="123"/>
+        <location filename="../db/balances_model.py" line="124"/>
         <source>Total:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="200"/>
+        <location filename="../db/balances_model.py" line="199"/>
         <source>Without tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="215"/>
+        <location filename="../db/balances_model.py" line="214"/>
         <source>Term deposits</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2666,17 +2666,17 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="185"/>
+        <location filename="../widgets/tax_widget.py" line="184"/>
         <source>Excel files (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="185"/>
+        <location filename="../widgets/tax_widget.py" line="184"/>
         <source>Save money flow report to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="216"/>
+        <location filename="../widgets/tax_widget.py" line="215"/>
         <source>Money flow report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2748,21 +2748,26 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../widgets/operations_widget.py" line="148"/>
+        <source>Show inactive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/operations_widget.py" line="154"/>
         <source>Balance history chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="156"/>
+        <location filename="../widgets/operations_widget.py" line="162"/>
         <source>Expand all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="159"/>
+        <location filename="../widgets/operations_widget.py" line="165"/>
         <source>Collapse all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="180"/>
+        <location filename="../widgets/operations_widget.py" line="186"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2777,47 +2782,37 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="121"/>
+        <location filename="../ui/operations_widget.ui" line="124"/>
         <source>dd/MM/yyyy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="137"/>
-        <source>Sum Currency:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="150"/>
-        <source>Show &amp;Inactive</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="186"/>
+        <location filename="../ui/operations_widget.ui" line="169"/>
         <source>Operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="244"/>
+        <location filename="../ui/operations_widget.ui" line="230"/>
         <source>Account:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="254"/>
+        <location filename="../ui/operations_widget.ui" line="240"/>
         <source>Search:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="389"/>
+        <location filename="../ui/operations_widget.ui" line="375"/>
         <source>New operation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="399"/>
+        <location filename="../ui/operations_widget.ui" line="385"/>
         <source>Copy operation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="409"/>
+        <location filename="../ui/operations_widget.ui" line="395"/>
         <source>Delete operation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5637,52 +5632,52 @@ Please select an account for import:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="74"/>
+        <location filename="../widgets/tax_widget.py" line="73"/>
         <source>Save tax reports to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="74"/>
+        <location filename="../widgets/tax_widget.py" line="73"/>
         <source>Excel files (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="77"/>
+        <location filename="../widgets/tax_widget.py" line="76"/>
         <source>Save tax form to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="77"/>
+        <location filename="../widgets/tax_widget.py" line="76"/>
         <source>Tax form (*.dc{last_digit})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="130"/>
+        <location filename="../widgets/tax_widget.py" line="129"/>
         <source>Data are incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="131"/>
+        <location filename="../widgets/tax_widget.py" line="130"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="139"/>
+        <location filename="../widgets/tax_widget.py" line="138"/>
         <source>Tax report is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="153"/>
+        <location filename="../widgets/tax_widget.py" line="152"/>
         <source>Tax report was saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="161"/>
+        <location filename="../widgets/tax_widget.py" line="160"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="163"/>
+        <location filename="../widgets/tax_widget.py" line="162"/>
         <source>Can&apos;t write tax form into file </source>
         <translation type="unfinished"></translation>
     </message>

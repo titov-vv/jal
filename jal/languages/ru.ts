@@ -666,37 +666,37 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="87"/>
+        <location filename="../db/balances_model.py" line="88"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="88"/>
+        <location filename="../db/balances_model.py" line="89"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="89"/>
+        <location filename="../db/balances_model.py" line="90"/>
         <source> </source>
         <translation> </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="90"/>
+        <location filename="../db/balances_model.py" line="91"/>
         <source>Balance, </source>
         <translation>Баланс, </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="123"/>
+        <location filename="../db/balances_model.py" line="124"/>
         <source>Total:</source>
         <translation>Итого:</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="200"/>
+        <location filename="../db/balances_model.py" line="199"/>
         <source>Without tag</source>
         <translation>Без метки</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="215"/>
+        <location filename="../db/balances_model.py" line="214"/>
         <source>Term deposits</source>
         <translation>Срочные вклады</translation>
     </message>
@@ -2679,17 +2679,17 @@ Application will be terminated now.</source>
         <translation>Файл Excel:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="185"/>
+        <location filename="../widgets/tax_widget.py" line="184"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="185"/>
+        <location filename="../widgets/tax_widget.py" line="184"/>
         <source>Save money flow report to:</source>
         <translation>Сохранить ОоДДС в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="216"/>
+        <location filename="../widgets/tax_widget.py" line="215"/>
         <source>Money flow report saved to file </source>
         <translation>ОоДДС сохранён в файле </translation>
     </message>
@@ -2761,21 +2761,26 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../widgets/operations_widget.py" line="148"/>
+        <source>Show inactive</source>
+        <translation type="unfinished">Показывать неактивные</translation>
+    </message>
+    <message>
+        <location filename="../widgets/operations_widget.py" line="154"/>
         <source>Balance history chart</source>
         <translation>График истории баланса</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="156"/>
+        <location filename="../widgets/operations_widget.py" line="162"/>
         <source>Expand all</source>
         <translation>Развернуть все</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="159"/>
+        <location filename="../widgets/operations_widget.py" line="165"/>
         <source>Collapse all</source>
         <translation>Свернуть все</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="180"/>
+        <location filename="../widgets/operations_widget.py" line="186"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation>Выберите метку для присвоения выбранным операциям:</translation>
     </message>
@@ -2790,47 +2795,37 @@ Application will be terminated now.</source>
         <translation>Балансы счетов</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="121"/>
+        <location filename="../ui/operations_widget.ui" line="124"/>
         <source>dd/MM/yyyy</source>
         <translation>dd/MM/yyyy</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="137"/>
-        <source>Sum Currency:</source>
-        <translation>Валюта итого:</translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="150"/>
-        <source>Show &amp;Inactive</source>
-        <translation>Показывать &amp;неактивные</translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="186"/>
+        <location filename="../ui/operations_widget.ui" line="169"/>
         <source>Operations</source>
         <translation>Операции</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="244"/>
+        <location filename="../ui/operations_widget.ui" line="230"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="254"/>
+        <location filename="../ui/operations_widget.ui" line="240"/>
         <source>Search:</source>
         <translation>Поиск:</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="389"/>
+        <location filename="../ui/operations_widget.ui" line="375"/>
         <source>New operation</source>
         <translation>Новая операция</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="399"/>
+        <location filename="../ui/operations_widget.ui" line="385"/>
         <source>Copy operation</source>
         <translation>Копировать операцию</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="409"/>
+        <location filename="../ui/operations_widget.ui" line="395"/>
         <source>Delete operation</source>
         <translation>Удалить операцию</translation>
     </message>
@@ -5652,52 +5647,52 @@ Please select an account for import:</source>
         <translation>Не использовать дату поставки для курсов валют</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="74"/>
+        <location filename="../widgets/tax_widget.py" line="73"/>
         <source>Save tax reports to:</source>
         <translation>Сохранить налоговый отчёт в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="74"/>
+        <location filename="../widgets/tax_widget.py" line="73"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="77"/>
+        <location filename="../widgets/tax_widget.py" line="76"/>
         <source>Save tax form to:</source>
         <translation>Сохранить 3-НДФЛ в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="77"/>
+        <location filename="../widgets/tax_widget.py" line="76"/>
         <source>Tax form (*.dc{last_digit})</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="130"/>
+        <location filename="../widgets/tax_widget.py" line="129"/>
         <source>Data are incomplete</source>
         <translation>Данные неполные</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="131"/>
+        <location filename="../widgets/tax_widget.py" line="130"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation>Вы не выбрали счёт для налогового отчёта</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="139"/>
+        <location filename="../widgets/tax_widget.py" line="138"/>
         <source>Tax report is empty</source>
         <translation>Налоговый отчёт пуст</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="153"/>
+        <location filename="../widgets/tax_widget.py" line="152"/>
         <source>Tax report was saved to file </source>
         <translation>Налоговый отчёт сохранён в файл </translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="161"/>
+        <location filename="../widgets/tax_widget.py" line="160"/>
         <source>Tax report saved to file </source>
         <translation>Налоговый отчёт сохранён в файл </translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="163"/>
+        <location filename="../widgets/tax_widget.py" line="162"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать 3-НДФЛ в файл </translation>
     </message>

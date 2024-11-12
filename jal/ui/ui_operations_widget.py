@@ -15,11 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QDateEdit,
-    QFrame, QGroupBox, QHBoxLayout, QHeaderView,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QSplitter, QTableView, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDateEdit, QFrame,
+    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QSplitter, QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
 from jal.widgets.custom.date_range_selector import DateRangeSelector
@@ -42,7 +41,7 @@ class Ui_OperationsWidget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.BalanceOperationsSplitter.sizePolicy().hasHeightForWidth())
         self.BalanceOperationsSplitter.setSizePolicy(sizePolicy)
-        self.BalanceOperationsSplitter.setOrientation(Qt.Horizontal)
+        self.BalanceOperationsSplitter.setOrientation(Qt.Orientation.Horizontal)
         self.BalanceBox = QGroupBox(self.BalanceOperationsSplitter)
         self.BalanceBox.setObjectName(u"BalanceBox")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
@@ -52,49 +51,38 @@ class Ui_OperationsWidget(object):
         self.BalanceBox.setSizePolicy(sizePolicy1)
         self.BalanceBox.setMaximumSize(QSize(16777215, 16777215))
         self.verticalLayout = QVBoxLayout(self.BalanceBox)
+        self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.BalanceConfigFrame = QFrame(self.BalanceBox)
-        self.BalanceConfigFrame.setObjectName(u"BalanceConfigFrame")
-        self.BalanceConfigFrame.setMinimumSize(QSize(408, 0))
-        self.BalanceConfigFrame.setMaximumSize(QSize(16777215, 44))
-        self.BalanceConfigFrame.setFrameShape(QFrame.Panel)
-        self.BalanceConfigFrame.setFrameShadow(QFrame.Plain)
-        self.BalanceConfigFrame.setLineWidth(0)
-        self.horizontalLayout_2 = QHBoxLayout(self.BalanceConfigFrame)
+        self.BalanceFrameTop = QFrame(self.BalanceBox)
+        self.BalanceFrameTop.setObjectName(u"BalanceFrameTop")
+        self.BalanceFrameTop.setMinimumSize(QSize(408, 0))
+        self.BalanceFrameTop.setMaximumSize(QSize(16777215, 44))
+        self.BalanceFrameTop.setFrameShape(QFrame.Shape.Panel)
+        self.BalanceFrameTop.setFrameShadow(QFrame.Shadow.Plain)
+        self.BalanceFrameTop.setLineWidth(0)
+        self.horizontalLayout_2 = QHBoxLayout(self.BalanceFrameTop)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
-        self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
+        self.BalanceDate = QDateEdit(self.BalanceFrameTop)
         self.BalanceDate.setObjectName(u"BalanceDate")
         self.BalanceDate.setDateTime(QDateTime(QDate(2020, 11, 19), QTime(0, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
-        self.BalanceDate.setTimeSpec(Qt.UTC)
+        self.BalanceDate.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.horizontalLayout_2.addWidget(self.BalanceDate)
-
-        self.CurrencyLbl = QLabel(self.BalanceConfigFrame)
-        self.CurrencyLbl.setObjectName(u"CurrencyLbl")
-        self.CurrencyLbl.setLayoutDirection(Qt.LeftToRight)
-        self.CurrencyLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.horizontalLayout_2.addWidget(self.CurrencyLbl)
-
-        self.BalancesCurrencyCombo = CurrencyComboBox(self.BalanceConfigFrame)
-        self.BalancesCurrencyCombo.setObjectName(u"BalancesCurrencyCombo")
-
-        self.horizontalLayout_2.addWidget(self.BalancesCurrencyCombo)
-
-        self.ShowInactiveCheckBox = QCheckBox(self.BalanceConfigFrame)
-        self.ShowInactiveCheckBox.setObjectName(u"ShowInactiveCheckBox")
-
-        self.horizontalLayout_2.addWidget(self.ShowInactiveCheckBox)
 
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer_2)
 
+        self.BalancesCurrencyCombo = CurrencyComboBox(self.BalanceFrameTop)
+        self.BalancesCurrencyCombo.setObjectName(u"BalancesCurrencyCombo")
 
-        self.verticalLayout.addWidget(self.BalanceConfigFrame)
+        self.horizontalLayout_2.addWidget(self.BalancesCurrencyCombo)
+
+
+        self.verticalLayout.addWidget(self.BalanceFrameTop)
 
         self.BalancesTreeView = TreeViewWithFooter(self.BalanceBox)
         self.BalancesTreeView.setObjectName(u"BalancesTreeView")
@@ -109,16 +97,17 @@ class Ui_OperationsWidget(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.OperationsBox.sizePolicy().hasHeightForWidth())
         self.OperationsBox.setSizePolicy(sizePolicy2)
-        self.OperationsBox.setContextMenuPolicy(Qt.DefaultContextMenu)
+        self.OperationsBox.setContextMenuPolicy(Qt.ContextMenuPolicy.DefaultContextMenu)
         self.verticalLayout_2 = QVBoxLayout(self.OperationsBox)
+        self.verticalLayout_2.setSpacing(2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.OperationConfigFrame = QFrame(self.OperationsBox)
         self.OperationConfigFrame.setObjectName(u"OperationConfigFrame")
         self.OperationConfigFrame.setEnabled(True)
         self.OperationConfigFrame.setMinimumSize(QSize(0, 0))
-        self.OperationConfigFrame.setFrameShape(QFrame.Panel)
-        self.OperationConfigFrame.setFrameShadow(QFrame.Plain)
+        self.OperationConfigFrame.setFrameShape(QFrame.Shape.Panel)
+        self.OperationConfigFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.OperationConfigFrame.setLineWidth(0)
         self.horizontalLayout_3 = QHBoxLayout(self.OperationConfigFrame)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
@@ -158,7 +147,7 @@ class Ui_OperationsWidget(object):
 
         self.OperationsDetailsSplitter = QSplitter(self.OperationsBox)
         self.OperationsDetailsSplitter.setObjectName(u"OperationsDetailsSplitter")
-        self.OperationsDetailsSplitter.setOrientation(Qt.Vertical)
+        self.OperationsDetailsSplitter.setOrientation(Qt.Orientation.Vertical)
         self.OperationsTableView = QTableView(self.OperationsDetailsSplitter)
         self.OperationsTableView.setObjectName(u"OperationsTableView")
         sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -167,8 +156,8 @@ class Ui_OperationsWidget(object):
         sizePolicy3.setHeightForWidth(self.OperationsTableView.sizePolicy().hasHeightForWidth())
         self.OperationsTableView.setSizePolicy(sizePolicy3)
         self.OperationsTableView.setAlternatingRowColors(True)
-        self.OperationsTableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.OperationsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.OperationsTableView.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.OperationsTableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.OperationsTableView.setWordWrap(False)
         self.OperationsDetailsSplitter.addWidget(self.OperationsTableView)
         self.OperationsTableView.verticalHeader().setVisible(False)
@@ -183,8 +172,8 @@ class Ui_OperationsWidget(object):
         self.OperationDetails.setSizePolicy(sizePolicy4)
         self.OperationDetails.setMinimumSize(QSize(0, 100))
         self.OperationDetails.setMaximumSize(QSize(16777215, 300))
-        self.OperationDetails.setFrameShape(QFrame.Panel)
-        self.OperationDetails.setFrameShadow(QFrame.Sunken)
+        self.OperationDetails.setFrameShape(QFrame.Shape.Panel)
+        self.OperationDetails.setFrameShadow(QFrame.Shadow.Sunken)
         self.OperationDetails.setLineWidth(1)
         self.horizontalLayout_4 = QHBoxLayout(self.OperationDetails)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
@@ -250,8 +239,6 @@ class Ui_OperationsWidget(object):
         OperationsWidget.setWindowTitle(QCoreApplication.translate("OperationsWidget", u"Operations & Balances", None))
         self.BalanceBox.setTitle(QCoreApplication.translate("OperationsWidget", u"Balances", None))
         self.BalanceDate.setDisplayFormat(QCoreApplication.translate("OperationsWidget", u"dd/MM/yyyy", None))
-        self.CurrencyLbl.setText(QCoreApplication.translate("OperationsWidget", u"Sum Currency:", None))
-        self.ShowInactiveCheckBox.setText(QCoreApplication.translate("OperationsWidget", u"Show &Inactive", None))
         self.OperationsBox.setTitle(QCoreApplication.translate("OperationsWidget", u"Operations", None))
         self.AccountLbl.setText(QCoreApplication.translate("OperationsWidget", u"Account:", None))
         self.SearchLbl.setText(QCoreApplication.translate("OperationsWidget", u"Search:", None))

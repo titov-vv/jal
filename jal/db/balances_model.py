@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor
 from jal.db.helpers import localize_decimal
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
+from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
 from jal.db.deposit import JalDeposit
@@ -76,7 +77,7 @@ class BalancesModel(ReportTreeModel):
         self._data = []
         self._currency = 0
         self._currency_name = ''
-        self._active_only = True
+        self._active_only = not JalSettings().getValue("ShowInactiveAccountBalances", False)
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
         self.bold_font = QFont()
         self.bold_font.setBold(True)
@@ -172,11 +173,9 @@ class BalancesModel(ReportTreeModel):
             self.prepareData()
 
     @Slot()
-    def toggleActive(self, state):
-        if state == 0:
-            self._active_only = True
-        else:
-            self._active_only = False
+    def showInactiveAccounts(self, state: bool):
+        self._active_only = not state
+        JalSettings().setValue("ShowInactiveAccountBalances", state)
         self.prepareData()
 
     def getAccountId(self, index):

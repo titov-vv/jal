@@ -38,7 +38,7 @@
       </sizepolicy>
      </property>
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <widget class="QGroupBox" name="BalanceBox">
       <property name="sizePolicy">
@@ -57,6 +57,9 @@
        <string>Balances</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -70,7 +73,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QFrame" name="BalanceConfigFrame">
+        <widget class="QFrame" name="BalanceFrameTop">
          <property name="minimumSize">
           <size>
            <width>408</width>
@@ -84,10 +87,10 @@
           </size>
          </property>
          <property name="frameShape">
-          <enum>QFrame::Panel</enum>
+          <enum>QFrame::Shape::Panel</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <property name="lineWidth">
           <number>0</number>
@@ -124,37 +127,14 @@
              <bool>true</bool>
             </property>
             <property name="timeSpec">
-             <enum>Qt::UTC</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="CurrencyLbl">
-            <property name="layoutDirection">
-             <enum>Qt::LeftToRight</enum>
-            </property>
-            <property name="text">
-             <string>Sum Currency:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="CurrencyComboBox" name="BalancesCurrencyCombo"/>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="ShowInactiveCheckBox">
-            <property name="text">
-             <string>Show &amp;Inactive</string>
+             <enum>Qt::TimeSpec::UTC</enum>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_2">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -163,6 +143,9 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item>
+           <widget class="CurrencyComboBox" name="BalancesCurrencyCombo"/>
           </item>
          </layout>
         </widget>
@@ -180,12 +163,15 @@
        </sizepolicy>
       </property>
       <property name="contextMenuPolicy">
-       <enum>Qt::DefaultContextMenu</enum>
+       <enum>Qt::ContextMenuPolicy::DefaultContextMenu</enum>
       </property>
       <property name="title">
        <string>Operations</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -210,10 +196,10 @@
           </size>
          </property>
          <property name="frameShape">
-          <enum>QFrame::Panel</enum>
+          <enum>QFrame::Shape::Panel</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <property name="lineWidth">
           <number>0</number>
@@ -261,7 +247,7 @@
           <item>
            <spacer name="horizontalSpacer">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -277,7 +263,7 @@
        <item>
         <widget class="QSplitter" name="OperationsDetailsSplitter">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <widget class="QTableView" name="OperationsTableView">
           <property name="sizePolicy">
@@ -290,10 +276,10 @@
            <bool>true</bool>
           </property>
           <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
+           <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
           </property>
           <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectRows</enum>
+           <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
           </property>
           <property name="wordWrap">
            <bool>false</bool>
@@ -328,10 +314,10 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Panel</enum>
+           <enum>QFrame::Shape::Panel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::Shadow::Sunken</enum>
           </property>
           <property name="lineWidth">
            <number>1</number>
@@ -416,7 +402,7 @@
               <item>
                <spacer name="verticalSpacer_4">
                 <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+                 <enum>Qt::Orientation::Vertical</enum>
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>

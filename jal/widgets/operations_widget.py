@@ -8,6 +8,7 @@ from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectTagDialog
 from jal.widgets.helpers import ManipulateDate
 from jal.widgets.icons import JalIcon
+from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.balances_model import BalancesModel
@@ -68,7 +69,6 @@ class OperationsWidget(MdiWidget):
         self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTreeView.model().setCurrency)
         self.ui.BalancesTreeView.doubleClicked.connect(self.balance_double_click)
         self.ui.BalancesTreeView.customContextMenuRequested.connect(self.balances_context_menu)
-        self.ui.ShowInactiveCheckBox.stateChanged.connect(self.ui.BalancesTreeView.model().toggleActive)
         self.ui.DateRange.changed.connect(self.operations_model.setDateRange)
         self.ui.ChooseAccountBtn.changed.connect(self.operations_model.setAccount)
         self.ui.SearchString.editingFinished.connect(self.update_operations_filter)
@@ -145,6 +145,12 @@ class OperationsWidget(MdiWidget):
         index = self.ui.BalancesTreeView.indexAt(pos)
         account_id = self.balances_model.data(index, BalancesModel.ACCOUNT_ROLE) if index.isValid() else 0
         contextMenu = QMenu(self.ui.BalancesTreeView)
+        actionToggleInactive = QAction(self.tr("Show inactive"), self)
+        actionToggleInactive.setCheckable(True)
+        actionToggleInactive.setChecked(JalSettings().getValue("ShowInactiveAccountBalances", False))
+        actionToggleInactive.toggled.connect(self.ui.BalancesTreeView.model().showInactiveAccounts)
+        contextMenu.addAction(actionToggleInactive)
+        contextMenu.addSeparator()
         actionBalanceHistory = QAction(JalIcon[JalIcon.CHART], self.tr("Balance history chart"), self)
         actionBalanceHistory.triggered.connect(partial(self.show_balance_history_chart, account_id))
         if account_id:

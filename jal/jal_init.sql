@@ -618,7 +618,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 58);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 59);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
@@ -650,6 +650,7 @@ INSERT INTO settings(name, value) VALUES('DlgGeometry_Quotes', '');
 INSERT INTO settings(name, value) VALUES('DlgViewState_Quotes', '');
 INSERT INTO settings(name, value) VALUES('DlgGeometry_Base currency', '');
 INSERT INTO settings(name, value) VALUES('DlgViewState_Base currency', '');
+INSERT INTO settings(name, value) VALUES('ShowInactiveAccountBalances', 0);
 
 -- Initialize available languages
 INSERT INTO languages (id, language) VALUES (1, 'en');
