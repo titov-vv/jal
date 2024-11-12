@@ -145,11 +145,18 @@ class OperationsWidget(MdiWidget):
         index = self.ui.BalancesTreeView.indexAt(pos)
         account_id = self.balances_model.data(index, BalancesModel.ACCOUNT_ROLE) if index.isValid() else 0
         contextMenu = QMenu(self.ui.BalancesTreeView)
+        # Create a menu item to toggle active/inactive accounts
         actionToggleInactive = QAction(self.tr("Show inactive"), self)
         actionToggleInactive.setCheckable(True)
         actionToggleInactive.setChecked(JalSettings().getValue("ShowInactiveAccountBalances", False))
         actionToggleInactive.toggled.connect(self.ui.BalancesTreeView.model().showInactiveAccounts)
         contextMenu.addAction(actionToggleInactive)
+        # Create a menu item to show account balance with/without credit limit
+        actionUseCreditLimit = QAction(self.tr("Use credit limits"), self)
+        actionUseCreditLimit.setCheckable(True)
+        actionUseCreditLimit.setChecked(JalSettings().getValue("UseAccountCreditLimit", True))
+        actionUseCreditLimit.toggled.connect(self.ui.BalancesTreeView.model().useCreditLimits)
+        contextMenu.addAction(actionUseCreditLimit)
         contextMenu.addSeparator()
         actionBalanceHistory = QAction(JalIcon[JalIcon.CHART], self.tr("Balance history chart"), self)
         actionBalanceHistory.triggered.connect(partial(self.show_balance_history_chart, account_id))

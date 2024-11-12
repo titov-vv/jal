@@ -31,7 +31,7 @@ class JalAccount(JalDB):
                         "INSERT INTO accounts (name, active, investing, number, currency_id, organization_id, "
                         "country_id, precision) "
                         "VALUES(:name, 1, :investing, :number, :currency, :organization, "
-                        "coalesce((SELECT id FROM countries WHERE code=:country), 0), :precision)",
+                        "coalesce((SELECT id FROM countries WHERE code=:country), 0), :precision, 0)",
                         [(":name", data['name']), (":investing", data['investing']), (":number", data['number']),
                          (":currency", data['currency']), (":organization", data['organization']),
                          (":country", data['country']), (":precision", data['precision'])], commit=True)
@@ -48,6 +48,7 @@ class JalAccount(JalDB):
         self._country = JalCountry(self._data['country_id']) if self._data is not None else JalCountry(0)
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
         self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
+        self._credit_limit = Decimal(self._data['credit']) if self._data is not None else Decimal('0')
 
     def invalidate_cache(self):
         self._fetch_data()
@@ -216,6 +217,9 @@ class JalAccount(JalDB):
 
     def precision(self) -> int:
         return self._precision
+
+    def credit_limit(self) -> Decimal:
+        return self._credit_limit
 
     def last_operation_date(self) -> int:
         last_timestamp = self._read("SELECT MAX(o.timestamp) FROM operation_sequence AS o "
@@ -393,8 +397,8 @@ class JalAccount(JalDB):
         else:
             name = similar.name() + '.' + new_currency.symbol()
         query = self._exec(
-            "INSERT INTO accounts (name, currency_id, active, investing, number, organization_id, country_id, precision) "
-            "SELECT :name, :currency, active, investing, number, organization_id, country_id, precision "
+            "INSERT INTO accounts (name, currency_id, active, investing, number, organization_id, country_id, precision, credit) "
+            "SELECT :name, :currency, active, investing, number, organization_id, country_id, precision, credit "
             "FROM accounts WHERE id=:id", [(":id", similar.id()), (":name", name), (":currency", new_currency.id())])
         return query.lastInsertId()
 

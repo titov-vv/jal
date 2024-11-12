@@ -78,6 +78,7 @@ class BalancesModel(ReportTreeModel):
         self._currency = 0
         self._currency_name = ''
         self._active_only = not JalSettings().getValue("ShowInactiveAccountBalances", False)
+        self._use_credit = JalSettings().getValue("UseAccountCreditLimit", True)
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
         self.bold_font = QFont()
         self.bold_font.setBold(True)
@@ -178,6 +179,12 @@ class BalancesModel(ReportTreeModel):
         JalSettings().setValue("ShowInactiveAccountBalances", state)
         self.prepareData()
 
+    @Slot()
+    def useCreditLimits(self, state: bool):
+        self._use_credit = state
+        JalSettings().setValue("UseAccountCreditLimit", state)
+        self.prepareData()
+
     def getAccountId(self, index):
         if not index.isValid():
             return 0
@@ -202,7 +209,7 @@ class BalancesModel(ReportTreeModel):
                     "account_name": account.name(),
                     "currency": account.currency(),
                     "currency_name": JalAsset(account.currency()).symbol(),
-                    "value": value,
+                    "value": value + account.credit_limit() if self._use_credit else value,
                     "value_common": value * rate,
                     "unreconciled": (account.last_operation_date() - account.reconciled_at())/86400,
                     "active": account.is_active(),

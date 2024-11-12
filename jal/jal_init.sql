@@ -8,13 +8,14 @@ CREATE TABLE accounts (
     name            TEXT (64) NOT NULL UNIQUE,                                                                       -- human-readable name of the account
     currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,                  -- accounting currency for the account
     active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,                                              -- 1 = account is active, 0 = inactive (hidden in UI)
-    investing       INTEGER   NOT NULL DEFAULT (0),                                                                  -- 1 if account can hold investment assets, 0 otherwise
+    investing       INTEGER   DEFAULT (0) NOT NULL,                                                                  -- 1 if account can hold investment assets, 0 otherwise
     tag_id          INTEGER   REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,                             -- optional tag of the account
     number          TEXT (32),                                                                                       -- human-readable number of account (as a reference to bank/broker documents)
     reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,                                              -- timestamp of last confirmed operation
     organization_id INTEGER   REFERENCES agents (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (1),   -- Bank/Broker that handles account
     country_id      INTEGER   REFERENCES countries (id) ON DELETE SET DEFAULT ON UPDATE CASCADE DEFAULT (0) NOT NULL,-- Location of the account
-    precision       INTEGER   NOT NULL DEFAULT (2)                                                                   -- number of digits after decimal points that is used by this account
+    precision       INTEGER   DEFAULT (2) NOT NULL,                                                                  -- number of digits after decimal points that is used by this account
+    credit          TEXT      DEFAULT ('0') NOT NULL                                                                 -- credit limit for the account
 );
 ------------------------------------------------------------------------------------------------------------------------
 -- tables to store information about Income/Spending transactions
@@ -651,6 +652,7 @@ INSERT INTO settings(name, value) VALUES('DlgViewState_Quotes', '');
 INSERT INTO settings(name, value) VALUES('DlgGeometry_Base currency', '');
 INSERT INTO settings(name, value) VALUES('DlgViewState_Base currency', '');
 INSERT INTO settings(name, value) VALUES('ShowInactiveAccountBalances', 0);
+INSERT INTO settings(name, value) VALUES('UseAccountCreditLimit', 1);
 
 -- Initialize available languages
 INSERT INTO languages (id, language) VALUES (1, 'en');

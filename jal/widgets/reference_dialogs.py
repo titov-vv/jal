@@ -32,7 +32,8 @@ class AccountListModel(AbstractReferenceListModel):
                          ("reconciled_on", self.tr("Reconciled @")),
                          ("organization_id", self.tr("Bank/Broker")),
                          ("country_id", self.tr("Country")),
-                         ("precision", self.tr("Precision"))]
+                         ("precision", self.tr("Precision")),
+                         ("credit", self.tr("Credit limit"))]
         self._sort_by = "name"
         self._group_by = "tag_id"
         self._hidden = ["id"]
@@ -42,7 +43,8 @@ class AccountListModel(AbstractReferenceListModel):
         self._timestamp_delegate = None
         self._bool_delegate = None
         self._tag_delegate = None
-        self._default_values = {'active': 1, 'reconciled_on': 0, 'country_id': 0, 'precision': 2}
+        self._float_delegate = None
+        self._default_values = {'active': 1, 'reconciled_on': 0, 'country_id': 0, 'precision': 2, 'credit': '0'}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
 
@@ -72,6 +74,8 @@ class AccountListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("investing"), self._bool_delegate)
         self._tag_delegate = TagSelectorDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("tag_id"), self._tag_delegate)
+        self._float_delegate = FloatDelegate(2, parent=self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("credit"), self._float_delegate)
 
     def removeElement(self, index) -> bool:
         reply = QMessageBox().warning(None, self.tr("Warning"), self.tr("All transactions related with this account will be deleted.\n"
