@@ -10,7 +10,7 @@
     {"name": "Description", "width": 50},
     {"name": "Payment date", "width": 10},
     {"name": "EUR/{parameters[currency]} rate for payment date", "width": 10},
-    {"name": "СAmount, {parameters[currency]}", "width": 10},
+    {"name": "Amount, {parameters[currency]}", "width": 10},
     {"name": "Amount, EUR", "width": 10}
   ],
   "columns_numbered": true,
