@@ -108,7 +108,8 @@ class QuoteDownloader(QObject):
             self.download_asset_prices(start_timestamp, end_timestamp, sources_list)
         except KeyboardInterrupt:
             logging.warning(self.tr("Interrupted by user"))
-        self.show_progress.emit(False)
+        finally:
+            self.show_progress.emit(False)
         if not self._cancelled:
             logging.info(self.tr("Download completed"))
 
@@ -173,7 +174,7 @@ class QuoteDownloader(QObject):
                 if from_timestamp <= end_timestamp:
                     data = data_loaders[asset.quote_source(currency)](asset, currency, from_timestamp, end_timestamp)
                     self._store_quotations(asset, currency, data)
-            except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
+            except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError, json.decoder.JSONDecodeError):
                 logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.symbol()}")
                 continue
             self.update_progress.emit(100.0 * i / len(assets))
