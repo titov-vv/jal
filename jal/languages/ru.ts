@@ -87,22 +87,22 @@
 <context>
     <name>AccountListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="87"/>
+        <location filename="../widgets/reference_dialogs.py" line="91"/>
         <source>Accounts</source>
         <translation>Счета</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="100"/>
+        <location filename="../widgets/reference_dialogs.py" line="104"/>
         <source>Show inactive</source>
         <translation>Показывать неактивные</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="103"/>
+        <location filename="../widgets/reference_dialogs.py" line="107"/>
         <source>Account tag:</source>
         <translation>Метка счёта:</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="107"/>
+        <location filename="../widgets/reference_dialogs.py" line="111"/>
         <source>All tags</source>
         <translation>Все метки</translation>
     </message>
@@ -155,12 +155,17 @@
         <translation>Точность</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="77"/>
+        <location filename="../widgets/reference_dialogs.py" line="36"/>
+        <source>Credit limit</source>
+        <translation>Кредитный лимит</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="81"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="78"/>
+        <location filename="../widgets/reference_dialogs.py" line="82"/>
         <source>All transactions related with this account will be deleted.
 Do you want to delete the account anyway?</source>
         <translation>Все транзакции связанные с этим счётом будут удалены.
@@ -243,12 +248,12 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="173"/>
+        <location filename="../widgets/reference_dialogs.py" line="177"/>
         <source>Assets</source>
         <translation>Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="190"/>
+        <location filename="../widgets/reference_dialogs.py" line="194"/>
         <source>Asset type:</source>
         <translation>Тип ЦБ:</translation>
     </message>
@@ -256,50 +261,50 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="130"/>
+        <location filename="../widgets/reference_dialogs.py" line="134"/>
         <source>Symbol</source>
         <translation>Символ</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="131"/>
+        <location filename="../widgets/reference_dialogs.py" line="135"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="132"/>
+        <location filename="../widgets/reference_dialogs.py" line="136"/>
         <source>ISIN</source>
         <translation>ISIN</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="133"/>
+        <location filename="../widgets/reference_dialogs.py" line="137"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="134"/>
+        <location filename="../widgets/reference_dialogs.py" line="138"/>
         <source>Country</source>
         <translation>Страна</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="135"/>
+        <location filename="../widgets/reference_dialogs.py" line="139"/>
         <source>Data source</source>
         <translation>Ист.котировок</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="157"/>
-        <location filename="../widgets/reference_dialogs.py" line="162"/>
+        <location filename="../widgets/reference_dialogs.py" line="161"/>
+        <location filename="../widgets/reference_dialogs.py" line="166"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="159"/>
+        <location filename="../widgets/reference_dialogs.py" line="163"/>
         <source>You can&apos;t delete currency that is used by account:
 </source>
         <translation>Вы не можете удалить валюту, которая используется для счёта:
 </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="164"/>
+        <location filename="../widgets/reference_dialogs.py" line="168"/>
         <source>All transactions related with this asset will be deleted.
 Do you want to delete the asset anyway?</source>
         <translation>Все транзакции связанные с данной ценной бумагой будут удалены.
@@ -666,37 +671,42 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="88"/>
+        <location filename="../db/balances_model.py" line="89"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="89"/>
+        <location filename="../db/balances_model.py" line="90"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="90"/>
+        <location filename="../db/balances_model.py" line="91"/>
         <source> </source>
         <translation> </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="91"/>
+        <location filename="../db/balances_model.py" line="92"/>
         <source>Balance, </source>
         <translation>Баланс, </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="124"/>
+        <location filename="../db/balances_model.py" line="119"/>
+        <source>Credit limit: </source>
+        <translation>Кредитный лимит: </translation>
+    </message>
+    <message>
+        <location filename="../db/balances_model.py" line="130"/>
         <source>Total:</source>
         <translation>Итого:</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="199"/>
+        <location filename="../db/balances_model.py" line="211"/>
         <source>Without tag</source>
         <translation>Без метки</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="214"/>
+        <location filename="../db/balances_model.py" line="227"/>
         <source>Term deposits</source>
         <translation>Срочные вклады</translation>
     </message>
@@ -704,7 +714,7 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>BaseCurrencyDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="543"/>
+        <location filename="../widgets/reference_dialogs.py" line="547"/>
         <source>Base currency</source>
         <translation>Базовая валюта</translation>
     </message>
@@ -712,12 +722,12 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>BaseCurrencyListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="520"/>
+        <location filename="../widgets/reference_dialogs.py" line="524"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="521"/>
+        <location filename="../widgets/reference_dialogs.py" line="525"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
@@ -725,37 +735,37 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>CategoryListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="351"/>
+        <location filename="../widgets/reference_dialogs.py" line="355"/>
         <source>Show operations with Category</source>
         <translation>Показать операции с Категорией</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="352"/>
+        <location filename="../widgets/reference_dialogs.py" line="356"/>
         <source>Replace with...</source>
         <translation>Заменить на...</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="342"/>
+        <location filename="../widgets/reference_dialogs.py" line="346"/>
         <source>Categories</source>
         <translation>Категории</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="383"/>
+        <location filename="../widgets/reference_dialogs.py" line="387"/>
         <source>Replace category &apos;</source>
         <translation>Заменить категорию &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="383"/>
+        <location filename="../widgets/reference_dialogs.py" line="387"/>
         <source>&apos; with: </source>
         <translation>&apos; на: </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="387"/>
+        <location filename="../widgets/reference_dialogs.py" line="391"/>
         <source>Category &apos;</source>
         <translation>Категория &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="387"/>
+        <location filename="../widgets/reference_dialogs.py" line="391"/>
         <source>&apos; was successfully replaced</source>
         <translation>&apos; заменена успешно</translation>
     </message>
@@ -802,28 +812,28 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>CategoryTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="313"/>
+        <location filename="../widgets/reference_dialogs.py" line="317"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="315"/>
+        <location filename="../widgets/reference_dialogs.py" line="319"/>
         <source>New category</source>
         <translation>Новая категория</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="328"/>
-        <location filename="../widgets/reference_dialogs.py" line="331"/>
+        <location filename="../widgets/reference_dialogs.py" line="332"/>
+        <location filename="../widgets/reference_dialogs.py" line="335"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="328"/>
+        <location filename="../widgets/reference_dialogs.py" line="332"/>
         <source>You can&apos;t delete a predefined category.</source>
         <translation>Нельзя удалить предопределённую категорию.</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="333"/>
+        <location filename="../widgets/reference_dialogs.py" line="337"/>
         <source>Category or one of its subcategories are in use.
 All related transactions will be deleted together with the category.
 Do you want to delete the category anyway?</source>
@@ -2475,12 +2485,12 @@ do you want to save it?</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="336"/>
+        <location filename="../net/downloader.py" line="337"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="396"/>
+        <location filename="../net/downloader.py" line="397"/>
         <source>Multiple MOEX assets found for: </source>
         <translation>Найдено несколько ЦБ на MOEX для: </translation>
     </message>
@@ -2760,27 +2770,32 @@ Application will be terminated now.</source>
         <translation>Вы уверены что хотите удалить выбранную транзакцию(-ии),</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="148"/>
+        <location filename="../widgets/operations_widget.py" line="149"/>
         <source>Show inactive</source>
-        <translation type="unfinished">Показывать неактивные</translation>
+        <translation>Показывать неактивные</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="154"/>
+        <location filename="../widgets/operations_widget.py" line="155"/>
+        <source>Use credit limits</source>
+        <translation>Использовать кредитные лимиты</translation>
+    </message>
+    <message>
+        <location filename="../widgets/operations_widget.py" line="161"/>
         <source>Balance history chart</source>
         <translation>График истории баланса</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="162"/>
+        <location filename="../widgets/operations_widget.py" line="169"/>
         <source>Expand all</source>
         <translation>Развернуть все</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="165"/>
+        <location filename="../widgets/operations_widget.py" line="172"/>
         <source>Collapse all</source>
         <translation>Свернуть все</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="186"/>
+        <location filename="../widgets/operations_widget.py" line="193"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation>Выберите метку для присвоения выбранным операциям:</translation>
     </message>
@@ -2864,42 +2879,42 @@ Application will be terminated now.</source>
 <context>
     <name>PeerListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="266"/>
+        <location filename="../widgets/reference_dialogs.py" line="270"/>
         <source>Show operations with Peer</source>
         <translation>Показать операции с Контрагентом</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="267"/>
+        <location filename="../widgets/reference_dialogs.py" line="271"/>
         <source>Replace with...</source>
         <translation>Заменить на...</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="257"/>
+        <location filename="../widgets/reference_dialogs.py" line="261"/>
         <source>Peers</source>
         <translation>Контрагенты</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="297"/>
+        <location filename="../widgets/reference_dialogs.py" line="301"/>
         <source>Replace peer &apos;</source>
         <translation>Заменить контрагента &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="297"/>
+        <location filename="../widgets/reference_dialogs.py" line="301"/>
         <source>&apos; with: </source>
         <translation>&apos; на: </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="300"/>
+        <location filename="../widgets/reference_dialogs.py" line="304"/>
         <source>Keep old name in notes?</source>
         <translation>Сохранить старое название в примечании?</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="305"/>
+        <location filename="../widgets/reference_dialogs.py" line="309"/>
         <source>Peer &apos;</source>
         <translation>Контрагент &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="305"/>
+        <location filename="../widgets/reference_dialogs.py" line="309"/>
         <source>&apos; was successfully replaced</source>
         <translation>&apos; заменена успешно</translation>
     </message>
@@ -2946,38 +2961,38 @@ Application will be terminated now.</source>
 <context>
     <name>PeerTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="212"/>
+        <location filename="../widgets/reference_dialogs.py" line="216"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="213"/>
+        <location filename="../widgets/reference_dialogs.py" line="217"/>
         <source>Location</source>
         <translation>Адрес</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="214"/>
+        <location filename="../widgets/reference_dialogs.py" line="218"/>
         <source>Docs count</source>
         <translation>Кол-во док.</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="216"/>
+        <location filename="../widgets/reference_dialogs.py" line="220"/>
         <source>New peer</source>
         <translation>Новый контрагент</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="243"/>
-        <location filename="../widgets/reference_dialogs.py" line="246"/>
+        <location filename="../widgets/reference_dialogs.py" line="247"/>
+        <location filename="../widgets/reference_dialogs.py" line="250"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="243"/>
+        <location filename="../widgets/reference_dialogs.py" line="247"/>
         <source>You can&apos;t delete a predefined peer.</source>
         <translation>Вы не можете удалить предопределённого контрагента </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="248"/>
+        <location filename="../widgets/reference_dialogs.py" line="252"/>
         <source>Peer or one of its child peers are in use.
 All related transactions will be deleted together with the peer.
 Do you want to delete the peer anyway?</source>
@@ -3447,87 +3462,87 @@ Do you want to delete the peer anyway?</source>
         <translation>Прервано пользователем</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="113"/>
+        <location filename="../net/downloader.py" line="114"/>
         <source>Download completed</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="141"/>
+        <location filename="../net/downloader.py" line="142"/>
         <source>Loading currency rates for </source>
         <translation>Загрузка курса валюты для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="151"/>
+        <location filename="../net/downloader.py" line="152"/>
         <source>No rates were downloaded for </source>
         <translation>Не загружены курсы для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="169"/>
+        <location filename="../net/downloader.py" line="170"/>
         <source>Loading assets prices</source>
         <translation>Загрузка котировок</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="177"/>
+        <location filename="../net/downloader.py" line="178"/>
         <source>No quotes were downloaded for </source>
         <translation>Не загружены котировки для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="205"/>
+        <location filename="../net/downloader.py" line="206"/>
         <source>There are no CBR data for: </source>
         <translation>Нет данных ЦБ РФ для: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="462"/>
+        <location filename="../net/downloader.py" line="463"/>
         <source>Yahoo returned and error: </source>
         <translation>Сервер Yahoo вернул ошибку: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="465"/>
+        <location filename="../net/downloader.py" line="466"/>
         <source>Yahoo returned more then one result: </source>
         <translation>Сервер Yahoo вернул больше чем один результат: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="504"/>
+        <location filename="../net/downloader.py" line="505"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="507"/>
+        <location filename="../net/downloader.py" line="508"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="510"/>
+        <location filename="../net/downloader.py" line="511"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="554"/>
+        <location filename="../net/downloader.py" line="555"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="584"/>
+        <location filename="../net/downloader.py" line="585"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation>Не обнаружен пакет pypdf, необходимый для чтения PDF файлов.</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="595"/>
+        <location filename="../net/downloader.py" line="596"/>
         <source>Can&apos;t parse server response as pdf: </source>
         <translation>Невозможно прочитать полученные от сервера данные как pdf: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="598"/>
+        <location filename="../net/downloader.py" line="599"/>
         <source>Unexpected number of pages in Victoria Seguros document: </source>
         <translation>Неожиданное количество страниц в документе Victoria Seguros: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="626"/>
+        <location filename="../net/downloader.py" line="627"/>
         <source>Can&apos;t parse date from Victoria Seguros file</source>
         <translation>Невозможно получить дату из файла Victoria Seguros</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="572"/>
+        <location filename="../net/downloader.py" line="573"/>
         <source>Can&apos;t find quote for Victoria Seguros fund: </source>
         <translation>Не удалось найти котировку для фонда Victoria Seguros: </translation>
     </message>
@@ -3535,7 +3550,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QuotesListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="501"/>
+        <location filename="../widgets/reference_dialogs.py" line="505"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
@@ -3543,22 +3558,22 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>QuotesListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="469"/>
+        <location filename="../widgets/reference_dialogs.py" line="473"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="470"/>
+        <location filename="../widgets/reference_dialogs.py" line="474"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="471"/>
+        <location filename="../widgets/reference_dialogs.py" line="475"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="472"/>
+        <location filename="../widgets/reference_dialogs.py" line="476"/>
         <source>Quote</source>
         <translation>Котировка</translation>
     </message>
@@ -5391,17 +5406,17 @@ Please select an account for import:</source>
 <context>
     <name>TagTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="394"/>
+        <location filename="../widgets/reference_dialogs.py" line="398"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="394"/>
+        <location filename="../widgets/reference_dialogs.py" line="398"/>
         <source>Icon filename</source>
         <translation>Файл иконки</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="396"/>
+        <location filename="../widgets/reference_dialogs.py" line="400"/>
         <source>New tag</source>
         <translation>Новая метка</translation>
     </message>
@@ -5409,37 +5424,37 @@ Please select an account for import:</source>
 <context>
     <name>TagsListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="424"/>
+        <location filename="../widgets/reference_dialogs.py" line="428"/>
         <source>Show operations with Tag</source>
         <translation>Показать операции с Меткой</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="425"/>
+        <location filename="../widgets/reference_dialogs.py" line="429"/>
         <source>Replace with...</source>
         <translation>Заменить на...</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="415"/>
+        <location filename="../widgets/reference_dialogs.py" line="419"/>
         <source>Tags</source>
         <translation>Тэги</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="456"/>
+        <location filename="../widgets/reference_dialogs.py" line="460"/>
         <source>Replace tag &apos;</source>
         <translation>Заменить метку &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="456"/>
+        <location filename="../widgets/reference_dialogs.py" line="460"/>
         <source>&apos; with: </source>
         <translation>&apos; на: </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="460"/>
+        <location filename="../widgets/reference_dialogs.py" line="464"/>
         <source>Tag &apos;</source>
         <translation>Метка &apos;</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="460"/>
+        <location filename="../widgets/reference_dialogs.py" line="464"/>
         <source>&apos; was successfully replaced</source>
         <translation>&apos; заменена успешно</translation>
     </message>
