@@ -112,8 +112,11 @@ class BalancesModel(ReportTreeModel):
                 return self.data_background(item.details().get('unreconciled', 0), self._view.isEnabled())
             if role == Qt.DecorationRole and item.isGroup() and index.column() == self.fieldIndex('account_name'):
                 return JalIcon[item.details().get('icon_id', JalIcon.NONE)]
-            if role == Qt.DecorationRole and self._use_credit and index.column() == self.fieldIndex('value') and item.details()['credit_limit']:
-                return JalIcon[JalIcon.WITH_CREDIT]
+            if self._use_credit and index.column() == self.fieldIndex('value') and item.details()['credit_limit']:
+                if role == Qt.DecorationRole:
+                    return JalIcon[JalIcon.WITH_CREDIT]
+                if role == Qt.ToolTipRole:
+                    return self.tr("Credit limit: ") + localize_decimal(item.details()['credit_limit']) + " " + item.details()['currency_name']
             if role == self.ACCOUNT_ROLE:
                 return item.details().get('account', 0)
             return None
