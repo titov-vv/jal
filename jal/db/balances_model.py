@@ -22,7 +22,7 @@ class AccountTreeItem(AbstractTreeItem):
         if data is None:
             self._data = {
                 "account_tag": '', "icon_id": JalIcon.NONE, "account": 0, "account_name": '', "currency": 0, "currency_name": '',
-                "value": Decimal('0'), "value_common": Decimal('0'), "reconciled": 0, "active": 1, "font": "bold"
+                "value": Decimal('0'), "value_common": Decimal('0'), "credit_limit": Decimal('0'), "reconciled": 0, "active": 1, "font": "bold"
             }
         else:
             self._data = data.copy()
@@ -112,6 +112,8 @@ class BalancesModel(ReportTreeModel):
                 return self.data_background(item.details().get('unreconciled', 0), self._view.isEnabled())
             if role == Qt.DecorationRole and item.isGroup() and index.column() == self.fieldIndex('account_name'):
                 return JalIcon[item.details().get('icon_id', JalIcon.NONE)]
+            if role == Qt.DecorationRole and self._use_credit and index.column() == self.fieldIndex('value') and item.details()['credit_limit']:
+                return JalIcon[JalIcon.WITH_CREDIT]
             if role == self.ACCOUNT_ROLE:
                 return item.details().get('account', 0)
             return None
@@ -211,6 +213,7 @@ class BalancesModel(ReportTreeModel):
                     "currency_name": JalAsset(account.currency()).symbol(),
                     "value": value + account.credit_limit() if self._use_credit else value,
                     "value_common": value * rate,
+                    "credit_limit": account.credit_limit(),
                     "unreconciled": (account.last_operation_date() - account.reconciled_at())/86400,
                     "active": account.is_active(),
                     "font": 'normal' if account.is_active() else 'italic'
@@ -226,6 +229,7 @@ class BalancesModel(ReportTreeModel):
                 "currency_name": deposit.currency().symbol(),
                 "value": deposit.balance(self._date),
                 "value_common": deposit.balance(self._date) * rate,
+                "credit_limit": Decimal('0'),
                 "unreconciled": 0,
                 "active": 1,
                 "font": 'normal'
