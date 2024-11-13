@@ -10,7 +10,9 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 
 ## ⭐️ Features
 ### Multiple Accounts Management
-- Support for various currencies with user-selected base currency totals.
+- Accounting with various currencies for different accounts.
+- User-selected base currency totals.
+- Account balance indication with or without credit limit.
 ### Transaction Types
 - Generic income/spending with multi-category split.
 - Asset and money transfers, including currency conversion.
