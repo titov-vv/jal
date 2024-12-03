@@ -1,4 +1,5 @@
 import logging
+import math
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
@@ -163,8 +164,18 @@ class JalAsset(JalDB):
 
     # Return a list of tuples (timestamp:int, quote:Decimal) of all quotes available for asset
     # for time interval begin-end
-    def quotes(self, begin: int, end: int, currency_id: int) -> list:
+    # If adjust_splits is True then quotes will be corrected for each split
+    def quotes(self, begin: int, end: int, currency_id: int, adjust_splits=False) -> list:
         quotes = []
+        splits = {}  # Dictionary of timestamp:coefficient for splits
+        if adjust_splits:  # Get all splits recorded for the asset and create and fill the dictionary
+            query = self._exec("SELECT a.timestamp, a.qty AS x, r.qty AS y "
+                               "FROM asset_actions AS a LEFT JOIN action_results AS r ON a.oid=r.action_id "
+                               "WHERE a.asset_id=:asset_id AND a.type=:split ORDER BY a.timestamp",
+                               [(":asset_id", self._id), (":split", 4)])  #FIXME 4->CorporateAction.Split
+            while query.next():
+                timestamp, x, y = self._read_record(query, cast=[int, Decimal, Decimal])
+                splits[timestamp] = x / y
         query = self._exec(
             "SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
             "AND currency_id=:currency_id AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
@@ -172,6 +183,7 @@ class JalAsset(JalDB):
         while query.next():
             timestamp, quote = self._read_record(query, cast=[int, Decimal])
             quotes.append((timestamp, quote))
+        quotes = [(t_q, q * math.prod([splits[t_s] for t_s in splits if t_s >= t_q])) for t_q, q in quotes]
         return quotes
 
     # Returns tuple (begin_timestamp: int, end_timestamp: int) that defines timestamp range for which quotations are

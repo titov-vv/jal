@@ -120,7 +120,7 @@ class ChartWindow(MdiWidget):
                 text = operation.name() + "\n" + operation.description().split('\n')[0]
             trades.append({
                 'timestamp': operation.timestamp() * 1000,  # timestamp to ms
-                'price': trade.open_price(),
+                'price': trade.open_price(adjusted=True),
                 'qty': trade.open_qty(),
                 'color': marker_color,
                 'text': text
@@ -133,7 +133,7 @@ class ChartWindow(MdiWidget):
         self.currency_name = JalAsset(account.currency()).symbol()
         self.trades = self.load_open_trades(account, asset, end_time)
         start_time = 0 if not self.trades else min([x['timestamp'] for x in self.trades])/1000 - 2592000  # Shift back by 30 days
-        quotes = asset.quotes(start_time, end_time, self.currency_id)
+        quotes = asset.quotes(start_time, end_time, self.currency_id, adjust_splits=True)
         for quote in quotes:
             self.quotes.append({'timestamp': quote[0] * 1000, 'quote': quote[1]})  # timestamp to ms
         if self.quotes or self.trades:
