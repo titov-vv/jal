@@ -5,7 +5,7 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
 from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset
 from jal.db.db import JalDB
-from jal.db.helpers import format_decimal, year_begin, year_end
+from jal.db.helpers import format_decimal, year_begin, year_end, day_begin
 from jal.db.country import JalCountry
 from jal.db.tag import JalTag
 from jal.widgets.helpers import ts2d
@@ -183,7 +183,7 @@ class JalAsset(JalDB):
         while query.next():
             timestamp, quote = self._read_record(query, cast=[int, Decimal])
             quotes.append((timestamp, quote))
-        quotes = [(t_q, q * math.prod([splits[t_s] for t_s in splits if t_s >= t_q])) for t_q, q in quotes]
+        quotes = [(t_q, q * math.prod([splits[t_s] for t_s in splits if day_begin(t_s) > t_q])) for t_q, q in quotes]
         return quotes
 
     # Returns tuple (begin_timestamp: int, end_timestamp: int) that defines timestamp range for which quotations are

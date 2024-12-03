@@ -89,6 +89,11 @@ def year_end(timestamp: int) -> int:
 def now_ts() -> int:
     return int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
 
+# Returns timestamp of the first second of the day of given timestamp
+def day_begin(timestamp: int) -> int:
+    begin = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(hour=0, minute=0, second=0)
+    return int(begin.replace(tzinfo=timezone.utc).timestamp())
+
 # Returns timestamp of the last second of the day of given timestamp
 def day_end(timestamp: int) -> int:
     end = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(hour=23, minute=59, second=59)
