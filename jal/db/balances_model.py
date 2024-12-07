@@ -200,6 +200,7 @@ class BalancesModel(ReportTreeModel):
 
     # Populate table balances with data calculated for given parameters of model: _currency, _date, _active_only
     def prepareData(self):
+        self.beginResetModel()
         self.setGrouping("account_tag")
         balances = []
         accounts = JalAccount.get_all_accounts(active_only=self._active_only)
@@ -244,4 +245,5 @@ class BalancesModel(ReportTreeModel):
             new_item = AccountTreeItem(position)
             leaf = self._root.getGroupLeaf(self._groups, new_item)
             leaf.appendChild(new_item)
+        self.endResetModel()
         super().prepareData()

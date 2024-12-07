@@ -343,6 +343,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
     def prepareData(self):
         if not self._currency:
             return
+        self.beginResetModel()
         root_category = JalCategory(0)
         if self._periodicity == MONTHLY:
             self._period_list = month_list(self._begin, self._end)
@@ -354,7 +355,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
         self._root.appendChild(ReportTreeItem(self._begin, self._end, 0, self.tr("TOTAL"), periods=self._periodicity))  # visible root
         self._load_child_amounts(root_category)
         self._root.removeEmptyChildren()
-        self.modelReset.emit()
+        self.endResetModel()
         self._view.expandAll()
 
     def _load_child_amounts(self, parent_category: JalCategory):

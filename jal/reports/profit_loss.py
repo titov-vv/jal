@@ -93,10 +93,11 @@ class ProfitLossModel(QAbstractTableModel):
         return data
 
     def prepareData(self):
+        self.beginResetModel()
         self._data = []
         money_p = assets_p = money_0 = assets_0 = None
         if not self._month_list:
-            self.modelReset.emit()
+            self.endResetModel()
             return
         account = JalAccount(self._account_id)
         # Prepend table with initial row and extend it with totals row
@@ -126,7 +127,7 @@ class ProfitLossModel(QAbstractTableModel):
             self._data.append(data_row)
             money_p = values['money']
             assets_p = values['assets']
-        self.modelReset.emit()
+        self.endResetModel()
 
     def configureView(self):
         self._view.setModel(self)

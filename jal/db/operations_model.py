@@ -146,9 +146,10 @@ class OperationsModel(QAbstractTableModel):
         self._view.setCurrentIndex(idx)
 
     def prepareData(self):
+        self.beginResetModel()
         self._data = []
         self._data = Ledger.get_operations_sequence(self._begin, self._end, self._account)
-        self.modelReset.emit()
+        self.endResetModel()
 
     def delete_rows(self, rows):
         for row in rows:

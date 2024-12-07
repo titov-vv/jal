@@ -176,6 +176,7 @@ class ClosedTradesModel(ReportTreeModel):
             self.prepareData()
 
     def prepareData(self):
+        self.beginResetModel()
         self._trades = JalAccount(self._account_id).closed_trades_list()
         self._trades = [x for x in self._trades if self._begin <= x.close_operation().timestamp() <= self._end]
         self._root = TradeTreeItem()
@@ -183,6 +184,7 @@ class ClosedTradesModel(ReportTreeModel):
             new_item = TradeTreeItem(trade)
             leaf = self._root.getGroupLeaf(self._groups, new_item)
             leaf.appendChild(new_item)
+        self.endResetModel()
         super().prepareData()
 
     def configureView(self):

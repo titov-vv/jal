@@ -91,11 +91,12 @@ class DepositsListModel(QAbstractTableModel):
             self.configureView()
 
     def prepareData(self):
+        self.beginResetModel()
         self._data = JalDeposit.get_term_deposits(self._timestamp)
         self._initial_total = sum([x.open_amount() for x in self._data])
         self._accrued_total = sum([x.accrued_interest(self._timestamp) for x in self._data])
         self._planned_total = sum([x.close_amount() for x in self._data])
-        self.modelReset.emit()
+        self.endResetModel()
 
     def configureView(self):
         font = self._view.horizontalHeader().font()

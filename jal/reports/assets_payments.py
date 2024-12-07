@@ -98,11 +98,12 @@ class AssetsPaymentsModel(QAbstractTableModel):
             self.configureView()
 
     def prepareData(self):
+        self.beginResetModel()
         dividends = AssetPayment.get_list(self._account_id)
         self._data = [x for x in dividends if self._begin <= x.timestamp() <= self._end]
         self._total = sum([x.amount() for x in self._data])
         self._total_tax = sum([x.tax() for x in self._data])
-        self.modelReset.emit()
+        self.endResetModel()
 
     def configureView(self):
         font = self._view.horizontalHeader().font()

@@ -228,6 +228,7 @@ class HoldingsModel(ReportTreeModel):
 
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def prepareData(self):
+        self.beginResetModel()
         holdings = []
         accounts = JalAccount.get_all_accounts(investing_only=True, active_only=self._only_active_accounts)
         for account in accounts:
@@ -313,4 +314,5 @@ class HoldingsModel(ReportTreeModel):
             new_item = AssetTreeItem(position)
             leaf = self._root.getGroupLeaf(self._groups, new_item)
             leaf.appendChild(new_item)
+        self.endResetModel()
         super().prepareData()

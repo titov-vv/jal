@@ -153,7 +153,6 @@ class ReportTreeModel(QAbstractItemModel):
         return True
 
     def prepareData(self):
-        self.modelReset.emit()
         if not self._view_configured:
             self.configureView()
         self._view.expandAll()

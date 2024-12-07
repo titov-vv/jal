@@ -134,6 +134,7 @@ class ReportOperationsModel(QAbstractTableModel):
     # self._data array should be populated by child classes.
     # Then they call this method to calculate total value.
     def prepareData(self):
+        self.beginResetModel()
         self._total = Decimal('0')
         for line in self._data:
             account_currency = JalAccount(line['account_id']).currency()
@@ -142,4 +143,4 @@ class ReportOperationsModel(QAbstractTableModel):
                 self._total += amount
             else:
                 self._total += amount * JalAsset(account_currency).quote(line['timestamp'], self._total_currency)[1]
-        self.modelReset.emit()
+        self.endResetModel()
