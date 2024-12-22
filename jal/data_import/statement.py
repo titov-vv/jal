@@ -117,7 +117,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         'SBF': MarketDataFeed.EU,
         'AMEX': MarketDataFeed.US,
         'MOEX': MarketDataFeed.RU,
-        'COIN': MarketDataFeed.COIN
+        'COIN': MarketDataFeed.COIN,
+        'BVME': MarketDataFeed.MILAN,
+        'BVME.ETF': MarketDataFeed.MILAN
     }
     
     def __init__(self):
