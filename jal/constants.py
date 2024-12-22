@@ -193,14 +193,15 @@ class AssetData:
 class MarketDataFeed(PredefinedList, QObject):
     NA = -1
     FX = 0
-    RU = 1
+    RU = 1  # MOEX
     US = 2
     EU = 3
     CA = 4
     GB = 5
-    FRA = 6
+    FRA = 6  # Frankfurt Borse
     SMA_VICTORIA = 7
     COIN = 8
+    MILAN = 9  # Borsa Italiana, Milan Stock Exchange
 
     def __init__(self):
         super().__init__()
@@ -214,7 +215,8 @@ class MarketDataFeed(PredefinedList, QObject):
             self.GB: self.tr("LSE"),
             self.FRA: self.tr("Frankfurt Borse"),
             self.SMA_VICTORIA: self.tr("Victoria Seguros"),
-            self.COIN: self.tr("Coinbase")
+            self.COIN: self.tr("Coinbase"),
+            self.MILAN: self.tr("Borsa Italiana")
         }
 
 

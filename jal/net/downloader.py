@@ -163,7 +163,8 @@ class QuoteDownloader(QObject):
             MarketDataFeed.GB: self.YahooLSE_Downloader,
             MarketDataFeed.FRA: self.YahooFRA_Downloader,
             MarketDataFeed.SMA_VICTORIA: self.Victoria_Downloader,
-            MarketDataFeed.COIN: self.Coinbase_Downloader
+            MarketDataFeed.COIN: self.Coinbase_Downloader,
+            MarketDataFeed.MILAN: self.EuronextMilan_DataReader
         }
         assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)
         assets = [(x['asset'], x['currency']) for x in assets if x['asset'].quote_source(x['currency']) in sources_list]
@@ -523,6 +524,39 @@ class QuoteDownloader(QObject):
         data['Close'] = data['Close'].apply(Decimal)
         data = data.drop(columns=['Open', 'High', 'Low', 'Last', 'Number of Shares', 'Number of Trades', 'Turnover', 'vwap'],
                          errors='ignore')  # Ignore errors as some columns might be missing
+        close = data.set_index("Date")
+        close.sort_index(inplace=True)
+        return close
+
+    # noinspection PyMethodMayBeStatic
+    def EuronextMilan_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
+        suffix = "ETF" if asset.type() == PredefinedAsset.ETF else "MTA"
+        url = "https://charts.borsaitaliana.it/charts/services/ChartWService.asmx/GetPricesWithVolume"
+        params = {
+            "request": {
+                "SampleTime":"1d",
+                "TimeFrame":None,
+                "RequestedDataSetType":"ohlc",
+                "ChartPriceType":"price",
+                "Key": asset.symbol() + "." + suffix,
+                "OffSet":0,
+                "FromDate":start_timestamp,
+                "ToDate":end_timestamp,
+                "UseDelay":False,
+                "KeyType":"Topic",
+                "KeyType2":"Topic",
+                "Language":"en-US"
+            }
+        }
+        self._request = WebRequest(WebRequest.POST_JSON, url, params=params, headers={'Accept': 'text/csv'})
+        self._wait_for_event()
+        json_content = json.loads(self._request.data())
+        if 'd' not in json_content:
+            return None
+        data = pd.DataFrame(json_content['d'], columns=["Date", "Unk", "O", "H", "L", "Close", "V"])
+        data = data.drop(columns=["Unk", "O", "H", "L", "V"], errors='ignore')
+        data['Date'] = pd.to_datetime(data['Date'], unit='ms', utc=True)
+        data['Close'] = data['Close'].astype('str').apply(Decimal)
         close = data.set_index("Date")
         close.sort_index(inplace=True)
         return close

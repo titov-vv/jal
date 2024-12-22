@@ -242,6 +242,16 @@ def test_Euronext_downloader(prepare_db):
     quotes_downloaded = downloader.Euronext_DataReader(JalAsset(4), 3, d2t(230412), d2t(230414))
     assert_frame_equal(quotes, quotes_downloaded)
 
+def test_EuronextMilan_DataReader(prepare_db):
+    create_assets([('MINT', 'Pimco Us Dollar Short Maturity Ucits Etf', 'IE00B67B7N93', 3, PredefinedAsset.ETF, 0)])   # ID = 4
+    quotes = pd.DataFrame({'Close': [Decimal('95.20'), Decimal('95.02'), Decimal('94.80')],
+                           'Date': [d2dt(241203), d2dt(241204), d2dt(241205)]})
+    quotes = quotes.set_index('Date')
+
+    downloader = QuoteDownloader()
+    quotes_downloaded = downloader.EuronextMilan_DataReader(JalAsset(4), 3, d2t(241203), d2t(241205))
+    assert_frame_equal(quotes, quotes_downloaded)
+
 
 def test_TMX_downloader(prepare_db):
     create_stocks([('RY', '')], currency_id=3)   # id = 4
