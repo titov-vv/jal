@@ -132,7 +132,7 @@ class IBKR_Account:
 # -----------------------------------------------------------------------------------------------------------------------
 # Class for Loading Interactive Brokers XML Flex report
 class StatementIBKR(StatementXML):
-    statements_path = '/*/FlexStatement'
+    statements_path = './*/FlexStatement'
     statement_tag = 'FlexStatement'
     level_tag = 'levelOfDetail'
     CancelledFlag = 'Ca'
