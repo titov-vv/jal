@@ -29,7 +29,7 @@ class JalAccount(JalDB):
                 else:   # Create new account record
                     query = self._exec(
                         "INSERT INTO accounts (name, active, investing, number, currency_id, organization_id, "
-                        "country_id, precision) "
+                        "country_id, precision, credit) "
                         "VALUES(:name, 1, :investing, :number, :currency, :organization, "
                         "coalesce((SELECT id FROM countries WHERE code=:country), 0), :precision, 0)",
                         [(":name", data['name']), (":investing", data['investing']), (":number", data['number']),
