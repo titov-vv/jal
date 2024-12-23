@@ -40,7 +40,7 @@
     {"id": 29, "type": "stock", "name": "APPLE INC", "isin": "US0378331005"},
     {"id": 30, "type": "option", "name": "VLO 24JUL20 64.0 P"},
     {"id": 31, "type": "stock", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001"},
-    {"id": -3, "type": "money", "name":  ""},
+    {"id": -3, "type": "money", "name":  "EUR"},
     {"id": 33, "type": "stock", "isin": "US5543821012"},
     {"id": 34, "type": "stock", "isin": "US3696043013"},
     {"id": 35, "type": "bond", "isin": "US345370CV02"},
