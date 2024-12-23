@@ -130,9 +130,9 @@ class StatementXLS(Statement):
         if self.AccountPattern[2] is None:
             self._account_number = str(self._statement[self.AccountPattern[0]][self.AccountPattern[1]])
         else:
-            parts = re.match(self.AccountPattern[2], self._statement[self.AccountPattern[0]][self.AccountPattern[1]], re.IGNORECASE)
+            parts = re.match(self.AccountPattern[2], str(self._statement[self.AccountPattern[0]][self.AccountPattern[1]]), re.IGNORECASE)
             if parts is None:
-                self._account_number = self._statement[self.AccountPattern[0]][self.AccountPattern[1]]
+                self._account_number = str(self._statement[self.AccountPattern[0]][self.AccountPattern[1]])
             else:
                 self._account_number = parts.groupdict()['ACCOUNT']
         if not self._account_number:

@@ -6,8 +6,8 @@
     {"id": 3, "currency": 1, "number": "54321"}
   ],
   "assets": [
-    {"id": 1, "type": "money", "name":  ""},
-    {"id": 2, "type": "money", "name":  ""},
+    {"id": 1, "type": "money", "name":  "RUB"},
+    {"id": 2, "type": "money", "name":  "USD"},
     {"id": -8, "type": "stock", "name": "АО Аэрофлот", "isin": "RU0009062285"},
     {"id": 3, "type": "etf", "name": "FinEx Gold ETF USD", "isin": "IE00B8XB7377"},
     {"id": 4, "type": "bond", "name": "АО \"Тинькофф Банк\" БО-07", "isin": "RU000A0JWM31"},
