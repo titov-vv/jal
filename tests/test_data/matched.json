@@ -9,9 +9,9 @@
     {"id": 6, "number": "U7654321", "currency": -3, "precision": 10}
   ],
   "assets": [
-    {"id": -1, "type": "money", "name":  ""},
-    {"id": -2, "type": "money", "name":  ""},
-    {"id": 3, "type": "money", "name":  ""},
+    {"id": -1, "type": "money", "name":  "RUB"},
+    {"id": -2, "type": "money", "name":  "USD"},
+    {"id": 3, "type": "money", "name":  "CAD"},
     {"id": 4, "type": "stock", "name": "AMAZON.COM INC", "isin": "US0231351067"},
     {"id": -4, "type": "etf", "name": "VANGUARD GROWTH ETF", "isin": "US9229087369", "country": "us"},
     {"id": 6, "type": "adr", "name": "ALIBABA GROUP HOLDING-SP ADR", "isin": "US01609W1027"},

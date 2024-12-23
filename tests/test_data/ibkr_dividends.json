@@ -4,7 +4,7 @@
     {"id": 1, "number": "U7654321", "currency": 1, "precision": 10, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89}
   ],
   "assets": [
-    {"id": 1, "name": "", "type": "money"},
+    {"id": 1, "name": "USD", "type": "money"},
     {"id": 2, "type": "stock", "name": "BROOKFIELD RENEWABLE PARTNER", "isin": "BMG162581083", "country": "ca"},
     {"id": 3, "type": "adr", "name": "TELEFONICA SA-SPON ADR", "isin": "US8793822086", "country": "es"},
     {"id": 4, "type": "stock", "name": "OWL ROCK CAPITAL CORP", "isin": "US69121K1043", "country": "us"},

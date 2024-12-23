@@ -4,7 +4,7 @@
     {"id": 1, "currency": 1, "number": "JT222222", "cash_begin": 0, "cash_end": 0, "cash_end_settled": 20290.14}
   ],
   "assets": [
-    {"id": 1, "type": "money", "name": ""},
+    {"id": 1, "type": "money", "name": "USD"},
     {"id": 2, "type": "stock", "name": "Abbott Laboratories", "isin": "US0028241000"},
     {"id": 3, "type": "stock", "name": "АФК \"Система\" ПАО ао", "isin": "RU000A0DQZE3"},
     {"id": 4, "type": "stock", "name": "United Company RUSAL PLC, А", "isin": "JE00B5BCW814"},

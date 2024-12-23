@@ -4,8 +4,8 @@
     {"id": 1, "number": "U1234567", "currency": 1, "precision": 10, "cash_begin": 0.0, "cash_end": 10659.073152, "cash_end_settled": -81667.430698},
     {"id": 2, "number": "U1234567", "currency": 2, "precision": 10, "cash_begin": 0.0, "cash_end": -935.800878369, "cash_end_settled": -935.800878369}
   ],
- "assets": [{"id": 1, "name": "", "type": "money"},
-            {"id": 2, "name": "", "type": "money"},
+ "assets": [{"id": 1, "name": "HKD", "type": "money"},
+            {"id": 2, "name": "USD", "type": "money"},
             {"id": 3, "type": "stock", "name": "TONGDA GROUP HOLDINGS LTD", "isin": "KYG8917X1218"},
             {"id": 5, "type": "stock", "name": "INTERACTIVE BROKERS GRO-CL A", "isin": "US45841N1072" },
             {"id": 6, "type": "stock", "isin": "KYG8917X1RTS"}
