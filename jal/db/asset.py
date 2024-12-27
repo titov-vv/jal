@@ -392,15 +392,15 @@ class JalAsset(JalDB):
     @classmethod
     def get_active_assets(cls, begin: int, end: int) -> list:
         assets = []
-        query = cls._exec("SELECT MAX(l.id) AS id, l.asset_id, a.currency_id "
+        query = cls._exec("SELECT DISTINCT l.asset_id, a.currency_id "
                           "FROM ledger l LEFT JOIN accounts a ON a.id=l.account_id "
                           "WHERE l.book_account=:assets "
-                          "GROUP BY l.asset_id, a.currency_id "
-                          "HAVING l.amount_acc!='0' OR (l.timestamp>=:begin AND l.timestamp<=:end)",
+                          "GROUP BY l.asset_id, a.currency_id, l.account_id "
+                          "HAVING l.id = MAX(l.id) AND (l.amount_acc!='0' OR l.value_acc!='0' OR (l.timestamp>=:begin AND l.timestamp<=:end))",
                           [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
         while query.next():
             try:
-                _id, asset_id, currency_id = super(JalAsset, JalAsset)._read_record(query, cast=[int, int, int])
+                asset_id, currency_id = super(JalAsset, JalAsset)._read_record(query, cast=[int, int])
             except TypeError:  # Skip if None is returned (i.e. there are no assets)
                 continue
             assets.append({"asset": JalAsset(asset_id), "currency": currency_id})
