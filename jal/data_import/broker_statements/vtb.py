@@ -124,6 +124,7 @@ class StatementVTB(StatementXLS):
     def _load_deals(self):
         self._load_deals_main_market()
         self._load_deals_derivatives_market()
+        self._load_deals_currency_exchange()
 
     def _load_deals_main_market(self):
         cnt = 0
@@ -183,7 +184,7 @@ class StatementVTB(StatementXLS):
                 self._data[FOF.ASSET_PAYMENTS].append(payment)
             cnt += 1
             row += 1
-        logging.info(self.tr("Trades loaded: ") + f"{cnt}")
+        logging.info(self.tr("Stock trades loaded: ") + f"{cnt}")
 
     def _load_deals_derivatives_market(self):
         cnt = 0
@@ -223,7 +224,57 @@ class StatementVTB(StatementXLS):
             self._data[FOF.TRADES].append(trade)
             cnt += 1
             row += 1
-        logging.info(self.tr("Trades loaded: ") + f"{cnt}")
+        logging.info(self.tr("Derivative trades loaded: ") + f"{cnt}")
+
+    def _load_deals_currency_exchange(self):
+        SymbolPattern = r"^(?P<A>[A-Z]{3})(?P<B>[A-Z]{3})(_TO[D|M])?$"
+        cnt = 0
+        columns = {
+            "symbol": "Финансовый инструмент",
+            "datetime": "Дата и время заключения сделки",
+            "B/S": "Вид сделки",
+            "number": "№ сделки",
+            "deposit": r"Количество \(шт\)",
+            "withdrawal": "Сумма сделки в валюте расчетов",
+            "fee": "Комиссия Банка за расчет по сделке",
+            "fee_currency": "Валюта расчетов",
+            "description": "Комментарий"
+        }
+        row, headers = self.find_section_start(r"^Заключенные в отчетном периоде сделки с иностранной валютой", columns)
+        if row < 0:
+            return
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row] == '':
+                break
+            parts = re.match(SymbolPattern, self._statement[headers['symbol']][row], re.IGNORECASE)
+            if parts is None:
+                raise Statement_ImportError(self.tr("Can't parse currency exchange symbol") + f"'{self._statement[headers['symbol']][row]}'")
+            symbols_data = parts.groupdict()
+            if self._statement[headers['B/S']][row] == 'Покупка':
+                symbols_data['A'], symbols_data['B'] = symbols_data['B'], symbols_data['A']
+            elif self._statement[headers['B/S']][row] == 'Продажа':
+                pass
+            else:
+                row += 1
+                logging.warning(self.tr("Unknown currency trade type: ") + self._statement[headers['B/S']][row])
+                continue
+            timestamp = int(self._statement[headers['datetime']][row].replace(tzinfo=timezone.utc).timestamp())
+            number = self._statement[headers['number']][row]
+            account_to = self._find_account_id(self._account_number, symbols_data['B'])
+            account_from = self._find_account_id(self._account_number, symbols_data['A'])
+            account_fee = self._find_account_id(self._account_number, self._statement[headers['fee_currency']][row])
+            withdrawal = self._statement[headers['withdrawal']][row]
+            deposit = self._statement[headers['deposit']][row]
+            fee = self._statement[headers['fee']][row]
+            description = self._statement[headers['description']][row]
+            new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+            transfer = {"id": new_id, "account": [account_from, account_to, account_fee], "timestamp": timestamp, "number" : number,
+                        "asset": [self.currency_id(symbols_data['A']), self.currency_id(symbols_data['B'])],
+                        "withdrawal": withdrawal, "deposit": deposit, "fee": fee, "description": description}
+            self._data[FOF.TRANSFERS].append(transfer)
+            cnt += 1
+            row += 1
+        logging.info(self.tr("Currency trades loaded: ") + f"{cnt}")
 
     def _load_asset_transactions(self):
         cnt = 0
