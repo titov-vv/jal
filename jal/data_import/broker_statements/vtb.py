@@ -236,7 +236,8 @@ class StatementVTB(StatementXLS):
             "number": "№ сделки",
             "deposit": r"Количество \(шт\)",
             "withdrawal": "Сумма сделки в валюте расчетов",
-            "fee": "Комиссия Банка за расчет по сделке",
+            "fee1": "Комиссия Банка за расчет по сделке",
+            "fee2": "Комиссия Банка за заключение сделки",
             "fee_currency": "Валюта расчетов",
             "description": "Комментарий"
         }
@@ -265,7 +266,7 @@ class StatementVTB(StatementXLS):
             account_fee = self._find_account_id(self._account_number, self._statement[headers['fee_currency']][row])
             withdrawal = self._statement[headers['withdrawal']][row]
             deposit = self._statement[headers['deposit']][row]
-            fee = self._statement[headers['fee']][row]
+            fee = self._statement[headers['fee1']][row] + self._statement[headers['fee2']][row]
             description = self._statement[headers['description']][row]
             new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
             transfer = {"id": new_id, "account": [account_from, account_to, account_fee], "timestamp": timestamp, "number" : number,
