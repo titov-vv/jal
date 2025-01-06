@@ -50,16 +50,10 @@ class MOEX:
             key_col = securities['columns'].index(field)
             if data := [x for x in securities['data'] if x[key_col] == search_value or x[key_col] is None]:
                 break
-        if len(data) > 1: # remove not traded assets if there are any outdated doubles present
-            data = [x for x in data if x[securities['columns'].index('is_traded')] == 1]
-        if len(data) > 1: # still have multiple matches for the same asset data
-            logging.info(QApplication.translate("MOEX", "Multiple MOEX assets found for ") + f"{key} = {search_value}: {data}")
-            return {}
+        data = self.__validate_search_data(data, securities['columns'], key, search_value)
         if not data:
-            logging.info(QApplication.translate("MOEX", "No MOEX assets found for ") + f"{key} = {search_value}")
             return {}
-        asset_data = dict(zip(securities['columns'], data[0]))
-        return asset_data
+        return dict(zip(securities['columns'], data[0]))
 
     def __lookup_futures(self, name, base_asset) -> dict:
         request = WebRequest(WebRequest.GET, "https://iss.moex.com/iss/statistics/engines/futures/markets/forts/series.json",
@@ -70,16 +64,24 @@ class MOEX:
         futures = moex_search_data['series']
         key_col = futures['columns'].index('name')
         data = [x for x in futures['data'] if x[key_col] == name or x[key_col] is None]
-        if len(data) > 1: # remove not traded futures if there are any outdated doubles present
-            data = [x for x in data if x[futures['columns'].index('is_traded')] == 1]
-        if len(data) > 1: # still have multiple matches for the same asset data
-            logging.info(QApplication.translate("MOEX", "Multiple MOEX futures found for ") + f"{name}: {data}")
-            return {}
+        data = self.__validate_search_data(data, futures['columns'], 'name', name)
         if not data:
-            logging.info(QApplication.translate("MOEX", "No MOEX futures found for ") + f"{name}")
             return {}
-        asset_data = dict(zip(futures['columns'], data[0]))
-        return asset_data
+        return dict(zip(futures['columns'], data[0]))
+
+    def __validate_search_data(self, data, columns, key, search_value) -> list:
+        if not data:
+            logging.info(QApplication.translate("MOEX", "No MOEX assets found for ") + f"{key} = {search_value}")
+            return []
+        if len(data) > 1:  # remove not traded assets if there are any outdated doubles present
+            data = [x for x in data if x[columns.index('is_traded')] == 1]
+            if not data:
+                logging.info(QApplication.translate("MOEX", "Multiple MOEX non-traded assets found for ") + f"{key} = {search_value}: {data}")
+                return []
+        if len(data) > 1:  # still have multiple matches for the same asset data
+            logging.info(QApplication.translate("MOEX", "Multiple MOEX assets found for ") + f"{key} = {search_value}: {data}")
+            return []
+        return data
 
     def asset_info(self, **kwargs) -> dict:
         pass
