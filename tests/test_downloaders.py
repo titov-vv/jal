@@ -7,6 +7,7 @@ from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets
 from jal.db.asset import JalAsset
 from jal.constants import PredefinedAsset
 from jal.net.downloader import QuoteDownloader
+from jal.net.moex import MOEX
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 
 
@@ -16,18 +17,20 @@ def test_INN_resolution():
     name = fns_api.shop_name()
     assert name == 'ПАО СБЕРБАНК'
 
-def test_MOEX_details():
-    assert QuoteDownloader.MOEX_find_secid(reg_number='') == ''
-    assert QuoteDownloader.MOEX_find_secid(isin='TEST') == ''
-    assert QuoteDownloader.MOEX_find_secid(reg_number='0252-74113866') == 'RU000A0ERGA7'
-    assert QuoteDownloader.MOEX_find_secid(reg_number='1-01-00010-A') == 'AFLT'
-    assert QuoteDownloader.MOEX_find_secid(isin='IE00B8XB7377') == 'FXGD'
-    assert QuoteDownloader.MOEX_find_secid(isin='JE00B6T5S470') == 'POLY'
-    assert QuoteDownloader.MOEX_find_secid(isin='RU000A1038V6') == 'SU26238RMFS4'
-    assert QuoteDownloader.MOEX_find_secid(isin='IE00B8XB7377', reg_number='CEOGCS') == 'FXGD'
-    assert QuoteDownloader.MOEX_find_secid(name='МЕТАЛЛОИНВЕСТ 028') == 'RU000A105A04'
-    assert QuoteDownloader.MOEX_find_secid(name='АБЗ-1 1Р01') == 'RU000A102LW1'
+def test_MOEX_lookup():
+    assert MOEX().find_asset(reg_number='') == ''
+    assert MOEX().find_asset(isin='TEST') == ''
+    assert MOEX().find_asset(reg_number='0252-74113866') == 'RU000A0ERGA7'
+    assert MOEX().find_asset(reg_number='1-01-00010-A') == 'AFLT'
+    assert MOEX().find_asset(isin='IE00B8XB7377') == 'FXGD'
+    assert MOEX().find_asset(isin='JE00B6T5S470') == 'POLY'
+    assert MOEX().find_asset(isin='RU000A1038V6') == 'SU26238RMFS4'
+    assert MOEX().find_asset(isin='IE00B8XB7377', reg_number='CEOGCS') == 'FXGD'
+    assert MOEX().find_asset(name='МЕТАЛЛОИНВЕСТ 028') == 'RU000A105A04'
+    assert MOEX().find_asset(name='АБЗ-1 1Р01') == 'RU000A102LW1'
+    assert MOEX().find_asset(name='CNY-9.24') == 'CRU4'
 
+def test_MOEX_details():
     assert QuoteDownloader.MOEX_info() == {}
     assert QuoteDownloader.MOEX_info(special=True) == {}
     assert QuoteDownloader.MOEX_info(symbol='AFLT', special=True) == {'symbol': 'AFLT',

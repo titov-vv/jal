@@ -18,6 +18,7 @@ from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
 from jal.net.downloader import QuoteDownloader
+from jal.net.moex import MOEX
 
 
 class FOF:
@@ -672,7 +673,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 self._uppend_keys_from(search_data, asset_info, ['isin', 'reg_number'])
                 if 'symbol' in asset_info:
                     search_data['name'] = asset_info['symbol']   # Search as by name as it is more flexible
-                symbol = QuoteDownloader.MOEX_find_secid(**search_data)
+                symbol = MOEX().find_asset(**search_data)
                 if not symbol and 'symbol' in asset_info:
                     symbol = asset_info['symbol']
                 currency = asset_info['currency'] if 'currency' in asset_info else None  # Keep currency

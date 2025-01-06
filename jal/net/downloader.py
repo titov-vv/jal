@@ -16,6 +16,7 @@ from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.asset import JalAsset
 from jal.net.web_request import WebRequest
+from jal.net.moex import MOEX
 try:
     from pypdf import PdfReader
     from pypdf.errors import PdfStreamError
@@ -271,9 +272,9 @@ class QuoteDownloader(QObject):
             data = QuoteDownloader.MOEX_download_info(kwargs['isin'], currency=currency)
         # If not found try to use search API with regnumber or isin
         if not data and 'reg_number' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid(reg_number=kwargs['reg_number']))
+            data = QuoteDownloader.MOEX_download_info(MOEX().find_asset(reg_number=kwargs['reg_number']))
         if not data and 'isin' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid(isin=kwargs['isin']))
+            data = QuoteDownloader.MOEX_download_info(MOEX().find_asset(isin=kwargs['isin']))
         if 'special' not in kwargs:
             for key in ['engine', 'market', 'board']:
                 try:
@@ -353,53 +354,6 @@ class QuoteDownloader(QObject):
                               'market': board[0]['market'],
                               'board': board[0]['boardid']})
         return asset
-
-    # Searches for asset info on http://www.moex.com by given reg_number or isin
-    # Returns 'secid' if asset was found and empty string otherwise
-    @staticmethod
-    def MOEX_find_secid(**kwargs) -> str:
-        secid = ''
-        data = []
-        if kwargs.get('reg_number', ''):
-            request = WebRequest(WebRequest.GET, "https://iss.moex.com/iss/securities.json",
-                                 params={'q': kwargs['reg_number'], 'iss.meta': 'off', 'limit': '10'})
-            while request.isRunning():
-                QApplication.processEvents()
-            asset_data = json.loads(request.data())
-            securities = asset_data['securities']
-            columns = securities['columns']
-            data = [x for x in securities['data'] if
-                    x[columns.index('regnumber')] == kwargs['reg_number'] or x[columns.index('regnumber')] is None]
-        if not data and kwargs.get('isin', ''):
-            request = WebRequest(WebRequest.GET, "https://iss.moex.com/iss/securities.json",
-                                 params={'q': kwargs['isin'], 'iss.meta': 'off', 'limit': '10'})
-            while request.isRunning():
-                QApplication.processEvents()
-            asset_data = json.loads(request.data())
-            securities = asset_data['securities']
-            columns = securities['columns']
-            data = securities['data']  # take the whole list if we search by isin
-        if not data and 'name' in kwargs:
-            request = WebRequest(WebRequest.GET, "https://iss.moex.com/iss/securities.json",
-                                 params={'q': kwargs['name'], 'iss.meta': 'off', 'limit': '10'})
-            while request.isRunning():
-                QApplication.processEvents()
-            asset_data = json.loads(request.data())
-            securities = asset_data['securities']
-            columns = securities['columns']
-            data = [x for x in securities['data'] if x[columns.index('name')] == kwargs['name']]
-            if not data:
-                data = [x for x in securities['data'] if x[columns.index('shortname')] == kwargs['name']]
-        if data:
-            if len(data) > 1:
-                # remove not traded assets if there are any outdated doubles present
-                data = [x for x in data if x[columns.index('is_traded')] == 1]
-            if len(data) > 1:  # and then check again
-                logging.info(QApplication.translate("MOEX", "Multiple MOEX assets found for: ") + f"{kwargs}")
-                return secid
-            asset_data = dict(zip(columns, data[0]))
-            secid = asset_data['secid'] if 'secid' in asset_data else ''
-        return secid
 
     # noinspection PyMethodMayBeStatic
     def MOEX_DataReader(self, asset, currency_id, start_timestamp, end_timestamp, update_symbol=True):
