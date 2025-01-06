@@ -14,7 +14,7 @@
     {"id": 5, "type": "stock", "name": "ао ПАО Банк ВТБ", "isin": "RU000A0JP5V6"},
     {"id": 6, "type": "futures", "name": "Фьючерсный контракт Si-12.21"},
     {"id": 7, "type": "stock", "name": "ПАО Московская Биржа", "isin": "RU000A0JR4A1"},
-    {"id": 8, "type": "stock", "name": "Solidcore Resources plc", "isin": "JE00B6T5S470"},
+    {"id": 8, "type": "stock", "name": "Polymetal International plc", "isin": "JE00B6T5S470"},
     {"id": 9, "type": "stock", "name": "Северсталь (ПАО)ао", "isin": "RU0009046510"}
   ],
   "symbols": [

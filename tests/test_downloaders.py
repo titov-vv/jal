@@ -77,7 +77,7 @@ def test_MOEX_details():
                                                                                       "type": PredefinedAsset.ETF}
     assert QuoteDownloader.MOEX_info(isin='JE00B6T5S470', reg_number='', symbol='') == {'symbol': 'POLY',
                                                                                         'isin': 'JE00B6T5S470',
-                                                                                        'name': 'Solidcore Resources plc',
+                                                                                        'name': 'Polymetal International plc',
                                                                                         'principal': 0.03,
                                                                                         'type': PredefinedAsset.Stock}
     assert QuoteDownloader.MOEX_info(isin='RU000A1038V6') == {'symbol': 'SU26238RMFS4',

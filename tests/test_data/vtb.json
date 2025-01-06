@@ -16,7 +16,7 @@
     {"id": 8, "isin": "RU000A1014L8", "name": "БПИФ Ликвидность УК ВИМ", "type": "etf"},
     {"id": 9, "isin": "RU0009046510", "name": "Северсталь (ПАО)ао", "type": "stock"},
     {"id": 10, "isin": "RU000A0JL4R1", "name": "Группа Черкизово ПАО-ао", "type": "stock"},
-    {"id": 11, "name": "Фьючерсный контракт CNY-9.25", "type": "futures"}
+    {"id": 11, "name": "Фьючерсный контракт CNY-9.24", "type": "futures"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "RUB"},
@@ -29,7 +29,7 @@
     {"id": 8, "asset": 8, "symbol": "LQDT", "currency": 1, "note": "MOEX"},
     {"id": 9, "asset": 9, "symbol": "CHMF", "currency": 1, "note": "MOEX"},
     {"id": 10, "asset": 10, "symbol": "GCHE", "currency": 1, "note": "MOEX"},
-    {"id": 11, "asset": 11, "symbol": "CRU5", "currency": 1, "note": "MOEX"}
+    {"id": 11, "asset": 11, "symbol": "CRU4", "currency": 1, "note": "MOEX"}
   ],
   "assets_data": [
     {"id": 1, "asset": 4, "reg_number": "4-01-00487-R", "expiry": 1711584000, "principal": 1000.0},
@@ -39,7 +39,7 @@
     {"id": 5, "asset": 8, "reg_number": "3915"},
     {"id": 6, "asset": 9, "reg_number": "1-02-00143-A", "principal": 0.01},
     {"id": 7, "asset": 10, "reg_number": "1-02-10797-A", "principal": 0.01},
-    {"id": 8, "asset": 11, "expiry": 1758153600}
+    {"id": 8, "asset": 11, "expiry": 1726704000}
   ],
   "trades": [
     {"id": 1, "number": "B9340571485", "timestamp": 1704799653, "settlement": 1704877200, "account": 1, "asset": 8, "quantity": 200, "price": 1.3252, "fee": 0},
