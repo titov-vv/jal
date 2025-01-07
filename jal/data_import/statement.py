@@ -17,7 +17,6 @@ from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
-from jal.net.downloader import QuoteDownloader
 from jal.net.moex import MOEX
 
 
@@ -677,7 +676,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 if not symbol and 'symbol' in asset_info:
                     symbol = asset_info['symbol']
                 currency = asset_info['currency'] if 'currency' in asset_info else None  # Keep currency
-                moex_asset = QuoteDownloader.MOEX_info(symbol=symbol)
+                moex_asset = MOEX().asset_info(symbol=symbol)
                 if not moex_asset:
                     raise Statement_ImportError(self.tr("Can't find asset on moex.com: ") + f"'{asset_info}'")
                 try:

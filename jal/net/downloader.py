@@ -1,7 +1,7 @@
 import logging
 import xml.etree.ElementTree as xml_tree
 from datetime import datetime, timedelta, timezone
-from jal.widgets.helpers import timestamp_range, dependency_present, is_english
+from jal.widgets.helpers import timestamp_range, dependency_present
 from decimal import Decimal
 from io import StringIO, BytesIO
 
@@ -254,111 +254,10 @@ class QuoteDownloader(QObject):
         rates = data.set_index("Date")
         return rates
 
-    # Get asset data from http://www.moex.com
-    # Accepts parameters:
-    #     symbol, isin, reg_number - to identify asset
-    #     special - if 'engine', 'market' and 'board' should be returned as part of result
-    # Returns asset data or empty dictionary if nothing found
-    @staticmethod
-    def MOEX_info(**kwargs) -> dict:
-        data = {}
-        if 'symbol' in kwargs and not is_english(kwargs['symbol']):
-            del kwargs['symbol']
-        currency = kwargs['currency'] if 'currency' in kwargs else ''
-        # First try to load with symbol or isin from asset details API
-        if 'symbol' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(kwargs['symbol'], currency=currency)
-        if not data and 'isin' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(kwargs['isin'], currency=currency)
-        # If not found try to use search API with regnumber or isin
-        if not data and 'reg_number' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(MOEX().find_asset(reg_number=kwargs['reg_number']))
-        if not data and 'isin' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(MOEX().find_asset(isin=kwargs['isin']))
-        if 'special' not in kwargs:
-            for key in ['engine', 'market', 'board']:
-                try:
-                    del data[key]
-                except KeyError:
-                    pass
-        return data
-
-    # Searches for asset info on http://www.moex.com by symbol or ISIN provided as asset_code parameter
-    # Returns disctionary with asset data: {symbol, isin, regnumber, engine, market, board, pricipal, expiry, etc}
-    @staticmethod
-    def MOEX_download_info(asset_code, currency='') -> dict:
-        mapping = {
-            'SECID': 'symbol',
-            'NAME': 'name',
-            'SHORTNAME': 'short_name',
-            'ISIN': 'isin',
-            'REGNUMBER': 'reg_number',
-            'FACEVALUE': 'principal',
-            'MATDATE': 'expiry',
-            'LSTDELDATE': 'expiry',
-            'GROUP': 'type'
-        }
-        asset_type = {
-            'stock_shares': PredefinedAsset.Stock,
-            'stock_dr': PredefinedAsset.Stock,
-            'stock_bonds': PredefinedAsset.Bond,
-            'stock_etf': PredefinedAsset.ETF,
-            'stock_ppif': PredefinedAsset.ETF,
-            'futures_forts': PredefinedAsset.Derivative,
-            'currency_metal': PredefinedAsset.Commodity
-        }
-        asset = {}
-        if not asset_code:
-            return asset
-        request = WebRequest(WebRequest.GET, f"http://iss.moex.com/iss/securities/{asset_code}.xml")
-        while request.isRunning():
-            QApplication.processEvents()
-        xml_root = xml_tree.fromstring(request.data())
-        info_rows = xml_root.findall("data[@id='description']/rows/*")
-        boards = xml_root.findall("data[@id='boards']/rows/*")
-        if not boards:   # can't find boards -> not traded asset
-            return asset
-        for info in info_rows:
-            asset.update({mapping[field]: info.attrib['value'] for field in mapping if info.attrib['name'] == field})
-        if 'isin' in asset:
-            # replace symbol with short name if we have isin in place of symbol
-            asset['symbol'] = asset['short_name'] if asset['symbol'] == asset['isin'] else asset['symbol']
-        if 'short_name' in asset:
-            del asset['short_name']  # drop short name as we won't use it further
-        if 'principal' in asset:  # Convert principal into float if possible or drop otherwise
-            try:
-                asset['principal'] = float(asset['principal'])
-            except ValueError:
-                del asset['principal']
-        if 'expiry' in asset:  # convert YYYY-MM-DD into timestamp
-            date_value = datetime.strptime(asset['expiry'], "%Y-%m-%d")
-            asset['expiry'] = int(date_value.replace(tzinfo=timezone.utc).timestamp())
-        try:
-            asset['type'] = asset_type[asset['type']]
-        except KeyError:
-            logging.error(QApplication.translate("MOEX", "Unsupported MOEX security type: ") + f"{asset['type']}")
-            return {}
-
-        boards_list = [board.attrib for board in boards]
-        primary_board = [x for x in boards_list if "is_primary" in x and x["is_primary"] == '1']
-        if primary_board:
-            board_id = primary_board[0]['boardid']
-            if primary_board[0]['currencyid'] != currency and primary_board[0]['market'] != 'bonds':
-                if currency == 'USD':
-                    board_id = board_id[:-1] + 'D'
-                if currency == 'EUR':
-                    board_id = board_id[:-1] + 'E'
-            board = [x for x in boards_list if "boardid" in x and x["boardid"] == board_id]
-            if board:
-                asset.update({'engine': board[0]['engine'],
-                              'market': board[0]['market'],
-                              'board': board[0]['boardid']})
-        return asset
-
     # noinspection PyMethodMayBeStatic
     def MOEX_DataReader(self, asset, currency_id, start_timestamp, end_timestamp, update_symbol=True):
         currency = JalAsset(currency_id).symbol()
-        moex_info = self.MOEX_info(symbol=asset.symbol(currency_id), isin=asset.isin(), currency=currency, special=True)
+        moex_info = MOEX().asset_info(symbol=asset.symbol(currency_id), isin=asset.isin(), currency=currency, special=True)
         if not ('engine' in moex_info and 'market' in moex_info and 'board' in moex_info) or \
                 (moex_info['engine'] is None) or (moex_info['market'] is None) or (moex_info['board'] is None):
             logging.warning(f"Failed to find {asset.symbol(currency_id)} ({asset.isin()}) on moex.com")

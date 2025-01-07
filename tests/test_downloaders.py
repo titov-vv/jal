@@ -31,9 +31,9 @@ def test_MOEX_lookup():
     assert MOEX().find_asset(name='CNY-9.24') == 'CRU4'
 
 def test_MOEX_details():
-    assert QuoteDownloader.MOEX_info() == {}
-    assert QuoteDownloader.MOEX_info(special=True) == {}
-    assert QuoteDownloader.MOEX_info(symbol='AFLT', special=True) == {'symbol': 'AFLT',
+    assert MOEX().asset_info() == {}
+    assert MOEX().asset_info(special=True) == {}
+    assert MOEX().asset_info(symbol='AFLT', special=True) == {'symbol': 'AFLT',
                                                                       'isin': 'RU0009062285',
                                                                       'name': 'Аэрофлот-росс.авиалин(ПАО)ао',
                                                                       'principal': 1.0,
@@ -42,7 +42,7 @@ def test_MOEX_details():
                                                                       'market': 'shares',
                                                                       'board': 'TQBR',
                                                                       'type': PredefinedAsset.Stock}
-    assert QuoteDownloader.MOEX_info(isin='RU000A0JWUE9', special=True) == {'symbol': 'СберБ БО37',
+    assert MOEX().asset_info(isin='RU000A0JWUE9', special=True) == {'symbol': 'СберБ БО37',
                                                                             'isin': 'RU000A0JWUE9',
                                                                             'name': 'Сбербанк ПАО БО-37',
                                                                             'principal': 1000.0,
@@ -52,35 +52,35 @@ def test_MOEX_details():
                                                                             'market': 'bonds',
                                                                             'board': 'TQCB',
                                                                             'type': PredefinedAsset.Bond}
-    assert QuoteDownloader.MOEX_info(symbol='SiZ1', isin='', special=True) == {'symbol': 'SiZ1',
+    assert MOEX().asset_info(symbol='SiZ1', isin='', special=True) == {'symbol': 'SiZ1',
                                                                                'name': 'Фьючерсный контракт Si-12.21',
                                                                                'expiry': 1639612800,
                                                                                'engine': 'futures',
                                                                                'market': 'forts',
                                                                                'board': 'RFUD',
                                                                                'type': PredefinedAsset.Derivative}
-    assert QuoteDownloader.MOEX_info(symbol='', reg_number='0252-74113866') == {'symbol': 'ПИФСбер-КН',
+    assert MOEX().asset_info(symbol='', reg_number='0252-74113866') == {'symbol': 'ПИФСбер-КН',
                                                                       'isin': 'RU000A0ERGA7',
                                                                       'name': 'ПИФСбербанк Комм.недвижимость',
                                                                       'reg_number': '0252-74113866',
                                                                       'type': PredefinedAsset.ETF}
-    assert QuoteDownloader.MOEX_info(isin='IE00B8XB7377', reg_number='IE00B8XB7377', symbol='FXGD ETF') == {'symbol': 'FXGD',
+    assert MOEX().asset_info(isin='IE00B8XB7377', reg_number='IE00B8XB7377', symbol='FXGD ETF') == {'symbol': 'FXGD',
                                                                                                            'isin': 'IE00B8XB7377',
                                                                                                            'name': 'FinEx Gold ETF USD',
                                                                                                            'type': PredefinedAsset.ETF}
-    assert QuoteDownloader.MOEX_info(symbol='FXGD', currency='USD', special=True) == {"symbol": "FXGD",
+    assert MOEX().asset_info(symbol='FXGD', currency='USD', special=True) == {"symbol": "FXGD",
                                                                                       "isin": "IE00B8XB7377",
                                                                                       "name": "FinEx Gold ETF USD",
                                                                                       "board": "TQTD",
                                                                                       "engine": "stock",
                                                                                       "market": "shares",
                                                                                       "type": PredefinedAsset.ETF}
-    assert QuoteDownloader.MOEX_info(isin='JE00B6T5S470', reg_number='', symbol='') == {'symbol': 'POLY',
+    assert MOEX().asset_info(isin='JE00B6T5S470', reg_number='', symbol='') == {'symbol': 'POLY',
                                                                                         'isin': 'JE00B6T5S470',
                                                                                         'name': 'Polymetal International plc',
                                                                                         'principal': 0.03,
                                                                                         'type': PredefinedAsset.Stock}
-    assert QuoteDownloader.MOEX_info(isin='RU000A1038V6') == {'symbol': 'SU26238RMFS4',
+    assert MOEX().asset_info(isin='RU000A1038V6') == {'symbol': 'SU26238RMFS4',
                                                               'isin': 'RU000A1038V6',
                                                               'name': 'ОФЗ-ПД 26238 15/05/2041',
                                                               'principal': 1000.0,
@@ -88,14 +88,14 @@ def test_MOEX_details():
                                                               'expiry': 2252188800,
                                                               'type': PredefinedAsset.Bond}
 
-    assert QuoteDownloader.MOEX_info(**{'isin': 'RU0009062285',
+    assert MOEX().asset_info(**{'isin': 'RU0009062285',
                                         'reg_number': '1-01-00010-A',
                                         'symbol': 'Аэрофлот'}) == {'symbol': 'RU0009062285',
                                                                    'name': 'ОАО "Аэрофлот-росс.авл " (2 в)',
                                                                    'reg_number': '1-02-00010-A',
                                                                    'principal': 1.0,
                                                                    'type': PredefinedAsset.Stock}
-    assert QuoteDownloader.MOEX_info(symbol='GLDRUB_TOM') == {'symbol': 'GLDRUB_TOM',
+    assert MOEX().asset_info(symbol='GLDRUB_TOM') == {'symbol': 'GLDRUB_TOM',
                                                               'name': 'GLD/RUB_TOM - GLD/РУБ',
                                                               'principal': 1.0,
                                                               'type': PredefinedAsset.Commodity}
