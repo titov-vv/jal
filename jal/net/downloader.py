@@ -176,7 +176,7 @@ class QuoteDownloader(QObject):
                 if from_timestamp <= end_timestamp:
                     data = data_loaders[asset.quote_source(currency)](asset, currency, from_timestamp, end_timestamp)
                     self._store_quotations(asset, currency, data)
-            except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError, json.decoder.JSONDecodeError):
+            except (pd.errors.EmptyDataError, KeyError, json.decoder.JSONDecodeError):
                 logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.symbol()}")
                 continue
             self.update_progress.emit(100.0 * i / len(assets))
@@ -275,26 +275,24 @@ class QuoteDownloader(QObject):
             principal = moex_info['principal'] if 'principal' in moex_info else 0
             details = {'isin': isin, 'reg_number': reg_number, 'expiry': expiry, 'principal': principal}
             asset.update_data(details)
-
         # Get price history
         url = f"http://iss.moex.com/iss/history/engines/{moex_info['engine']}/markets/{moex_info['market']}/" \
-              f"boards/{moex_info['board']}/securities/{asset_code}.xml"
+              f"boards/{moex_info['board']}/securities/{asset_code}.json"
         params = {
             'from': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
             'till': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
         }
         self._request = WebRequest(WebRequest.GET, url, params=params)
         self._wait_for_event()
-        xml_root = xml_tree.fromstring(self._request.data())
-        history_rows = xml_root.findall("data[@id='history']/rows/*")
+        moex_data = json.loads(self._request.data())
+        if 'history' not in moex_data:
+            return None
+        quotes_data = [dict(zip(moex_data['history']['columns'], x)) for x in moex_data['history']['data']]
         quotes = []
-        for row in history_rows:
-            if row.attrib['CLOSE']:
-                if 'FACEVALUE' in row.attrib:  # Correction for bonds
-                    price = Decimal(row.attrib['CLOSE']) * Decimal(row.attrib['FACEVALUE']) / Decimal('100')
-                    quotes.append({"Date": row.attrib['TRADEDATE'], "Close": str(price)})
-                else:
-                    quotes.append({"Date": row.attrib['TRADEDATE'], "Close": row.attrib['CLOSE']})
+        for x in quotes_data:
+            if x['CLOSE']:   # CLOSE field is numeric, it gives a lot of digits after direct conversion to Decimal, so we treat it as a string
+                price = Decimal(str(x['CLOSE'])) * Decimal(str(x['FACEVALUE'])) / Decimal('100') if 'FACEVALUE' in x else x['CLOSE']
+                quotes.append({"Date": x['TRADEDATE'], "Close": str(price)})
         data = pd.DataFrame(quotes, columns=["Date", "Close"])
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d", utc=True)
         data['Close'] = data['Close'].apply(Decimal)
