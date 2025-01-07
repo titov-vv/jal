@@ -169,7 +169,7 @@ class StatementVTB(StatementXLS):
             fee = self._statement[headers['fee1']][row] + self._statement[headers['fee2']][row]
             amount = self._statement[headers['amount']][row]
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
-                price = abs(amount / qty)
+                price = abs((amount - bond_interest) / qty)
             timestamp = int(self._statement[headers['datetime']][row].replace(tzinfo=timezone.utc).timestamp())
             settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
             account_id = self._find_account_id(self._account_number, currency)

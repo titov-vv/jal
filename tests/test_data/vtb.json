@@ -43,7 +43,7 @@
   ],
   "trades": [
     {"id": 1, "number": "B9340571485", "timestamp": 1704799653, "settlement": 1704877200, "account": 1, "asset": 8, "quantity": 200, "price": 1.3252, "fee": 0},
-    {"id": 2, "number": "B9392407465", "timestamp": 1704979595, "settlement": 1705050000, "account": 1, "asset": 6, "quantity": 23, "price": 970.1, "fee": 11.35},
+    {"id": 2, "number": "B9392407465", "timestamp": 1704979595, "settlement": 1705050000, "account": 1, "asset": 6, "quantity": 23, "price": 996.92, "fee": 11.35},
     {"id": 3, "number": "S9392676025", "timestamp": 1704993223, "settlement": 1705050000, "account": 1, "asset": 8, "quantity": -24, "price": 1.3283333333333334, "fee": 0},
     {"id": 4, "number": "FB2022427862631512964", "timestamp": 1711730494, "account": 1, "asset": 11, "quantity": 100, "price": 13.277, "fee": 100},
     {"id": 5, "timestamp": 1707955200, "settlement": 1707955200, "account": 1, "asset": 7, "quantity": -51.0, "price": 1000.0, "fee": 0.0, "note": "Ден.ср-ва от погаш. номин.ст-ти обл. ООО МФК ЦФП 4-01-00009-L, Е918036.   НДС не обл. Налог не удерживается."},
