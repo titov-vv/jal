@@ -1,6 +1,7 @@
 import logging
 import re
 from datetime import timezone
+from jal.constants import PredefinedCategory
 from jal.data_import.statement_xls import StatementXLS
 from jal.data_import.statement import FOF, Statement_ImportError
 
@@ -334,7 +335,7 @@ class StatementVTB(StatementXLS):
             'Купонный доход': self.interest,
             'Погашение ценных бумаг': self.bond_maturity,
             'Сальдо расчётов по сделкам с ценными бумагами': None,  # These operations are results of trades
-            'Вознаграждение Брокера': None,
+            'Вознаграждение Брокера': self.broker_fee,
             'Дивиденды': self.dividend,
             'Сальдо расчётов по сделкам с иностранной валютой': None,  # These operation are results of currency exchange
             'Перевод денежных средств': None,   # TODO - to be implemented
@@ -427,3 +428,12 @@ class StatementVTB(StatementXLS):
         trade = {"id": new_id, "timestamp": timestamp, "settlement": timestamp, "account": account_id,
                  "asset": asset_id, "quantity": qty, "price": price, "fee": 0.0, "note": description}
         self._data[FOF.TRADES].append(trade)
+
+    def broker_fee(self, timestamp, account_id, amount, description):
+        if description.startswith("Комиссия банка за заключение сделок") \
+            or description.startswith("Комиссия за брокерские услуги по проведению расчетов по заключенным сделкам"):
+            return  # Skip these operations as they are already included in trade fees
+        new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        fee = {"id": new_id, "peer": 0, "account": account_id, "timestamp": timestamp,
+               'lines': [{'amount': amount, 'category': -PredefinedCategory.Fees, 'description': description}]}
+        self._data[FOF.INCOME_SPENDING].append(fee)

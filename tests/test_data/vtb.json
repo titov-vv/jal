@@ -49,7 +49,9 @@
     {"id": 5, "timestamp": 1707955200, "settlement": 1707955200, "account": 1, "asset": 7, "quantity": -51.0, "price": 1000.0, "fee": 0.0, "note": "Ден.ср-ва от погаш. номин.ст-ти обл. ООО МФК ЦФП 4-01-00009-L, Е918036.   НДС не обл. Налог не удерживается."},
     {"id": 6, "timestamp": 1708473600, "settlement": 1708473600, "account": 1, "asset": 5, "quantity": -30.0, "price": 1000.0, "fee": 0.0, "note": "Ден.ср-ва от погаш. номин.ст-ти обл. АО МФК Займер 4-01-00587-R, Е918036.   НДС не обл. Налог не удерживается."}
   ],
-  "income_spending": [],
+  "income_spending": [
+    {"id": 1, "timestamp": 1708560000, "account": 1, "peer": 0, "lines": [{"amount": -377.51, "category": -5, "description": "Разница между суммами по внеб. сделкам спец. вал. СВОП ¹"}]}
+  ],
   "transfers": [
     {"id": 1, "account": [1, 3, 1], "asset": [1, 3], "timestamp": 1708520639, "number": "CB660474832", "withdrawal": 409712, "deposit": 32000, "fee": 213.88, "description": ""},
     {"id": 2, "account": [1, 3, 1], "asset": [1, 3], "timestamp": 1709725452, "number": "ibc0481850_1", "withdrawal": 2766.63, "deposit": 221, "fee": 1.11, "description": ""},
