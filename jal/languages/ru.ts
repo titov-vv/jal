@@ -2487,22 +2487,22 @@ do you want to save it?</source>
     <message>
         <location filename="../net/moex.py" line="98"/>
         <source>No MOEX assets found for </source>
-        <translation type="unfinished"></translation>
+        <translation>Не найдена ЦБ MOEX для </translation>
     </message>
     <message>
         <location filename="../net/moex.py" line="103"/>
         <source>Multiple MOEX non-traded assets found for </source>
-        <translation type="unfinished"></translation>
+        <translation>Несколько неторгуемых ЦБ MOEX найдено для </translation>
     </message>
     <message>
         <location filename="../net/moex.py" line="106"/>
         <source>Multiple MOEX assets found for </source>
-        <translation type="unfinished"></translation>
+        <translation>Несколько ЦБ MOEX найдено для </translation>
     </message>
     <message>
         <location filename="../net/moex.py" line="169"/>
         <source>Unsupported MOEX security type: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неподдерживаемый тип ЦБ MOEX: </translation>
     </message>
 </context>
 <context>
@@ -2663,7 +2663,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../constants.py" line="223"/>
         <source>Borsa Italiana</source>
-        <translation type="unfinished"></translation>
+        <translation>Итальянская биржа</translation>
     </message>
 </context>
 <context>
@@ -4290,12 +4290,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/statement.py" line="366"/>
         <source>Statement period starts before last recorded operation for the account </source>
-        <translation type="unfinished"></translation>
+        <translation>Период отчёта начинается раньше даты последней операции для счёта </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="366"/>
         <source>Continue import?</source>
-        <translation type="unfinished"></translation>
+        <translation>Продолжить импорт?</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="384"/>
@@ -4539,12 +4539,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="538"/>
         <source>Only internal transfers are supported: </source>
-        <translation type="unfinished"></translation>
+        <translation>Поддерживаются только внутренние переводы: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="547"/>
         <source>Unknown transfer direction: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестное направление перевода: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="567"/>
@@ -4930,62 +4930,62 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="21"/>
         <source>Investbook / IZI-Invest</source>
-        <translation type="unfinished"></translation>
+        <translation>Investbook / IZI-Invest</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="24"/>
         <source>Open portfolio (*.json)</source>
-        <translation type="unfinished"></translation>
+        <translation>Open portfolio (*.json)</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="46"/>
         <source>Failed to read JSON from file: </source>
-        <translation type="unfinished">Невозможно прочитать JSON из файла: </translation>
+        <translation>Невозможно прочитать JSON из файла: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="48"/>
         <source>Failed to read file: </source>
-        <translation type="unfinished">Невозможно прочесть файл: </translation>
+        <translation>Невозможно прочесть файл: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="54"/>
         <source>Mandatory section is missing: </source>
-        <translation type="unfinished"></translation>
+        <translation>Обязательная секция отсутствует: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="66"/>
         <source>Unsupported version of open portfolio format: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неподдерживаемая версия open portfolio format: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="80"/>
         <source>Incomplete asset data: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неполные данные ЦБ: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="92"/>
         <source>Asset without symbol was skipped: </source>
-        <translation type="unfinished"></translation>
+        <translation>Пропущена ЦБ, т.к. отсутствует символ: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="99"/>
         <source>Can&apos;t parse fx-contract name </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно распознать название валютного контракта</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="102"/>
         <source>FX-contract description incomplete </source>
-        <translation type="unfinished"></translation>
+        <translation>Неполное название валютного контракта </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="104"/>
         <source>Can&apos;t import fx-contract with base currency not RUB</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно импортировать валютный контракт с базовой валютой отличной от RUB</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/open_portfolio.py" line="120"/>
         <source>Imported #</source>
-        <translation type="unfinished"></translation>
+        <translation>Импортирован #</translation>
     </message>
 </context>
 <context>
@@ -5212,27 +5212,27 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="188"/>
         <source>Stock trades loaded: </source>
-        <translation type="unfinished">Сделки с акциями загружены: </translation>
+        <translation>Сделки с акциями загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="228"/>
         <source>Derivative trades loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Сделки с деривативами загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="253"/>
         <source>Can&apos;t parse currency exchange symbol</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно распознать символ валюты</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="261"/>
         <source>Unknown currency trade type: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестныей тип сделки при обмене валюты: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="279"/>
         <source>Currency trades loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Сделки обмена валюты загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="302"/>
