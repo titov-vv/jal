@@ -359,9 +359,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         accounts = self._data[FOF.ACCOUNTS]
         for account in accounts:
             if account['id'] < 0:  # Checks if report is after last transaction recorded for account.
-                if period[0] < JalAccount(-account['id']).last_operation_date():
+                jal_account = JalAccount(-account['id'])
+                if period[0] < jal_account.last_operation_date():
                     if QMessageBox().warning(None, self.tr("Confirmation"),
-                                             self.tr("Statement period starts before last recorded operation for the account. Continue import?"),
+                                             self.tr("Statement period starts before last recorded operation for the account ")
+                                             + f'"{jal_account.name()}"\n' + self.tr("Continue import?"),
                                              QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                         raise Statement_ImportError(self.tr("Statement import was cancelled"))
 
