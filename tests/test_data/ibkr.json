@@ -169,7 +169,8 @@
     {"id": 6, "account": [0, 2, 0], "number": "1234567890", "asset": [2, 2], "timestamp": 1663372800, "withdrawal": 100.0, "deposit": 100.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS", "fee": 0.0},
     {"id": 7, "account": [0, 2, 0], "number": "1234567891", "asset": [2, 2], "timestamp": 1663372800, "withdrawal": 100.0, "deposit": 100.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS", "fee": 0.0},
     {"id": 8, "account": [3, 2, 0], "number": "24055511103", "asset": [4 ,4], "timestamp": 1685702720, "withdrawal": 7.0, "deposit": 7.0, "description": "INTERNAL TRANSFER (--)", "fee": 0.0},
-    {"id": 9, "account": [2, 3, 0], "number": "21632131212", "asset": [2, 2], "timestamp": 1694777165, "withdrawal": 12345.0, "deposit": 12345.0, "description": "INTERNAL TRANSFER FROM U7654321 TO TEST_ACC","fee": 0.0}
+    {"id": 9, "account": [2, 3, 0], "number": "21632131212", "asset": [2, 2], "timestamp": 1694777165, "withdrawal": 12345.0, "deposit": 12345.0, "description": "INTERNAL TRANSFER FROM U7654321 TO TEST_ACC","fee": 0.0},
+    {"id": 10, "account": [3, 2, 0], "number": "16377745681", "asset": [2, 2], "timestamp": 1683361518, "withdrawal": 150.0, "deposit": 150.0, "description": "INTERNAL TRANSFER FROM TEST_ACC TO U7654321", "fee": 0.0}
   ],
   "corporate_actions": [
     {"id": 1, "type": "split", "account": 2, "timestamp": 1618345500, "number": "16074977038", "asset": 4, "quantity": 217.0,

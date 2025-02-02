@@ -534,12 +534,18 @@ class StatementIBKR(StatementXML):
         cnt = 0
         for i, transfer in enumerate(transfers):
             transfer['id'] = transfer_base + i
+            if transfer['type'] != "INTERNAL":
+                raise Statement_ImportError(self.tr("Only internal transfers are supported: ") + f"{transfer}")
             if self._find_in_list(self._data[FOF.ASSETS], 'id', transfer['asset'])['type'] == FOF.ASSET_MONEY:
-                if transfer['direction'] != "OUT":
-                    raise Statement_ImportError(self.tr("Incoming money transfer not implemented yet"))
-                transfer['account'] = [transfer['account'], transfer.pop('account2'), 0]
+                if transfer['direction'] == "OUT":
+                    transfer['account'] = [transfer['account'], transfer.pop('account2'), 0]
+                    transfer['withdrawal'] = transfer['deposit'] = -transfer.pop('amount')
+                elif transfer['direction'] == "IN":
+                    transfer['account'] = [transfer.pop('account2'), transfer['account'], 0]
+                    transfer['withdrawal'] = transfer['deposit'] = transfer.pop('amount')
+                else:
+                    raise Statement_ImportError(self.tr("Unknown transfer direction: ") + f"{transfer}")
                 transfer['asset'] = [transfer['asset'], transfer['asset']]
-                transfer['withdrawal'] = transfer['deposit'] = -transfer.pop('amount')
                 transfer['description'] = transfer.pop('type') + ' ' + transfer['description']
                 transfer['fee'] = 0.0
                 self.drop_extra_fields(transfer, ["direction", "amount", "company", "quantity"])
