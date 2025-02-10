@@ -1,4 +1,6 @@
 import json
+from typing import Any
+
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 import sys
@@ -612,13 +614,14 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # Helper function that takes list of dictionaries and returns one element where key=value
     # exception is raised if multiple elements found
     # Returns None if nothing was found in the list
-    def _find_in_list(self, data_list, key, value):
+    def _find_in_list(self, data_list, key, value) -> dict | None:
         filtered = [x for x in data_list if key in x and x[key] == value]
         if filtered:
             if len(filtered) == 1:
                 return filtered[0]
             else:
                 raise Statement_ImportError(self.tr("Multiple match for ") + f"'{key}'='{value}': {filtered}")
+        return None
 
     # Method finds currency in current statement data. New currency is created if no currency was found.
     # Returns currency id

@@ -178,6 +178,7 @@ class StatementIBKR(StatementXML):
                                           ('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
                                           ('description', 'name', str, None),
                                           ('isin', 'isin', str, ''),
+                                          ('figi', 'figi', str, ''),
                                           ('cusip', 'reg_number', str, ''),
                                           ('expiry', 'expiry', datetime, 0),
                                           ('maturity', 'maturity', datetime, 0),
@@ -476,8 +477,7 @@ class StatementIBKR(StatementXML):
                 asset.pop('expiry')
             if asset['type'] == FOF.ASSET_BOND:
                 asset['principal'] = int(asset['principal']) * IBKR_Asset.BondPrincipal if asset['principal'] else IBKR_Asset.BondPrincipal
-            asset.pop('maturity')
-            asset.pop('exchange')
+            self.drop_extra_fields(asset,['maturity', 'exchange'])
             self.asset_id(asset)
             asset_count += 1
         logging.info(self.tr("Securities loaded: ") + f"{asset_count} ({len(assets)})")
