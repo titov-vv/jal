@@ -178,7 +178,7 @@ class StatementIBKR(StatementXML):
                                           ('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
                                           ('description', 'name', str, None),
                                           ('isin', 'isin', str, ''),
-                                          ('figi', 'figi', str, ''),
+                                          # ('figi', 'figi', str, ''),
                                           ('cusip', 'reg_number', str, ''),
                                           ('expiry', 'expiry', datetime, 0),
                                           ('maturity', 'maturity', datetime, 0),

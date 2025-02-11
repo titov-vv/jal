@@ -389,7 +389,7 @@ class QuoteDownloader(QObject):
                 "TimeFrame":None,
                 "RequestedDataSetType":"ohlc",
                 "ChartPriceType":"price",
-                "Key": asset.symbol() + "." + suffix,
+                "Key": asset.symbol(currency_id) + "." + suffix,
                 "OffSet":0,
                 "FromDate":start_timestamp,
                 "ToDate":end_timestamp,
