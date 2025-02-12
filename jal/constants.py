@@ -183,11 +183,42 @@ class DepositActions(PredefinedList, QObject):
             self.TaxWithheld: self.tr("Tax withheld")
         }
 
-class AssetData:
+
+class AssetData(PredefinedList, QObject):
+    FIGI = 0
     RegistrationCode = 1
     ExpiryDate = 2
     PrincipalValue = 3
     Tag = 4   # This value is used in database trigger(s) after tag deletion
+    CUSIP = 5
+    IbkrContractId = 6
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.FIGI: self.tr("FIGI"),
+            self.RegistrationCode: self.tr("Reg.code"),
+            self.ExpiryDate: self.tr("expiry"),
+            self.PrincipalValue: self.tr("principal"),
+            self.Tag: self.tr("Tag"),
+            self.CUSIP: self.tr("CUSIP"),
+            self.IbkrContractId: self.tr("IB contract ID")
+        }
+        self._types = {
+            self.FIGI: "str",
+            self.RegistrationCode: "str",
+            self.ExpiryDate: "date",
+            self.PrincipalValue: "float",
+            self.Tag: "tag",
+            self.CUSIP: "str",
+            self.IbkrContractId: "int"
+        }
+
+    def get_type(self, type_id, default='') -> str:
+        try:
+            return self._types[type_id]
+        except KeyError:
+            return default
 
 
 class MarketDataFeed(PredefinedList, QObject):

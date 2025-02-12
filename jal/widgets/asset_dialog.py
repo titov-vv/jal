@@ -200,20 +200,15 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
         super().__init__(parent=parent)
         self._key = key_field
         self._value = value_field
-        self.types = {
-            AssetData.RegistrationCode: (self.tr("reg.code"), "str"),
-            AssetData.ExpiryDate: (self.tr("expiry"), "date"),
-            AssetData.PrincipalValue: (self.tr("principal"), "float"),
-            AssetData.Tag: (self.tr("tag"), "tag")
-        }
+        self.types = AssetData()
 
-    def type(self, index):
-        return self.types[index][0]
+    def type_name(self, index):
+        return self.types.get_name(index)
 
     def display_value(self, type_index, value):
-        datatype = self.types[type_index][1]
+        datatype = self.types.get_type(type_index)
         try:
-            if datatype == "str":
+            if datatype == "str" or datatype == "int":
                 return value
             elif datatype == "date":
                 return datetime.fromtimestamp(int(value), tz=timezone.utc).strftime("%d/%m/%Y")
@@ -222,27 +217,26 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
             elif datatype == "tag":
                 return JalTag(int(value)).name()
             else:
-                assert False, "Unknown data type of asset data"
+                assert False, f"Unknown data type of asset data '{datatype}'"
         except ValueError:
             return ''
 
     def createEditor(self, aParent, option, index):
         if index.column() == self._key:
             editor = QComboBox(aParent)
-            for idx in self.types:
-                editor.addItem(self.types[idx][0], userData=idx)
+            self.types.load2combo(editor)
         elif index.column() == self._value:
             type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
-            if self.types[type_idx][1] == "str" or self.types[type_idx][1] == "float":
+            if self.types.get_type(type_idx) == "str" or self.types.get_type(type_idx) == "int" or self.types.get_type(type_idx) == "float":
                 editor = QLineEdit(aParent)
-            elif self.types[type_idx][1] == "date":
+            elif self.types.get_type(type_idx) == "date":
                 editor = DateTimeEditWithReset(aParent)
                 editor.setTimeSpec(Qt.UTC)
                 editor.setDisplayFormat("dd/MM/yyyy")
-            elif self.types[type_idx][1] == "tag":
+            elif self.types.get_type(type_idx) == "tag":
                 editor = TagSelector(aParent)
             else:
-                assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.createEditor()"
+                assert False, f"Unknown data type '{self.types.get_type(type_idx)}' in DataDelegate.createEditor()"
         else:
             assert False, f"Delegate DataDelegate.createEditor() called for not-initialized column {index.column()}"
         return editor
@@ -252,28 +246,34 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
             editor.setCurrentIndex(editor.findData(index.model().data(index, Qt.EditRole)))
         elif index.column() == self._value:
             type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
-            if self.types[type_idx][1] == "str":
+            if self.types.get_type(type_idx) == "str":
                 editor.setText(index.model().data(index, Qt.EditRole))
-            elif self.types[type_idx][1] == "date":
+            elif self.types.get_type(type_idx) == "date":
                 try:
                     timestamp = int(index.model().data(index, Qt.EditRole))
                     editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, QTimeZone(0)))
                 except ValueError:
                     QStyledItemDelegate.setEditorData(self, editor, index)
-            elif self.types[type_idx][1] == "float":
+            elif self.types.get_type(type_idx) == "int":
+                try:
+                    amount = int(index.model().data(index, Qt.EditRole))
+                except (ValueError, TypeError):
+                    amount = 0
+                editor.setText(str(amount))
+            elif self.types.get_type(type_idx) == "float":
                 try:
                     amount = Decimal(index.model().data(index, Qt.EditRole))
                 except (ValueError, TypeError):
                     amount = Decimal('0')
                 editor.setText(localize_decimal(amount))
-            elif self.types[type_idx][1] == "tag":
+            elif self.types.get_type(type_idx) == "tag":
                 try:
                     tag_id = int(index.model().data(index, Qt.EditRole))
                 except (ValueError, TypeError):
                     tag_id = 0
                 editor.selected_id = tag_id
             else:
-                assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.setEditorData()"
+                assert False, f"Unknown data type '{self.types.get_type(type_idx)}' in DataDelegate.setEditorData()"
         else:
             assert False, f"Delegate DataDelegate.setEditorData() called for not-initialized column {index.column()}"
 
@@ -283,18 +283,21 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
             model.setData(index.sibling(index.row(), self._value), '')  # Reset data value on type change
         elif index.column() == self._value:
             type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
-            if self.types[type_idx][1] == "str":
+            if self.types.get_type(type_idx) == "str":
                 model.setData(index, editor.text())
-            elif self.types[type_idx][1] == "date":
+            elif self.types.get_type(type_idx) == "int":
+                value = QLocale().toInt(editor.text())[0]
+                model.setData(index, value)
+            elif self.types.get_type(type_idx) == "date":
                 timestamp = editor.dateTime().toSecsSinceEpoch()
                 model.setData(index, str(timestamp))
-            elif self.types[type_idx][1] == "float":
+            elif self.types.get_type(type_idx) == "float":
                 value = QLocale().toDouble(editor.text())[0]
                 model.setData(index, value)
-            elif self.types[type_idx][1] == "tag":
+            elif self.types.get_type(type_idx) == "tag":
                 model.setData(index, str(editor.selected_id))
             else:
-                assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.setModelData()"
+                assert False, f"Unknown data type '{self.types.get_type(type_idx)}' in DataDelegate.setModelData()"
         else:
             assert False, f"Delegate DataDelegate.setModelData() called for not-initialized column {index.column()}"
 
@@ -322,7 +325,7 @@ class ExtraDataModel(AbstractReferenceListModel):
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             if index.column() == self.fieldIndex("datatype"):
-                return self._data_delegate.type(super().data(index, role))
+                return self._data_delegate.type_name(super().data(index, role))
             elif index.column() == self.fieldIndex("value"):
                 datatype = super().data(index.sibling(index.row(), self.fieldIndex("datatype")), role)
                 return self._data_delegate.display_value(datatype, super().data(index, role))
