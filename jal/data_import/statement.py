@@ -652,7 +652,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             asset_data = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', asset_info['reg_number'])
             if asset_data is not None:
                 asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_data['asset'])
-        if asset is None and 'symbol' in asset_info:
+        # FIXME - all asset handling should be changed in order to allow multiple symbols per asset with different currencies, ISINs, etc.
+        us_asset = (asset_info.get('isin', '')[2:-1] == asset_info.get('reg_number', '')) and asset_info.get('isin', '')[:2] == 'US'  # US stock that has ISIN derived from CUSIP
+        if not us_asset and asset is None and 'symbol' in asset_info:
             symbol = self._find_in_list(self._data[FOF.SYMBOLS], 'symbol', asset_info['symbol'])
             if symbol is not None:
                 asset = self._find_in_list(self._data[FOF.ASSETS], 'id', symbol['asset'])
