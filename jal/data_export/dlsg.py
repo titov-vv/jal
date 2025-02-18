@@ -11,7 +11,7 @@ form_3nfl_template = {
     2020: {
         "header": "DLSG            Decl20200102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
         "sections": {
-            "@DeclInfo": ('', '', 0, 0, datetime(2022, 1, 29), 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, '', '', 0),
+            "@DeclInfo": ('', '', 0, 0, datetime(2021, 1, 29), 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, '', '', 0),
             "@PersonName": ('', '', '', '', '', 0),
             "@PersonDocument": (0, '', '', datetime(1990, 1, 1), datetime(1977, 1, 1), '', '', 0),
             "@Foreigner": ('', "РОССИЯ", '', 643),
@@ -86,7 +86,7 @@ form_3nfl_template = {
     2023: {
         "header": "DLSG            Decl20230103FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
         "sections": {
-            "@DeclInfo": ('', '', 0, 0, datetime(2023, 4, 9), 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, '', '', 0),
+            "@DeclInfo": ('', '', 0, 0, datetime(2024, 4, 9), 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, '', '', 0),
             "@PersonName": ('', '', '', '', '', 0),
             "@PersonDocument": (0, '', '', datetime(1990, 1, 1), datetime(1977, 1, 1), '', '', 0),
             "@Foreigner": ('', "РОССИЯ", '', 643),
@@ -106,6 +106,32 @@ form_3nfl_template = {
             "@ConstructionDeduct": (0, ),
             "@CBDeduct": (0, ),
             "@InvDeduct": (0, )
+        }
+    },
+    2024: {
+        "header": "DLSG            Decl20240103FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+        "sections": {
+            "@DeclInfo": ('', '', 0, 0, datetime(2025, 4, 9), 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, '', '', 0),
+            "@PersonName": ('', '', '', '', '', 0),
+            "@PersonDocument": (0, '', '', datetime(1990, 1, 1), datetime(1977, 1, 1), '', '', 0),
+            "@Foreigner": ('', "РОССИЯ", '', 643),
+            "@PhoneForeignerHome": ('', ''),
+            "@PhoneForeignerWork": ('', ''),
+            "@PersonAddress": (0, '', 0, '', '', '', '', '', '', '', '', ''),
+            "@HomePhone": ('', ''),
+            "@WorkPhone": ('', ''),
+            "@DeclInquiry": (0, 0, 0, 0, 0, 0),
+            "@DeclForeign": {
+                # "@CurrencyIncome0000": (0, 1530, "(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)", "IBKR", 324,
+                #     840, datetime(2022, 1, 31), datetime(2022, 1, 31), 1, 840, 7618.54, 100, 7618.54, 100, "Доллар США",
+                #     123, 9370.8, 11, 838.04, 201, 321, 0, 0, 0, '', 0,)
+            },
+            "@StandartDeduct": (0, ),
+            "@SocialDeduct": (0, ),
+            "@ConstructionDeduct": (0, ),
+            "@CBDeduct": (0, ),
+            "@InvDeduct": (0, ),
+            "@DSDeduct": (0, )
         }
     }
 }
