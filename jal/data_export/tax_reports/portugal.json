@@ -4,5 +4,8 @@
   },
   "2023": {
     "tax_treaty": ["ad", "ae","ao","at","bb", "be", "bg","bh", "br", "ca", "ch", "ci", "cl", "co", "cn", "cv", "cu", "cy", "cz", "de", "dk", "dz", "ee", "es", "et", "fr", "gb", "ge", "gr", "gw", "hk", "hr", "hu", "id", "ie", "il", "in", "is", "it", "jp", "ke", "kr", "kw", "lv", "lt", "lu", "ma", "md", "me", "mo", "mt", "mx", "mz", "nl", "no", "om", "pa", "pe", "pk", "pl", "qa", "ro", "ru", "sa", "se", "sg", "si", "sk", "sm", "sn", "st", "tl", "tn", "tr", "ua", "us", "uy", "ve", "vn", "za"]
+  },
+  "2024": {
+    "tax_treaty": ["ad", "ae","ao","at","bb", "be", "bg","bh", "br", "ca", "ch", "ci", "cl", "co", "cn", "cv", "cu", "cy", "cz", "de", "dk", "dz", "ee", "es", "et", "fr", "gb", "ge", "gr", "gw", "hk", "hr", "hu", "id", "ie", "il", "in", "is", "it", "jp", "ke", "kr", "kw", "lv", "lt", "lu", "ma", "md", "me", "mo", "mt", "mx", "mz", "nl", "no", "om", "pa", "pe", "pk", "pl", "qa", "ro", "ru", "sa", "se", "sg", "si", "sk", "sm", "sn", "st", "tl", "tn", "tr", "ua", "us", "uy", "ve", "vn", "za"]
   }
 }
