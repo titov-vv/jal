@@ -138,7 +138,6 @@ class StatementOpenPortfolio(Statement):
                             "timestamp": trade['timestamp'],
                             "withdrawal": abs(trade['summa']), "deposit": abs(trade['count']), "fee": abs(trade['fee']),
                             "description": trade['description']}
-                print(f"T: {transfer}")
                 self._data[FOF.TRANSFERS].append(transfer)
             else:  # Create trade
                 trade["number"] = trade["trade-id"]

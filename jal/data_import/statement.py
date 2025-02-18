@@ -653,13 +653,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset_data is not None:
                 asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_data['asset'])
         # FIXME - all asset handling should be changed in order to allow multiple symbols per asset with different currencies, ISINs, etc.
-        us_asset = (asset_info.get('isin', '')[2:-1] == asset_info.get('reg_number', '')) and asset_info.get('isin', '')[:2] == 'US'  # US stock that has ISIN derived from CUSIP
-        if not us_asset and asset is None and 'symbol' in asset_info:
+        has_code = asset_info.get('isin','') or asset_info.get('reg_number','')
+        if not has_code and asset is None and 'symbol' in asset_info:
             symbol = self._find_in_list(self._data[FOF.SYMBOLS], 'symbol', asset_info['symbol'])
             if symbol is not None:
                 asset = self._find_in_list(self._data[FOF.ASSETS], 'id', symbol['asset'])
-                if 'isin' in asset and 'isin' in asset_info and asset['isin'] != asset_info['isin']:
-                    asset = None
         if asset_info.get('search_offline', False):   # If allowed fetch asset data from database
             db_asset = JalAsset(data=asset_info, search=True, create=False)
             if db_asset.id():
