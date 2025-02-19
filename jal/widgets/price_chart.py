@@ -152,7 +152,7 @@ class ChartWindow(MdiWidget):
             min_ts = 0.95 * min_ts
             max_ts = 1.05 * max_ts
         # Round min/max values to near "round" values in order to have 10 nice intervals
-        step = Decimal(10) ** Decimal(floor(Decimal.log10(max_price - min_price)))
+        step = Decimal(1) if min_price == max_price else Decimal(10) ** Decimal(floor(Decimal.log10(max_price - min_price)))
         min_price = floor(min_price / step) * step
         max_price = ceil(max_price / step) * step
         # Add a gap at the beginning and end
