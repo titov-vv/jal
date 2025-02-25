@@ -221,12 +221,15 @@ class JalAccount(JalDB):
     def credit_limit(self) -> Decimal:
         return self._credit_limit
 
-    def last_operation_date(self) -> int:
+    # Returns timestamp of last operation recorded for the account
+    # If future=True then include future operations
+    def last_operation_date(self, future=False) -> int:
+        limit = Setup.MAX_TIMESTAMP if future else now_ts()
         last_timestamp = self._read("SELECT MAX(o.timestamp) FROM operation_sequence AS o "
-                                    "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.id=:account_id",
-                                    [(":account_id", self._id)])
+                                    "LEFT JOIN accounts AS a ON o.account_id=a.id "
+                                    "WHERE a.id=:account_id AND o.timestamp<=:now",
+                                    [(":account_id", self._id), (":now", limit)])
         last_timestamp = 0 if last_timestamp == '' else last_timestamp
-        last_timestamp = now_ts() if last_timestamp > now_ts() else last_timestamp  # Skip future operations
         return last_timestamp
 
     # FIXME This method now looks duplicated with open_trades_list() - need some unification
