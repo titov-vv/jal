@@ -168,7 +168,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     # validate income/spending
     assert JalAccount(1).dump_actions() == [
         [1, 1, 1578073286, 1, 1, '', '', [1, 1, 5, '', '-7.96', '0', 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019']],
-        [2, 1, 1601462520, 1, 1, '', '', [2, 2, 5, '', '0.6905565', '0', 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)']]
+        [2, 1, 1601462520, 1, 1, '', '', [2, 2, 5, '', '0.6905565', '0', 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)']],
+        [4, 1, 1604534400, 1, 1, '', '', [4, 4, 6, '', '-0.0105', '0', 'VAT Spain 21%: 0.05 USD t*****71:Global Snapshot PnP']]
     ]
     assert JalAccount(2).dump_actions() == [
         [3, 1, 1591142400, 2, 1, '', '', [3, 3, 8, '', '0.5', '0', 'RUB CREDIT INT FOR MAY-2020']]

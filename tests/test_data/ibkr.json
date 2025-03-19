@@ -158,7 +158,8 @@
   "income_spending": [
     {"id": 1, "timestamp": 1578073286, "account": 2, "peer": 0, "lines": [{"amount": -7.96, "category": -5, "description": "BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019"}]},
     {"id": 2, "timestamp": 1601462520, "account": 2, "peer": 0, "lines": [{"amount": 0.6905565, "category": -5, "description": "COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)"}]},
-    {"id": 3, "timestamp": 1591142400, "account": 1, "peer": 0, "lines": [{"amount": 0.5, "category": -8, "description": "RUB CREDIT INT FOR MAY-2020"}]}
+    {"id": 3, "timestamp": 1591142400, "account": 1, "peer": 0, "lines": [{"amount": 0.5, "category": -8, "description": "RUB CREDIT INT FOR MAY-2020"}]},
+    {"id": 4, "timestamp": 1604534400, "account": 2, "peer": 0, "lines": [{"amount": -0.0105, "category": -6, "description": "VAT Spain 21%: 0.05 USD t*****71:Global Snapshot PnP"}]}
   ],
   "transfers": [
     {"id": 1, "account": [6, 2, 2], "number": "2674343226","asset": [32, 2], "timestamp": 1580443370, "withdrawal": 890.47, "deposit": 1000.0, "fee": 3.0, "description": "IDEALFX"},

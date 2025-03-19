@@ -272,6 +272,18 @@ class StatementIBKR(StatementXML):
                                             ('source', 'source', str, None),
                                             ('tradeId', 'number', str, None)],
                                  'loader': self.load_taxes},
+            'SalesTaxes': {'tag': 'SalesTax',
+                           'level': '',
+                           'values': [('accountId', 'account', IBKR_Account, None),
+                                      ('currency', 'currency', str, None),
+                                      ('date', 'timestamp', datetime, None),
+                                      ('salesTax', 'amount', float, None),
+                                      ('taxableDescription', 'description', str, None),
+                                      ('country', 'country', str, None),
+                                      ('taxType', 'tax_type', str, None),
+                                      ('taxableAmount', 'taxable_amount', float, None),
+                                      ('taxRate', 'tax_rate', str, None)],
+                           'loader': self.load_sales_taxes},
             'CFDCharges': {'tag': 'CFDCharge',
                            'level': '',
                            'values': [('accountId', 'account', IBKR_Account, None),
@@ -1065,7 +1077,21 @@ class StatementIBKR(StatementXML):
                 self.drop_extra_fields(tax, ["source", "number"])
                 self._data[FOF.ASSET_PAYMENTS].append(tax)
                 cnt += 1
-        logging.info(self.tr("Taxes loaded: ") + f"{cnt} ({len(taxes)})")
+        logging.info(self.tr("Transaction taxes loaded: ") + f"{cnt} ({len(taxes)})")
+
+    def load_sales_taxes(self, taxes):
+        cnt = 0
+        id_base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        for i, tax in enumerate(taxes):
+            tax['id'] = id_base + i
+            tax['peer'] = 0
+            rate = format_decimal(Decimal('100') * Decimal(tax['tax_rate']))
+            text = f"{tax['tax_type']} {tax['country']} {rate}%: {-tax['taxable_amount']} {tax['currency']} {tax['description']}"
+            tax['lines'] = [{'amount': tax['amount'], 'category': -PredefinedCategory.Taxes, 'description': text}]
+            self.drop_extra_fields(tax, ["amount", "currency", "description", "country", "tax_type", "tax_rate", "taxable_amount",])
+            self._data[FOF.INCOME_SPENDING].append(tax)
+            cnt += 1
+        logging.info(self.tr("Sales taxes loaded: ") + f"{cnt} ({len(taxes)})")
 
     def load_cfd_charges(self, charges):
         cnt = 0
