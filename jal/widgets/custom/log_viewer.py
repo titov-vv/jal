@@ -33,7 +33,6 @@ class LogHandler(logging.Handler):
 class LogViewer(QPlainTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.app = QApplication.instance()
         self._logger = None     # Here an instance of current logger will be stored
         self._log_handler = LogHandler(self.process_message)
         self.setReadOnly(True)
@@ -118,7 +117,6 @@ class LogViewer(QPlainTextEdit):
         if self.expandButton:
             palette = self.expandButton.palette()
             palette.setColor(self.expandButton.foregroundRole(), color)
-        self.app.processEvents()
 
     def showEvent(self, event):
         self.cleanNotification()
