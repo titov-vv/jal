@@ -525,7 +525,7 @@ class QuoteDownloader(QObject):
 
     def Coinbase_Downloader(self, asset, currency_id, start_timestamp, end_timestamp):
         currency_symbol = JalAsset(currency_id).symbol()
-        url = f"https://api.coinbase.com/v2/prices/{asset.symbol()}-{currency_symbol}/spot"
+        url = f"https://api.coinbase.com/v2/prices/{asset.symbol(currency_id)}-{currency_symbol}/spot"
         quotes = []
         for ts in timestamp_range(start_timestamp, end_timestamp):
             date_string = datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
