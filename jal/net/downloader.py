@@ -539,13 +539,15 @@ class QuoteDownloader(QObject):
         
         try:
             # Read CSV data directly from response
-            data = pd.read_csv(StringIO(self._request.data()))
+            data = pd.read_csv(
+                StringIO(self._request.data()),
+                converters={'Close': lambda x: Decimal(x.strip())} # не теряем точность при чтении
+            )
             if data.empty:
                 return None
                 
             # Convert dates and filter required columns
             data['Date'] = pd.to_datetime(data['Date'], format='%Y-%m-%d', utc=True)
-            data['Close'] = data['Close'].apply(Decimal)
             
             # Set index and return
             close = data[['Date', 'Close']].set_index('Date')

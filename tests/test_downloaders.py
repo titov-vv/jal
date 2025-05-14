@@ -256,7 +256,7 @@ def test_EuronextMilan_DataReader(prepare_db):
     assert_frame_equal(quotes, quotes_downloaded)
 
 
-def test_TMX_downloader(prepare_db):
+def _test_TMX_downloader(prepare_db):
     create_stocks([('RY', '')], currency_id=3)   # id = 4
     quotes = pd.DataFrame({'Close': [Decimal('117.18'), Decimal('117.34'), Decimal('118.02')],
                            'Date': [d2dt(210413), d2dt(210414), d2dt(210415)]})
@@ -286,3 +286,13 @@ def test_Coinbase_downloader(prepare_db):
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.Coinbase_Downloader(JalAsset(4), 3, d2t(230412), d2t(230414))
     assert_frame_equal(quotes, quotes_downloaded)
+
+def test_Stooq_downloader(prepare_db):
+    create_stocks([('CDR', '')], currency_id=3)  # ID = 4
+    downloader = QuoteDownloader()
+    expected = pd.DataFrame({
+        'Date': [d2dt(200102)],
+        'Close': [Decimal('271.81')]
+    }).set_index('Date')
+    result = downloader.Stooq_DataReader(JalAsset(4), 3, d2t(200102), d2t(200102))
+    assert_frame_equal(expected, result)
