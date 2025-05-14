@@ -165,7 +165,8 @@ class QuoteDownloader(QObject):
             MarketDataFeed.FRA: self.YahooFRA_Downloader,
             MarketDataFeed.SMA_VICTORIA: self.Victoria_Downloader,
             MarketDataFeed.COIN: self.Coinbase_Downloader,
-            MarketDataFeed.MILAN: self.EuronextMilan_DataReader
+            MarketDataFeed.MILAN: self.EuronextMilan_DataReader,
+            MarketDataFeed.WSE: self.Stooq_DataReader
         }
         assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)
         assets = [(x['asset'], x['currency']) for x in assets if x['asset'].quote_source(x['currency']) in sources_list]
@@ -522,6 +523,38 @@ class QuoteDownloader(QObject):
             fund_name, price = match.groups()
             self._victoria_quotes.append({'name': fund_name, 'price': Decimal(price.replace(',', '.'))})
         return self._victoria_quotes
+
+    def Stooq_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
+        """Fetches historical data from Warsaw Stock Exchange (GPW) using Stooq API"""
+        url = "https://stooq.com/q/d/l/"
+        params = {
+            's': asset.symbol(currency_id),
+            'd1': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y%m%d'),
+            'd2': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y%m%d'),
+            'i': 'd'
+        }
+        
+        self._request = WebRequest(WebRequest.GET, url, params=params)
+        self._wait_for_event()
+        
+        try:
+            # Read CSV data directly from response
+            data = pd.read_csv(StringIO(self._request.data()))
+            if data.empty:
+                return None
+                
+            # Convert dates and filter required columns
+            data['Date'] = pd.to_datetime(data['Date'], format='%Y-%m-%d', utc=True)
+            data['Close'] = data['Close'].apply(Decimal)
+            
+            # Set index and return
+            close = data[['Date', 'Close']].set_index('Date')
+            close.sort_index(inplace=True)
+            return close
+            
+        except (ParserError, KeyError, ValueError) as e:
+            logging.error(f"Failed to parse Stooq data: {str(e)}")
+            return None
 
     def Coinbase_Downloader(self, asset, currency_id, start_timestamp, end_timestamp):
         currency_symbol = JalAsset(currency_id).symbol()

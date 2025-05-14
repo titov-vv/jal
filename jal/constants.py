@@ -233,6 +233,7 @@ class MarketDataFeed(PredefinedList, QObject):
     SMA_VICTORIA = 7
     COIN = 8
     MILAN = 9  # Borsa Italiana, Milan Stock Exchange
+    WSE = 10    # Warsaw Stock Exchange (WSE)
 
     def __init__(self):
         super().__init__()
@@ -247,7 +248,8 @@ class MarketDataFeed(PredefinedList, QObject):
             self.FRA: self.tr("Frankfurt Borse"),
             self.SMA_VICTORIA: self.tr("Victoria Seguros"),
             self.COIN: self.tr("Coinbase"),
-            self.MILAN: self.tr("Borsa Italiana")
+            self.MILAN: self.tr("Borsa Italiana"),
+            self.WSE: self.tr("Warsaw Stock Exchange")
         }
 
 
