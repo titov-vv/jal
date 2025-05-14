@@ -142,7 +142,7 @@ class JalDB:
             error = self.run_sql_script(self.get_app_path() + Setup.INIT_SCRIPT_PATH)
             if error.code != JalDBError.NoError:
                 return error
-        if self._read("SELECT value FROM settings WHERE name='CleanDB'") == '2':
+        if self._read("SELECT value FROM settings WHERE name='CleanDB'") == 'yes':
             db.close()
             os.remove(self.get_db_path())
             db.open()

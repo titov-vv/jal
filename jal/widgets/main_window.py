@@ -185,7 +185,7 @@ class MainWindow(QMainWindow):
                                  self.tr("All data will be deleted. The actions can't be undone.\nAre you sure?"),
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return
-        JalSettings().setValue("CleanDB", 2)
+        JalSettings().setValue("CleanDB", "yes")
         QMessageBox().information(self, self.tr("Restart required"),
                                   self.tr("Database will be removed at next JAL start.\n"
                                           "Application will be terminated now."),
