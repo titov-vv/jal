@@ -256,7 +256,7 @@ def test_EuronextMilan_DataReader(prepare_db):
     assert_frame_equal(quotes, quotes_downloaded)
 
 
-def _test_TMX_downloader(prepare_db):
+def test_TMX_downloader(prepare_db):
     create_stocks([('RY', '')], currency_id=3)   # id = 4
     quotes = pd.DataFrame({'Close': [Decimal('117.18'), Decimal('117.34'), Decimal('118.02')],
                            'Date': [d2dt(210413), d2dt(210414), d2dt(210415)]})

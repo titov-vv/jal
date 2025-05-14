@@ -538,7 +538,6 @@ class QuoteDownloader(QObject):
         self._wait_for_event()
         
         try:
-            # Read CSV data directly from response
             data = pd.read_csv(
                 StringIO(self._request.data()),
                 converters={'Close': lambda x: Decimal(x.strip())} # не теряем точность при чтении
@@ -549,7 +548,6 @@ class QuoteDownloader(QObject):
             # Convert dates and filter required columns
             data['Date'] = pd.to_datetime(data['Date'], format='%Y-%m-%d', utc=True)
             
-            # Set index and return
             close = data[['Date', 'Close']].set_index('Date')
             close.sort_index(inplace=True)
             return close
