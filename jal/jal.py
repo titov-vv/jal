@@ -30,7 +30,6 @@ def main():
     translator_installed = False
     translator = None
     sys.excepthook = exception_logger
-    os.environ['QT_MAC_WANTS_LAYER'] = '1'    # Workaround for https://bugreports.qt.io/browse/QTBUG-87014
     app = QApplication([])
 
     error = JalDB().init_db()

@@ -6,7 +6,7 @@ import re
 import logging
 import sqlparse
 from configparser import ConfigParser
-from pkg_resources import parse_version
+from packaging.version import Version
 from PySide6.QtCore import QStandardPaths
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlTableModel
@@ -79,6 +79,8 @@ class JalSqlError:
 class JalDB:
     _tables = []
     _instances_with_cache = []
+    sql_call_count = 0
+    trace_sql_requests = os.environ.get('TRACE_SQL', '').upper() == 'YES'
     PATH_APP = auto()
     PATH_DB_FILE = auto()
     PATH_LANG = auto()
@@ -133,7 +135,7 @@ class JalDB:
             error = db.lastError()
             return JalDBError(JalDBError.DbInitFailure, details=f"{error.driverText()}: {error.databaseText()}, file: {db_file}")
         sqlite_version = self.get_engine_version()
-        if parse_version(sqlite_version) < parse_version(Setup.SQLITE_MIN_VERSION):
+        if Version(sqlite_version) < Version(Setup.SQLITE_MIN_VERSION):
             db.close()
             return JalDBError(JalDBError.OutdatedSqlite)
         JalDB._tables = db.tables(QSql.Tables) + db.tables(QSql.Views)  # Bitwise or somehow doesn't work here :(
@@ -203,6 +205,9 @@ class JalDB:
     # return value - QSqlQuery object (to allow iteration through result)
     @classmethod
     def _exec(cls, sql_text, params=None, forward_only=True, commit=False):
+        JalDB.sql_call_count = JalDB.sql_call_count + 1;
+        if (JalDB.trace_sql_requests):
+            logging.debug(f"Trace SQL {JalDB.sql_call_count}: '{sql_text[:80]}'")
         if params is None:
             params = []
         db = cls.connection()
