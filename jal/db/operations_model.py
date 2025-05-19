@@ -7,7 +7,7 @@ from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2dt
 from jal.widgets.delegates import ColoredAmountsDelegate, long_fraction
-
+from jal.universal_cache import UniversalCache
 
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -20,6 +20,7 @@ class OperationsModel(QAbstractTableModel):
         self._amount_delegate = None
         self._total_delegate = None
         self._data = []
+        self._cache = UniversalCache()
         self._begin = 0
         self._end = 0
         self._account = 0
@@ -49,14 +50,9 @@ class OperationsModel(QAbstractTableModel):
         odata = self._data[row]
         if not index.isValid():
             return None
-        try:
-            operation = LedgerTransaction().get_operation(odata['otype'], odata['oid'], odata['opart'])
-        except IndexError as e:
-            if str(e) == LedgerTransaction.NoOpException:
-                return None
-            raise e
+        operation = self._cache.get_data(self._fetch_single_row_safe_for_deleted, (row,)) # Tuple is required
         if role == Qt.DisplayRole:
-            return self.data_text(operation, index.column())
+            return self._cache.get_data(self._fetch_data_text, (row, index.column())) # operation is too have to be argument for caching
         if role == Qt.DecorationRole and index.column() == 0:
             return operation.icon()
         if role == Qt.FontRole and index.column() == 0:
@@ -80,7 +76,11 @@ class OperationsModel(QAbstractTableModel):
         if role == Qt.UserRole:  # return underlying data for given field extra parameter
             return odata[field]
 
-    def data_text(self, operation, column):
+    def _fetch_data_text(self, rowId: int, columnId):
+        operation = self._cache.get_data(self._fetch_single_row_safe_for_deleted, (rowId,)) # Tuple is required
+        return self.data_text(operation, columnId)
+
+    def data_text(self, operation: LedgerTransaction, column):
         if column == 0:
             date_time = ts2dt(operation.timestamp())
             if operation.number() and operation.type() != LedgerTransaction.Transfer:  # Transfer is 1-liner
@@ -149,6 +149,7 @@ class OperationsModel(QAbstractTableModel):
         self.beginResetModel()
         self._data = []
         self._data = Ledger.get_operations_sequence(self._begin, self._end, self._account)
+        self._cache.clear_cache()
         self.endResetModel()
 
     def delete_rows(self, rows):
@@ -166,3 +167,15 @@ class OperationsModel(QAbstractTableModel):
             if (row >= 0) and (row < len(self._data)):
                 LedgerTransaction.get_operation(self._data[row]['otype'], self._data[row]['oid'],self._data[row]['opart']).assign_tag(tag_id)
         self.prepareData()
+
+    def _refresh_data_internal(self):
+        return [self._fetch_single_row_safe_for_deleted(row) for row in self._data]
+
+    def _fetch_single_row_safe_for_deleted(self, row):
+        odata = self._data[row]
+        try:
+            return LedgerTransaction.get_operation(odata['otype'], odata['oid'], odata['opart'])
+        except IndexError as e:   # If row is already deleted (for example by another reference from 'opart')
+            if str(e) == LedgerTransaction.NoOpException:
+                return None
+            raise e
