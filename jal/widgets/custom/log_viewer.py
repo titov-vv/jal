@@ -45,7 +45,6 @@ class LogViewer(QPlainTextEdit):
         self.clear_color = None   # Variable to store initial "clear" background color
         self.collapsed_text = self.tr("▶ logs")
         self.expanded_text = self.tr("▲ logs")
-        self._is_inside_render_func = False
 
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.addAction(JalIcon[JalIcon.COPY], self.tr('Copy'), self._copy2clipboard)
@@ -67,6 +66,10 @@ class LogViewer(QPlainTextEdit):
 
     @Slot(int, str)
     def process_message(self, log_level, message):
+        # Can be called from inside of QT rendering process, causng segmentation fault
+        QTimer.singleShot(0, lambda: self.displayMessage(log_level, message))
+
+    def displayMessage(self, log_level, message: str):
         colors = {
             logging.DEBUG: CustomColor.Grey,
             logging.INFO: None,
@@ -74,17 +77,8 @@ class LogViewer(QPlainTextEdit):
             logging.ERROR: CustomColor.LightRed,
             logging.CRITICAL: CustomColor.LightRed
         }
-        message_color = colors[log_level]
-        if (self._is_inside_render_func):
-            # QT inside of displayMessage() may log something, causing infinite loop/crash
-            QTimer.singleShot(0, lambda: self.deferredSignal.emit(log_level, message))
-        else:
-            self._is_inside_render_func = True
-            self.displayMessage(message, message_color)
-            self._is_inside_render_func = False
-
-    def displayMessage(self, message: str, color: CustomColor = None):
-        color = self.clear_color if color is None else color
+        message_color = colors[log_level];
+        color = self.clear_color if message_color is None else message_color
 
         # Store message in log window
         text_format = self.currentCharFormat()
