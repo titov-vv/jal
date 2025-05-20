@@ -2,7 +2,7 @@ import sys
 import os
 import logging
 import traceback
-from PySide6.QtCore import Qt, QTranslator
+from PySide6.QtCore import Qt, QTranslator, qInstallMessageHandler, QtMsgType
 from PySide6.QtWidgets import QApplication, QMessageBox
 from jal.widgets.main_window import MainWindow
 from jal.db.db import JalDB, JalDBError
@@ -24,9 +24,35 @@ def make_error_window(error: JalDBError):
     window.setInformativeText(error.details)
     return window
 
+def setup_root_logging():
+    root_logger = logging.getLogger()
+    log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
+    root_logger.setLevel(log_level)
+    qInstallMessageHandler(systemWideQtLogHandler)
+
+def systemWideQtLogHandler(level, context, message):
+    # Маппинг уровней Qt -> logging
+    level_map = {
+        QtMsgType.QtDebugMsg: logging.DEBUG,
+        QtMsgType.QtInfoMsg: logging.INFO,
+        QtMsgType.QtWarningMsg: logging.WARNING,
+        QtMsgType.QtCriticalMsg: logging.ERROR,
+        QtMsgType.QtFatalMsg: logging.CRITICAL,
+    }
+
+    category = context.category if hasattr(context, 'file') else ""
+    ctx_str = f"{str(context)}:{category}"
+
+    log_message = str(message)
+    
+    logging.log(
+        level_map.get(level, logging.ERROR),
+        f"[QT] {log_message} | {ctx_str}"[:250]
+    )
 
 #-----------------------------------------------------------------------------------------------------------------------
 def main():
+    setup_root_logging()
     translator_installed = False
     translator = None
     sys.excepthook = exception_logger

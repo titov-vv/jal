@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 from jal.constants import CustomColor
 from jal.widgets.icons import JalIcon
-from PySide6.QtCore import Qt, Slot, Signal, QObject, qInstallMessageHandler, QtMsgType
+from PySide6.QtCore import Qt, Slot, Signal, QObject, QTimer
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
 from PySide6.QtGui import QBrush
 
@@ -15,18 +15,21 @@ from PySide6.QtGui import QBrush
 class SignalForwarder(QObject):
     signal = Signal(int, str)    # Log level, Log message
 
-
 # Adapter class to have custom log handler that may be passed to logger.addHandler/logger.removeHandler methods and
 # then forward all to the Viewer class for displaying
 class LogHandler(logging.Handler):
-    def __init__(self, receiver):
-        super().__init__()
+    def __init__(self, receiver, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         self._forwarder = SignalForwarder()
         self._forwarder.signal.connect(receiver)
 
     def emit(self, record, **kwargs):
         message = self.format(record)
         self._forwarder.signal.emit(record.levelno, message)
+
+    def disconnect(self):
+        self._forwarder.signal.disconnect()
 
 
 # A GUI class to display messages forwarded from python logging unit in a normal multi-line text area
@@ -42,6 +45,7 @@ class LogViewer(QPlainTextEdit):
         self.clear_color = None   # Variable to store initial "clear" background color
         self.collapsed_text = self.tr("▶ logs")
         self.expanded_text = self.tr("▲ logs")
+        self._is_inside_render_func = False
 
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.addAction(JalIcon[JalIcon.COPY], self.tr('Copy'), self._copy2clipboard)
@@ -56,30 +60,10 @@ class LogViewer(QPlainTextEdit):
     def startLogging(self):
         self._logger = logging.getLogger()
         self._logger.addHandler(self._log_handler)
-        log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
-        self._logger.setLevel(log_level)
-        self._log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-        qInstallMessageHandler(self.qtLogHandler)
-
+        
     def stopLogging(self):
+        self._log_handler.disconnect()
         self._logger.removeHandler(self._log_handler)    # Removing handler (but it doesn't prevent exception at exit)
-        logging.raiseExceptions = False                  # Silencing logging module exceptions
-
-    def qtLogHandler(self, mode, _context, message):
-        colors = {
-            QtMsgType.QtDebugMsg: CustomColor.Grey,
-            QtMsgType.QtInfoMsg: None,
-            QtMsgType.QtWarningMsg: CustomColor.LightRed,
-            QtMsgType.QtCriticalMsg: CustomColor.LightRed,
-            QtMsgType.QtFatalMsg: CustomColor.LightRed,
-            QtMsgType.QtSystemMsg: CustomColor.LightRed
-        }
-        try:
-            message_color = colors[mode]
-        except KeyError:
-            message_color = CustomColor.LightRed
-        message = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]} - Qt - {message}"
-        self.displayMessage(message, message_color)
 
     @Slot(int, str)
     def process_message(self, log_level, message):
@@ -90,11 +74,14 @@ class LogViewer(QPlainTextEdit):
             logging.ERROR: CustomColor.LightRed,
             logging.CRITICAL: CustomColor.LightRed
         }
-        try:
-            message_color = colors[log_level]
-        except KeyError:
-            message_color = CustomColor.LightRed
-        self.displayMessage(message, message_color)
+        message_color = colors[log_level]
+        if (self._is_inside_render_func):
+            # QT inside of displayMessage() may log something, causing infinite loop/crash
+            QTimer.singleShot(0, lambda: self.deferredSignal.emit(log_level, message))
+        else:
+            self._is_inside_render_func = True
+            self.displayMessage(message, message_color)
+            self._is_inside_render_func = False
 
     def displayMessage(self, message: str, color: CustomColor = None):
         color = self.clear_color if color is None else color
@@ -117,6 +104,7 @@ class LogViewer(QPlainTextEdit):
         if self.expandButton:
             palette = self.expandButton.palette()
             palette.setColor(self.expandButton.foregroundRole(), color)
+            self.expandButton.setPalette(palette)
 
     def showEvent(self, event):
         self.cleanNotification()
