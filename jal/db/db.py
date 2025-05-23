@@ -205,9 +205,6 @@ class JalDB:
     # return value - QSqlQuery object (to allow iteration through result)
     @classmethod
     def _exec(cls, sql_text, params=None, forward_only=True, commit=False):
-        JalDB._sql_call_count = JalDB._sql_call_count + 1
-        if JalDB._trace_sql_requests:
-            logging.debug(f"Trace SQL {JalDB._sql_call_count}: '{sql_text}'")
         if params is None:
             params = []
         db = cls.connection()
@@ -221,6 +218,8 @@ class JalDB:
         for param in params:
             query.bindValue(param[0], param[1])
             assert query.boundValue(param[0]) == param[1], f"SQL: failed to assign parameter {param} in '{sql_text}'"
+        if JalDB._trace_sql_requests:
+            cls._log_query(query)
         if not query.exec():
             error = JalSqlError(query.lastError().text())
             if error.custom():
@@ -231,6 +230,17 @@ class JalDB:
         if commit:
             db.commit()
         return query
+
+    # -------------------------------------------------------------------------------------------------------------------
+    # Logs given query as SQL statement with parameters
+    @classmethod
+    def _log_query(cls, query):
+        JalDB._sql_call_count = JalDB._sql_call_count + 1
+        query_text = query.lastQuery()
+        for k, v in zip(query.boundValueNames(), query.boundValues()):
+            v = f"'{v}'" if type(v) == str else v
+            query_text = query_text.replace(k, str(v))
+        logging.debug(f"Trace SQL {JalDB._sql_call_count}: {query_text}")
 
     # ------------------------------------------------------------------------------------------------------------------
     # Reads the result of 'sql_test' query from the database (with given params - the same as for _exec() method)
