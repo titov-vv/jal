@@ -59,9 +59,10 @@ class OperationsModel(QAbstractTableModel):
             return self.data_text(operation, index.column())
         if role == Qt.DecorationRole and index.column() == 0:
             return operation.icon()
-        if role == Qt.FontRole and index.column() == 0:
+        if role == Qt.FontRole:
             # below line isn't related with font, it is put here to be called for each row minimal times (ideally 1)
-            self._view.setRowHeight(row, self._view.verticalHeader().fontMetrics().height() * operation.view_rows())
+            if index.column() == 0:
+                self._view.setRowHeight(row, self._view.fontMetrics().height() * operation.view_rows())
             return self._view.font()
         if role == Qt.ForegroundRole and self._view.isEnabled():
             if index.column() == 4 and operation.reconciled():
@@ -109,8 +110,8 @@ class OperationsModel(QAbstractTableModel):
         self._view.horizontalHeader().setFont(self._bold_font)
         self._amount_delegate = ColoredAmountsDelegate(self._view)
         self._total_delegate = ColoredAmountsDelegate(self._view, colors=False, signs=False)
-        self._view.setItemDelegateForColumn(3, self._amount_delegate)
-        self._view.setItemDelegateForColumn(4, self._total_delegate)
+        self._view.setItemDelegateForColumn(3, self._amount_delegate)     # Amount
+        self._view.setItemDelegateForColumn(4, self._total_delegate)      # Balance
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)  # row size is adjusted in data() method
 
     @Slot()
