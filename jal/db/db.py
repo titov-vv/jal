@@ -79,8 +79,8 @@ class JalSqlError:
 class JalDB:
     _tables = []
     _instances_with_cache = []
-    sql_call_count = 0
-    trace_sql_requests = os.environ.get('TRACE_SQL', '').upper() == 'YES'
+    _sql_call_count = 0
+    _trace_sql_requests = os.environ.get('TRACE_SQL', '').upper() == 'YES'
     PATH_APP = auto()
     PATH_DB_FILE = auto()
     PATH_LANG = auto()
@@ -205,9 +205,9 @@ class JalDB:
     # return value - QSqlQuery object (to allow iteration through result)
     @classmethod
     def _exec(cls, sql_text, params=None, forward_only=True, commit=False):
-        JalDB.sql_call_count = JalDB.sql_call_count + 1;
-        if (JalDB.trace_sql_requests):
-            logging.debug(f"Trace SQL {JalDB.sql_call_count}: '{sql_text[:80]}'")
+        JalDB._sql_call_count = JalDB._sql_call_count + 1
+        if JalDB._trace_sql_requests:
+            logging.debug(f"Trace SQL {JalDB._sql_call_count}: '{sql_text}'")
         if params is None:
             params = []
         db = cls.connection()
