@@ -50,9 +50,9 @@ class OperationsModel(QAbstractTableModel):
         odata = self._data[row]
         if not index.isValid():
             return None
-        operation = self._cache.get_data(self._fetch_single_row_safe_for_deleted, (row,)) # Tuple is required
+        operation = self._cache.get_data(self._fetch_single_row_safe_for_deleted, (row,)) # Tuple is required for key
         if role == Qt.DisplayRole:
-            return self._cache.get_data(self._fetch_data_text, (row, index.column())) # operation is too have to be argument for caching
+            return self._cache.get_data(self._fetch_column_text, (row, index.column())) # operation is too heavy to be an argument for caching -> use row id
         if role == Qt.DecorationRole and index.column() == 0:
             return operation.icon()
         if role == Qt.FontRole and index.column() == 0:
@@ -76,9 +76,9 @@ class OperationsModel(QAbstractTableModel):
         if role == Qt.UserRole:  # return underlying data for given field extra parameter
             return odata[field]
 
-    def _fetch_data_text(self, rowId: int, columnId):
-        operation = self._cache.get_data(self._fetch_single_row_safe_for_deleted, (rowId,)) # Tuple is required
-        return self.data_text(operation, columnId)
+    def _fetch_column_text(self, row_id: int, column_id: int):
+        operation = self._cache.get_data(self._fetch_single_row_safe_for_deleted, (row_id,)) # Tuple is required
+        return self.data_text(operation, column_id)
 
     def data_text(self, operation: LedgerTransaction, column):
         if column == 0:
@@ -168,14 +168,14 @@ class OperationsModel(QAbstractTableModel):
                 LedgerTransaction.get_operation(self._data[row]['otype'], self._data[row]['oid'],self._data[row]['opart']).assign_tag(tag_id)
         self.prepareData()
 
-    def _refresh_data_internal(self):
+    def _refresh_data_internal(self):  # FIXME: This method is not used, remove it?
         return [self._fetch_single_row_safe_for_deleted(row) for row in self._data]
 
     def _fetch_single_row_safe_for_deleted(self, row):
         odata = self._data[row]
         try:
             return LedgerTransaction.get_operation(odata['otype'], odata['oid'], odata['opart'])
-        except IndexError as e:   # If row is already deleted (for example by another reference from 'opart')
+        except IndexError as e:   # If row is already deleted (for example by another reference to the same 'oid' from different 'opart')
             if str(e) == LedgerTransaction.NoOpException:
                 return None
             raise e

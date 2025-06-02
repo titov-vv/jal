@@ -3,13 +3,13 @@ from typing import Any, Callable, Hashable, Tuple
 
 class UniversalCache:
     """
-    Универсальный кэш для любых функций и параметров
+    Universal cache for functions with hashable arguments.
     
-    Особенности:
-    - Ключ кэша: кортеж (функция, хешируемые аргументы)
-    - Автоматическая проверка хешируемости аргументов
-    - Поддержка инвалидации по ключу
-    - Гарантированная уникальность ключей
+    Features:
+    - Cache key: tuple (function, hashable arguments)
+    - Autovalidation of arguments (must be hashable)
+    - Invalidate specific cache entries (by key)
+    - Guaranteed unique cache key for each function and its arguments
     """
     
     def __init__(self):
@@ -21,11 +21,11 @@ class UniversalCache:
         args: Tuple[Hashable, ...] = ()
     ) -> Any:
         """
-        Получить или вычислить данные
+        Get data from cache or execute function if not cached.
         
-        :param func: Функция для выполнения
-        :param args: Аргументы для функции (должны быть хешируемыми)
-        :return: Результат выполнения функции
+        :param func: Function to cache/execute
+        :param args: Function arguments (must be hashable)
+        :return: Function result from cache or execution
         """
         key = self._create_key(func, args)
         
@@ -35,16 +35,16 @@ class UniversalCache:
         return self._cache[key]
 
     def invalidate(self, func: Callable, args: Tuple[Hashable, ...] = ()) -> None:
-        """Удалить запись из кэша"""
+        """Delete a specific cache entry"""
         key = self._create_key(func, args)
         self._cache.pop(key, None)
 
     def clear_cache(self) -> None:
-        """Полностью очистить кэш"""
+        """Clear the entire cache"""
         self._cache.clear()
 
     def _create_key(self, func: Callable, args: Tuple) -> Tuple:
-        """Создать уникальный ключ для кэша"""
+        """Create a unique key for the cache"""
         self._validate_args_hashable(args)
         return (
             func.__module__,
@@ -54,8 +54,8 @@ class UniversalCache:
 
     @staticmethod
     def _validate_args_hashable(args: Tuple) -> None:
-        """Проверить что все аргументы хешируемы"""
+        """Validate that all arguments are hashable"""
         try:
             hash(args)
         except TypeError:
-            raise ValueError("Все элементы args должны быть хешируемыми")
+            raise ValueError("All elements must be hashable")
