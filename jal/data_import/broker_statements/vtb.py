@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import timezone
+from datetime import timezone, datetime
 from jal.constants import PredefinedCategory
 from jal.data_import.statement_xls import StatementXLS
 from jal.data_import.statement import FOF, Statement_ImportError
@@ -9,6 +9,13 @@ from jal.data_import.statement import FOF, Statement_ImportError
 JAL_STATEMENT_CLASS = "StatementVTB"
 
 MAX_T_DELTA = 3  # Maximum allowed days between bond maturity and money transfer
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Helper function to convert string to number, as VTB statement has it localized
+def str2num(value):
+    return float(value.replace(',', ' ').replace(' ', '')) if isinstance(value, str) else value
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementVTB(StatementXLS):
@@ -20,10 +27,10 @@ class StatementVTB(StatementXLS):
         "name": "Валюта",
         "cash_end": "Плановый",
     }
-    asset_section = "^Отчет об остатках ценных бумаг"
+    asset_section = "^Отчёт об остатках ценных бумаг"
     asset_columns = {
-        "name": "Наименование ценной бумаги, \n№ гос. регистрации, ISIN",
-        "currency": r"Валюта цены \n\(номинала для облигаций\)"
+        "name": "Наименование ценной бумаги,\n№ гос\. регистрации, ISIN",
+        "currency": r"Валюта\nцены\n\(номинала для\nоблигаций\)"
     }
 
     def __init__(self):
@@ -35,24 +42,8 @@ class StatementVTB(StatementXLS):
         self.asset_withdrawal = []
 
     def _validate(self):
-        shift = 0   # Check how header is shifted to the right
-        for i in range(self._statement.shape[1]):
-            if self._statement[i][4].startswith("Клиент"):  # Starting cell is found
-                shift = 1
-                continue
-            if self._statement[i][4].startswith("ИНН"):   # Next header reached - something went wrong
-                shift = 0
-                break
-            if not shift:
-                continue
-            if self._statement[i][4]:  # Client name found - we may break here
-                break
-            shift += 1
-        if not shift:
-            raise Statement_ImportError(self.tr("Can't determine VTB statement header format"))
-        shift = shift - 6
-        self.AccountPattern = (7 + shift, 7, None)
-        self.PeriodPattern = (5 + shift, 1, r"Отчет Банка ВТБ \(ПАО\) за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d) о сделках, .*")
+        self.AccountPattern = (7, 4, None)
+        self.PeriodPattern = (3, 0, r"Отчет Банка ВТБ \(ПАО\) за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d) о сделках, .*")
         super()._validate()
 
     def _strip_unused_data(self):
@@ -90,6 +81,7 @@ class StatementVTB(StatementXLS):
         cnt = 0
         row, headers = self.find_section_start(self.asset_section, self.asset_columns)
         if row < 0:
+            logging.error(self.tr("Assets section not found"))
             return
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row].startswith('ИТОГО') or self._statement[self.HeaderCol][row] == '':
@@ -130,17 +122,17 @@ class StatementVTB(StatementXLS):
     def _load_deals_main_market(self):
         cnt = 0
         columns = {
-            "asset_name": r"Наименование ценной бумаги, \n№ гос\. Регистрации, ISIN",
+            "asset_name": r"Наименование ценной бумаги,\n№ гос\. регистрации, ISIN",
             "number": "№ сделки",
             "datetime": "Дата и время заключения сделки",
             "B/S": "Вид сделки",
-            "price": r"Цена\n\(% для облигаций\)",
-            "currency": r"Валюта цены\n \(номинала для облигаций\)",
-            "qty": r"Количество \n\(шт\)",
-            "amount": r"Сумма сделки в валюте расчетов\n \(с учетом НКД для облигаций\)  ",
-            "accrued_int": "НКД\nпо сделке в валюте расчетов",
-            "settlement": " Плановая дата поставки",
-            "fee1": "Комиссия Банка за расчет по сделке",
+            "price": r"Цена\n\(% для\nоблигаций\)",
+            "currency": r"Валюта\nцены\n\(номинала для облигаций\)",
+            "qty": r"Количество\n\(шт\.\)",
+            "amount": r"Сумма сделки\nв валюте\nрасчётов\n\(с учётом НКД\nдля\nоблигаций\)",
+            "accrued_int": "НКД\nпо сделке в\nвалюте\nрасчётов",
+            "settlement": "Плановая\nдата\nпоставки",
+            "fee1": "Комиссия Банка за расчёт по сделке",
             "fee2": "Комиссия Банка за заключение сделки"
         }
         row, headers = self.find_section_start(r"^Заключенные в отчетном периоде сделки с ценными бумагами", columns)
@@ -155,24 +147,24 @@ class StatementVTB(StatementXLS):
                 raise Statement_ImportError(self.tr("No asset match in deals for ") + f"'{asset_name}'")
             asset_id = assets[0]['id']
             if self._statement[headers['B/S']][row] == 'Покупка':
-                qty = self._statement[headers['qty']][row]
-                bond_interest = -self._statement[headers['accrued_int']][row]
+                qty = str2num(self._statement[headers['qty']][row])
+                bond_interest = -str2num(self._statement[headers['accrued_int']][row])
             elif self._statement[headers['B/S']][row] == 'Продажа':
-                qty = -self._statement[headers['qty']][row]
-                bond_interest = self._statement[headers['accrued_int']][row]
+                qty = -str2num(self._statement[headers['qty']][row])
+                bond_interest = str2num(self._statement[headers['accrued_int']][row])
             else:
                 row += 1
                 logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
                 continue
             deal_number = self._statement[headers['number']][row]
-            price = self._statement[headers['price']][row]
+            price = str2num(self._statement[headers['price']][row])
             currency = self._statement[headers['currency']][row]
-            fee = self._statement[headers['fee1']][row] + self._statement[headers['fee2']][row]
-            amount = self._statement[headers['amount']][row]
+            fee = str2num(self._statement[headers['fee1']][row]) + str2num(self._statement[headers['fee2']][row])
+            amount = str2num(self._statement[headers['amount']][row])
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                 price = abs((amount - bond_interest) / qty)
-            timestamp = int(self._statement[headers['datetime']][row].replace(tzinfo=timezone.utc).timestamp())
-            settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
+            timestamp = int(datetime.strptime(self._statement[headers['datetime']][row], "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
+            settlement = int(datetime.strptime(self._statement[headers['settlement']][row], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
             account_id = self._find_account_id(self._account_number, currency)
             new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
@@ -353,8 +345,8 @@ class StatementVTB(StatementXLS):
                 continue
             if operation not in operations:
                 raise Statement_ImportError(self.tr("Unsuppported cash transaction ") + f"'{operation}'")
-            timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
-            amount = self._statement[headers['amount']][row]
+            timestamp = int(datetime.strptime(self._statement[headers['date']][row], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            amount = str2num(self._statement[headers['amount']][row])
             description = self._statement[headers['description']][row]
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             if operations[operation] is not None:
@@ -392,20 +384,16 @@ class StatementVTB(StatementXLS):
         self._data[FOF.ASSET_PAYMENTS].append(payment)
 
     def dividend(self, timestamp, account_id, amount, description):
-        DividendPattern = r"^Дивиденды .* (?P<reg_number>\S*), .*. Удержан налог в размере (?P<tax>\d+\.\d\d) руб.$"
+        # DividendPattern = r"^Дивиденды .* (?P<reg_number>\S*), .*. Удержан налог в размере (?P<tax>\d+\.\d\d) руб.$"
+        DividendPattern = r"^Выплата дохода по акциям .* ISIN (?P<isin>\S*), размер выплаты на \d+ ц/б АКЦИЯ (?P<payment>\d+\.\d\d) .*$"
         parts = re.match(DividendPattern, description, re.IGNORECASE)
         if parts is None:
             raise Statement_ImportError(self.tr("Can't parse dividend description ") + f"'{description}'")
         dividend_data = parts.groupdict()
-        asset_id = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', dividend_data['reg_number'])['asset']
-        try:
-            tax = float(dividend_data['tax'])
-            amount += tax
-        except ValueError:
-            raise Statement_ImportError(self.tr("Failed to convert dividend tax ") + f"'{description}'")
+        asset_id = self._find_in_list(self._data[FOF.ASSETS], 'isin', dividend_data['isin'])['id']
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
-                   "asset": asset_id, "amount": amount, "tax": tax, "description": description}
+                   "asset": asset_id, "amount": amount, "tax": 0, "description": description}
         self._data[FOF.ASSET_PAYMENTS].append(payment)
 
     def bond_maturity(self, timestamp, account_id, amount, description):
