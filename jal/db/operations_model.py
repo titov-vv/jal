@@ -169,9 +169,6 @@ class OperationsModel(QAbstractTableModel):
                 LedgerTransaction.get_operation(self._data[row]['otype'], self._data[row]['oid'],self._data[row]['opart']).assign_tag(tag_id)
         self.prepareData()
 
-    def _refresh_data_internal(self):  # FIXME: This method is not used, remove it?
-        return [self._fetch_single_row_safe_for_deleted(row) for row in self._data]
-
     def _fetch_single_row_safe_for_deleted(self, row):
         odata = self._data[row]
         try:
