@@ -9,6 +9,7 @@ from jal.db.helpers import format_decimal, year_begin, year_end, day_begin
 from jal.db.country import JalCountry
 from jal.db.tag import JalTag
 from jal.widgets.helpers import ts2d
+from jal.universal_cache import UniversalCache
 
 
 # Helper function to convert db timestamp string into an integer and replace it as 0 if error happens
@@ -21,12 +22,10 @@ def db_timestamp2int(timestamp_string: str) -> int:
 
 
 class JalAsset(JalDB):
-    db_cache = []
+    db_cache = UniversalCache()
 
     def __init__(self, asset_id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
         super().__init__(cached=True)
-        if not JalAsset.db_cache:
-            self._fetch_data()
         try:
             self._id = int(asset_id)
         except (TypeError, ValueError):
@@ -41,8 +40,7 @@ class JalAsset(JalDB):
                     [(":type", data['type']), (":full_name", data['name']),
                      (":isin", data['isin']), (":country", data['country'])], commit=True)
                 self._id = query.lastInsertId()
-                self._fetch_data()
-        self._data = next((x for x in self.db_cache if x['id'] == self._id), None)
+        self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))  # Load asset data from cache or DB
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['full_name'] if self._data is not None else ''
         self._isin = self._data['isin'] if self._data is not None else None
@@ -56,18 +54,10 @@ class JalAsset(JalDB):
         except (AttributeError, ValueError, TypeError):
             self._tag = JalTag(0)
 
-    def invalidate_cache(self):
-        self._fetch_data()
-
-    # JalAsset maintains single cache available for all instances
-    @classmethod
-    def class_cache(cls) -> True:
-        return True
-
-    def _fetch_data(self):
-        JalAsset.db_cache = []
-        query = self._exec("SELECT * FROM assets ORDER BY id")
-        while query.next():
+    def _load_asset_data(self, asset_id: int) -> dict:
+        asset_data = {}
+        query = self._exec("SELECT * FROM assets WHERE id=:id", [(":id", asset_id)])
+        if query.next():
             asset_data = self._read_record(query, named=True)
             asset_data['symbols'] = []
             symbols_query = self._exec("SELECT * FROM asset_tickers WHERE asset_id=:id", [(":id", asset_data['id'])])
@@ -84,7 +74,15 @@ class JalAsset(JalDB):
                 extra_data[datatype] = value
             if extra_data:
                 asset_data['data'] = extra_data
-            JalAsset.db_cache.append(asset_data)
+        return asset_data
+
+    def invalidate_cache(self):
+        self.db_cache.clear_cache()
+
+    # JalAsset maintains single cache available for all instances
+    @classmethod
+    def class_cache(cls) -> True:
+        return True
 
     def dump(self) -> dict:
         return self._data
@@ -131,7 +129,6 @@ class JalAsset(JalDB):
             if existing['quote_source'] == MarketDataFeed.NA:
                 _ = self._exec("UPDATE asset_tickers SET quote_source=:data_source WHERE id=:id",
                                [(":data_source", data_source), (":id", existing['id'])])
-        self._fetch_data()
 
     # Returns country object for the asset
     def country(self) -> JalCountry:
