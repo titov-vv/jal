@@ -41,13 +41,13 @@ class JalAsset(JalDB):
                      (":isin", data['isin']), (":country", data['country'])], commit=True)
                 self._id = query.lastInsertId()
         self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))  # Load asset data from cache or DB
-        self._type = self._data['type_id'] if self._data is not None else None
-        self._name = self._data['full_name'] if self._data is not None else ''
-        self._isin = self._data['isin'] if self._data is not None else None
-        self._country = JalCountry(self._data['country_id']) if self._data is not None else JalCountry(0)
-        self._reg_number = self._data.get('data', {}).get(AssetData.RegistrationCode, '') if self._data is not None else ''
-        self._expiry = int(self._data.get('data', {}).get(AssetData.ExpiryDate, 0)) if self._data is not None else 0
-        self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '') if self._data is not None else ''
+        self._type = self._data.get('type_id', None)
+        self._name = self._data.get('full_name', '')
+        self._isin = self._data.get('isin', None)
+        self._country = JalCountry(self._data.get('country_id', 0))
+        self._reg_number = self._data.get('data', {}).get(AssetData.RegistrationCode, '')
+        self._expiry = int(self._data.get('data', {}).get(AssetData.ExpiryDate, 0))
+        self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '')
         self._principal = Decimal(self._principal) if self._principal else Decimal('0')
         try:
             self._tag = JalTag(int(self._data.get('data', {}).get(AssetData.Tag, 0)))
@@ -101,7 +101,7 @@ class JalAsset(JalDB):
 
     # Returns asset symbol for given currency or all symbols if no currency is given
     def symbol(self, currency: int = None) -> str:
-        if self._data is None:
+        if not self._data:
             return ''
         currency = None if self._type == PredefinedAsset.Money else currency  # Money have one unique symbol
         if currency is None:
