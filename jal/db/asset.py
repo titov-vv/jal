@@ -129,6 +129,7 @@ class JalAsset(JalDB):
             if existing['quote_source'] == MarketDataFeed.NA:
                 _ = self._exec("UPDATE asset_tickers SET quote_source=:data_source WHERE id=:id",
                                [(":data_source", data_source), (":id", existing['id'])])
+        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
     # Returns country object for the asset
     def country(self) -> JalCountry:
@@ -254,7 +255,7 @@ class JalAsset(JalDB):
                        "VALUES(:asset_id, :datatype, :expiry)",
                        [(":asset_id", self._id), (":datatype", AssetData.Tag), (":expiry", str(tag_id))])
         self._tag = JalTag(tag_id)
-        self._fetch_data()
+        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
     # Updates relevant asset data fields with information provided in data dictionary
     def update_data(self, data: dict) -> None:
@@ -274,7 +275,7 @@ class JalAsset(JalDB):
                     updaters[key](data[key])
                 except KeyError:  # No updater for this key is present
                     continue
-        self._fetch_data()
+        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
     def _update_isin(self, new_isin: str) -> None:
         if self._isin:
@@ -409,7 +410,8 @@ class JalAsset(JalDB):
         assets = []
         query = cls._exec("SELECT id FROM assets")
         while query.next():
-            assets.append(JalAsset(super(JalAsset, JalAsset)._read_record(query, cast=[int])))
+            asset_id = cls._read_record(query, cast=[int])
+            assets.append(JalAsset(asset_id))
         return assets
 
     # Method returns a list of JalAsset objects that describe currencies defined in ledger

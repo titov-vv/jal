@@ -34,6 +34,21 @@ class UniversalCache:
             
         return self._cache[key]
 
+    def update_data(
+            self,
+            func: Callable,
+            args: Tuple[Hashable, ...] = ()
+    ) -> Any:
+        """
+        Invalidates old cache entry and executes function to have new data cached.
+
+        :param func: Function to cache/execute
+        :param args: Function arguments (must be hashable)
+        :return: Function result from new execution
+        """
+        self.invalidate(func, args)
+        return self.get_data(func, args)
+
     def invalidate(self, func: Callable, args: Tuple[Hashable, ...] = ()) -> None:
         """Delete a specific cache entry"""
         key = self._create_key(func, args)
