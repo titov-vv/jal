@@ -6,7 +6,7 @@ import re
 import logging
 import sqlparse
 from configparser import ConfigParser
-from pkg_resources import parse_version
+from packaging.version import Version
 from PySide6.QtCore import QStandardPaths
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlTableModel
@@ -79,6 +79,8 @@ class JalSqlError:
 class JalDB:
     _tables = []
     _instances_with_cache = []
+    _sql_call_count = 0
+    _trace_sql_requests = os.environ.get('TRACE_SQL', '').upper() == 'YES'
     PATH_APP = auto()
     PATH_DB_FILE = auto()
     PATH_LANG = auto()
@@ -133,7 +135,7 @@ class JalDB:
             error = db.lastError()
             return JalDBError(JalDBError.DbInitFailure, details=f"{error.driverText()}: {error.databaseText()}, file: {db_file}")
         sqlite_version = self.get_engine_version()
-        if parse_version(sqlite_version) < parse_version(Setup.SQLITE_MIN_VERSION):
+        if Version(sqlite_version) < Version(Setup.SQLITE_MIN_VERSION):
             db.close()
             return JalDBError(JalDBError.OutdatedSqlite)
         JalDB._tables = db.tables(QSql.Tables) + db.tables(QSql.Views)  # Bitwise or somehow doesn't work here :(
@@ -216,6 +218,8 @@ class JalDB:
         for param in params:
             query.bindValue(param[0], param[1])
             assert query.boundValue(param[0]) == param[1], f"SQL: failed to assign parameter {param} in '{sql_text}'"
+        if JalDB._trace_sql_requests:
+            cls._log_query(query)
         if not query.exec():
             error = JalSqlError(query.lastError().text())
             if error.custom():
@@ -226,6 +230,17 @@ class JalDB:
         if commit:
             db.commit()
         return query
+
+    # -------------------------------------------------------------------------------------------------------------------
+    # Logs given query as SQL statement with parameters
+    @classmethod
+    def _log_query(cls, query):
+        JalDB._sql_call_count = JalDB._sql_call_count + 1
+        query_text = query.lastQuery()
+        for k, v in zip(query.boundValueNames(), query.boundValues()):
+            v = f"'{v}'" if type(v) == str else v
+            query_text = query_text.replace(k, str(v))
+        logging.debug(f"Trace SQL {JalDB._sql_call_count}: {query_text}")
 
     # ------------------------------------------------------------------------------------------------------------------
     # Reads the result of 'sql_test' query from the database (with given params - the same as for _exec() method)

@@ -277,6 +277,7 @@ def test_Frankfurt_downloader(prepare_db):
     quotes_downloaded = downloader.YahooFRA_Downloader(JalAsset(4), 3, d2t(210413), d2t(210415))
     assert_frame_equal(quotes, quotes_downloaded)
 
+
 def test_Coinbase_downloader(prepare_db):
     create_assets([('ALGO', 'Algorand', '', 3, PredefinedAsset.Crypto, 0)])  # ID = 4
     quotes = pd.DataFrame({'Close': [Decimal('0.20171559017841111516'), Decimal('0.19595558582536402655'), Decimal('0.20032663919036912874')],
@@ -286,6 +287,7 @@ def test_Coinbase_downloader(prepare_db):
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.Coinbase_Downloader(JalAsset(4), 3, d2t(230412), d2t(230414))
     assert_frame_equal(quotes, quotes_downloaded)
+
 
 def test_Stooq_downloader(prepare_db):
     create_stocks([('CDR', '')], currency_id=3)  # ID = 4
