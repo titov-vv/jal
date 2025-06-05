@@ -1,9 +1,7 @@
-import os
 import logging
-from datetime import datetime
 from jal.constants import CustomColor
 from jal.widgets.icons import JalIcon
-from PySide6.QtCore import Qt, Slot, Signal, QObject, QTimer
+from PySide6.QtCore import Qt, Slot, Signal, QObject, QMetaObject, Q_ARG
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
 from PySide6.QtGui import QBrush
 
@@ -66,9 +64,10 @@ class LogViewer(QPlainTextEdit):
 
     @Slot(int, str)
     def process_message(self, log_level, message):
-        # Can be called from inside of QT rendering process, causng segmentation fault
-        QTimer.singleShot(0, lambda: self.displayMessage(log_level, message))
+        # Can be called from inside of QT rendering process, causing segmentation fault
+        QMetaObject.invokeMethod(self, "displayMessage", Qt.QueuedConnection, Q_ARG(int, log_level), Q_ARG(str, message))
 
+    @Slot(int, str)
     def displayMessage(self, log_level, message: str):
         colors = {
             logging.DEBUG: CustomColor.Grey,
@@ -77,7 +76,7 @@ class LogViewer(QPlainTextEdit):
             logging.ERROR: CustomColor.LightRed,
             logging.CRITICAL: CustomColor.LightRed
         }
-        message_color = colors[log_level];
+        message_color = colors[log_level]
         color = self.clear_color if message_color is None else message_color
 
         # Store message in log window

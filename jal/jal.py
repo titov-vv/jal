@@ -2,7 +2,7 @@ import sys
 import os
 import logging
 import traceback
-from PySide6.QtCore import Qt, QTranslator, qInstallMessageHandler, QtMsgType
+from PySide6.QtCore import Qt, QTranslator, qInstallMessageHandler, QtMsgType, qDebug
 from PySide6.QtWidgets import QApplication, QMessageBox
 from jal.widgets.main_window import MainWindow
 from jal.db.db import JalDB, JalDBError
@@ -31,7 +31,7 @@ def setup_root_logging():
     qInstallMessageHandler(systemWideQtLogHandler)
 
 def systemWideQtLogHandler(level, context, message):
-    # Маппинг уровней Qt -> logging
+    # Mapping Qt message levels to Python logging levels
     level_map = {
         QtMsgType.QtDebugMsg: logging.DEBUG,
         QtMsgType.QtInfoMsg: logging.INFO,
@@ -42,19 +42,15 @@ def systemWideQtLogHandler(level, context, message):
 
     category = context.category if hasattr(context, 'file') else ""
     ctx_str = f"{str(context)}:{category}"
-
-    log_message = str(message)
-    
     logging.log(
         level_map.get(level, logging.ERROR),
-        f"[QT] {log_message} | {ctx_str}"[:250]
+        f"[QT] {message} | {ctx_str}"[:250]
     )
 
 #-----------------------------------------------------------------------------------------------------------------------
 def main():
     setup_root_logging()
     translator_installed = False
-    translator = None
     sys.excepthook = exception_logger
     os.environ['QT_MAC_WANTS_LAYER'] = '1'    # Workaround for https://bugreports.qt.io/browse/QTBUG-87014
     app = QApplication([])
