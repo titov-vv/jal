@@ -62,11 +62,6 @@ class Ui_TaxWidget(object):
 
         self.MainLayout.addWidget(self.XlsFileName, 3, 1, 1, 1)
 
-        self.NoSettlement = QCheckBox(TaxWidget)
-        self.NoSettlement.setObjectName(u"NoSettlement")
-
-        self.MainLayout.addWidget(self.NoSettlement, 4, 0, 1, 3)
-
         self.PtBox = QGroupBox(TaxWidget)
         self.PtBox.setObjectName(u"PtBox")
         self.PtLayout = QVBoxLayout(self.PtBox)
@@ -78,6 +73,12 @@ class Ui_TaxWidget(object):
         self.Pt_OneCurrencyRate.setChecked(True)
 
         self.PtLayout.addWidget(self.Pt_OneCurrencyRate)
+
+        self.Pt_RateComment = QLabel(self.PtBox)
+        self.Pt_RateComment.setObjectName(u"Pt_RateComment")
+        self.Pt_RateComment.setEnabled(True)
+
+        self.PtLayout.addWidget(self.Pt_RateComment)
 
 
         self.MainLayout.addWidget(self.PtBox, 8, 0, 1, 3)
@@ -118,26 +119,31 @@ class Ui_TaxWidget(object):
 
         self.gridLayout_2.addWidget(self.DlsgFileLbl, 1, 0, 1, 1)
 
-        self.DlsgIncomeSourceBroker = QCheckBox(self.DlsgGroup)
-        self.DlsgIncomeSourceBroker.setObjectName(u"DlsgIncomeSourceBroker")
-        self.DlsgIncomeSourceBroker.setChecked(True)
+        self.DlsgSelectBtn = QPushButton(self.DlsgGroup)
+        self.DlsgSelectBtn.setObjectName(u"DlsgSelectBtn")
 
-        self.gridLayout_2.addWidget(self.DlsgIncomeSourceBroker, 3, 0, 1, 3)
+        self.gridLayout_2.addWidget(self.DlsgSelectBtn, 1, 2, 1, 1)
 
         self.DlsgDividendsOnly = QCheckBox(self.DlsgGroup)
         self.DlsgDividendsOnly.setObjectName(u"DlsgDividendsOnly")
 
-        self.gridLayout_2.addWidget(self.DlsgDividendsOnly, 4, 0, 1, 3)
+        self.gridLayout_2.addWidget(self.DlsgDividendsOnly, 6, 0, 1, 3)
 
         self.DlsgFileName = QLineEdit(self.DlsgGroup)
         self.DlsgFileName.setObjectName(u"DlsgFileName")
 
         self.gridLayout_2.addWidget(self.DlsgFileName, 1, 1, 1, 1)
 
-        self.DlsgSelectBtn = QPushButton(self.DlsgGroup)
-        self.DlsgSelectBtn.setObjectName(u"DlsgSelectBtn")
+        self.NoSettlement = QCheckBox(self.DlsgGroup)
+        self.NoSettlement.setObjectName(u"NoSettlement")
 
-        self.gridLayout_2.addWidget(self.DlsgSelectBtn, 1, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.NoSettlement, 4, 0, 1, 1)
+
+        self.DlsgIncomeSourceBroker = QCheckBox(self.DlsgGroup)
+        self.DlsgIncomeSourceBroker.setObjectName(u"DlsgIncomeSourceBroker")
+        self.DlsgIncomeSourceBroker.setChecked(True)
+
+        self.gridLayout_2.addWidget(self.DlsgIncomeSourceBroker, 5, 0, 1, 1)
 
 
         self.verticalLayout.addWidget(self.DlsgGroup)
@@ -186,23 +192,24 @@ class Ui_TaxWidget(object):
 #if QT_CONFIG(tooltip)
         self.XlsFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store tax report in Excel format", None))
 #endif // QT_CONFIG(tooltip)
-        self.NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))
         self.PtBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Portugal)", None))
-        self.Pt_OneCurrencyRate.setText(QCoreApplication.translate("TaxWidget", u"Use Realization currency rate for Acquisition (one currency rate for all)", None))
+        self.Pt_OneCurrencyRate.setText(QCoreApplication.translate("TaxWidget", u"Use only realization (Sell) currency rate", None))
+        self.Pt_RateComment.setText(QCoreApplication.translate("TaxWidget", u"     (This selection depends CIRS a.23 interpretation)", None))
         self.AccountLbl.setText(QCoreApplication.translate("TaxWidget", u"Account:", None))
         self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Excel file:", None))
         self.RuBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Russia)", None))
         self.DlsgGroup.setTitle(QCoreApplication.translate("TaxWidget", u"Create tax form in \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" program format (*.dcX)", None))
         self.DlsgFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Output file:", None))
-        self.DlsgIncomeSourceBroker.setText(QCoreApplication.translate("TaxWidget", u"Use broker name as income source", None))
-        self.DlsgDividendsOnly.setText(QCoreApplication.translate("TaxWidget", u"Update only information about dividends", None))
-#if QT_CONFIG(tooltip)
-        self.DlsgFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store russian tax form", None))
-#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.DlsgSelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
         self.DlsgSelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
+        self.DlsgDividendsOnly.setText(QCoreApplication.translate("TaxWidget", u"Update only information about dividends", None))
+#if QT_CONFIG(tooltip)
+        self.DlsgFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store russian tax form", None))
+#endif // QT_CONFIG(tooltip)
+        self.NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))
+        self.DlsgIncomeSourceBroker.setText(QCoreApplication.translate("TaxWidget", u"Use broker name as income source", None))
         self.CountryLbl.setText(QCoreApplication.translate("TaxWidget", u"Country:", None))
         self.YearLbl.setText(QCoreApplication.translate("TaxWidget", u"Year:", None))
         self.SaveButton.setText(QCoreApplication.translate("TaxWidget", u"Save Report", None))

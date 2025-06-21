@@ -5669,22 +5669,22 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TaxWidget</name>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="261"/>
+        <location filename="../ui/tax_export_widget.ui" line="271"/>
         <source>Year:</source>
         <translation>Год:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="130"/>
+        <location filename="../ui/tax_export_widget.ui" line="133"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="174"/>
+        <location filename="../ui/tax_export_widget.ui" line="177"/>
         <source>Create tax form in &quot;Декларация&quot; program format (*.dcX)</source>
         <translation>Создать файл 3-НФДЛ в формате программы &quot;Декларация&quot; (*.dcX)</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="137"/>
+        <location filename="../ui/tax_export_widget.ui" line="140"/>
         <source>Excel file:</source>
         <translation>Файл Excel:</translation>
     </message>
@@ -5694,13 +5694,23 @@ Do you want to delete the peer anyway?</source>
         <translation>Файл для сохранения расчёта в формате Excel</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="268"/>
+        <location filename="../ui/tax_export_widget.ui" line="110"/>
+        <source>Use only realization (Sell) currency rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="123"/>
+        <source>     (This selection depends CIRS a.23 interpretation)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="278"/>
         <source>Save Report</source>
         <translation>Сохранить Отчёт</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="47"/>
-        <location filename="../ui/tax_export_widget.ui" line="235"/>
+        <location filename="../ui/tax_export_widget.ui" line="214"/>
         <source>Select file</source>
         <translation>Выберит файл</translation>
     </message>
@@ -5710,12 +5720,12 @@ Do you want to delete the peer anyway?</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="254"/>
+        <location filename="../ui/tax_export_widget.ui" line="264"/>
         <source>Country:</source>
         <translation>Страна:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="228"/>
+        <location filename="../ui/tax_export_widget.ui" line="231"/>
         <source>File where to store russian tax form</source>
         <translation>Файл для сохранения декларации 3-НДФЛ</translation>
     </message>
@@ -5725,42 +5735,37 @@ Do you want to delete the peer anyway?</source>
         <translation>Выберите параметры налогового отчёта</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="96"/>
+        <location filename="../ui/tax_export_widget.ui" line="89"/>
         <source>Additional parameters (Portugal)</source>
         <translation>Дополнительные параметры (Португалия)</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="117"/>
-        <source>Use Realization currency rate for Acquisition (one currency rate for all)</source>
-        <translation>Использовать для Приобретения курс валюты при Реализации (один курс для всего)</translation>
-    </message>
-    <message>
-        <location filename="../ui/tax_export_widget.ui" line="144"/>
+        <location filename="../ui/tax_export_widget.ui" line="147"/>
         <source>Additional parameters (Russia)</source>
         <translation>Дополнительные параметры (Россия)</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="204"/>
+        <location filename="../ui/tax_export_widget.ui" line="207"/>
         <source>Output file:</source>
         <translation>Файл с результатом:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="221"/>
+        <location filename="../ui/tax_export_widget.ui" line="224"/>
         <source>Update only information about dividends</source>
         <translation>Обновить только информацию о дивидендах</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="238"/>
+        <location filename="../ui/tax_export_widget.ui" line="217"/>
         <source> ... </source>
         <translation> ... </translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="211"/>
+        <location filename="../ui/tax_export_widget.ui" line="245"/>
         <source>Use broker name as income source</source>
         <translation>Использовать название брокера как источник выплаты</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="89"/>
+        <location filename="../ui/tax_export_widget.ui" line="238"/>
         <source>Do not use settlement date for currency rates</source>
         <translation>Не использовать дату поставки для курсов валют</translation>
     </message>
