@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'login_pingo_doce_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.2
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -38,13 +38,13 @@ class Ui_LoginPingoDoceDialog(object):
         self.PhoneLbl = QLabel(self.PhoneNumberFrame)
         self.PhoneLbl.setObjectName(u"PhoneLbl")
 
-        self.formLayout_2.setWidget(0, QFormLayout.LabelRole, self.PhoneLbl)
+        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.LabelRole, self.PhoneLbl)
 
         self.PhoneNumberEdit = QLineEdit(self.PhoneNumberFrame)
         self.PhoneNumberEdit.setObjectName(u"PhoneNumberEdit")
         self.PhoneNumberEdit.setInputMask(u"+351-999-999-999;_")
 
-        self.formLayout_2.setWidget(0, QFormLayout.FieldRole, self.PhoneNumberEdit)
+        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.FieldRole, self.PhoneNumberEdit)
 
 
         self.verticalLayout_3.addWidget(self.PhoneNumberFrame)
@@ -59,13 +59,13 @@ class Ui_LoginPingoDoceDialog(object):
         self.PasswordLbl = QLabel(self.PasswordFrame)
         self.PasswordLbl.setObjectName(u"PasswordLbl")
 
-        self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.PasswordLbl)
+        self.formLayout_3.setWidget(0, QFormLayout.ItemRole.LabelRole, self.PasswordLbl)
 
         self.PasswordEdit = QLineEdit(self.PasswordFrame)
         self.PasswordEdit.setObjectName(u"PasswordEdit")
         self.PasswordEdit.setEchoMode(QLineEdit.Password)
 
-        self.formLayout_3.setWidget(0, QFormLayout.FieldRole, self.PasswordEdit)
+        self.formLayout_3.setWidget(0, QFormLayout.ItemRole.FieldRole, self.PasswordEdit)
 
 
         self.verticalLayout_3.addWidget(self.PasswordFrame)

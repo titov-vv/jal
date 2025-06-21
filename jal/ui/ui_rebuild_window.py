@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'rebuild_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.2
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -55,29 +55,29 @@ class Ui_ReBuildDialog(object):
         self.AllRadioButton = QRadioButton(self.TypeGroup)
         self.AllRadioButton.setObjectName(u"AllRadioButton")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.AllRadioButton)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.AllRadioButton)
 
         self.LastRadioButton = QRadioButton(self.TypeGroup)
         self.LastRadioButton.setObjectName(u"LastRadioButton")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.LastRadioButton)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.LastRadioButton)
 
         self.FrontierDateLabel = QLabel(self.TypeGroup)
         self.FrontierDateLabel.setObjectName(u"FrontierDateLabel")
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.FrontierDateLabel)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.FrontierDateLabel)
 
         self.DateRadionButton = QRadioButton(self.TypeGroup)
         self.DateRadionButton.setObjectName(u"DateRadionButton")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.DateRadionButton)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.DateRadionButton)
 
         self.CustomDateEdit = QDateEdit(self.TypeGroup)
         self.CustomDateEdit.setObjectName(u"CustomDateEdit")
         self.CustomDateEdit.setCalendarPopup(True)
         self.CustomDateEdit.setTimeSpec(Qt.TimeSpec.UTC)
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.CustomDateEdit)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.CustomDateEdit)
 
 
         self.verticalLayout.addWidget(self.TypeGroup)

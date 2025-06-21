@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'login_fns_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.2
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -47,13 +47,13 @@ class Ui_LoginFNSDialog(object):
         self.PhoneLbl = QLabel(self.PhoneNumberFrame)
         self.PhoneLbl.setObjectName(u"PhoneLbl")
 
-        self.formLayout_2.setWidget(0, QFormLayout.LabelRole, self.PhoneLbl)
+        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.LabelRole, self.PhoneLbl)
 
         self.PhoneNumberEdit = QLineEdit(self.PhoneNumberFrame)
         self.PhoneNumberEdit.setObjectName(u"PhoneNumberEdit")
         self.PhoneNumberEdit.setInputMask(u"+7-999-999-99-99;_")
 
-        self.formLayout_2.setWidget(0, QFormLayout.FieldRole, self.PhoneNumberEdit)
+        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.FieldRole, self.PhoneNumberEdit)
 
 
         self.verticalLayout_7.addWidget(self.PhoneNumberFrame)
@@ -88,12 +88,12 @@ class Ui_LoginFNSDialog(object):
         self.CodeLbl = QLabel(self.CodeFrame)
         self.CodeLbl.setObjectName(u"CodeLbl")
 
-        self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.CodeLbl)
+        self.formLayout_3.setWidget(0, QFormLayout.ItemRole.LabelRole, self.CodeLbl)
 
         self.CodeEdit = QLineEdit(self.CodeFrame)
         self.CodeEdit.setObjectName(u"CodeEdit")
 
-        self.formLayout_3.setWidget(0, QFormLayout.FieldRole, self.CodeEdit)
+        self.formLayout_3.setWidget(0, QFormLayout.ItemRole.FieldRole, self.CodeEdit)
 
 
         self.verticalLayout_7.addWidget(self.CodeFrame)
@@ -168,23 +168,23 @@ class Ui_LoginFNSDialog(object):
         self.InnLbl = QLabel(self.LoginDataFrame)
         self.InnLbl.setObjectName(u"InnLbl")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.InnLbl)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.InnLbl)
 
         self.InnEdit = QLineEdit(self.LoginDataFrame)
         self.InnEdit.setObjectName(u"InnEdit")
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.InnEdit)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.FieldRole, self.InnEdit)
 
         self.PasswordLbl = QLabel(self.LoginDataFrame)
         self.PasswordLbl.setObjectName(u"PasswordLbl")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.PasswordLbl)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.PasswordLbl)
 
         self.PasswordEdit = QLineEdit(self.LoginDataFrame)
         self.PasswordEdit.setObjectName(u"PasswordEdit")
         self.PasswordEdit.setEchoMode(QLineEdit.Password)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.PasswordEdit)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.PasswordEdit)
 
 
         self.verticalLayout.addWidget(self.LoginDataFrame)
