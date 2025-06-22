@@ -40,10 +40,10 @@
   },
   "totals": {
     "rows": [
-      [null, null, null, null, null, null, null, null, "TOTAL", "profit", " ", " ", "profit_eur", null, null]
+      [null, null, null, null, null, null, null, null, "TOTAL", "profit", "",  "profit_eur", "",  null, null]
     ],
     "formats": [
-      [null, null, null, null, null, null, null, null, "F",     "F",      "F", "F", "F",          null, null]
+      [null, null, null, null, null, null, null, null, "F",     "F",      "F", "F",          "F", null, null]
     ]
   },
   "footers": []
