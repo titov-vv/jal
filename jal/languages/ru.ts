@@ -177,37 +177,37 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../constants.py" line="199"/>
         <source>FIGI</source>
-        <translation type="unfinished"></translation>
+        <translation>FIGI</translation>
     </message>
     <message>
         <location filename="../constants.py" line="200"/>
         <source>Reg.code</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../constants.py" line="201"/>
         <source>expiry</source>
-        <translation type="unfinished">экспирация</translation>
+        <translation>экспирация</translation>
     </message>
     <message>
         <location filename="../constants.py" line="202"/>
         <source>principal</source>
-        <translation type="unfinished">номинал</translation>
+        <translation>номинал</translation>
     </message>
     <message>
         <location filename="../constants.py" line="203"/>
         <source>Tag</source>
-        <translation type="unfinished"></translation>
+        <translation>Метка</translation>
     </message>
     <message>
         <location filename="../constants.py" line="204"/>
         <source>CUSIP</source>
-        <translation type="unfinished"></translation>
+        <translation>CUSIP</translation>
     </message>
     <message>
         <location filename="../constants.py" line="207"/>
         <source>IB contract ID</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -2683,7 +2683,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../constants.py" line="256"/>
         <source>Warsaw Stock Exchange</source>
-        <translation type="unfinished"></translation>
+        <translation>Польская биржа</translation>
     </message>
 </context>
 <context>
@@ -4780,12 +4780,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="1080"/>
         <source>Transaction taxes loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Загружено налоговых транзакций: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="1094"/>
         <source>Sales taxes loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Загружено транзакций налога с продажи: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="1102"/>
@@ -5206,7 +5206,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="84"/>
         <source>Assets section not found</source>
-        <translation type="unfinished"></translation>
+        <translation>Раздел ценных бумаг не найден</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="95"/>
@@ -5696,12 +5696,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="110"/>
         <source>Use only realization (Sell) currency rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Использовать только курс операции продажи</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="123"/>
         <source>     (This selection depends CIRS a.23 interpretation)</source>
-        <translation type="unfinished"></translation>
+        <translation>     (Этот выбор зависит от интерпретации статьи 23 CIRS)</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="278"/>
