@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>618</width>
-    <height>397</height>
+    <height>473</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -122,6 +122,60 @@
         <property name="text">
          <string>     (This selection depends CIRS a.23 interpretation)</string>
         </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="IRS_Modelo3Group">
+        <property name="title">
+         <string>Create XML records to introduce in Modelo-3 form</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <property name="leftMargin">
+          <number>6</number>
+         </property>
+         <property name="topMargin">
+          <number>6</number>
+         </property>
+         <property name="rightMargin">
+          <number>6</number>
+         </property>
+         <property name="bottomMargin">
+          <number>6</number>
+         </property>
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="IRS_Modelo3FileLbl">
+           <property name="text">
+            <string>Output file:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="IRS_Modelo3Filename">
+           <property name="toolTip">
+            <string>File where to store russian tax form</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="IRS_Modelo3SelectBtn">
+           <property name="toolTip">
+            <string>Select file</string>
+           </property>
+           <property name="text">
+            <string> ... </string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>

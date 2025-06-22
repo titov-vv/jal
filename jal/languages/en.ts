@@ -2711,17 +2711,17 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="184"/>
+        <location filename="../widgets/tax_widget.py" line="186"/>
         <source>Excel files (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="184"/>
+        <location filename="../widgets/tax_widget.py" line="186"/>
         <source>Save money flow report to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="215"/>
+        <location filename="../widgets/tax_widget.py" line="217"/>
         <source>Money flow report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
@@ -5654,22 +5654,22 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TaxWidget</name>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="271"/>
+        <location filename="../ui/tax_export_widget.ui" line="325"/>
         <source>Year:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="133"/>
+        <location filename="../ui/tax_export_widget.ui" line="187"/>
         <source>Account:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="177"/>
+        <location filename="../ui/tax_export_widget.ui" line="231"/>
         <source>Create tax form in &quot;Декларация&quot; program format (*.dcX)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="140"/>
+        <location filename="../ui/tax_export_widget.ui" line="194"/>
         <source>Excel file:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5689,13 +5689,19 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="278"/>
+        <location filename="../ui/tax_export_widget.ui" line="130"/>
+        <source>Create XML records to introduce in Modelo-3 form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="332"/>
         <source>Save Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="47"/>
-        <location filename="../ui/tax_export_widget.ui" line="214"/>
+        <location filename="../ui/tax_export_widget.ui" line="171"/>
+        <location filename="../ui/tax_export_widget.ui" line="268"/>
         <source>Select file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5705,12 +5711,13 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="264"/>
+        <location filename="../ui/tax_export_widget.ui" line="318"/>
         <source>Country:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="231"/>
+        <location filename="../ui/tax_export_widget.ui" line="164"/>
+        <location filename="../ui/tax_export_widget.ui" line="285"/>
         <source>File where to store russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5725,32 +5732,34 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="147"/>
+        <location filename="../ui/tax_export_widget.ui" line="201"/>
         <source>Additional parameters (Russia)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="207"/>
+        <location filename="../ui/tax_export_widget.ui" line="157"/>
+        <location filename="../ui/tax_export_widget.ui" line="261"/>
         <source>Output file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="224"/>
+        <location filename="../ui/tax_export_widget.ui" line="278"/>
         <source>Update only information about dividends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="217"/>
+        <location filename="../ui/tax_export_widget.ui" line="174"/>
+        <location filename="../ui/tax_export_widget.ui" line="271"/>
         <source> ... </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="245"/>
+        <location filename="../ui/tax_export_widget.ui" line="299"/>
         <source>Use broker name as income source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="238"/>
+        <location filename="../ui/tax_export_widget.ui" line="292"/>
         <source>Do not use settlement date for currency rates</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5775,32 +5784,32 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="129"/>
+        <location filename="../widgets/tax_widget.py" line="131"/>
         <source>Data are incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="130"/>
+        <location filename="../widgets/tax_widget.py" line="132"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="138"/>
+        <location filename="../widgets/tax_widget.py" line="140"/>
         <source>Tax report is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="152"/>
+        <location filename="../widgets/tax_widget.py" line="154"/>
         <source>Tax report was saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="160"/>
+        <location filename="../widgets/tax_widget.py" line="162"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="162"/>
+        <location filename="../widgets/tax_widget.py" line="164"/>
         <source>Can&apos;t write tax form into file </source>
         <translation type="unfinished"></translation>
     </message>

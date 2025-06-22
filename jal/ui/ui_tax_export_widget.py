@@ -23,7 +23,7 @@ class Ui_TaxWidget(object):
     def setupUi(self, TaxWidget):
         if not TaxWidget.objectName():
             TaxWidget.setObjectName(u"TaxWidget")
-        TaxWidget.resize(618, 397)
+        TaxWidget.resize(618, 473)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -79,6 +79,32 @@ class Ui_TaxWidget(object):
         self.Pt_RateComment.setEnabled(True)
 
         self.PtLayout.addWidget(self.Pt_RateComment)
+
+        self.IRS_Modelo3Group = QGroupBox(self.PtBox)
+        self.IRS_Modelo3Group.setObjectName(u"IRS_Modelo3Group")
+        self.IRS_Modelo3Group.setCheckable(True)
+        self.IRS_Modelo3Group.setChecked(False)
+        self.gridLayout = QGridLayout(self.IRS_Modelo3Group)
+        self.gridLayout.setSpacing(2)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.gridLayout.setContentsMargins(6, 6, 6, 6)
+        self.IRS_Modelo3FileLbl = QLabel(self.IRS_Modelo3Group)
+        self.IRS_Modelo3FileLbl.setObjectName(u"IRS_Modelo3FileLbl")
+
+        self.gridLayout.addWidget(self.IRS_Modelo3FileLbl, 0, 0, 1, 1)
+
+        self.IRS_Modelo3Filename = QLineEdit(self.IRS_Modelo3Group)
+        self.IRS_Modelo3Filename.setObjectName(u"IRS_Modelo3Filename")
+
+        self.gridLayout.addWidget(self.IRS_Modelo3Filename, 0, 1, 1, 1)
+
+        self.IRS_Modelo3SelectBtn = QPushButton(self.IRS_Modelo3Group)
+        self.IRS_Modelo3SelectBtn.setObjectName(u"IRS_Modelo3SelectBtn")
+
+        self.gridLayout.addWidget(self.IRS_Modelo3SelectBtn, 0, 2, 1, 1)
+
+
+        self.PtLayout.addWidget(self.IRS_Modelo3Group)
 
 
         self.MainLayout.addWidget(self.PtBox, 8, 0, 1, 3)
@@ -195,6 +221,15 @@ class Ui_TaxWidget(object):
         self.PtBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Portugal)", None))
         self.Pt_OneCurrencyRate.setText(QCoreApplication.translate("TaxWidget", u"Use only realization (Sell) currency rate", None))
         self.Pt_RateComment.setText(QCoreApplication.translate("TaxWidget", u"     (This selection depends CIRS a.23 interpretation)", None))
+        self.IRS_Modelo3Group.setTitle(QCoreApplication.translate("TaxWidget", u"Create XML records to introduce in Modelo-3 form", None))
+        self.IRS_Modelo3FileLbl.setText(QCoreApplication.translate("TaxWidget", u"Output file:", None))
+#if QT_CONFIG(tooltip)
+        self.IRS_Modelo3Filename.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store russian tax form", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.IRS_Modelo3SelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
+#endif // QT_CONFIG(tooltip)
+        self.IRS_Modelo3SelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
         self.AccountLbl.setText(QCoreApplication.translate("TaxWidget", u"Account:", None))
         self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Excel file:", None))
         self.RuBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Russia)", None))

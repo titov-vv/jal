@@ -19,6 +19,7 @@ from jal.data_export.taxes import TaxReport
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 from jal.data_export.dlsg import DLSG
+from jal.data_export.irs_modelo3 import IRS_Modelo3
 
 
 class TaxWidget(MdiWidget):
@@ -35,6 +36,7 @@ class TaxWidget(MdiWidget):
         self.ui.Year.setValue(datetime.now().year - 1)   # Set previous year by default
         self.ui.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
         self.ui.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
+        self.ui.IRS_Modelo3SelectBtn.pressed.connect(partial(self.OnFileBtn, 'XML'))
         self.ui.SaveButton.pressed.connect(self.SaveReport)
         self.ui.Country.setCurrentIndex(TaxReport.RUSSIA)
 
@@ -75,6 +77,8 @@ class TaxWidget(MdiWidget):
             last_digit = self.year % 10
             selector = (self.tr("Save tax form to:"), self.tr(f"Tax form (*.dc{last_digit})"),
                         f".dc{last_digit}", self.ui.DlsgFileName)
+        elif type == 'XML':
+            selector = (self.tr("Save IRS Modelo 3 tax data to:"), self.tr("XML files (*.xml)"), '.xml', self.ui.IRS_Modelo3Filename)
         else:
             raise ValueError
         folder = JalSettings().getRecentFolder(FolderFor.Report, '.')
@@ -86,42 +90,17 @@ class TaxWidget(MdiWidget):
                 selector[3].setText(filename[0])
             JalSettings().setRecentFolder(FolderFor.Report, filename[0])
 
-    def getYear(self):
-        return self.ui.Year.value()
-
-    def getXlsFilename(self):
-        return self.ui.XlsFileName.text()
-
-    def getAccount(self):
-        return self.ui.Account.currentData()
-
-    def getDlsgState(self):
-        return self.ui.DlsgGroup.isChecked()
-
-    def getDslgFilename(self):
-        return self.ui.DlsgFileName.text()
-
-    def getBrokerAsIncomeName(self):
-        return self.ui.DlsgIncomeSourceBroker.isChecked()
-
-    def getDividendsOnly(self):
-        return self.ui.DlsgDividendsOnly.isChecked()
-
-    def getUseOneRate(self):
-        return self.ui.Pt_OneCurrencyRate.isChecked()
-
-    def getNoSettlement(self):
-        return self.ui.NoSettlement.isChecked()
-
-    year = Property(int, fget=getYear)
-    xls_filename = Property(str, fget=getXlsFilename)
-    account = Property(int, fget=getAccount)
-    update_dlsg = Property(bool, fget=getDlsgState)
-    dlsg_filename = Property(str, fget=getDslgFilename)
-    dlsg_broker_as_income = Property(bool, fget=getBrokerAsIncomeName)
-    dlsg_dividends_only = Property(bool, fget=getDividendsOnly)
-    use_one_rate = Property(bool, fget=getUseOneRate)
-    no_settelement = Property(bool, fget=getNoSettlement)
+    year = Property(int, fget=lambda self: self.ui.Year.value())
+    xls_filename = Property(str, fget=lambda self: self.ui.XlsFileName.text())
+    account = Property(int, fget=lambda self: self.ui.Account.currentData())
+    update_dlsg = Property(bool, fget=lambda self: self.ui.DlsgGroup.isChecked())
+    dlsg_filename = Property(str, fget=lambda self: self.ui.DlsgFileName.text())
+    dlsg_broker_as_income = Property(bool, fget=lambda self: self.ui.DlsgIncomeSourceBroker.isChecked())
+    dlsg_dividends_only = Property(bool, fget=lambda self: self.ui.DlsgDividendsOnly.isChecked())
+    use_one_rate = Property(bool, fget=lambda self: self.ui.Pt_OneCurrencyRate.isChecked())
+    update_modelo3 = Property(bool, fget=lambda self: self.ui.IRS_Modelo3Group.isChecked())
+    modelo3_filename = Property(str, fget=lambda self: self.ui.IRS_Modelo3Filename.text())
+    no_settlement = Property(bool, fget=lambda self: self.ui.NoSettlement.isChecked())
 
     @Slot()
     def SaveReport(self):
@@ -133,7 +112,7 @@ class TaxWidget(MdiWidget):
 
         tax_report = taxes.prepare_tax_report(self.year, self.account,
                                               use_one_currency_rate=self.use_one_rate,
-                                              use_settlement=(not self.no_settelement))
+                                              use_settlement=(not self.no_settlement))
         if not tax_report:
             logging.warning(self.tr("Tax report is empty"))
             return
@@ -151,15 +130,20 @@ class TaxWidget(MdiWidget):
         reports_xls.save()
         logging.info(self.tr("Tax report was saved to file ") + f"'{self.xls_filename}'")
 
-        if self.update_dlsg:
-            tax_forms = DLSG(self.year, broker_as_income=self.dlsg_broker_as_income,
-                             only_dividends=self.dlsg_dividends_only)
+        if self.update_dlsg or self.update_modelo3:
+            tax_forms = None
+            if self.update_dlsg:
+                tax_forms = DLSG(self.year, broker_as_income=self.dlsg_broker_as_income, only_dividends=self.dlsg_dividends_only)
+                filename = self.dlsg_filename
+            if self.update_modelo3:
+                tax_forms = IRS_Modelo3()
+                filename = self.modelo3_filename
             tax_forms.update_taxes(tax_report, parameters)
             try:
-                tax_forms.save(self.dlsg_filename)
-                logging.info(self.tr("Tax report saved to file ") + f"'{self.dlsg_filename}'")
+                tax_forms.save(filename)
+                logging.info(self.tr("Tax report saved to file ") + f"'{filename}'")
             except:
-                logging.error(self.tr("Can't write tax form into file ") + f"'{self.dlsg_filename}'" +
+                logging.error(self.tr("Can't write tax form into file ") + f"'{filename}'" +
                               f"\n{traceback.format_exc()}")
 
 

@@ -97,6 +97,8 @@ class TaxReport:
             self.use_settlement = kwargs['use_settlement']
         if 'use_one_currency_rate' in kwargs:
             self.one_currency_rate = kwargs['use_one_currency_rate']
+        if 'generate_modelo3' in kwargs:
+            self.generate_modelo3 = kwargs['generate_modelo3']
         self.load_parameters(year)
         for report in self.reports:
             tax_report[report] = self.reports[report][REPORT_METHOD]()
