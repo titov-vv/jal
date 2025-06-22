@@ -33,7 +33,7 @@
   "trade": {
     "rows": [
       ["c_symbol", "c_isin", "o_type", "c_qty", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_fee", "o_fee_rub", "cost_basis", "income_rub", "spending_rub", "profit_rub", "profit", "note"],
-      [null,     null,   "c_type", null,  "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_fee", "c_fee_rub", null,         null,         null,           null,         null,     null]
+      [null,        null,    "c_type", null,    "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_fee", "c_fee_rub", null,         null,         null,           null,         null,     null]
     ],
     "formats": [
       ["T",  "T",  "T", "N:0", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2", "N:2", "T"],
