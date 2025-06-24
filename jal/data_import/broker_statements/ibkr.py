@@ -238,6 +238,7 @@ class StatementIBKR(StatementXML):
                                             ('reportDate', 'reported', datetime, None),
                                             ('amount', 'amount', float, None),
                                             ('tradeID', 'number', str, ''),
+                                            ('actionID', 'actionid', str, ''),
                                             ('transactionID', 'tid', str, ''),
                                             ('description', 'description', str, None)],
                                  'loader': self.load_cash_transactions},
@@ -979,6 +980,12 @@ class StatementIBKR(StatementXML):
             t_payment['description'] = t_payment['description'].replace(self.CancelPrefix, '')
             t_payment['amount'] = -t_payment['amount']
             if t_payment not in payments:
+                # IB, April 2022: ActionID field added to Activity Flex to allow simple mapping of corporate actions, dividends, dividend accruals, and withholding tax.
+                no_report_no_description = lambda x: {i: x[i] for i in x if i != 'reported' and i != 'description'}
+                m_payments = [x for x in payments if x['actionid'] != '' and no_report_no_description(x) == no_report_no_description(t_payment)]
+                if len(m_payments):
+                    payments.remove(m_payments[0])
+                    continue
                 no_description = lambda x: {i:x[i] for i in x if i != 'description'}
                 m_payments = [x for x in payments if no_description(x) == no_description(t_payment)]
                 if len(m_payments):
@@ -1011,6 +1018,12 @@ class StatementIBKR(StatementXML):
             t_payment['description'] = t_payment['description'].replace(self.CancelPrefix, '')
             t_payment['amount'] = -t_payment['amount']
             if t_payment not in payments:
+                # IB, April 2022: ActionID field added to Activity Flex to allow simple mapping of corporate actions, dividends, dividend accruals, and withholding tax.
+                no_report_no_description = lambda x: {i: x[i] for i in x if i != 'reported' and i != 'description'}
+                m_payments = [x for x in payments if x['actionid'] != '' and no_report_no_description(x) == no_report_no_description(t_payment)]
+                if len(m_payments):
+                    payments.remove(m_payments[0])
+                    continue
                 no_report = lambda x: {i: x[i] for i in x if i != 'reported'}
                 m_payments = [x for x in payments if no_report(x) == no_report(t_payment)]
                 if len(m_payments):
