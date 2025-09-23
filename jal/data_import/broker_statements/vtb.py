@@ -27,10 +27,10 @@ class StatementVTB(StatementXLS):
         "name": "Валюта",
         "cash_end": "Плановый",
     }
-    asset_section = "^Отчет об остатках ценных бумаг"
+    asset_section = "^Отчёт об остатках ценных бумаг"
     asset_columns = {
-        "name": r"Наименование ценной бумаги, \n№ гос. регистрации, ISIN",
-        "currency": r"Валюта цены \n\(номинала для облигаций\)"
+        "name": r"Наименование ценной бумаги,\n№ гос. регистрации, ISIN",
+        "currency": r"Валюта\nцены\n\(номинала для\nоблигаций\)"
     }
 
     def __init__(self):
@@ -42,8 +42,8 @@ class StatementVTB(StatementXLS):
         self.asset_withdrawal = []
 
     def _validate(self):
-        self.AccountPattern = (8, 5, None)
-        self.PeriodPattern = (6, 1, r"Отчет Банка ВТБ \(ПАО\) за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d) о сделках, .*")
+        self.AccountPattern = (7, 7, None)
+        self.PeriodPattern = (3, 0, r"Отчет Банка ВТБ \(ПАО\) за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d) о сделках, .*")
         super()._validate()
 
     def _strip_unused_data(self):
@@ -121,17 +121,17 @@ class StatementVTB(StatementXLS):
     def _load_deals_main_market(self):
         cnt = 0
         columns = {
-            "asset_name": r"Наименование ценной бумаги, \n№ гос. Регистрации, ISIN",
+            "asset_name": r"Наименование ценной бумаги,\n№ гос. регистрации, ISIN",
             "number": "№ сделки",
             "datetime": "Дата и время заключения сделки",
             "B/S": "Вид сделки",
-            "price": r"Цена\n\(% для облигаций\)",
-            "currency": r"Валюта цены\n \(номинала для облигаций\)",
-            "qty": r"Количество \n\(шт\)",
-            "amount": r"Сумма сделки в валюте расчетов\n \(с учетом НКД для облигаций\) \xa0",
-            "accrued_int": "НКД\nпо сделке в валюте расчетов",
-            "settlement": "Плановая дата поставки",
-            "fee1": "Комиссия Банка за расчет по сделке",
+            "price": r"Цена\n\(% для\nоблигаций\)",
+            "currency": r"Валюта\nцены\n\(номинала для облигаций\)",
+            "qty": r"Количество\n\(шт\.\)",
+            "amount": r"Сумма сделки\nв валюте\nрасчётов\n\(с учётом НКД\nдля\nоблигаций\)",
+            "accrued_int": r"НКД\nпо сделке в\nвалюте\nрасчётов",
+            "settlement": r"Плановая\nдата\nпоставки",
+            "fee1": "Комиссия Банка за расчёт по сделке",
             "fee2": "Комиссия Банка за заключение сделки"
         }
         row, headers = self.find_section_start(r"^Заключенные в отчетном периоде сделки с ценными бумагами", columns)
