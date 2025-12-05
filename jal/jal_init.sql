@@ -53,10 +53,11 @@ CREATE TABLE assets (
 );
 
 -- Table to keep various asset identifiers
+DROP TABLE IF EXISTS asset_id;
 CREATE TABLE IF NOT EXISTS asset_id (
-    id INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    id       INTEGER PRIMARY KEY UNIQUE NOT NULL,
     asset_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    id_type INTEGER NOT NULL,
+    id_type  INTEGER NOT NULL,
     id_value TEXT NOT NULL
 );
 
@@ -91,6 +92,18 @@ CREATE TRIGGER validate_ticker_currency_update
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0003");
 END;
+
+
+-- Table to keep asset locations
+DROP TABLE IF EXISTS asset_location;
+CREATE TABLE IF NOT EXISTS asset_location (
+    id           INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    loc_type     INTEGER NOT NULL,
+    name         TEXT NOT NULL UNIQUE,
+    country_id   INTEGER DEFAULT (0) NOT NULL REFERENCES countries (id) ON DELETE SET DEFAULT ON UPDATE CASCADE,
+    price_source INTEGER DEFAULT (- 1)
+);
+
 
 -- Table to keep extra asset data
 DROP TABLE IF EXISTS asset_data;

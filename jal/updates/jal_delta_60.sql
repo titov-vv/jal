@@ -1,9 +1,9 @@
 BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS asset_id (
-    id INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    id       NTEGER PRIMARY KEY UNIQUE NOT NULL,
     asset_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    id_type INTEGER NOT NULL,
+    id_type  INTEGER NOT NULL,
     id_value TEXT NOT NULL
 );
 -- Migrate existing ISINs to new asset_id table
@@ -18,6 +18,14 @@ INSERT INTO asset_id (asset_id, id_type, id_value)
 DELETE FROM asset_data WHERE datatype=1 AND value LIKE '1-__-%'
 -- Clean up any remaining registration data from asset_data table (There was a bit of mess)
 DELETE FROM asset_data WHERE datatype=1
+--------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS asset_location (
+    id           INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    loc_type     INTEGER NOT NULL,
+    name         TEXT NOT NULL UNIQUE,
+    country_id   INTEGER DEFAULT (0) NOT NULL REFERENCES countries (id) ON DELETE SET DEFAULT ON UPDATE CASCADE,
+    price_source INTEGER DEFAULT (- 1)
+);
 --------------------------------------------------------------------------------
 -- Update assets_ext view and trigger
 DROP VIEW assets_ext;
