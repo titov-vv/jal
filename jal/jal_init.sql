@@ -61,8 +61,8 @@ CREATE TABLE IF NOT EXISTS asset_id (
 );
 
 -- Table to keep asset symbols
-DROP TABLE IF EXISTS asset_tickers;
-CREATE TABLE asset_tickers (
+DROP TABLE IF EXISTS asset_symbol;
+CREATE TABLE asset_symbol (
     id           INTEGER PRIMARY KEY UNIQUE NOT NULL,
     asset_id     INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     symbol       TEXT    NOT NULL,
@@ -72,11 +72,11 @@ CREATE TABLE asset_tickers (
 );
 -- Index to prevent duplicates
 DROP INDEX IF EXISTS uniq_symbols;
-CREATE UNIQUE INDEX uniq_symbols ON asset_tickers (asset_id, symbol COLLATE NOCASE, currency_id);
+CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id);
 -- Create triggers to keep currency_id NULL for currencies and NOT NULL for other assets
 DROP TRIGGER IF EXISTS validate_ticker_currency_insert;
 CREATE TRIGGER validate_ticker_currency_insert
-    BEFORE INSERT ON asset_tickers
+    BEFORE INSERT ON asset_symbol
     FOR EACH ROW
     WHEN IIF(NEW.currency_id IS NULL, 0, 1) = (SELECT IIF(type_id=1, 1, 0) FROM assets WHERE id=NEW.asset_id)
 BEGIN
@@ -85,7 +85,7 @@ END;
 
 DROP TRIGGER IF EXISTS validate_ticker_currency_update;
 CREATE TRIGGER validate_ticker_currency_update
-    AFTER UPDATE OF currency_id ON asset_tickers
+    AFTER UPDATE OF currency_id ON asset_symbol
     FOR EACH ROW
     WHEN IIF(NEW.currency_id IS NULL, 0, 1) = (SELECT IIF(type_id=1, 1, 0) FROM assets WHERE id=NEW.asset_id)
 BEGIN
@@ -406,9 +406,9 @@ ORDER BY m.timestamp, m.seq, m.opart, m.oid;  -- First sort by sequence and part
 DROP VIEW IF EXISTS currencies;
 CREATE VIEW currencies AS
 SELECT a.id, s.symbol
-FROM assets AS a
-LEFT JOIN asset_tickers AS s ON s.asset_id = a.id AND  s.active = 1
-WHERE a.type_id = 1;
+    FROM assets AS a
+    LEFT JOIN asset_symbol AS s ON s.asset_id = a.id AND  s.active = 1
+    WHERE a.type_id = 1;
 
 
 -- View: frontier
@@ -419,11 +419,11 @@ CREATE VIEW frontier AS SELECT MAX(ledger.timestamp) AS ledger_frontier FROM led
 -- View: assets_ext
 DROP VIEW IF EXISTS assets_ext;
 CREATE VIEW assets_ext AS
-SELECT a.id, a.type_id, t.symbol, a.full_name, i.id_value AS isin, t.currency_id, a.country_id, t.quote_source
+SELECT a.id, a.type_id, s.symbol, a.full_name, i.id_value AS isin, s.currency_id, a.country_id, s.quote_source
     FROM assets a
-    LEFT JOIN asset_tickers t ON a.id = t.asset_id
+    LEFT JOIN asset_symbol s ON a.id = s.asset_id
     LEFT JOIN asset_id i ON a.id = i.asset_id AND i.id_type = 1
-    WHERE t.active = 1
+    WHERE s.active = 1
     ORDER BY a.id;
 
 
@@ -692,13 +692,13 @@ INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');
 INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (1, 1, 6, 'RUB');
-INSERT INTO asset_tickers (id, asset_id, symbol, quote_source, active) VALUES (1, 1, 'RUB', -1, 1);
+INSERT INTO asset_symbol (id, asset_id, symbol, quote_source, active) VALUES (1, 1, 'RUB', -1, 1);
 INSERT INTO assets (id, type_id, full_name) VALUES (2, 1, 'Доллар США');
 INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (2, 2, 6, 'USD');
-INSERT INTO asset_tickers (id, asset_id, symbol, quote_source, active) VALUES (2, 2, 'USD', 0, 1);
+INSERT INTO asset_symbol (id, asset_id, symbol, quote_source, active) VALUES (2, 2, 'USD', 0, 1);
 INSERT INTO assets (id, type_id, full_name) VALUES (3, 1, 'Евро');
 INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (3, 3, 6, 'EUR');
-INSERT INTO asset_tickers (id, asset_id, symbol, quote_source, active) VALUES (3, 3, 'EUR', 0, 1);
+INSERT INTO asset_symbol (id, asset_id, symbol, quote_source, active) VALUES (3, 3, 'EUR', 0, 1);
 
 -- Initialize countries
 INSERT INTO countries (id, code, iso_code) VALUES (0, 'xx', '000');

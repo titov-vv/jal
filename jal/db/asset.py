@@ -68,7 +68,7 @@ class JalAsset(JalDB):
                 it_type, id_value = self._read_record(id_query)
                 asset_data['ID'][it_type] = id_value
             asset_data['symbols'] = []
-            symbols_query = self._exec("SELECT * FROM asset_tickers WHERE asset_id=:id", [(":id", asset_data['id'])])
+            symbols_query = self._exec("SELECT * FROM asset_symbol WHERE asset_id=:id", [(":id", asset_data['id'])])
             while symbols_query.next():
                 symbol = self._read_record(symbols_query, named=True)
                 del symbol['id']
@@ -119,20 +119,20 @@ class JalAsset(JalDB):
             return ''.join(x for x in symbol)   # return symbol or empty string (there shouldn't be more than one)
 
     def add_symbol(self, symbol: str, currency_id: int=None, data_source: int=MarketDataFeed.NA) -> None:
-        existing = self._read("SELECT id, symbol, quote_source FROM asset_tickers "
+        existing = self._read("SELECT id, symbol, quote_source FROM asset_symbol "
                               "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id IS :currency",
                               [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)
         if existing is None:  # Deactivate old symbols and create a new one
-            _ = self._exec("UPDATE asset_tickers SET active=0 WHERE asset_id=:asset_id AND currency_id IS :currency",
+            _ = self._exec("UPDATE asset_symbol SET active=0 WHERE asset_id=:asset_id AND currency_id IS :currency",
                            [(":asset_id", self._id), (":currency", currency_id)])
             _ = self._exec(
-                "INSERT INTO asset_tickers (asset_id, symbol, currency_id, quote_source) "
+                "INSERT INTO asset_symbol (asset_id, symbol, currency_id, quote_source) "
                 "VALUES (:asset_id, :symbol, :currency, :data_source)",
                 [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
                  (":data_source", data_source)])
         else:  # Update data for existing symbol
             if existing['quote_source'] == MarketDataFeed.NA:
-                _ = self._exec("UPDATE asset_tickers SET quote_source=:data_source WHERE id=:id",
+                _ = self._exec("UPDATE asset_symbol SET quote_source=:data_source WHERE id=:id",
                                [(":data_source", data_source), (":id", existing['id'])])
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
@@ -204,7 +204,7 @@ class JalAsset(JalDB):
 
     # Returns a quote source id defined for given currency (currency_id can be None)
     def quote_source(self, currency_id: int) -> int:
-        source_id = self._read("SELECT quote_source FROM asset_tickers "
+        source_id = self._read("SELECT quote_source FROM asset_symbol "
                                "WHERE asset_id=:asset AND currency_id IS :currency",
                                [(":asset", self._id), (":currency", currency_id)])
         if source_id is None:

@@ -46,7 +46,7 @@ class AssetDialog(QDialog):
 
         self._model.select()
 
-        self._symbols_model = SymbolsListModel("asset_tickers", self.ui.SymbolsTable)
+        self._symbols_model = SymbolsListModel("asset_symbol", self.ui.SymbolsTable)
         self.ui.SymbolsTable.setModel(self._symbols_model)
         self._symbols_model.select()
         self._symbols_model.configureView()
