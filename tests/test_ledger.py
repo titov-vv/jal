@@ -500,7 +500,7 @@ def test_asset_transfer(prepare_db):
 
     # Prepare single stock
     create_stocks([('A.USD', 'A SHARE')], currency_id=2)   # id = 4
-    JalAsset(4).add_symbol('A.RUB', 1, '')
+    JalAsset(4).add_symbol('A.RUB', 1)
 
     create_trades(1, [(d2t(220201), d2t(220203), 4, 2.0, 100.0, 1.0)])  # Buy A on account.USD in 2 transactions
     create_trades(1, [(d2t(220205), d2t(220207), 4, 3.0, 100.0, 1.0)])

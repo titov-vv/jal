@@ -36,6 +36,8 @@ END;
 --------------------------------------------------------------------------------
 -- Remove ISIN column from assets table
 ALTER TABLE assets DROP COLUMN isin;
+-- Remove unused description from asset symbols
+ALTER TABLE asset_tickers DROP COLUMN description;
 --------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=60 WHERE name='SchemaVersion';

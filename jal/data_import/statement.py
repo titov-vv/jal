@@ -392,7 +392,6 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if 'currency' in symbol and symbol['currency'] > 0:
                 raise Statement_ImportError(self.tr("Symbol currency isn't linked to asset: ") + f"{symbol}")
             asset = self._find_in_list(self._data[FOF.ASSETS], "id", symbol['asset'])
-            note = symbol['note'] if 'note' in symbol else ''
             if asset['type'] == FOF.ASSET_MONEY:
                 currency = None
                 source = MarketDataFeed.FX
@@ -402,7 +401,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     source = self._sources[symbol['note']]
                 except KeyError:
                     source = MarketDataFeed.NA
-            JalAsset(-symbol['asset']).add_symbol(symbol['symbol'], currency, note, data_source=source)
+            JalAsset(-symbol['asset']).add_symbol(symbol['symbol'], currency, data_source=source)
 
     def _import_asset_data(self, data):
         for detail in data:

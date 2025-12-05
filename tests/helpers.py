@@ -65,7 +65,7 @@ def json_decimal2float(json_obj):
 def create_stocks(assets, currency_id):
     for item in assets:
         asset = JalAsset(data={'type': PredefinedAsset.Stock, 'name': item[1]}, create=True)
-        asset.add_symbol(item[0], currency_id, '')
+        asset.add_symbol(item[0], currency_id)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ def create_stocks(assets, currency_id):
 def create_assets(assets, data=[]):
     for item in assets:
         asset = JalAsset(data={'type': item[4], 'name': item[1], 'isin': item[2], 'country': item[5]}, create=True)
-        asset.add_symbol(item[0], item[3], '')
+        asset.add_symbol(item[0], item[3])
     for item in data:
         JalAsset(item[0]).update_data({item[1]: item[2]})
 

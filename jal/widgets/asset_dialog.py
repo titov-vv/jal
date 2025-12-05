@@ -170,17 +170,16 @@ class SymbolsListModel(AbstractReferenceListModel):
                          ("asset_id", ''),
                          ("symbol", self.tr("Symbol")),
                          ("currency_id", self.tr("Currency")),
-                         ("description", self.tr("Description")),
                          ("quote_source", self.tr("Quotes")),
                          ("active", self.tr("Act."))]
         self._default_name = "symbol"
         self._sort_by = "symbol"
         self._hidden = ["id", "asset_id"]
-        self._stretch = "description"
+        self._stretch = "symbol"
         self._lookup_delegate = None
         self._bool_delegate = None
         self._constant_lookup_delegate = None
-        self._default_values = {'description': '', 'currency_id': 1, 'quote_source': -1, 'active': 1}
+        self._default_values = {'currency_id': 1, 'quote_source': -1, 'active': 1}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
 
     def configureView(self):

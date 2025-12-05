@@ -67,7 +67,6 @@ CREATE TABLE asset_tickers (
     asset_id     INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     symbol       TEXT    NOT NULL,
     currency_id  INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    description  TEXT    NOT NULL DEFAULT (''),
     quote_source INTEGER DEFAULT ( -1) NOT NULL,
     active       INTEGER NOT NULL DEFAULT (1)
 );
@@ -693,13 +692,13 @@ INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');
 INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (1, 1, 6, 'RUB');
-INSERT INTO asset_tickers (id, asset_id, symbol, description, quote_source, active) VALUES (1, 1, 'RUB', 'Российский Рубль', -1, 1);
+INSERT INTO asset_tickers (id, asset_id, symbol, quote_source, active) VALUES (1, 1, 'RUB', -1, 1);
 INSERT INTO assets (id, type_id, full_name) VALUES (2, 1, 'Доллар США');
 INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (2, 2, 6, 'USD');
-INSERT INTO asset_tickers (id, asset_id, symbol, description, quote_source, active) VALUES (2, 2, 'USD', 'Доллар США', 0, 1);
+INSERT INTO asset_tickers (id, asset_id, symbol, quote_source, active) VALUES (2, 2, 'USD', 0, 1);
 INSERT INTO assets (id, type_id, full_name) VALUES (3, 1, 'Евро');
 INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (3, 3, 6, 'EUR');
-INSERT INTO asset_tickers (id, asset_id, symbol, description, quote_source, active) VALUES (3, 3, 'EUR', 'Евро', 0, 1);
+INSERT INTO asset_tickers (id, asset_id, symbol, quote_source, active) VALUES (3, 3, 'EUR', 0, 1);
 
 -- Initialize countries
 INSERT INTO countries (id, code, iso_code) VALUES (0, 'xx', '000');
