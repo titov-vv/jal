@@ -1,5 +1,5 @@
 from decimal import Decimal
-from jal.constants import PredefinedAsset, PredefinedCategory
+from jal.constants import PredefinedAsset, PredefinedCategory, AssetId
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
@@ -57,7 +57,7 @@ class TaxesRussia(TaxReport):
                 'payment_date': dividend.timestamp(),
                 'symbol': dividend.asset().symbol(self.account_currency.id()),
                 'full_name': dividend.asset().name(),
-                'isin': dividend.asset().isin(),
+                'isin': dividend.asset().ID(AssetId.ISIN),
                 'amount': dividend.amount(self.account_currency.id()),
                 'tax': dividend.tax(),
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
@@ -116,10 +116,10 @@ class TaxesRussia(TaxReport):
             line = {
                 'report_template': report_template,
                 'c_symbol': trade.asset().symbol(self.account_currency.id()),
-                'c_isin': trade.asset().isin(),  # May be not used in template (for derivatives as example)
+                'c_isin': trade.asset().ID(AssetId.ISIN),  # May be not used in template (for derivatives as example)
                 'c_qty': trade.qty(),
                 'o_symbol': trade.open_operation().asset().symbol(),
-                'o_isin': trade.open_operation().asset().isin(),
+                'o_isin': trade.open_operation().asset().ID(AssetId.ISIN),
                 'o_qty': trade.open_qty(),
                 'country_iso': self.account.country().iso_code(),  # this field is required for DLSG
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
@@ -187,10 +187,10 @@ class TaxesRussia(TaxReport):
             line = {
                 'report_template': "bond_trade",
                 'c_symbol': trade.asset().symbol(self.account_currency.id()),
-                'c_isin': trade.asset().isin(),  # May be not used in template (for derivatives as example)
+                'c_isin': trade.asset().ID(AssetId.ISIN),  # May be not used in template (for derivatives as example)
                 'c_qty': trade.qty(),
                 'o_symbol': trade.open_operation().asset().symbol(),
-                'o_isin': trade.open_operation().asset().isin(),
+                'o_isin': trade.open_operation().asset().ID(AssetId.ISIN),
                 'o_qty': trade.open_qty(),
                 'principal': trade.asset().principal(),
                 'country_iso': country.iso_code(),
@@ -242,7 +242,7 @@ class TaxesRussia(TaxReport):
                 'empty': '',  # to keep cell borders drawn
                 'o_date': interest.timestamp(),
                 'symbol': interest.asset().symbol(currency.id()),
-                'isin': interest.asset().isin(),
+                'isin': interest.asset().ID(AssetId.ISIN),
                 'number': interest.number(),
                 'interest': amount,
                 'rate': rate,

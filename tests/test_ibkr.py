@@ -7,7 +7,7 @@ from tests.helpers import d2t
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset, AssetData
-from jal.constants import PredefinedAsset, BookAccount
+from jal.constants import PredefinedAsset, BookAccount, AssetId
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -21,39 +21,44 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate assets
     test_assets = [
-        {'id': 1, 'type_id': PredefinedAsset.Money, 'full_name': 'Российский Рубль', 'isin': '', 'country_id': 0, 'base_asset': '',
+        {'id': 1, 'type_id': PredefinedAsset.Money, 'full_name': 'Российский Рубль', 'country_id': 0, 'base_asset': '',
+         'ID': {AssetId.ISO4217_CODE: 'RUB'},
          'symbols': [{'symbol': 'RUB', 'description': 'Российский Рубль', 'active': 1, 'currency_id': '', 'quote_source': -1}]},
-        {'id': 2, 'type_id': PredefinedAsset.Money, 'full_name': 'Доллар США', 'isin': '', 'country_id': 0, 'base_asset': '',
+        {'id': 2, 'type_id': PredefinedAsset.Money, 'full_name': 'Доллар США', 'country_id': 0, 'base_asset': '',
+         'ID': {AssetId.ISO4217_CODE: 'USD'},
          'symbols': [{'symbol': 'USD', 'description': 'Доллар США', 'active': 1, 'currency_id': '', 'quote_source': 0}]},
-        {'id': 3, 'type_id': PredefinedAsset.Money, 'full_name': 'Евро', 'isin': '', 'country_id': 0, 'base_asset': '',
+        {'id': 3, 'type_id': PredefinedAsset.Money, 'full_name': 'Евро', 'country_id': 0, 'base_asset': '',
+         'ID': {AssetId.ISO4217_CODE: 'EUR'},
          'symbols': [{'symbol': 'EUR', 'description': 'Евро', 'active': 1, 'currency_id': '', 'quote_source': 0}]},
-        {'id': 4, 'type_id': PredefinedAsset.Stock, 'full_name': 'PACIFIC ETHANOL INC', 'isin': 'US69423U3059', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'PEIX', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
-         'data': {AssetData.RegistrationCode: '69423U305'}},
-        {'id': 5, 'type_id': PredefinedAsset.Derivative, 'full_name': 'FANG 21JAN22 40.0 C', 'isin': '', 'country_id': 0, 'base_asset': '',
+        {'id': 4, 'type_id': PredefinedAsset.Stock, 'full_name': 'PACIFIC ETHANOL INC', 'country_id': 0, 'base_asset': '',
+         'ID': {AssetId.ISIN: 'US69423U3059', AssetId.REG_CODE: '69423U305'},
+         'symbols': [{'symbol': 'PEIX', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}]},
+        {'id': 5, 'type_id': PredefinedAsset.Derivative, 'full_name': 'FANG 21JAN22 40.0 C', 'country_id': 0, 'base_asset': '',
+         'ID': {},
          'symbols': [{'symbol': 'FANG  220121C00040000', 'description': 'CBOE', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
          'data': {AssetData.ExpiryDate: str(d2t(220121))}},
-        {'id': 6, 'type_id': PredefinedAsset.Stock, 'full_name': 'EXXON MOBIL CORP', 'isin': 'US30231G1022', 'country_id': 2, 'base_asset': '',
-         'symbols': [{'symbol': 'XOM', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
-         'data': {AssetData.RegistrationCode: '30231G102'}},
-        {'id': 7, 'type_id': PredefinedAsset.Derivative, 'full_name': 'XOM 21JAN22 42.5 C', 'isin': '', 'country_id': 0, 'base_asset': '',
+        {'id': 6, 'type_id': PredefinedAsset.Stock, 'full_name': 'EXXON MOBIL CORP', 'country_id': 2, 'base_asset': '',
+         'ID': {AssetId.ISIN: 'US30231G1022', AssetId.REG_CODE: '30231G102'},
+         'symbols': [{'symbol': 'XOM', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}]},
+        {'id': 7, 'type_id': PredefinedAsset.Derivative, 'full_name': 'XOM 21JAN22 42.5 C', 'country_id': 0, 'base_asset': '',
+         'ID': {},
          'symbols': [{'symbol': 'XOM   220121C00042500', 'description': 'CBOE', 'active': 1, 'currency_id': 2, 'quote_source': -1}],
          'data': {AssetData.ExpiryDate: str(d2t(220121))}},
-        {'id': 8, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'isin': '', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'ACB', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
-         'data': {1: '05156X108'}},
-        {'id': 9, 'type_id': PredefinedAsset.Stock, 'full_name': 'TWO HARBORS INVESTMENT CORP', 'isin': 'US90187B4086', 'country_id': 2, 'base_asset': '',
-         'symbols': [{'symbol': 'TWO', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
-         'data': {1: '90187B408'}},
-        {'id': 10, 'type_id': PredefinedAsset.Stock, 'full_name': 'NEW RESIDENTIAL INVESTMENT', 'isin': 'US64828T2015', 'country_id': 2, 'base_asset': '',
-         'symbols': [{'symbol': 'NRZ', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
-         'data': {1: '64828T201'}},
-        {'id': 11, 'type_id': PredefinedAsset.Stock, 'full_name': 'INTERACTIVE BROKERS GRO-CL A', 'isin': 'US45841N1072', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'IBKR', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
-         'data': {1: '45841N107'}},
-        {'id': 12, 'type_id': PredefinedAsset.Stock, 'full_name': 'VERB TECHNOLOGY CO INC', 'isin': 'US92337U1043', 'country_id': 0, 'base_asset': '',
-         'symbols': [{'symbol': 'VERB', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}],
-         'data': {1: '92337U104'}} 
+        {'id': 8, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'country_id': 0, 'base_asset': '',
+         'ID': {AssetId.REG_CODE: '05156X108'},
+         'symbols': [{'symbol': 'ACB', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}]},
+        {'id': 9, 'type_id': PredefinedAsset.Stock, 'full_name': 'TWO HARBORS INVESTMENT CORP', 'country_id': 2, 'base_asset': '',
+         'ID': {AssetId.ISIN: 'US90187B4086', AssetId.REG_CODE: '90187B408'},
+         'symbols': [{'symbol': 'TWO', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}]},
+        {'id': 10, 'type_id': PredefinedAsset.Stock, 'full_name': 'NEW RESIDENTIAL INVESTMENT', 'country_id': 2, 'base_asset': '',
+         'ID': {AssetId.ISIN: 'US64828T2015', AssetId.REG_CODE: '64828T201'},
+         'symbols': [{'symbol': 'NRZ', 'description': 'NYSE', 'active': 1, 'currency_id': 2, 'quote_source': 2}]},
+        {'id': 11, 'type_id': PredefinedAsset.Stock, 'full_name': 'INTERACTIVE BROKERS GRO-CL A', 'country_id': 0, 'base_asset': '',
+         'ID': {AssetId.ISIN: 'US45841N1072', AssetId.REG_CODE: '45841N107'},
+         'symbols': [{'symbol': 'IBKR', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}]},
+        {'id': 12, 'type_id': PredefinedAsset.Stock, 'full_name': 'VERB TECHNOLOGY CO INC', 'country_id': 0, 'base_asset': '',
+         'ID': {AssetId.ISIN: 'US92337U1043', AssetId.REG_CODE: '92337U104'},
+         'symbols': [{'symbol': 'VERB', 'description': 'NASDAQ', 'active': 1, 'currency_id': 2, 'quote_source': 2}]}
     ]
     assets = JalAsset.get_assets()
     assert len(assets) == len(test_assets)

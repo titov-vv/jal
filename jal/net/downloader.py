@@ -13,7 +13,7 @@ from PySide6.QtCore import Qt, QObject, Signal, Slot, QDate
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
-from jal.constants import MarketDataFeed, PredefinedAsset
+from jal.constants import MarketDataFeed, PredefinedAsset, AssetId
 from jal.db.asset import JalAsset
 from jal.net.web_request import WebRequest
 from jal.net.moex import MOEX
@@ -258,15 +258,15 @@ class QuoteDownloader(QObject):
     # noinspection PyMethodMayBeStatic
     def MOEX_DataReader(self, asset, currency_id, start_timestamp, end_timestamp, update_symbol=True):
         currency = JalAsset(currency_id).symbol()
-        moex_info = MOEX().asset_info(symbol=asset.symbol(currency_id), isin=asset.isin(), currency=currency, special=True)
+        moex_info = MOEX().asset_info(symbol=asset.symbol(currency_id), isin=asset.ID(AssetId.ISIN), currency=currency, special=True)
         if not ('engine' in moex_info and 'market' in moex_info and 'board' in moex_info) or \
                 (moex_info['engine'] is None) or (moex_info['market'] is None) or (moex_info['board'] is None):
-            logging.warning(f"Failed to find {asset.symbol(currency_id)} ({asset.isin()}) on moex.com")
+            logging.warning(f"Failed to find {asset.symbol(currency_id)} ({asset.ID(AssetId.ISIN)}) on moex.com")
             return None
         if (moex_info['market'] == 'bonds') and (moex_info['board'] in ['TQCB', 'TQIR']):
-            asset_code = asset.isin()   # Corporate bonds are quoted by ISIN
+            asset_code = asset.ID(AssetId.ISIN)   # Corporate bonds are quoted by ISIN
         elif (moex_info['market'] == 'shares') and (moex_info['board'] == 'TQIF'):
-            asset_code = asset.isin()   # ETFs are quoted by ISIN
+            asset_code = asset.ID(AssetId.ISIN)   # ETFs are quoted by ISIN
         else:
             asset_code = asset.symbol(currency_id)
         if update_symbol:
@@ -339,7 +339,7 @@ class QuoteDownloader(QObject):
     # noinspection PyMethodMayBeStatic
     def Euronext_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
         suffix = "ETFP" if asset.type() == PredefinedAsset.ETF else "XPAR"  # Dates don't work for ETFP due to glitch on their site
-        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-{suffix}"
+        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.ID(AssetId.ISIN)}-{suffix}"
         params = {
             'format': 'csv',
             'decimal_separator': '.',
@@ -360,7 +360,7 @@ class QuoteDownloader(QObject):
         if quotes_text[0] != '"Historical Data"':
             logging.warning(self.tr("Euronext quotes header not found in: ") + quotes)
             return None
-        if quotes_text[2] != asset.isin():
+        if quotes_text[2] != asset.ID(AssetId.ISIN):
             logging.warning(self.tr("Euronext quotes ISIN mismatch in: ") + quotes)
             return None
         quotes_text = [x.replace("'", "") for x in quotes_text]   # Some lines have occasional quote in some places

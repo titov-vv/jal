@@ -9,7 +9,7 @@ class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 59
+    DB_REQUIRED_VERSION = 60
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'
@@ -181,6 +181,33 @@ class DepositActions(PredefinedList, QObject):
             self.Renewal: self.tr("Term deposit renewal"),
             self.InterestAccrued: self.tr("Interest accrued"),
             self.TaxWithheld: self.tr("Tax withheld")
+        }
+
+
+# Possible types of asset identifiers that are used in "asset_id" table
+class AssetId(PredefinedList, QObject):
+    UUID = 0
+    FIGI = 1
+    ISIN = 2
+    ITIN = 3
+    CUSIP = 4
+    REG_CODE = 5  # Registration code of the security
+    ISO4217_CODE = 6  # Currency code according to ISO 4217 standard
+    ETH_ADDRESS = 7  # Ethereum contract address
+    ARB_ADDRESS = 8  # Arbitrum contract address
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.UUID: self.tr("UUID"),
+            self.FIGI: self.tr("FIGI"),
+            self.ISIN: self.tr("ISIN"),
+            self.ITIN: self.tr("ITIN"),
+            self.CUSIP: self.tr("CUSIP"),
+            self.REG_CODE: self.tr("Reg.code"),
+            self.ISO4217_CODE: self.tr("ISO4217 currency code"),
+            self.ETH_ADDRESS: self.tr("ETH address"),
+            self.ARB_ADDRESS: self.tr("ARB address")
         }
 
 

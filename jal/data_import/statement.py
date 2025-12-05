@@ -1,5 +1,4 @@
 import json
-from typing import Any
 
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
@@ -12,7 +11,7 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset, AssetId
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -266,9 +265,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             db_asset = JalAsset(data=search_data, search=True, create=False)
             db_id = db_asset.id()
             if db_id:
-                if db_asset.isin() and 'isin' in asset and asset['isin'] and db_asset.isin() != asset['isin']:
+                if db_asset.ID(AssetId.ISIN) and 'isin' in asset and asset['isin'] and db_asset.ID(AssetId.ISIN) != asset['isin']:
                     continue  # verify that we don't have ISIN mismatch
-                if db_asset.reg_number() and reg_number and db_asset.reg_number() != reg_number:
+                if db_asset.ID(AssetId.REG_CODE) and reg_number and db_asset.ID(AssetId.REG_CODE) != reg_number:
                     continue  # verify that we don't have reg.number mismatch
                 old_id, asset['id'] = asset['id'], -db_id
                 self._update_id("asset", old_id, db_id)
@@ -662,7 +661,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         if asset_info.get('search_offline', False):   # If allowed fetch asset data from database
             db_asset = JalAsset(data=asset_info, search=True, create=False)
             if db_asset.id():
-                asset = {'id': -db_asset.id(), 'type': FOF.convert_predefined_asset_type(db_asset.type()), 'name': db_asset.name(), 'isin': db_asset.isin()}
+                asset = {'id': -db_asset.id(), 'type': FOF.convert_predefined_asset_type(db_asset.type()), 'name': db_asset.name(), 'isin': db_asset.ID(AssetId.ISIN)}
                 self._data[FOF.ASSETS].append(asset)
                 symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
                 symbol = {"id": symbol_id, "asset": -db_asset.id(), 'symbol': db_asset.symbol(asset_info['currency']), 'currency': asset_info['currency']}

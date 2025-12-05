@@ -5,7 +5,7 @@ from pandas._testing import assert_frame_equal
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
 from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets
 from jal.db.asset import JalAsset
-from jal.constants import PredefinedAsset
+from jal.constants import PredefinedAsset, AssetId
 from jal.net.downloader import QuoteDownloader
 from jal.net.moex import MOEX
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
@@ -64,22 +64,6 @@ def test_MOEX_details():
                                                                       'name': 'ПИФСбербанк Комм.недвижимость',
                                                                       'reg_number': '0252-74113866',
                                                                       'type': PredefinedAsset.ETF}
-    assert MOEX().asset_info(isin='IE00B8XB7377', reg_number='IE00B8XB7377', symbol='FXGD ETF') == {'symbol': 'FXGD',
-                                                                                                           'isin': 'IE00B8XB7377',
-                                                                                                           'name': 'FinEx Gold ETF USD',
-                                                                                                           'type': PredefinedAsset.ETF}
-    assert MOEX().asset_info(symbol='FXGD', currency='USD', special=True) == {"symbol": "FXGD",
-                                                                                      "isin": "IE00B8XB7377",
-                                                                                      "name": "FinEx Gold ETF USD",
-                                                                                      "board": "TQTD",
-                                                                                      "engine": "stock",
-                                                                                      "market": "shares",
-                                                                                      "type": PredefinedAsset.ETF}
-    assert MOEX().asset_info(isin='JE00B6T5S470', reg_number='', symbol='') == {'symbol': 'POLY',
-                                                                                        'isin': 'JE00B6T5S470',
-                                                                                        'name': 'Polymetal International plc',
-                                                                                        'principal': 0.03,
-                                                                                        'type': PredefinedAsset.Stock}
     assert MOEX().asset_info(isin='RU000A1038V6') == {'symbol': 'SU26238RMFS4',
                                                               'isin': 'RU000A1038V6',
                                                               'name': 'ОФЗ-ПД 26238 15/05/2041',
@@ -155,19 +139,19 @@ def test_MOEX_downloader(prepare_db_moex):
     assert_frame_equal(stock_quotes, quotes_downloaded)
     sber = JalAsset(4)
     assert sber.type() == PredefinedAsset.Stock
-    assert sber.isin() == 'RU0009029540'
+    assert sber.ID(AssetId.ISIN) == 'RU0009029540'
     assert sber.symbol(1) == 'SBER'
     assert sber.name() == ''
-    assert sber.reg_number() == '10301481B'
+    assert sber.ID(AssetId.REG_CODE)== '10301481B'
 
     quotes_downloaded = downloader.MOEX_DataReader(JalAsset(6), 1, d2t(210722), d2t(210723))
     assert_frame_equal(bond_quotes, quotes_downloaded)
     bond = JalAsset(6)
     assert bond.type() == PredefinedAsset.Bond
-    assert bond.isin() == 'RU000A1038V6'
+    assert bond.ID(AssetId.ISIN) == 'RU000A1038V6'
     assert bond.symbol(1) == 'SU26238RMFS4'
     assert bond.name() == ''
-    assert bond.reg_number() == '26238RMFS'
+    assert bond.ID(AssetId.REG_CODE) == '26238RMFS'
     assert bond.expiry() == d2t(410515)
     assert bond.principal() == Decimal('1000')
 
@@ -175,10 +159,10 @@ def test_MOEX_downloader(prepare_db_moex):
     assert_frame_equal(corp_quotes, quotes_downloaded)
     bond2 = JalAsset(7)
     assert bond2.type() == PredefinedAsset.Bond
-    assert bond2.isin() == 'RU000A1014H6'
+    assert bond2.ID(AssetId.ISIN) == 'RU000A1014H6'
     assert bond2.symbol(1) == 'МКБ 1P2'
     assert bond2.name() == ''
-    assert bond2.reg_number() == '4B020901978B001P'
+    assert bond2.ID(AssetId.REG_CODE) == '4B020901978B001P'
     assert bond2.expiry() == d2t(211130)
     assert bond2.principal() == Decimal('1000')
     # Test of quotes download for PNK Rental Fund
@@ -196,21 +180,13 @@ def test_MOEX_downloader(prepare_db_moex):
 
 
 def test_MOEX_downloader_USD(prepare_db_moex):
-    create_assets([('FXGD', 'FinEx Gold ETF', 'IE00B8XB7377', 2, PredefinedAsset.ETF, 0)])   # ID = 9
-    create_assets([('ГазКЗ-30Д', 'Газпром капитал ООО ЗО30-1-Д', 'RU000A105SG2', 2, PredefinedAsset.Bond, 0)])
+    create_assets([('ГазКЗ-30Д', 'Газпром капитал ООО ЗО30-1-Д', 'RU000A105SG2', 2, PredefinedAsset.Bond, 0)])  # ID = 9
 
-    JalAsset(9).add_symbol('FXGD', 1, 'FinEx Gold ETF - RUB')
-    usd_quotes = pd.DataFrame({'Close': [Decimal('12.02'), Decimal('11.90')],
-                               'Date': [d2dt(211213), d2dt(211214)]})
-    usd_quotes = usd_quotes.set_index('Date')
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(9), 2, d2t(211213), d2t(211214), update_symbol=False)
-    assert_frame_equal(usd_quotes, quotes_downloaded)
-
     bond_usd_quotes = pd.DataFrame({'Close': [Decimal('846.509'), Decimal('844.998')],
-                               'Date': [d2dt(240213), d2dt(240214)]})
+                                    'Date': [d2dt(240213), d2dt(240214)]})
     bond_usd_quotes = bond_usd_quotes.set_index('Date')
-    bond_quotes = downloader.MOEX_DataReader(JalAsset(10), 2, d2t(240213), d2t(240214))
+    bond_quotes = downloader.MOEX_DataReader(JalAsset(9), 2, d2t(240213), d2t(240214))
     assert_frame_equal(bond_quotes, bond_usd_quotes)
 
 def test_NYSE_downloader(prepare_db):

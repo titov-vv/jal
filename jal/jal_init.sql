@@ -48,9 +48,16 @@ CREATE TABLE assets (
     id         INTEGER    PRIMARY KEY UNIQUE NOT NULL,
     type_id    INTEGER    NOT NULL,
     full_name  TEXT (128) NOT NULL,
-    isin       TEXT (12)  DEFAULT ('') NOT NULL,
     country_id INTEGER    REFERENCES countries (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (0),
     base_asset INTEGER    REFERENCES assets (id) ON DELETE SET NULL ON UPDATE CASCADE                             -- base asset for derivatives
+);
+
+-- Table to keep various asset identifiers
+CREATE TABLE IF NOT EXISTS asset_id (
+    id INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    asset_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    id_type INTEGER NOT NULL,
+    id_value TEXT NOT NULL
 );
 
 -- Table to keep asset symbols
@@ -413,9 +420,10 @@ CREATE VIEW frontier AS SELECT MAX(ledger.timestamp) AS ledger_frontier FROM led
 -- View: assets_ext
 DROP VIEW IF EXISTS assets_ext;
 CREATE VIEW assets_ext AS
-    SELECT a.id, a.type_id, t.symbol, a.full_name, a.isin, t.currency_id, a.country_id, t.quote_source
+SELECT a.id, a.type_id, t.symbol, a.full_name, i.id_value AS isin, t.currency_id, a.country_id, t.quote_source
     FROM assets a
     LEFT JOIN asset_tickers t ON a.id = t.asset_id
+    LEFT JOIN asset_id i ON a.id = i.asset_id AND i.id_type = 1
     WHERE t.active = 1
     ORDER BY a.id;
 
@@ -619,7 +627,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 59);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 60);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
@@ -684,10 +692,13 @@ INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_
 
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');
+INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (1, 1, 6, 'RUB');
 INSERT INTO asset_tickers (id, asset_id, symbol, description, quote_source, active) VALUES (1, 1, 'RUB', 'Российский Рубль', -1, 1);
 INSERT INTO assets (id, type_id, full_name) VALUES (2, 1, 'Доллар США');
+INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (2, 2, 6, 'USD');
 INSERT INTO asset_tickers (id, asset_id, symbol, description, quote_source, active) VALUES (2, 2, 'USD', 'Доллар США', 0, 1);
 INSERT INTO assets (id, type_id, full_name) VALUES (3, 1, 'Евро');
+INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (3, 3, 6, 'EUR');
 INSERT INTO asset_tickers (id, asset_id, symbol, description, quote_source, active) VALUES (3, 3, 'EUR', 'Евро', 0, 1);
 
 -- Initialize countries

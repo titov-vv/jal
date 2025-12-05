@@ -3,7 +3,7 @@ import math
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
-from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset
+from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset, AssetId
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal, year_begin, year_end, day_begin
 from jal.db.country import JalCountry
@@ -35,17 +35,19 @@ class JalAsset(JalDB):
                 self._id = self._find_asset(data)
             if create and not self._id:   # If we haven't found peer before and requested to create new record
                 query = self._exec(
-                    "INSERT INTO assets (type_id, full_name, isin, country_id) "
-                    "VALUES (:type, :full_name, :isin, coalesce((SELECT id FROM countries WHERE code=:country), 0))",
+                    "INSERT INTO assets (type_id, full_name, country_id) "
+                    "VALUES (:type, :full_name, coalesce((SELECT id FROM countries WHERE code=:country), 0))",
                     [(":type", data['type']), (":full_name", data['name']),
-                     (":isin", data['isin']), (":country", data['country'])], commit=True)
+                     (":country", data['country'])], commit=True)
                 self._id = query.lastInsertId()
+                if 'isin' in data and data['isin']:
+                    _ = self._exec("INSERT INTO asset_id (asset_id, id_type, id_value) "
+                                   "VALUES(:asset_id, :id_type, :id_value)",
+                                   [(":asset_id", self._id), (":id_type", AssetId.ISIN), (":id_value", data['isin'])])
         self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))  # Load asset data from cache or DB
         self._type = self._data.get('type_id', None)
         self._name = self._data.get('full_name', '')
-        self._isin = self._data.get('isin', None)
         self._country = JalCountry(self._data.get('country_id', 0))
-        self._reg_number = self._data.get('data', {}).get(AssetData.RegistrationCode, '')
         self._expiry = int(self._data.get('data', {}).get(AssetData.ExpiryDate, 0))
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '')
         self._principal = Decimal(self._principal) if self._principal else Decimal('0')
@@ -59,6 +61,12 @@ class JalAsset(JalDB):
         query = self._exec("SELECT * FROM assets WHERE id=:id", [(":id", asset_id)])
         if query.next():
             asset_data = self._read_record(query, named=True)
+            asset_data['ID'] = {}  # Dictionary of various asset IDs
+            id_query = self._exec("SELECT id_type, id_value FROM asset_id WHERE asset_id=:id ORDER BY id_type",
+                                    [(":id", asset_data['id'])])
+            while id_query.next():
+                it_type, id_value = self._read_record(id_query)
+                asset_data['ID'][it_type] = id_value
             asset_data['symbols'] = []
             symbols_query = self._exec("SELECT * FROM asset_tickers WHERE asset_id=:id", [(":id", asset_data['id'])])
             while symbols_query.next():
@@ -96,8 +104,8 @@ class JalAsset(JalDB):
     def name(self) -> str:
         return self._name
 
-    def isin(self) -> str:
-        return self._isin
+    def ID(self, id_type: int) -> str:  # Returns asset ID of given type or None if not present
+        return self._data['ID'].get(id_type, None)
 
     # Returns asset symbol for given currency or all symbols if no currency is given
     def symbol(self, currency: int = None) -> str:
@@ -239,9 +247,6 @@ class JalAsset(JalDB):
         days_remaining = int((expiry_date - datetime.now(tz=timezone.utc)).total_seconds() / 86400)
         return days_remaining
 
-    def reg_number(self):
-        return self._reg_number
-
     def principal(self) -> Decimal:
         return self._principal
 
@@ -278,14 +283,15 @@ class JalAsset(JalDB):
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
     def _update_isin(self, new_isin: str) -> None:
-        if self._isin:
-            if new_isin != self._isin:
-                logging.error(self.tr("Unexpected attempt to update ISIN for ")
-                              + f"{self.symbol()}: {self._isin} -> {new_isin}")
+        _isin = self.ID(AssetId.ISIN)
+        if _isin:
+            if new_isin != _isin:
+                logging.error(self.tr("Unexpected attempt to update ISIN for ") + f"{self.symbol()}: {_isin} -> {new_isin}")
         else:
-            _ = self._exec("UPDATE assets SET isin=:new_isin WHERE id=:id",
-                           [(":new_isin", new_isin), (":id", self._id)])
-            self._isin = new_isin
+            _ = self._exec("INSERT INTO asset_id (asset_id, id_type, id_value) "
+                           "VALUES(:asset_id, :id_type, :id_value)",
+                           [(":asset_id", self._id), (":id_type", AssetId.ISIN), (":id_value", new_isin)])
+            self._data['ID'][AssetId.ISIN] = new_isin
 
     def _update_name(self, new_name: str) -> None:
         if not self._name:
@@ -304,14 +310,13 @@ class JalAsset(JalDB):
                              + f"{self.symbol()}: {self._country.name()} -> {new_country.name()}")
 
     def _update_reg_number(self, new_number: str) -> None:
-        if new_number != self._reg_number:
-            _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
-                           "VALUES(:asset_id, :datatype, :reg_number)",
-                           [(":asset_id", self._id), (":datatype", AssetData.RegistrationCode),
-                            (":reg_number", new_number)])
-            self._reg_number = new_number
-            logging.info(self.tr("Reg.number updated for ")
-                         + f"{self.symbol()}: {self._reg_number} -> {new_number}")
+        _reg_number = self.ID(AssetId.REG_CODE)
+        if new_number != _reg_number:
+            _ = self._exec("INSERT INTO asset_id (asset_id, id_type, id_value) "
+                           "VALUES(:asset_id, :id_type, :id_value)",
+                           [(":asset_id", self._id), (":id_type", AssetId.REG_CODE), (":id_value", new_number)])
+            self._data['ID'][AssetId.REG_CODE] = new_number
+            logging.info(self.tr("Reg.number updated for ") + f"{self.symbol()}: {_reg_number} -> {new_number}")
 
     def _update_expiration(self, new_expiration: int) -> None:
         _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "

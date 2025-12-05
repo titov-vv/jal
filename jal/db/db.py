@@ -138,7 +138,7 @@ class JalDB:
         if Version(sqlite_version) < Version(Setup.SQLITE_MIN_VERSION):
             db.close()
             return JalDBError(JalDBError.OutdatedSqlite)
-        JalDB._tables = db.tables(QSql.Tables) + db.tables(QSql.Views)  # Bitwise or somehow doesn't work here :(
+        JalDB._tables = db.tables(QSql.Tables) + db.tables(QSql.Views)  # Bitwise 'OR' somehow doesn't work here :(
         if not JalDB._tables:
             logging.info("Loading DB initialization script")
             error = self.run_sql_script(self.get_app_path() + Setup.INIT_SCRIPT_PATH)

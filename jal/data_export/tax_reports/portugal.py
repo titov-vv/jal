@@ -1,5 +1,5 @@
 from decimal import Decimal
-from jal.constants import PredefinedAsset, PredefinedCategory
+from jal.constants import PredefinedAsset, PredefinedCategory, AssetId
 from jal.db.operations import AssetPayment, CorporateAction
 from jal.data_export.taxes import TaxReport
 from jal.db.category import JalCategory
@@ -34,7 +34,7 @@ class TaxesPortugal(TaxReport):
                 'payment_date': dividend.timestamp(),
                 'symbol': dividend.asset().symbol(self.account_currency.id()),
                 'full_name': dividend.asset().name(),
-                'isin': dividend.asset().isin(),
+                'isin': dividend.asset().ID(AssetId.ISIN),
                 'amount': dividend.amount(self.account_currency.id()),
                 'tax': dividend.tax(),
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
@@ -72,7 +72,7 @@ class TaxesPortugal(TaxReport):
             line = {
                 'report_template': "trade",
                 'symbol': trade.asset().symbol(self.account_currency.id()),
-                'isin': trade.asset().isin(),
+                'isin': trade.asset().ID(AssetId.ISIN),
                 'qty': trade.qty(),
                 'o_type': "Aquisição" if trade.qty() >= Decimal('0') else "Venda",
                 'o_number': trade.open_operation().number(),
