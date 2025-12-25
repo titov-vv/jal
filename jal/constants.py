@@ -248,6 +248,40 @@ class AssetData(PredefinedList, QObject):
             return default
 
 
+class AssetLocation(PredefinedList, QObject):
+    UNDEFINED = 0
+    CASH_WALLET = 100
+    BANK_ACCOUNT = 101
+    NYSE_EXCHANGE = 201
+    NASDAQ_EXCHANGE = 202
+    LSE_EXCHANGE = 203
+    FRA_EXCHANGE = 204
+    MILAN_EXCHANGE = 205
+    WSE_EXCHANGE = 206
+    TMX_EXCHANGE = 207
+    MOEX_EXCHANGE = 208
+    ETH_BLOCKCHAIN = 301
+    ARB_BLOCKCHAIN = 302
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.UNDEFINED: self.tr("Unknown"),
+            self.CASH_WALLET: self.tr("Cash"),
+            self.BANK_ACCOUNT: self.tr("Bank account"),
+            self.NYSE_EXCHANGE: self.tr("NYSE"),
+            self.NASDAQ_EXCHANGE: self.tr("Nasdaq"),
+            self.LSE_EXCHANGE: self.tr("LSE"),
+            self.FRA_EXCHANGE: self.tr("Frankfurt Borse"),
+            self.MILAN_EXCHANGE: self.tr("Borsa Italiana"),
+            self.WSE_EXCHANGE: self.tr("Warsaw Stock Exchange"),
+            self.TMX_EXCHANGE: self.tr("TMX TSX"),
+            self.MOEX_EXCHANGE: self.tr("MOEX"),
+            self.ETH_BLOCKCHAIN: self.tr("Ethereum"),
+            self.ARB_BLOCKCHAIN: self.tr("Arbitrum")
+            # self.SMA_VICTORIA: self.tr("Victoria Seguros"),
+        }
+
 class MarketDataFeed(PredefinedList, QObject):
     NA = -1
     FX = 0
