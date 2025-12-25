@@ -33,7 +33,7 @@
   "columns_numbered": true,
   "bond_trade": {
     "rows": [
-      ["c_symbol", "c_isin", "c_qty", "principal", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_int", "c_int_rub", "o_fee", "o_fee_rub", "income_rub", "spending_rub", "profit_rub", "profit"],
+      ["c_symbol", "c_isin", "c_qty", "principal", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_int", "o_int_rub", "o_fee", "o_fee_rub", "income_rub", "spending_rub", "profit_rub", "profit"],
       [null,       null,     null,    null,        "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_int", "c_int_rub", "c_fee", "c_fee_rub", null,         null,           null,         null]
     ],
     "formats": [
