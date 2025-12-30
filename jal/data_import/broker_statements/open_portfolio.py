@@ -1,7 +1,7 @@
 import re
 import json
 import logging
-from pkg_resources import parse_version
+from packaging.version import Version
 from jal.data_import.statement import FOF, Statement, Statement_ImportError
 from jal.constants import PredefinedCategory
 
@@ -62,7 +62,7 @@ class StatementOpenPortfolio(Statement):
 
     def _validate_version(self, section):
         version = self._data[section]
-        if parse_version(version) > parse_version("1.1.0"):
+        if Version(version) > Version("1.1.0"):
             raise Statement_ImportError(self.tr("Unsupported version of open portfolio format: ") + version)
         self._data.pop(section)
 
