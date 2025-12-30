@@ -118,7 +118,7 @@ class JalAsset(JalDB):
             symbol = [x['symbol'] for x in self._data['symbols'] if x['active'] == 1 and x['currency_id'] == currency]
             return ''.join(x for x in symbol)   # return symbol or empty string (there shouldn't be more than one)
 
-    def add_symbol(self, symbol: str, currency_id: int=None, data_source: int=MarketDataFeed.NA) -> None:
+    def add_symbol(self, symbol: str, currency_id, data_source: int) -> None:
         existing = self._read("SELECT id, symbol, quote_source FROM asset_symbol "
                               "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id IS :currency",
                               [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)
@@ -130,10 +130,6 @@ class JalAsset(JalDB):
                 "VALUES (:asset_id, :symbol, :currency, :data_source)",
                 [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
                  (":data_source", data_source)])
-        else:  # Update data for existing symbol
-            if existing['quote_source'] == MarketDataFeed.NA:
-                _ = self._exec("UPDATE asset_symbol SET quote_source=:data_source WHERE id=:id",
-                               [(":data_source", data_source), (":id", existing['id'])])
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
     # Returns country object for the asset
@@ -207,10 +203,7 @@ class JalAsset(JalDB):
         source_id = self._read("SELECT quote_source FROM asset_symbol "
                                "WHERE asset_id=:asset AND currency_id IS :currency",
                                [(":asset", self._id), (":currency", currency_id)])
-        if source_id is None:
-            return MarketDataFeed.NA
-        else:
-            return source_id
+        return source_id
 
     # Returns a dict (ID-Name) of all available data sources
     @classmethod

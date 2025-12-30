@@ -283,7 +283,6 @@ class AssetLocation(PredefinedList, QObject):
         }
 
 class MarketDataFeed(PredefinedList, QObject):
-    NA = -1
     FX = 0
     RU = 1  # MOEX
     US = 2
@@ -299,7 +298,6 @@ class MarketDataFeed(PredefinedList, QObject):
     def __init__(self):
         super().__init__()
         self._names = {
-            self.NA: self.tr("None"),
             self.FX: self.tr("Central banks"),
             self.RU: self.tr("MOEX"),
             self.US: self.tr("NYSE/Nasdaq"),

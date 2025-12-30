@@ -400,7 +400,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 try:
                     source = self._sources[symbol['note']]
                 except KeyError:
-                    source = MarketDataFeed.NA
+                    source = None
             JalAsset(-symbol['asset']).add_symbol(symbol['symbol'], currency, data_source=source)
 
     def _import_asset_data(self, data):

@@ -37,11 +37,10 @@ class QuotesUpdateDialog(QDialog):
         self.ui.EndDateEdit.setDate(QDate.currentDate())
         sources = JalAsset.get_sources_list()
         for source in sources:
-            if source != MarketDataFeed.NA:
-                item = QListWidgetItem(sources[source], self.ui.SourcesList)
-                item.setData(DATA_SOURCE_ROLE, source)
-                item.setCheckState(Qt.Checked)
-                self.ui.SourcesList.addItem(item)
+            item = QListWidgetItem(sources[source], self.ui.SourcesList)
+            item.setData(DATA_SOURCE_ROLE, source)
+            item.setCheckState(Qt.Checked)
+            self.ui.SourcesList.addItem(item)
 
         # center dialog with respect to parent window
         x = parent.x() + parent.width() / 2 - self.width() / 2
@@ -156,7 +155,6 @@ class QuoteDownloader(QObject):
 
     def download_asset_prices(self, start_timestamp, end_timestamp, sources_list):
         data_loaders = {
-            MarketDataFeed.NA: self.Dummy_DataReader,
             MarketDataFeed.RU: self.MOEX_DataReader,
             MarketDataFeed.EU: self.Euronext_DataReader,
             MarketDataFeed.US: self.Yahoo_Downloader,

@@ -54,43 +54,26 @@ CREATE TABLE assets (
 
 -- Table to keep various asset identifiers
 CREATE TABLE IF NOT EXISTS asset_id (
-    id INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    asset_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    id_type INTEGER NOT NULL,
-    id_value TEXT NOT NULL
+    id        INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    symbol_id INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    id_type   INTEGER NOT NULL,
+    id_value  TEXT NOT NULL
 );
 
 -- Table to keep asset symbols
 DROP TABLE IF EXISTS asset_symbol;
 CREATE TABLE asset_symbol (
-    id           INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    asset_id     INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    symbol       TEXT    NOT NULL,
-    currency_id  INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    quote_source INTEGER DEFAULT ( -1) NOT NULL,
-    active       INTEGER NOT NULL DEFAULT (1)
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    symbol      TEXT NOT NULL,
+    currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    location_id INTEGER NOT NULL DEFAULT (0),
+    active      INTEGER NOT NULL DEFAULT (1),
+    icon        BLOB
 );
 -- Index to prevent duplicates
 DROP INDEX IF EXISTS uniq_symbols;
 CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id);
--- Create triggers to keep currency_id NULL for currencies and NOT NULL for other assets
-DROP TRIGGER IF EXISTS validate_ticker_currency_insert;
-CREATE TRIGGER validate_ticker_currency_insert
-    BEFORE INSERT ON asset_symbol
-    FOR EACH ROW
-    WHEN IIF(NEW.currency_id IS NULL, 0, 1) = (SELECT IIF(type_id=1, 1, 0) FROM assets WHERE id=NEW.asset_id)
-BEGIN
-    SELECT RAISE(ABORT, "JAL_SQL_MSG_0003");
-END;
-
-DROP TRIGGER IF EXISTS validate_ticker_currency_update;
-CREATE TRIGGER validate_ticker_currency_update
-    AFTER UPDATE OF currency_id ON asset_symbol
-    FOR EACH ROW
-    WHEN IIF(NEW.currency_id IS NULL, 0, 1) = (SELECT IIF(type_id=1, 1, 0) FROM assets WHERE id=NEW.asset_id)
-BEGIN
-    SELECT RAISE(ABORT, "JAL_SQL_MSG_0003");
-END;
 
 -- Table to keep extra asset data
 DROP TABLE IF EXISTS asset_data;
@@ -260,6 +243,16 @@ CREATE TABLE quotes (
     quote       TEXT    NOT NULL DEFAULT ('0')
 );
 CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
+
+
+-- Create quote source table
+DROP TABLE IF EXISTS quote_source;
+CREATE TABLE quote_source (
+    asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    datafeed_id INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX datafeed_pk ON quote_source (asset_id ASC, currency_id ASC);
 
 -- Table to store application settings
 DROP TABLE IF EXISTS settings;
@@ -692,13 +685,15 @@ INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');
 INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (1, 1, 6, 'RUB');
-INSERT INTO asset_symbol (id, asset_id, symbol, quote_source, active) VALUES (1, 1, 'RUB', -1, 1);
+INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) VALUES (1, 1, 'RUB', 1, 1);
 INSERT INTO assets (id, type_id, full_name) VALUES (2, 1, 'Доллар США');
 INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (2, 2, 6, 'USD');
-INSERT INTO asset_symbol (id, asset_id, symbol, quote_source, active) VALUES (2, 2, 'USD', 0, 1);
+INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) VALUES (2, 2, 'USD', 2, 1);
+INSERT INTO quote_source (asset_id, currency_id, datafeed_id) VALUES (2, 2, 0);
 INSERT INTO assets (id, type_id, full_name) VALUES (3, 1, 'Евро');
 INSERT INTO asset_id (id, asset_id, id_type, id_value) VALUES (3, 3, 6, 'EUR');
-INSERT INTO asset_symbol (id, asset_id, symbol, quote_source, active) VALUES (3, 3, 'EUR', 0, 1);
+INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) VALUES (3, 3, 'EUR', 3, 1);
+INSERT INTO quote_source (asset_id, currency_id, datafeed_id) VALUES (3, 3, 0);
 
 -- Initialize countries
 INSERT INTO countries (id, code, iso_code) VALUES (0, 'xx', '000');

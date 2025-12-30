@@ -116,7 +116,7 @@ class CorporateActionWidget(AbstractOperationDetails):
             return False
         # Split should have the same asset before and after the operation
         if fields['type'] == CorporateAction.Split and fields['asset_id'] != results[0]['asset_id']:
-            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't change asset during Split"), QMessageBox.Ok)
+            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't change asset during Split"), QMessageBox.Ok)   # FIXME this condition doesn't work for split in options
             return False
         # Everything after corporate action should add up to 100% of initial asset value
         total_share = sum([Decimal(x['value_share']) for x in results])
