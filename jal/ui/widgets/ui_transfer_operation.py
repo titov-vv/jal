@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'transfer_operation.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.1
+## Created by: Qt User Interface Compiler version 6.10.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QDateTimeEdit, QGridLayo
     QSpacerItem, QWidget)
 
 from jal.widgets.account_select import AccountCurrencyLabel
-from jal.widgets.reference_selector import (AccountSelector, AssetSelector)
+from jal.widgets.reference_selector import (AccountSelector, SymbolSelector)
 
 class Ui_TransferOperation(object):
     def setupUi(self, TransferOperation):
@@ -168,7 +168,7 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.fee_currency, 5, 7, 1, 1)
 
-        self.asset_widget = AssetSelector(TransferOperation)
+        self.asset_widget = SymbolSelector(TransferOperation)
         self.asset_widget.setObjectName(u"asset_widget")
 
         self.layout.addWidget(self.asset_widget, 2, 9, 1, 1)

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTime
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime, QTimeZone
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor, Setup
-from jal.widgets.reference_selector import AssetSelector, PeerSelector, CategorySelector, TagSelector
+from jal.widgets.reference_selector import SymbolSelector, PeerSelector, CategorySelector, TagSelector
 from jal.db.db import JalModel
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
@@ -335,14 +335,14 @@ class PeerSelectorDelegate(LookupSelectorDelegate):
         self._selector = PeerSelector(parent, validate=False)
 
 
-class AssetSelectorDelegate(LookupSelectorDelegate):
+class SymbolSelectorDelegate(LookupSelectorDelegate):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self._table = "assets_ext"
+        self._table = "asset_symbol"
         self._field = "symbol"
 
     def createSelector(self, parent) -> None:
-        self._selector = AssetSelector(parent, validate=False)
+        self._selector = SymbolSelector(parent, validate=False)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # This is a helper function for ColoredAmountsDelegate.

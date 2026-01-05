@@ -127,7 +127,7 @@
     </widget>
    </item>
    <item row="3" column="4">
-    <widget class="AssetSelector" name="asset_widget" native="true"/>
+    <widget class="SymbolSelector" name="asset_widget" native="true"/>
    </item>
    <item row="2" column="4">
     <widget class="AccountSelector" name="account_widget" native="true"/>
@@ -231,7 +231,7 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>AssetSelector</class>
+   <class>SymbolSelector</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>

@@ -400,24 +400,13 @@ DROP VIEW IF EXISTS currencies;
 CREATE VIEW currencies AS
 SELECT a.id, s.symbol
     FROM assets AS a
-    LEFT JOIN asset_symbol AS s ON s.asset_id = a.id AND  s.active = 1
+    LEFT JOIN asset_symbol AS s ON s.asset_id = a.id AND s.active = 1
     WHERE a.type_id = 1;
 
 
 -- View: frontier
 DROP VIEW IF EXISTS frontier;
 CREATE VIEW frontier AS SELECT MAX(ledger.timestamp) AS ledger_frontier FROM ledger;
-
-
--- View: assets_ext
-DROP VIEW IF EXISTS assets_ext;
-CREATE VIEW assets_ext AS
-SELECT a.id, a.type_id, s.symbol, a.full_name, i.id_value AS isin, s.currency_id, a.country_id, s.quote_source
-    FROM assets a
-    LEFT JOIN asset_symbol s ON a.id = s.asset_id
-    LEFT JOIN asset_id i ON a.id = i.asset_id AND i.id_type = 1
-    WHERE s.active = 1
-    ORDER BY a.id;
 
 
 DROP VIEW IF EXISTS countries_ext;
@@ -429,12 +418,6 @@ CREATE VIEW countries_ext AS
 
 --------------------------------------------------------------------------------
 -- TRIGGERS
--- Deletion should happen on base table of the view
-DROP TRIGGER IF EXISTS on_asset_ext_delete;
-CREATE TRIGGER on_asset_ext_delete INSTEAD OF DELETE ON assets_ext FOR EACH ROW
-BEGIN
-    DELETE FROM assets WHERE id = OLD.id;
-END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS action_details_after_delete;
 CREATE TRIGGER action_details_after_delete AFTER DELETE ON action_details FOR EACH ROW

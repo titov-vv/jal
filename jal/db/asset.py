@@ -61,19 +61,18 @@ class JalAsset(JalDB):
         query = self._exec("SELECT * FROM assets WHERE id=:id", [(":id", asset_id)])
         if query.next():
             asset_data = self._read_record(query, named=True)
-            asset_data['ID'] = {}  # Dictionary of various asset IDs
-            id_query = self._exec("SELECT id_type, id_value FROM asset_id WHERE asset_id=:id ORDER BY id_type",
-                                    [(":id", asset_data['id'])])
-            while id_query.next():
-                it_type, id_value = self._read_record(id_query)
-                asset_data['ID'][it_type] = id_value
             asset_data['symbols'] = []
+            asset_data['ID'] = {}  # Dictionary of various asset IDs linked to symbols
             symbols_query = self._exec("SELECT * FROM asset_symbol WHERE asset_id=:id", [(":id", asset_data['id'])])
             while symbols_query.next():
                 symbol = self._read_record(symbols_query, named=True)
-                del symbol['id']
                 del symbol['asset_id']
                 asset_data['symbols'].append(symbol)
+                id_query = self._exec("SELECT id_type, id_value FROM asset_id WHERE symbol_id=:id ORDER BY id_type",
+                                        [(":id", symbol['id'])])
+                while id_query.next():
+                    it_type, id_value = self._read_record(id_query)
+                    asset_data['ID'][(symbol['id'], it_type)] = id_value
             extra_data = {}
             data_query = self._exec("SELECT datatype, value FROM asset_data WHERE asset_id=:id ORDER BY datatype",
                                     [(":id", asset_data['id'])])
@@ -83,6 +82,10 @@ class JalAsset(JalDB):
             if extra_data:
                 asset_data['data'] = extra_data
         return asset_data
+
+    # returns a list of IDs of given type that are defined for this asset
+    def _get_id(self, id_type: int) -> list:
+        return [value for (key, value) in self._data['ID'].items() if key[1] == id_type]
 
     def invalidate_cache(self):
         self.db_cache.clear_cache()

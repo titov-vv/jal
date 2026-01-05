@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'asset_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.1
+## Created by: Qt User Interface Compiler version 6.10.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QFrame,
 
 from jal.constants import AssetTypeComboBox
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
-from jal.widgets.reference_selector import AssetSelector
+from jal.widgets.reference_selector import SymbolSelector
 
 class Ui_AssetDialog(object):
     def setupUi(self, AssetDialog):
@@ -186,10 +186,10 @@ class Ui_AssetDialog(object):
 
         self.gridLayout.addWidget(self.isinLbl, 1, 0, 1, 1)
 
-        self.BaseAssetSelector = AssetSelector(AssetDialog)
-        self.BaseAssetSelector.setObjectName(u"BaseAssetSelector")
+        self.BaseSymbolSelector = SymbolSelector(AssetDialog)
+        self.BaseSymbolSelector.setObjectName(u"BaseSymbolSelector")
 
-        self.gridLayout.addWidget(self.BaseAssetSelector, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.BaseSymbolSelector, 2, 1, 1, 1)
 
         self.ButtonsFrame = QFrame(AssetDialog)
         self.ButtonsFrame.setObjectName(u"ButtonsFrame")

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'trade_operation.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.1
+## Created by: Qt User Interface Compiler version 6.10.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QDateEdit, QDateTimeEdit, QGridLayo
     QSpacerItem, QWidget)
 
 from jal.widgets.account_select import AccountCurrencyLabel
-from jal.widgets.reference_selector import (AccountSelector, AssetSelector)
+from jal.widgets.reference_selector import (AccountSelector, SymbolSelector)
 
 class Ui_TradeOperation(object):
     def setupUi(self, TradeOperation):
@@ -155,7 +155,7 @@ class Ui_TradeOperation(object):
 
         self.layout.addWidget(self.note, 4, 1, 1, 9)
 
-        self.asset_widget = AssetSelector(TradeOperation)
+        self.asset_widget = SymbolSelector(TradeOperation)
         self.asset_widget.setObjectName(u"asset_widget")
 
         self.layout.addWidget(self.asset_widget, 3, 1, 1, 6)

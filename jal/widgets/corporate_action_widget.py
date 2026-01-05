@@ -8,7 +8,7 @@ from PySide6.QtGui import QFont
 from jal.ui.widgets.ui_corporate_action_operation import Ui_CorporateActionOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.icons import JalIcon
-from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
+from jal.widgets.delegates import WidgetMapperDelegateBase, SymbolSelectorDelegate, FloatDelegate
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import localize_decimal, db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction, CorporateAction
@@ -30,7 +30,7 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.operation_type = LedgerTransaction.CorporateAction
         self.combo_model = None
 
-        self.asset_delegate = AssetSelectorDelegate()
+        self.asset_delegate = SymbolSelectorDelegate()
         self.float_delegate = FloatDelegate(2)
         self.percent_delegate = FloatDelegate(2, percent=True)
 

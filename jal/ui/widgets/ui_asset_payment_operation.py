@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'asset_payment_operation.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.1
+## Created by: Qt User Interface Compiler version 6.10.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDateEdit, QDateTimeEdit
     QSizePolicy, QSpacerItem, QWidget)
 
 from jal.widgets.account_select import AccountCurrencyLabel
-from jal.widgets.reference_selector import (AccountSelector, AssetSelector)
+from jal.widgets.reference_selector import (AccountSelector, SymbolSelector)
 
 class Ui_AssetPaymentOperation(object):
     def setupUi(self, AssetPaymentOperation):
@@ -123,7 +123,7 @@ class Ui_AssetPaymentOperation(object):
 
         self.layout.addWidget(self.account_widget, 2, 1, 1, 4)
 
-        self.asset_widget = AssetSelector(AssetPaymentOperation)
+        self.asset_widget = SymbolSelector(AssetPaymentOperation)
         self.asset_widget.setObjectName(u"asset_widget")
 
         self.layout.addWidget(self.asset_widget, 3, 1, 1, 4)

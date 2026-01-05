@@ -95,7 +95,13 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
         return self.getFieldValue(self.getId(index), self._default_name)
 
     def getFieldValue(self, item_id, field_name):
-        return self._read(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        field_relation = self.relation(self.fieldIndex(field_name))  # Provide lookup from foreign table if relation is set
+        if field_relation.isValid():
+            table = field_relation.tableName()
+            column = field_relation.displayColumn()
+            return self._read(f"SELECT d.{column} FROM {self._table} s LEFT JOIN {table} d ON d.id = s.{field_name} WHERE s.id=:id", [(":id", item_id)])
+        else:
+            return self._read(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
     def addElement(self, index, in_group=0):
         row = index.row() if index.isValid() else 0
