@@ -278,6 +278,15 @@ class JalDB:
         else:
             return None
 
+    # Executes query and return result as a list of lists or dictionaries if named=True
+    @classmethod
+    def _read_to_list(cls, sql_text, params=None, named=False) -> list:
+        result = []
+        query = cls._exec(sql_text, params)
+        while query.next():
+            result.append(cls._read_record(query, named=named))
+        return result
+
     # ------------------------------------------------------------------------------------------------------------------
     def invalidate_cache(self):
         processed_cache_classes = set()   # a list of classes that were already invalidated and don't need extra action

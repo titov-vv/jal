@@ -341,47 +341,44 @@ class JalAsset(JalDB):
         return True
 
     def _find_asset(self, data: dict) -> int:
-        id = None
+        aid = None
         if data['isin']:
-            # Select either by ISIN if no symbol given OR by both ISIN & symbol
-            id = self._read("SELECT id FROM assets_ext "
-                            "WHERE ((isin=:isin OR isin='') AND symbol=:symbol) OR (isin=:isin AND :symbol='')",
-                            [(":isin", data['isin']), (":symbol", data['symbol'])])
-            if id is None and data['symbol']:  # Make one more try by ISIN only if no match for ISIN+Symbol due to symbol change
-                id = self._read("SELECT id FROM assets_ext WHERE isin=:isin", [(":isin", data['isin'])])
-            if id is None:
+            query = self._exec("SELECT s.asset_id, s.symbol FROM asset_id i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:isin",
+                               [(":datatype", AssetId.ISIN), (":isin", data['isin'])])
+            while query.next():
+                aid, symbol = self._read_record(query, cast=[int, str])
+                if data['symbol'] and data['symbol'] == symbol:  # Try to match by ISIN and symbol first
+                    return aid
+            if aid is None:
                 return 0
             else:
-                return id
+                return aid
         if data['reg_number']:
-            id = self._read("SELECT asset_id FROM asset_data WHERE datatype=:datatype AND value=:reg_number",
-                            [(":datatype", AssetData.RegistrationCode), (":reg_number", data['reg_number'])])
-            if id is not None:
-                return id
+            aid = self._read("SELECT s.asset_id FROM asset_id i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:reg_code",
+                            [(":datatype", AssetId.REG_CODE), (":reg_code", data['reg_number'])], check_unique=True)
+            if aid is not None:
+                return aid
         if data['symbol']:
+            symbols = self._read_to_list("SELECT s.asset_id, a.type_id, d.value AS expiry FROM asset_symbol s "
+                                         "LEFT JOIN assets a ON s.asset_id=a.id "
+                                         "LEFT JOIN asset_data d ON s.asset_id=d.asset_id AND d.datatype=:datatype "
+                                         "WHERE s.symbol=:symbol COLLATE NOCASE",
+                                         [(":datatype", AssetData.ExpiryDate), (":symbol", data['symbol'])], named=True)
             if 'type' in data:
                 if 'expiry' in data:
-                    id = self._read("SELECT a.id FROM assets_ext a "
-                                    "LEFT JOIN asset_data d ON a.id=d.asset_id AND d.datatype=:datatype "
-                                    "WHERE symbol=:symbol COLLATE NOCASE AND type_id=:type AND value=:value",
-                                    [(":datatype", AssetData.ExpiryDate), (":symbol", data['symbol']),
-                                     (":type", data['type']), (":value", data['expiry'])])
+                    symbols = list(filter(lambda x: x['type_id'] == data['type'] and x['expiry'] == data['expiry'], symbols))
                 else:
-                    id = self._read("SELECT id FROM assets_ext "
-                                    "WHERE symbol=:symbol COLLATE NOCASE and type_id=:type",
-                                    [(":symbol", data['symbol']), (":type", data['type'])])
-            else:
-                id = self._read("SELECT id FROM assets_ext WHERE symbol=:symbol COLLATE NOCASE",
-                                [(":symbol", data['symbol'])])
-            if id is not None:
-                return id
+                    symbols = list(filter(lambda x: x['type_id'] == data['type'], symbols))
+            if len(symbols) == 1:
+                aid = symbols[0]['asset_id']
+            if aid is not None:
+                return aid
         if data['name']:
-            id = self._read("SELECT id FROM assets_ext WHERE full_name=:name COLLATE NOCASE",
-                            [(":name", data['name'])])
-        if id is None:
+            aid = self._read("SELECT id FROM assets WHERE full_name=:name COLLATE NOCASE", [(":name", data['name'])])
+        if aid is None:
             return 0
         else:
-            return id
+            return aid
 
     # Method returns a list of {"asset": JalAsset, "currency" currency_id} that describes assets involved into ledger
     # operations between begin and end timestamps or that have non-zero value in ledger
