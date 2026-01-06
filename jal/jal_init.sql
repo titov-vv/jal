@@ -134,17 +134,17 @@ CREATE UNIQUE INDEX country_name_by_language ON country_names (country_id, langu
 -- Table: asset_payments
 DROP TABLE IF EXISTS asset_payments;
 CREATE TABLE asset_payments (
-    oid        INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    otype      INTEGER NOT NULL DEFAULT (2),
-    timestamp  INTEGER NOT NULL,
-    ex_date    INTEGER NOT NULL DEFAULT (0),
-    number     TEXT    NOT NULL DEFAULT (''),
-    type       INTEGER NOT NULL,
-    account_id INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    symbol_id  INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    amount     TEXT    NOT NULL DEFAULT ('0'),
-    tax        TEXT    NOT NULL DEFAULT ('0'),
-    note       TEXT
+    oid        INTEGER PRIMARY KEY UNIQUE NOT NULL,   -- Unique operation id
+    otype      INTEGER NOT NULL DEFAULT (2),          -- Operation type (2 = asset payment)
+    timestamp  INTEGER NOT NULL,                      -- Timestamp when payment really happened
+    ex_date    INTEGER NOT NULL DEFAULT (0),          -- Timestamp (date) of ex-date for dividends
+    number     TEXT    NOT NULL DEFAULT (''),         -- Number of the operation in broker/exchange systems
+    type       INTEGER NOT NULL,                      -- Sub-type of operation (see AssetPayment class)
+    account_id INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,      -- where operation is accounted
+    symbol_id  INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- for which asset
+    amount     TEXT    NOT NULL DEFAULT ('0'),        -- How much was paid (in form of money or stocks)
+    tax        TEXT    NOT NULL DEFAULT ('0'),        -- Amount of tax that was witheld from the payment
+    note       TEXT                                   -- Free text comment
 );
 
 DROP TABLE IF EXISTS languages;
@@ -296,17 +296,17 @@ CREATE TABLE action_results (
 -- Table 'trade' records all buy/sell operations with assets
 DROP TABLE IF EXISTS trades;
 CREATE TABLE trades (
-    oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,  -- Unique operation id
-    otype      INTEGER     NOT NULL DEFAULT (3),         -- Operation type (3 = trade)
-    timestamp  INTEGER     NOT NULL,                     -- Timestamp when trade happened
-    settlement INTEGER     NOT NULL DEFAULT (0),         -- Timestamp of settlement if known (otherwise 0)
-    number     TEXT        NOT NULL DEFAULT (''),        -- Number of trade in broker/exchange systems
-    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- where trade is accounted
-    asset_id   INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,    -- which asset was bought/sold
-    qty        TEXT        NOT NULL DEFAULT ('0'),       -- Quantity of asset (>0 - Buy, <0 - Sell)
-    price      TEXT        NOT NULL DEFAULT ('0'),       -- Price of the trade
-    fee        TEXT        NOT NULL DEFAULT ('0'),       -- Total fee (broker, exchange, other) of the trade
-    note       TEXT        NOT NULL DEFAULT ('')         -- Free text comment
+    oid        INTEGER  PRIMARY KEY UNIQUE NOT NULL,  -- Unique operation id
+    otype      INTEGER  NOT NULL DEFAULT (3),         -- Operation type (3 = trade)
+    timestamp  INTEGER  NOT NULL,                     -- Timestamp when trade happened
+    settlement INTEGER  NOT NULL DEFAULT (0),         -- Timestamp of settlement if known (otherwise 0)
+    number     TEXT     NOT NULL DEFAULT (''),        -- Number of trade in broker/exchange systems
+    account_id INTEGER  REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,      -- where trade is accounted
+    symbol_id  INTEGER  REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- which asset was bought/sold
+    qty        TEXT     NOT NULL DEFAULT ('0'),       -- Quantity of asset (>0 - Buy, <0 - Sell)
+    price      TEXT     NOT NULL DEFAULT ('0'),       -- Price of the trade
+    fee        TEXT     NOT NULL DEFAULT ('0'),       -- Total fee (broker, exchange, other) of the trade
+    note       TEXT     NOT NULL DEFAULT ('')         -- Free text comment
 );
 
 -- Table for closed deals storage
@@ -499,7 +499,7 @@ BEGIN
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS trades_after_update;
-CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, asset_id, qty, price, fee ON trades FOR EACH ROW
+CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, symbol_id, qty, price, fee ON trades FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;

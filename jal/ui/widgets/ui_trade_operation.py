@@ -155,10 +155,10 @@ class Ui_TradeOperation(object):
 
         self.layout.addWidget(self.note, 4, 1, 1, 9)
 
-        self.asset_widget = SymbolSelector(TradeOperation)
-        self.asset_widget.setObjectName(u"asset_widget")
+        self.symbol_widget = SymbolSelector(TradeOperation)
+        self.symbol_widget.setObjectName(u"symbol_widget")
 
-        self.layout.addWidget(self.asset_widget, 3, 1, 1, 6)
+        self.layout.addWidget(self.symbol_widget, 3, 1, 1, 6)
 
         self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 

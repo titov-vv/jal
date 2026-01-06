@@ -11,7 +11,7 @@ class TradeWidgetDelegate(WidgetMapperDelegateBase):
         super().__init__(parent=parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'settlement': self.timestamp_delegate,
-                          'asset_id': self.symbol_delegate,
+                          'symbol_id': self.symbol_delegate,
                           'qty': self.decimal_long_delegate,
                           'price': self.decimal_long_delegate,
                           'fee': self.decimal_long_delegate}
@@ -29,14 +29,14 @@ class TradeWidget(AbstractOperationDetails):
         self.mapper.setItemDelegate(TradeWidgetDelegate(self.mapper))
 
         self.ui.account_widget.changed.connect(self.mapper.submit)
-        self.ui.asset_widget.changed.connect(self.mapper.submit)
+        self.ui.symbol_widget.changed.connect(self.mapper.submit)
 
         self.mapper.addMapping(self.ui.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.ui.settlement_editor, self.model.fieldIndex("settlement"))
         self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.ui.currency_price, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.ui.currency_fee, self.model.fieldIndex("account_id"))
-        self.mapper.addMapping(self.ui.asset_widget, self.model.fieldIndex("asset_id"))
+        self.mapper.addMapping(self.ui.symbol_widget, self.model.fieldIndex("symbol_id"))
         self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.ui.qty_edit, self.model.fieldIndex("qty"))
         self.mapper.addMapping(self.ui.price_edit, self.model.fieldIndex("price"))
@@ -51,7 +51,7 @@ class TradeWidget(AbstractOperationDetails):
         new_record.setValue("settlement", now_ts())
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
-        new_record.setValue("asset_id", 0)
+        new_record.setValue("symbol_id", 0)
         new_record.setValue("qty", '0')
         new_record.setValue("price", '0')
         new_record.setValue("fee", '0')

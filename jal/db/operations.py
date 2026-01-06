@@ -666,7 +666,7 @@ class Trade(LedgerTransaction):
         "settlement": {"mandatory": False, "validation": False},
         "number": {"mandatory": False, "validation": True, "default": ''},
         "account_id": {"mandatory": True, "validation": True},
-        "asset_id": {"mandatory": True, "validation": True},
+        "symbol_id": {"mandatory": True, "validation": True},
         "qty": {"mandatory": True, "validation": True},
         "price": {"mandatory": True, "validation": True},
         "fee": {"mandatory": True, "validation": False},
@@ -682,8 +682,10 @@ class Trade(LedgerTransaction):
         self._otype = LedgerTransaction.Trade
         self._opart = opart
         self._view_rows = 2
-        self._data = self._read("SELECT t.timestamp, t.settlement, t.number, t.account_id, t.asset_id, t.qty, "
-                                "t.price, t.fee, t.note FROM trades AS t WHERE t.oid=:oid",
+        self._data = self._read("SELECT t.timestamp, t.settlement, t.number, t.account_id, s.asset_id, "
+                                "t.symbol_id, t.qty, t.price, t.fee, t.note FROM trades AS t "
+                                "LEFT JOIN asset_symbol AS s ON t.symbol_id=s.id "
+                                "WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         self._timestamp = int(self._data['timestamp'])
         self._settlement = int(self._data['settlement'])
@@ -691,7 +693,7 @@ class Trade(LedgerTransaction):
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
-        self._asset = JalAsset(self._data['asset_id'])
+        self._asset = JalAsset(self._data['asset_id'], symbol_id=self._data['symbol_id'])
         self._number = self._data['number']
         self._qty = Decimal(self._data['qty'])
         self._price = Decimal(self._data['price'])
@@ -736,7 +738,7 @@ class Trade(LedgerTransaction):
         return self._price * self._qty
 
     def description(self, part_only=False) -> str:
-        deal_text = f"{self._qty:+.2f} {self._asset.symbol(self._account.currency())} @ {self._price:.4f}"
+        deal_text = f"{self._qty:+.2f} {self._asset.symbol()} @ {self._price:.4f}"
         fee_text = f"({self._fee:.2f})"
         text = deal_text + " " + fee_text if self._fee != Decimal('0') else deal_text
         if part_only and self._opart is not None:
@@ -757,7 +759,7 @@ class Trade(LedgerTransaction):
         if self._opart:
             return f" {self._account_currency}"
         else:
-            return f" {self._account_currency}\n {self._asset.symbol(self._account.currency())}"
+            return f" {self._account_currency}\n {self._asset.symbol()}"
 
     def value_total(self) -> list:
         amount = self._money_total(self._account.id())

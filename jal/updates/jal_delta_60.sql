@@ -129,6 +129,44 @@ BEGIN
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 --------------------------------------------------------------------------------
+-- Link trades to asset symbol
+CREATE TABLE old_trades AS SELECT * FROM trades;
+DROP TABLE trades;
+CREATE TABLE trades (
+    oid        INTEGER  PRIMARY KEY UNIQUE NOT NULL,  -- Unique operation id
+    otype      INTEGER  NOT NULL DEFAULT (3),         -- Operation type (3 = trade)
+    timestamp  INTEGER  NOT NULL,                     -- Timestamp when trade happened
+    settlement INTEGER  NOT NULL DEFAULT (0),         -- Timestamp of settlement if known (otherwise 0)
+    number     TEXT     NOT NULL DEFAULT (''),        -- Number of trade in broker/exchange systems
+    account_id INTEGER  REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,      -- where trade is accounted
+    symbol_id  INTEGER  REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- which asset was bought/sold
+    qty        TEXT     NOT NULL DEFAULT ('0'),       -- Quantity of asset (>0 - Buy, <0 - Sell)
+    price      TEXT     NOT NULL DEFAULT ('0'),       -- Price of the trade
+    fee        TEXT     NOT NULL DEFAULT ('0'),       -- Total fee (broker, exchange, other) of the trade
+    note       TEXT     NOT NULL DEFAULT ('')         -- Free text comment
+);
+INSERT INTO trades (oid, otype, timestamp, settlement, number, account_id, symbol_id, qty, price, fee, note)
+  SELECT t.oid, t.otype, t.timestamp, t.settlement, t.number, t.account_id, s.id AS symbol_id, t.qty, t.price, t.fee, t.note
+  FROM old_trades t
+  LEFT JOIN accounts a ON t.account_id=a.id
+  LEFT JOIN asset_symbol s ON t.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1;
+DROP TABLE old_trades;
+-- re-create triggers
+CREATE TRIGGER trades_after_delete AFTER DELETE ON trades FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+END;
+CREATE TRIGGER trades_after_insert AFTER INSERT ON trades FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+END;
+CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, symbol_id, qty, price, fee ON trades FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=60 WHERE name='SchemaVersion';
 --INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);

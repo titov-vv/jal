@@ -1024,57 +1024,57 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="1101"/>
+        <location filename="../db/operations.py" line="1103"/>
         <source>UNDEFINED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1102"/>
+        <location filename="../db/operations.py" line="1104"/>
         <source>Symbol change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1103"/>
+        <location filename="../db/operations.py" line="1105"/>
         <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1104"/>
+        <location filename="../db/operations.py" line="1106"/>
         <source>Spin-off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1105"/>
+        <location filename="../db/operations.py" line="1107"/>
         <source>Merger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1106"/>
+        <location filename="../db/operations.py" line="1108"/>
         <source>Delisting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1215"/>
+        <location filename="../db/operations.py" line="1217"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1233"/>
+        <location filename="../db/operations.py" line="1235"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1238"/>
+        <location filename="../db/operations.py" line="1240"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1242"/>
+        <location filename="../db/operations.py" line="1244"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1251"/>
+        <location filename="../db/operations.py" line="1253"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
     </message>
@@ -5907,7 +5907,7 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>TermDeposit</name>
     <message>
-        <location filename="../db/operations.py" line="1368"/>
+        <location filename="../db/operations.py" line="1370"/>
         <source>Can&apos;t process deposit as bank isn&apos;t set for account: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6055,17 +6055,17 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>Trade</name>
     <message>
-        <location filename="../db/operations.py" line="703"/>
+        <location filename="../db/operations.py" line="705"/>
         <source>Sell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="706"/>
+        <location filename="../db/operations.py" line="708"/>
         <source>Buy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="786"/>
+        <location filename="../db/operations.py" line="788"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6157,63 +6157,63 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>Transfer</name>
     <message>
-        <location filename="../db/operations.py" line="849"/>
+        <location filename="../db/operations.py" line="851"/>
         <source>Outgoing transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="850"/>
+        <location filename="../db/operations.py" line="852"/>
         <source>Incoming transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="851"/>
-        <location filename="../db/operations.py" line="925"/>
+        <location filename="../db/operations.py" line="853"/>
+        <location filename="../db/operations.py" line="927"/>
         <source>Transfer fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="852"/>
+        <location filename="../db/operations.py" line="854"/>
         <source>Outgoing asset transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="853"/>
+        <location filename="../db/operations.py" line="855"/>
         <source>Incoming asset transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="854"/>
+        <location filename="../db/operations.py" line="856"/>
         <source>Asset transfer fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="928"/>
+        <location filename="../db/operations.py" line="930"/>
         <source>Cost basis:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="942"/>
+        <location filename="../db/operations.py" line="944"/>
         <source>Error. Zero rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1005"/>
+        <location filename="../db/operations.py" line="1007"/>
         <source>Can&apos;t collect fee from the account &apos;{}&apos; ({}) as organization isn&apos;t set for it. Date: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1027"/>
+        <location filename="../db/operations.py" line="1029"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1032"/>
+        <location filename="../db/operations.py" line="1034"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1045"/>
+        <location filename="../db/operations.py" line="1047"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation type="unfinished"></translation>
     </message>
