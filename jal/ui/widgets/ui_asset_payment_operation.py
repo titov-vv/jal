@@ -123,10 +123,10 @@ class Ui_AssetPaymentOperation(object):
 
         self.layout.addWidget(self.account_widget, 2, 1, 1, 4)
 
-        self.asset_widget = SymbolSelector(AssetPaymentOperation)
-        self.asset_widget.setObjectName(u"asset_widget")
+        self.symbol_widget = SymbolSelector(AssetPaymentOperation)
+        self.symbol_widget.setObjectName(u"symbol_widget")
 
-        self.layout.addWidget(self.asset_widget, 3, 1, 1, 4)
+        self.layout.addWidget(self.symbol_widget, 3, 1, 1, 4)
 
         self.note_label = QLabel(AssetPaymentOperation)
         self.note_label.setObjectName(u"note_label")

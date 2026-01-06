@@ -15,7 +15,7 @@ class AssetPaymentWidgetDelegate(WidgetMapperDelegateBase):
         super().__init__(parent=parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'ex_date': self.timestamp_delegate,
-                          'asset_id': self.symbol_delegate,
+                          'symbol_id': self.symbol_delegate,
                           'amount': self.decimal_delegate,
                           'tax': self.decimal_delegate}
 
@@ -42,7 +42,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
         self.mapper.setItemDelegate(AssetPaymentWidgetDelegate(self.mapper))
 
         self.ui.account_widget.changed.connect(self.mapper.submit)
-        self.ui.asset_widget.changed.connect(self.assetChanged)
+        self.ui.symbol_widget.changed.connect(self.assetChanged)
         self.ui.type.currentIndexChanged.connect(self.typeChanged)
         self.ui.timestamp_editor.dateTimeChanged.connect(self.refreshAssetPrice)
 
@@ -50,7 +50,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.ex_date_editor, self.model.fieldIndex("ex_date"))
         self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.ui.currency, self.model.fieldIndex("account_id"))
-        self.mapper.addMapping(self.ui.asset_widget, self.model.fieldIndex("asset_id"))
+        self.mapper.addMapping(self.ui.symbol_widget, self.model.fieldIndex("symbol_id"))
         self.mapper.addMapping(self.ui.type, self.model.fieldIndex("type"), QByteArray().setRawData("currentIndex", 12))
         self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.ui.dividend_edit, self.model.fieldIndex("amount"))
@@ -81,7 +81,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
     def refreshAssetPrice(self):
         if self.ui.type.currentIndex() == AssetPayment.StockDividend or self.ui.type.currentIndex() == AssetPayment.StockVesting:
             dividend_timestamp = self.ui.timestamp_editor.dateTime().toSecsSinceEpoch()
-            timestamp, price = JalAsset(self.ui.asset_widget.selected_id).quote(dividend_timestamp,
+            timestamp, price = JalAsset(self.ui.symbol_widget.selected_id).quote(dividend_timestamp,
                                                                              JalAccount(self.ui.account_widget.selected_id).currency())
             if timestamp == dividend_timestamp:
                 self.ui.price_edit.setText(str(price))
@@ -107,7 +107,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
         new_record.setValue("type", 0)
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
-        new_record.setValue("asset_id", 0)
+        new_record.setValue("symbol_id", 0)
         new_record.setValue("amount", '0')
         new_record.setValue("tax", '0')
         new_record.setValue("note", None)

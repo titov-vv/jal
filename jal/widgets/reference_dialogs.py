@@ -1,9 +1,9 @@
 import logging
 from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QAction
-from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
+from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog, QMessageBox
-from jal.constants import PredefinedAsset, MarketDataFeed
+from jal.constants import MarketDataFeed
 from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory

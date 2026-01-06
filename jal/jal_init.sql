@@ -141,7 +141,7 @@ CREATE TABLE asset_payments (
     number     TEXT    NOT NULL DEFAULT (''),
     type       INTEGER NOT NULL,
     account_id INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    asset_id   INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    symbol_id  INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     amount     TEXT    NOT NULL DEFAULT ('0'),
     tax        TEXT    NOT NULL DEFAULT ('0'),
     note       TEXT
@@ -478,7 +478,7 @@ BEGIN
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_payments_after_update;
-CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, account_id, asset_id, amount, tax ON asset_payments FOR EACH ROW
+CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, account_id, symbol_id, amount, tax ON asset_payments FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;

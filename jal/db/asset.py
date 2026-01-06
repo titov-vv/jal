@@ -24,7 +24,7 @@ def db_timestamp2int(timestamp_string: str) -> int:
 class JalAsset(JalDB):
     db_cache = UniversalCache()
 
-    def __init__(self, asset_id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
+    def __init__(self, asset_id: int = 0, symbol_id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
         super().__init__(cached=True)
         try:
             self._id = int(asset_id)
@@ -47,6 +47,7 @@ class JalAsset(JalDB):
         self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))  # Load asset data from cache or DB
         self._type = self._data.get('type_id', None)
         self._name = self._data.get('full_name', '')
+        self._symbol_id = symbol_id
         self._country = JalCountry(self._data.get('country_id', 0))
         self._expiry = int(self._data.get('data', {}).get(AssetData.ExpiryDate, 0))
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '')
@@ -111,9 +112,11 @@ class JalAsset(JalDB):
         return self._data['ID'].get(id_type, None)
 
     # Returns asset symbol for given currency or all symbols if no currency is given
-    def symbol(self, currency: int = None) -> str:
+    def symbol(self, currency: int = None) -> str:  # TODO check if currency_id is still used after asset/symbol change
         if not self._data:
             return ''
+        if self._symbol_id:
+            return ''.join([x['symbol'] for x in self._data['symbols'] if x['id'] == self._symbol_id])
         currency = None if self._type == PredefinedAsset.Money else currency  # Money have one unique symbol
         if currency is None:
             return ','.join([x['symbol'] for x in self._data['symbols'] if x['active'] == 1])  # concatenate all symbols via comma

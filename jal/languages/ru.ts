@@ -1260,12 +1260,12 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DB</name>
     <message>
-        <location filename="../db/db.py" line="331"/>
+        <location filename="../db/db.py" line="340"/>
         <source>Database format is outdated</source>
         <translation>Формат базы данных устарел</translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="332"/>
+        <location filename="../db/db.py" line="341"/>
         <source>Do you agree to upgrade your data to newer format?</source>
         <translation>Вы согласны сконвертировать данные в новый формат?</translation>
     </message>
@@ -2122,27 +2122,27 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>JalAsset</name>
     <message>
-        <location filename="../db/asset.py" line="162"/>
+        <location filename="../db/asset.py" line="165"/>
         <source>There are no quote/rate for </source>
         <translation>Нет котировки/курса для </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="228"/>
+        <location filename="../db/asset.py" line="231"/>
         <source>Quotations were updated: </source>
         <translation>Котировки обновлены: </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="282"/>
+        <location filename="../db/asset.py" line="285"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation>Неожиданная попытка обновить ISIN для </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="302"/>
+        <location filename="../db/asset.py" line="305"/>
         <source>Country updated for </source>
         <translation>Страна обновлёна для </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="312"/>
+        <location filename="../db/asset.py" line="315"/>
         <source>Reg.number updated for </source>
         <translation>Регистрационный номер обновлён для </translation>
     </message>
@@ -2224,7 +2224,7 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/db.py" line="363"/>
+        <location filename="../db/db.py" line="372"/>
         <source>Operation already present in db and was skipped: </source>
         <translation>Операция уже есть в базе данных и была пропущена: </translation>
     </message>

@@ -61,6 +61,14 @@ DROP TRIGGER IF EXISTS validate_ticker_currency_insert;
 DROP TRIGGER IF EXISTS  validate_ticker_currency_update;
 -- Remove NULL values from currency_id
 UPDATE asset_tickers SET currency_id=asset_id WHERE currency_id IS NULL;
+-- Fix absent symbols for non-default currency
+INSERT INTO asset_tickers (asset_id, symbol, currency_id)
+  SELECT DISTINCT p.asset_id, s2.symbol, a.currency_id
+  FROM asset_payments p
+  LEFT JOIN accounts a ON p.account_id=a.id
+  LEFT JOIN asset_tickers s1 ON p.asset_id=s1.asset_id AND a.currency_id=s1.currency_id AND s1.active=1
+  LEFT JOIN asset_tickers s2 ON p.asset_id=s2.asset_id AND s2.currency_id=1 AND s2.active=1
+  WHERE s1.symbol IS NULL;
 -- Create new symbols table
 CREATE TABLE asset_symbol (
     id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
@@ -81,6 +89,45 @@ SELECT a.id, s.symbol
     FROM assets AS a
     LEFT JOIN asset_symbol AS s ON s.asset_id = a.id AND s.active = 1
     WHERE a.type_id = 1;
+--------------------------------------------------------------------------------
+-- Link asset payments to asset symbol
+CREATE TABLE old_asset_payments AS SELECT * FROM asset_payments;
+DROP TABLE asset_payments;
+CREATE TABLE asset_payments (
+    oid        INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    otype      INTEGER NOT NULL DEFAULT (2),
+    timestamp  INTEGER NOT NULL,
+    ex_date    INTEGER NOT NULL DEFAULT (0),
+    number     TEXT    NOT NULL DEFAULT (''),
+    type       INTEGER NOT NULL,
+    account_id INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    symbol_id  INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    amount     TEXT    NOT NULL DEFAULT ('0'),
+    tax        TEXT    NOT NULL DEFAULT ('0'),
+    note       TEXT
+);
+INSERT INTO asset_payments (oid, otype, timestamp, ex_date, number, type, account_id, symbol_id, amount, tax, note)
+  SELECT p.oid, p.otype, p.timestamp, p.ex_date, p.number, p.type, p.account_id, s.id AS symbol_id, p.amount, p.tax, p.note
+  FROM old_asset_payments p
+  LEFT JOIN accounts a ON p.account_id=a.id
+  LEFT JOIN asset_symbol s ON p.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1;
+DROP TABLE old_asset_payments;
+-- re-create triggers
+CREATE TRIGGER asset_payments_after_delete AFTER DELETE ON asset_payments FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+END;
+CREATE TRIGGER asset_payments_after_insert AFTER INSERT ON asset_payments FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+END;
+CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, account_id, symbol_id, amount, tax ON asset_payments FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;
 --------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=60 WHERE name='SchemaVersion';

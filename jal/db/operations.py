@@ -408,7 +408,7 @@ class AssetPayment(LedgerTransaction):
         "number": {"mandatory": False, "validation": True, "default": ''},
         "type": {"mandatory": True, "validation": True},
         "account_id": {"mandatory": True, "validation": True},
-        "asset_id": {"mandatory": True, "validation": True},
+        "symbol_id": {"mandatory": True, "validation": True},
         "amount": {"mandatory": True, "validation": True},
         "tax": {"mandatory": False, "validation": False},
         "note": {"mandatory": False, "validation": True}
@@ -438,9 +438,10 @@ class AssetPayment(LedgerTransaction):
         self._otype = LedgerTransaction.AssetPayment
         self._opart = opart
         self._view_rows = 2
-        self._data = self._read("SELECT p.type, p.timestamp, p.ex_date, p.number, p.account_id, p.asset_id, "
-                                "p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
+        self._data = self._read("SELECT p.type, p.timestamp, p.ex_date, p.number, p.account_id, s.asset_id, "
+                                "p.symbol_id, p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
                                 "FROM asset_payments AS p "
+                                "LEFT JOIN asset_symbol AS s ON p.symbol_id=s.id "
                                 "LEFT JOIN ledger_totals AS l ON l.otype=p.otype AND l.oid=p.oid "
                                 "AND l.book_account = :book_assets WHERE p.oid=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
@@ -458,7 +459,7 @@ class AssetPayment(LedgerTransaction):
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
-        self._asset = JalAsset(self._data['asset_id'])
+        self._asset = JalAsset(self._data['asset_id'], symbol_id=self._data['symbol_id'])
         self._number = self._data['number']
         self._amount = Decimal(self._data['amount'])
         self._tax = Decimal(self._data['tax'])
@@ -571,9 +572,9 @@ class AssetPayment(LedgerTransaction):
     def value_currency(self) -> str:
         if (self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting) and not self._opart:
             if self._tax:
-                return f" {self._asset.symbol(self._account.currency())}\n {self._account_currency}"
+                return f" {self._asset.symbol()}\n {self._account_currency}"
             else:
-                return f" {self._asset.symbol(self._account.currency())}"
+                return f" {self._asset.symbol()}"
         else:
             return f" {self._account_currency}"
 

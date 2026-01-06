@@ -1256,12 +1256,12 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DB</name>
     <message>
-        <location filename="../db/db.py" line="331"/>
+        <location filename="../db/db.py" line="340"/>
         <source>Database format is outdated</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="332"/>
+        <location filename="../db/db.py" line="341"/>
         <source>Do you agree to upgrade your data to newer format?</source>
         <translation></translation>
     </message>
@@ -2118,27 +2118,27 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>JalAsset</name>
     <message>
-        <location filename="../db/asset.py" line="162"/>
+        <location filename="../db/asset.py" line="165"/>
         <source>There are no quote/rate for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="228"/>
+        <location filename="../db/asset.py" line="231"/>
         <source>Quotations were updated: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="282"/>
+        <location filename="../db/asset.py" line="285"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="302"/>
+        <location filename="../db/asset.py" line="305"/>
         <source>Country updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="312"/>
+        <location filename="../db/asset.py" line="315"/>
         <source>Reg.number updated for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2218,7 +2218,7 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/db.py" line="363"/>
+        <location filename="../db/db.py" line="372"/>
         <source>Operation already present in db and was skipped: </source>
         <translation type="unfinished"></translation>
     </message>
