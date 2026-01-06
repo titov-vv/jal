@@ -441,7 +441,6 @@ class AssetPayment(LedgerTransaction):
         self._data = self._read("SELECT p.type, p.timestamp, p.ex_date, p.number, p.account_id, p.asset_id, "
                                 "p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
                                 "FROM asset_payments AS p "
-                                "LEFT JOIN assets AS a ON p.asset_id = a.id "
                                 "LEFT JOIN ledger_totals AS l ON l.otype=p.otype AND l.oid=p.oid "
                                 "AND l.book_account = :book_assets WHERE p.oid=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)

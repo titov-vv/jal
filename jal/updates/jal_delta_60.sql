@@ -60,7 +60,7 @@ ALTER TABLE assets DROP COLUMN isin;
 DROP TRIGGER IF EXISTS validate_ticker_currency_insert;
 DROP TRIGGER IF EXISTS  validate_ticker_currency_update;
 -- Remove NULL values from currency_id
-UPDATE asset_symbol SET currency_id=asset_id WHERE currency_id IS NULL
+UPDATE asset_tickers SET currency_id=asset_id WHERE currency_id IS NULL;
 -- Create new symbols table
 CREATE TABLE asset_symbol (
     id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
