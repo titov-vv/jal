@@ -15,7 +15,7 @@ from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget
 from jal.widgets.helpers import dependency_present
 from jal.widgets.icons import JalIcon
-from jal.widgets.reference_dialogs import AccountListDialog, AssetListDialog, TagsListDialog,\
+from jal.widgets.reference_dialogs import AccountListDialog, SymbolListDialog, TagsListDialog,\
     CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog
 from jal.constants import Setup, JalGlobals
 from jal.db.db import JalDB
@@ -264,7 +264,7 @@ class MainWindow(QMainWindow):
         if dlg_type == "accounts":
             AccountListDialog().exec()
         elif dlg_type == "assets":
-            AssetListDialog().exec()
+            SymbolListDialog().exec()
         elif dlg_type == "agents":
             PeerListDialog(self).exec()
         elif dlg_type == "categories":

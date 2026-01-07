@@ -80,7 +80,20 @@ CREATE TABLE asset_symbol (
     icon        BLOB
 );
 INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) SELECT id, asset_id, symbol, currency_id, active FROM asset_tickers;
+PRAGMA foreign_keys = OFF;  -- Prevent deletion of linked asset_ids
 DROP TABLE asset_tickers;
+-- Re-create asset_id table to recover foreign keys (otherwise it will be linked to an old non-existing table asset_tickers
+CREATE TABLE IF NOT EXISTS asset_id_new (
+    id        INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    symbol_id INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    id_type   INTEGER NOT NULL,
+    id_value  TEXT NOT NULL
+);
+INSERT INTO asset_id_new (id, symbol_id, id_type, id_value)
+  SELECT id, symbol_id, id_type, id_value FROM asset_id;
+DROP TABLE asset_id;
+ALTER TABLE asset_id_new RENAME TO asset_id;
+PRAGMA foreign_keys = ON;  -- Prevent deletion of linked asset_ids
 CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id);
 --------------------------------------------------------------------------------
 -- Update currencies view
@@ -261,7 +274,7 @@ PRAGMA foreign_keys = ON;
 -- re-create triggers
 CREATE TRIGGER asset_action_after_delete AFTER DELETE ON asset_actions FOR EACH ROW
 BEGIN
-    DELETE FROM action_results WHERE action_id = OLD.oid;
+    DELETE FROM asset_action_results WHERE action_id = OLD.oid;
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;

@@ -147,8 +147,8 @@ class SymbolsListModel(AbstractReferenceListModel):
         super().configureView()
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._constant_lookup_delegate = ConstantLookupDelegate(MarketDataFeed, self._view)
-        # self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
-        # self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._constant_lookup_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._constant_lookup_delegate)
 
     def removeElement(self, index) -> bool:
         used_by_accounts = JalAccount().get_all_accounts(active_only=False, currency_id=self.getId(index))
@@ -167,7 +167,7 @@ class SymbolsListModel(AbstractReferenceListModel):
         return super().removeElement(index)
 
 
-class AssetListDialog(ReferenceDataDialog):
+class SymbolListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Assets"))
         self.table = "asset_symbol"

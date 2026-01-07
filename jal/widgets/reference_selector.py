@@ -124,7 +124,7 @@ class SymbolSelector(AbstractReferenceSelector):
         self.table = "asset_symbol"
         self.selector_field = "symbol"
         self.details_field = "asset_id"
-        self.dialog = ui_dialogs.AssetListDialog()
+        self.dialog = ui_dialogs.SymbolListDialog()
         super().__init__(parent=parent, validate=validate)
 
 
