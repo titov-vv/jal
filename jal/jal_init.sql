@@ -272,25 +272,25 @@ CREATE TABLE tags (
 -- Table to store about corporate actions that transform one asset into another
 DROP TABLE IF EXISTS asset_actions;
 CREATE TABLE asset_actions (
-    oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,
-    otype      INTEGER     NOT NULL DEFAULT (5),
-    timestamp  INTEGER     NOT NULL,
-    number     TEXT        DEFAULT (''),
-    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    type       INTEGER     NOT NULL,
-    asset_id   INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    qty        TEXT        NOT NULL,
-    note       TEXT
+    oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,          -- Unique operation id
+    otype      INTEGER     NOT NULL DEFAULT (5),                 -- Operation type (5 = corporate action)
+    timestamp  INTEGER     NOT NULL,                             -- Timestamp when action happened
+    number     TEXT        DEFAULT (''),                         -- Number of operation in broker/exchange systems
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,      -- where the operation is accounted
+    type       INTEGER     NOT NULL,                             -- Type of corporate action (see CorporateAction class)
+    symbol_id  INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- which asset experienced the change
+    qty        TEXT        NOT NULL,                             -- Quantity of the asset affected by the action
+    note       TEXT                                              -- Free text comment
 );
 
 -- Table to store information about assets that appear after corporate action
-DROP TABLE IF EXISTS action_results;
-CREATE TABLE action_results (
-    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    action_id   INTEGER NOT NULL REFERENCES asset_actions (oid) ON DELETE CASCADE ON UPDATE CASCADE,
-    asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    qty         TEXT    NOT NULL,
-    value_share TEXT    NOT NULL
+DROP TABLE IF EXISTS asset_action_results;
+CREATE TABLE asset_action_results (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,             -- PK
+    action_id   INTEGER NOT NULL REFERENCES asset_actions (oid) ON DELETE CASCADE ON UPDATE CASCADE,  -- Reference to corporate action operation
+    symbol_id   INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,    -- which asset appears after the action
+    qty         TEXT    NOT NULL,                                -- Quantity of the asset the appears after the action
+    value_share TEXT    NOT NULL                                 -- Which share of total 100% this asset takes in the action results
 );
 
 -- Table 'trade' records all buy/sell operations with assets
@@ -301,7 +301,7 @@ CREATE TABLE trades (
     timestamp  INTEGER  NOT NULL,                     -- Timestamp when trade happened
     settlement INTEGER  NOT NULL DEFAULT (0),         -- Timestamp of settlement if known (otherwise 0)
     number     TEXT     NOT NULL DEFAULT (''),        -- Number of trade in broker/exchange systems
-    account_id INTEGER  REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,      -- where trade is accounted
+    account_id INTEGER  REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,      -- where the trade is accounted
     symbol_id  INTEGER  REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- which asset was bought/sold
     qty        TEXT     NOT NULL DEFAULT ('0'),       -- Quantity of asset (>0 - Buy, <0 - Sell)
     price      TEXT     NOT NULL DEFAULT ('0'),       -- Price of the trade
@@ -508,7 +508,7 @@ END;
 DROP TRIGGER IF EXISTS asset_action_after_delete;
 CREATE TRIGGER asset_action_after_delete AFTER DELETE ON asset_actions FOR EACH ROW
 BEGIN
-    DELETE FROM action_results WHERE action_id = OLD.oid;
+    DELETE FROM asset_action_results WHERE action_id = OLD.oid;
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
@@ -521,26 +521,26 @@ BEGIN
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_action_after_update;
-CREATE TRIGGER asset_action_after_update AFTER UPDATE OF timestamp, account_id, type, asset_id, qty ON asset_actions FOR EACH ROW
+CREATE TRIGGER asset_action_after_update AFTER UPDATE OF timestamp, account_id, type, symbol_id, qty ON asset_actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS asset_result_after_delete;
-CREATE TRIGGER asset_result_after_delete AFTER DELETE ON action_results FOR EACH ROW
+CREATE TRIGGER asset_result_after_delete AFTER DELETE ON asset_action_results FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = OLD.action_id);
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS asset_result_after_insert;
-CREATE TRIGGER asset_result_after_insert AFTER INSERT ON action_results FOR EACH ROW
+CREATE TRIGGER asset_result_after_insert AFTER INSERT ON asset_action_results FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = NEW.action_id);
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS asset_result_after_update;
-CREATE TRIGGER asset_result_after_update AFTER UPDATE OF asset_id, qty, value_share ON action_results FOR EACH ROW
+CREATE TRIGGER asset_result_after_update AFTER UPDATE OF symbol_id, qty, value_share ON asset_action_results FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = OLD.action_id);
 END;

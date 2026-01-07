@@ -1077,7 +1077,7 @@ class CorporateAction(LedgerTransaction):
         "number": {"mandatory": False, "validation": True, "default": ''},
         "account_id": {"mandatory": True, "validation": True},
         "type": {"mandatory": True, "validation": True},
-        "asset_id": {"mandatory": True, "validation": True},
+        "symbol_id": {"mandatory": True, "validation": True},
         "qty": {"mandatory": True, "validation": True},
         "note": {"mandatory": False, "validation": False},
         "outcome": {
@@ -1085,7 +1085,7 @@ class CorporateAction(LedgerTransaction):
             "child_table": "action_results", "child_pid": "action_id",
             "child_fields": {
                 "action_id": {"mandatory": True, "validation": False},    # TODO Check if mandatory requirement is true here and works as expected
-                "asset_id": {"mandatory": True, "validation": False},
+                "symbol_id": {"mandatory": True, "validation": False},
                 "qty": {"mandatory": True, "validation": False},
                 "value_share": {"mandatory": True, "validation": False}
             }
@@ -1111,15 +1111,17 @@ class CorporateAction(LedgerTransaction):
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.CorporateAction
-        self._data = self._read("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
-                                "FROM asset_actions AS a WHERE a.oid=:oid", [(":oid", self._oid)], named=True)
+        self._data = self._read("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, s.asset_id, a.symbol_id, a.note "
+                                "FROM asset_actions AS a LEFT JOIN asset_symbol AS s ON a.symbol_id=s.id WHERE a.oid=:oid",
+                                [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
-        results_query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
+        results_query = self._exec("SELECT s.asset_id, r.symbol_id, r.qty, r.value_share FROM asset_action_results AS r "
+                                   "LEFT JOIN asset_symbol AS s ON r.symbol_id=s.id WHERE action_id=:oid",
                                    [(":oid", self._oid)])
         self._results = []
         while results_query.next():
-            self._results.append(self._read_record(results_query, named=True))
+            self._results.append(self._read_record(results_query, named=True, cast=[int, int, Decimal, Decimal]))
         self._view_rows = len(self._results) + 1
         self._subtype = self._data['type']
         self._oname = self.names[self._subtype]
@@ -1131,7 +1133,7 @@ class CorporateAction(LedgerTransaction):
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
-        self._asset = JalAsset(self._data['asset_id'])
+        self._asset = JalAsset(self._data['asset_id'], symbol_id=self._data['symbol_id'])
         self._qty = Decimal(self._data['qty'])
         self._number = self._data['number']
         self._note = self._data['note']
@@ -1145,10 +1147,7 @@ class CorporateAction(LedgerTransaction):
         description = self.names[self._subtype]
         if self._note:
             description += ": " + self._note
-        query = self._exec("SELECT asset_id, value_share FROM action_results WHERE action_id=:oid",
-                           [(":oid", self._oid)])
-        while query.next():
-            result = self._read_record(query, named=True, cast=[int, Decimal])
+        for result in self._results:
             if self._subtype == CorporateAction.SpinOff and result['asset_id'] == self._asset.id():
                 continue   # Don't display initial asset in list
             description += "\n" + JalAsset(result['asset_id']).name()
@@ -1160,9 +1159,7 @@ class CorporateAction(LedgerTransaction):
         result = []
         if self._subtype != CorporateAction.SpinOff:
             result.append(Decimal(-self._qty))
-        query = self._exec("SELECT qty FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
-        while query.next():
-            result.append(self._read_record(query, cast=[Decimal]))
+        result += [x['qty'] for x in self._results]
         if len(result) == 1:  # Need to feed at least 2 lines
             result.append(None)
         return result
@@ -1172,9 +1169,8 @@ class CorporateAction(LedgerTransaction):
             symbol = f" {self._asset.symbol(self._account.currency())}\n"
         else:
             symbol = ""
-        query = self._exec("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
-        while query.next():
-            symbol += f" {JalAsset(self._read_record(query, cast=[int])).symbol()}\n"
+        for x in self._results:
+            symbol += f" {JalAsset(x['asset_id'], symbol_id=x['symbol_id']).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
 
     def value_total(self) -> list:
@@ -1184,9 +1180,8 @@ class CorporateAction(LedgerTransaction):
             balance = [Decimal('0')]
         else:
             balance = [self._account.get_asset_amount(self._timestamp, self._asset.id())]
-        query = self._exec("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
-        while query.next():
-            balance.append(self._account.get_asset_amount(self._timestamp, self._read_record(query, cast=[int])))
+        for asset_id in [x['asset_id'] for x in self._results]:
+            balance.append(self._account.get_asset_amount(self._timestamp, asset_id))
         return balance  # Crop ending line break
 
     def qty(self) -> Decimal:
@@ -1201,7 +1196,7 @@ class CorporateAction(LedgerTransaction):
         return self._results
 
     # Returns qty and value_share for result of corporate action that corresponds to given asset
-    def get_result_for_asset(self, asset) -> (Decimal, Decimal):
+    def get_result_for_asset(self, asset) -> tuple:
         out = [x for x in self._results if x['asset_id'] == asset.id()]
         if len(out) == 1:
             return Decimal(out[0]['qty']), Decimal(out[0]['value_share'])
@@ -1212,7 +1207,7 @@ class CorporateAction(LedgerTransaction):
     def set_result_share(self, asset, share: Decimal) -> None:
         out = [x for x in self._results if x['asset_id'] == asset.id()]
         if len(out) == 1:
-            self._exec("UPDATE action_results SET value_share=:share WHERE action_id=:action_id AND asset_id=:asset_id",
+            self._exec("UPDATE asset_action_results SET value_share=:share WHERE action_id=:action_id AND asset_id=:asset_id",
                        [(":share", format_decimal(share)), (":action_id", self._oid), (":asset_id", asset.id())])
             out[0]['value_share'] = format_decimal(share)
         else:
@@ -1247,10 +1242,7 @@ class CorporateAction(LedgerTransaction):
                               + f"{ts2dt(self._timestamp)}, "
                               + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         # Calculate total asset allocation after corporate action and verify it equals 100%
-        allocation = Decimal('0')
-        query = self._exec("SELECT value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
-        while query.next():
-            allocation += self._read_record(query, cast=[Decimal])
+        allocation = Decimal('0') + sum([x['value_share'] for x in self._results])
         if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
             raise LedgerError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
                               + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, "
@@ -1262,10 +1254,11 @@ class CorporateAction(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=PredefinedCategory.Profit, peer=self._broker, tag=self._asset.tag().id())
             return
         # Process assets after corporate action
-        query = self._exec("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])  # FIXME - replace with get_results() call
         closed_trades = self._deals_closed_by_operation()
-        while query.next():
-            asset, qty, share = self._read_record(query, cast=[JalAsset, Decimal, Decimal])
+        for result in self._results:
+            asset = JalAsset(result['asset_id'], symbol_id=result['symbol_id'])
+            qty = Decimal(result['qty'])
+            share = Decimal(result['share'])
             value = share * processed_value
             if asset.type() == PredefinedAsset.Money:
                 ledger.appendTransaction(self, BookAccount.Money, qty)

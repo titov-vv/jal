@@ -96,10 +96,10 @@ class Ui_CorporateActionOperation(object):
 
         self.layout.addWidget(self.type_label, 3, 0, 1, 1)
 
-        self.asset_widget = SymbolSelector(CorporateActionOperation)
-        self.asset_widget.setObjectName(u"asset_widget")
+        self.symbol_widget = SymbolSelector(CorporateActionOperation)
+        self.symbol_widget.setObjectName(u"symbol_widget")
 
-        self.layout.addWidget(self.asset_widget, 3, 4, 1, 1)
+        self.layout.addWidget(self.symbol_widget, 3, 4, 1, 1)
 
         self.account_widget = AccountSelector(CorporateActionOperation)
         self.account_widget.setObjectName(u"account_widget")

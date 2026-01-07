@@ -19,7 +19,7 @@ class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
-                          'asset_id': self.symbol_delegate,
+                          'symbol_id': self.symbol_delegate,
                           'qty': self.decimal_delegate}
 
 
@@ -30,7 +30,7 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.operation_type = LedgerTransaction.CorporateAction
         self.combo_model = None
 
-        self.asset_delegate = SymbolSelectorDelegate()
+        self.symbol_delegate = SymbolSelectorDelegate()
         self.float_delegate = FloatDelegate(2)
         self.percent_delegate = FloatDelegate(2, percent=True)
 
@@ -54,23 +54,23 @@ class CorporateActionWidget(AbstractOperationDetails):
 
         self.mapper.setItemDelegate(CorporateActionWidgetDelegate(self.mapper))
 
-        self.results_model = ResultsModel(self.ui.results_table, "action_results")
+        self.results_model = ResultsModel(self.ui.results_table, "asset_action_results")
         self.results_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.ui.results_table.setModel(self.results_model)
 
         self.results_model.dataChanged.connect(self.onDataChange)
         self.ui.account_widget.changed.connect(self.mapper.submit)
-        self.ui.asset_widget.changed.connect(self.mapper.submit)
+        self.ui.symbol_widget.changed.connect(self.mapper.submit)
 
         self.mapper.addMapping(self.ui.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
-        self.mapper.addMapping(self.ui.asset_widget, self.model.fieldIndex("asset_id"))
+        self.mapper.addMapping(self.ui.symbol_widget, self.model.fieldIndex("symbol_id"))
         self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.ui.qty_edit, self.model.fieldIndex("qty"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
         self.mapper.addMapping(self.ui.type, self.model.fieldIndex("type"), QByteArray().setRawData("currentIndex", 12))
 
-        self.ui.results_table.setItemDelegateForColumn(2, self.asset_delegate)
+        self.ui.results_table.setItemDelegateForColumn(2, self.symbol_delegate)
         self.ui.results_table.setItemDelegateForColumn(3, self.float_delegate)
         self.ui.results_table.setItemDelegateForColumn(4, self.percent_delegate)
 
@@ -79,7 +79,7 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.results_model.configureView()
 
     def set_id(self, oid):
-        self.results_model.setFilter(f"action_results.action_id = {oid}")  # First we need to select right children
+        self.results_model.setFilter(f"asset_action_results.action_id = {oid}")  # First we need to select right children
         super().set_id(oid)
 
     @Slot()
@@ -115,8 +115,8 @@ class CorporateActionWidget(AbstractOperationDetails):
             QMessageBox().warning(self, self.tr("Wrong data"), constraints[fields['type']][1], QMessageBox.Ok)
             return False
         # Split should have the same asset before and after the operation
-        if fields['type'] == CorporateAction.Split and fields['asset_id'] != results[0]['asset_id']:
-            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't change asset during Split"), QMessageBox.Ok)   # FIXME this condition doesn't work for split in options
+        if fields['type'] == CorporateAction.Split and fields['symbol_id'] != results[0]['symbol_id']:
+            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't change asset during Split"), QMessageBox.Ok)   # FIXME this condition doesn't work for split in options -> to be implemented via asset_id
             return False
         # Everything after corporate action should add up to 100% of initial asset value
         total_share = sum([Decimal(x['value_share']) for x in results])
@@ -156,7 +156,7 @@ class CorporateActionWidget(AbstractOperationDetails):
 
     def createNew(self, account_id=0):
         super().createNew(account_id)
-        self.results_model.setFilter(f"action_results.action_id = 0")
+        self.results_model.setFilter(f"asset_action_results.action_id = 0")
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
@@ -164,7 +164,7 @@ class CorporateActionWidget(AbstractOperationDetails):
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
         new_record.setValue("type", 0)
-        new_record.setValue("asset_id", 0)
+        new_record.setValue("symbol_id", 0)
         new_record.setValue("qty", '0')
         new_record.setValue("note", None)
         return new_record
@@ -174,7 +174,7 @@ class CorporateActionWidget(AbstractOperationDetails):
         child_records = []
         for row in range(self.results_model.rowCount()):
             child_records.append(self.results_model.record(row))
-        self.results_model.setFilter(f"action_results.action_id = 0")
+        self.results_model.setFilter(f"asset_action_results.action_id = 0")
         for record in reversed(child_records):
             record.setNull("id")
             record.setNull("action_id")

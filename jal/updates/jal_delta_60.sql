@@ -207,6 +207,75 @@ BEGIN
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
 --------------------------------------------------------------------------------
+-- Link corporate action results to asset symbol
+CREATE TABLE old_action_results AS SELECT * FROM action_results;
+DROP TABLE action_results;
+CREATE TABLE asset_action_results (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,             -- PK
+    action_id   INTEGER NOT NULL REFERENCES asset_actions (oid) ON DELETE CASCADE ON UPDATE CASCADE,  -- Reference to corporate action operation
+    symbol_id   INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,    -- which asset appears after the action
+    qty         TEXT    NOT NULL,                                -- Quantity of the asset the appears after the action
+    value_share TEXT    NOT NULL                                 -- Which share of total 100% this asset takes in the action results
+);
+INSERT INTO asset_action_results (id, action_id, symbol_id, qty, value_share)
+  SELECT r.id, r.action_id, s.id AS symbol_id, r.qty, r.value_share FROM old_action_results r
+  LEFT JOIN asset_actions aa ON r.action_id=aa.oid
+  LEFT JOIN accounts a ON aa.account_id=a.id
+  LEFT JOIN asset_symbol s ON r.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1;
+DROP TABLE old_action_results;
+-- re-create triggers
+CREATE TRIGGER asset_result_after_delete AFTER DELETE ON asset_action_results FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = OLD.action_id);
+END;
+CREATE TRIGGER asset_result_after_insert AFTER INSERT ON asset_action_results FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = NEW.action_id);
+END;
+CREATE TRIGGER asset_result_after_update AFTER UPDATE OF symbol_id, qty, value_share ON asset_action_results FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE oid = OLD.action_id);
+END;
+--------------------------------------------------------------------------------
+-- Link corporate actions to asset symbol
+PRAGMA foreign_keys = OFF;  -- Prevent child table 'asset_action_results' cleanup
+CREATE TABLE old_asset_actions AS SELECT * FROM asset_actions;
+DROP TABLE asset_actions;
+CREATE TABLE asset_actions (
+    oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,          -- Unique operation id
+    otype      INTEGER     NOT NULL DEFAULT (5),                 -- Operation type (5 = corporate action)
+    timestamp  INTEGER     NOT NULL,                             -- Timestamp when action happened
+    number     TEXT        DEFAULT (''),                         -- Number of operation in broker/exchange systems
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,      -- where the operation is accounted
+    type       INTEGER     NOT NULL,                             -- Type of corporate action (see CorporateAction class)
+    symbol_id  INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- which asset experienced the change
+    qty        TEXT        NOT NULL,                             -- Quantity of the asset affected by the action
+    note       TEXT                                              -- Free text comment
+);
+INSERT INTO asset_actions (oid, otype, timestamp, number, account_id, type, symbol_id, qty, note)
+  SELECT o.oid, o.otype, o.timestamp, o.number, o.account_id, o.type, s.id AS symbol_id, o.qty, o.note FROM old_asset_actions o
+  LEFT JOIN accounts a ON o.account_id=a.id
+  LEFT JOIN asset_symbol s ON o.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1;
+DROP TABLE old_asset_actions;
+PRAGMA foreign_keys = ON;
+-- re-create triggers
+CREATE TRIGGER asset_action_after_delete AFTER DELETE ON asset_actions FOR EACH ROW
+BEGIN
+    DELETE FROM action_results WHERE action_id = OLD.oid;
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+END;
+CREATE TRIGGER asset_action_after_insert AFTER INSERT ON asset_actions FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+END;
+CREATE TRIGGER asset_action_after_update AFTER UPDATE OF timestamp, account_id, type, symbol_id, qty ON asset_actions FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
+END;
+-------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=60 WHERE name='SchemaVersion';
 --INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);
