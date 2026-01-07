@@ -333,19 +333,19 @@ CREATE TABLE trades_closed (
 -- Table: transfers
 DROP TABLE IF EXISTS transfers;
 CREATE TABLE transfers (
-    oid                  INTEGER     PRIMARY KEY UNIQUE NOT NULL,
-    otype                INTEGER     NOT NULL DEFAULT (4),
-    withdrawal_timestamp INTEGER     NOT NULL,
-    withdrawal_account   INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    withdrawal           TEXT        NOT NULL,
-    deposit_timestamp    INTEGER     NOT NULL,
-    deposit_account      INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    deposit              TEXT        NOT NULL,
-    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    fee                  TEXT,
-    number               TEXT        NOT NULL DEFAULT (''),
-    asset                INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    note                 TEXT
+    oid                  INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
+    otype                INTEGER     NOT NULL DEFAULT (4),            -- Operation type (4 = transfer)
+    withdrawal_timestamp INTEGER     NOT NULL,                        -- When initiated
+    withdrawal_account   INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- From where transfer is
+    withdrawal           TEXT        NOT NULL,                        -- Amount sent
+    deposit_timestamp    INTEGER     NOT NULL,                        -- When received
+    deposit_account      INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- To where transfer is
+    deposit              TEXT        NOT NULL,                        -- Amount received
+    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- If and where fee was withdrawn
+    fee                  TEXT,                                        -- Fee amount
+    number               TEXT        NOT NULL DEFAULT (''),           -- Number of operation in bank/broker systems
+    symbol_id            INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- If it is an asset transfer
+    note                 TEXT                                         -- Free text comment
 );
 
 
@@ -558,7 +558,7 @@ BEGIN
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS transfers_after_update;
-CREATE TRIGGER transfers_after_update AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, fee_account, withdrawal, deposit, fee, asset ON transfers FOR EACH ROW
+CREATE TRIGGER transfers_after_update AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, fee_account, withdrawal, deposit, fee, symbol_id ON transfers FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;

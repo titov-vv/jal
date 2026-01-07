@@ -833,7 +833,7 @@ class Transfer(LedgerTransaction):
         "fee_account": {"mandatory": False, "validation": True, "default": None},
         "fee": {"mandatory": False, "validation": True, "default": None},
         "number": {"mandatory": False, "validation": True, "default": ''},
-        "asset": {"mandatory": False, "validation": True, "default": None},
+        "symbol_id": {"mandatory": False, "validation": True, "default": None},
         "note": {"mandatory": False, "validation": False}
     }
 
@@ -859,8 +859,10 @@ class Transfer(LedgerTransaction):
         self._otype = LedgerTransaction.Transfer
         self._opart = opart
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
-                                "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, "
-                                "t.number, t.note FROM transfers AS t WHERE t.oid=:oid",
+                                "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, "
+                                "s.asset_id, t.symbol_id, t.number, t.note FROM transfers AS t "
+                                "LEFT JOIN asset_symbol AS s ON t.symbol_id=s.id "
+                                "WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
@@ -878,7 +880,7 @@ class Transfer(LedgerTransaction):
         self._fee_currency = JalAsset(self._fee_account.currency()).symbol()
         self._fee_account_name = self._fee_account.name()
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
-        self._asset = JalAsset(self._data['asset'])
+        self._asset = JalAsset(self._data['asset_id'], symbol_id=self._data['symbol_id'])
         self._number = self._data['number']
         self._account = self._withdrawal_account
         self._note = self._data['note']
@@ -964,12 +966,12 @@ class Transfer(LedgerTransaction):
     def value_currency(self) -> str:
         if self._opart == Transfer.Outgoing:
             if self._asset.id():
-                return self._asset.symbol(self._withdrawal_account.currency())
+                return self._asset.symbol()
             else:
                 return self._withdrawal_currency
         elif self._opart == Transfer.Incoming:
             if self._asset.id():
-                return self._asset.symbol(self._deposit_account.currency())
+                return self._asset.symbol()
             else:
                 return self._deposit_currency
         elif self._opart == Transfer.Fee:

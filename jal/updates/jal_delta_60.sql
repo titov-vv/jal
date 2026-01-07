@@ -166,7 +166,47 @@ CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, symbol
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
-END;--------------------------------------------------------------------------------
+END;
+--------------------------------------------------------------------------------
+-- Link transfers to asset symbol
+CREATE TABLE old_transfers AS SELECT * FROM transfers;
+DROP TABLE transfers;
+CREATE TABLE transfers (
+    oid                  INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
+    otype                INTEGER     NOT NULL DEFAULT (4),            -- Operation type (4 = transfer)
+    withdrawal_timestamp INTEGER     NOT NULL,                        -- When initiated
+    withdrawal_account   INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- From where transfer is
+    withdrawal           TEXT        NOT NULL,                        -- Amount sent
+    deposit_timestamp    INTEGER     NOT NULL,                        -- When received
+    deposit_account      INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- To where transfer is
+    deposit              TEXT        NOT NULL,                        -- Amount received
+    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- If and where fee was withdrawn
+    fee                  TEXT,                                        -- Fee amount
+    number               TEXT        NOT NULL DEFAULT (''),           -- Number of operation in bank/broker systems
+    symbol_id            INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- If it is an asset transfer
+    note                 TEXT                                         -- Free text comment
+);
+INSERT INTO transfers (oid, otype, withdrawal_timestamp, withdrawal_account, withdrawal, deposit_timestamp, deposit_account, deposit, fee_account, fee, number, symbol_id, note)
+  SELECT t.oid, t.otype, t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.number, s.id AS symbol_id, t.note
+  FROM old_transfers t
+  LEFT JOIN accounts a ON t.withdrawal_account=a.id
+  LEFT JOIN asset_symbol s ON t.asset=s.asset_id AND a.currency_id=s.currency_id AND s.active=1;
+DROP TABLE old_transfers;
+-- re-create triggers
+CREATE TRIGGER transfers_after_delete AFTER DELETE ON transfers FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
+END;
+CREATE TRIGGER transfers_after_insert AFTER INSERT ON transfers FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
+END;
+CREATE TRIGGER transfers_after_update AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, fee_account, withdrawal, deposit, fee, symbol_id ON transfers FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
+END;
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=60 WHERE name='SchemaVersion';
 --INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);

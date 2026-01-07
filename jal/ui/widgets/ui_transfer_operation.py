@@ -168,10 +168,10 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.fee_currency, 5, 7, 1, 1)
 
-        self.asset_widget = SymbolSelector(TransferOperation)
-        self.asset_widget.setObjectName(u"asset_widget")
+        self.symbol_widget = SymbolSelector(TransferOperation)
+        self.symbol_widget.setObjectName(u"symbol_widget")
 
-        self.layout.addWidget(self.asset_widget, 2, 9, 1, 1)
+        self.layout.addWidget(self.symbol_widget, 2, 9, 1, 1)
 
         self.asset_check = QCheckBox(TransferOperation)
         self.asset_check.setObjectName(u"asset_check")

@@ -33,7 +33,7 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.withdrawal_timestamp.setFixedWidth(self.ui.withdrawal_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.deposit_timestamp.setFixedWidth(self.ui.deposit_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.fee_account_widget.setValidation(False)
-        self.ui.asset_widget.setValidation(False)
+        self.ui.symbol_widget.setValidation(False)
 
         self.ui.copy_date_btn.clicked.connect(self.onCopyDate)
         self.ui.copy_amount_btn.clicked.connect(self.onCopyAmount)
@@ -48,7 +48,7 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.to_account_widget.changed.connect(self.mapper.submit)
         self.ui.to_account_widget.changed.connect(self.account_changed)
         self.ui.fee_account_widget.changed.connect(self.mapper.submit)
-        self.ui.asset_widget.changed.connect(self.mapper.submit)
+        self.ui.symbol_widget.changed.connect(self.mapper.submit)
         self.mapper.currentIndexChanged.connect(self.record_changed)
 
         self.mapper.addMapping(self.ui.withdrawal_timestamp, self.model.fieldIndex("withdrawal_timestamp"))
@@ -62,7 +62,7 @@ class TransferWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.fee_account_widget, self.model.fieldIndex("fee_account"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.fee_currency, self.model.fieldIndex("fee_account"))
         self.mapper.addMapping(self.ui.fee, self.model.fieldIndex("fee"))
-        self.mapper.addMapping(self.ui.asset_widget, self.model.fieldIndex("asset"), QByteArray("selected_id_str"))
+        self.mapper.addMapping(self.ui.symbol_widget, self.model.fieldIndex("symbol_id"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
 
@@ -81,8 +81,8 @@ class TransferWidget(AbstractOperationDetails):
             if not JalAccount(int(fields['fee_account'])).organization():
                 QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Can't collect fee from an account without organization assigned"), QMessageBox.Ok)
                 return False
-        if fields['asset'] == '0':   # Store None if asset isn't selected
-            self.model.setData(self.model.index(0, self.model.fieldIndex("asset")), None)
+        if fields['symbol_id'] == '0':   # Store None if asset isn't selected
+            self.model.setData(self.model.index(0, self.model.fieldIndex("symbol_id")), None)
         return True
 
     def revertChanges(self):
@@ -99,7 +99,7 @@ class TransferWidget(AbstractOperationDetails):
         new_record.setValue("deposit", '0')
         new_record.setNull("fee_account")
         new_record.setValue("fee", '0')
-        new_record.setNull("asset")
+        new_record.setNull("symbol_id")
         new_record.setValue("number", None)
         new_record.setValue("note", None)
         return new_record
@@ -129,7 +129,7 @@ class TransferWidget(AbstractOperationDetails):
         else:
             self.ui.fee_check.setCheckState(Qt.CheckState.Unchecked)
             self.set_fee_data_visible(False)
-        if self.ui.asset_widget.selected_id:
+        if self.ui.symbol_widget.selected_id:
             self.ui.asset_check.setCheckState(Qt.CheckState.Checked)
             self.set_asset_data_visible(True)
         else:
@@ -151,7 +151,7 @@ class TransferWidget(AbstractOperationDetails):
         self.mapper.submit()
 
     def set_asset_data_visible(self, visible: bool):
-        self.ui.asset_widget.setVisible(visible)
+        self.ui.symbol_widget.setVisible(visible)
         self.ui.value_label.setVisible(visible)
         self.ui.copy_amount_btn.setVisible(not visible)
         self.ui.from_currency.setVisible(not visible)
@@ -162,7 +162,7 @@ class TransferWidget(AbstractOperationDetails):
         asset_transfer = self.ui.asset_check.isChecked()
         self.set_asset_data_visible(asset_transfer)
         if not asset_transfer:
-            self.ui.asset_widget.selected_id = 0
+            self.ui.symbol_widget.selected_id = 0
         self.mapper.submit()
 
     @Slot()
