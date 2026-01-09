@@ -1258,7 +1258,7 @@ class CorporateAction(LedgerTransaction):
         for result in self._results:
             asset = JalAsset(result['asset_id'], symbol_id=result['symbol_id'])
             qty = Decimal(result['qty'])
-            share = Decimal(result['share'])
+            share = Decimal(result['value_share'])
             value = share * processed_value
             if asset.type() == PredefinedAsset.Money:
                 ledger.appendTransaction(self, BookAccount.Money, qty)
