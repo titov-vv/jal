@@ -289,6 +289,12 @@ BEGIN
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
 END;
 -------------------------------------------------------------------------------
+-- create asset/symbols view
+CREATE VIEW symbols_ext AS
+    SELECT s.id, s.symbol, s.asset_id, a.type_id, s.currency_id, s.location_id, a.full_name, s.icon
+    FROM asset_symbol s
+    LEFT JOIN assets a ON a.id=s.asset_id;
+-------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=60 WHERE name='SchemaVersion';
 --INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);

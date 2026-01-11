@@ -121,9 +121,9 @@ class AccountSelector(AbstractReferenceSelector):
 
 class SymbolSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.table = "asset_symbol"
+        self.table = "symbols_ext"
         self.selector_field = "symbol"
-        self.details_field = "asset_id"
+        self.details_field = "full_name"
         self.dialog = ui_dialogs.SymbolListDialog()
         super().__init__(parent=parent, validate=validate)
 

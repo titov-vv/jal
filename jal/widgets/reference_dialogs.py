@@ -1,9 +1,9 @@
 import logging
 from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QAction
-from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
+from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog, QMessageBox
-from jal.constants import MarketDataFeed
+from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
@@ -126,21 +126,25 @@ class AccountListDialog(ReferenceDataDialog):
 class SymbolsListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
+        pk = QSqlIndex()  # Manual primary key setup is required as we use underlying sql view instead of sql table
+        pk.append(self.record().field("id"))
+        self.setPrimaryKey(pk)
         self._columns = [("id", ''),
-                         ("asset_id", self.tr("Asset")),
                          ("symbol", self.tr("Symbol")),
+                         ("asset_id", self.tr("Asset")),
+                         ("type_id", self.tr("Asset type")),
                          ("currency_id", self.tr("Currency")),
                          ("location_id", self.tr("Location")),
-                         ("active", ''),
+                         ("full_name", self.tr("Name")),
                          ("icon", '')]
         self._default_name = "symbol"
         self._sort_by = "symbol"
-        self._hidden = ["id"]
-        self._stretch = "symbol"
+        self._group_by = "type_id"
+        self._hidden = ["id", "type_id"]
+        self._stretch = "full_name"
         self._lookup_delegate = None
         self._constant_lookup_delegate = None
-        self._default_values = {'isin': '', 'country_id': 0, 'quote_source': -1}
-        self.setRelation(self.fieldIndex("asset_id"), QSqlRelation("assets", "id", "full_name"))
+        # self._default_values = {'isin': '', 'country_id': 0, 'quote_source': -1}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
 
     def configureView(self):
@@ -170,7 +174,7 @@ class SymbolsListModel(AbstractReferenceListModel):
 class SymbolListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Assets"))
-        self.table = "asset_symbol"
+        self.table = "symbols_ext"
         self.model = SymbolsListModel(self.table, self.ui.DataView)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
@@ -178,19 +182,19 @@ class SymbolListDialog(ReferenceDataDialog):
         super()._init_completed()
 
     def setup_ui(self):
-        self.search_field = "full_name"
+        self.search_field = "symbols_ext.full_name"
         self.ui.SearchFrame.setVisible(True)
         self.ui.Toggle.setVisible(False)
 
         self.custom_editor = True
         self.ui.DataView.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        # self.ui.GroupLbl.setVisible(True)
-        # self.ui.GroupLbl.setText(self.tr("Asset type:"))
-        # self.ui.GroupCombo.setVisible(True)
-        # self.group_field = self.model.group_by
-        # PredefinedAsset().load2combo(self.ui.GroupCombo)
-        # self.group_id = 1
+        self.ui.GroupLbl.setVisible(True)
+        self.ui.GroupLbl.setText(self.tr("Asset type:"))
+        self.ui.GroupCombo.setVisible(True)
+        self.group_field = self.model.group_by
+        PredefinedAsset().load2combo(self.ui.GroupCombo)
+        self.group_id = 1
 
     def locateItem(self, item_id):
         type_id = self.model.getGroupId(item_id)

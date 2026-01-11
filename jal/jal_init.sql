@@ -395,7 +395,7 @@ FROM
 ORDER BY m.timestamp, m.seq, m.opart, m.oid;  -- First sort by sequence and part to enforce right operation processing order
 
 
--- View: currencies
+-- View that shows only currencies from assets
 DROP VIEW IF EXISTS currencies;
 CREATE VIEW currencies AS
 SELECT a.id, s.symbol
@@ -409,11 +409,19 @@ DROP VIEW IF EXISTS frontier;
 CREATE VIEW frontier AS SELECT MAX(ledger.timestamp) AS ledger_frontier FROM ledger;
 
 
+-- Countries with translated names
 DROP VIEW IF EXISTS countries_ext;
 CREATE VIEW countries_ext AS
     SELECT c.id, c.code, c.iso_code, n.name
     FROM countries AS c
     LEFT JOIN country_names AS n ON n.country_id = c.id AND n.language_id = (SELECT value FROM settings WHERE name='Language');
+
+
+-- Combined view to list assets with symbols
+CREATE VIEW symbols_ext AS
+    SELECT s.id, s.symbol, s.asset_id, a.type_id, s.currency_id, s.location_id, a.full_name, s.icon
+    FROM asset_symbol s
+    LEFT JOIN assets a ON a.id=s.asset_id;
 
 
 --------------------------------------------------------------------------------
