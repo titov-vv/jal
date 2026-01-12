@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QToolButton, QCompleter
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QToolButton
 from PySide6.QtGui import QPalette
 import jal.widgets.reference_dialogs as ui_dialogs
 from jal.widgets.icons import JalIcon
@@ -40,15 +40,7 @@ class AbstractReferenceSelector(QWidget):
 
         self.button.clicked.connect(self.on_button_clicked)
         self.clean_button.clicked.connect(self.on_clean_button_clicked)
-
-        if self.details_field:
-            self.name.setFixedWidth(self.name.fontMetrics().horizontalAdvance("X") * 15)
-            self.details.setVisible(True)
-        self.completer = QCompleter(self.dialog.model.completion_model)
-        self.completer.setCompletionColumn(self.dialog.model.completion_model.fieldIndex(self.selector_field))
-        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
-        self.name.setCompleter(self.completer)
-        self.completer.activated[QModelIndex].connect(self.on_completion)
+        self.dialog.model.bind_completer(self.name, self.on_completion)
 
     def get_id(self):
         return self.p_selected_id
@@ -57,9 +49,7 @@ class AbstractReferenceSelector(QWidget):
         if self.p_selected_id == selected_id:
             return
         self.p_selected_id = selected_id
-        self.name.setText(self.dialog.model.getFieldValue(selected_id, self.selector_field))
-        if self.details_field:
-            self.details.setText(self.dialog.model.getFieldValue(selected_id, self.details_field))
+        self.set_labels_text(selected_id)
         self._update_view()
 
     selected_id = Property(int, get_id, set_id, notify=changed, user=True)
@@ -73,6 +63,9 @@ class AbstractReferenceSelector(QWidget):
         self.set_id(new_id)
 
     selected_id_str = Property(str, get_str_id, set_str_id, notify=changed)  # workaround for QTBUG-115144
+
+    def set_labels_text(self, item_id):
+        self.name.setText(self.dialog.getValue(item_id))
 
     def setFilterValue(self, filter_value):
         self.dialog.setFilterValue(filter_value)
@@ -112,39 +105,34 @@ class AbstractReferenceSelector(QWidget):
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.selector_field = "name"
-        self.details_field = None
         self.dialog = ui_dialogs.AccountListDialog()
         super().__init__(parent=parent, validate=validate)
 
 
 class SymbolSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.selector_field = "symbol"
-        self.details_field = "full_name"
         self.dialog = ui_dialogs.SymbolListDialog()
         super().__init__(parent=parent, validate=validate)
+        self.details.setVisible(True)
+
+    def set_labels_text(self, item_id):
+        super().set_labels_text(item_id)
+        self.details.setText(self.dialog.getValueDetails(item_id))
 
 
 class PeerSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.selector_field = "name"
-        self.details_field = None
         self.dialog = ui_dialogs.PeerListDialog(parent)
         super().__init__(parent=parent, validate=validate)
 
 
 class CategorySelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.selector_field = "name"
-        self.details_field = None
         self.dialog = ui_dialogs.CategoryListDialog(parent)
         super().__init__(parent=parent, validate=validate)
 
 
 class TagSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.selector_field = "tag"
-        self.details_field = None
         self.dialog = ui_dialogs.TagsListDialog(parent)
         super().__init__(parent=parent, validate=validate)

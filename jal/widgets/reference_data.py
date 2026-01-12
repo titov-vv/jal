@@ -10,7 +10,7 @@ from jal.db.settings import JalSettings
 # Class to display and edit table with reference data (accounts, categories, tags...)
 # --------------------------------------------------------------------------------------------------------------
 class ReferenceDataDialog(QDialog):
-    # tree_view - table will be displayed as hierarchical tree with help of 2 columns: 'id', 'pid' in sql table
+    # tree_view - table will be displayed as hierarchical tree with help of 2 columns: 'id', 'pid' in SQL table
     def __init__(self, parent=None, window_title=''):
         super().__init__(parent)
         self.ui = Ui_ReferenceDataDialog()
@@ -115,6 +115,10 @@ class ReferenceDataDialog(QDialog):
         res = super().exec()
         self.resetFilter()
         return res
+
+    # Returns a value (from default field) for given item_id
+    def getValue(self, item_id) -> str:
+        return self.model.getValue(item_id)
 
     def getSelectedName(self):
         if self.selected_id == 0:

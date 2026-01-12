@@ -126,7 +126,7 @@ class AccountListDialog(ReferenceDataDialog):
 class SymbolsListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(table=table, parent_view=parent_view)
-        pk = QSqlIndex()  # Manual primary key setup is required as we use underlying sql view instead of sql table
+        pk = QSqlIndex()  # Manual primary key setup is required as we use underlying SQL view instead of SQL table
         pk.append(self.record().field("id"))
         self.setPrimaryKey(pk)
         self._columns = [("id", ''),
@@ -137,7 +137,7 @@ class SymbolsListModel(AbstractReferenceListModel):
                          ("location_id", self.tr("Location")),
                          ("full_name", self.tr("Name")),
                          ("icon", '')]
-        self._default_name = "symbol"
+        self._default_name = "symbol"  # FIXME Move into parent constructor call
         self._sort_by = "symbol"
         self._group_by = "type_id"
         self._hidden = ["id", "type_id"]
@@ -206,6 +206,10 @@ class SymbolListDialog(ReferenceDataDialog):
 
     def customEditor(self):
         return AssetDialog(self)
+
+    # Returns an extra details for a value for given item_id
+    def getValueDetails(self, item_id) -> str:
+        return self.model.getFieldValue(item_id, "full_name")
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -396,7 +400,7 @@ class TagTreeModel(SqlTreeModel):
         super().__init__(table=table, parent_view=parent_view)
         self._columns = [("tag", self.tr("Tag")), ("icon_file", self.tr("Icon filename"))]
         self._default_value = self.tr("New tag")
-        self._default_name = "tag"
+        self._default_name = "tag"  # FIXME Move into parent constructor call
         self._sort_by = "tag"
         self._stretch = "tag"
 
@@ -474,7 +478,7 @@ class QuotesListModel(AbstractReferenceListModel):
                          ("currency_id", self.tr("Currency")),
                          ("quote", self.tr("Quote"))]
         self._hidden = ["id"]
-        self._default_name = "quote"
+        self._default_name = "quote"  # FIXME Move into parent constructor call
         self._sort_by = "timestamp"
         self._stretch = "asset_id"
         self._asset_delegate = None
@@ -524,7 +528,7 @@ class BaseCurrencyListModel(AbstractReferenceListModel):
                          ("currency_id", self.tr("Currency"))]
         self._hidden = ["id"]
         self._sort_by = "since_timestamp"
-        self._default_name = "currency_id"
+        self._default_name = "currency_id"  # FIXME Move into parent constructor call
         self._timestamp_delegate = None
         self._lookup_delegate = None
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))

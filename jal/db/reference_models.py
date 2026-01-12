@@ -2,7 +2,7 @@ import logging
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex, QMimeData, QByteArray, QDataStream, QIODevice
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QHeaderView, QMessageBox, QAbstractItemView
+from PySide6.QtWidgets import QHeaderView, QMessageBox, QAbstractItemView, QCompleter
 from jal.db.db import JalDB, JalSqlError
 from jal.constants import Setup
 
@@ -35,6 +35,14 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
         self._completion_model = QSqlTableModel(parent=parent_view, db=self.connection())
         self._completion_model.setTable(self._table)
         self._completion_model.select()
+        # Completer is used in widgets after call to bind_completer()
+        self._completer = QCompleter(self._completion_model)
+        self._completer.setCompletionColumn(self._completion_model.fieldIndex(self._default_name))
+        self._completer.setCaseSensitivity(Qt.CaseInsensitive)
+
+    def bind_completer(self, widget, completion_handler):
+        widget.setCompleter(self._completer)
+        self._completer.activated[QModelIndex].connect(completion_handler)
 
     @property
     def group_by(self):
@@ -93,6 +101,9 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
 
     def getName(self, index):
         return self.getFieldValue(self.getId(index), self._default_name)
+
+    def getValue(self, item_id):
+        return self.getFieldValue(item_id, self._default_name)
 
     def getFieldValue(self, item_id, field_name):
         field_relation = self.relation(self.fieldIndex(field_name))  # Provide lookup from foreign table if relation is set
@@ -200,6 +211,15 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         self._completion_model = QSqlTableModel(parent=parent_view, db=self.connection())
         self._completion_model.setTable(self._table)
         self._completion_model.select()
+        # Completer is used in widgets after call to bind_completer()
+        self._completer = QCompleter(self._completion_model)
+        self._completer.setCompletionColumn(self._completion_model.fieldIndex(self._default_name))
+        self._completer.setCaseSensitivity(Qt.CaseInsensitive)
+
+    # Binds completer to the given widget. Trigger completion_handler event handler when selection to be done.
+    def bind_completer(self, widget, completion_handler):
+        widget.setCompleter(self._completer)
+        self._completer.activated[QModelIndex].connect(completion_handler)
 
     def index(self, row, column, parent=None):
         if parent is None:
@@ -359,6 +379,9 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
 
     def getName(self, index):
         return self.getFieldValue(self.getId(index), self._default_name)
+
+    def getValue(self, item_id):
+        return self.getFieldValue(item_id, self._default_name)
 
     def getFieldValue(self, item_id, field_name):
         return self._read(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
