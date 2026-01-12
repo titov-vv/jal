@@ -112,7 +112,6 @@ class AbstractReferenceSelector(QWidget):
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.table = "accounts"
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.AccountListDialog()
@@ -121,7 +120,6 @@ class AccountSelector(AbstractReferenceSelector):
 
 class SymbolSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.table = "symbols_ext"
         self.selector_field = "symbol"
         self.details_field = "full_name"
         self.dialog = ui_dialogs.SymbolListDialog()
@@ -130,7 +128,6 @@ class SymbolSelector(AbstractReferenceSelector):
 
 class PeerSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.table = "agents"
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.PeerListDialog(parent)
@@ -139,7 +136,6 @@ class PeerSelector(AbstractReferenceSelector):
 
 class CategorySelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.table = "categories"
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.CategoryListDialog(parent)
@@ -148,7 +144,6 @@ class CategorySelector(AbstractReferenceSelector):
 
 class TagSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.table = "tags"
         self.selector_field = "tag"
         self.details_field = None
         self.dialog = ui_dialogs.TagsListDialog(parent)
