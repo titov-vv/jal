@@ -7,31 +7,19 @@ from jal.db.db import JalDB, JalSqlError
 from jal.constants import Setup
 
 
-#TODO AbstractReferenceListModel and SqlTreeModel seems to have some common things - move it to separate class
 # ----------------------------------------------------------------------------------------------------------------------
-class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
-    @property
-    def completion_model(self):
-        return self._completion_model
-
-    def __init__(self, table, parent_view, **kwargs):
+class BaseReferenceModelMixin:
+    # BaseReferenceModelMixin must never define __init__ (otherwise it breaks multiple inheritance)
+    def _init_base(self, table, parent_view, **kwargs):
         self._view = parent_view
         self._table = table
-        self._columns = list(kwargs.get('columns', []))    # List of (column_name, column_title) that defines columns of the table
-        self._hidden = kwargs.get('hide', [])              # List of columns to hide from the table
-        self._sort_by = kwargs.get('sort', None)           # Column to be used for sorting rows in the table
-        self._group_by = kwargs.get('group', None)         # Column to use for grouping
-        self._stretch = kwargs.get('stretch', None)        # Column that is stretched in UI to fill the space
+        self._columns = list(kwargs.get('columns', []))
+        self._hidden = kwargs.get('hide', [])
+        self._sort_by = kwargs.get('sort', None)
+        self._group_by = kwargs.get('group', None)
+        self._stretch = kwargs.get('stretch', None)
         self._default_name = kwargs.get('default', "name")
-        self._deleted_rows = []
-        self._filter_by = ''
-        self._filter_value = None
-        self._default_values = {}        # List of field default values for new row creation
-        super().__init__(parent=parent_view, db=self.connection())
-        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
-        self.setTable(self._table)
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.select()
+        self._default_values = {}
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
         self._completion_model = QSqlTableModel(parent=parent_view, db=self.connection())
         self._completion_model.setTable(self._table)
@@ -41,13 +29,62 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
         self._completer.setCompletionColumn(self._completion_model.fieldIndex(self._default_name))
         self._completer.setCaseSensitivity(Qt.CaseInsensitive)
 
+    @property
+    def completion_model(self):
+        return self._completion_model
+
+    # Binds completer to the given widget. Trigger completion_handler event handler when selection to be done.
     def bind_completer(self, widget, completion_handler):
         widget.setCompleter(self._completer)
         self._completer.activated[QModelIndex].connect(completion_handler)
 
-    # set default field values for new row creation
+    # set default field values for new element creation
     def set_default_values(self, defaults: dict):
         self._default_values = defaults
+
+    def fieldIndex(self, field):
+        column_data = [i for i, column in enumerate(self._columns) if column[0] == field]
+        if len(column_data) > 0:
+            return column_data[0]
+        else:
+            return -1
+
+    def getName(self, index):
+        return self.getFieldValue(self.getId(index), self._default_name)
+
+    def getValue(self, item_id):
+        return self.getFieldValue(item_id, self._default_name)
+
+    def headerData(self, section, orientation=Qt.Horizontal, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+                return self._columns[section][1]
+        return None
+
+    def setStretching(self):
+        if self._stretch:
+            self._horizontalHeader().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
+
+    def setBoldHeader(self):
+        font = self._horizontalHeader().font()
+        font.setBold(True)
+        self._horizontalHeader().setFont(font)
+
+    def hideColumns(self):
+        for column_name in self._hidden:
+            self._view.setColumnHidden(self.fieldIndex(column_name), True)
+
+# ----------------------------------------------------------------------------------------------------------------------
+class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableModel, JalDB):
+    def __init__(self, table, parent_view, **kwargs):
+        self._init_base(table, parent_view, **kwargs)
+        super().__init__(parent=parent_view, db=self.connection())
+        self._deleted_rows = []
+        self._filter_by = ''
+        self._filter_value = None
+        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
+        self.setTable(self._table)
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.select()
 
     @property
     def group_by(self):
@@ -58,19 +95,6 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
             return True
         else:
             return False
-
-    def fieldIndex(self, field):
-        column_data = [i for i, column in enumerate(self._columns) if column[0] == field]
-        if len(column_data) > 0:
-            return column_data[0]
-        else:
-            return -1
-
-    def headerData(self, section, orientation=Qt.Horizontal, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
-                return self._columns[section][1]
-        return None
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
@@ -85,30 +109,17 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
         self.setSorting()
         self.hideColumns()
         self.setStretching()
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
+        self.setBoldHeader()
 
     def setSorting(self):
         if self._sort_by:
             self.setSort(self.fieldIndex(self._sort_by), Qt.AscendingOrder)
 
-    def hideColumns(self):
-        for column_name in self._hidden:
-            self._view.setColumnHidden(self.fieldIndex(column_name), True)
-
-    def setStretching(self):
-        if self._stretch:
-            self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
+    def _horizontalHeader(self):
+        return self._view.horizontalHeader()
 
     def getId(self, index):
         return self.record(index.row()).value('id')
-
-    def getName(self, index):
-        return self.getFieldValue(self.getId(index), self._default_name)
-
-    def getValue(self, item_id):
-        return self.getFieldValue(item_id, self._default_name)
 
     def getFieldValue(self, item_id, field_name):
         field_relation = self.relation(self.fieldIndex(field_name))  # Provide lookup from foreign table if relation is set
@@ -193,44 +204,15 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class SqlTreeModel(QAbstractItemModel, JalDB):
+class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
     ROOT_PID = 0
     DRAG_DROP_MIME_TYPE = "application/vnd.tree_item"
 
-    @property
-    def completion_model(self):
-        return self._completion_model
-
     def __init__(self, table, parent_view, **kwargs):
         super().__init__(parent=parent_view)
-        self._table = table
-        self._columns = list(kwargs.get('columns', []))     # List of (column_name, column_title) that defines columns of the table
-        self._hidden = kwargs.get('hide', [])               # List of columns to hide from the table
-        self._sort_by = kwargs.get('sort', None)            # Column to be used for sorting rows in the table
-        self._group_by = kwargs.get('group', None)          # Column to use for grouping
-        self._stretch = kwargs.get('stretch', None)         # Column that is stretched in UI to fill the space
-        self._default_name = kwargs.get('default', "name")
-        self._default_values = {}    # Values to be used for new element creation
+        self._init_base(table, parent_view, **kwargs)
         self._drag_and_drop = False  # This is required to prevent deletion of initial element after drag&drop movement
-        self._view = parent_view
         self._filter_text = ''
-        # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
-        self._completion_model = QSqlTableModel(parent=parent_view, db=self.connection())
-        self._completion_model.setTable(self._table)
-        self._completion_model.select()
-        # Completer is used in widgets after call to bind_completer()
-        self._completer = QCompleter(self._completion_model)
-        self._completer.setCompletionColumn(self._completion_model.fieldIndex(self._default_name))
-        self._completer.setCaseSensitivity(Qt.CaseInsensitive)
-
-    # Binds completer to the given widget. Trigger completion_handler event handler when selection to be done.
-    def bind_completer(self, widget, completion_handler):
-        widget.setCompleter(self._completer)
-        self._completer.activated[QModelIndex].connect(completion_handler)
-
-    # set default field values for new element creation
-    def set_default_values(self, defaults: dict):
-        self._default_values = defaults
 
     def index(self, row, column, parent=None):
         if parent is None:
@@ -315,19 +297,6 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         self.layoutChanged.emit()   # Emit unconditionally as item order may be changed after editing
         return True
 
-    def fieldIndex(self, field):
-        column_data = [i for i, column in enumerate(self._columns) if column[0] == field]
-        if len(column_data) > 0:
-            return column_data[0]
-        else:
-            return -1
-
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
-                return self._columns[section][1]
-        return None
-
     def supportedDragActions(self) -> Qt.DropAction:
         return Qt.DropAction.MoveAction
 
@@ -369,9 +338,7 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
 
     def configureView(self):
         self.setStretching()
-        font = self._view.header().font()
-        font.setBold(True)
-        self._view.header().setFont(font)
+        self.setBoldHeader()
         self._view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self._view.setDragEnabled(True)
         self._view.setAcceptDrops(True)
@@ -379,20 +346,13 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
         self._view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         self._view.setDefaultDropAction(Qt.DropAction.MoveAction)
 
-    def setStretching(self):
-        if self._stretch:
-            self._view.header().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
+    def _horizontalHeader(self):
+        return self._view.header()
 
     def getId(self, index):
         if not index.isValid():
             return None
         return index.internalId()
-
-    def getName(self, index):
-        return self.getFieldValue(self.getId(index), self._default_name)
-
-    def getValue(self, item_id):
-        return self.getFieldValue(item_id, self._default_name)
 
     def getFieldValue(self, item_id, field_name):
         return self._read(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
