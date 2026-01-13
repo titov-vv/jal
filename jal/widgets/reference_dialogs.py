@@ -21,30 +21,26 @@ from jal.widgets.icons import JalIcon
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view, **kwargs):
-        super().__init__(table=table, parent_view=parent_view)
-        self._columns = [("id", ''),
-                         ("name", self.tr("Name")),
-                         ("currency_id", self.tr("Currency")),
-                         ("active", self.tr("Act.")),
-                         ("investing", self.tr("Invest.")),
-                         ("tag_id", 'Tag'),
-                         ("number", self.tr("Account #")),
-                         ("reconciled_on", self.tr("Reconciled @")),
-                         ("organization_id", self.tr("Bank/Broker")),
-                         ("country_id", self.tr("Country")),
-                         ("precision", self.tr("Precision")),
-                         ("credit", self.tr("Credit limit"))]
-        self._sort_by = "name"
-        self._group_by = "tag_id"
-        self._hidden = ["id"]
-        self._stretch = "name"
+        columns = [("id", ''),
+                   ("name", self.tr("Name")),
+                   ("currency_id", self.tr("Currency")),
+                   ("active", self.tr("Act.")),
+                   ("investing", self.tr("Invest.")),
+                   ("tag_id", 'Tag'),
+                   ("number", self.tr("Account #")),
+                   ("reconciled_on", self.tr("Reconciled @")),
+                   ("organization_id", self.tr("Bank/Broker")),
+                   ("country_id", self.tr("Country")),
+                   ("precision", self.tr("Precision")),
+                   ("credit", self.tr("Credit limit"))]
+        super().__init__(table=table, parent_view=parent_view, columns=columns, sort="name", hide=["id"], group="tag_id", stretch="name")
+        self.set_default_values({'active': 1, 'reconciled_on': 0, 'country_id': 0, 'precision': 2, 'credit': '0'})
         self._lookup_delegate = None
         self._peer_delegate = None
         self._timestamp_delegate = None
         self._bool_delegate = None
         self._tag_delegate = None
         self._float_delegate = None
-        self._default_values = {'active': 1, 'reconciled_on': 0, 'country_id': 0, 'precision': 2, 'credit': '0'}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
 
@@ -124,7 +120,7 @@ class AccountListDialog(ReferenceDataDialog):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class SymbolsListModel(AbstractReferenceListModel):
-    def __init__(self, table, parent_view, **kwargs):
+    def __init__(self, table, parent_view):
         super().__init__(table=table, parent_view=parent_view)
         pk = QSqlIndex()  # Manual primary key setup is required as we use underlying SQL view instead of SQL table
         pk.append(self.record().field("id"))
@@ -144,7 +140,6 @@ class SymbolsListModel(AbstractReferenceListModel):
         self._stretch = "full_name"
         self._lookup_delegate = None
         self._constant_lookup_delegate = None
-        # self._default_values = {'isin': '', 'country_id': 0, 'quote_source': -1}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
 
     def configureView(self):
@@ -215,13 +210,11 @@ class SymbolListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class PeerTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view, **kwargs):
-        super().__init__(table=table, parent_view=parent_view)
-        self._columns = [("name", self.tr("Name")),
-                         ("location", self.tr("Location")),
-                         ("actions_count", self.tr("Docs count"))]
-        self._default_value = self.tr("New peer")
-        self._sort_by = "name"
-        self._stretch = "name"
+        columns = [("name", self.tr("Name")),
+                   ("location", self.tr("Location")),
+                   ("actions_count", self.tr("Docs count"))]
+        super().__init__(table=table, parent_view=parent_view, columns=columns, sort="name", stretch="name")
+        self.set_default_values({"name": self.tr("New peer")})
         self._int_delegate = None
         self._grid_delegate = None
 
@@ -316,11 +309,8 @@ class PeerListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class CategoryTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view, **kwargs):
-        super().__init__(table=table, parent_view=parent_view)
-        self._columns = [("name", self.tr("Name"))]
-        self._default_value = self.tr("New category")
-        self._sort_by = "name"
-        self._stretch = "name"
+        super().__init__(table=table, parent_view=parent_view, columns=[("name", self.tr("Name"))], sort="name", stretch="name")
+        self.set_default_values({"name": self.tr("New category")})
         self._bool_delegate = None
         self._grid_delegate = None
 
@@ -396,13 +386,10 @@ class CategoryListDialog(ReferenceDataDialog):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class TagTreeModel(SqlTreeModel):
-    def __init__(self, table, parent_view, **kwargs):
-        super().__init__(table=table, parent_view=parent_view)
-        self._columns = [("tag", self.tr("Tag")), ("icon_file", self.tr("Icon filename"))]
-        self._default_value = self.tr("New tag")
-        self._default_name = "tag"  # FIXME Move into parent constructor call
-        self._sort_by = "tag"
-        self._stretch = "tag"
+    def __init__(self, table, parent_view):
+        columns = [("tag", self.tr("Tag")), ("icon_file", self.tr("Icon filename"))]
+        super().__init__(table=table, parent_view=parent_view, columns=columns, sort="tag", stretch="tag", default="tag")
+        self.set_default_values({"tag": self.tr("New tag")})
 
     def data(self, index, role=Qt.DisplayRole):   # Display tag icon as decoration role
         if not index.isValid():
@@ -471,16 +458,12 @@ class TagsListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class QuotesListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        super().__init__(table=table, parent_view=parent_view)
-        self._columns = [("id", ''),
-                         ("timestamp", self.tr("Date")),
-                         ("asset_id", self.tr("Asset")),
-                         ("currency_id", self.tr("Currency")),
-                         ("quote", self.tr("Quote"))]
-        self._hidden = ["id"]
-        self._default_name = "quote"  # FIXME Move into parent constructor call
-        self._sort_by = "timestamp"
-        self._stretch = "asset_id"
+        columns = [("id", ''),
+                   ("timestamp", self.tr("Date")),
+                   ("asset_id", self.tr("Asset")),
+                   ("currency_id", self.tr("Currency")),
+                   ("quote", self.tr("Quote"))]
+        super().__init__(table=table, parent_view=parent_view, columns=columns, sort="timestamp", hide=["id"], stretch="asset_id", default="quote")
         self._asset_delegate = None
         self._timestamp_delegate = None
         self._lookup_delegate = None
@@ -522,13 +505,10 @@ class QuotesListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class BaseCurrencyListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        super().__init__(table=table, parent_view=parent_view)
-        self._columns = [("id", ''),
-                         ("since_timestamp", self.tr("Date")),
-                         ("currency_id", self.tr("Currency"))]
-        self._hidden = ["id"]
-        self._sort_by = "since_timestamp"
-        self._default_name = "currency_id"  # FIXME Move into parent constructor call
+        columns = [("id", ''),
+                   ("since_timestamp", self.tr("Date")),
+                   ("currency_id", self.tr("Currency"))]
+        super().__init__(table=table, parent_view=parent_view, columns=columns, sort="since_timestamp", hide=["id"], stretch="currency_id", default="currency_id")
         self._timestamp_delegate = None
         self._lookup_delegate = None
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))

@@ -7,6 +7,7 @@ from jal.db.db import JalDB, JalSqlError
 from jal.constants import Setup
 
 
+#TODO AbstractReferenceListModel and SqlTreeModel seems to have some common things - move it to separate class
 # ----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
     @property
@@ -16,16 +17,16 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
     def __init__(self, table, parent_view, **kwargs):
         self._view = parent_view
         self._table = table
-        self._columns = []
+        self._columns = list(kwargs.get('columns', []))    # List of (column_name, column_title) that defines columns of the table
+        self._hidden = kwargs.get('hide', [])              # List of columns to hide from the table
+        self._sort_by = kwargs.get('sort', None)           # Column to be used for sorting rows in the table
+        self._group_by = kwargs.get('group', None)         # Column to use for grouping
+        self._stretch = kwargs.get('stretch', None)        # Column that is stretched in UI to fill the space
+        self._default_name = kwargs.get('default', "name")
         self._deleted_rows = []
-        self._default_name = "name"
-        self._group_by = None
         self._filter_by = ''
         self._filter_value = None
-        self._sort_by = None
-        self._hidden = []
-        self._stretch = None
-        self._default_values = {}   # To fill in default values for fields allowed to be NULL
+        self._default_values = {}        # List of field default values for new row creation
         super().__init__(parent=parent_view, db=self.connection())
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(self._table)
@@ -43,6 +44,10 @@ class AbstractReferenceListModel(QSqlRelationalTableModel, JalDB):
     def bind_completer(self, widget, completion_handler):
         widget.setCompleter(self._completer)
         self._completer.activated[QModelIndex].connect(completion_handler)
+
+    # set default field values for new row creation
+    def set_default_values(self, defaults: dict):
+        self._default_values = defaults
 
     @property
     def group_by(self):
@@ -196,16 +201,18 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
     def completion_model(self):
         return self._completion_model
 
-    def __init__(self, table, parent_view):
+    def __init__(self, table, parent_view, **kwargs):
         super().__init__(parent=parent_view)
         self._table = table
-        self._columns = []
+        self._columns = list(kwargs.get('columns', []))     # List of (column_name, column_title) that defines columns of the table
+        self._hidden = kwargs.get('hide', [])               # List of columns to hide from the table
+        self._sort_by = kwargs.get('sort', None)            # Column to be used for sorting rows in the table
+        self._group_by = kwargs.get('group', None)          # Column to use for grouping
+        self._stretch = kwargs.get('stretch', None)         # Column that is stretched in UI to fill the space
+        self._default_name = kwargs.get('default', "name")
+        self._default_values = {}    # Values to be used for new element creation
         self._drag_and_drop = False  # This is required to prevent deletion of initial element after drag&drop movement
         self._view = parent_view
-        self._default_name = "name"
-        self._default_value = self.tr("New")
-        self._stretch = None
-        self._sort_by = None
         self._filter_text = ''
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
         self._completion_model = QSqlTableModel(parent=parent_view, db=self.connection())
@@ -220,6 +227,10 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
     def bind_completer(self, widget, completion_handler):
         widget.setCompleter(self._completer)
         self._completer.activated[QModelIndex].connect(completion_handler)
+
+    # set default field values for new element creation
+    def set_default_values(self, defaults: dict):
+        self._default_values = defaults
 
     def index(self, row, column, parent=None):
         if parent is None:
@@ -392,13 +403,15 @@ class SqlTreeModel(QAbstractItemModel, JalDB):
 
     # Helper function that generates new default name that is not present in the table yet
     def valid_new_name(self) -> str:
+        default_value = self._default_values.get(self._default_name, self.tr("New"))
         for i in range(Setup.MAX_TIMESTAMP):
-            new_name = f"{self._default_value} {i}" if i else self._default_value
+            new_name = f"{default_value} {i}" if i else default_value
             exists = self._read(f"SELECT id FROM {self._table} WHERE {self._default_name}=:default_value",
                                 [(":default_value", new_name)])
             if exists is None:
                 return new_name
         assert True, "Number of valid new name exhausted"
+        return ''
 
     def insertRows(self, row, count, parent=None):
         if parent is None:
