@@ -27,6 +27,8 @@ class ReferenceDataDialog(QDialog):
         self.selection_enabled = False
         self.group_id = None
         self.group_field = None
+        self.filter_field = None
+        self._filter_value = ''
         self.toggle_state = False
         self.toggle_field = None
         self.search_field = None
@@ -180,6 +182,12 @@ class ReferenceDataDialog(QDialog):
         self.ui.CommitBtn.setEnabled(False)
         self.ui.RevertBtn.setEnabled(False)
 
+    def setFilterValue(self, filter_value):
+        if self.filter_field is None:
+            return
+        self._filter_value = filter_value
+        self.setFilter()
+
     def resetFilter(self):
         self.model.setFilter("")
 
@@ -200,6 +208,11 @@ class ReferenceDataDialog(QDialog):
 
         if self.group_id:
             conditions.append(f"{self.table}.{self.group_field}={self.group_id}")
+
+        if self.filter_field is not None and self._filter_value:
+            conditions.append(f"{self.table}.{self.filter_field} = {self._filter_value}")
+            # completion model needs only this filter, others are for dialog
+            self.model.completion_model.setFilter(f"{self.table}.{self.filter_field} = {self._filter_value}")
 
         if self.toggle_field:
             if not self.toggle_state:

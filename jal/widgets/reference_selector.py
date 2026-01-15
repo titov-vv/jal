@@ -67,6 +67,9 @@ class AbstractReferenceSelector(QWidget):
     def set_labels_text(self, item_id):
         self.name.setText(self.dialog.model.getValue(item_id))
 
+    def setFilterValue(self, filter_value):
+        self.dialog.setFilterValue(filter_value)
+
     def setValidation(self, validate):
         self._validate = validate
         self._update_view()
