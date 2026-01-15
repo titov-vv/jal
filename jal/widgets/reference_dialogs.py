@@ -8,7 +8,7 @@ from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
-from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
+from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel, AbstractReferenceListReadOnlyModel
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate, \
     SymbolSelectorDelegate, ConstantLookupDelegate, TagSelectorDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
@@ -119,51 +119,41 @@ class AccountListDialog(ReferenceDataDialog):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class SymbolsListModel(AbstractReferenceListModel):
+class SymbolsListModel(AbstractReferenceListReadOnlyModel):
     def __init__(self, table, parent_view):
-        super().__init__(table=table, parent_view=parent_view)
-        pk = QSqlIndex()  # Manual primary key setup is required as we use underlying SQL view instead of SQL table
-        pk.append(self.record().field("id"))
-        self.setPrimaryKey(pk)
-        self._columns = [("id", ''),
-                         ("symbol", self.tr("Symbol")),
-                         ("asset_id", self.tr("Asset")),
-                         ("type_id", self.tr("Asset type")),
-                         ("currency_id", self.tr("Currency")),
-                         ("location_id", self.tr("Location")),
-                         ("full_name", self.tr("Name")),
-                         ("icon", '')]
-        self._default_name = "symbol"  # FIXME Move into parent constructor call
-        self._sort_by = "symbol"
-        self._group_by = "type_id"
-        self._hidden = ["id", "type_id"]
-        self._stretch = "full_name"
-        self._lookup_delegate = None
-        self._constant_lookup_delegate = None
-        self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
+        columns = [("id", ''),
+                   ("symbol", self.tr("Symbol")),
+                   ("asset_id", self.tr("Asset")),
+                   ("type_id", self.tr("Asset type")),
+                   ("currency_id", self.tr("Currency")),
+                   ("location_id", self.tr("Location")),
+                   ("full_name", self.tr("Name")),
+                   ("icon", '')]
+        super().__init__(table=table, parent_view=parent_view, columns=columns, default="symbol", sort="symbol", hide=["id", "type_id"],
+                         group="type_id", stretch="full_name")
 
     def configureView(self):
         super().configureView()
-        self._lookup_delegate = QSqlRelationalDelegate(self._view)
-        self._constant_lookup_delegate = ConstantLookupDelegate(MarketDataFeed, self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._constant_lookup_delegate)
+        # self._lookup_delegate = QSqlRelationalDelegate(self._view)
+        # self._constant_lookup_delegate = ConstantLookupDelegate(MarketDataFeed, self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._constant_lookup_delegate)
 
-    def removeElement(self, index) -> bool:
-        used_by_accounts = JalAccount().get_all_accounts(active_only=False, currency_id=self.getId(index))
-        if len(used_by_accounts):
-            QMessageBox().warning(None, self.tr("Warning"),
-                                  self.tr("You can't delete currency that is used by account:\n") +
-                                  '\n'.join([x.name() for i, x in enumerate(used_by_accounts) if i < 10]),  # Display first 10 accounts that use the currency
-                                  QMessageBox.Ok)
-            return False
-        reply = QMessageBox().warning(None, self.tr("Warning"),
-                                      self.tr("All transactions related with this asset will be deleted.\n"
-                                              "Do you want to delete the asset anyway?"),
-                                      QMessageBox.Yes, QMessageBox.No)
-        if reply != QMessageBox.Yes:
-            return False
-        return super().removeElement(index)
+    # def removeElement(self, index) -> bool:
+    #     used_by_accounts = JalAccount().get_all_accounts(active_only=False, currency_id=self.getId(index))
+    #     if len(used_by_accounts):
+    #         QMessageBox().warning(None, self.tr("Warning"),
+    #                               self.tr("You can't delete currency that is used by account:\n") +
+    #                               '\n'.join([x.name() for i, x in enumerate(used_by_accounts) if i < 10]),  # Display first 10 accounts that use the currency
+    #                               QMessageBox.Ok)
+    #         return False+
+    #     reply = QMessageBox().warning(None, self.tr("Warning"),
+    #                                   self.tr("All transactions related with this asset will be deleted.\n"
+    #                                           "Do you want to delete the asset anyway?"),
+    #                                   QMessageBox.Yes, QMessageBox.No)
+    #     if reply != QMessageBox.Yes:
+    #         return False
+    #     return super().removeElement(index)
 
 
 class SymbolListDialog(ReferenceDataDialog):
@@ -177,7 +167,7 @@ class SymbolListDialog(ReferenceDataDialog):
         super()._init_completed()
 
     def setup_ui(self):
-        self.search_field = "symbols_ext.full_name"
+        self.search_field = "full_name"
         self.ui.SearchFrame.setVisible(True)
         self.ui.Toggle.setVisible(False)
 

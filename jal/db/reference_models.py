@@ -1,6 +1,6 @@
 import logging
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex, QMimeData, QByteArray, QDataStream, QIODevice
-from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
+from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlQueryModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView, QMessageBox, QAbstractItemView, QCompleter
 from jal.db.db import JalDB, JalSqlError
@@ -175,6 +175,75 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
     def revertAll(self):
         self._deleted_rows = []
         super().revertAll()
+
+    def locateItem(self, item_id, use_filter=''):
+        if use_filter:
+            use_filter = f"WHERE {use_filter}"
+        row = self._read(f"SELECT row_number FROM ("
+                         f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
+                         f"FROM {self._table} {use_filter}) WHERE id=:id", [(":id", item_id)])
+        if row is None:
+            return QModelIndex()
+        return self.index(row - 1, 0)
+
+    def updateItemType(self, index, new_type):
+        id = self.getId(index)
+        self._exec(f"UPDATE {self._table} SET {self._group_by}=:new_type WHERE id=:id",
+                   [(":new_type", new_type), (":id", id)])
+
+    def filterBy(self, field_name, value):
+        self._filter_by = field_name
+        self._filter_value = value
+        self.setFilter(f"{self._table}.{field_name} = {value}")
+
+    # returns group id for given item
+    def getGroupId(self, item_id: int) -> int:
+        group_id = self._read(f"SELECT {self._group_by} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        group_id = 0 if not group_id or group_id is None else group_id
+        return group_id
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class AbstractReferenceListReadOnlyModel(BaseReferenceModelMixin, QSqlQueryModel, JalDB):
+    def __init__(self, table, parent_view, **kwargs):
+        self._init_base(table, parent_view, **kwargs)
+        super().__init__(parent=parent_view, db=self.connection())
+        self._filter_by = ''
+        self._filter_value = None
+        self._query_text = f"SELECT * FROM {self._table}"
+        self.setQuery(self._exec(self._query_text, forward_only=False))
+
+    @property
+    def group_by(self):
+        return self._group_by
+
+    def configureView(self):
+        # self.setSorting()
+        self.hideColumns()
+        self.setStretching()
+        self.setBoldHeader()
+
+    # def setSorting(self):
+    #     if self._sort_by:
+    #         self.setSort(self.fieldIndex(self._sort_by), Qt.AscendingOrder)
+
+    def setFilter(self, filter_text):
+        self.setQuery(self._exec(f"{self._query_text} WHERE {filter_text}", forward_only=False))
+
+    def _horizontalHeader(self):
+        return self._view.horizontalHeader()
+
+    def getId(self, index):
+        return self.record(index.row()).value('id')
+
+    def getFieldValue(self, item_id, field_name):
+        return self._read(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+
+    def submitAll(self):
+        pass
+
+    def revertAll(self):
+        pass
 
     def locateItem(self, item_id, use_filter=''):
         if use_filter:
