@@ -65,7 +65,7 @@ class AbstractReferenceSelector(QWidget):
     selected_id_str = Property(str, get_str_id, set_str_id, notify=changed)  # workaround for QTBUG-115144
 
     def set_labels_text(self, item_id):
-        self.name.setText(self.dialog.getValue(item_id))
+        self.name.setText(self.dialog.model.getValue(item_id))
 
     def setValidation(self, validate):
         self._validate = validate

@@ -114,10 +114,6 @@ class ReferenceDataDialog(QDialog):
         self.resetFilter()
         return res
 
-    # Returns a value (from default field) for given item_id
-    def getValue(self, item_id) -> str:
-        return self.model.getValue(item_id)
-
     def getSelectedName(self):
         if self.selected_id == 0:
             return self.tr("ANY")
