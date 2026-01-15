@@ -209,7 +209,6 @@ class SymbolDelegate(QStyledItemDelegate):
         account_currency = JalAccount(index.model().data(index.sibling(index.row(),
                                                                        index.model().fieldIndex('account_id')),
                                                          Qt.EditRole)).currency()
-        editor.setFilterValue(account_currency)
         QStyledItemDelegate.setEditorData(self, editor, index)
 
 
