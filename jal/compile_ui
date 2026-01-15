@@ -7,6 +7,7 @@
 /usr/lib/qt6/uic -g python -o ./ui/ui_tax_export_widget.py ./ui/tax_export_widget.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_flow_export_widget.py ./ui/flow_export_widget.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_asset_dlg.py ./ui/asset_dlg.ui
+/usr/lib/qt6/uic -g python -o ./ui/ui_asset_list_dlg.py ./ui/asset_list_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_select_account_dlg.py ./ui/select_account_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_select_reference_dlg.py ./ui/select_reference_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_receipt_import_dlg.py ./ui/receipt_import_dlg.ui
