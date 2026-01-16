@@ -68,7 +68,7 @@
        </widget>
       </item>
       <item>
-       <widget class="AccountSelector" name="ReportAccountEdit" native="true"/>
+       <widget class="ReferenceSelectorWidget" name="ReportAccountEdit" native="true"/>
       </item>
       <item>
        <widget class="QLabel" name="CurrencyLbl">
@@ -141,7 +141,7 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>AccountSelector</class>
+   <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>

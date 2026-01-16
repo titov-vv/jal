@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHBoxLay
     QSpacerItem, QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.custom.date_range_selector import DateRangeSelector
-from jal.widgets.reference_selector import AccountSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_ProfitLossReportWidget(object):
     def setupUi(self, ProfitLossReportWidget):
@@ -50,7 +50,7 @@ class Ui_ProfitLossReportWidget(object):
 
         self.horizontalLayout.addWidget(self.ReportAccountLbl)
 
-        self.ReportAccountEdit = AccountSelector(self.ReportParamsFrame)
+        self.ReportAccountEdit = ReferenceSelectorWidget(self.ReportParamsFrame)
         self.ReportAccountEdit.setObjectName(u"ReportAccountEdit")
 
         self.horizontalLayout.addWidget(self.ReportAccountEdit)

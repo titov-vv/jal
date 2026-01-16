@@ -22,7 +22,7 @@
     </widget>
    </item>
    <item>
-    <widget class="AccountSelector" name="AccountWidget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="AccountWidget" native="true"/>
    </item>
    <item>
     <widget class="QCheckBox" name="ReuseAccount">
@@ -58,7 +58,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AccountSelector</class>
+   <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>

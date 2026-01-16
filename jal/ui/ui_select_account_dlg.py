@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog
     QDialogButtonBox, QLabel, QSizePolicy, QSpacerItem,
     QVBoxLayout, QWidget)
 
-from jal.widgets.reference_selector import AccountSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_SelectAccountDlg(object):
     def setupUi(self, SelectAccountDlg):
@@ -33,7 +33,7 @@ class Ui_SelectAccountDlg(object):
 
         self.verticalLayout.addWidget(self.DescriptionLbl)
 
-        self.AccountWidget = AccountSelector(SelectAccountDlg)
+        self.AccountWidget = ReferenceSelectorWidget(SelectAccountDlg)
         self.AccountWidget.setObjectName(u"AccountWidget")
 
         self.verticalLayout.addWidget(self.AccountWidget)

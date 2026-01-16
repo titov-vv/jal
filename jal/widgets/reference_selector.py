@@ -119,9 +119,3 @@ class ReferenceSelectorWidget(QWidget):
         else:
             p = self.style().standardPalette()
         self.name.setPalette(p)
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-class AccountSelector(ReferenceSelectorWidget):
-    def __init__(self, parent=None, validate=True):
-        super().__init__(parent=parent, validate=validate)
