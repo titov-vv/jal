@@ -7,10 +7,12 @@ from jal.ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
 from jal.reports.reports import Reports
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.common_models import AccountListModel
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.helpers import month_list
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.reference_dialogs import AccountListDialog
 
 JAL_REPORT_CLASS = "ProfitLossReport"
 
@@ -164,6 +166,9 @@ class ProfitLossReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_ProfitLossReportWidget()
         self.ui.setupUi(self)
+        self._account_model = AccountListModel(self)
+        self._account_dialog = AccountListDialog(self)
+        self.ui.ReportAccountEdit.setup_selector(self._account_model, self._account_dialog)
         self._parent = parent
         self.name = self.tr("P&L by Account")
 

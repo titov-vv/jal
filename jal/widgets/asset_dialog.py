@@ -9,8 +9,10 @@ from jal.constants import PredefinedAsset, AssetData, MarketDataFeed
 from jal.db.helpers import localize_decimal, db_row2dict
 from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantLookupDelegate
 from jal.db.common_models_abstract import AbstractReferenceListModel
+from jal.db.common_models import SymbolsListModel, TagTreeModel
 from jal.db.tag import JalTag
 from jal.widgets.icons import JalIcon
+from jal.widgets.reference_dialogs import SymbolListDialog
 from jal.widgets.reference_selector import TagSelector
 
 
@@ -30,6 +32,8 @@ class AssetDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_AssetDialog()
         self.ui.setupUi(self)
+        self.symbols_dialog = SymbolListDialog()
+        self.ui.BaseSymbolSelector.setModel(SymbolsListModel(), self.symbols_dialog.on_dialog_request)   #FIXME: wrong call signature
         self._asset_id = -1
         # Custom model to allow common submit errors handling and error message display
         self._model = AssetsListModel("assets", self)
@@ -234,6 +238,7 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
                 editor.setDisplayFormat("dd/MM/yyyy")
             elif self.types.get_type(type_idx) == "tag":
                 editor = TagSelector(aParent)
+                editor.setModel(TagTreeModel())   # FIXME: wrong call signature
             else:
                 assert False, f"Unknown data type '{self.types.get_type(type_idx)}' in DataDelegate.createEditor()"
         else:

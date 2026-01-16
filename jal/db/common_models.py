@@ -6,11 +6,10 @@ from db.category import JalCategory
 from db.common_models_abstract import AbstractReferenceListModel, AbstractReferenceListReadOnlyModel, SqlTreeModel
 from db.peer import JalPeer
 from db.tag import JalTag
-from widgets.delegates import PeerSelectorDelegate, TimestampDelegate, BoolDelegate, TagSelectorDelegate, FloatDelegate, \
-    GridLinesDelegate, SymbolSelectorDelegate
 from widgets.icons import JalIcon
 
-
+# FIXME Review and re-enable delegates
+# FIXME Implement SymbolsListModel
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(AbstractReferenceListModel):
     def __init__(self, parent_view=None):
@@ -54,17 +53,17 @@ class AccountListModel(AbstractReferenceListModel):
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
-        self._peer_delegate = PeerSelectorDelegate()
-        self._view.setItemDelegateForColumn(self.fieldIndex("organization_id"), self._peer_delegate)
-        self._timestamp_delegate = TimestampDelegate(parent=self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("reconciled_on"), self._timestamp_delegate)
-        self._bool_delegate = BoolDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("investing"), self._bool_delegate)
-        self._tag_delegate = TagSelectorDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("tag_id"), self._tag_delegate)
-        self._float_delegate = FloatDelegate(2, parent=self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("credit"), self._float_delegate)
+        # self._peer_delegate = PeerSelectorDelegate()
+        # self._view.setItemDelegateForColumn(self.fieldIndex("organization_id"), self._peer_delegate)
+        # self._timestamp_delegate = TimestampDelegate(parent=self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("reconciled_on"), self._timestamp_delegate)
+        # self._bool_delegate = BoolDelegate(self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("investing"), self._bool_delegate)
+        # self._tag_delegate = TagSelectorDelegate(self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("tag_id"), self._tag_delegate)
+        # self._float_delegate = FloatDelegate(2, parent=self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("credit"), self._float_delegate)
 
     def removeElement(self, index) -> bool:
         reply = QMessageBox().warning(None, self.tr("Warning"), self.tr("All transactions related with this account will be deleted.\n"
@@ -88,6 +87,9 @@ class SymbolsListModel(AbstractReferenceListReadOnlyModel):
                    ("icon", '')]
         super().__init__(table="symbols_ext", parent_view=parent_view, columns=columns, default="symbol", sort="symbol", hide=["id", "type_id"],
                          group="type_id", stretch="full_name")
+
+    def getValueDetails(self, item_id) -> str:
+        return self.getFieldValue(item_id, "full_name")
 
     def configureView(self):
         super().configureView()
@@ -137,11 +139,11 @@ class PeerTreeModel(SqlTreeModel):
 
     def configureView(self):
         super().configureView()
-        self._grid_delegate = GridLinesDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("location"), self._grid_delegate)
-        self._int_delegate = FloatDelegate(0, parent=self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
+        # self._grid_delegate = GridLinesDelegate(self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("location"), self._grid_delegate)
+        # self._int_delegate = FloatDelegate(0, parent=self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
 
     def removeElement(self, index) -> bool:
         peer = JalPeer(self.getId(index))
@@ -168,8 +170,8 @@ class CategoryTreeModel(SqlTreeModel):
 
     def configureView(self):
         super().configureView()
-        self._grid_delegate = GridLinesDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
+        # self._grid_delegate = GridLinesDelegate(self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
 
     def removeElement(self, index) -> bool:
         category = JalCategory(self.getId(index))
@@ -202,9 +204,9 @@ class TagTreeModel(SqlTreeModel):
 
     def configureView(self):
         super().configureView()
-        self._grid_delegate = GridLinesDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("tag"), self._grid_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("icon_file"), self._grid_delegate)
+        # self._grid_delegate = GridLinesDelegate(self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("tag"), self._grid_delegate)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("icon_file"), self._grid_delegate)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -228,14 +230,14 @@ class QuotesListModel(AbstractReferenceListModel):
                                   self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("quote"), 100)
 
-        self._asset_delegate = SymbolSelectorDelegate()
-        self._view.setItemDelegateForColumn(self.fieldIndex("asset_id"), self._asset_delegate)
-        self._timestamp_delegate = TimestampDelegate(parent=self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
-        self._lookup_delegate = QSqlRelationalDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
-        self._float_delegate = FloatDelegate(4, allow_tail=True, parent=self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("quote"), self._float_delegate)
+        # self._asset_delegate = SymbolSelectorDelegate()
+        # self._view.setItemDelegateForColumn(self.fieldIndex("asset_id"), self._asset_delegate)
+        # self._timestamp_delegate = TimestampDelegate(parent=self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
+        # self._lookup_delegate = QSqlRelationalDelegate(self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
+        # self._float_delegate = FloatDelegate(4, allow_tail=True, parent=self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("quote"), self._float_delegate)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -255,7 +257,7 @@ class BaseCurrencyListModel(AbstractReferenceListModel):
                                   self._view.fontMetrics().horizontalAdvance("00/00/0000") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("currency_id"), 100)
 
-        self._timestamp_delegate = TimestampDelegate(display_format='%d/%m/%Y', parent=self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("since_timestamp"), self._timestamp_delegate)
-        self._lookup_delegate = QSqlRelationalDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
+        # self._timestamp_delegate = TimestampDelegate(display_format='%d/%m/%Y', parent=self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("since_timestamp"), self._timestamp_delegate)
+        # self._lookup_delegate = QSqlRelationalDelegate(self._view)
+        # self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)

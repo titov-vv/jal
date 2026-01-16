@@ -11,8 +11,9 @@ from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
 from jal.widgets.reference_data import ReferenceDataDialog
-from jal.widgets.asset_dialog import AssetDialog
-from jal.widgets.selection_dialog import SelectPeerDialog, SelectCategoryDialog, SelectTagDialog
+# FIXME: re-enable this imports and related functions.
+# from jal.widgets.asset_dialog import AssetDialog
+# from jal.widgets.selection_dialog import SelectPeerDialog, SelectCategoryDialog, SelectTagDialog
 from jal.widgets.icons import JalIcon
 
 
@@ -87,12 +88,8 @@ class SymbolListDialog(ReferenceDataDialog):
         item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
         self.ui.DataView.setCurrentIndex(item_idx)
 
-    def customEditor(self):
-        return AssetDialog(self)
-
-    # Returns an extra details for a value for given item_id
-    def getValueDetails(self, item_id) -> str:
-        return self.model.getFieldValue(item_id, "full_name")
+    # def customEditor(self):
+    #     return AssetDialog(self)   #FIXME make new custom SymbolsListDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -138,7 +135,7 @@ class PeerListDialog(ReferenceDataDialog):
 
     @Slot()
     def replacePeer(self):
-        dialog = SelectPeerDialog(self.tr("Replace peer '") + self._menu_peer_name + self.tr("' with: "))
+        # dialog = SelectPeerDialog(self.tr("Replace peer '") + self._menu_peer_name + self.tr("' with: "))
         if dialog.exec() != QDialog.Accepted:
             return
         reply = QMessageBox().warning(self, '', self.tr("Keep old name in notes?"), QMessageBox.Yes, QMessageBox.No)
@@ -193,8 +190,8 @@ class CategoryListDialog(ReferenceDataDialog):
 
     @Slot()
     def replaceCategory(self):
-        dialog = SelectCategoryDialog(parent=self,
-                                      description=self.tr("Replace category '") + self._menu_category_name + self.tr("' with: "))
+        # dialog = SelectCategoryDialog(parent=self,
+        #                               description=self.tr("Replace category '") + self._menu_category_name + self.tr("' with: "))
         if dialog.exec() != QDialog.Accepted:
             return
         JalCategory(self._menu_category_id).replace_with(dialog.selected_id)
@@ -244,8 +241,8 @@ class TagsListDialog(ReferenceDataDialog):
 
     @Slot()
     def replaceTag(self):
-        dialog = SelectTagDialog(parent=self,
-                                 description=self.tr("Replace tag '") + self._menu_tag_name + self.tr("' with: "))
+        # dialog = SelectTagDialog(parent=self,
+        #                          description=self.tr("Replace tag '") + self._menu_tag_name + self.tr("' with: "))
         if dialog.exec() != QDialog.Accepted:
             return
         JalTag(self._menu_tag_id).replace_with(dialog.selected_id)

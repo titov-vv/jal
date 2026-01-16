@@ -2,10 +2,9 @@ from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.ui.ui_select_reference_dlg import Ui_SelectReferenceDlg
 from jal.widgets.helpers import center_window
-from jal.widgets.reference_selector import PeerSelector
-from jal.widgets.reference_selector import CategorySelector
-from jal.widgets.reference_selector import TagSelector
-
+from jal.db.common_models import PeerTreeModel, CategoryTreeModel, TagTreeModel
+from jal.widgets.reference_selector import PeerSelector, CategorySelector, TagSelector
+from widgets.reference_dialogs import PeerListDialog, CategoryListDialog, TagsListDialog
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Common base GUI dialog class for selector dialogs. Takes window title and label comment to describe selection
@@ -36,6 +35,9 @@ class SelectPeerDialog(SelectReferenceDialog):
     def __init__(self, description, default_peer=0):
         super().__init__(title=self.tr("Please select peer"), description=description)
         self.PeerWidget = PeerSelector(self.ui.SelectorFrame)
+        self._peer_model = PeerTreeModel(self)
+        self._peer_dialog = PeerListDialog(self)
+        self.PeerWidget.setup_selector(self._peer_model, self._peer_dialog)
         self.ui.FrameLayout.addWidget(self.PeerWidget)
         self.PeerWidget.selected_id = self.selected_id = default_peer
 
@@ -52,6 +54,9 @@ class SelectCategoryDialog(SelectReferenceDialog):
     def __init__(self, parent=None, description='', default_category=0):
         super().__init__(parent, title=self.tr("Please select category"), description=description)
         self.CategoryWidget = CategorySelector(self.ui.SelectorFrame)
+        self._category_model = CategoryTreeModel(self)
+        self._category_dialog = CategoryListDialog(self)
+        self.CategoryWidget.setup_selector(self._category_model, self._category_dialog)
         self.ui.FrameLayout.addWidget(self.CategoryWidget)
         self.CategoryWidget.selected_id = self.selected_id = default_category
 
@@ -68,6 +73,9 @@ class SelectTagDialog(SelectReferenceDialog):
     def __init__(self, parent=None, description='', default_tag=0):
         super().__init__(parent, title=self.tr("Please select tag"), description=description)
         self.TagWidget = TagSelector(self.ui.SelectorFrame)
+        self._tag_model = TagTreeModel(self)
+        self._tag_dialog = TagsListDialog(self)
+        self.TagWidget.setup_selector(self._tag_model, self._tag_dialog)
         self.ui.FrameLayout.addWidget(self.TagWidget)
         self.TagWidget.selected_id = self.selected_id = default_tag
 

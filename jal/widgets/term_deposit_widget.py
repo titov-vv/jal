@@ -7,8 +7,10 @@ from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.constants import DepositActions
 from jal.db.view_model import JalViewModel
 from jal.db.operations import LedgerTransaction
+from jal.db.common_models import AccountListModel
 from jal.db.helpers import now_ts, db_row2dict
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate, ConstantLookupDelegate
+from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.icons import JalIcon
 
 
@@ -17,6 +19,9 @@ class TermDepositWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         super().__init__(parent=parent, ui_class=Ui_TermDepositOperation)
         self.operation_type = LedgerTransaction.TermDeposit
+        self._account_model = AccountListModel(self)
+        self._account_dialog = AccountListDialog(self)
+        self.ui.account_widget.setup_selector(self._account_model, self._account_dialog)
         super()._init_db("term_deposits")
 
         self.timestamp_delegate = TimestampDelegate()

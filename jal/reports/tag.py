@@ -5,8 +5,10 @@ from jal.db.tag import JalTag
 from jal.reports.reports import Reports
 from jal.reports.operations_base import ReportOperationsModel
 from jal.db.operations import LedgerTransaction
+from jal.db.common_models import TagTreeModel
 from jal.ui.reports.ui_tag_report import Ui_TagReportWidget
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.reference_dialogs import TagsListDialog
 
 JAL_REPORT_CLASS = "TagReport"
 
@@ -50,6 +52,9 @@ class TagReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_TagReportWidget()
         self.ui.setupUi(self)
+        self._tag_model = TagTreeModel(self)
+        self._tag_dialog = TagsListDialog(self)
+        self.ui.ReportTagEdit.setModel(self._tag_model, self._tag_dialog)
         self._parent = parent
 
         self.tag_model = TagOperationsModel(self.ui.ReportTableView)

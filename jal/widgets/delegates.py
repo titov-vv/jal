@@ -8,7 +8,9 @@ from jal.widgets.reference_selector import SymbolSelector, PeerSelector, Categor
 from jal.db.db import JalModel
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
+from jal.db.common_models import SymbolsListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel
 from jal.widgets.icons import JalIcon
+from jal.widgets.reference_dialogs import SymbolListDialog, PeerListDialog, CategoryListDialog, TagsListDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -279,6 +281,8 @@ class LookupSelectorDelegate(QStyledItemDelegate):
         self._table = ''
         self._field = ''
         self._selector = None
+        self._selector_model = None
+        self._selector_dialog = None
 
     def displayText(self, value, locale):
         item_name = JalModel(self, self._table).get_value(self._field, "id", value)
@@ -313,6 +317,9 @@ class CategorySelectorDelegate(LookupSelectorDelegate):
 
     def createSelector(self, parent) -> None:
         self._selector = CategorySelector(parent, validate=False)
+        self._selector_model = CategoryTreeModel(parent)
+        self._selector_dialog = CategoryListDialog(parent)
+        self._selector.setup_selector(self._selector_model, self._selector_dialog)
 
 
 class TagSelectorDelegate(LookupSelectorDelegate):
@@ -323,6 +330,9 @@ class TagSelectorDelegate(LookupSelectorDelegate):
 
     def createSelector(self, parent) -> None:
         self._selector = TagSelector(parent, validate=False)
+        self._selector_model = TagTreeModel(parent)
+        self._selector_dialog = TagsListDialog(parent)
+        self._selector.setup_selector(self._selector_model, self._selector_dialog)
 
 
 class PeerSelectorDelegate(LookupSelectorDelegate):
@@ -333,6 +343,9 @@ class PeerSelectorDelegate(LookupSelectorDelegate):
 
     def createSelector(self, parent) -> None:
         self._selector = PeerSelector(parent, validate=False)
+        self._selector_model = PeerTreeModel(parent)
+        self._selector_dialog = PeerListDialog(parent)
+        self._selector.setup_selector(self._selector_model, self._selector_dialog)
 
 
 class SymbolSelectorDelegate(LookupSelectorDelegate):
@@ -343,6 +356,9 @@ class SymbolSelectorDelegate(LookupSelectorDelegate):
 
     def createSelector(self, parent) -> None:
         self._selector = SymbolSelector(parent, validate=False)
+        self._selector_model = SymbolsListModel(parent)
+        self._selector_dialog = SymbolListDialog(parent)
+        self._selector.setup_selector(self._selector_model, self._selector_dialog)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # This is a helper function for ColoredAmountsDelegate.

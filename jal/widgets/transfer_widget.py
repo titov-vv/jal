@@ -5,9 +5,11 @@ from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_transfer_operation import Ui_TransferOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.delegates import WidgetMapperDelegateBase
+from jal.widgets.reference_dialogs import AccountListDialog, SymbolListDialog
 from jal.db.operations import LedgerTransaction
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.account import JalAccount
+from jal.db.common_models import AccountListModel, SymbolsListModel
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -27,6 +29,18 @@ class TransferWidget(AbstractOperationDetails):
         super().__init__(parent=parent, ui_class=Ui_TransferOperation)
         self.name = self.tr("Transfer")
         self.operation_type = LedgerTransaction.Transfer
+        self._from_account_model = AccountListModel(self)
+        self._from_account_dialog = AccountListDialog(self)
+        self.ui.from_account_widget.setup_selector(self._from_account_model, self._from_account_dialog)
+        self._to_account_model = AccountListModel(self)
+        self._to_account_dialog = AccountListDialog(self)
+        self.ui.to_account_widget.setup_selector(self._to_account_model, self._to_account_dialog)
+        self._fee_account_model = AccountListModel(self)
+        self._fee_account_dialog = AccountListDialog(self)
+        self.ui.fee_account_widget.setup_selector(self._fee_account_model, self._fee_account_dialog)
+        self._symbols_model = SymbolsListModel(self)
+        self._symbols_dialog = SymbolListDialog(self)
+        self.ui.symbol_widget.setup_selector(self._symbols_model, self._symbols_dialog)
 
         self.ui.copy_date_btn.setFixedWidth(self.ui.copy_date_btn.fontMetrics().horizontalAdvance("XXXX"))
         self.ui.copy_amount_btn.setFixedWidth(self.ui.copy_amount_btn.fontMetrics().horizontalAdvance("XXXX"))

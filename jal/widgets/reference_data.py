@@ -10,6 +10,8 @@ from jal.db.settings import JalSettings
 # Class to display and edit table with reference data (accounts, categories, tags...)
 # --------------------------------------------------------------------------------------------------------------
 class ReferenceDataDialog(QDialog):
+    selection_done = Signal(int)
+
     # tree_view - table will be displayed as hierarchical tree with help of 2 columns: 'id', 'pid' in SQL table
     def __init__(self, parent=None, window_title=''):
         super().__init__(parent)
@@ -80,6 +82,7 @@ class ReferenceDataDialog(QDialog):
         self.restoreGeometry(base64.decodebytes(JalSettings().getValue('DlgGeometry_' + self.dialog_window_name, '').encode('utf-8')))
         self._view_header.restoreState(base64.decodebytes(JalSettings().getValue('DlgViewState_' + self.dialog_window_name, '').encode('utf-8')))
 
+    @Slot()
     def onDataViewContextMenu(self, pos):
         contextMenu = QMenu(self._view)
         if self.custom_context_menu:
@@ -106,13 +109,20 @@ class ReferenceDataDialog(QDialog):
                 self.model.revertAll()
         event.accept()
 
+    @Slot()
+    def on_dialog_request(self, selected_id, position):
+        self.setGeometry(position.x(), position.y(), self.width(), self.height())
+        self.exec(enable_selection=True, selected=selected_id)
+
     # Overload ancestor method to activate/deactivate filters for table view
     def exec(self, enable_selection=False, selected=0):
         self.selection_enabled = enable_selection
-        self.setFilter()
+        self.setFilter()             # TODO Check filters, if it work correctly
         if enable_selection:
             self.locateItem(selected)
         res = super().exec()
+        if res:
+            self.selection_done.emit(self.selected_id)
         self.resetFilter()
         return res
 

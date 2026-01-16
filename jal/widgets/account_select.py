@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QDialog, QWidget, QPushButton, QComboBox, QMenu, Q
 from jal.db.db import JalModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.common_models import AccountListModel
 from jal.widgets.helpers import center_window
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
@@ -23,7 +24,7 @@ class AccountButton(QPushButton):
         self.Menu.addAction(self.tr("Any account"), self.ClearAccount)
         self.setMenu(self.Menu)
 
-        self.dialog = AccountListDialog()
+        self.dialog = AccountListDialog(self)
         self.setText(self.dialog.SelectedName)
 
     def get_id(self):
@@ -83,6 +84,9 @@ class SelectAccountDialog(QDialog):
         super().__init__()
         self.ui = Ui_SelectAccountDlg()
         self.ui.setupUi(self)
+        self._account_model = AccountListModel(self)
+        self._account_dialog = AccountListDialog(self)
+        self.ui.AccountWidget.setup_selector(self._account_model, self._account_dialog)
         self.account_id = recent_account
         self.store_account = False
         self.current_account = current_account

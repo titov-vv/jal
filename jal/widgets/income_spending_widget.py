@@ -11,7 +11,9 @@ from jal.widgets.icons import JalIcon
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import localize_decimal, db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction
+from jal.db.common_models import AccountListModel, PeerTreeModel
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
+from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -26,6 +28,12 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         super().__init__(parent=parent, ui_class=Ui_IncomeSpendingOperation)
         self.operation_type = LedgerTransaction.IncomeSpending
+        self._account_model = AccountListModel(self)
+        self._account_dialog = AccountListDialog(self)
+        self.ui.account_widget.setup_selector(self._account_model, self._account_dialog)
+        self._peer_model = PeerTreeModel(self)
+        self._peer_dialog = PeerListDialog(self)
+        self.ui.peer_widget.setup_selector(self._peer_model, self._peer_dialog)
         super()._init_db("actions")
 
         self.category_delegate = CategorySelectorDelegate()

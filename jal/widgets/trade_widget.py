@@ -1,7 +1,9 @@
 from jal.ui.widgets.ui_trade_operation import Ui_TradeOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.delegates import WidgetMapperDelegateBase
+from jal.widgets.reference_dialogs import AccountListDialog, SymbolListDialog
 from jal.db.operations import LedgerTransaction
+from jal.db.common_models import AccountListModel, SymbolsListModel
 from jal.db.helpers import now_ts
 
 
@@ -22,6 +24,12 @@ class TradeWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         super().__init__(parent=parent, ui_class=Ui_TradeOperation)
         self.operation_type = LedgerTransaction.Trade
+        self._account_model = AccountListModel(self)
+        self._account_dialog = AccountListDialog(self)
+        self.ui.account_widget.setup_selector(self._account_model, self._account_dialog)
+        self._symbols_model = SymbolsListModel(self)
+        self._symbols_dialog = SymbolListDialog(self)
+        self.ui.symbol_widget.setup_selector(self._symbols_model, self._symbols_dialog)
         super()._init_db("trades")
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.settlement_editor.setFixedWidth(self.ui.settlement_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)

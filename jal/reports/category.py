@@ -5,8 +5,10 @@ from jal.db.category import JalCategory
 from jal.reports.reports import Reports
 from jal.reports.operations_base import ReportOperationsModel
 from jal.db.operations import LedgerTransaction
+from jal.db.common_models import CategoryTreeModel
 from jal.ui.reports.ui_category_report import Ui_CategoryReportWidget
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.reference_dialogs import CategoryListDialog
 
 JAL_REPORT_CLASS = "CategoryReport"
 
@@ -50,6 +52,9 @@ class CategoryReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_CategoryReportWidget()
         self.ui.setupUi(self)
+        self._category_model = CategoryTreeModel(self)
+        self._category_dialog = CategoryListDialog(self)
+        self.ui.ReportCategoryEdit.setup_selector(self._category_model, self._category_dialog)
         self._parent = parent
 
         self.category_model = CategoryOperationsModel(self.ui.ReportTableView)

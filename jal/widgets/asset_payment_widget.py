@@ -7,6 +7,8 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction, AssetPayment
+from jal.db.common_models import AccountListModel, SymbolsListModel
+from jal.widgets.reference_dialogs import AccountListDialog, SymbolListDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -25,6 +27,12 @@ class AssetPaymentWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         super().__init__(parent=parent, ui_class=Ui_AssetPaymentOperation)
         self.operation_type = LedgerTransaction.AssetPayment
+        self._account_model = AccountListModel(self)
+        self._account_dialog = AccountListDialog(self)
+        self.ui.account_widget.setup_selector(self._account_model, self._account_dialog)
+        self._symbols_model = SymbolsListModel(self)
+        self._symbols_dialog = SymbolListDialog(self)
+        self.ui.symbol_widget.setup_selector(self._symbols_model, self._symbols_dialog)
         super()._init_db("asset_payments")
         self.combo_model = QStringListModel([self.tr("N/A"),
                                              self.tr("Dividend"),

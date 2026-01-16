@@ -1,7 +1,6 @@
-from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex
+from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex, QPoint
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QToolButton
 from PySide6.QtGui import QPalette
-import jal.widgets.reference_dialogs as ui_dialogs
 from jal.widgets.icons import JalIcon
 from jal.constants import CustomColor
 
@@ -9,6 +8,7 @@ from jal.constants import CustomColor
 #-----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceSelector(QWidget):
     changed = Signal()
+    open_dialog = Signal(int, QPoint)
 
     # If validate==True then widget will be highlighted for invalid values
     def __init__(self, parent=None, validate=True):
@@ -42,12 +42,15 @@ class AbstractReferenceSelector(QWidget):
         self.button.clicked.connect(self.on_button_clicked)
         self.clean_button.clicked.connect(self.on_clean_button_clicked)
 
-    def setModel(self, model):
+    # Sets relations of the widget:
+    # model - data model to get values from
+    # selection_dialog - is used for items selection, it must expose 'on_dialog_request' slot and emit 'selection_done' signal on completion
+    def setup_selector(self, model, selection_dialog=None):
         self._model = model
         self._model.bind_completer(self.name, self.on_completion)
-
-    def model(self):
-        return self._model
+        if selection_dialog:
+            self.open_dialog.connect(selection_dialog.on_dialog_request)
+            selection_dialog.selection_done.connect(self.on_selection)
 
     def get_id(self):
         return self.p_selected_id
@@ -76,7 +79,8 @@ class AbstractReferenceSelector(QWidget):
         self.name.setText(self._model.getValue(item_id))
 
     def setFilterValue(self, filter_value):
-        self.dialog.setFilterValue(filter_value)
+        pass
+        # self.dialog.setFilterValue(filter_value)   # FIXME - it seems to be used from one of special delegates
 
     def setValidation(self, validate):
         self._validate = validate
@@ -84,11 +88,12 @@ class AbstractReferenceSelector(QWidget):
 
     def on_button_clicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
-        self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
-        res = self.dialog.exec(enable_selection=True, selected=self.selected_id)
-        if res:
-            self.selected_id = self.dialog.selected_id
-            self.changed.emit()
+        self.open_dialog.emit(self.selected_id, ref_point)
+
+    @Slot(int)
+    def on_selection(self, selected_id):
+        self.selected_id = selected_id
+        self.changed.emit()
 
     def on_clean_button_clicked(self):
         self.selected_id = 0
@@ -113,34 +118,29 @@ class AbstractReferenceSelector(QWidget):
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.dialog = ui_dialogs.AccountListDialog()
         super().__init__(parent=parent, validate=validate)
 
 
 class SymbolSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.dialog = ui_dialogs.SymbolListDialog()
         super().__init__(parent=parent, validate=validate)
         self.details.setVisible(True)
 
     def set_labels_text(self, item_id):
         super().set_labels_text(item_id)
-        self.details.setText(self.dialog.getValueDetails(item_id))
+        self.details.setText(self._model.getValueDetails(item_id))  # FIXME - now it should be only one class ReferenceSelector for all selectors (as model is assigned externally)
 
 
 class PeerSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.dialog = ui_dialogs.PeerListDialog(parent)
         super().__init__(parent=parent, validate=validate)
 
 
 class CategorySelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.dialog = ui_dialogs.CategoryListDialog(parent)
         super().__init__(parent=parent, validate=validate)
 
 
 class TagSelector(AbstractReferenceSelector):
     def __init__(self, parent=None, validate=True):
-        self.dialog = ui_dialogs.TagsListDialog(parent)
         super().__init__(parent=parent, validate=validate)

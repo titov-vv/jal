@@ -5,8 +5,10 @@ from jal.db.peer import JalPeer
 from jal.reports.reports import Reports
 from jal.reports.operations_base import ReportOperationsModel
 from jal.db.operations import LedgerTransaction
+from jal.db.common_models import PeerTreeModel
 from jal.ui.reports.ui_peer_report import Ui_PeerReportWidget
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.reference_dialogs import PeerListDialog
 
 JAL_REPORT_CLASS = "PeerReport"
 
@@ -50,6 +52,9 @@ class PeerReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_PeerReportWidget()
         self.ui.setupUi(self)
+        self._peer_model = PeerTreeModel(self)
+        self._peer_dialog = PeerListDialog(self)
+        self.ui.ReportPeerEdit.setup_selector(self._peer_model, self._peer_dialog)
         self._parent = parent
 
         self.peer_model = PeerOperationsModel(self.ui.ReportTableView)
