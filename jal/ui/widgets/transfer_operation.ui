@@ -51,7 +51,7 @@
     </widget>
    </item>
    <item row="3" column="4">
-    <widget class="AccountSelector" name="to_account_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="to_account_widget" native="true"/>
    </item>
    <item row="7" column="0">
     <widget class="QLabel" name="note_label">
@@ -122,7 +122,7 @@
     </spacer>
    </item>
    <item row="5" column="4">
-    <widget class="AccountSelector" name="fee_account_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="fee_account_widget" native="true"/>
    </item>
    <item row="8" column="0">
     <spacer name="vertical_spacer">
@@ -187,7 +187,7 @@
     <widget class="QLineEdit" name="number"/>
    </item>
    <item row="2" column="4">
-    <widget class="AccountSelector" name="from_account_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="from_account_widget" native="true"/>
    </item>
    <item row="5" column="2" colspan="2" alignment="Qt::AlignRight">
     <widget class="QCheckBox" name="fee_check">
@@ -285,7 +285,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AccountSelector</class>
+   <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>

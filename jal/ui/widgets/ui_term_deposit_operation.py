@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (QApplication, QGridLayout, QHeaderView, QLabel,
     QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
     QTableView, QWidget)
 
-from jal.widgets.reference_selector import AccountSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_TermDepositOperation(object):
     def setupUi(self, TermDepositOperation):
@@ -69,7 +69,7 @@ class Ui_TermDepositOperation(object):
 
         self.layout.addWidget(self.main_label, 0, 0, 1, 2)
 
-        self.account_widget = AccountSelector(TermDepositOperation)
+        self.account_widget = ReferenceSelectorWidget(TermDepositOperation)
         self.account_widget.setObjectName(u"account_widget")
 
         self.layout.addWidget(self.account_widget, 2, 1, 1, 2)

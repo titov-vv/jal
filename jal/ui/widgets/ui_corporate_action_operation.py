@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDateTimeEdit, QGridLayo
     QSizePolicy, QSpacerItem, QWidget)
 
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
-from jal.widgets.reference_selector import (AccountSelector, SymbolSelector)
+from jal.widgets.reference_selector import (ReferenceSelectorWidget, SymbolSelector)
 
 class Ui_CorporateActionOperation(object):
     def setupUi(self, CorporateActionOperation):
@@ -101,7 +101,7 @@ class Ui_CorporateActionOperation(object):
 
         self.layout.addWidget(self.symbol_widget, 3, 4, 1, 1)
 
-        self.account_widget = AccountSelector(CorporateActionOperation)
+        self.account_widget = ReferenceSelectorWidget(CorporateActionOperation)
         self.account_widget.setObjectName(u"account_widget")
 
         self.layout.addWidget(self.account_widget, 2, 4, 1, 1)

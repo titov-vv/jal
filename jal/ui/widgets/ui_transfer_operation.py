@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QDateTimeEdit, QGridLayo
     QSpacerItem, QWidget)
 
 from jal.widgets.account_select import AccountCurrencyLabel
-from jal.widgets.reference_selector import (AccountSelector, SymbolSelector)
+from jal.widgets.reference_selector import (ReferenceSelectorWidget, SymbolSelector)
 
 class Ui_TransferOperation(object):
     def setupUi(self, TransferOperation):
@@ -46,7 +46,7 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.from_account_label, 2, 0, 1, 1)
 
-        self.to_account_widget = AccountSelector(TransferOperation)
+        self.to_account_widget = ReferenceSelectorWidget(TransferOperation)
         self.to_account_widget.setObjectName(u"to_account_widget")
 
         self.layout.addWidget(self.to_account_widget, 3, 4, 1, 1)
@@ -87,7 +87,7 @@ class Ui_TransferOperation(object):
 
         self.layout.addItem(self.horizontal_spacer, 1, 10, 1, 1)
 
-        self.fee_account_widget = AccountSelector(TransferOperation)
+        self.fee_account_widget = ReferenceSelectorWidget(TransferOperation)
         self.fee_account_widget.setObjectName(u"fee_account_widget")
 
         self.layout.addWidget(self.fee_account_widget, 5, 4, 1, 1)
@@ -130,7 +130,7 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.number, 1, 9, 1, 1)
 
-        self.from_account_widget = AccountSelector(TransferOperation)
+        self.from_account_widget = ReferenceSelectorWidget(TransferOperation)
         self.from_account_widget.setObjectName(u"from_account_widget")
 
         self.layout.addWidget(self.from_account_widget, 2, 4, 1, 1)

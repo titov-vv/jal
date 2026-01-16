@@ -87,7 +87,7 @@
     </widget>
    </item>
    <item row="1" column="5">
-    <widget class="AccountSelector" name="account_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="account_widget" native="true"/>
    </item>
    <item row="2" column="6">
     <widget class="QLabel" name="note_label">
@@ -215,7 +215,7 @@
    <header>jal/widgets/custom/tableview_with_footer.h</header>
   </customwidget>
   <customwidget>
-   <class>AccountSelector</class>
+   <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>
