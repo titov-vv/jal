@@ -244,7 +244,7 @@
     </widget>
    </item>
    <item row="2" column="9">
-    <widget class="SymbolSelector" name="symbol_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="symbol_widget" native="true"/>
    </item>
    <item row="5" column="9">
     <widget class="QCheckBox" name="asset_check">
@@ -286,12 +286,6 @@
  <customwidgets>
   <customwidget>
    <class>ReferenceSelectorWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/reference_selector.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SymbolSelector</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>

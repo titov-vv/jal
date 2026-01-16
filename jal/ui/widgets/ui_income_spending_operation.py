@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (QApplication, QDateTimeEdit, QGridLayout, QHeader
 
 from jal.widgets.account_select import (AccountCurrencyLabel, OptionalCurrencyComboBox)
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
-from jal.widgets.reference_selector import (PeerSelector, ReferenceSelectorWidget)
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_IncomeSpendingOperation(object):
     def setupUi(self, IncomeSpendingOperation):
@@ -113,7 +113,7 @@ class Ui_IncomeSpendingOperation(object):
 
         self.layout.addWidget(self.revert_button, 0, 10, 1, 1)
 
-        self.peer_widget = PeerSelector(IncomeSpendingOperation)
+        self.peer_widget = ReferenceSelectorWidget(IncomeSpendingOperation)
         self.peer_widget.setObjectName(u"peer_widget")
 
         self.layout.addWidget(self.peer_widget, 2, 5, 1, 1)

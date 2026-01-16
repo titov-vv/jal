@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDateEdit, QDateTimeEdit
     QSizePolicy, QSpacerItem, QWidget)
 
 from jal.widgets.account_select import AccountCurrencyLabel
-from jal.widgets.reference_selector import (ReferenceSelectorWidget, SymbolSelector)
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_AssetPaymentOperation(object):
     def setupUi(self, AssetPaymentOperation):
@@ -123,7 +123,7 @@ class Ui_AssetPaymentOperation(object):
 
         self.layout.addWidget(self.account_widget, 2, 1, 1, 4)
 
-        self.symbol_widget = SymbolSelector(AssetPaymentOperation)
+        self.symbol_widget = ReferenceSelectorWidget(AssetPaymentOperation)
         self.symbol_widget.setObjectName(u"symbol_widget")
 
         self.layout.addWidget(self.symbol_widget, 3, 1, 1, 4)

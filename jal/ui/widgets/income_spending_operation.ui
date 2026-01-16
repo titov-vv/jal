@@ -165,7 +165,7 @@
     </widget>
    </item>
    <item row="2" column="5">
-    <widget class="PeerSelector" name="peer_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="peer_widget" native="true"/>
    </item>
    <item row="3" column="0" colspan="11">
     <widget class="TableViewWithFooter" name="details_table">
@@ -216,12 +216,6 @@
   </customwidget>
   <customwidget>
    <class>ReferenceSelectorWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/reference_selector.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PeerSelector</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>
