@@ -60,7 +60,7 @@
        <number>6</number>
       </property>
       <item row="0" column="2">
-       <widget class="TagSelector" name="ReportTagEdit" native="true"/>
+       <widget class="ReferenceSelectorWidget" name="ReportTagEdit" native="true"/>
       </item>
       <item row="0" column="0">
        <widget class="DateRangeSelector" name="ReportRange">
@@ -178,7 +178,7 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>TagSelector</class>
+   <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>

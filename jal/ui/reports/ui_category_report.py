@@ -23,7 +23,7 @@ from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.date_range_selector import DateRangeSelector
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.operations_tabs import JalOperationsTabs
-from jal.widgets.reference_selector import CategorySelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_CategoryReportWidget(object):
     def setupUi(self, CategoryReportWidget):
@@ -46,7 +46,7 @@ class Ui_CategoryReportWidget(object):
 
         self.gridLayout.addItem(self.ReportFrameSpacer, 0, 5, 1, 1)
 
-        self.ReportCategoryEdit = CategorySelector(self.ReportParamsFrame)
+        self.ReportCategoryEdit = ReferenceSelectorWidget(self.ReportParamsFrame)
         self.ReportCategoryEdit.setObjectName(u"ReportCategoryEdit")
 
         self.gridLayout.addWidget(self.ReportCategoryEdit, 0, 2, 1, 1)

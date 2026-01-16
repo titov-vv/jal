@@ -5266,7 +5266,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="60"/>
         <source>Assets</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ЦБ</translation>
     </message>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="77"/>

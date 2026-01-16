@@ -23,7 +23,7 @@ from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.date_range_selector import DateRangeSelector
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.operations_tabs import JalOperationsTabs
-from jal.widgets.reference_selector import TagSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_TagReportWidget(object):
     def setupUi(self, TagReportWidget):
@@ -47,7 +47,7 @@ class Ui_TagReportWidget(object):
         self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.ReportTagEdit = TagSelector(self.ReportParamsFrame)
+        self.ReportTagEdit = ReferenceSelectorWidget(self.ReportParamsFrame)
         self.ReportTagEdit.setObjectName(u"ReportTagEdit")
 
         self.gridLayout.addWidget(self.ReportTagEdit, 0, 2, 1, 1)

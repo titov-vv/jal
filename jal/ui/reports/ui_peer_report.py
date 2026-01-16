@@ -23,7 +23,7 @@ from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.date_range_selector import DateRangeSelector
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.operations_tabs import JalOperationsTabs
-from jal.widgets.reference_selector import PeerSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_PeerReportWidget(object):
     def setupUi(self, PeerReportWidget):
@@ -47,7 +47,7 @@ class Ui_PeerReportWidget(object):
         self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.ReportPeerEdit = PeerSelector(self.ReportParamsFrame)
+        self.ReportPeerEdit = ReferenceSelectorWidget(self.ReportParamsFrame)
         self.ReportPeerEdit.setObjectName(u"ReportPeerEdit")
 
         self.gridLayout.addWidget(self.ReportPeerEdit, 0, 2, 1, 1)
