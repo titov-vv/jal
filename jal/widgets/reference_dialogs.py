@@ -8,7 +8,7 @@ from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
-from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel, AbstractReferenceListReadOnlyModel
+from jal.db.common_models_abstract import AbstractReferenceListModel, SqlTreeModel, AbstractReferenceListReadOnlyModel
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate, \
     SymbolSelectorDelegate, ConstantLookupDelegate, TagSelectorDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
