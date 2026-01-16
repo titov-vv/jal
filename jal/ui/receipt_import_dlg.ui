@@ -253,7 +253,7 @@
        </widget>
       </item>
       <item row="3" column="3">
-       <widget class="PeerSelector" name="PeerEdit" native="true"/>
+       <widget class="ReferenceSelectorWidget" name="PeerEdit" native="true"/>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="PeerLbl">
@@ -287,7 +287,7 @@
        </widget>
       </item>
       <item row="2" column="3">
-       <widget class="AccountSelector" name="AccountEdit" native="true"/>
+       <widget class="ReferenceSelectorWidget" name="AccountEdit" native="true"/>
       </item>
       <item row="4" column="1" colspan="4">
        <widget class="QTableView" name="LinesTableView">
@@ -374,13 +374,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AccountSelector</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/reference_selector.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PeerSelector</class>
+   <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>

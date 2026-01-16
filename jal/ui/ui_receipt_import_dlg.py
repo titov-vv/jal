@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDateTimeEdit, QDialog,
     QSizePolicy, QSpacerItem, QTableView, QVBoxLayout,
     QWidget)
 
-from jal.widgets.reference_selector import (AccountSelector, PeerSelector)
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_ImportShopReceiptDlg(object):
     def setupUi(self, ImportShopReceiptDlg):
@@ -141,7 +141,7 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.gridLayout.addWidget(self.CorrespondenceLbl, 3, 2, 1, 1)
 
-        self.PeerEdit = PeerSelector(self.ReceiptGroup)
+        self.PeerEdit = ReferenceSelectorWidget(self.ReceiptGroup)
         self.PeerEdit.setObjectName(u"PeerEdit")
 
         self.gridLayout.addWidget(self.PeerEdit, 3, 3, 1, 1)
@@ -168,7 +168,7 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.gridLayout.addWidget(self.AccountLbl, 1, 3, 1, 1)
 
-        self.AccountEdit = AccountSelector(self.ReceiptGroup)
+        self.AccountEdit = ReferenceSelectorWidget(self.ReceiptGroup)
         self.AccountEdit.setObjectName(u"AccountEdit")
 
         self.gridLayout.addWidget(self.AccountEdit, 2, 3, 1, 1)
