@@ -77,6 +77,12 @@ class ReferenceSelectorWidget(QWidget):
     def set_labels_text(self, item_id):
         assert not self._model is None, f"Model is not set for {self.__class__.__name__}"
         self.name.setText(self._model.getValue(item_id))
+        details_text = self._model.getValueDetails(item_id)
+        if details_text:
+            self.details.setVisible(True)
+            self.details.setText(details_text)
+        else:
+            self.details.setVisible(False)
 
     def setFilterValue(self, filter_value):
         pass
@@ -124,11 +130,6 @@ class AccountSelector(ReferenceSelectorWidget):
 class SymbolSelector(ReferenceSelectorWidget):
     def __init__(self, parent=None, validate=True):
         super().__init__(parent=parent, validate=validate)
-        self.details.setVisible(True)
-
-    def set_labels_text(self, item_id):
-        super().set_labels_text(item_id)
-        self.details.setText(self._model.getValueDetails(item_id))  # FIXME - now it should be only one class ReferenceSelector for all selectors (as model is assigned externally)
 
 
 class PeerSelector(ReferenceSelectorWidget):

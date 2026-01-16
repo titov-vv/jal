@@ -86,10 +86,7 @@ class SymbolsListModel(AbstractReferenceListReadOnlyModel):
                    ("full_name", self.tr("Name")),
                    ("icon", '')]
         super().__init__(table="symbols_ext", parent_view=parent_view, columns=columns, default="symbol", sort="symbol", hide=["id", "type_id"],
-                         group="type_id", stretch="full_name")
-
-    def getValueDetails(self, item_id) -> str:
-        return self.getFieldValue(item_id, "full_name")
+                         group="type_id", stretch="full_name", details="full_name")
 
     def configureView(self):
         super().configureView()

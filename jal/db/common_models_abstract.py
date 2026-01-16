@@ -18,6 +18,7 @@ class BaseReferenceModelMixin:
         self._sort_by = kwargs.get('sort', None)
         self._group_by = kwargs.get('group', None)
         self._stretch = kwargs.get('stretch', None)
+        self._details_field = kwargs.get('details', None)
         self._default_name = kwargs.get('default', "name")
         self._default_values = {}
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
@@ -54,6 +55,12 @@ class BaseReferenceModelMixin:
 
     def getValue(self, item_id):
         return self.getFieldValue(item_id, self._default_name)
+
+    def getValueDetails(self, item_id) -> str:
+        if self._details_field:
+            return self.getFieldValue(item_id, self._details_field)
+        else:
+            return ''
 
     def headerData(self, section, orientation=Qt.Horizontal, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
