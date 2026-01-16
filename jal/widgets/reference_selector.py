@@ -6,7 +6,7 @@ from jal.constants import CustomColor
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-class AbstractReferenceSelector(QWidget):
+class ReferenceSelectorWidget(QWidget):
     changed = Signal()
     open_dialog = Signal(int, QPoint)
 
@@ -116,12 +116,12 @@ class AbstractReferenceSelector(QWidget):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class AccountSelector(AbstractReferenceSelector):
+class AccountSelector(ReferenceSelectorWidget):
     def __init__(self, parent=None, validate=True):
         super().__init__(parent=parent, validate=validate)
 
 
-class SymbolSelector(AbstractReferenceSelector):
+class SymbolSelector(ReferenceSelectorWidget):
     def __init__(self, parent=None, validate=True):
         super().__init__(parent=parent, validate=validate)
         self.details.setVisible(True)
@@ -131,16 +131,16 @@ class SymbolSelector(AbstractReferenceSelector):
         self.details.setText(self._model.getValueDetails(item_id))  # FIXME - now it should be only one class ReferenceSelector for all selectors (as model is assigned externally)
 
 
-class PeerSelector(AbstractReferenceSelector):
+class PeerSelector(ReferenceSelectorWidget):
     def __init__(self, parent=None, validate=True):
         super().__init__(parent=parent, validate=validate)
 
 
-class CategorySelector(AbstractReferenceSelector):
+class CategorySelector(ReferenceSelectorWidget):
     def __init__(self, parent=None, validate=True):
         super().__init__(parent=parent, validate=validate)
 
 
-class TagSelector(AbstractReferenceSelector):
+class TagSelector(ReferenceSelectorWidget):
     def __init__(self, parent=None, validate=True):
         super().__init__(parent=parent, validate=validate)
