@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTime
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime, QTimeZone
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor, Setup
-from jal.widgets.reference_selector import SymbolSelector, PeerSelector, CategorySelector, TagSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.db.db import JalModel
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
@@ -292,7 +292,7 @@ class LookupSelectorDelegate(QStyledItemDelegate):
             return item_name
 
     def createSelector(self, parent) -> None:
-        raise NotImplementedError("Method createSelector() isn't defined")
+        self._selector = ReferenceSelectorWidget(parent, validate=False)
 
     def createEditor(self, aParent, option, index):
         self.createSelector(aParent)
@@ -316,7 +316,7 @@ class CategorySelectorDelegate(LookupSelectorDelegate):
         self._field = "name"
 
     def createSelector(self, parent) -> None:
-        self._selector = CategorySelector(parent, validate=False)
+        super().createSelector(parent)
         self._selector_model = CategoryTreeModel(parent)
         self._selector_dialog = CategoryListDialog(parent)
         self._selector.setup_selector(self._selector_model, self._selector_dialog)
@@ -329,7 +329,7 @@ class TagSelectorDelegate(LookupSelectorDelegate):
         self._field = "tag"
 
     def createSelector(self, parent) -> None:
-        self._selector = TagSelector(parent, validate=False)
+        super().createSelector(parent)
         self._selector_model = TagTreeModel(parent)
         self._selector_dialog = TagsListDialog(parent)
         self._selector.setup_selector(self._selector_model, self._selector_dialog)
@@ -342,7 +342,7 @@ class PeerSelectorDelegate(LookupSelectorDelegate):
         self._field = "name"
 
     def createSelector(self, parent) -> None:
-        self._selector = PeerSelector(parent, validate=False)
+        super().createSelector(parent)
         self._selector_model = PeerTreeModel(parent)
         self._selector_dialog = PeerListDialog(parent)
         self._selector.setup_selector(self._selector_model, self._selector_dialog)
@@ -355,7 +355,7 @@ class SymbolSelectorDelegate(LookupSelectorDelegate):
         self._field = "symbol"
 
     def createSelector(self, parent) -> None:
-        self._selector = SymbolSelector(parent, validate=False)
+        super().createSelector(parent)
         self._selector_model = SymbolsListModel(parent)
         self._selector_dialog = SymbolListDialog(parent)
         self._selector.setup_selector(self._selector_model, self._selector_dialog)
