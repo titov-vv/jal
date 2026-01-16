@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QFrame,
 
 from jal.constants import AssetTypeComboBox
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
-from jal.widgets.reference_selector import SymbolSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_AssetDialog(object):
     def setupUi(self, AssetDialog):
@@ -186,7 +186,7 @@ class Ui_AssetDialog(object):
 
         self.gridLayout.addWidget(self.isinLbl, 1, 0, 1, 1)
 
-        self.BaseSymbolSelector = SymbolSelector(AssetDialog)
+        self.BaseSymbolSelector = ReferenceSelectorWidget(AssetDialog)
         self.BaseSymbolSelector.setObjectName(u"BaseSymbolSelector")
 
         self.gridLayout.addWidget(self.BaseSymbolSelector, 2, 1, 1, 1)

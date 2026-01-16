@@ -125,8 +125,3 @@ class ReferenceSelectorWidget(QWidget):
 class AccountSelector(ReferenceSelectorWidget):
     def __init__(self, parent=None, validate=True):
         super().__init__(parent=parent, validate=validate)
-
-
-class SymbolSelector(ReferenceSelectorWidget):
-    def __init__(self, parent=None, validate=True):
-        super().__init__(parent=parent, validate=validate)
