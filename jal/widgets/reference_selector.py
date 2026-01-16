@@ -16,6 +16,7 @@ class AbstractReferenceSelector(QWidget):
         self.completer = None
         self.p_selected_id = 0
         self._validate = validate
+        self._model = None
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -40,7 +41,13 @@ class AbstractReferenceSelector(QWidget):
 
         self.button.clicked.connect(self.on_button_clicked)
         self.clean_button.clicked.connect(self.on_clean_button_clicked)
-        self.dialog.model.bind_completer(self.name, self.on_completion)
+
+    def setModel(self, model):
+        self._model = model
+        self._model.bind_completer(self.name, self.on_completion)
+
+    def model(self):
+        return self._model
 
     def get_id(self):
         return self.p_selected_id
@@ -65,7 +72,8 @@ class AbstractReferenceSelector(QWidget):
     selected_id_str = Property(str, get_str_id, set_str_id, notify=changed)  # workaround for QTBUG-115144
 
     def set_labels_text(self, item_id):
-        self.name.setText(self.dialog.model.getValue(item_id))
+        assert not self._model is None, f"Model is not set for {self.__class__.__name__}"
+        self.name.setText(self._model.getValue(item_id))
 
     def setFilterValue(self, filter_value):
         self.dialog.setFilterValue(filter_value)

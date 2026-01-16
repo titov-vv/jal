@@ -21,7 +21,7 @@ class AccountListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Accounts"))
         self.table = "accounts"
-        self.model = AccountListModel(table=self.table, parent_view=self.ui.DataView)
+        self.model = AccountListModel(parent_view=self.ui.DataView)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -58,7 +58,7 @@ class SymbolListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Assets"))
         self.table = "symbols_ext"
-        self.model = SymbolsListModel(self.table, self.ui.DataView)
+        self.model = SymbolsListModel(parent_view=self.ui.DataView)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -100,7 +100,7 @@ class PeerListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Peers"))
         self.table = "agents"
-        self.model = PeerTreeModel(self.table, self.ui.TreeView)
+        self.model = PeerTreeModel(parent_view=self.ui.TreeView)
         self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -155,7 +155,7 @@ class CategoryListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Categories"))
         self.table = "categories"
-        self.model = CategoryTreeModel(self.table, self.ui.TreeView)
+        self.model = CategoryTreeModel(parent_view=self.ui.TreeView)
         self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -206,7 +206,7 @@ class TagsListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent, window_title=self.tr("Tags"))
         self.table = "tags"
-        self.model = TagTreeModel(self.table, self.ui.TreeView)
+        self.model = TagTreeModel(parent_view=self.ui.TreeView)
         self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -258,7 +258,7 @@ class QuotesListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent, window_title=self.tr("Quotes"))
         self.table = "quotes"
-        self.model = QuotesListModel(self.table, self.ui.DataView)
+        self.model = QuotesListModel(parent_view=self.ui.DataView)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -273,9 +273,9 @@ class QuotesListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class BaseCurrencyDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
-        super().__init__(None, window_title=self.tr("Base currency"))
+        super().__init__(parent, window_title=self.tr("Base currency"))
         self.table = "base_currency"
-        self.model = BaseCurrencyListModel(self.table, self.ui.DataView)
+        self.model = BaseCurrencyListModel(parent_view=self.ui.DataView)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
