@@ -140,8 +140,3 @@ class PeerSelector(ReferenceSelectorWidget):
 class CategorySelector(ReferenceSelectorWidget):
     def __init__(self, parent=None, validate=True):
         super().__init__(parent=parent, validate=validate)
-
-
-class TagSelector(ReferenceSelectorWidget):
-    def __init__(self, parent=None, validate=True):
-        super().__init__(parent=parent, validate=validate)

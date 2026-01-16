@@ -13,7 +13,7 @@ from jal.db.common_models import SymbolsListModel, TagTreeModel
 from jal.db.tag import JalTag
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_dialogs import SymbolListDialog
-from jal.widgets.reference_selector import TagSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 
 class AssetsListModel(AbstractReferenceListModel):
@@ -237,7 +237,7 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
                 editor.setTimeSpec(Qt.UTC)
                 editor.setDisplayFormat("dd/MM/yyyy")
             elif self.types.get_type(type_idx) == "tag":
-                editor = TagSelector(aParent)
+                editor = ReferenceSelectorWidget(aParent)
                 editor.setModel(TagTreeModel())   # FIXME: wrong call signature
             else:
                 assert False, f"Unknown data type '{self.types.get_type(type_idx)}' in DataDelegate.createEditor()"

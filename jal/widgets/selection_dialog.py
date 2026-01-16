@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.ui.ui_select_reference_dlg import Ui_SelectReferenceDlg
 from jal.widgets.helpers import center_window
 from jal.db.common_models import PeerTreeModel, CategoryTreeModel, TagTreeModel
-from jal.widgets.reference_selector import PeerSelector, CategorySelector, TagSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 from widgets.reference_dialogs import PeerListDialog, CategoryListDialog, TagsListDialog
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ class SelectReferenceDialog(QDialog):
 class SelectPeerDialog(SelectReferenceDialog):
     def __init__(self, description, default_peer=0):
         super().__init__(title=self.tr("Please select peer"), description=description)
-        self.PeerWidget = PeerSelector(self.ui.SelectorFrame)
+        self.PeerWidget = ReferenceSelectorWidget(self.ui.SelectorFrame)
         self._peer_model = PeerTreeModel(self)
         self._peer_dialog = PeerListDialog(self)
         self.PeerWidget.setup_selector(self._peer_model, self._peer_dialog)
@@ -53,7 +53,7 @@ class SelectPeerDialog(SelectReferenceDialog):
 class SelectCategoryDialog(SelectReferenceDialog):
     def __init__(self, parent=None, description='', default_category=0):
         super().__init__(parent, title=self.tr("Please select category"), description=description)
-        self.CategoryWidget = CategorySelector(self.ui.SelectorFrame)
+        self.CategoryWidget = ReferenceSelectorWidget(self.ui.SelectorFrame)
         self._category_model = CategoryTreeModel(self)
         self._category_dialog = CategoryListDialog(self)
         self.CategoryWidget.setup_selector(self._category_model, self._category_dialog)
@@ -72,7 +72,7 @@ class SelectCategoryDialog(SelectReferenceDialog):
 class SelectTagDialog(SelectReferenceDialog):
     def __init__(self, parent=None, description='', default_tag=0):
         super().__init__(parent, title=self.tr("Please select tag"), description=description)
-        self.TagWidget = TagSelector(self.ui.SelectorFrame)
+        self.TagWidget = ReferenceSelectorWidget(self.ui.SelectorFrame)
         self._tag_model = TagTreeModel(self)
         self._tag_dialog = TagsListDialog(self)
         self.TagWidget.setup_selector(self._tag_model, self._tag_dialog)

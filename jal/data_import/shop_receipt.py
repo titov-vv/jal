@@ -3,7 +3,7 @@ import pandas as pd
 from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDateTime, QDate, QTime, QLocale
 from PySide6.QtWidgets import QDialog, QHeaderView, QStyledItemDelegate, QLineEdit, QComboBox
-from jal.widgets.reference_selector import CategorySelector, TagSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.delegates import DateTimeEditWithReset
 from jal.constants import CustomColor
 from jal.widgets.helpers import dependency_present
@@ -104,13 +104,13 @@ class SlipLinesDelegate(QStyledItemDelegate):
 
     def createEditor(self, aParent, option, index):
         if index.column() == 1:
-            self._category_selector = CategorySelector(aParent, validate=False)
+            self._category_selector = ReferenceSelectorWidget(aParent, validate=False)
             self._category_model = CategoryTreeModel(aParent)
             self._category_dialog = CategoryListDialog(aParent)
             self._category_selector.setup_selector(self._category_model, self._category_dialog)
             return self._category_selector
         if index.column() == 3:
-            self._tag_selector = TagSelector(aParent, validate=False)
+            self._tag_selector = ReferenceSelectorWidget(aParent, validate=False)
             self._tag_model = TagTreeModel(aParent)
             self._tag_dialog = TagsListDialog(aParent)
             self._tag_selector.setup_selector(self._tag_model, self._tag_dialog)
