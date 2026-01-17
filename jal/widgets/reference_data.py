@@ -1,5 +1,5 @@
 import base64
-from PySide6.QtCore import Qt, Signal, Property, Slot
+from PySide6.QtCore import Qt, Signal, Property, Slot, QPoint
 from PySide6.QtWidgets import QDialog, QMessageBox, QMenu
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.icons import JalIcon
@@ -109,8 +109,8 @@ class ReferenceDataDialog(QDialog):
                 self.model.revertAll()
         event.accept()
 
-    @Slot()
-    def on_dialog_request(self, selected_id, position):
+    @Slot(int, QPoint)
+    def dialog_requested(self, selected_id: int, position: QPoint):
         self.setGeometry(position.x(), position.y(), self.width(), self.height())
         self.exec(enable_selection=True, selected=selected_id)
 

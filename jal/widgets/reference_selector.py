@@ -45,12 +45,11 @@ class ReferenceSelectorWidget(QWidget):
     # Sets relations of the widget:
     # model - data model to get values from
     # selection_dialog - is used for items selection, it must expose 'on_dialog_request' slot and emit 'selection_done' signal on completion
-    def setup_selector(self, model, selection_dialog=None):
+    def setup_selector(self, model, selection_dialog):
         self._model = model
         self._model.bind_completer(self.name, self.on_completion)
-        if selection_dialog:
-            self.open_dialog.connect(selection_dialog.on_dialog_request)
-            selection_dialog.selection_done.connect(self.on_selection)
+        self.open_dialog.connect(selection_dialog.dialog_requested)
+        selection_dialog.selection_done.connect(self.selection_done)
 
     def get_id(self):
         return self.p_selected_id
@@ -97,7 +96,7 @@ class ReferenceSelectorWidget(QWidget):
         self.open_dialog.emit(self.selected_id, ref_point)
 
     @Slot(int)
-    def on_selection(self, selected_id):
+    def selection_done(self, selected_id):
         self.selected_id = selected_id
         self.changed.emit()
 
