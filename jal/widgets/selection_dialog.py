@@ -2,14 +2,12 @@ from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.ui.ui_select_reference_dlg import Ui_SelectReferenceDlg
 from jal.widgets.helpers import center_window
-from jal.db.common_models import PeerTreeModel, CategoryTreeModel, TagTreeModel
 from jal.widgets.reference_selector import ReferenceSelectorWidget
-from widgets.reference_dialogs import PeerListDialog, CategoryListDialog, TagsListDialog
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Common base GUI dialog class for selector dialogs. Takes window title and label comment to describe selection
 class SelectReferenceDialog(QDialog):
-    def __init__(self, parent=None, title='', description=''):
+    def __init__(self, parent=None, title='', description='', model=None, dialog=None):
         super().__init__(parent=parent)
         self.ui = Ui_SelectReferenceDlg()
         self.ui.setupUi(self)
@@ -17,69 +15,19 @@ class SelectReferenceDialog(QDialog):
         self.setWindowTitle(title)
         self.ui.DescriptionLabel.setText(description)
         center_window(self)
+        self._selection_widget_model = model
+        self._selection_widget_dialog = dialog
+        self._selection_widget = ReferenceSelectorWidget(self.ui.SelectorFrame)
+        self._selection_widget.setup_selector(self._selection_widget_model, self._selection_widget_dialog)
+        self.ui.FrameLayout.addWidget(self._selection_widget)
+        self._selection_widget.selected_id = self.selected_id = 0
 
     @Slot()
     def closeEvent(self, event):
+        self.selected_id = self._selection_widget.selected_id
         if self.selected_id == 0:
             QMessageBox().warning(None, self.tr("No selection"), self.tr("You should select something"), QMessageBox.Ok)
             event.ignore()
             return
         self.setResult(QDialog.Accepted)
         event.accept()
-
-
-#-----------------------------------------------------------------------------------------------------------------------
-# Dialog for peer selection
-# Constructor takes description to show and default_peer for initial choice
-class SelectPeerDialog(SelectReferenceDialog):
-    def __init__(self, description, default_peer=0):
-        super().__init__(title=self.tr("Please select peer"), description=description)
-        self.PeerWidget = ReferenceSelectorWidget(self.ui.SelectorFrame)
-        self._peer_model = PeerTreeModel(self)
-        self._peer_dialog = PeerListDialog(self)
-        self.PeerWidget.setup_selector(self._peer_model, self._peer_dialog)
-        self.ui.FrameLayout.addWidget(self.PeerWidget)
-        self.PeerWidget.selected_id = self.selected_id = default_peer
-
-    @Slot()
-    def closeEvent(self, event):
-        self.selected_id = self.PeerWidget.selected_id
-        super().closeEvent(event)
-        
-        
-#-----------------------------------------------------------------------------------------------------------------------
-# Dialog for category selection
-# Constructor takes description to show and default_category for initial choice
-class SelectCategoryDialog(SelectReferenceDialog):
-    def __init__(self, parent=None, description='', default_category=0):
-        super().__init__(parent, title=self.tr("Please select category"), description=description)
-        self.CategoryWidget = ReferenceSelectorWidget(self.ui.SelectorFrame)
-        self._category_model = CategoryTreeModel(self)
-        self._category_dialog = CategoryListDialog(self)
-        self.CategoryWidget.setup_selector(self._category_model, self._category_dialog)
-        self.ui.FrameLayout.addWidget(self.CategoryWidget)
-        self.CategoryWidget.selected_id = self.selected_id = default_category
-
-    @Slot()
-    def closeEvent(self, event):
-        self.selected_id = self.CategoryWidget.selected_id
-        super().closeEvent(event)
-
-
-#-----------------------------------------------------------------------------------------------------------------------
-# Dialog for tag selection
-# Constructor takes description to show and default_tag for initial choice
-class SelectTagDialog(SelectReferenceDialog):
-    def __init__(self, parent=None, description='', default_tag=0):
-        super().__init__(parent, title=self.tr("Please select tag"), description=description)
-        self.TagWidget = ReferenceSelectorWidget(self.ui.SelectorFrame)
-        self._tag_model = TagTreeModel(self)
-        self._tag_dialog = TagsListDialog(self)
-        self.TagWidget.setup_selector(self._tag_model, self._tag_dialog)
-        self.ui.FrameLayout.addWidget(self.TagWidget)
-        self.TagWidget.selected_id = self.selected_id = default_tag
-
-    @Slot()
-    def closeEvent(self, event):
-        self.selected_id = self.TagWidget.selected_id
-        super().closeEvent(event)

@@ -9,9 +9,11 @@ from jal.db.asset import JalAsset
 from jal.db.holdings_model import HoldingsModel
 from jal.widgets.mdi import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
+from db.common_models import TagTreeModel
 from jal.widgets.icons import JalIcon
 from jal.widgets.price_chart import ChartWindow
-from jal.widgets.selection_dialog import SelectTagDialog
+from jal.widgets.selection_dialog import SelectReferenceDialog
+from jal.widgets.reference_dialogs import TagsListDialog
 
 JAL_REPORT_CLASS = "AssetPortfolioReport"
 
@@ -118,8 +120,11 @@ class PortfolioReportWindow(MdiWidget):
         model = index.model()
         account, asset_id, currency, asset_qty = model.get_data_for_tax(index)
         asset = JalAsset(asset_id)
-        dialog = SelectTagDialog(
-            parent=self, description=self.tr("Select tag for {} ({}): ").format(asset.symbol(currency),asset.name()))
+        tag_model = TagTreeModel(self)
+        tag_dialog = TagsListDialog(self)
+        dialog = SelectReferenceDialog(self, self.tr("Please select tag"),
+                                       self.tr("Select tag for {} ({}): ").format(asset.symbol(currency),asset.name()),
+                                       tag_model, tag_dialog)
         if dialog.exec() != QDialog.Accepted:
             return
         asset.set_tag(dialog.selected_id)

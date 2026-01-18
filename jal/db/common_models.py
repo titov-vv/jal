@@ -6,7 +6,8 @@ from db.category import JalCategory
 from db.common_models_abstract import AbstractReferenceListModel, AbstractReferenceListReadOnlyModel, SqlTreeModel
 from db.peer import JalPeer
 from db.tag import JalTag
-from widgets.icons import JalIcon
+from jal.widgets.icons import JalIcon
+# from jal.widgets.delegates import PeerSelectorDelegate, TimestampDelegate, BoolDelegate, TagSelectorDelegate, FloatDelegate
 
 # FIXME Review and re-enable delegates
 # FIXME Implement SymbolsListModel
@@ -28,10 +29,10 @@ class AccountListModel(AbstractReferenceListModel):
         super().__init__(table="accounts", parent_view=parent_view, columns=columns, sort="name", hide=["id"], group="tag_id", stretch="name")
         self.set_default_values({'active': 1, 'reconciled_on': 0, 'country_id': 0, 'precision': 2, 'credit': '0'})
         self._lookup_delegate = None
-        self._peer_delegate = None
+        # self._peer_delegate = None
         self._timestamp_delegate = None
-        self._bool_delegate = None
-        self._tag_delegate = None
+        # self._bool_delegate = None
+        # self._tag_delegate = None
         self._float_delegate = None
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
@@ -61,6 +62,7 @@ class AccountListModel(AbstractReferenceListModel):
         # self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
         # self._view.setItemDelegateForColumn(self.fieldIndex("investing"), self._bool_delegate)
         # self._tag_delegate = TagSelectorDelegate(self._view)
+        self._view.parent().set_tag_delegate(self.fieldIndex("tag_id"))
         # self._view.setItemDelegateForColumn(self.fieldIndex("tag_id"), self._tag_delegate)
         # self._float_delegate = FloatDelegate(2, parent=self._view)
         # self._view.setItemDelegateForColumn(self.fieldIndex("credit"), self._float_delegate)

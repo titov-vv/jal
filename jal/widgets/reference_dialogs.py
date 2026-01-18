@@ -11,10 +11,11 @@ from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
 from jal.widgets.reference_data import ReferenceDataDialog
-# FIXME: re-enable this imports and related functions.
+# FIXME: re-enable AssetDialog import
 # from jal.widgets.asset_dialog import AssetDialog
-# from jal.widgets.selection_dialog import SelectPeerDialog, SelectCategoryDialog, SelectTagDialog
+from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.icons import JalIcon
+from jal.widgets.delegates import LookupSelectorDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -22,6 +23,9 @@ class AccountListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Accounts"))
         self.table = "accounts"
+        self._tag_model = TagTreeModel(self)
+        self._tag_dialog = TagsListDialog(self)
+        self._tag_delegate = LookupSelectorDelegate(self, self._tag_model, self._tag_dialog)
         self.model = AccountListModel(parent_view=self.ui.DataView)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
@@ -52,6 +56,9 @@ class AccountListDialog(ReferenceDataDialog):
         self.ui.GroupCombo.setCurrentIndex(type_id-1)
         item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
         self.ui.DataView.setCurrentIndex(item_idx)
+
+    def set_tag_delegate(self, column):
+        self.ui.DataView.setItemDelegateForColumn(column, self._tag_delegate)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -135,7 +142,11 @@ class PeerListDialog(ReferenceDataDialog):
 
     @Slot()
     def replacePeer(self):
-        # dialog = SelectPeerDialog(self.tr("Replace peer '") + self._menu_peer_name + self.tr("' with: "))
+        peer_model = PeerTreeModel(self)
+        peer_dialog = PeerListDialog(self)
+        dialog = SelectReferenceDialog(self, self.tr("Please select peer"),
+                                       self.tr("Replace peer '") + self._menu_peer_name + self.tr("' with: "),
+                                       peer_model, peer_dialog)
         if dialog.exec() != QDialog.Accepted:
             return
         reply = QMessageBox().warning(self, '', self.tr("Keep old name in notes?"), QMessageBox.Yes, QMessageBox.No)
@@ -190,8 +201,11 @@ class CategoryListDialog(ReferenceDataDialog):
 
     @Slot()
     def replaceCategory(self):
-        # dialog = SelectCategoryDialog(parent=self,
-        #                               description=self.tr("Replace category '") + self._menu_category_name + self.tr("' with: "))
+        category_model = CategoryTreeModel(self)
+        category_dialog = CategoryListDialog(self)
+        dialog = SelectReferenceDialog(self, self.tr("Please select category"),
+                                       self.tr("Replace category '") + self._menu_category_name + self.tr("' with: "),
+                                       category_model, category_dialog)
         if dialog.exec() != QDialog.Accepted:
             return
         JalCategory(self._menu_category_id).replace_with(dialog.selected_id)
@@ -241,8 +255,11 @@ class TagsListDialog(ReferenceDataDialog):
 
     @Slot()
     def replaceTag(self):
-        # dialog = SelectTagDialog(parent=self,
-        #                          description=self.tr("Replace tag '") + self._menu_tag_name + self.tr("' with: "))
+        tag_model = TagTreeModel(self)
+        tag_dialog = TagsListDialog(self)
+        dialog = SelectReferenceDialog(self, self.tr("Please select tag"),
+                                       self.tr("Replace tag '") + self._menu_tag_name + self.tr("' with: "),
+                                       tag_model, tag_dialog)
         if dialog.exec() != QDialog.Accepted:
             return
         JalTag(self._menu_tag_id).replace_with(dialog.selected_id)

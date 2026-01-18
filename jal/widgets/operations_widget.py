@@ -5,7 +5,8 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QMessageBox, QDialog
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.selection_dialog import SelectTagDialog
+from jal.widgets.selection_dialog import SelectReferenceDialog
+from jal.widgets.reference_dialogs import TagsListDialog
 from jal.widgets.helpers import ManipulateDate
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
@@ -13,6 +14,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.balances_model import BalancesModel
 from jal.db.operations_model import OperationsModel
+from db.common_models import TagTreeModel
 from jal.db.operations import LedgerTransaction
 
 
@@ -190,7 +192,11 @@ class OperationsWidget(MdiWidget):
         rows = []
         for index in self.ui.OperationsTableView.selectionModel().selectedRows():
             rows.append(index.row())
-        dialog = SelectTagDialog(parent=self, description=self.tr("Choose tag to be assigned to selected operations:"))
+        tag_model = TagTreeModel(self)
+        tag_dialog = TagsListDialog(self)
+        dialog = SelectReferenceDialog(self, self.tr("Please select tag"),
+                                       self.tr("Choose tag to be assigned to selected operations:"),
+                                       tag_model, tag_dialog)
         if dialog.exec() != QDialog.Accepted:
             return
         self.operations_model.assign_tag_to_rows(rows, dialog.selected_id)
