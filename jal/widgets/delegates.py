@@ -274,18 +274,21 @@ class ConstantLookupDelegate(QStyledItemDelegate):
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Base class for lookup delegate that allows Asset, Peer, Category and Tag selection
+# Class to allow lookup values selection from reference models
+# Parameters:
+#   model - data model to get values from (from common_models.py)
+#   dialog - selection dialog to be used for selection (from reference_dialogs.py)
 class LookupSelectorDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
+    def __init__(self, parent, model, dialog):
         super().__init__(parent=parent)
-        self._table = ''
-        self._field = ''
         self._selector = None
-        self._selector_model = None
-        self._selector_dialog = None
+        assert model is not None
+        assert dialog is not None
+        self._selector_model = model
+        self._selector_dialog = dialog
 
     def displayText(self, value, locale):
-        item_name = JalModel(self, self._table).get_value(self._field, "id", value)
+        item_name = self._selector_model.getValue(value)
         if item_name is None:
             return ''
         else:
@@ -293,6 +296,7 @@ class LookupSelectorDelegate(QStyledItemDelegate):
 
     def createSelector(self, parent) -> None:
         self._selector = ReferenceSelectorWidget(parent, validate=False)
+        self._selector.setup_selector(self._selector_model, self._selector_dialog)
 
     def createEditor(self, aParent, option, index):
         self.createSelector(aParent)
@@ -308,57 +312,6 @@ class LookupSelectorDelegate(QStyledItemDelegate):
         else:
             model.setData(index, None)  # replace invalid index with NULL value
 
-
-class CategorySelectorDelegate(LookupSelectorDelegate):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        self._table = "categories"
-        self._field = "name"
-
-    def createSelector(self, parent) -> None:
-        super().createSelector(parent)
-        self._selector_model = CategoryTreeModel(parent)
-        self._selector_dialog = CategoryListDialog(parent)
-        self._selector.setup_selector(self._selector_model, self._selector_dialog)
-
-
-class TagSelectorDelegate(LookupSelectorDelegate):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        self._table = "tags"
-        self._field = "tag"
-
-    def createSelector(self, parent) -> None:
-        super().createSelector(parent)
-        self._selector_model = TagTreeModel(parent)
-        self._selector_dialog = TagsListDialog(parent)
-        self._selector.setup_selector(self._selector_model, self._selector_dialog)
-
-
-class PeerSelectorDelegate(LookupSelectorDelegate):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        self._table = "agents"
-        self._field = "name"
-
-    def createSelector(self, parent) -> None:
-        super().createSelector(parent)
-        self._selector_model = PeerTreeModel(parent)
-        self._selector_dialog = PeerListDialog(parent)
-        self._selector.setup_selector(self._selector_model, self._selector_dialog)
-
-
-class SymbolSelectorDelegate(LookupSelectorDelegate):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        self._table = "asset_symbol"
-        self._field = "symbol"
-
-    def createSelector(self, parent) -> None:
-        super().createSelector(parent)
-        self._selector_model = SymbolsListModel(parent)
-        self._selector_dialog = SymbolListDialog(parent)
-        self._selector.setup_selector(self._selector_model, self._selector_dialog)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # This is a helper function for ColoredAmountsDelegate.

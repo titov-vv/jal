@@ -11,9 +11,9 @@ from jal.widgets.icons import JalIcon
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import localize_decimal, db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction
-from jal.db.common_models import AccountListModel, PeerTreeModel
-from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
-from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog
+from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel
+from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, LookupSelectorDelegate
+from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog, CategoryListDialog, TagsListDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -36,8 +36,12 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.ui.peer_widget.setup_selector(self._peer_model, self._peer_dialog)
         super()._init_db("actions")
 
-        self.category_delegate = CategorySelectorDelegate()
-        self.tag_delegate = TagSelectorDelegate()
+        self._category_model = CategoryTreeModel(self)
+        self._category_dialog = CategoryListDialog(self)
+        self.category_delegate = LookupSelectorDelegate(self, self._category_model, self._category_dialog)
+        self._tag_model = TagTreeModel(self)
+        self._tag_dialog = TagsListDialog(self)
+        self.tag_delegate = LookupSelectorDelegate(self, self._tag_model, self._tag_dialog)
         self.float_delegate = FloatDelegate(2)
 
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
