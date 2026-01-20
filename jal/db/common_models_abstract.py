@@ -116,6 +116,8 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
         self.setTable(self._table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.select()
+        if self._sort_by:
+            self.setSort(self.fieldIndex(self._sort_by), Qt.AscendingOrder)
 
     @property
     def group_by(self):
@@ -135,14 +137,6 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
             font.setStrikeOut(True)
             return font
         return super().data(index, role)
-
-    # FIXME - move sorting settings into the right place for all models
-    # def configureView(self):
-    #     self.setSorting()
-
-    def setSorting(self):
-        if self._sort_by:
-            self.setSort(self.fieldIndex(self._sort_by), Qt.AscendingOrder)
 
     def getId(self, index):
         return self.record(index.row()).value('id')
@@ -237,18 +231,13 @@ class AbstractReferenceListReadOnlyModel(BaseReferenceModelMixin, QSqlQueryModel
         self._filter_by = ''
         self._filter_value = None
         self._query_text = f"SELECT * FROM {self._table}"
+        # if self._sort_by:
+        #     self.setSort(self.fieldIndex(self._sort_by), Qt.AscendingOrder)
         self.setQuery(self._exec(self._query_text, forward_only=False))
 
     @property
     def group_by(self):
         return self._group_by
-
-    # def configureView(self):
-        # self.setSorting()
-
-    # def setSorting(self):
-    #     if self._sort_by:
-    #         self.setSort(self.fieldIndex(self._sort_by), Qt.AscendingOrder)
 
     def setFilter(self, filter_text):
         self.setQuery(self._exec(f"{self._query_text} WHERE {filter_text}", forward_only=False))
