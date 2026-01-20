@@ -111,12 +111,6 @@ class BaseReferenceModelMixin:
         if self._stretch:
             self._horizontalHeader().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
 
-    def setBoldHeader(self):
-        return   #FIXME
-        font = self._horizontalHeader().font()
-        font.setBold(True)
-        self._horizontalHeader().setFont(font)
-
     def hideColumns(self):
         return #FIXME
         for column_name in self._hidden:
@@ -158,14 +152,10 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
         self.setSorting()
         self.hideColumns()
         self.setStretching()
-        self.setBoldHeader()
 
     def setSorting(self):
         if self._sort_by:
             self.setSort(self.fieldIndex(self._sort_by), Qt.AscendingOrder)
-
-    def _horizontalHeader(self):
-        return self._view.horizontalHeader()
 
     def getId(self, index):
         return self.record(index.row()).value('id')
@@ -270,7 +260,6 @@ class AbstractReferenceListReadOnlyModel(BaseReferenceModelMixin, QSqlQueryModel
         # self.setSorting()
         self.hideColumns()
         self.setStretching()
-        self.setBoldHeader()
 
     # def setSorting(self):
     #     if self._sort_by:
@@ -279,8 +268,6 @@ class AbstractReferenceListReadOnlyModel(BaseReferenceModelMixin, QSqlQueryModel
     def setFilter(self, filter_text):
         self.setQuery(self._exec(f"{self._query_text} WHERE {filter_text}", forward_only=False))
 
-    def _horizontalHeader(self):
-        return self._view.horizontalHeader()
 
     def getId(self, index):
         return self.record(index.row()).value('id')
@@ -395,7 +382,7 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
         if role == Qt.DisplayRole or role == Qt.EditRole:
             col = index.column()
             if (col >= 0) and (col < len(self._columns)):
-                return self._read(f"SELECT {self._columns[col][0]} FROM {self._table} WHERE id=:id",
+                return self._read(f"SELECT {self._columns[col].name} FROM {self._table} WHERE id=:id",
                                   [(":id", item_id)])
             else:
                 return None
@@ -456,16 +443,12 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
 
     def configureView(self):
         self.setStretching()
-        self.setBoldHeader()  #FIXME - MOVE TO DIALOG
         # self._view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         # self._view.setDragEnabled(True)
         # self._view.setAcceptDrops(True)
         # self._view.setDropIndicatorShown(True)
         # self._view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         # self._view.setDefaultDropAction(Qt.DropAction.MoveAction)
-
-    def _horizontalHeader(self):
-        return self._view.header()
 
     def getId(self, index):
         if not index.isValid():

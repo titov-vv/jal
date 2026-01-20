@@ -71,7 +71,7 @@ class ReferenceDataDialog(QDialog):
         # self._tag_delegate = None
         self._float_delegate = None
 
-    def _init_completed(self):
+    def setup_ui(self):
         self.ui.DataView.setVisible(not self.tree_view)
         self.ui.TreeView.setVisible(self.tree_view)
         if self.tree_view:
@@ -83,6 +83,7 @@ class ReferenceDataDialog(QDialog):
         self._view.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self._view.setContextMenuPolicy(Qt.CustomContextMenu)
         self._view.customContextMenuRequested.connect(self.onDataViewContextMenu)
+        self.setViewBoldHeader()
         self.model.dataChanged.connect(self.OnDataChanged)
         self.setFilter()
         self.setWindowTitle(self.dialog_window_name)
@@ -132,6 +133,11 @@ class ReferenceDataDialog(QDialog):
             self.selection_done.emit(self.selected_id)
         self.resetFilter()
         return res
+
+    def setViewBoldHeader(self):
+        font = self._view_header.font()
+        font.setBold(True)
+        self._view_header.setFont(font)
 
     def getSelectedName(self):
         if self.selected_id == 0:

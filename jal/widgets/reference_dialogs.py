@@ -30,7 +30,6 @@ class AccountListDialog(ReferenceDataDialog):
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-        super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "accounts.name"
@@ -48,6 +47,7 @@ class AccountListDialog(ReferenceDataDialog):
         for tag_id, tag in sorted(JalAccount.get_all_tags().items(), key=lambda x: x[1]):
             self.ui.GroupCombo.addItem(JalIcon[JalTag(tag_id).icon()], tag, tag_id)
         self.group_id = self.ui.GroupCombo.itemData(0)
+        super().setup_ui()
 
     #     specs = model.column_specs()
     #
@@ -94,7 +94,6 @@ class SymbolListDialog(ReferenceDataDialog):
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-        super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "full_name"
@@ -110,6 +109,7 @@ class SymbolListDialog(ReferenceDataDialog):
         self.group_field = self.model.group_by
         PredefinedAsset().load2combo(self.ui.GroupCombo)
         self.group_id = 1
+        super().setup_ui()
 
     def locateItem(self, item_id):
         type_id = self.model.getGroupId(item_id)
@@ -132,7 +132,6 @@ class PeerListDialog(ReferenceDataDialog):
         self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-        super()._init_completed()
         self._menu_peer_id = 0
         self._menu_peer_name = ''
         self.actionShowUsage = QAction(text=self.tr("Show operations with Peer"), parent=self)
@@ -148,6 +147,7 @@ class PeerListDialog(ReferenceDataDialog):
         self.ui.Toggle.setVisible(False)
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
+        super().setup_ui()
 
     def locateItem(self, item_id):
         self.model.locateItem(item_id)
@@ -191,7 +191,6 @@ class CategoryListDialog(ReferenceDataDialog):
         self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-        super()._init_completed()
         self._menu_category_id = 0
         self._menu_category_name = ''
         self.actionShowUsage = QAction(text=self.tr("Show operations with Category"), parent=self)
@@ -207,6 +206,7 @@ class CategoryListDialog(ReferenceDataDialog):
         self.ui.Toggle.setVisible(False)
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
+        super().setup_ui()
 
     def locateItem(self, item_id):
         self.model.locateItem(item_id)
@@ -245,7 +245,6 @@ class TagsListDialog(ReferenceDataDialog):
         self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-        super()._init_completed()
         self._menu_tag_id = 0
         self._menu_tag_name = ''
         self.actionShowUsage = QAction(text=self.tr("Show operations with Tag"), parent=self)
@@ -261,6 +260,7 @@ class TagsListDialog(ReferenceDataDialog):
         self.ui.Toggle.setVisible(False)
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
+        super().setup_ui()
 
     def locateItem(self, item_id):
         self.model.locateItem(item_id)
@@ -300,12 +300,12 @@ class QuotesListDialog(ReferenceDataDialog):
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-        super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "asset_id-asset_symbol-id-symbol"
         self.ui.SearchFrame.setVisible(True)
         self.ui.Toggle.setVisible(False)
+        super().setup_ui()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -317,7 +317,7 @@ class BaseCurrencyDialog(ReferenceDataDialog):
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-        super()._init_completed()
 
     def setup_ui(self):
         self.ui.Toggle.setVisible(False)
+        super().setup_ui()
