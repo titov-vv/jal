@@ -32,8 +32,8 @@ class CmColumn:    # column metadata for custom models
     group: bool = False          # True = enable grouping by this column
     default: bool = False        # True = this is the default column to show as item name
     details: bool = False        # True = this column contains details to show in item related widgets
-    delegate_type: str | None = None
-    delegate_details: str | None = None
+    delegate_type: str | None = None      # one of CmDelegate values that defines formatting/editing delegate for the column
+    delegate_details: str | int | None = None   # additional details for delegate (e.g. number of decimal places for FLOAT delegate)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class BaseReferenceModelMixin:

@@ -2,8 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlRelation
 from PySide6.QtWidgets import QMessageBox
 from db.category import JalCategory
-from db.common_models_abstract import CmColumn, CmWidth, AbstractReferenceListModel, AbstractReferenceListReadOnlyModel, \
-    SqlTreeModel, CmDelegate
+from db.common_models_abstract import CmColumn, CmWidth, CmDelegate, AbstractReferenceListModel, AbstractReferenceListReadOnlyModel, SqlTreeModel
 from db.peer import JalPeer
 from db.tag import JalTag
 from jal.widgets.icons import JalIcon
@@ -24,7 +23,7 @@ class AccountListModel(AbstractReferenceListModel):
             CmColumn("organization_id", self.tr("Bank/Broker"), delegate_type=CmDelegate.REFERENCE, delegate_details='peer'),
             CmColumn("country_id", self.tr("Country"), width=80, delegate_type=CmDelegate.LOOKUP),
             CmColumn("precision", self.tr("Precision")),
-            CmColumn("credit", self.tr("Credit limit"), delegate_type=CmDelegate.FLOAT, delegate_details='2')
+            CmColumn("credit", self.tr("Credit limit"), delegate_type=CmDelegate.FLOAT, delegate_details=2)
         ]
         super().__init__("accounts", columns, parent)
         self.set_default_values({'active': 1, 'reconciled_on': 0, 'country_id': 0, 'precision': 2, 'credit': '0'})
@@ -92,7 +91,7 @@ class PeerTreeModel(SqlTreeModel):
         columns = [
             CmColumn("name", self.tr("Name"), sort=True, width=CmWidth.WIDTH_STRETCH, delegate_type=CmDelegate.GRID),
             CmColumn("location", self.tr("Location"), delegate_type=CmDelegate.GRID),
-            CmColumn("actions_count", self.tr("Docs count"), delegate_type=CmDelegate.FLOAT, delegate_details='0')
+            CmColumn("actions_count", self.tr("Docs count"), delegate_type=CmDelegate.FLOAT, delegate_details=0)
         ]
         super().__init__("agents", columns, parent)
         self.set_default_values({"name": self.tr("New peer")})
@@ -173,7 +172,7 @@ class QuotesListModel(AbstractReferenceListModel):
             CmColumn("timestamp", self.tr("Date"), sort=True, width=CmWidth.WIDTH_DATETIME, delegate_type=CmDelegate.TIMESTAMP),
             CmColumn("asset_id", self.tr("Asset"), width=CmWidth.WIDTH_STRETCH, delegate_type=CmDelegate.REFERENCE, delegate_details='symbol'),
             CmColumn("currency_id", self.tr("Currency"), delegate_type=CmDelegate.LOOKUP),
-            CmColumn("quote", self.tr("Quote"), default=True, width=100, delegate_type=CmDelegate.FLOAT, delegate_details='4')
+            CmColumn("quote", self.tr("Quote"), default=True, width=100, delegate_type=CmDelegate.FLOAT, delegate_details=4)
         ]
         super().__init__("quotes", columns, parent)
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))

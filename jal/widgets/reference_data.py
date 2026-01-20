@@ -1,5 +1,6 @@
 import base64
 from PySide6.QtCore import Qt, Signal, Property, Slot, QPoint
+from PySide6.QtSql import QSqlRelationalDelegate
 from PySide6.QtWidgets import QDialog, QMessageBox, QMenu, QHeaderView
 from PySide6.QtGui import QAction
 from db.common_models_abstract import CmWidth
@@ -41,6 +42,7 @@ class ReferenceDataDialog(QDialog):
         self.toolbar = None
         self.custom_editor = False
         self.custom_context_menu = False
+        self._delegates = []  # to keep references to delegates to avoid garbage collection
 
         self.ui.AddChildBtn.setVisible(False)
         self.ui.GroupLbl.setVisible(False)
@@ -66,13 +68,6 @@ class ReferenceDataDialog(QDialog):
         self.ui.TreeView.doubleClicked.connect(self.OnDoubleClicked)
         self.ui.TreeView.clicked.connect(self.OnClicked)
 
-        self._lookup_delegate = None
-        # self._peer_delegate = None
-        self._timestamp_delegate = None
-        # self._bool_delegate = None
-        # self._tag_delegate = None
-        self._float_delegate = None
-
     def setup_ui(self):
         self.ui.DataView.setVisible(not self.tree_view)
         self.ui.TreeView.setVisible(self.tree_view)
@@ -89,6 +84,7 @@ class ReferenceDataDialog(QDialog):
         self._view_header.customContextMenuRequested.connect(self.onHeaderContextMenu)
         self.setViewBoldHeader()
         self.configureColumns()
+        self.configureDelegates()
         self.model.dataChanged.connect(self.OnDataChanged)
         self.setFilter()
         self.setWindowTitle(self.dialog_window_name)
@@ -163,16 +159,15 @@ class ReferenceDataDialog(QDialog):
                 else:
                     self._view.setColumnWidth(col, spec.width)
 
-
-    #
-    #         if spec.delegate_type:
-    #             delegate = self.create_delegate(spec)
-    #             self.table.setItemDelegateForColumn(col, delegate)
-
-    # LOOKUP DELEGATE EXAMPLE
-    # self._lookup_delegate = QSqlRelationalDelegate(self._view)
-    # self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
-    # self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
+    def configureDelegates(self):
+        specs = self.model.column_meta()
+        for col, spec in enumerate(specs):
+            if not spec.delegate_type:
+                continue
+            if spec.delegate_type == 'lookup':
+                delegate = QSqlRelationalDelegate(self._view)
+                self._view.setItemDelegateForColumn(col, delegate)
+                self._delegates.append(delegate)
 
     def getSelectedName(self):
         if self.selected_id == 0:
