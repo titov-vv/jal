@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex, QMimeData, QByteArray, QDataStream, QIODevice
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlQueryModel
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QHeaderView, QMessageBox, QCompleter
+from PySide6.QtWidgets import QMessageBox, QCompleter
 from jal.db.db import JalDB, JalSqlError
 from jal.constants import Setup
 
@@ -41,7 +41,6 @@ class BaseReferenceModelMixin:
     def _init_base(self, table, columns, parent=None):
         self._table = table
         self._columns = columns
-        self._hidden = [x.name for x in columns if x.hide]
         sorted_by = [x.name for x in columns if x.sort]
         assert len(sorted_by) <= 1, f"Attempt to sort by multiple columns {sorted_by} in model for '{table}' table"
         self._sort_by = sorted_by[0] if sorted_by else None
@@ -55,7 +54,6 @@ class BaseReferenceModelMixin:
         assert len(details) <= 1, f"More than 1 details column {details} in model for '{table}' table"
         self._details_field = details[0] if details else None
         self._default_values = {}
-        self._stretch = None   # FIXME - to be removed
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
         self._completion_model = QSqlTableModel(parent=parent, db=self.connection())
         self._completion_model.setTable(self._table)
@@ -66,9 +64,8 @@ class BaseReferenceModelMixin:
         self._completer.setCaseSensitivity(Qt.CaseInsensitive)
 
     # Returns columns metadata
-    @classmethod
-    def column_meta(cls) -> list[CmColumn]:
-        raise NotImplementedError
+    def column_meta(self) -> list[CmColumn]:
+        return self._columns
 
     @property
     def completion_model(self):
@@ -107,15 +104,6 @@ class BaseReferenceModelMixin:
                 return self._columns[section].header
         return None
 
-    def setStretching(self):
-        if self._stretch:
-            self._horizontalHeader().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
-
-    def hideColumns(self):
-        return #FIXME
-        for column_name in self._hidden:
-            self._view.setColumnHidden(self.fieldIndex(column_name), True)
-
 # ----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableModel, JalDB):
     def __init__(self, table, columns, parent=None):
@@ -148,10 +136,9 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
             return font
         return super().data(index, role)
 
-    def configureView(self):
-        self.setSorting()
-        self.hideColumns()
-        self.setStretching()
+    # FIXME - move sorting settings into the right place for all models
+    # def configureView(self):
+    #     self.setSorting()
 
     def setSorting(self):
         if self._sort_by:
@@ -256,10 +243,8 @@ class AbstractReferenceListReadOnlyModel(BaseReferenceModelMixin, QSqlQueryModel
     def group_by(self):
         return self._group_by
 
-    def configureView(self):
+    # def configureView(self):
         # self.setSorting()
-        self.hideColumns()
-        self.setStretching()
 
     # def setSorting(self):
     #     if self._sort_by:
@@ -441,8 +426,7 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
         self._drag_and_drop = True
         return True
 
-    def configureView(self):
-        self.setStretching()
+    # def configureView(self):
         # self._view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         # self._view.setDragEnabled(True)
         # self._view.setAcceptDrops(True)

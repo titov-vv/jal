@@ -1,6 +1,7 @@
 import base64
 from PySide6.QtCore import Qt, Signal, Property, Slot, QPoint
-from PySide6.QtWidgets import QDialog, QMessageBox, QMenu
+from PySide6.QtWidgets import QDialog, QMessageBox, QMenu, QHeaderView
+from db.common_models_abstract import CmWidth
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
@@ -84,11 +85,12 @@ class ReferenceDataDialog(QDialog):
         self._view.setContextMenuPolicy(Qt.CustomContextMenu)
         self._view.customContextMenuRequested.connect(self.onDataViewContextMenu)
         self.setViewBoldHeader()
+        self.configureColumns()
         self.model.dataChanged.connect(self.OnDataChanged)
         self.setFilter()
         self.setWindowTitle(self.dialog_window_name)
         self.restoreGeometry(base64.decodebytes(JalSettings().getValue('DlgGeometry_' + self.dialog_window_name, '').encode('utf-8')))
-        self._view_header.restoreState(base64.decodebytes(JalSettings().getValue('DlgViewState_' + self.dialog_window_name, '').encode('utf-8')))
+        # self._view_header.restoreState(base64.decodebytes(JalSettings().getValue('DlgViewState_' + self.dialog_window_name, '').encode('utf-8')))
 
     @Slot()
     def onDataViewContextMenu(self, pos):
@@ -138,6 +140,30 @@ class ReferenceDataDialog(QDialog):
         font = self._view_header.font()
         font.setBold(True)
         self._view_header.setFont(font)
+
+    def configureColumns(self):
+        specs = self.model.column_meta()
+        for col, spec in enumerate(specs):
+            if spec.hide:
+                self._view.setColumnHidden(col, True)
+            if spec.width:
+                if spec.width == CmWidth.WIDTH_STRETCH:
+                    self._view_header.setSectionResizeMode(col, QHeaderView.Stretch)
+                elif spec.width == CmWidth.WIDTH_DATETIME:
+                    self._view.setColumnWidth(col, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
+                else:
+                    self._view.setColumnWidth(col, spec.width)
+
+
+    #
+    #         if spec.delegate_type:
+    #             delegate = self.create_delegate(spec)
+    #             self.table.setItemDelegateForColumn(col, delegate)
+
+    # LOOKUP DELEGATE EXAMPLE
+    # self._lookup_delegate = QSqlRelationalDelegate(self._view)
+    # self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
+    # self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
 
     def getSelectedName(self):
         if self.selected_id == 0:

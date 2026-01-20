@@ -28,7 +28,6 @@ class AccountListDialog(ReferenceDataDialog):
         self._tag_delegate = LookupSelectorDelegate(self, self._tag_model, self._tag_dialog)
         self.model = AccountListModel(self)
         self.ui.DataView.setModel(self.model)
-        self.model.configureView()
         self.setup_ui()
 
     def setup_ui(self):
@@ -49,30 +48,6 @@ class AccountListDialog(ReferenceDataDialog):
         self.group_id = self.ui.GroupCombo.itemData(0)
         super().setup_ui()
 
-    #     specs = model.column_specs()
-    #
-    #     for col, spec in enumerate(specs):
-    #         if spec.width:
-    #             self.table.setColumnWidth(col, spec.width)
-    #
-    #         if spec.stretch:
-    #             self.table.horizontalHeader().setSectionResizeMode(
-    #                 col, QHeaderView.Stretch
-    #             )
-    #
-    #         if spec.delegate_type:
-    #             delegate = self.create_delegate(spec)
-    #             self.table.setItemDelegateForColumn(col, delegate)
-
-    ###############33
-    #         self._view.setColumnWidth(self.fieldIndex("active"), 64)   - width
-    #   self._view.setColumnWidth(self.fieldIndex("reconciled_on"), self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)  - width for timestamp
-
-    # LOOKUP DELEGATE EXAMPLE
-    # self._lookup_delegate = QSqlRelationalDelegate(self._view)
-    # self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
-    # self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
-
     def locateItem(self, item_id):
         type_id = self.model.getGroupId(item_id)
         if type_id == 0:
@@ -92,7 +67,6 @@ class SymbolListDialog(ReferenceDataDialog):
         self.table = "symbols_ext"
         self.model = SymbolsListModel(self)
         self.ui.DataView.setModel(self.model)
-        self.model.configureView()
         self.setup_ui()
 
     def setup_ui(self):
@@ -130,7 +104,6 @@ class PeerListDialog(ReferenceDataDialog):
         self.table = "agents"
         self.model = PeerTreeModel(self)
         self.ui.TreeView.setModel(self.model)
-        self.model.configureView()
         self.setup_ui()
         self._menu_peer_id = 0
         self._menu_peer_name = ''
@@ -189,7 +162,6 @@ class CategoryListDialog(ReferenceDataDialog):
         self.table = "categories"
         self.model = CategoryTreeModel(self)
         self.ui.TreeView.setModel(self.model)
-        self.model.configureView()
         self.setup_ui()
         self._menu_category_id = 0
         self._menu_category_name = ''
@@ -243,7 +215,6 @@ class TagsListDialog(ReferenceDataDialog):
         self.table = "tags"
         self.model = TagTreeModel(parent=self)
         self.ui.TreeView.setModel(self.model)
-        self.model.configureView()
         self.setup_ui()
         self._menu_tag_id = 0
         self._menu_tag_name = ''
@@ -298,7 +269,6 @@ class QuotesListDialog(ReferenceDataDialog):
         self.table = "quotes"
         self.model = QuotesListModel(self)
         self.ui.DataView.setModel(self.model)
-        self.model.configureView()
         self.setup_ui()
 
     def setup_ui(self):
@@ -315,7 +285,6 @@ class BaseCurrencyDialog(ReferenceDataDialog):
         self.table = "base_currency"
         self.model = BaseCurrencyListModel(self)
         self.ui.DataView.setModel(self.model)
-        self.model.configureView()
         self.setup_ui()
 
     def setup_ui(self):
