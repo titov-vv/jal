@@ -1,6 +1,7 @@
 import base64
 from PySide6.QtCore import Qt, Signal, Property, Slot, QPoint
 from PySide6.QtWidgets import QDialog, QMessageBox, QMenu, QHeaderView
+from PySide6.QtGui import QAction
 from db.common_models_abstract import CmWidth
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.icons import JalIcon
@@ -84,19 +85,27 @@ class ReferenceDataDialog(QDialog):
         self._view.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self._view.setContextMenuPolicy(Qt.CustomContextMenu)
         self._view.customContextMenuRequested.connect(self.onDataViewContextMenu)
+        self._view_header.setContextMenuPolicy(Qt.CustomContextMenu)
+        self._view_header.customContextMenuRequested.connect(self.onHeaderContextMenu)
         self.setViewBoldHeader()
         self.configureColumns()
         self.model.dataChanged.connect(self.OnDataChanged)
         self.setFilter()
         self.setWindowTitle(self.dialog_window_name)
         self.restoreGeometry(base64.decodebytes(JalSettings().getValue('DlgGeometry_' + self.dialog_window_name, '').encode('utf-8')))
-        # self._view_header.restoreState(base64.decodebytes(JalSettings().getValue('DlgViewState_' + self.dialog_window_name, '').encode('utf-8')))
+        self._view_header.restoreState(base64.decodebytes(JalSettings().getValue('DlgViewState_' + self.dialog_window_name, '').encode('utf-8')))
 
     @Slot()
     def onDataViewContextMenu(self, pos):
         contextMenu = QMenu(self._view)
         if self.custom_context_menu:
             self.customizeContextMenu(contextMenu, self._view.indexAt(pos))
+        contextMenu.popup(self._view.viewport().mapToGlobal(pos))
+
+    @Slot()
+    def onHeaderContextMenu(self, pos):
+        contextMenu = QMenu(self._view_header)
+        contextMenu.addAction(QAction(self.tr("Reset columns"), self, triggered=self.configureColumns))
         contextMenu.popup(self._view.viewport().mapToGlobal(pos))
 
     @Slot()
