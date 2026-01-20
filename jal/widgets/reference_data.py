@@ -64,6 +64,13 @@ class ReferenceDataDialog(QDialog):
         self.ui.TreeView.doubleClicked.connect(self.OnDoubleClicked)
         self.ui.TreeView.clicked.connect(self.OnClicked)
 
+        self._lookup_delegate = None
+        # self._peer_delegate = None
+        self._timestamp_delegate = None
+        # self._bool_delegate = None
+        # self._tag_delegate = None
+        self._float_delegate = None
+
     def _init_completed(self):
         self.ui.DataView.setVisible(not self.tree_view)
         self.ui.TreeView.setVisible(self.tree_view)

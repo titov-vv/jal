@@ -26,7 +26,7 @@ class AccountListDialog(ReferenceDataDialog):
         self._tag_model = TagTreeModel(self)
         self._tag_dialog = TagsListDialog(self)
         self._tag_delegate = LookupSelectorDelegate(self, self._tag_model, self._tag_dialog)
-        self.model = AccountListModel(parent_view=self.ui.DataView)
+        self.model = AccountListModel(self)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -49,6 +49,30 @@ class AccountListDialog(ReferenceDataDialog):
             self.ui.GroupCombo.addItem(JalIcon[JalTag(tag_id).icon()], tag, tag_id)
         self.group_id = self.ui.GroupCombo.itemData(0)
 
+    #     specs = model.column_specs()
+    #
+    #     for col, spec in enumerate(specs):
+    #         if spec.width:
+    #             self.table.setColumnWidth(col, spec.width)
+    #
+    #         if spec.stretch:
+    #             self.table.horizontalHeader().setSectionResizeMode(
+    #                 col, QHeaderView.Stretch
+    #             )
+    #
+    #         if spec.delegate_type:
+    #             delegate = self.create_delegate(spec)
+    #             self.table.setItemDelegateForColumn(col, delegate)
+
+    ###############33
+    #         self._view.setColumnWidth(self.fieldIndex("active"), 64)   - width
+    #   self._view.setColumnWidth(self.fieldIndex("reconciled_on"), self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)  - width for timestamp
+
+    # LOOKUP DELEGATE EXAMPLE
+    # self._lookup_delegate = QSqlRelationalDelegate(self._view)
+    # self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
+    # self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
+
     def locateItem(self, item_id):
         type_id = self.model.getGroupId(item_id)
         if type_id == 0:
@@ -66,7 +90,7 @@ class SymbolListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Assets"))
         self.table = "symbols_ext"
-        self.model = SymbolsListModel(parent_view=self.ui.DataView)
+        self.model = SymbolsListModel(self)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -104,7 +128,7 @@ class PeerListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Peers"))
         self.table = "agents"
-        self.model = PeerTreeModel(parent_view=self.ui.TreeView)
+        self.model = PeerTreeModel(self)
         self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -163,7 +187,7 @@ class CategoryListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Categories"))
         self.table = "categories"
-        self.model = CategoryTreeModel(parent_view=self.ui.TreeView)
+        self.model = CategoryTreeModel(self)
         self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -217,7 +241,7 @@ class TagsListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent, window_title=self.tr("Tags"))
         self.table = "tags"
-        self.model = TagTreeModel(parent_view=self.ui.TreeView)
+        self.model = TagTreeModel(parent=self)
         self.ui.TreeView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -272,7 +296,7 @@ class QuotesListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent, window_title=self.tr("Quotes"))
         self.table = "quotes"
-        self.model = QuotesListModel(parent_view=self.ui.DataView)
+        self.model = QuotesListModel(self)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -289,7 +313,7 @@ class BaseCurrencyDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent, window_title=self.tr("Base currency"))
         self.table = "base_currency"
-        self.model = BaseCurrencyListModel(parent_view=self.ui.DataView)
+        self.model = BaseCurrencyListModel(self)
         self.ui.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()

@@ -1,34 +1,74 @@
 import logging
+from dataclasses import dataclass
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex, QMimeData, QByteArray, QDataStream, QIODevice
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlQueryModel
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QHeaderView, QMessageBox, QAbstractItemView, QCompleter
+from PySide6.QtWidgets import QHeaderView, QMessageBox, QCompleter
 from jal.db.db import JalDB, JalSqlError
 from jal.constants import Setup
 
 
+class CmWidth:
+    WIDTH_STRETCH = -1  # special value for column width to indicate stretching to fill available space
+    WIDTH_DATETIME = -2  # special value for datetime column width
+
+class CmDelegate:
+    FLOAT = 'float'
+    BOOL = 'bool'
+    TIMESTAMP = 'timestamp'
+    LOOKUP = 'lookup'
+    REFERENCE = 'reference'
+    CONSTANT_LOOKUP = 'constant'
+    GRID = 'grid'
+
+# ----------------------------------------------------------------------------------------------------------------------
+@dataclass
+class CmColumn:    # column metadata for custom models
+    name: str                    # DB column name
+    header: str                  # Column header title
+    width: int | None = None     # Width of the column
+    hide: bool = False           # True = hide the column from the view
+    sort: bool = False           # True = enable sorting by this column
+    group: bool = False          # True = enable grouping by this column
+    default: bool = False        # True = this is the default column to show as item name
+    details: bool = False        # True = this column contains details to show in item related widgets
+    delegate_type: str | None = None
+    delegate_details: str | None = None
+
 # ----------------------------------------------------------------------------------------------------------------------
 class BaseReferenceModelMixin:
     # BaseReferenceModelMixin must never define __init__ (otherwise it breaks multiple inheritance)
-    def _init_base(self, table, parent_view, **kwargs):
-        self._view = parent_view
+    def _init_base(self, table, columns, parent=None):
         self._table = table
-        self._columns = list(kwargs.get('columns', []))
-        self._hidden = kwargs.get('hide', [])
-        self._sort_by = kwargs.get('sort', None)
-        self._group_by = kwargs.get('group', None)
-        self._stretch = kwargs.get('stretch', None)
-        self._details_field = kwargs.get('details', None)
-        self._default_name = kwargs.get('default', "name")
+        self._columns = columns
+        self._hidden = [x.name for x in columns if x.hide]
+        sorted_by = [x.name for x in columns if x.sort]
+        assert len(sorted_by) <= 1, f"Attempt to sort by multiple columns {sorted_by} in model for '{table}' table"
+        self._sort_by = sorted_by[0] if sorted_by else None
+        grouped_by = [x.name for x in columns if x.group]
+        assert len(grouped_by) <= 1, f"Attempt to group by multiple columns {grouped_by} in model for '{table}' table"
+        self._group_by = grouped_by[0] if grouped_by else None
+        defaults = [x.name for x in columns if x.default]
+        assert len(defaults) <= 1, f"More than 1 default column {defaults} for model for '{table}' table"
+        self._default_name = defaults[0] if defaults else "name"
+        details = [x.name for x in columns if x.details]
+        assert len(details) <= 1, f"More than 1 details column {details} in model for '{table}' table"
+        self._details_field = details[0] if details else None
         self._default_values = {}
+        self._stretch = None   # FIXME - to be removed
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
-        self._completion_model = QSqlTableModel(parent=parent_view, db=self.connection())
+        self._completion_model = QSqlTableModel(parent=parent, db=self.connection())
         self._completion_model.setTable(self._table)
         self._completion_model.select()
         # Completer is used in widgets after call to bind_completer()
         self._completer = QCompleter(self._completion_model)
         self._completer.setCompletionColumn(self._completion_model.fieldIndex(self._default_name))
         self._completer.setCaseSensitivity(Qt.CaseInsensitive)
+
+    # Returns columns metadata
+    @classmethod
+    def column_meta(cls) -> list[CmColumn]:
+        raise NotImplementedError
 
     @property
     def completion_model(self):
@@ -44,7 +84,7 @@ class BaseReferenceModelMixin:
         self._default_values = defaults
 
     def fieldIndex(self, field):
-        column_data = [i for i, column in enumerate(self._columns) if column[0] == field]
+        column_data = [i for i, column in enumerate(self._columns) if column.name == field]
         if len(column_data) > 0:
             return column_data[0]
         else:
@@ -64,7 +104,7 @@ class BaseReferenceModelMixin:
 
     def headerData(self, section, orientation=Qt.Horizontal, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-                return self._columns[section][1]
+                return self._columns[section].header
         return None
 
     def setStretching(self):
@@ -72,19 +112,21 @@ class BaseReferenceModelMixin:
             self._horizontalHeader().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
 
     def setBoldHeader(self):
+        return   #FIXME
         font = self._horizontalHeader().font()
         font.setBold(True)
         self._horizontalHeader().setFont(font)
 
     def hideColumns(self):
+        return #FIXME
         for column_name in self._hidden:
             self._view.setColumnHidden(self.fieldIndex(column_name), True)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableModel, JalDB):
-    def __init__(self, table, parent_view, **kwargs):
-        self._init_base(table, parent_view, **kwargs)
-        super().__init__(parent=parent_view, db=self.connection())
+    def __init__(self, table, columns, parent=None):
+        self._init_base(table, columns)
+        super().__init__(parent=parent, db=self.connection())
         self._deleted_rows = []
         self._filter_by = ''
         self._filter_value = None
@@ -212,9 +254,9 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceListReadOnlyModel(BaseReferenceModelMixin, QSqlQueryModel, JalDB):
-    def __init__(self, table, parent_view, **kwargs):
-        self._init_base(table, parent_view, **kwargs)
-        super().__init__(parent=parent_view, db=self.connection())
+    def __init__(self, table, columns, parent=None):
+        self._init_base(table, columns, parent)
+        super().__init__(parent=parent, db=self.connection())
         self._filter_by = ''
         self._filter_value = None
         self._query_text = f"SELECT * FROM {self._table}"
@@ -284,9 +326,9 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
     ROOT_PID = 0
     DRAG_DROP_MIME_TYPE = "application/vnd.tree_item"
 
-    def __init__(self, table, parent_view, **kwargs):
-        super().__init__(parent=parent_view)
-        self._init_base(table, parent_view, **kwargs)
+    def __init__(self, table, columns, parent=None):
+        super().__init__(parent=parent)
+        self._init_base(table, columns, parent)
         self._drag_and_drop = False  # This is required to prevent deletion of initial element after drag&drop movement
         self._filter_text = ''
 
@@ -414,13 +456,13 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
 
     def configureView(self):
         self.setStretching()
-        self.setBoldHeader()
-        self._view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self._view.setDragEnabled(True)
-        self._view.setAcceptDrops(True)
-        self._view.setDropIndicatorShown(True)
-        self._view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
-        self._view.setDefaultDropAction(Qt.DropAction.MoveAction)
+        self.setBoldHeader()  #FIXME - MOVE TO DIALOG
+        # self._view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        # self._view.setDragEnabled(True)
+        # self._view.setAcceptDrops(True)
+        # self._view.setDropIndicatorShown(True)
+        # self._view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        # self._view.setDefaultDropAction(Qt.DropAction.MoveAction)
 
     def _horizontalHeader(self):
         return self._view.header()
