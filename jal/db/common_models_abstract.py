@@ -8,18 +8,22 @@ from jal.db.db import JalDB, JalSqlError
 from jal.constants import Setup
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class CmWidth:
     WIDTH_STRETCH = -1  # special value for column width to indicate stretching to fill available space
     WIDTH_DATETIME = -2  # special value for datetime column width
 
+
+# ----------------------------------------------------------------------------------------------------------------------
 class CmDelegate:
-    FLOAT = 'float'
     BOOL = 'bool'
-    TIMESTAMP = 'timestamp'
+    CONSTANT_LOOKUP = 'constant'
+    FLOAT = 'float'
+    GRID = 'grid'
     LOOKUP = 'lookup'
     REFERENCE = 'reference'
-    CONSTANT_LOOKUP = 'constant'
-    GRID = 'grid'
+    TIMESTAMP = 'timestamp'
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 @dataclass

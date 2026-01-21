@@ -3,8 +3,9 @@ from PySide6.QtCore import Qt, Signal, Property, Slot, QPoint
 from PySide6.QtSql import QSqlRelationalDelegate
 from PySide6.QtWidgets import QDialog, QMessageBox, QMenu, QHeaderView
 from PySide6.QtGui import QAction
-from db.common_models_abstract import CmWidth
+from db.common_models_abstract import CmWidth, CmDelegate
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
+from jal.widgets.delegates import BoolDelegate, FloatDelegate
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 
@@ -164,10 +165,18 @@ class ReferenceDataDialog(QDialog):
         for col, spec in enumerate(specs):
             if not spec.delegate_type:
                 continue
-            if spec.delegate_type == 'lookup':
+            if spec.delegate_type == CmDelegate.BOOL:
+                delegate = BoolDelegate(self._view)
+            elif spec.delegate_type == CmDelegate.CONSTANT_LOOKUP:
+                raise NotImplementedError
+            elif spec.delegate_type == CmDelegate.FLOAT:
+                delegate = FloatDelegate(spec.delegate_details, parent=self._view)
+            elif spec.delegate_type == CmDelegate.LOOKUP:
                 delegate = QSqlRelationalDelegate(self._view)
-                self._view.setItemDelegateForColumn(col, delegate)
-                self._delegates.append(delegate)
+            else:
+                continue
+            self._view.setItemDelegateForColumn(col, delegate)
+            self._delegates.append(delegate)
 
     def getSelectedName(self):
         if self.selected_id == 0:
