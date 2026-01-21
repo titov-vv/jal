@@ -5,7 +5,8 @@ from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_transfer_operation import Ui_TransferOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.delegates import WidgetMapperDelegateBase
-from jal.widgets.reference_dialogs import AccountListDialog, SymbolListDialog
+from jal.widgets.reference_dialogs import AccountListDialog
+from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.db.operations import LedgerTransaction
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.account import JalAccount

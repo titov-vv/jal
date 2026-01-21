@@ -2,23 +2,21 @@ import base64
 import logging
 from PySide6.QtCore import Qt, Slot, Signal, Property, QDate, QPoint
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QAbstractItemView, QMenu, QDialog, QMessageBox, QHeaderView
+from PySide6.QtWidgets import QMenu, QDialog, QMessageBox, QHeaderView
 from PySide6.QtSql import QSqlRelationalDelegate
 from jal.db.common_models_abstract import CmWidth, CmDelegate, CmReference
 from jal.db.common_models import AccountListModel, SymbolsListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, \
     QuotesListModel, BaseCurrencyListModel
-from jal.constants import PredefinedAsset
 from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
-# FIXME: re-enable AssetDialog import
-# from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.delegates import BoolDelegate, FloatDelegate, GridLinesDelegate, TimestampDelegate, LookupSelectorDelegate
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
+from jal.widgets.assets_dialogs import SymbolListDialog
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -413,42 +411,6 @@ class AccountListDialog(ReferenceDataDialog):
 
     def set_tag_delegate(self, column):
         self.ui.DataView.setItemDelegateForColumn(column, self._tag_delegate)
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-class SymbolListDialog(ReferenceDataDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent, window_title=self.tr("Assets"))
-        self.model = SymbolsListModel(self)
-        self.ui.DataView.setModel(self.model)
-        self.setup_ui()
-
-    def setup_ui(self):
-        self.search_field = "full_name"
-        self.ui.SearchFrame.setVisible(True)
-        self.ui.Toggle.setVisible(False)
-
-        self.custom_editor = True
-        self.ui.DataView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-
-        self.ui.GroupLbl.setVisible(True)
-        self.ui.GroupLbl.setText(self.tr("Asset type:"))
-        self.ui.GroupCombo.setVisible(True)
-        self.group_field = self.model.group_by
-        PredefinedAsset().load2combo(self.ui.GroupCombo)
-        self.group_id = 1
-        super().setup_ui()
-
-    def locateItem(self, item_id):
-        type_id = self.model.getGroupId(item_id)
-        if type_id == 0:
-            return
-        self.ui.GroupCombo.setCurrentIndex(type_id-1)
-        item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
-        self.ui.DataView.setCurrentIndex(item_idx)
-
-    # def customEditor(self):
-    #     return AssetDialog(self)   #FIXME make new custom SymbolsListDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------

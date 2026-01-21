@@ -1,7 +1,8 @@
 from jal.ui.widgets.ui_trade_operation import Ui_TradeOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.delegates import WidgetMapperDelegateBase
-from jal.widgets.reference_dialogs import AccountListDialog, SymbolListDialog
+from jal.widgets.reference_dialogs import AccountListDialog
+from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.db.operations import LedgerTransaction
 from jal.db.common_models import AccountListModel, SymbolsListModel
 from jal.db.helpers import now_ts
