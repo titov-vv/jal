@@ -98,13 +98,13 @@ class MainWindow(QMainWindow):
         self.ui.actionRestore.triggered.connect(self.backup.restore)
         self.ui.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
         self.ui.actionCleanAll.triggered.connect(self.onCleanDB)
-        self.ui.actionAccounts.triggered.connect(partial(self.onDataDialog, "accounts"))
-        self.ui.actionAssets.triggered.connect(partial(self.onDataDialog, "assets"))
-        self.ui.actionPeers.triggered.connect(partial(self.onDataDialog, "agents"))
-        self.ui.actionCategories.triggered.connect(partial(self.onDataDialog, "categories"))
-        self.ui.actionTags.triggered.connect(partial(self.onDataDialog, "tags"))
-        self.ui.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
-        self.ui.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, "base_currency"))
+        self.ui.actionAccounts.triggered.connect(partial(self.onDataDialog, AccountListDialog))
+        self.ui.actionAssets.triggered.connect(partial(self.onDataDialog, SymbolListDialog))
+        self.ui.actionPeers.triggered.connect(partial(self.onDataDialog, PeerListDialog))
+        self.ui.actionCategories.triggered.connect(partial(self.onDataDialog, CategoryListDialog))
+        self.ui.actionTags.triggered.connect(partial(self.onDataDialog, TagsListDialog))
+        self.ui.actionQuotes.triggered.connect(partial(self.onDataDialog, QuotesListDialog))
+        self.ui.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, BaseCurrencyDialog))
         self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInMDI, self.ui.mdiArea))
         self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInMDI, self.ui.mdiArea))
         self.CancelButton.clicked.connect(self.downloader.on_cancel)
@@ -260,23 +260,8 @@ class MainWindow(QMainWindow):
         self.ledger.rebuild()
 
     @Slot()
-    def onDataDialog(self, dlg_type):
-        if dlg_type == "accounts":
-            AccountListDialog().exec()
-        elif dlg_type == "assets":
-            SymbolListDialog().exec()
-        elif dlg_type == "agents":
-            PeerListDialog(self).exec()
-        elif dlg_type == "categories":
-            CategoryListDialog(self).exec()
-        elif dlg_type == "tags":
-            TagsListDialog(self).exec()
-        elif dlg_type == "quotes":
-            QuotesListDialog().exec()
-        elif dlg_type == "base_currency":
-            BaseCurrencyDialog().exec()
-        else:
-            assert False, f"Unexpected dialog call: '{dlg_type}'"
+    def onDataDialog(self, dialog_class):
+        dialog_class().exec()
         self.ledger.rebuild()
 
     @Slot()
