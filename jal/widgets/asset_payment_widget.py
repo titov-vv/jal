@@ -7,7 +7,8 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction, AssetPayment
-from jal.db.common_models import AccountListModel, SymbolsListModel
+from jal.db.common_models import AccountListModel
+from jal.db.asset_models import SymbolsListModel
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
 

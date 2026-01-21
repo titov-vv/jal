@@ -4,7 +4,7 @@ from PySide6.QtCore import Signal, Slot, QPoint
 from PySide6.QtWidgets import QAbstractItemView, QDialog, QMessageBox
 from jal.ui.ui_asset_list_dlg import Ui_AssetsListDialog
 from jal.db.settings import JalSettings
-from jal.db.common_models import SymbolsListModel
+from jal.db.asset_models import SymbolsListModel
 from jal.constants import PredefinedAsset
 
 

@@ -12,7 +12,8 @@ from jal.widgets.delegates import WidgetMapperDelegateBase, LookupSelectorDelega
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import localize_decimal, db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction, CorporateAction
-from jal.db.common_models import AccountListModel, SymbolsListModel
+from jal.db.common_models import AccountListModel
+from jal.db.asset_models import SymbolsListModel
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
 

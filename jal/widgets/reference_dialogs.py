@@ -5,8 +5,8 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog, QMessageBox, QHeaderView
 from PySide6.QtSql import QSqlRelationalDelegate
 from jal.db.common_models_abstract import CmWidth, CmDelegate, CmReference
-from jal.db.common_models import AccountListModel, SymbolsListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, \
-    QuotesListModel, BaseCurrencyListModel
+from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, QuotesListModel, BaseCurrencyListModel
+from jal.db.asset_models import SymbolsListModel
 from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
@@ -178,8 +178,6 @@ class ReferenceDataDialog(QDialog):
                 continue
             if spec.delegate_type == CmDelegate.BOOL:
                 delegate = BoolDelegate(self._view)
-            elif spec.delegate_type == CmDelegate.CONSTANT_LOOKUP:
-                raise NotImplementedError   # FIXME implement ConstantLookupDelegate call with proper initialization
             elif spec.delegate_type == CmDelegate.FLOAT:
                 delegate = FloatDelegate(spec.delegate_details, parent=self._view)
             elif spec.delegate_type == CmDelegate.GRID:

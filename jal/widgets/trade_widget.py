@@ -4,7 +4,8 @@ from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.db.operations import LedgerTransaction
-from jal.db.common_models import AccountListModel, SymbolsListModel
+from jal.db.common_models import AccountListModel
+from jal.db.asset_models import SymbolsListModel
 from jal.db.helpers import now_ts
 
 

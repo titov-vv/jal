@@ -9,7 +9,8 @@ from jal.constants import PredefinedAsset, AssetData, MarketDataFeed
 from jal.db.helpers import localize_decimal, db_row2dict
 from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantLookupDelegate
 from jal.db.common_models_abstract import AbstractReferenceListModel
-from jal.db.common_models import SymbolsListModel, TagTreeModel
+from jal.db.common_models import TagTreeModel
+from jal.db.asset_models import SymbolsListModel
 from jal.db.tag import JalTag
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_dialogs import SymbolListDialog

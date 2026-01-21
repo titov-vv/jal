@@ -10,7 +10,8 @@ from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.db.operations import LedgerTransaction
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.account import JalAccount
-from jal.db.common_models import AccountListModel, SymbolsListModel
+from jal.db.common_models import AccountListModel
+from jal.db.asset_models import SymbolsListModel
 
 
 # ----------------------------------------------------------------------------------------------------------------------

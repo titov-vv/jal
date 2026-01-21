@@ -2,13 +2,12 @@ from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlRelation
 from PySide6.QtWidgets import QMessageBox
 from jal.db.category import JalCategory
-from jal.db.common_models_abstract import CmColumn, CmWidth, CmDelegate, CmReference, \
-    AbstractReferenceListModel, AbstractReferenceListReadOnlyModel, SqlTreeModel
+from jal.db.common_models_abstract import CmColumn, CmWidth, CmDelegate, CmReference, AbstractReferenceListModel, SqlTreeModel
 from jal.db.peer import JalPeer
 from jal.db.tag import JalTag
 from jal.widgets.icons import JalIcon
 
-# FIXME Implement SymbolsListModel
+
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(AbstractReferenceListModel):
     def __init__(self, parent=None):
@@ -45,45 +44,6 @@ class AccountListModel(AbstractReferenceListModel):
         if reply != QMessageBox.Yes:
             return False
         return super().removeElement(index)
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-class SymbolsListModel(AbstractReferenceListReadOnlyModel):
-    def __init__(self, parent=None):
-        columns = [
-            CmColumn("id", '', hide=True),
-            CmColumn("symbol", self.tr("Symbol"), default=True, sort=True),
-            CmColumn("asset_id", self.tr("Asset")),
-            CmColumn("type_id", self.tr("Asset type"), hide=True, group=True),
-            CmColumn("currency_id", self.tr("Currency")),
-            CmColumn("location_id", self.tr("Location")),
-            CmColumn("full_name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, details=True),
-            CmColumn("icon", '')
-        ]
-        super().__init__("symbols_ext", columns, parent)
-
-    def configureView(self):
-        super().configureView()
-        # self._lookup_delegate = QSqlRelationalDelegate(self._view)
-        # self._constant_lookup_delegate = ConstantLookupDelegate(MarketDataFeed, self._view)
-        # self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
-        # self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._constant_lookup_delegate)
-
-    # def removeElement(self, index) -> bool:
-    #     used_by_accounts = JalAccount().get_all_accounts(active_only=False, currency_id=self.getId(index))
-    #     if len(used_by_accounts):
-    #         QMessageBox().warning(None, self.tr("Warning"),
-    #                               self.tr("You can't delete currency that is used by account:\n") +
-    #                               '\n'.join([x.name() for i, x in enumerate(used_by_accounts) if i < 10]),  # Display first 10 accounts that use the currency
-    #                               QMessageBox.Ok)
-    #         return False+
-    #     reply = QMessageBox().warning(None, self.tr("Warning"),
-    #                                   self.tr("All transactions related with this asset will be deleted.\n"
-    #                                           "Do you want to delete the asset anyway?"),
-    #                                   QMessageBox.Yes, QMessageBox.No)
-    #     if reply != QMessageBox.Yes:
-    #         return False
-    #     return super().removeElement(index)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
