@@ -91,10 +91,10 @@ class GridLinesDelegate(QStyledItemDelegate):
 # ----------------------------------------------------------------------------------------------------------------------
 # Delegate to convert timestamp from unix-time to QDateTime and display it according to the given format
 class TimestampDelegate(GridLinesDelegate):
-    def __init__(self, display_format='%d/%m/%Y %H:%M:%S', parent=None):
+    def __init__(self, display_format=None, parent=None):
         super().__init__(parent=parent)
         self._parent = parent
-        self._format = display_format
+        self._format = '%d/%m/%Y %H:%M:%S' if display_format is None else display_format
 
     def displayText(self, value, locale):
         if isinstance(value, str):  # int value comes here in form of string in case of SQL aggregate function results
