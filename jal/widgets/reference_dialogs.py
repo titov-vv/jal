@@ -300,16 +300,16 @@ class ReferenceDataDialog(QDialog):
                 assert False, f"Unsupported format of search field: {self.search_field}"
 
         if self.group_id:
-            conditions.append(f"{self.table}.{self.group_field}={self.group_id}")
+            conditions.append(f"{self.group_field}={self.group_id}")
 
         if self.filter_field is not None and self._filter_value:
-            conditions.append(f"{self.table}.{self.filter_field} = {self._filter_value}")
+            conditions.append(f"{self.filter_field} = {self._filter_value}")
             # completion model needs only this filter, others are for dialog
-            self.model.completion_model.setFilter(f"{self.table}.{self.filter_field} = {self._filter_value}")
+            self.model.completion_model.setFilter(f"{self.filter_field} = {self._filter_value}")
 
         if self.toggle_field:
             if not self.toggle_state:
-                conditions.append(f"{self.table}.{self.toggle_field}=1")
+                conditions.append(f"{self.toggle_field}=1")
 
         self._filter_text = ""
         for line in conditions:
@@ -378,7 +378,6 @@ class ReferenceDataDialog(QDialog):
 class AccountListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Accounts"))
-        self.table = "accounts"
         self._tag_model = TagTreeModel(self)
         self._tag_dialog = TagsListDialog(self)
         self._tag_delegate = LookupSelectorDelegate(self, self._tag_model, self._tag_dialog)
@@ -420,7 +419,6 @@ class AccountListDialog(ReferenceDataDialog):
 class SymbolListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Assets"))
-        self.table = "symbols_ext"
         self.model = SymbolsListModel(self)
         self.ui.DataView.setModel(self.model)
         self.setup_ui()
@@ -457,7 +455,6 @@ class SymbolListDialog(ReferenceDataDialog):
 class PeerListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Peers"))
-        self.table = "agents"
         self.model = PeerTreeModel(self)
         self.ui.TreeView.setModel(self.model)
         self.setup_ui()
@@ -515,7 +512,6 @@ class PeerListDialog(ReferenceDataDialog):
 class CategoryListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Categories"))
-        self.table = "categories"
         self.model = CategoryTreeModel(self)
         self.ui.TreeView.setModel(self.model)
         self.setup_ui()
@@ -568,7 +564,6 @@ class CategoryListDialog(ReferenceDataDialog):
 class TagsListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent, window_title=self.tr("Tags"))
-        self.table = "tags"
         self.model = TagTreeModel(parent=self)
         self.ui.TreeView.setModel(self.model)
         self.setup_ui()
@@ -622,7 +617,6 @@ class TagsListDialog(ReferenceDataDialog):
 class QuotesListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent, window_title=self.tr("Quotes"))
-        self.table = "quotes"
         self.model = QuotesListModel(self)
         self.ui.DataView.setModel(self.model)
         self.setup_ui()
@@ -638,7 +632,6 @@ class QuotesListDialog(ReferenceDataDialog):
 class BaseCurrencyDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent, window_title=self.tr("Base currency"))
-        self.table = "base_currency"
         self.model = BaseCurrencyListModel(self)
         self.ui.DataView.setModel(self.model)
         self.setup_ui()
