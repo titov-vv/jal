@@ -1,8 +1,9 @@
 from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlRelation
 from PySide6.QtWidgets import QMessageBox
+from jal.constants import CmColumn, CmWidth, CmDelegate, CmReference
 from jal.db.category import JalCategory
-from jal.db.common_models_abstract import CmColumn, CmWidth, CmDelegate, CmReference, AbstractReferenceListModel, SqlTreeModel
+from jal.db.common_models_abstract import AbstractReferenceListModel, SqlTreeModel
 from jal.db.peer import JalPeer
 from jal.db.tag import JalTag
 from jal.widgets.icons import JalIcon

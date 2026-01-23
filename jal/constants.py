@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from PySide6.QtCore import Property, QObject, QLocale
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QComboBox
@@ -31,6 +32,39 @@ class Setup:
     NULL_VALUE = '-.--'
     MAX_TIMESTAMP = 9999999999
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Constants to define presentation of database columns in UI views.
+
+class CmWidth:
+    WIDTH_STRETCH = -1  # special value for column width to indicate stretching to fill available space
+    WIDTH_DATETIME = -2  # special value for datetime column width
+
+
+class CmReference:
+    TAG = 1
+    PEER = 2
+    SYMBOL = 3
+
+class CmDelegate:
+    BOOL = 'bool'
+    FLOAT = 'float'
+    GRID = 'grid'
+    LOOKUP = 'lookup'
+    REFERENCE = 'reference'
+    TIMESTAMP = 'timestamp'
+
+@dataclass
+class CmColumn:    # column metadata for custom models
+    name: str                    # DB column name
+    header: str                  # Column header title
+    width: int | None = None     # Width of the column
+    hide: bool = False           # True = hide the column from the view
+    sort: bool = False           # True = enable sorting by this column
+    group: bool = False          # True = enable grouping by this column
+    default: bool = False        # True = this is the default column to show as item name
+    details: bool = False        # True = this column contains details to show in item related widgets
+    delegate_type: str | None = None            # one of CmDelegate values that defines formatting/editing delegate for the column
+    delegate_details: str | int | None = None   # additional details for delegate (e.g. number of decimal places for FLOAT delegate)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # This class is initialized with global values that is used by JAL

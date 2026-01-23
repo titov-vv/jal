@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, Slot, Signal, Property, QDate, QPoint
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog, QMessageBox, QHeaderView
 from PySide6.QtSql import QSqlRelationalDelegate
-from jal.db.common_models_abstract import CmWidth, CmDelegate, CmReference
+from jal.constants import CmWidth, CmDelegate, CmReference
 from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, QuotesListModel, BaseCurrencyListModel
 from jal.db.asset_models import SymbolsListModel
 from jal.db.account import JalAccount

@@ -3,22 +3,23 @@ from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtSql import QSqlQueryModel, QSqlTableModel
 from PySide6.QtWidgets import QCompleter
 from jal.db.db import JalDB
+from jal.constants import CmColumn, CmWidth
 
-# columns = [
-#     CmColumn("id", '', hide=True),
-#     CmColumn("symbol", self.tr("Symbol"), default=True, sort=True),
-#     CmColumn("asset_id", self.tr("Asset")),
-#     CmColumn("type_id", self.tr("Asset type"), hide=True, group=True),
-#     CmColumn("currency_id", self.tr("Currency")),
-#     CmColumn("location_id", self.tr("Location")),
-#     CmColumn("full_name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, details=True),
-#     CmColumn("icon", '')
-# ]
+
 # ----------------------------------------------------------------------------------------------------------------------
 class SymbolsListModel(QSqlQueryModel, JalDB):
     def __init__(self, parent=None):
-        # self._init_base(table, columns, parent)
         super().__init__(parent=parent, db=self.connection())
+        self._columns = [
+            CmColumn("id", '', hide=True),
+            CmColumn("symbol", self.tr("Symbol"), default=True, sort=True),
+            CmColumn("asset_id", self.tr("Asset")),
+            CmColumn("type_id", self.tr("Asset type"), hide=True, group=True),
+            CmColumn("currency_id", self.tr("Currency")),
+            CmColumn("location_id", self.tr("Location")),
+            CmColumn("full_name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, details=True),
+            CmColumn("icon", '')
+        ]
         self._table = 'symbols_ext'
         self._filter_by = ''
         self._filter_value = None
