@@ -563,7 +563,7 @@ class StatementIBKR(StatementXML):
                 self.drop_extra_fields(transfer, ["direction", "amount", "company", "quantity"])
             else:
                 if transfer['direction'] != "IN":
-                    raise Statement_ImportError(self.tr("Outgoing asset transfer not implemented yet"))
+                    raise Statement_ImportError(self.tr("Outgoing asset transfer not implemented yet: ") + f"{transfer}")
                 transfer['account'] = [transfer.pop('account2'), transfer['account'], 0]
                 transfer['asset'] = [transfer['asset'], transfer['asset']]
                 transfer['withdrawal'] = transfer['deposit'] = transfer.pop('quantity')

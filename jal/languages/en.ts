@@ -35,7 +35,7 @@
 <context>
     <name>AccountBalanceHistoryReport</name>
     <message>
-        <location filename="../reports/account_balance.py" line="69"/>
+        <location filename="../reports/account_balance.py" line="68"/>
         <source>Account balance history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -61,7 +61,7 @@
 <context>
     <name>AccountBalanceHistoryReportWindow</name>
     <message>
-        <location filename="../reports/account_balance.py" line="80"/>
+        <location filename="../reports/account_balance.py" line="78"/>
         <source>Account balance</source>
         <translation type="unfinished"></translation>
     </message>
@@ -165,7 +165,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="82"/>
+        <location filename="../widgets/reference_dialogs.py" line="81"/>
         <source>All transactions related with this account will be deleted.
 Do you want to delete the account anyway?</source>
         <translation type="unfinished"></translation>
@@ -204,7 +204,7 @@ Do you want to delete the account anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="207"/>
+        <location filename="../constants.py" line="205"/>
         <source>IB contract ID</source>
         <translation type="unfinished"></translation>
     </message>
@@ -334,13 +334,13 @@ Do you want to delete the account anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="163"/>
+        <location filename="../widgets/reference_dialogs.py" line="162"/>
         <source>You can&apos;t delete currency that is used by account:
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="168"/>
+        <location filename="../widgets/reference_dialogs.py" line="167"/>
         <source>All transactions related with this asset will be deleted.
 Do you want to delete the asset anyway?</source>
         <translation type="unfinished"></translation>
@@ -379,7 +379,7 @@ Do you want to delete the asset anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="437"/>
+        <location filename="../db/operations.py" line="435"/>
         <source>Asset fee/tax</source>
         <translation type="unfinished"></translation>
     </message>
@@ -414,7 +414,7 @@ Do you want to delete the asset anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="640"/>
+        <location filename="../db/operations.py" line="639"/>
         <source>Not supported action: stock dividend or vesting closes short trade.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -573,7 +573,7 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>AssetPortfolioReport</name>
     <message>
-        <location filename="../reports/portfolio.py" line="24"/>
+        <location filename="../reports/portfolio.py" line="23"/>
         <source>Asset portfolio</source>
         <translation type="unfinished"></translation>
     </message>
@@ -634,7 +634,7 @@ Do you want to delete the asset anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="22"/>
+        <location filename="../reports/assets_payments.py" line="21"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
@@ -664,7 +664,7 @@ Do you want to delete the asset anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="24"/>
+        <location filename="../reports/assets_payments.py" line="23"/>
         <source>Bond Amortization</source>
         <translation type="unfinished"></translation>
     </message>
@@ -672,7 +672,7 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>AssetsPaymentsReport</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="125"/>
+        <location filename="../reports/assets_payments.py" line="124"/>
         <source>Assets&apos; Payments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -698,7 +698,7 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>AssetsPaymentsReportWindow</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="136"/>
+        <location filename="../reports/assets_payments.py" line="134"/>
         <source>Assets&apos; Payments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -731,7 +731,7 @@ Do you want to delete the asset anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="130"/>
+        <location filename="../db/balances_model.py" line="129"/>
         <source>Total:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -816,12 +816,12 @@ Do you want to delete the asset anyway?</source>
 <context>
     <name>CategoryReport</name>
     <message>
-        <location filename="../reports/category.py" line="43"/>
+        <location filename="../reports/category.py" line="42"/>
         <source>Operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/category.py" line="44"/>
+        <location filename="../reports/category.py" line="43"/>
         <source>by Category</source>
         <translation type="unfinished"></translation>
     </message>
@@ -852,7 +852,7 @@ Do you want to delete the asset anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="319"/>
+        <location filename="../widgets/reference_dialogs.py" line="318"/>
         <source>New category</source>
         <translation type="unfinished"></translation>
     </message>
@@ -868,7 +868,7 @@ Do you want to delete the asset anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="337"/>
+        <location filename="../widgets/reference_dialogs.py" line="335"/>
         <source>Category or one of its subcategories are in use.
 All related transactions will be deleted together with the category.
 Do you want to delete the category anyway?</source>
@@ -883,12 +883,12 @@ Do you want to delete the category anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/price_chart.py" line="116"/>
+        <location filename="../widgets/price_chart.py" line="115"/>
         <source>Buy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/price_chart.py" line="119"/>
+        <location filename="../widgets/price_chart.py" line="118"/>
         <source>Sell</source>
         <translation type="unfinished"></translation>
     </message>
@@ -956,7 +956,7 @@ Do you want to delete the category anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="148"/>
+        <location filename="../db/trades_model.py" line="147"/>
         <source>Total:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -989,7 +989,7 @@ Do you want to delete the category anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1108"/>
+        <location filename="../db/operations.py" line="1106"/>
         <source>Delisting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -999,22 +999,22 @@ Do you want to delete the category anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1234"/>
+        <location filename="../db/operations.py" line="1233"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1239"/>
+        <location filename="../db/operations.py" line="1238"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1243"/>
+        <location filename="../db/operations.py" line="1242"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1252"/>
+        <location filename="../db/operations.py" line="1251"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1290,7 +1290,7 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DealsReport</name>
     <message>
-        <location filename="../reports/deals.py" line="17"/>
+        <location filename="../reports/deals.py" line="16"/>
         <source>Deals by Account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1326,7 +1326,7 @@ one for ParentCo and second for Subsidiary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="30"/>
+        <location filename="../reports/deals.py" line="27"/>
         <source>Deals</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1389,7 +1389,7 @@ one for ParentCo and second for Subsidiary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="187"/>
+        <location filename="../constants.py" line="183"/>
         <source>Tax withheld</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1407,7 +1407,7 @@ one for ParentCo and second for Subsidiary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/term_deposit_widget.py" line="163"/>
+        <location filename="../widgets/term_deposit_widget.py" line="161"/>
         <source>Amount</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1445,12 +1445,12 @@ one for ParentCo and second for Subsidiary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/term_deposits.py" line="21"/>
+        <location filename="../reports/term_deposits.py" line="20"/>
         <source>Planned End Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/term_deposits.py" line="70"/>
+        <location filename="../reports/term_deposits.py" line="69"/>
         <source>Total</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1473,12 +1473,12 @@ one for ParentCo and second for Subsidiary</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="205"/>
+        <location filename="../widgets/income_spending_widget.py" line="204"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="217"/>
+        <location filename="../widgets/income_spending_widget.py" line="216"/>
         <source>Total</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1579,7 +1579,7 @@ one for ParentCo and second for Subsidiary</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="248"/>
+        <location filename="../db/holdings_model.py" line="247"/>
         <source>Exp:</source>
         <translation></translation>
     </message>
@@ -1731,17 +1731,17 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>IncomeSpending</name>
     <message>
-        <location filename="../db/operations.py" line="320"/>
+        <location filename="../db/operations.py" line="319"/>
         <source>Spending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="323"/>
+        <location filename="../db/operations.py" line="322"/>
         <source>Income</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="340"/>
+        <location filename="../db/operations.py" line="339"/>
         <source>Rate: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1827,7 +1827,7 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>IncomeSpendingReport</name>
     <message>
-        <location filename="../reports/income_spending.py" line="379"/>
+        <location filename="../reports/income_spending.py" line="378"/>
         <source>Income &amp; Spending</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1835,7 +1835,7 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>IncomeSpendingReportModel</name>
     <message>
-        <location filename="../reports/income_spending.py" line="229"/>
+        <location filename="../reports/income_spending.py" line="228"/>
         <location filename="../reports/income_spending.py" line="355"/>
         <source>TOTAL</source>
         <translation type="unfinished"></translation>
@@ -1877,7 +1877,7 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>IncomeSpendingReportWindow</name>
     <message>
-        <location filename="../reports/income_spending.py" line="390"/>
+        <location filename="../reports/income_spending.py" line="389"/>
         <source>Income &amp; Spending</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2058,27 +2058,27 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>JalAsset</name>
     <message>
-        <location filename="../db/asset.py" line="159"/>
+        <location filename="../db/asset.py" line="158"/>
         <source>There are no quote/rate for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="228"/>
+        <location filename="../db/asset.py" line="227"/>
         <source>Quotations were updated: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="284"/>
+        <location filename="../db/asset.py" line="283"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="304"/>
+        <location filename="../db/asset.py" line="303"/>
         <source>Country updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="314"/>
+        <location filename="../db/asset.py" line="313"/>
         <source>Reg.number updated for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2123,13 +2123,13 @@ one for ParentCo and second for Subsidiary</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="135"/>
+        <location filename="../db/backup_restore.py" line="134"/>
         <source>Database was loaded from the backup.
 </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="136"/>
+        <location filename="../db/backup_restore.py" line="135"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
@@ -2188,12 +2188,12 @@ do you want to save it?</source>
 <context>
     <name>JalSqlError</name>
     <message>
-        <location filename="../db/db.py" line="50"/>
+        <location filename="../db/db.py" line="48"/>
         <source>Incorrect currency assignment for an asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="53"/>
+        <location filename="../db/db.py" line="51"/>
         <source>Data are referenced in another place and can&apos;t be modified</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2264,12 +2264,12 @@ do you want to save it?</source>
 <context>
     <name>LogViewer</name>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="45"/>
+        <location filename="../widgets/custom/log_viewer.py" line="44"/>
         <source>▶ logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/log_viewer.py" line="47"/>
+        <location filename="../widgets/custom/log_viewer.py" line="45"/>
         <source>▲ logs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2520,7 +2520,7 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="176"/>
+        <location filename="../widgets/main_window.py" line="175"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
@@ -2562,7 +2562,7 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="178"/>
+        <location filename="../widgets/main_window.py" line="177"/>
         <source>You should restart application to apply changes.
 Application will be terminated now.</source>
         <translation type="unfinished"></translation>
@@ -2579,7 +2579,7 @@ Are you sure?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="191"/>
+        <location filename="../widgets/main_window.py" line="190"/>
         <source>Database will be removed at next JAL start.
 Application will be terminated now.</source>
         <translation type="unfinished"></translation>
@@ -2595,17 +2595,17 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="239"/>
+        <location filename="../widgets/main_window.py" line="238"/>
         <source>More information, manuals and problem reports are at </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="241"/>
+        <location filename="../widgets/main_window.py" line="240"/>
         <source>Questions, comments, help or donations:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="305"/>
+        <location filename="../widgets/main_window.py" line="304"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation></translation>
     </message>
@@ -2668,7 +2668,7 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="256"/>
+        <location filename="../constants.py" line="252"/>
         <source>Warsaw Stock Exchange</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2711,17 +2711,17 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="186"/>
+        <location filename="../widgets/tax_widget.py" line="168"/>
         <source>Excel files (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="186"/>
+        <location filename="../widgets/tax_widget.py" line="168"/>
         <source>Save money flow report to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="217"/>
+        <location filename="../widgets/tax_widget.py" line="199"/>
         <source>Money flow report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2754,7 +2754,7 @@ Application will be terminated now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="19"/>
+        <location filename="../db/operations_model.py" line="18"/>
         <source>Currency</source>
         <translation></translation>
     </message>
@@ -2878,22 +2878,22 @@ Application will be terminated now.</source>
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="57"/>
+        <location filename="../data_import/shop_receipt.py" line="56"/>
         <source>Product name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="59"/>
+        <location filename="../data_import/shop_receipt.py" line="58"/>
         <source>Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="61"/>
+        <location filename="../data_import/shop_receipt.py" line="60"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="63"/>
+        <location filename="../data_import/shop_receipt.py" line="62"/>
         <source>Amount</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2952,12 +2952,12 @@ Application will be terminated now.</source>
 <context>
     <name>PeerReport</name>
     <message>
-        <location filename="../reports/peer.py" line="43"/>
+        <location filename="../reports/peer.py" line="42"/>
         <source>Operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/peer.py" line="44"/>
+        <location filename="../reports/peer.py" line="43"/>
         <source>by Peer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2998,7 +2998,7 @@ Application will be terminated now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="220"/>
+        <location filename="../widgets/reference_dialogs.py" line="219"/>
         <source>New peer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3014,7 +3014,7 @@ Application will be terminated now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="252"/>
+        <location filename="../widgets/reference_dialogs.py" line="250"/>
         <source>Peer or one of its child peers are in use.
 All related transactions will be deleted together with the peer.
 Do you want to delete the peer anyway?</source>
@@ -3024,7 +3024,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>PortfolioReportWindow</name>
     <message>
-        <location filename="../reports/portfolio.py" line="37"/>
+        <location filename="../reports/portfolio.py" line="34"/>
         <source>Asset Portfolio</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3145,7 +3145,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>PredefinedAgents</name>
     <message>
-        <location filename="../constants.py" line="94"/>
+        <location filename="../constants.py" line="91"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3193,7 +3193,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="165"/>
+        <location filename="../constants.py" line="161"/>
         <source>Crypto-currency</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3241,7 +3241,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="120"/>
+        <location filename="../constants.py" line="117"/>
         <source>Results of investments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3269,7 +3269,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="139"/>
+        <location filename="../constants.py" line="135"/>
         <source>Broker account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3332,7 +3332,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="25"/>
+        <location filename="../reports/profit_loss.py" line="24"/>
         <source>Change, %</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3392,17 +3392,17 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="29"/>
+        <location filename="../reports/profit_loss.py" line="27"/>
         <source>Dec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="111"/>
+        <location filename="../reports/profit_loss.py" line="110"/>
         <source>Period start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="115"/>
+        <location filename="../reports/profit_loss.py" line="114"/>
         <source>Period end</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3410,7 +3410,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>ProfitLossReport</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="158"/>
+        <location filename="../reports/profit_loss.py" line="157"/>
         <source>P&amp;L by Account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3441,7 +3441,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>ProfitLossReportWindow</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="170"/>
+        <location filename="../reports/profit_loss.py" line="168"/>
         <source>P&amp;L by Account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3649,7 +3649,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="30"/>
+        <location filename="../data_import/receipt_api/receipts.py" line="28"/>
         <source>Portuguese Pingo Doce receipt</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3906,7 +3906,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>ReferenceDataDialog</name>
     <message>
-        <location filename="../widgets/reference_data.py" line="122"/>
+        <location filename="../widgets/reference_data.py" line="121"/>
         <source>ANY</source>
         <translation></translation>
     </message>
@@ -4004,7 +4004,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/operations_base.py" line="23"/>
+        <location filename="../reports/operations_base.py" line="22"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4067,12 +4067,12 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="102"/>
+        <location filename="../reports/income_spending.py" line="100"/>
         <source>Dec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="106"/>
+        <location filename="../reports/income_spending.py" line="105"/>
         <source>wk</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4134,12 +4134,12 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="198"/>
+        <location filename="../widgets/corporate_action_widget.py" line="196"/>
         <source>Share, %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="202"/>
+        <location filename="../widgets/corporate_action_widget.py" line="201"/>
         <source>Total</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4274,7 +4274,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>SqlTreeModel</name>
     <message>
-        <location filename="../db/reference_models.py" line="190"/>
+        <location filename="../db/reference_models.py" line="189"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4293,7 +4293,7 @@ Do you want to delete the peer anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="369"/>
+        <location filename="../data_import/statement.py" line="368"/>
         <source>Statement period starts before last recorded operation for the account </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4368,7 +4368,7 @@ Do you want to delete the peer anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="465"/>
+        <location filename="../data_import/statement.py" line="464"/>
         <source>Select account to withdraw from:</source>
         <translation></translation>
     </message>
@@ -4378,7 +4378,7 @@ Do you want to delete the peer anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="470"/>
+        <location filename="../data_import/statement.py" line="469"/>
         <source>Select account to deposit to:</source>
         <translation></translation>
     </message>
@@ -4527,7 +4527,7 @@ Do you want to delete the peer anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="467"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="466"/>
         <source>Load IB Flex-statement for account </source>
         <translation></translation>
     </message>
@@ -4549,6 +4549,11 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="559"/>
         <source>Unknown transfer direction: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/ibkr.py" line="566"/>
+        <source>Outgoing asset transfer not implemented yet: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4613,12 +4618,12 @@ Do you want to delete the peer anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="147"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="146"/>
         <source>Interactive Brokers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="150"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="148"/>
         <source>IBKR flex-query (*.xml)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4638,18 +4643,13 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="461"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="460"/>
         <source>Can&apos;t find account for a given masked account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="461"/>
         <source>Please create one.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="566"/>
-        <source>Outgoing asset transfer not implemented yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4728,12 +4728,12 @@ Do you want to delete the peer anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="987"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="986"/>
         <source>Payment was reversed by approximate description: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="994"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="993"/>
         <source>Payment was reversed with different reported date: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4743,7 +4743,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1000"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="999"/>
         <source>Payment was reversed: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4801,7 +4801,7 @@ Do you want to delete the peer anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1140"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1139"/>
         <source>Tax adjustment for dividend: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4824,12 +4824,12 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>StatementJ2T</name>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="35"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="34"/>
         <source>Just2Trade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="37"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="36"/>
         <source>Just2Trade statement (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4865,7 +4865,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="250"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="249"/>
         <source>Unknown cash transaction type </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4900,12 +4900,12 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>StatementKIT</name>
     <message>
-        <location filename="../data_import/broker_statements/kit.py" line="28"/>
+        <location filename="../data_import/broker_statements/kit.py" line="27"/>
         <source>KIT Finance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kit.py" line="31"/>
+        <location filename="../data_import/broker_statements/kit.py" line="29"/>
         <source>KIT Finance statement (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4938,12 +4938,12 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>StatementOpenPortfolio</name>
     <message>
-        <location filename="../data_import/broker_statements/open_portfolio.py" line="21"/>
+        <location filename="../data_import/broker_statements/open_portfolio.py" line="20"/>
         <source>Investbook / IZI-Invest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/open_portfolio.py" line="24"/>
+        <location filename="../data_import/broker_statements/open_portfolio.py" line="22"/>
         <source>Open portfolio (*.json)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5001,12 +5001,12 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>StatementPSB</name>
     <message>
-        <location filename="../data_import/broker_statements/psb.py" line="34"/>
+        <location filename="../data_import/broker_statements/psb.py" line="33"/>
         <source>PSB Broker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/psb.py" line="37"/>
+        <location filename="../data_import/broker_statements/psb.py" line="35"/>
         <source>PSB broker statement (*.xlsx *.xls)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5059,12 +5059,12 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>StatementTvoyBroker</name>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="50"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="49"/>
         <source>Tvoy Broker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/tvoy.py" line="52"/>
+        <location filename="../data_import/broker_statements/tvoy.py" line="51"/>
         <source>Tvoy Broker statement (*.zip)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5174,12 +5174,12 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>StatementVTB</name>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="39"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="38"/>
         <source>VTB Investments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="41"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="40"/>
         <source>VTB statement (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5204,98 +5204,103 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="111"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="114"/>
         <source>Securities loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="147"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="146"/>
         <source>No asset match in deals for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="157"/>
-        <location filename="../data_import/broker_statements/vtb.py" line="207"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="156"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="206"/>
         <source>Unknown trade type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="180"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="179"/>
         <source>Stock trades loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="220"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="219"/>
         <source>Derivative trades loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="245"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="244"/>
         <source>Can&apos;t parse currency exchange symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="253"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="252"/>
         <source>Unknown currency trade type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="271"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="270"/>
         <source>Currency trades loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="294"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="296"/>
         <source>Unsuppported asset transaction </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="298"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="303"/>
         <source>No asset match in asset transactions </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="304"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="309"/>
         <source>Failed to convert asset amount </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="309"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="314"/>
         <source>Asset transactions loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="347"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="353"/>
         <source>Unsuppported cash transaction </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="356"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="362"/>
         <source>Cash operations loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="378"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="384"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="391"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="396"/>
         <source>Can&apos;t parse dividend description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="403"/>
+        <source>Failed to convert dividend tax </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/vtb.py" line="413"/>
         <source>Can&apos;t parse bond maturity description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="409"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="419"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/vtb.py" line="411"/>
+        <location filename="../data_import/broker_statements/vtb.py" line="421"/>
         <source>Multiple asset cancellation match for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -5351,7 +5356,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>StatementXML</name>
     <message>
-        <location filename="../data_import/statement_xml.py" line="79"/>
+        <location filename="../data_import/statement_xml.py" line="78"/>
         <source>Unsupported date/time format: </source>
         <translation></translation>
     </message>
@@ -5463,12 +5468,12 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TagReport</name>
     <message>
-        <location filename="../reports/tag.py" line="43"/>
+        <location filename="../reports/tag.py" line="42"/>
         <source>Operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/tag.py" line="44"/>
+        <location filename="../reports/tag.py" line="43"/>
         <source>by Tag</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5504,7 +5509,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="400"/>
+        <location filename="../widgets/reference_dialogs.py" line="399"/>
         <source>New tag</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5646,7 +5651,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="108"/>
+        <location filename="../data_export/taxes.py" line="110"/>
         <source>There are no information about tax treaty in tax report parameters</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5764,52 +5769,62 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="73"/>
+        <location filename="../widgets/tax_widget.py" line="75"/>
         <source>Save tax reports to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="73"/>
+        <location filename="../widgets/tax_widget.py" line="75"/>
         <source>Excel files (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="76"/>
+        <location filename="../widgets/tax_widget.py" line="78"/>
         <source>Save tax form to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="76"/>
+        <location filename="../widgets/tax_widget.py" line="78"/>
         <source>Tax form (*.dc{last_digit})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="131"/>
+        <location filename="../widgets/tax_widget.py" line="81"/>
+        <source>Save IRS Modelo 3 tax data to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="81"/>
+        <source>XML files (*.xml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="108"/>
         <source>Data are incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="132"/>
+        <location filename="../widgets/tax_widget.py" line="109"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="140"/>
+        <location filename="../widgets/tax_widget.py" line="117"/>
         <source>Tax report is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="154"/>
+        <location filename="../widgets/tax_widget.py" line="131"/>
         <source>Tax report was saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="162"/>
+        <location filename="../widgets/tax_widget.py" line="144"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="164"/>
+        <location filename="../widgets/tax_widget.py" line="146"/>
         <source>Can&apos;t write tax form into file </source>
         <translation type="unfinished"></translation>
     </message>
@@ -5923,7 +5938,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TermDepositsReport</name>
     <message>
-        <location filename="../reports/term_deposits.py" line="125"/>
+        <location filename="../reports/term_deposits.py" line="124"/>
         <source>Term deposits</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5949,7 +5964,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TermDepositsReportWindow</name>
     <message>
-        <location filename="../reports/term_deposits.py" line="136"/>
+        <location filename="../reports/term_deposits.py" line="134"/>
         <source>Term deposits</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5957,7 +5972,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TimestampDelegate</name>
     <message>
-        <location filename="../widgets/delegates.py" line="106"/>
+        <location filename="../widgets/delegates.py" line="105"/>
         <source>&lt;invalid&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5965,12 +5980,12 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>Trade</name>
     <message>
-        <location filename="../db/operations.py" line="704"/>
+        <location filename="../db/operations.py" line="703"/>
         <source>Sell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="707"/>
+        <location filename="../db/operations.py" line="706"/>
         <source>Buy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6103,7 +6118,7 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="943"/>
+        <location filename="../db/operations.py" line="942"/>
         <source>Error. Zero rate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6113,12 +6128,12 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1028"/>
+        <location filename="../db/operations.py" line="1027"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1033"/>
+        <location filename="../db/operations.py" line="1032"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6229,7 +6244,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="29"/>
+        <location filename="../widgets/transfer_widget.py" line="28"/>
         <source>Transfer</source>
         <translation></translation>
     </message>
