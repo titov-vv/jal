@@ -5684,11 +5684,6 @@ Do you want to delete the peer anyway?</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="231"/>
-        <source>Create tax form in &quot;Декларация&quot; program format (*.dcX)</source>
-        <translation>Создать файл 3-НФДЛ в формате программы &quot;Декларация&quot; (*.dcX)</translation>
-    </message>
-    <message>
         <location filename="../ui/tax_export_widget.ui" line="194"/>
         <source>Excel file:</source>
         <translation>Файл Excel:</translation>
@@ -5712,6 +5707,11 @@ Do you want to delete the peer anyway?</source>
         <location filename="../ui/tax_export_widget.ui" line="130"/>
         <source>Create XML records to introduce in Modelo-3 form</source>
         <translation>Создать XML-записи для вставки в форму Modelo-3</translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="231"/>
+        <source>Create tax form in &quot;Декларация&quot; program format (*.dcX/*.deX)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="332"/>

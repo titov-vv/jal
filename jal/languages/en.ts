@@ -5669,11 +5669,6 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="231"/>
-        <source>Create tax form in &quot;Декларация&quot; program format (*.dcX)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../ui/tax_export_widget.ui" line="194"/>
         <source>Excel file:</source>
         <translation type="unfinished"></translation>
@@ -5696,6 +5691,11 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="130"/>
         <source>Create XML records to introduce in Modelo-3 form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="231"/>
+        <source>Create tax form in &quot;Декларация&quot; program format (*.dcX/*.deX)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

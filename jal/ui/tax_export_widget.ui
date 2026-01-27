@@ -228,7 +228,7 @@
          </sizepolicy>
         </property>
         <property name="title">
-         <string>Create tax form in &quot;Декларация&quot; program format (*.dcX)</string>
+         <string>Create tax form in &quot;Декларация&quot; program format (*.dcX/*.deX)</string>
         </property>
         <property name="flat">
          <bool>false</bool>

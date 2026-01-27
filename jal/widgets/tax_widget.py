@@ -75,8 +75,10 @@ class TaxWidget(MdiWidget):
             selector = (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.ui.XlsFileName)
         elif type == 'DLSG':
             last_digit = self.year % 10
-            selector = (self.tr("Save tax form to:"), self.tr(f"Tax form (*.dc{last_digit})"),
-                        f".dc{last_digit}", self.ui.DlsgFileName)
+            if self.year < 2025:
+                selector = (self.tr("Save tax form to:"), self.tr(f"Tax form (*.dc{last_digit})"), f".dc{last_digit}", self.ui.DlsgFileName)
+            else:
+                selector = (self.tr("Save tax form to:"), self.tr(f"Tax form (*.de{last_digit})"), f".de{last_digit}", self.ui.DlsgFileName)
         elif type == 'XML':
             selector = (self.tr("Save IRS Modelo 3 tax data to:"), self.tr("XML files (*.xml)"), '.xml', self.ui.IRS_Modelo3Filename)
         else:

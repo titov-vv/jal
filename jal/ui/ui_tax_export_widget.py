@@ -233,7 +233,7 @@ class Ui_TaxWidget(object):
         self.AccountLbl.setText(QCoreApplication.translate("TaxWidget", u"Account:", None))
         self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Excel file:", None))
         self.RuBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Russia)", None))
-        self.DlsgGroup.setTitle(QCoreApplication.translate("TaxWidget", u"Create tax form in \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" program format (*.dcX)", None))
+        self.DlsgGroup.setTitle(QCoreApplication.translate("TaxWidget", u"Create tax form in \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" program format (*.dcX/*.deX)", None))
         self.DlsgFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Output file:", None))
 #if QT_CONFIG(tooltip)
         self.DlsgSelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
