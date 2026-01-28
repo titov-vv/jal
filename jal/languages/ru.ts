@@ -2724,17 +2724,17 @@ Application will be terminated now.</source>
         <translation>Файл Excel:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="168"/>
+        <location filename="../widgets/tax_widget.py" line="176"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="168"/>
+        <location filename="../widgets/tax_widget.py" line="176"/>
         <source>Save money flow report to:</source>
         <translation>Сохранить ОоДДС в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="199"/>
+        <location filename="../widgets/tax_widget.py" line="207"/>
         <source>Money flow report saved to file </source>
         <translation>ОоДДС сохранён в файле </translation>
     </message>
@@ -5709,11 +5709,6 @@ Do you want to delete the peer anyway?</source>
         <translation>Создать XML-записи для вставки в форму Modelo-3</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="231"/>
-        <source>Create tax form in &quot;Декларация&quot; program format (*.dcX/*.deX)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../ui/tax_export_widget.ui" line="332"/>
         <source>Save Report</source>
         <translation>Сохранить Отчёт</translation>
@@ -5721,7 +5716,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="47"/>
         <location filename="../ui/tax_export_widget.ui" line="171"/>
-        <location filename="../ui/tax_export_widget.ui" line="268"/>
+        <location filename="../ui/tax_export_widget.ui" line="292"/>
         <source>Select file</source>
         <translation>Выберит файл</translation>
     </message>
@@ -5731,13 +5726,18 @@ Do you want to delete the peer anyway?</source>
         <translation>...</translation>
     </message>
     <message>
+        <location filename="../ui/tax_export_widget.ui" line="255"/>
+        <source>Create tax form in &quot;Декларация 2.0&quot; program format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/tax_export_widget.ui" line="318"/>
         <source>Country:</source>
         <translation>Страна:</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="164"/>
-        <location filename="../ui/tax_export_widget.ui" line="285"/>
+        <location filename="../ui/tax_export_widget.ui" line="302"/>
         <source>File where to store russian tax form</source>
         <translation>Файл для сохранения декларации 3-НДФЛ</translation>
     </message>
@@ -5758,88 +5758,88 @@ Do you want to delete the peer anyway?</source>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="157"/>
-        <location filename="../ui/tax_export_widget.ui" line="261"/>
+        <location filename="../ui/tax_export_widget.ui" line="285"/>
         <source>Output file:</source>
         <translation>Файл с результатом:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="278"/>
+        <location filename="../ui/tax_export_widget.ui" line="229"/>
         <source>Update only information about dividends</source>
         <translation>Обновить только информацию о дивидендах</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="174"/>
-        <location filename="../ui/tax_export_widget.ui" line="271"/>
+        <location filename="../ui/tax_export_widget.ui" line="295"/>
         <source> ... </source>
         <translation> ... </translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="299"/>
+        <location filename="../ui/tax_export_widget.ui" line="236"/>
         <source>Use broker name as income source</source>
         <translation>Использовать название брокера как источник выплаты</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="292"/>
+        <location filename="../ui/tax_export_widget.ui" line="222"/>
         <source>Do not use settlement date for currency rates</source>
         <translation>Не использовать дату поставки для курсов валют</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="75"/>
+        <location filename="../widgets/tax_widget.py" line="84"/>
         <source>Save tax reports to:</source>
         <translation>Сохранить налоговый отчёт в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="75"/>
+        <location filename="../widgets/tax_widget.py" line="84"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="78"/>
+        <location filename="../widgets/tax_widget.py" line="87"/>
         <source>Save tax form to:</source>
         <translation>Сохранить 3-НДФЛ в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="78"/>
-        <source>Tax form (*.dc{last_digit})</source>
-        <translation></translation>
+        <location filename="../widgets/tax_widget.py" line="87"/>
+        <source>Tax form (*.de{last_digit})</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="81"/>
+        <location filename="../widgets/tax_widget.py" line="89"/>
         <source>Save IRS Modelo 3 tax data to:</source>
         <translation>Сохранить налоговые данные IRS Modelo 3 в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="81"/>
+        <location filename="../widgets/tax_widget.py" line="89"/>
         <source>XML files (*.xml)</source>
         <translation>XML files (*.xml)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="108"/>
+        <location filename="../widgets/tax_widget.py" line="116"/>
         <source>Data are incomplete</source>
         <translation>Данные неполные</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="109"/>
+        <location filename="../widgets/tax_widget.py" line="117"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation>Вы не выбрали счёт для налогового отчёта</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="117"/>
+        <location filename="../widgets/tax_widget.py" line="125"/>
         <source>Tax report is empty</source>
         <translation>Налоговый отчёт пуст</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="131"/>
+        <location filename="../widgets/tax_widget.py" line="139"/>
         <source>Tax report was saved to file </source>
         <translation>Налоговый отчёт сохранён в файл </translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="144"/>
+        <location filename="../widgets/tax_widget.py" line="152"/>
         <source>Tax report saved to file </source>
         <translation>Налоговый отчёт сохранён в файл </translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="146"/>
+        <location filename="../widgets/tax_widget.py" line="154"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать 3-НДФЛ в файл </translation>
     </message>

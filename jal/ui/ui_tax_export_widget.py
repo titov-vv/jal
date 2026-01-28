@@ -48,7 +48,7 @@ class Ui_TaxWidget(object):
         self.Year.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
         self.Year.setMinimum(2010)
         self.Year.setMaximum(2030)
-        self.Year.setValue(2020)
+        self.Year.setValue(2025)
 
         self.MainLayout.addWidget(self.Year, 1, 1, 1, 2)
 
@@ -125,54 +125,54 @@ class Ui_TaxWidget(object):
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.DlsgGroup = QGroupBox(self.RuBox)
-        self.DlsgGroup.setObjectName(u"DlsgGroup")
-        self.DlsgGroup.setEnabled(True)
+        self.Ru_NoSettlement = QCheckBox(self.RuBox)
+        self.Ru_NoSettlement.setObjectName(u"Ru_NoSettlement")
+
+        self.verticalLayout.addWidget(self.Ru_NoSettlement)
+
+        self.Ru_DividendsOnly = QCheckBox(self.RuBox)
+        self.Ru_DividendsOnly.setObjectName(u"Ru_DividendsOnly")
+
+        self.verticalLayout.addWidget(self.Ru_DividendsOnly)
+
+        self.Ru_IncomeSourceBroker = QCheckBox(self.RuBox)
+        self.Ru_IncomeSourceBroker.setObjectName(u"Ru_IncomeSourceBroker")
+        self.Ru_IncomeSourceBroker.setChecked(True)
+
+        self.verticalLayout.addWidget(self.Ru_IncomeSourceBroker)
+
+        self.Ndfl3Group = QGroupBox(self.RuBox)
+        self.Ndfl3Group.setObjectName(u"Ndfl3Group")
+        self.Ndfl3Group.setEnabled(True)
         sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.DlsgGroup.sizePolicy().hasHeightForWidth())
-        self.DlsgGroup.setSizePolicy(sizePolicy3)
-        self.DlsgGroup.setFlat(False)
-        self.DlsgGroup.setCheckable(True)
-        self.DlsgGroup.setChecked(False)
-        self.gridLayout_2 = QGridLayout(self.DlsgGroup)
+        sizePolicy3.setHeightForWidth(self.Ndfl3Group.sizePolicy().hasHeightForWidth())
+        self.Ndfl3Group.setSizePolicy(sizePolicy3)
+        self.Ndfl3Group.setFlat(False)
+        self.Ndfl3Group.setCheckable(True)
+        self.Ndfl3Group.setChecked(False)
+        self.gridLayout_2 = QGridLayout(self.Ndfl3Group)
         self.gridLayout_2.setSpacing(2)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setContentsMargins(6, 6, 6, 6)
-        self.DlsgFileLbl = QLabel(self.DlsgGroup)
-        self.DlsgFileLbl.setObjectName(u"DlsgFileLbl")
+        self.Ndfl3FileLbl = QLabel(self.Ndfl3Group)
+        self.Ndfl3FileLbl.setObjectName(u"Ndfl3FileLbl")
 
-        self.gridLayout_2.addWidget(self.DlsgFileLbl, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.Ndfl3FileLbl, 1, 0, 1, 1)
 
-        self.DlsgSelectBtn = QPushButton(self.DlsgGroup)
-        self.DlsgSelectBtn.setObjectName(u"DlsgSelectBtn")
+        self.Ndfl3SelectBtn = QPushButton(self.Ndfl3Group)
+        self.Ndfl3SelectBtn.setObjectName(u"Ndfl3SelectBtn")
 
-        self.gridLayout_2.addWidget(self.DlsgSelectBtn, 1, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.Ndfl3SelectBtn, 1, 2, 1, 1)
 
-        self.DlsgDividendsOnly = QCheckBox(self.DlsgGroup)
-        self.DlsgDividendsOnly.setObjectName(u"DlsgDividendsOnly")
+        self.Ndfl3FileName = QLineEdit(self.Ndfl3Group)
+        self.Ndfl3FileName.setObjectName(u"Ndfl3FileName")
 
-        self.gridLayout_2.addWidget(self.DlsgDividendsOnly, 6, 0, 1, 3)
-
-        self.DlsgFileName = QLineEdit(self.DlsgGroup)
-        self.DlsgFileName.setObjectName(u"DlsgFileName")
-
-        self.gridLayout_2.addWidget(self.DlsgFileName, 1, 1, 1, 1)
-
-        self.NoSettlement = QCheckBox(self.DlsgGroup)
-        self.NoSettlement.setObjectName(u"NoSettlement")
-
-        self.gridLayout_2.addWidget(self.NoSettlement, 4, 0, 1, 1)
-
-        self.DlsgIncomeSourceBroker = QCheckBox(self.DlsgGroup)
-        self.DlsgIncomeSourceBroker.setObjectName(u"DlsgIncomeSourceBroker")
-        self.DlsgIncomeSourceBroker.setChecked(True)
-
-        self.gridLayout_2.addWidget(self.DlsgIncomeSourceBroker, 5, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.Ndfl3FileName, 1, 1, 1, 1)
 
 
-        self.verticalLayout.addWidget(self.DlsgGroup)
+        self.verticalLayout.addWidget(self.Ndfl3Group)
 
 
         self.MainLayout.addWidget(self.RuBox, 7, 0, 1, 3)
@@ -233,18 +233,18 @@ class Ui_TaxWidget(object):
         self.AccountLbl.setText(QCoreApplication.translate("TaxWidget", u"Account:", None))
         self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Excel file:", None))
         self.RuBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Russia)", None))
-        self.DlsgGroup.setTitle(QCoreApplication.translate("TaxWidget", u"Create tax form in \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" program format (*.dcX/*.deX)", None))
-        self.DlsgFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Output file:", None))
+        self.Ru_NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))
+        self.Ru_DividendsOnly.setText(QCoreApplication.translate("TaxWidget", u"Update only information about dividends", None))
+        self.Ru_IncomeSourceBroker.setText(QCoreApplication.translate("TaxWidget", u"Use broker name as income source", None))
+        self.Ndfl3Group.setTitle(QCoreApplication.translate("TaxWidget", u"Create tax form in \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f 2.0\" program format", None))
+        self.Ndfl3FileLbl.setText(QCoreApplication.translate("TaxWidget", u"Output file:", None))
 #if QT_CONFIG(tooltip)
-        self.DlsgSelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
+        self.Ndfl3SelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
-        self.DlsgSelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
-        self.DlsgDividendsOnly.setText(QCoreApplication.translate("TaxWidget", u"Update only information about dividends", None))
+        self.Ndfl3SelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
 #if QT_CONFIG(tooltip)
-        self.DlsgFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store russian tax form", None))
+        self.Ndfl3FileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store russian tax form", None))
 #endif // QT_CONFIG(tooltip)
-        self.NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))
-        self.DlsgIncomeSourceBroker.setText(QCoreApplication.translate("TaxWidget", u"Use broker name as income source", None))
         self.CountryLbl.setText(QCoreApplication.translate("TaxWidget", u"Country:", None))
         self.YearLbl.setText(QCoreApplication.translate("TaxWidget", u"Year:", None))
         self.SaveButton.setText(QCoreApplication.translate("TaxWidget", u"Save Report", None))
