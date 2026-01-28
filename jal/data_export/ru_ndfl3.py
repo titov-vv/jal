@@ -1,4 +1,8 @@
-
+import os
+import json
+from PySide6.QtWidgets import QApplication
+from jal.constants import Setup
+from jal.db.settings import JalSettings
 
 # ----------------------------------------------------------------------------------------------------------------------
 class Ru_NDFL3:
@@ -40,4 +44,26 @@ class Ru_NDFL3:
     }
 
     def __init__(self, year, broker_as_income=False, only_dividends=False):
-        pass
+        template_path = JalSettings.path(JalSettings.PATH_TEMPLATES) + Setup.NDFL3_TEMPLATE_PATH
+        template_file = template_path + os.sep + f"{year}.json"
+        try:
+            with open(template_file, 'r', encoding='utf-8') as json_template:
+                self._tax_form = json.load(json_template)
+        except FileNotFoundError:
+            raise ValueError(self.tr("3-NDFL template not found for given year: ") + f"{year}")
+        self._only_dividends = only_dividends
+        self._broker_as_income = broker_as_income
+        self._year = year
+        self.currency = None
+        self.broker_name = ''
+        self.broker_iso_country = "000"
+        self.stored_data = {
+            "Дивиденды": {"dividend": self.append_dividend},
+            "Акции": {"trade": self.append_stock_trade},
+            "Облигации": {"bond_trade": self.append_stock_trade, "bond_interest": self.append_bond_interest},
+            "ПФИ": {"trade": self.append_derivative_trade},
+            "Проценты": {"interest": self.append_other_income}
+        }
+
+    def tr(self, text):
+        return QApplication.translate("NDFL3", text)
