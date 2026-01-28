@@ -18,10 +18,19 @@ from jal.db.settings import JalSettings, FolderFor
 from jal.data_export.taxes import TaxReport
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
-from jal.data_export.dlsg import DLSG
+from jal.data_export.ru_ndfl3 import Ru_NDFL3
 from jal.data_export.irs_modelo3 import IRS_Modelo3
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Export file types
+class FileType:
+    XLS = 0
+    RU_Declaration_DE = 1
+    PT_Modelo3_XML = 2
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class TaxWidget(MdiWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -34,9 +43,9 @@ class TaxWidget(MdiWidget):
         self.ui.Country.currentIndexChanged.connect(self.OnCountryChange)
         self.ui.Year.valueChanged.connect(self.OnYearChange)
         self.ui.Year.setValue(datetime.now().year - 1)   # Set previous year by default
-        self.ui.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
-        self.ui.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
-        self.ui.IRS_Modelo3SelectBtn.pressed.connect(partial(self.OnFileBtn, 'XML'))
+        self.ui.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.XLS))
+        self.ui.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.RU_Declaration_DE))
+        self.ui.IRS_Modelo3SelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.PT_Modelo3_XML))
         self.ui.SaveButton.pressed.connect(self.SaveReport)
         self.ui.Country.setCurrentIndex(TaxReport.RUSSIA)
 
@@ -71,15 +80,12 @@ class TaxWidget(MdiWidget):
 
     @Slot()
     def OnFileBtn(self, type):
-        if type == 'XLS':
+        if type == FileType.XLS:
             selector = (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.ui.XlsFileName)
-        elif type == 'DLSG':
+        elif type == FileType.RU_Declaration_DE:
             last_digit = self.year % 10
-            if self.year < 2025:
-                selector = (self.tr("Save tax form to:"), self.tr(f"Tax form (*.dc{last_digit})"), f".dc{last_digit}", self.ui.DlsgFileName)
-            else:
-                selector = (self.tr("Save tax form to:"), self.tr(f"Tax form (*.de{last_digit})"), f".de{last_digit}", self.ui.DlsgFileName)
-        elif type == 'XML':
+            selector = (self.tr("Save tax form to:"), self.tr(f"Tax form (*.de{last_digit})"), f".de{last_digit}", self.ui.DlsgFileName)
+        elif type == FileType.PT_Modelo3_XML:
             selector = (self.tr("Save IRS Modelo 3 tax data to:"), self.tr("XML files (*.xml)"), '.xml', self.ui.IRS_Modelo3Filename)
         else:
             raise ValueError
@@ -135,7 +141,7 @@ class TaxWidget(MdiWidget):
         if self.update_dlsg or self.update_modelo3:
             tax_forms = None
             if self.update_dlsg:
-                tax_forms = DLSG(self.year, broker_as_income=self.dlsg_broker_as_income, only_dividends=self.dlsg_dividends_only)
+                tax_forms = Ru_NDFL3(self.year, broker_as_income=self.dlsg_broker_as_income, only_dividends=self.dlsg_dividends_only)
                 filename = self.dlsg_filename
             if self.update_modelo3:
                 tax_forms = IRS_Modelo3()
