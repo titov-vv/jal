@@ -66,7 +66,7 @@
       <number>2030</number>
      </property>
      <property name="value">
-      <number>2020</number>
+      <number>2025</number>
      </property>
     </widget>
    </item>
@@ -217,7 +217,31 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QGroupBox" name="DlsgGroup">
+       <widget class="QCheckBox" name="Ru_NoSettlement">
+        <property name="text">
+         <string>Do not use settlement date for currency rates</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="Ru_DividendsOnly">
+        <property name="text">
+         <string>Update only information about dividends</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="Ru_IncomeSourceBroker">
+        <property name="text">
+         <string>Use broker name as income source</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="Ndfl3Group">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -228,7 +252,7 @@
          </sizepolicy>
         </property>
         <property name="title">
-         <string>Create tax form in &quot;Декларация&quot; program format (*.dcX)</string>
+         <string>Create tax form in &quot;Декларация 2.0&quot; program format</string>
         </property>
         <property name="flat">
          <bool>false</bool>
@@ -256,14 +280,14 @@
           <number>2</number>
          </property>
          <item row="1" column="0">
-          <widget class="QLabel" name="DlsgFileLbl">
+          <widget class="QLabel" name="Ndfl3FileLbl">
            <property name="text">
             <string>Output file:</string>
            </property>
           </widget>
          </item>
          <item row="1" column="2">
-          <widget class="QPushButton" name="DlsgSelectBtn">
+          <widget class="QPushButton" name="Ndfl3SelectBtn">
            <property name="toolTip">
             <string>Select file</string>
            </property>
@@ -272,34 +296,10 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="0" colspan="3">
-          <widget class="QCheckBox" name="DlsgDividendsOnly">
-           <property name="text">
-            <string>Update only information about dividends</string>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="DlsgFileName">
+          <widget class="QLineEdit" name="Ndfl3FileName">
            <property name="toolTip">
             <string>File where to store russian tax form</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QCheckBox" name="NoSettlement">
-           <property name="text">
-            <string>Do not use settlement date for currency rates</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <widget class="QCheckBox" name="DlsgIncomeSourceBroker">
-           <property name="text">
-            <string>Use broker name as income source</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
            </property>
           </widget>
          </item>

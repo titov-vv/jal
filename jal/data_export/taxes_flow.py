@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.data_export.dlsg import DLSG
+from jal.data_export.ru_ndfl3 import Ru_NDFL3
 
 
 class TaxesFlowRus:
@@ -100,7 +100,7 @@ class TaxesFlowRus:
             f_currency = f_account[currency]
         except KeyError:
             try:
-                currency_code = DLSG.currencies[currency]['code']
+                currency_code = Ru_NDFL3.currencies[currency]['code']
             except KeyError:
                 currency_code = 'XXX'  # currency code isn't known
             f_currency = f_account[currency] = {'money': {}, 'assets': {}, 'code': currency_code}
