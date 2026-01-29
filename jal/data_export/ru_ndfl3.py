@@ -132,3 +132,129 @@ class Ru_NDFL3:
           "SubtractSum": 0.0
         }
         self._tax_form[FOREIGN_SECTION].append(dividend_record)
+
+    def append_stock_trade(self, trade):
+        if trade['c_qty'] < 0:  # short position - swap close/open dates/rates
+            trade['cs_date'] = trade['os_date']
+            trade['cs_rate'] = trade['os_rate']
+        if self._broker_as_income:
+            income_source = self.broker_name
+        else:
+            income_source = f"Доход от сделки с {trade['c_symbol']} ({trade['c_isin']})"
+        trade_record = {
+            "SourseName": income_source,
+            "CountryCode1": self.broker_iso_country,
+            "CountryCode2": self.broker_iso_country,
+            "IncomeGetDate": datetime.fromtimestamp(trade['cs_date'], tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+            "HoldDate": datetime.fromtimestamp(trade['cs_date'], tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+            "CurrencyCode": self.currency['code'],
+            "CurrencyName": self.currency['name'],
+            "CurrencyExchange": float(trade['cs_rate'] * self.currency['multiplier']),
+            "CurrencyUnits": self.currency['multiplier'],
+            "CurrencyExchangeHoldDate": float(trade['cs_rate'] * self.currency['multiplier']),
+            "CurrencyUnitsHoldDate": self.currency['multiplier'],
+            "IncomeRoubleSum": float(trade['income_rub']),
+            "TaxCurrencySum": 0.0,
+            "TaxRoubleSum": 0.0,
+            "TaxRate": 0,
+            "KIKIncomeType": 0,
+            "KIKNum": "",
+            "TaxKIKHoldRF": 0.0,
+            "IncomeCod": "1530",  # '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)'
+            "IncomeSum": float(trade['income']),
+            "SubtractCod": "201",
+            "SubtractSum": float(trade['spending_rub'])
+        }
+        self._tax_form[FOREIGN_SECTION].append(trade_record)
+
+    def append_derivative_trade(self, trade):
+        if trade['c_qty'] < 0:  # short position - swap close/open dates/rates
+            trade['cs_date'] = trade['os_date']
+            trade['cs_rate'] = trade['os_rate']
+        if self._broker_as_income:
+            income_source = self.broker_name
+        else:
+            income_source = f"Доход от сделки с {trade['c_symbol']} ({trade['c_isin']})"
+        trade_record = {
+            "SourseName": income_source,
+            "CountryCode1": self.broker_iso_country,
+            "CountryCode2": self.broker_iso_country,
+            "IncomeGetDate": datetime.fromtimestamp(trade['cs_date'], tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+            "HoldDate": datetime.fromtimestamp(trade['cs_date'], tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+            "CurrencyCode": self.currency['code'],
+            "CurrencyName": self.currency['name'],
+            "CurrencyExchange": float(trade['cs_rate'] * self.currency['multiplier']),
+            "CurrencyUnits": self.currency['multiplier'],
+            "CurrencyExchangeHoldDate": float(trade['cs_rate'] * self.currency['multiplier']),
+            "CurrencyUnitsHoldDate": self.currency['multiplier'],
+            "IncomeRoubleSum": float(trade['income_rub']),
+            "TaxCurrencySum": 0.0,
+            "TaxRoubleSum": 0.0,
+            "TaxRate": 0,
+            "KIKIncomeType": 0,
+            "KIKNum": "",
+            "TaxKIKHoldRF": 0.0,
+            "IncomeCod": "1532",  # '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ'
+            "IncomeSum": float(trade['income']),
+            "SubtractCod": "206",
+            "SubtractSum": float(trade['spending_rub'])
+        }
+        self._tax_form[FOREIGN_SECTION].append(trade_record)
+
+    def append_bond_interest(self, interest):
+        if self._broker_as_income:
+            income_source = self.broker_name
+        else:
+            income_source = f"Купонный доход от {interest['symbol']} ({interest['isin']})"
+        interest_record = {
+            "SourseName": income_source,
+            "CountryCode1": self.broker_iso_country,
+            "CountryCode2": self.broker_iso_country,
+            "IncomeGetDate": datetime.fromtimestamp(interest['o_date'], tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+            "HoldDate": datetime.fromtimestamp(interest['o_date'], tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+            "CurrencyCode": self.currency['code'],
+            "CurrencyName": self.currency['name'],
+            "CurrencyExchange": float(interest['rate'] * self.currency['multiplier']),
+            "CurrencyUnits": self.currency['multiplier'],
+            "CurrencyExchangeHoldDate": float(interest['rate'] * self.currency['multiplier']),
+            "CurrencyUnitsHoldDate": self.currency['multiplier'],
+            "IncomeRoubleSum": float(interest['interest_rub']),
+            "TaxCurrencySum": 0.0,
+            "TaxRoubleSum": 0.0,
+            "TaxRate": 0,
+            "KIKIncomeType": 0,
+            "KIKNum": "",
+            "TaxKIKHoldRF": 0.0,
+            "IncomeCod": "1530",  # '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)'
+            "IncomeSum": float(interest['interest']),
+            "SubtractCod": "",
+            "SubtractSum": 0.0
+        }
+        self._tax_form[FOREIGN_SECTION].append(interest_record)
+
+    def append_other_income(self, payment):
+        payment_record = {
+          "SourseName": self.broker_name,
+          "CountryCode1": self.broker_iso_country,
+          "CountryCode2": self.broker_iso_country,
+          "IncomeGetDate": datetime.fromtimestamp(payment['payment_date'], tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+          "HoldDate": datetime.fromtimestamp(payment['payment_date'], tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+          "CurrencyCode": self.currency['code'],
+          "CurrencyName": self.currency['name'],
+          "CurrencyExchange": float(payment['rate'] * self.currency['multiplier']),
+          "CurrencyUnits": self.currency['multiplier'],
+          "CurrencyExchangeHoldDate": float(payment['rate'] * self.currency['multiplier']),
+          "CurrencyUnitsHoldDate": self.currency['multiplier'],
+          "IncomeRoubleSum": float(payment['amount_rub']),
+          "TaxCurrencySum": 0.0,
+          "TaxRoubleSum": 0.0,
+          "TaxRate": 0,
+          "KIKIncomeType": 0,
+          "KIKNum": "",
+          "TaxKIKHoldRF": 0.0,
+          "IncomeCod": "4800",   # 'Иные доходы'
+          "IncomeSum": float(payment['amount']),
+          "SubtractCod": "",
+          "SubtractSum": 0.0
+        }
+        self._tax_form[FOREIGN_SECTION].append(payment_record)
