@@ -174,37 +174,37 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetData</name>
     <message>
-        <location filename="../constants.py" line="199"/>
+        <location filename="../constants.py" line="200"/>
         <source>FIGI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="200"/>
+        <location filename="../constants.py" line="201"/>
         <source>Reg.code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="201"/>
+        <location filename="../constants.py" line="202"/>
         <source>expiry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="202"/>
+        <location filename="../constants.py" line="203"/>
         <source>principal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="203"/>
+        <location filename="../constants.py" line="204"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="204"/>
+        <location filename="../constants.py" line="205"/>
         <source>CUSIP</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="205"/>
+        <location filename="../constants.py" line="206"/>
         <source>IB contract ID</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1207,29 +1207,6 @@ one for ParentCo and second for Subsidiary</source>
     </message>
 </context>
 <context>
-    <name>DLSG</name>
-    <message>
-        <location filename="../data_export/dlsg.py" line="181"/>
-        <source>3-NDFL form isn&apos;t supoorted for year: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_export/dlsg.py" line="210"/>
-        <source>Currency is not supported for 3-NDFL: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_export/dlsg.py" line="272"/>
-        <source>Account country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_export/dlsg.py" line="278"/>
-        <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DateRangeSelector</name>
     <message>
         <location filename="../widgets/custom/date_range_selector.py" line="15"/>
@@ -1359,37 +1336,37 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DepositActions</name>
     <message>
-        <location filename="../constants.py" line="177"/>
+        <location filename="../constants.py" line="178"/>
         <source>Open term deposit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="178"/>
+        <location filename="../constants.py" line="179"/>
         <source>Close term deposit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="179"/>
+        <location filename="../constants.py" line="180"/>
         <source>Top-up term deposit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="180"/>
+        <location filename="../constants.py" line="181"/>
         <source>Partial withdrawal from term deposit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="181"/>
+        <location filename="../constants.py" line="182"/>
         <source>Term deposit renewal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="182"/>
+        <location filename="../constants.py" line="183"/>
         <source>Interest accrued</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="183"/>
+        <location filename="../constants.py" line="184"/>
         <source>Tax withheld</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2613,62 +2590,62 @@ Application will be terminated now.</source>
 <context>
     <name>MarketDataFeed</name>
     <message>
-        <location filename="../constants.py" line="241"/>
+        <location filename="../constants.py" line="242"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="242"/>
+        <location filename="../constants.py" line="243"/>
         <source>Central banks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="243"/>
+        <location filename="../constants.py" line="244"/>
         <source>MOEX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="244"/>
+        <location filename="../constants.py" line="245"/>
         <source>NYSE/Nasdaq</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="245"/>
+        <location filename="../constants.py" line="246"/>
         <source>Euronext</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="246"/>
+        <location filename="../constants.py" line="247"/>
         <source>TMX TSX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="247"/>
+        <location filename="../constants.py" line="248"/>
         <source>LSE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="248"/>
+        <location filename="../constants.py" line="249"/>
         <source>Frankfurt Borse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="249"/>
+        <location filename="../constants.py" line="250"/>
         <source>Victoria Seguros</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="250"/>
+        <location filename="../constants.py" line="251"/>
         <source>Coinbase</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="251"/>
+        <location filename="../constants.py" line="252"/>
         <source>Borsa Italiana</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="252"/>
+        <location filename="../constants.py" line="253"/>
         <source>Warsaw Stock Exchange</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3145,7 +3122,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>PredefinedAgents</name>
     <message>
-        <location filename="../constants.py" line="91"/>
+        <location filename="../constants.py" line="92"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3153,47 +3130,47 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="153"/>
+        <location filename="../constants.py" line="154"/>
         <source>Money</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="154"/>
+        <location filename="../constants.py" line="155"/>
         <source>Shares</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="155"/>
+        <location filename="../constants.py" line="156"/>
         <source>Bonds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="156"/>
+        <location filename="../constants.py" line="157"/>
         <source>ETFs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="157"/>
+        <location filename="../constants.py" line="158"/>
         <source>Commodities</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="158"/>
+        <location filename="../constants.py" line="159"/>
         <source>Derivatives</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="159"/>
+        <location filename="../constants.py" line="160"/>
         <source>Forex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="160"/>
+        <location filename="../constants.py" line="161"/>
         <source>Funds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="161"/>
+        <location filename="../constants.py" line="162"/>
         <source>Crypto-currency</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3201,47 +3178,47 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>PredefinedCategory</name>
     <message>
-        <location filename="../constants.py" line="109"/>
+        <location filename="../constants.py" line="110"/>
         <source>Income</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="110"/>
+        <location filename="../constants.py" line="111"/>
         <source>Spending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="111"/>
+        <location filename="../constants.py" line="112"/>
         <source>Profits</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="112"/>
+        <location filename="../constants.py" line="113"/>
         <source>Starting balance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="113"/>
+        <location filename="../constants.py" line="114"/>
         <source>Fees</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="114"/>
+        <location filename="../constants.py" line="115"/>
         <source>Taxes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="115"/>
+        <location filename="../constants.py" line="116"/>
         <source>Dividends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="116"/>
+        <location filename="../constants.py" line="117"/>
         <source>Interest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="117"/>
+        <location filename="../constants.py" line="118"/>
         <source>Results of investments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3249,27 +3226,27 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>PredefinedTags</name>
     <message>
-        <location filename="../constants.py" line="131"/>
+        <location filename="../constants.py" line="132"/>
         <source>Account type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="132"/>
+        <location filename="../constants.py" line="133"/>
         <source>Cash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="133"/>
+        <location filename="../constants.py" line="134"/>
         <source>Bank account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="134"/>
+        <location filename="../constants.py" line="135"/>
         <source>Card</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="135"/>
+        <location filename="../constants.py" line="136"/>
         <source>Broker account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4141,6 +4118,29 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="201"/>
         <source>Total</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Ru_NDFL3</name>
+    <message>
+        <location filename="../data_export/ru_ndfl3.py" line="57"/>
+        <source>3-NDFL template not found for given year: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_export/ru_ndfl3.py" line="81"/>
+        <source>Currency is not supported for 3-NDFL: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_export/ru_ndfl3.py" line="102"/>
+        <source>Account country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_export/ru_ndfl3.py" line="108"/>
+        <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
