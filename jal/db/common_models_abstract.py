@@ -4,7 +4,7 @@ from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QMessageBox, QCompleter
 from jal.db.db import JalDB, JalSqlError
-from jal.constants import Setup
+from jal.constants import Setup, CmColumn
 
 
 # ----------------------------------------------------------------------------------------------------------------------

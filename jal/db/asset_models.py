@@ -37,6 +37,9 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         self._completer.setCompletionColumn(self._completion_model.fieldIndex(self._default_name))
         self._completer.setCaseSensitivity(Qt.CaseInsensitive)
 
+    def column_meta(self) -> list[CmColumn]:
+        return self._columns
+
     @property
     def completion_model(self):
         return self._completion_model
@@ -45,6 +48,11 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
     def bind_completer(self, widget, completion_handler):
         widget.setCompleter(self._completer)
         self._completer.activated[QModelIndex].connect(completion_handler)
+
+    def headerData(self, section, orientation=Qt.Horizontal, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+                return self._columns[section].header
+        return None
 
     @property
     def group_by(self):
