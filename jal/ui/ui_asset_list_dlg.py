@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'asset_list_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.1
+## Created by: Qt User Interface Compiler version 6.10.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -90,18 +90,6 @@ class Ui_AssetsListDialog(object):
 
         self.edit_layout.addWidget(self.RemoveBtn)
 
-        self.CommitBtn = QPushButton(self.DisplayFrame)
-        self.CommitBtn.setObjectName(u"CommitBtn")
-        self.CommitBtn.setEnabled(False)
-
-        self.edit_layout.addWidget(self.CommitBtn)
-
-        self.RevertBtn = QPushButton(self.DisplayFrame)
-        self.RevertBtn.setObjectName(u"RevertBtn")
-        self.RevertBtn.setEnabled(False)
-
-        self.edit_layout.addWidget(self.RevertBtn)
-
 
         self.verticalLayout.addWidget(self.DisplayFrame)
 
@@ -164,14 +152,6 @@ class Ui_AssetsListDialog(object):
         self.RemoveBtn.setToolTip(QCoreApplication.translate("AssetsListDialog", u"Delete", None))
 #endif // QT_CONFIG(tooltip)
         self.RemoveBtn.setText("")
-#if QT_CONFIG(tooltip)
-        self.CommitBtn.setToolTip(QCoreApplication.translate("AssetsListDialog", u"Save changes", None))
-#endif // QT_CONFIG(tooltip)
-        self.CommitBtn.setText("")
-#if QT_CONFIG(tooltip)
-        self.RevertBtn.setToolTip(QCoreApplication.translate("AssetsListDialog", u"Revert changes", None))
-#endif // QT_CONFIG(tooltip)
-        self.RevertBtn.setText("")
         self.SearchLbl.setText(QCoreApplication.translate("AssetsListDialog", u"Search:", None))
     # retranslateUi
 
