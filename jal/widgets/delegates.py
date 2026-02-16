@@ -202,13 +202,13 @@ class FloatDelegate(GridLinesDelegate):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Delegate to apply currency filter for AssetSelector widgets based on current account
+# This is special delegate that have only one purpose - to apply filters for Symbol widgets in operations.
+# Currently only currency_id is sent for Asset dialog initialization.
 class SymbolDelegate(QStyledItemDelegate):
     def setEditorData(self, editor, index):
-        account_currency = JalAccount(index.model().data(index.sibling(index.row(),
-                                                                       index.model().fieldIndex('account_id')),
-                                                         Qt.EditRole)).currency()
-        editor.setFilterValue(account_currency)
+        account_id_idx = index.sibling(index.row(), index.model().fieldIndex('account_id'))
+        account_currency = JalAccount(index.model().data(account_id_idx, Qt.EditRole)).currency()
+        editor.set_dialog_params({"currency_id": account_currency})
         QStyledItemDelegate.setEditorData(self, editor, index)
 
 

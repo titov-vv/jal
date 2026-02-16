@@ -134,7 +134,7 @@ class ReferenceDataDialog(QDialog):
         event.accept()
 
     @Slot(int, QPoint)
-    def dialog_requested(self, selected_id: int, position: QPoint):
+    def dialog_requested(self, selected_id: int, position: QPoint, _params: dict):
         self.setGeometry(position.x(), position.y(), self.width(), self.height())
         self.exec(enable_selection=True, selected=selected_id)
 

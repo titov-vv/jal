@@ -8,7 +8,7 @@ from jal.constants import CustomColor
 #-----------------------------------------------------------------------------------------------------------------------
 class ReferenceSelectorWidget(QWidget):
     changed = Signal()
-    open_dialog = Signal(int, QPoint)
+    open_dialog = Signal(int, QPoint, dict)
 
     # If validate==True then widget will be highlighted for invalid values
     def __init__(self, parent=None, validate=True):
@@ -17,6 +17,7 @@ class ReferenceSelectorWidget(QWidget):
         self.p_selected_id = 0
         self._validate = validate
         self._model = None
+        self._dialog_params = {}
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -83,9 +84,8 @@ class ReferenceSelectorWidget(QWidget):
         else:
             self.details.setVisible(False)
 
-    def setFilterValue(self, filter_value):
-        pass
-        # self.dialog.setFilterValue(filter_value)   # FIXME - it seems to be used from one of special delegates
+    def set_dialog_params(self, dialog_params):
+        self._dialog_params = dialog_params
 
     def setValidation(self, validate):
         self._validate = validate
@@ -93,7 +93,7 @@ class ReferenceSelectorWidget(QWidget):
 
     def on_button_clicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
-        self.open_dialog.emit(self.selected_id, ref_point)
+        self.open_dialog.emit(self.selected_id, ref_point, self._dialog_params)
 
     @Slot(int)
     def selection_done(self, selected_id):
