@@ -51,7 +51,6 @@ class ReferenceDataDialog(QDialog):
         self.search_text = ""
         self.tree_view = False
         self.toolbar = None
-        self.custom_editor = False
         self.custom_context_menu = False
         self._delegates = []  # to keep references to delegates to avoid garbage collection
                               # it also can keep tuples (model, dialog) for LookupSelectorDelegate
@@ -76,9 +75,7 @@ class ReferenceDataDialog(QDialog):
         self.ui.CommitBtn.clicked.connect(self.OnCommit)
         self.ui.RevertBtn.clicked.connect(self.OnRevert)
         self.ui.DataView.doubleClicked.connect(self.OnDoubleClicked)
-        self.ui.DataView.clicked.connect(self.OnClicked)
         self.ui.TreeView.doubleClicked.connect(self.OnDoubleClicked)
-        self.ui.TreeView.clicked.connect(self.OnClicked)
 
     def setup_ui(self):
         self.ui.DataView.setVisible(not self.tree_view)
@@ -227,18 +224,11 @@ class ReferenceDataDialog(QDialog):
 
     @Slot()
     def OnAdd(self):
-        if self.custom_editor:
-            editor = self.customEditor()
-            editor.createNewRecord()
-            editor.exec()
-            self.model.select()
-            self.locateItem(editor.selected_id)
-        else:
-            idx = self._view.selectionModel().selection().indexes()
-            current_index = idx[0] if idx else self.model.index(0, 0)
-            self.model.addElement(current_index, in_group=self.group_id)
-            self.ui.CommitBtn.setEnabled(True)
-            self.ui.RevertBtn.setEnabled(True)
+        idx = self._view.selectionModel().selection().indexes()
+        current_index = idx[0] if idx else self.model.index(0, 0)
+        self.model.addElement(current_index, in_group=self.group_id)
+        self.ui.CommitBtn.setEnabled(True)
+        self.ui.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnChildAdd(self):
@@ -325,16 +315,6 @@ class ReferenceDataDialog(QDialog):
         if idx:
             self.selected_id = self.model.getId(idx[0])
             self.p_selected_name = self.model.getName(idx[0])
-
-    @Slot()
-    def OnClicked(self, index):
-        if self.custom_editor:
-            if self._previous_row == index.row():
-                editor = self.customEditor()
-                editor.selected_id = self.selected_id
-                editor.exec()
-            else:
-                self._previous_row = index.row()
 
     @Slot()
     def OnDoubleClicked(self, index):
