@@ -110,8 +110,10 @@ class PredefinedList:
     def get_all_names(self) -> dict:
         return self._names
 
-    def load2combo(self, combobox):
+    def load2combo(self, combobox, with_empty=False):
         combobox.clear()
+        if with_empty:
+            combobox.addItem('', userData=None)
         for item in self._names:
             combobox.addItem(self._names[item], userData=item)
 
