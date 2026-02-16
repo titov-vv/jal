@@ -297,11 +297,7 @@ class ReferenceDataDialog(QDialog):
             if not self.toggle_state:
                 conditions.append(f"{self.toggle_field}=1")
 
-        self._filter_text = ""
-        for line in conditions:
-            self._filter_text += line + " AND "
-        self._filter_text = self._filter_text[:-len(" AND ")]
-
+        self._filter_text = ' AND '.join(conditions)
         self.model.setFilter(self._filter_text)
 
     @Slot()
