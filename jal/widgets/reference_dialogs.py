@@ -2,7 +2,7 @@ import base64
 import logging
 from PySide6.QtCore import Qt, Slot, Signal, Property, QDate, QPoint
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QMenu, QDialog, QMessageBox, QHeaderView
+from PySide6.QtWidgets import QMenu, QDialog, QMessageBox, QHeaderView, QAbstractItemView
 from PySide6.QtSql import QSqlRelationalDelegate
 from jal.constants import CmWidth, CmDelegate, CmReference
 from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, QuotesListModel, BaseCurrencyListModel
@@ -120,6 +120,14 @@ class ReferenceDataDialog(QDialog):
         self.ui.RevertBtn.setEnabled(True)
 
     @Slot()
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self.selection_enabled:  # It works better here than in exec()
+            current_index = self._view.currentIndex().siblingAtColumn(self.model.fieldIndex("ID"))  # Column #0 is hidden, so we scroll to column #1
+            if current_index.isValid():
+                self._view.scrollTo(current_index, QAbstractItemView.PositionAtCenter)
+
+    @Slot()
     def closeEvent(self, event):
         JalSettings().setValue('DlgGeometry_' + self.dialog_window_name, base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
         JalSettings().setValue('DlgViewState_' + self.dialog_window_name, base64.encodebytes(self._view_header.saveState().data()).decode('utf-8'))
@@ -142,8 +150,9 @@ class ReferenceDataDialog(QDialog):
     def exec(self, enable_selection=False, selected=0):
         self.selection_enabled = enable_selection
         self.setFilter()             # TODO Check filters, if it work correctly
-        if enable_selection:
-            self.locateItem(selected)
+        if self.selection_enabled:
+            item_index = self.model.locateItem(selected)
+            self._view.setCurrentIndex(item_index)
         res = super().exec()
         if res:
             self.selection_done.emit(self.selected_id)
@@ -334,12 +343,6 @@ class ReferenceDataDialog(QDialog):
             self.toggle_state = True
         self.setFilter()
 
-    def locateItem(self, item_id):
-        raise NotImplementedError("locateItem() method is not defined in subclass ReferenceDataDialog")
-
-    def customEditor(self):
-        raise NotImplementedError("Method customEditor() isn't implemented in a descendant of ReferenceDataDialog")
-
     # this method should fill given menu with actions for element at given index
     def customizeContextMenu(self, menu: QMenu, index):
         raise NotImplementedError(
@@ -375,14 +378,6 @@ class AccountListDialog(ReferenceDataDialog):
         self.group_id = self.ui.GroupCombo.itemData(0)
         super().setup_ui()
 
-    def locateItem(self, item_id):
-        type_id = self.model.getGroupId(item_id)
-        if type_id == 0:
-            return
-        self.ui.GroupCombo.setCurrentIndex(type_id-1)
-        item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
-        self.ui.DataView.setCurrentIndex(item_idx)
-
     def set_tag_delegate(self, column):
         self.ui.DataView.setItemDelegateForColumn(column, self._tag_delegate)
 
@@ -410,9 +405,6 @@ class PeerListDialog(ReferenceDataDialog):
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
         super().setup_ui()
-
-    def locateItem(self, item_id):
-        self.model.locateItem(item_id)
         
     def customizeContextMenu(self, menu: QMenu, index):
         self._menu_peer_id = self.model.getId(index)
@@ -468,9 +460,6 @@ class CategoryListDialog(ReferenceDataDialog):
             self.custom_context_menu = True
         super().setup_ui()
 
-    def locateItem(self, item_id):
-        self.model.locateItem(item_id)
-
     def customizeContextMenu(self, menu: QMenu, index):
         self._menu_category_id = self.model.getId(index)
         self._menu_category_name = self.model.getName(index)
@@ -519,9 +508,6 @@ class TagsListDialog(ReferenceDataDialog):
         if hasattr(self._parent, "reports"):  # Activate menu only if dialog is called from main window menu
             self.custom_context_menu = True
         super().setup_ui()
-
-    def locateItem(self, item_id):
-        self.model.locateItem(item_id)
 
     def customizeContextMenu(self, menu: QMenu, index):
         self._menu_tag_id = self.model.getId(index)

@@ -83,6 +83,7 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
         super().__init__(parent=parent, db=self.connection())
         self._deleted_rows = []
         self._filter_by = ''
+        self._filter_text = ''
         self._filter_value = None
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(self._table)
@@ -168,12 +169,11 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
         self._deleted_rows = []
         super().revertAll()
 
-    def locateItem(self, item_id, use_filter=''):
-        if use_filter:
-            use_filter = f"WHERE {use_filter}"
+    def locateItem(self, item_id):
+        filter_text = f"WHERE {self._filter_text}" if self._filter_text else ''
         row = self._read(f"SELECT row_number FROM ("
                          f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
-                         f"FROM {self._table} {use_filter}) WHERE id=:id", [(":id", item_id)])
+                         f"FROM {self._table} {filter_text}) WHERE id=:id", [(":id", item_id)])
         if row is None:
             return QModelIndex()
         return self.index(row - 1, 0)
@@ -187,6 +187,10 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
         self._filter_by = field_name
         self._filter_value = value
         self.setFilter(f"{self._table}.{field_name} = {value}")
+
+    def setFilter(self, filter_text):
+        self._filter_text = filter_text
+        super().setFilter(filter_text)
 
     # returns group id for given item
     def getGroupId(self, item_id: int) -> int:
