@@ -40,7 +40,7 @@ class SymbolListDialog(QDialog):
 
         PredefinedAsset().load2combo(self.ui.AssetTypeCombo, with_empty=True)
         self.ui.CurrencyCombo.clear()
-        self.ui.CurrencyCombo.addItem(self.tr(""), userData=None)
+        self.ui.CurrencyCombo.addItem('', userData=None)
         for currency_id, symbol in sorted([(x.id(), x.symbol()) for x in JalAsset.get_currencies()], key=lambda x: x[1]):
             self.ui.CurrencyCombo.addItem(symbol, currency_id)
         AssetLocation().load2combo(self.ui.LocationCombo, with_empty=True)
