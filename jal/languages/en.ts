@@ -673,17 +673,7 @@ Do you want to delete the account anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/asset_list_dlg.ui" line="138"/>
-        <source>Save changes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/asset_list_dlg.ui" line="151"/>
-        <source>Revert changes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/asset_list_dlg.ui" line="188"/>
+        <location filename="../ui/asset_list_dlg.ui" line="162"/>
         <source>Search:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5533,12 +5523,12 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>SymbolListDialog</name>
     <message>
-        <location filename="../widgets/assets_dialogs.py" line="30"/>
+        <location filename="../widgets/assets_dialogs.py" line="35"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/assets_dialogs.py" line="31"/>
+        <location filename="../widgets/assets_dialogs.py" line="36"/>
         <source>You have uncommitted changes. Do you want to close?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5563,17 +5553,18 @@ Do you want to delete the peer anyway?</source>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="18"/>
+        <location filename="../db/asset_models.py" line="19"/>
         <location filename="../widgets/asset_dialog.py" line="177"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="19"/>
+        <location filename="../db/asset_models.py" line="20"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="20"/>
+        <location filename="../db/asset_models.py" line="21"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>

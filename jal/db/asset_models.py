@@ -1,4 +1,3 @@
-import logging
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtSql import QSqlQueryModel, QSqlTableModel
 from PySide6.QtWidgets import QCompleter
@@ -13,24 +12,28 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         self._columns = [
             CmColumn("id", '', hide=True),
             CmColumn("symbol", self.tr("Symbol"), default=True, sort=True),
-            CmColumn("asset_id", self.tr("Asset")),
+            CmColumn("asset_id", self.tr("Asset"), hide=True),
             CmColumn("type_id", self.tr("Asset type"), hide=True, group=True),
-            CmColumn("currency_id", self.tr("Currency")),
+            CmColumn("currency_id", self.tr("Currency"), hide=True),
+            CmColumn("currency", self.tr("Currency")),
             CmColumn("location_id", self.tr("Location")),
             CmColumn("full_name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, details=True),
             CmColumn("icon", '')
         ]
-        self._table = 'symbols_ext'
         self._filter_by = ''
         self._filter_value = None
         self._default_name = 'symbol'
-        self._query_text = f"SELECT * FROM {self._table}"
-        # if self._sort_by:
-        #     self.setSort(self.fieldIndex(self._sort_by), Qt.AscendingOrder)
-        self.setQuery(self._exec(self._query_text, forward_only=False))
+        self._base_query = "SELECT s.id, s.symbol, s.asset_id, a.type_id, s.currency_id, c.symbol AS currency, s.location_id, a.full_name, s.icon "\
+                           "FROM asset_symbol s "\
+                           "LEFT JOIN assets a ON a.id=s.asset_id "\
+                           "LEFT JOIN asset_symbol c ON s.currency_id=c.asset_id"
+        self._filter_clause = ''
+        self._sort_clause = "ORDER BY s.symbol"
+        self._current_query = self._base_query + " " + self._sort_clause
+        self.setQuery(self._exec(self._current_query, forward_only=False))
 
         self._completion_model = QSqlTableModel(parent=parent, db=self.connection())
-        self._completion_model.setTable(self._table)
+        self._completion_model.setTable("asset_symbol")
         self._completion_model.select()
         # Completer is used in widgets after call to bind_completer()
         self._completer = QCompleter(self._completion_model)
@@ -54,48 +57,48 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
                 return self._columns[section].header
         return None
 
-    @property
-    def group_by(self):
-        return self._group_by
+    def fieldIndex(self, field):
+        column_data = [i for i, column in enumerate(self._columns) if column.name == field]
+        if len(column_data) > 0:
+            return column_data[0]
+        else:
+            return -1
 
-    def setFilter(self, filter_text):
-        self.setQuery(self._exec(f"{self._query_text} WHERE {filter_text}", forward_only=False))
-
+    def setFilter(self, asset_type=None, currency_id=None, location_id=None, text=''):
+        filter_clauses = []
+        if asset_type is not None:
+            filter_clauses.append(f"a.type_id={asset_type}")
+        if currency_id is not None:
+            filter_clauses.append(f"s.currency_id={currency_id}")
+        if location_id is not None:
+            filter_clauses.append(f"s.location_id={location_id}")
+        if text:
+            filter_clauses.append(f"(s.symbol LIKE '%{text}%' OR a.full_name LIKE '%{text}%')")
+        self._filter_clause = ' AND '.join(filter_clauses)
+        self._current_query = f"{self._base_query} WHERE {self._filter_clause} {self._sort_clause}"
+        self.setQuery(self._exec(self._current_query, forward_only=False))
 
     def getId(self, index):
         return self.record(index.row()).value('id')
 
-    def getFieldValue(self, item_id, field_name):
-        return self._read(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+    def getName(self, index):
+        return self._read("SELECT symbol FROM asset_symbol WHERE id=:id", [(":id", self.getId(index))])
 
-    def submitAll(self):
-        pass
+    def getValue(self, item_id):
+        return self._read("SELECT symbol FROM asset_symbol WHERE id=:id", [(":id", item_id)])
 
-    def revertAll(self):
-        pass
+    def getValueDetails(self, item_id) -> str:
+        return self._read("SELECT full_name FROM assets WHERE id=(SELECT asset_id FROM asset_symbol WHERE id=:id)", [(":id", item_id)])
 
-    def locateItem(self, item_id, use_filter=''):
-        if use_filter:
-            use_filter = f"WHERE {use_filter}"
+    def locateItem(self, item_id):
         row = self._read(f"SELECT row_number FROM ("
-                         f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
-                         f"FROM {self._table} {use_filter}) WHERE id=:id", [(":id", item_id)])
+                         f"SELECT ROW_NUMBER() OVER (ORDER BY symbol) AS row_number, id "
+                         f"FROM ({self._current_query})) WHERE id=:id", [(":id", item_id)])
         if row is None:
             return QModelIndex()
         return self.index(row - 1, 0)
 
-    def updateItemType(self, index, new_type):
+    def updateItemType(self, index, new_type):   # FIXME - needs adaptation to new query structure
         id = self.getId(index)
         self._exec(f"UPDATE {self._table} SET {self._group_by}=:new_type WHERE id=:id",
                    [(":new_type", new_type), (":id", id)])
-
-    def filterBy(self, field_name, value):
-        self._filter_by = field_name
-        self._filter_value = value
-        self.setFilter(f"{self._table}.{field_name} = {value}")
-
-    # returns group id for given item
-    def getGroupId(self, item_id: int) -> int:
-        group_id = self._read(f"SELECT {self._group_by} FROM {self._table} WHERE id=:id", [(":id", item_id)])
-        group_id = 0 if not group_id or group_id is None else group_id
-        return group_id

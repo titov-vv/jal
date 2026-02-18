@@ -416,14 +416,6 @@ CREATE VIEW countries_ext AS
     FROM countries AS c
     LEFT JOIN country_names AS n ON n.country_id = c.id AND n.language_id = (SELECT value FROM settings WHERE name='Language');
 
-
--- Combined view to list assets with symbols
-CREATE VIEW symbols_ext AS
-    SELECT s.id, s.symbol, s.asset_id, a.type_id, s.currency_id, s.location_id, a.full_name, s.icon
-    FROM asset_symbol s
-    LEFT JOIN assets a ON a.id=s.asset_id;
-
-
 --------------------------------------------------------------------------------
 -- TRIGGERS
 -- Ledger cleanup after modification
