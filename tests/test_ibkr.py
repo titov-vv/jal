@@ -330,3 +330,51 @@ def test_ibkr_merger_with_prefixed_old_symbol_pairs_correctly():
     assert merger['asset'] == 28
     assert merger['quantity'] == 10000.0
     assert merger['outcome'] == [{'asset': 29, 'quantity': 10000.0, 'share': 0.0}]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_split_with_prefixed_parenthetical_symbol_pairs_correctly():
+    ibkr = StatementIBKR()
+    ibkr._data = {FOF.CORP_ACTIONS: []}
+    ibkr.locate_asset = lambda symbol, isin: {
+        ('VYNE', 'US92941V2097'): 171,
+    }.get((symbol, isin))
+
+    action = {
+        'type': 'split',
+        'account': 1,
+        'asset': 170,
+        'asset_type': 'stock',
+        'timestamp': 1676060700,
+        'number': '23018699773',
+        'description': 'VYNE(US92941V2097) SPLIT 1 FOR 18 (VYNE, VYNE THERAPEUTICS INC, US92941V3087)',
+        'quantity': 0.6944,
+        'value': 0.0,
+        'proceeds': 0.0,
+        'code': '',
+        'jal_processed': False,
+    }
+    parts_b = [{
+        'type': 'split',
+        'account': 1,
+        'asset': 171,
+        'asset_type': 'stock',
+        'timestamp': 1676060700,
+        'number': '23018699768',
+        'description': 'VYNE(US92941V2097) SPLIT 1 FOR 18 (20230213002014VYNE, VYNE THERAPEUTICS INC, US92941V2097)',
+        'quantity': -12.5,
+        'value': 0.0,
+        'proceeds': 0.0,
+        'code': '',
+        'jal_processed': False,
+    }]
+
+    loaded = ibkr.load_split(action, parts_b)
+
+    assert loaded == 2
+    assert parts_b[0]['jal_processed'] is True
+    assert len(ibkr._data[FOF.CORP_ACTIONS]) == 1
+    split = ibkr._data[FOF.CORP_ACTIONS][0]
+    assert split['asset'] == 171
+    assert split['quantity'] == 12.5
+    assert split['outcome'] == [{'asset': 170, 'quantity': 0.6944, 'share': 1.0}]

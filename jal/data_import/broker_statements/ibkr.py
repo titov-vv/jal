@@ -646,12 +646,13 @@ class StatementIBKR(StatementXML):
     # Find record in list 'parts_b' (second parts of corporate actions) which matches
     # given asset and description with more details from corp_action itself
     def find_corp_action_pair(self, asset, description, action, parts_b):
+        expected = self.normalize_corp_action_description(description)
         paired_record = list(filter(
             lambda pair: pair['asset'] == asset
-                         and (pair['description'].startswith(description + ", ")
-                              or pair['description'].startswith(description + ".OLD, ")
-                              or pair['description'].startswith(description + "D, ")
-                              or pair['description'].startswith(description + "D.OLD, "))
+                         and (self.normalize_corp_action_description(pair['description']).startswith(expected + ", ")
+                              or self.normalize_corp_action_description(pair['description']).startswith(expected + ".OLD, ")
+                              or self.normalize_corp_action_description(pair['description']).startswith(expected + "D, ")
+                              or self.normalize_corp_action_description(pair['description']).startswith(expected + "D.OLD, "))
                          and pair['type'] == action['type']
                          and pair['timestamp'] == action['timestamp'], parts_b))
         if len(paired_record) != 1:
@@ -663,6 +664,11 @@ class StatementIBKR(StatementXML):
         # Some IBKR descriptions prefix the old symbol with a 14-digit timestamp-like value.
         normalized = re.sub(r"^\d{14}(?=\w)", "", symbol)
         return normalized if normalized else symbol
+
+    @classmethod
+    def normalize_corp_action_description(cls, description: str) -> str:
+        # IBKR may also prepend the same 14-digit value to the symbol inside parentheses.
+        return re.sub(r"\((\d{14})(?=\w)", "(", description)
 
     # Takes cancelled corporate actions and tries to find and remove original one form actions list
     def remove_cancelled_corporate_actions(self, actions):
