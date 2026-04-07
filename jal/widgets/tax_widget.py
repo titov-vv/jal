@@ -48,6 +48,7 @@ class TaxWidget(MdiWidget):
         self.ui.IRS_Modelo3SelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.PT_Modelo3_XML))
         self.ui.SaveButton.pressed.connect(self.SaveReport)
         self.ui.Country.setCurrentIndex(TaxReport.RUSSIA)
+        self.OnYearChange(self.ui.Year.value())
 
     def OnCountryChange(self, item_id):
         if item_id == TaxReport.PORTUGAL:
