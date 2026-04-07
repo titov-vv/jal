@@ -378,3 +378,49 @@ def test_ibkr_split_with_prefixed_parenthetical_symbol_pairs_correctly():
     assert split['asset'] == 171
     assert split['quantity'] == 12.5
     assert split['outcome'] == [{'asset': 170, 'quantity': 0.6944, 'share': 1.0}]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_find_db_stock_dividend_for_tax_correction(monkeypatch):
+    class DummyDividend:
+        def oid(self):
+            return 332
+
+        def timestamp(self):
+            return 1672258800
+
+        def number(self):
+            return '22598209889'
+
+        def amount(self):
+            return 0.2776
+
+        def tax(self):
+            return 0.48
+
+        def note(self):
+            return 'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000'
+
+    def fake_get_list(account, asset, subtype):
+        if subtype == 3:
+            return [DummyDividend()]
+        return []
+
+    monkeypatch.setattr('data_import.broker_statements.ibkr.AssetPayment.get_list', fake_get_list)
+
+    ibkr = StatementIBKR()
+    ibkr._data = {FOF.ASSET_PAYMENTS: []}
+    ibkr._map_db_account = lambda _: 1
+    ibkr._map_db_asset = lambda _: 294
+
+    dividend = ibkr.find_dividend4tax(
+        1672258800,
+        1,
+        294,
+        Decimal('0.48'),
+        Decimal('0'),
+        'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000',
+    )
+
+    assert dividend is not None
+    assert dividend['id'] == -332

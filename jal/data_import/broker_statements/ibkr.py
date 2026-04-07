@@ -1177,7 +1177,9 @@ class StatementIBKR(StatementXML):
         db_account = self._map_db_account(account_id)
         db_asset = self._map_db_asset(asset_id)
         if db_account and db_asset:
-            for db_dividend in AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend):
+            db_dividends = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
+            db_dividends += AssetPayment.get_list(db_account, db_asset, AssetPayment.StockDividend)
+            for db_dividend in db_dividends:
                 dividends.append({
                     "id": -db_dividend.oid(),
                     "account": account_id,
