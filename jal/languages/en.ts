@@ -4653,6 +4653,11 @@ Do you want to delete the peer anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../data_import/broker_statements/ibkr.py" line="566"/>
+        <source>Outgoing asset transfer not implemented yet: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="676"/>
         <source>Can&apos;t process cancelled corporate action</source>
         <translation type="unfinished"></translation>
