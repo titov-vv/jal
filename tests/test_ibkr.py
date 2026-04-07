@@ -282,3 +282,51 @@ def test_ibkr_q1_tax_correction_does_not_match_future_dividend():
     )
 
     assert dividend is None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_merger_with_prefixed_old_symbol_pairs_correctly():
+    ibkr = StatementIBKR()
+    ibkr._data = {FOF.CORP_ACTIONS: []}
+    ibkr.locate_asset = lambda symbol, isin: {
+        ('BGTK', 'US34520J2078'): 28,
+    }.get((symbol, isin))
+
+    action = {
+        'type': 'merger',
+        'account': 1,
+        'asset': 29,
+        'asset_type': 'stock',
+        'timestamp': 1646857500,
+        'number': '19750736274',
+        'description': '20220309164306BGTK(US34520J2078) MERGED(Acquisition) WITH US0896931054 1 FOR 1 (BGTK, BIG TOKEN INC, US0896931054)',
+        'quantity': 10000.0,
+        'value': 24.0,
+        'proceeds': 0.0,
+        'code': '',
+        'jal_processed': False,
+    }
+    parts_b = [{
+        'type': 'merger',
+        'account': 1,
+        'asset': 28,
+        'asset_type': 'stock',
+        'timestamp': 1646857500,
+        'number': '19750736269',
+        'description': '20220309164306BGTK(US34520J2078) MERGED(Acquisition) WITH US0896931054 1 FOR 1 (BGTK.OLD, FORCE PROTECTION VIDEO EQUIP, US34520J2078)',
+        'quantity': -10000.0,
+        'value': -20.0,
+        'proceeds': 0.0,
+        'code': '',
+        'jal_processed': False,
+    }]
+
+    loaded = ibkr.load_merger(action, parts_b)
+
+    assert loaded == 2
+    assert parts_b[0]['jal_processed'] is True
+    assert len(ibkr._data[FOF.CORP_ACTIONS]) == 1
+    merger = ibkr._data[FOF.CORP_ACTIONS][0]
+    assert merger['asset'] == 28
+    assert merger['quantity'] == 10000.0
+    assert merger['outcome'] == [{'asset': 29, 'quantity': 10000.0, 'share': 0.0}]

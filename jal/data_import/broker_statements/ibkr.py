@@ -658,6 +658,12 @@ class StatementIBKR(StatementXML):
             raise Statement_ImportError(self.tr("Can't find paired record for ") + f"{action}")
         return paired_record
 
+    @staticmethod
+    def normalize_corp_action_symbol(symbol: str) -> str:
+        # Some IBKR descriptions prefix the old symbol with a 14-digit timestamp-like value.
+        normalized = re.sub(r"^\d{14}(?=\w)", "", symbol)
+        return normalized if normalized else symbol
+
     # Takes cancelled corporate actions and tries to find and remove original one form actions list
     def remove_cancelled_corporate_actions(self, actions):
         delete_elements = []
@@ -703,6 +709,7 @@ class StatementIBKR(StatementXML):
         if len(merger_a) != MergerPatterns[pattern_id].count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Merger description miss some data ") + f"'{action}'")
 
+        merger_a['symbol_old'] = self.normalize_corp_action_symbol(merger_a['symbol_old'])
         description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old']
         asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
 
@@ -761,6 +768,7 @@ class StatementIBKR(StatementXML):
         spinoff = parts.groupdict()
         if len(spinoff) != SpinOffPattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Spin-off description miss some data ") + f"'{action}'")
+        spinoff['symbol_old'] = self.normalize_corp_action_symbol(spinoff['symbol_old'])
         asset_old = self.locate_asset(spinoff['symbol_old'], spinoff['isin_old'])
         if not asset_old:
             raise Statement_ImportError(self.tr("Spin-off initial asset not found ") + f"'{action}'")
@@ -786,6 +794,7 @@ class StatementIBKR(StatementXML):
         isin_change = parts.groupdict()
         if len(isin_change) != SymbolChangePattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Symbol Change description miss some data ") + f"'{action}'")
+        isin_change['symbol_old'] = self.normalize_corp_action_symbol(isin_change['symbol_old'])
         description_b = action['description'][:parts.span('symbol')[0]] + isin_change['symbol_old']
         asset_b = self.locate_asset(isin_change['symbol_old'], isin_change['isin_old'])
         paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
@@ -823,6 +832,7 @@ class StatementIBKR(StatementXML):
         split = parts.groupdict()
         if len(split) != SplitPattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Split description miss some data ") + f"'{action}'")
+        split['symbol_old'] = self.normalize_corp_action_symbol(split['symbol_old'])
         if parts['id'] is None or parts['isin_old'] == parts['id']:  # Simple split without ISIN change
             qty_delta = action['quantity']
             qty_old = qty_delta / (int(split['X']) / int(split['Y']) - 1)
