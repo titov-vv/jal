@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
+from jal.data_import.statement import FOF
 from tests.helpers import d2t
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
@@ -253,3 +254,31 @@ def test_ibkr_corp_actions(tmp_path, project_root, data_path, prepare_db_taxes):
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr_corp_actions.xml')
     assert IBKR._data == statement
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_q1_tax_correction_does_not_match_future_dividend():
+    # The DB already contains a later dividend with the same previous tax amount.
+    # A Q1 correction for February must not be attached to that future dividend.
+    ibkr = StatementIBKR()
+    ibkr._data = {
+        FOF.ASSET_PAYMENTS: [
+            {'id': 1, 'type': FOF.PAYMENT_DIVIDEND, 'account': 1, 'asset': 95, 'timestamp': d2t(250214),
+             'amount': 13.73, 'tax': 0.79, 'description': 'O(US7561091049) CASH DIVIDEND USD 0.264 PER SHARE (Ordinary Dividend)'},
+            {'id': 2, 'type': FOF.PAYMENT_DIVIDEND, 'account': 1, 'asset': 95, 'timestamp': d2t(250314),
+             'amount': 13.94, 'tax': 4.12, 'description': 'O(US7561091049) CASH DIVIDEND USD 0.268 PER SHARE (Ordinary Dividend)'},
+        ]
+    }
+    ibkr._map_db_account = lambda _: 0
+    ibkr._map_db_asset = lambda _: 0
+
+    dividend = ibkr.find_dividend4tax(
+        d2t(250214),
+        1,
+        95,
+        Decimal('4.12'),
+        Decimal('0'),
+        'O(US7561091049) CASH DIVIDEND USD 0.264 PER SHARE',
+    )
+
+    assert dividend is None
