@@ -1019,6 +1019,33 @@ class StatementIBKR(StatementXML):
     # Method takes a list of taxes and checks if we have the same amount added and deducted the same day
     # First it tries to find exact match. Second it does it again ignoring reportDate.
     def aggregate_taxes(self, taxes: list) -> list:
+        def is_mlp_extra_tax(tax: dict) -> bool:
+            if tax['amount'] >= 0:
+                return False
+            dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
+                         (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
+                         and x['asset'] == tax['asset'] and x['account'] == tax['account'] and x['timestamp'] == tax['timestamp']]
+            try:
+                db_account = self._map_db_account(tax['account'])
+                db_asset = self._map_db_asset(tax['asset'])
+            except RuntimeError:
+                db_account = 0
+                db_asset = 0
+            if db_account and db_asset:
+                db_dividends = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
+                db_dividends += AssetPayment.get_list(db_account, db_asset, AssetPayment.StockDividend)
+                for db_dividend in db_dividends:
+                    if db_dividend.timestamp() == tax['timestamp']:
+                        dividends.append({
+                            "amount": float(db_dividend.amount()),
+                        })
+            tax_amount = abs(Decimal(str(tax['amount'])))
+            for dividend in dividends:
+                dividend_amount = abs(Decimal(str(dividend['amount'])))
+                if abs(Decimal('0.1') * dividend_amount - tax_amount) <= Decimal('0.01'):
+                    return True
+            return False
+
         payments = [x for x in deepcopy(taxes) if x['amount'] < 0]
         reversals = [x for x in deepcopy(taxes) if x['amount'] > 0]
         not_matched_reversals = []
@@ -1062,17 +1089,18 @@ class StatementIBKR(StatementXML):
         non_mlp_taxes = [x for x in taxes_aggregated if x not in mlp_taxes]
         mlp_processed  = []
         for k, group in groupby(mlp_taxes, key=key_func):
-            group_list = sorted(list(group), key=lambda x: (x['amount']))  # sort to have higher tax first
-            if len(group_list) > 2:
-                raise Statement_ImportError(self.tr("Too many records for MLP tax: ") + f"{group_list}")
-            if len(group_list) == 2:  # 1st line is expected to be a base tax and 2nd line seems to be additional 10%
-                tax = group_list[1]   # Store 2nd line as separate asset payment record
+            group_list = sorted(list(group), key=lambda x: (x['amount']))
+            extra_taxes = [x for x in group_list if is_mlp_extra_tax(x)]
+            for tax in extra_taxes:
                 tax['id'] = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
                 tax['type'] = FOF.PAYMENT_FEE
                 tax['description'] += " - Extra 10% tax due to IRS section 1446"
                 self.drop_extra_fields(tax, ["source", "currency", "reported"])
                 self._data[FOF.ASSET_PAYMENTS].append(tax)
-            mlp_processed.append(group_list[0])  # Keep only base tax
+            group_list = [x for x in group_list if x not in extra_taxes]
+            if len(group_list) > 2:
+                raise Statement_ImportError(self.tr("Too many records for MLP tax: ") + f"{group_list}")
+            mlp_processed.extend(group_list)
         taxes_processed = sorted(non_mlp_taxes + mlp_processed, key=key_func)
         return taxes_processed
 

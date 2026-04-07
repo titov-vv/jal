@@ -424,3 +424,34 @@ def test_ibkr_find_db_stock_dividend_for_tax_correction(monkeypatch):
 
     assert dividend is not None
     assert dividend['id'] == -332
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_mlp_extra_tax_reported_separately_is_saved_as_fee():
+    ibkr = StatementIBKR()
+    ibkr._data = {
+        FOF.ASSET_PAYMENTS: [
+            {'id': 1, 'type': FOF.PAYMENT_DIVIDEND, 'account': 1, 'asset': 161, 'timestamp': 1699042800,
+             'amount': 5.25, 'tax': 1.94, 'description': 'USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE (Ordinary Dividend)'},
+        ],
+        FOF.ASSETS: [{'id': 161, 'type': FOF.ASSET_MLP}],
+    }
+    ibkr._map_db_account = lambda _: 0
+    ibkr._map_db_asset = lambda _: 0
+
+    taxes = [
+        {'id': 10, 'type': 'Withholding Tax', 'source': 'CASH', 'account': 1, 'asset': 161, 'currency': 1, 'timestamp': 1699042800,
+         'reported': 1709078400, 'amount': 1.94, 'description': 'USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE - US TAX'},
+        {'id': 11, 'type': 'Withholding Tax', 'source': 'CASH', 'account': 1, 'asset': 161, 'currency': 1, 'timestamp': 1699042800,
+         'reported': 1709078400, 'amount': -1.94, 'description': 'USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE - US TAX'},
+        {'id': 12, 'type': 'Withholding Tax', 'source': 'CASH', 'account': 1, 'asset': 161, 'currency': 1, 'timestamp': 1699042800,
+         'reported': 1724803200, 'amount': -0.53, 'description': 'USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE - US TAX'},
+    ]
+
+    aggregated = ibkr.aggregate_taxes(taxes)
+
+    assert [tax['amount'] for tax in aggregated] == [-1.94, 1.94]
+    extra_fees = [x for x in ibkr._data[FOF.ASSET_PAYMENTS] if x['type'] == FOF.PAYMENT_FEE]
+    assert len(extra_fees) == 1
+    assert extra_fees[0]['amount'] == -0.53
+    assert extra_fees[0]['description'].endswith(' - Extra 10% tax due to IRS section 1446')
