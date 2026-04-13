@@ -184,7 +184,7 @@ class AssetListDialog(ReferenceDataDialog):
         super()._init_completed()
 
     def setup_ui(self):
-        self.search_field = "assets_ext.full_name"
+        self.search_field = "assets_ext.full_name|assets_ext.symbol"
         self.ui.SearchFrame.setVisible(True)
         self.ui.Toggle.setVisible(False)
 

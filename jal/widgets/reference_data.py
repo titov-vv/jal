@@ -196,7 +196,13 @@ class ReferenceDataDialog(QDialog):
         if self.search_text and self.search_field is not None:
             search = self.search_field.split('-')
             if len(search) == 1:    # Simple search by given text field
-                conditions.append(f"{self.search_field} LIKE '%{self.search_text}%'")
+                search_fields = self.search_field.split('|')
+                if len(search_fields) == 1:
+                    conditions.append(f"{self.search_field} LIKE '%{self.search_text}%'")
+                else:
+                    conditions.append("(" + " OR ".join(
+                        f"{field} LIKE '%{self.search_text}%'" for field in search_fields
+                    ) + ")")
             elif len(search) == 4:  # Complex search by relation from another table
                 # Here search[0] is a field in current table that binds with search[2] field in lookup table search[1]
                 # search[3] is a name in lookup table which is used for searching.
