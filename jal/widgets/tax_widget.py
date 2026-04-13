@@ -15,6 +15,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings, FolderFor
+from jal.constants import PredefinedAgents
 from jal.data_export.taxes import TaxReport
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
@@ -111,6 +112,17 @@ class TaxWidget(MdiWidget):
     modelo3_filename = Property(str, fget=lambda self: self.ui.IRS_Modelo3Filename.text())
     no_settlement = Property(bool, fget=lambda self: self.ui.Ru_NoSettlement.isChecked())
 
+    def _warn_missing_broker(self, account: JalAccount) -> bool:
+        broker_id = account.organization()
+        broker_name = JalPeer(broker_id).name() if broker_id else ''
+        if broker_id and broker_id != PredefinedAgents.Empty and broker_name and broker_name.strip():
+            return True
+        warning = self.tr("Selected account isn't bound to a broker or broker name isn't set. "
+                          "Tax form export may be incomplete.")
+        logging.warning(warning)
+        reply = QMessageBox().warning(self, self.tr("Warning"), warning, QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Cancel)
+        return reply == QMessageBox.Ok
+
     @Slot()
     def SaveReport(self):
         if not self.account:
@@ -140,6 +152,8 @@ class TaxWidget(MdiWidget):
         logging.info(self.tr("Tax report was saved to file ") + f"'{self.xls_filename}'")
 
         if self.update_ndfl3 or self.update_modelo3:
+            if self.update_ndfl3 and not self._warn_missing_broker(taxes.account):
+                return
             tax_forms = None
             if self.update_ndfl3:
                 tax_forms = Ru_NDFL3(self.year, broker_as_income=self.ndfl3_broker_as_income, only_dividends=self.ndfl3_dividends_only)
