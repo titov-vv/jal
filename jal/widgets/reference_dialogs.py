@@ -44,7 +44,7 @@ class AccountListModel(AbstractReferenceListModel):
         self._bool_delegate = None
         self._tag_delegate = None
         self._float_delegate = None
-        self._default_values = {'active': 1, 'reconciled_on': 0, 'organization_id': PredefinedAgents.Empty,
+        self._default_values = {'active': 1, 'investing': 0, 'reconciled_on': 0, 'organization_id': PredefinedAgents.Empty,
                                 'country_id': 0, 'precision': 2, 'credit': '0'}
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
