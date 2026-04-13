@@ -99,13 +99,17 @@ class Ru_NDFL3:
             income_source = self.broker_name
             income_iso_country = self.broker_iso_country
             if income_iso_country == '000':
-                logging.error(self.tr("Account country is not set for asset, dividend isn't exported into 3-NDFL ") + f"'{income_source}'")
+                logging.error(self.tr("Account country is not set for asset, dividend isn't exported into 3-NDFL ") +
+                              f"broker='{income_source}', asset='{dividend['symbol']}', isin='{dividend['isin']}', "
+                              f"name='{dividend['full_name']}'")
                 return
         else:
             income_source = f"Дивиденд от {dividend['symbol']} ({dividend['full_name']})"
             income_iso_country = dividend["country_iso"]
             if income_iso_country == '000':
-                logging.error(self.tr("Country is not set for asset, dividend isn't exported into 3-NDFL ") + f"'{income_source}'")
+                logging.error(self.tr("Country is not set for asset, dividend isn't exported into 3-NDFL ") +
+                              f"asset='{dividend['symbol']}', isin='{dividend['isin']}', "
+                              f"name='{dividend['full_name']}'")
                 return
         dividend_record = {
           "SourseName": income_source,
