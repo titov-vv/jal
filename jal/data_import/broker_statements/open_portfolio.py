@@ -1,7 +1,7 @@
 import re
 import json
 import logging
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
 from jal.data_import.statement import FOF, Statement, Statement_ImportError
 from jal.constants import PredefinedCategory
 

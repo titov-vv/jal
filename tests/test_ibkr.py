@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
+from jal.data_import.statement import FOF
 from tests.helpers import d2t
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
@@ -253,3 +254,235 @@ def test_ibkr_corp_actions(tmp_path, project_root, data_path, prepare_db_taxes):
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr_corp_actions.xml')
     assert IBKR._data == statement
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_q1_tax_correction_does_not_match_future_dividend():
+    # The DB already contains a later dividend with the same previous tax amount.
+    # A Q1 correction for February must not be attached to that future dividend.
+    ibkr = StatementIBKR()
+    ibkr._data = {
+        FOF.ASSET_PAYMENTS: [
+            {'id': 1, 'type': FOF.PAYMENT_DIVIDEND, 'account': 1, 'asset': 95, 'timestamp': d2t(250214),
+             'amount': 13.73, 'tax': 0.79, 'description': 'O(US7561091049) CASH DIVIDEND USD 0.264 PER SHARE (Ordinary Dividend)'},
+            {'id': 2, 'type': FOF.PAYMENT_DIVIDEND, 'account': 1, 'asset': 95, 'timestamp': d2t(250314),
+             'amount': 13.94, 'tax': 4.12, 'description': 'O(US7561091049) CASH DIVIDEND USD 0.268 PER SHARE (Ordinary Dividend)'},
+        ]
+    }
+    ibkr._map_db_account = lambda _: 0
+    ibkr._map_db_asset = lambda _: 0
+
+    dividend = ibkr.find_dividend4tax(
+        d2t(250214),
+        1,
+        95,
+        Decimal('4.12'),
+        Decimal('0'),
+        'O(US7561091049) CASH DIVIDEND USD 0.264 PER SHARE',
+    )
+
+    assert dividend is None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_merger_with_prefixed_old_symbol_pairs_correctly():
+    ibkr = StatementIBKR()
+    ibkr._data = {FOF.CORP_ACTIONS: []}
+    ibkr.locate_asset = lambda symbol, isin: {
+        ('BGTK', 'US34520J2078'): 28,
+    }.get((symbol, isin))
+
+    action = {
+        'type': 'merger',
+        'account': 1,
+        'asset': 29,
+        'asset_type': 'stock',
+        'timestamp': 1646857500,
+        'number': '19750736274',
+        'description': '20220309164306BGTK(US34520J2078) MERGED(Acquisition) WITH US0896931054 1 FOR 1 (BGTK, BIG TOKEN INC, US0896931054)',
+        'quantity': 10000.0,
+        'value': 24.0,
+        'proceeds': 0.0,
+        'code': '',
+        'jal_processed': False,
+    }
+    parts_b = [{
+        'type': 'merger',
+        'account': 1,
+        'asset': 28,
+        'asset_type': 'stock',
+        'timestamp': 1646857500,
+        'number': '19750736269',
+        'description': '20220309164306BGTK(US34520J2078) MERGED(Acquisition) WITH US0896931054 1 FOR 1 (BGTK.OLD, FORCE PROTECTION VIDEO EQUIP, US34520J2078)',
+        'quantity': -10000.0,
+        'value': -20.0,
+        'proceeds': 0.0,
+        'code': '',
+        'jal_processed': False,
+    }]
+
+    loaded = ibkr.load_merger(action, parts_b)
+
+    assert loaded == 2
+    assert parts_b[0]['jal_processed'] is True
+    assert len(ibkr._data[FOF.CORP_ACTIONS]) == 1
+    merger = ibkr._data[FOF.CORP_ACTIONS][0]
+    assert merger['asset'] == 28
+    assert merger['quantity'] == 10000.0
+    assert merger['outcome'] == [{'asset': 29, 'quantity': 10000.0, 'share': 0.0}]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_split_with_prefixed_parenthetical_symbol_pairs_correctly():
+    ibkr = StatementIBKR()
+    ibkr._data = {FOF.CORP_ACTIONS: []}
+    ibkr.locate_asset = lambda symbol, isin: {
+        ('VYNE', 'US92941V2097'): 171,
+    }.get((symbol, isin))
+
+    action = {
+        'type': 'split',
+        'account': 1,
+        'asset': 170,
+        'asset_type': 'stock',
+        'timestamp': 1676060700,
+        'number': '23018699773',
+        'description': 'VYNE(US92941V2097) SPLIT 1 FOR 18 (VYNE, VYNE THERAPEUTICS INC, US92941V3087)',
+        'quantity': 0.6944,
+        'value': 0.0,
+        'proceeds': 0.0,
+        'code': '',
+        'jal_processed': False,
+    }
+    parts_b = [{
+        'type': 'split',
+        'account': 1,
+        'asset': 171,
+        'asset_type': 'stock',
+        'timestamp': 1676060700,
+        'number': '23018699768',
+        'description': 'VYNE(US92941V2097) SPLIT 1 FOR 18 (20230213002014VYNE, VYNE THERAPEUTICS INC, US92941V2097)',
+        'quantity': -12.5,
+        'value': 0.0,
+        'proceeds': 0.0,
+        'code': '',
+        'jal_processed': False,
+    }]
+
+    loaded = ibkr.load_split(action, parts_b)
+
+    assert loaded == 2
+    assert parts_b[0]['jal_processed'] is True
+    assert len(ibkr._data[FOF.CORP_ACTIONS]) == 1
+    split = ibkr._data[FOF.CORP_ACTIONS][0]
+    assert split['asset'] == 171
+    assert split['quantity'] == 12.5
+    assert split['outcome'] == [{'asset': 170, 'quantity': 0.6944, 'share': 1.0}]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_find_db_stock_dividend_for_tax_correction(monkeypatch):
+    class DummyDividend:
+        def oid(self):
+            return 332
+
+        def timestamp(self):
+            return 1672258800
+
+        def number(self):
+            return '22598209889'
+
+        def amount(self):
+            return 0.2776
+
+        def tax(self):
+            return 0.48
+
+        def note(self):
+            return 'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000'
+
+    def fake_get_list(account, asset, subtype):
+        if subtype == 3:
+            return [DummyDividend()]
+        return []
+
+    monkeypatch.setattr('data_import.broker_statements.ibkr.AssetPayment.get_list', fake_get_list)
+
+    ibkr = StatementIBKR()
+    ibkr._data = {FOF.ASSET_PAYMENTS: []}
+    ibkr._map_db_account = lambda _: 1
+    ibkr._map_db_asset = lambda _: 294
+
+    dividend = ibkr.find_dividend4tax(
+        1672258800,
+        1,
+        294,
+        Decimal('0.48'),
+        Decimal('0'),
+        'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000',
+    )
+
+    assert dividend is not None
+    assert dividend['id'] == -332
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_mlp_extra_tax_reported_separately_is_saved_as_fee():
+    ibkr = StatementIBKR()
+    ibkr._data = {
+        FOF.ASSET_PAYMENTS: [
+            {'id': 1, 'type': FOF.PAYMENT_DIVIDEND, 'account': 1, 'asset': 161, 'timestamp': 1699042800,
+             'amount': 5.25, 'tax': 1.94, 'description': 'USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE (Ordinary Dividend)'},
+        ],
+        FOF.ASSETS: [{'id': 161, 'type': FOF.ASSET_MLP}],
+    }
+    ibkr._map_db_account = lambda _: 0
+    ibkr._map_db_asset = lambda _: 0
+
+    taxes = [
+        {'id': 10, 'type': 'Withholding Tax', 'source': 'CASH', 'account': 1, 'asset': 161, 'currency': 1, 'timestamp': 1699042800,
+         'reported': 1709078400, 'amount': 1.94, 'description': 'USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE - US TAX'},
+        {'id': 11, 'type': 'Withholding Tax', 'source': 'CASH', 'account': 1, 'asset': 161, 'currency': 1, 'timestamp': 1699042800,
+         'reported': 1709078400, 'amount': -1.94, 'description': 'USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE - US TAX'},
+        {'id': 12, 'type': 'Withholding Tax', 'source': 'CASH', 'account': 1, 'asset': 161, 'currency': 1, 'timestamp': 1699042800,
+         'reported': 1724803200, 'amount': -0.53, 'description': 'USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE - US TAX'},
+    ]
+
+    aggregated = ibkr.aggregate_taxes(taxes)
+
+    assert [tax['amount'] for tax in aggregated] == [-1.94, 1.94]
+    extra_fees = [x for x in ibkr._data[FOF.ASSET_PAYMENTS] if x['type'] == FOF.PAYMENT_FEE]
+    assert len(extra_fees) == 1
+    assert extra_fees[0]['amount'] == -0.53
+    assert extra_fees[0]['description'].endswith(' - Extra 10% tax due to IRS section 1446')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_spinoff_allows_fractional_entitlement_rounding():
+    ibkr = StatementIBKR()
+    ibkr._data = {
+        FOF.ASSETS: [
+            {'id': 1, 'symbol': 'SVAC', 'isin': 'US85521J1097'},
+            {'id': 2, 'symbol': 'CYXTW', 'isin': 'US23284C1100'},
+        ],
+        FOF.CORP_ACTIONS: [],
+    }
+
+    action = {
+        'type': 'spin-off',
+        'account': 1,
+        'asset': 2,
+        'asset_type': 'warrant',
+        'timestamp': 1627331100,
+        'number': '17255221054',
+        'description': 'SVAC(US85521J1097) SPINOFF  1000000 FOR 2917329 (CYXTW, CYXTW 10SEP27 11.5 C, US23284C1100)',
+        'quantity': 17.0,
+        'value': 30.77,
+        'proceeds': 0.0,
+        'code': '',
+        'jal_processed': False
+    }
+
+    assert ibkr.load_spinoff(action, None) == 1
+    assert ibkr._data[FOF.CORP_ACTIONS][0]['asset'] == 1
+    assert ibkr._data[FOF.CORP_ACTIONS][0]['quantity'] == 50

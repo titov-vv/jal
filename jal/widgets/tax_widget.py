@@ -3,7 +3,8 @@ from datetime import datetime
 import logging
 import traceback
 
-from PySide6.QtCore import Property, Slot
+from PySide6.QtCore import Property, Slot, Qt
+from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication
 
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
@@ -15,6 +16,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings, FolderFor
+from jal.constants import PredefinedAgents
 from jal.data_export.taxes import TaxReport
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
@@ -48,6 +50,14 @@ class TaxWidget(MdiWidget):
         self.ui.IRS_Modelo3SelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.PT_Modelo3_XML))
         self.ui.SaveButton.pressed.connect(self.SaveReport)
         self.ui.Country.setCurrentIndex(TaxReport.RUSSIA)
+        self.OnYearChange(self.ui.Year.value())
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key_Escape:
+            self.close()
+            event.accept()
+            return
+        super().keyPressEvent(event)
 
     def OnCountryChange(self, item_id):
         if item_id == TaxReport.PORTUGAL:
@@ -110,6 +120,17 @@ class TaxWidget(MdiWidget):
     modelo3_filename = Property(str, fget=lambda self: self.ui.IRS_Modelo3Filename.text())
     no_settlement = Property(bool, fget=lambda self: self.ui.Ru_NoSettlement.isChecked())
 
+    def _warn_missing_broker(self, account: JalAccount) -> bool:
+        broker_id = account.organization()
+        broker_name = JalPeer(broker_id).name() if broker_id else ''
+        if broker_id and broker_id != PredefinedAgents.Empty and broker_name and broker_name.strip():
+            return True
+        warning = self.tr("Selected account isn't bound to a broker or broker name isn't set. "
+                          "Tax form export may be incomplete.")
+        logging.warning(warning)
+        reply = QMessageBox().warning(self, self.tr("Warning"), warning, QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Cancel)
+        return reply == QMessageBox.Ok
+
     @Slot()
     def SaveReport(self):
         if not self.account:
@@ -129,16 +150,19 @@ class TaxWidget(MdiWidget):
         parameters = {
             "period": f"{ts2d(taxes.year_begin)} - {ts2d(taxes.year_end - 1)}",
             "account": f"{taxes.account.number()} ({JalAsset(taxes.account.currency()).symbol()})",
+            "account_name": taxes.account.name(),
             "currency": JalAsset(taxes.account.currency()).symbol(),
             "broker_name": JalPeer(taxes.account.organization()).name(),
             "broker_iso_country": taxes.account.country().iso_code()
         }
         for section in tax_report:
             reports_xls.output_data(tax_report[section], taxes.report_template(section), parameters)
-        reports_xls.save()
-        logging.info(self.tr("Tax report was saved to file ") + f"'{self.xls_filename}'")
+        if reports_xls.save():
+            logging.info(self.tr("Excel tax report was saved to file ") + f"'{self.xls_filename}'")
 
         if self.update_ndfl3 or self.update_modelo3:
+            if self.update_ndfl3 and not self._warn_missing_broker(taxes.account):
+                return
             tax_forms = None
             if self.update_ndfl3:
                 tax_forms = Ru_NDFL3(self.year, broker_as_income=self.ndfl3_broker_as_income, only_dividends=self.ndfl3_dividends_only)
@@ -202,7 +226,6 @@ class MoneyFlowWidget(MdiWidget):
             "period": f"{ts2d(taxes_flow.year_begin)} - {ts2d(taxes_flow.year_end - 1)}"
         }
         reports_xls.output_data(flow_report, "tax_rus_flow.json", parameters)
-        reports_xls.save()
-
-        logging.info(self.tr("Money flow report saved to file ") + f"'{self.xls_filename}'")
-        self.close()
+        if reports_xls.save():
+            logging.info(self.tr("Excel money flow report was saved to file ") + f"'{self.xls_filename}'")
+            self.close()

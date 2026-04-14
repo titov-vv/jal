@@ -54,6 +54,23 @@ class JalAsset(JalDB):
         except (AttributeError, ValueError, TypeError):
             self._tag = JalTag(0)
 
+    @staticmethod
+    def _infer_country_from_isin(isin: str) -> str:
+        if not isin or len(isin) < 2:
+            return ''
+        country_code = isin[:2].lower()
+        if not country_code.isalpha():
+            return ''
+        return country_code
+
+    @staticmethod
+    def _warn_country_inferred_from_isin(isin: str, symbol: str = '', name: str = '') -> None:
+        country_code = JalAsset._infer_country_from_isin(isin)
+        if not country_code:
+            return
+        logging.warning("Asset country is inferred from ISIN prefix: "
+                        + f"symbol='{symbol}', name='{name}', isin='{isin}', country='{country_code}'")
+
     def _load_asset_data(self, asset_id: int) -> dict:
         asset_data = {}
         query = self._exec("SELECT * FROM assets WHERE id=:id", [(":id", asset_id)])
@@ -286,6 +303,9 @@ class JalAsset(JalDB):
             _ = self._exec("UPDATE assets SET isin=:new_isin WHERE id=:id",
                            [(":new_isin", new_isin), (":id", self._id)])
             self._isin = new_isin
+            if self._country.code() == 'xx':
+                self._warn_country_inferred_from_isin(new_isin, self.symbol(), self.name())
+                self._update_country(self._infer_country_from_isin(new_isin))
 
     def _update_name(self, new_name: str) -> None:
         if not self._name:
@@ -338,6 +358,9 @@ class JalAsset(JalDB):
         data['isin'] = data['isin'] if 'isin' in data else ''
         data['name'] = data['name'] if 'name' in data else ''
         data['country'] = data['country'] if 'country' in data else ''
+        if not data['country'] and data['isin']:
+            self._warn_country_inferred_from_isin(data['isin'], data.get('symbol', ''), data['name'])
+            data['country'] = self._infer_country_from_isin(data['isin'])
         data['symbol'] = data['symbol'] if 'symbol' in data else ''
         data['reg_number'] = data['reg_number'] if 'reg_number' in data else ''
         return True
