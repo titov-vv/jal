@@ -3,7 +3,8 @@ from datetime import datetime
 import logging
 import traceback
 
-from PySide6.QtCore import Property, Slot
+from PySide6.QtCore import Property, Slot, Qt
+from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication
 
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
@@ -50,6 +51,13 @@ class TaxWidget(MdiWidget):
         self.ui.SaveButton.pressed.connect(self.SaveReport)
         self.ui.Country.setCurrentIndex(TaxReport.RUSSIA)
         self.OnYearChange(self.ui.Year.value())
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key_Escape:
+            self.close()
+            event.accept()
+            return
+        super().keyPressEvent(event)
 
     def OnCountryChange(self, item_id):
         if item_id == TaxReport.PORTUGAL:
