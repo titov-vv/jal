@@ -455,3 +455,34 @@ def test_ibkr_mlp_extra_tax_reported_separately_is_saved_as_fee():
     assert len(extra_fees) == 1
     assert extra_fees[0]['amount'] == -0.53
     assert extra_fees[0]['description'].endswith(' - Extra 10% tax due to IRS section 1446')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_spinoff_allows_fractional_entitlement_rounding():
+    ibkr = StatementIBKR()
+    ibkr._data = {
+        FOF.ASSETS: [
+            {'id': 1, 'symbol': 'SVAC', 'isin': 'US85521J1097'},
+            {'id': 2, 'symbol': 'CYXTW', 'isin': 'US23284C1100'},
+        ],
+        FOF.CORP_ACTIONS: [],
+    }
+
+    action = {
+        'type': 'spin-off',
+        'account': 1,
+        'asset': 2,
+        'asset_type': 'warrant',
+        'timestamp': 1627331100,
+        'number': '17255221054',
+        'description': 'SVAC(US85521J1097) SPINOFF  1000000 FOR 2917329 (CYXTW, CYXTW 10SEP27 11.5 C, US23284C1100)',
+        'quantity': 17.0,
+        'value': 30.77,
+        'proceeds': 0.0,
+        'code': '',
+        'jal_processed': False
+    }
+
+    assert ibkr.load_spinoff(action, None) == 1
+    assert ibkr._data[FOF.CORP_ACTIONS][0]['asset'] == 1
+    assert ibkr._data[FOF.CORP_ACTIONS][0]['quantity'] == 50

@@ -779,9 +779,12 @@ class StatementIBKR(StatementXML):
         if not asset_old:
             raise Statement_ImportError(self.tr("Spin-off initial asset not found ") + f"'{action}'")
         qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
-        if abs(round(qty_old) - qty_old) > 0.01:
+        rounded_qty_old = round(qty_old)
+        # IBKR may report a rounded whole-number spin-off quantity after dropping fractional entitlements.
+        implied_spinoff_qty = rounded_qty_old * int(spinoff['X']) / int(spinoff['Y'])
+        if abs(rounded_qty_old - qty_old) > 0.01 and abs(implied_spinoff_qty - action['quantity']) >= 1.0:
             raise Statement_ImportError(self.tr("Spin-off rounding error is too big ") + f"'{action}'")
-        qty_old = round(qty_old)
+        qty_old = rounded_qty_old
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['outcome'] = [{'asset': asset_old, 'quantity': qty_old, 'share': 0.0},
                              {'asset': action['asset'], 'quantity': action['quantity'], 'share': 0.0}]
