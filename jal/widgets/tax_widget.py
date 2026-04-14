@@ -150,14 +150,15 @@ class TaxWidget(MdiWidget):
         parameters = {
             "period": f"{ts2d(taxes.year_begin)} - {ts2d(taxes.year_end - 1)}",
             "account": f"{taxes.account.number()} ({JalAsset(taxes.account.currency()).symbol()})",
+            "account_name": taxes.account.name(),
             "currency": JalAsset(taxes.account.currency()).symbol(),
             "broker_name": JalPeer(taxes.account.organization()).name(),
             "broker_iso_country": taxes.account.country().iso_code()
         }
         for section in tax_report:
             reports_xls.output_data(tax_report[section], taxes.report_template(section), parameters)
-        reports_xls.save()
-        logging.info(self.tr("Tax report was saved to file ") + f"'{self.xls_filename}'")
+        if reports_xls.save():
+            logging.info(self.tr("Excel tax report was saved to file ") + f"'{self.xls_filename}'")
 
         if self.update_ndfl3 or self.update_modelo3:
             if self.update_ndfl3 and not self._warn_missing_broker(taxes.account):
@@ -225,7 +226,6 @@ class MoneyFlowWidget(MdiWidget):
             "period": f"{ts2d(taxes_flow.year_begin)} - {ts2d(taxes_flow.year_end - 1)}"
         }
         reports_xls.output_data(flow_report, "tax_rus_flow.json", parameters)
-        reports_xls.save()
-
-        logging.info(self.tr("Money flow report saved to file ") + f"'{self.xls_filename}'")
-        self.close()
+        if reports_xls.save():
+            logging.info(self.tr("Excel money flow report was saved to file ") + f"'{self.xls_filename}'")
+            self.close()

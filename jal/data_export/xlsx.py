@@ -39,8 +39,10 @@ class XLSX:
     def save(self):
         try:
             self.workbook.close()
+            return True
         except:
-            logging.error(self.tr("Can't save report into file ") + f"'{self.filename}'")
+            logging.error(self.tr("Can't save Excel report into file ") + f"'{self.filename}'")
+            return False
 
     def load_template(self, file):
         template = None
