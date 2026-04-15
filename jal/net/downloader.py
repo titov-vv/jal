@@ -44,9 +44,9 @@ class QuotesUpdateDialog(QDialog):
                 item.setData(DATA_SOURCE_ROLE, source)
                 item.setCheckState(Qt.Checked)
                 self.ui.SourcesList.addItem(item)
-        self.ui.SourcesList.itemChanged.connect(self.on_sources_item_changed)
-        self.ui.AllSourcesCheck.pressed.connect(self.on_all_sources_pressed)
-        self.ui.AllSourcesCheck.clicked.connect(self.on_all_sources_clicked)
+        self.ui.SourcesList.itemChanged.connect(self._on_sources_item_changed)
+        self.ui.AllSourcesCheck.pressed.connect(self._on_all_sources_pressed)
+        self.ui.AllSourcesCheck.clicked.connect(self._on_all_sources_clicked)
         self._sync_all_sources_check()
 
         # center dialog with respect to parent window
@@ -70,17 +70,17 @@ class QuotesUpdateDialog(QDialog):
         return checked
 
     @Slot(QListWidgetItem)
-    def on_sources_item_changed(self, _item):
+    def _on_sources_item_changed(self, _item):
         if self._updating_all_sources:
             return
         self._sync_all_sources_check()
 
     @Slot()
-    def on_all_sources_pressed(self):
+    def _on_all_sources_pressed(self):
         self._all_sources_state_before_click = self.ui.AllSourcesCheck.checkState()
 
     @Slot(bool)
-    def on_all_sources_clicked(self, _checked):
+    def _on_all_sources_clicked(self, _checked):
         if self._updating_all_sources:
             return
         target_state = Qt.Unchecked if self._all_sources_state_before_click == Qt.Checked else Qt.Checked
