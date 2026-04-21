@@ -4,7 +4,7 @@ import logging
 import traceback
 
 from PySide6.QtCore import Property, Slot, Qt
-from PySide6.QtGui import QKeyEvent
+from PySide6.QtGui import QShortcut, QKeySequence
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication
 
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
@@ -51,13 +51,17 @@ class TaxWidget(MdiWidget):
         self.ui.SaveButton.pressed.connect(self.SaveReport)
         self.ui.Country.setCurrentIndex(TaxReport.RUSSIA)
         self.OnYearChange(self.ui.Year.value())
+        self._close_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        self._close_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
+        self._close_shortcut.activated.connect(self.closeMdiWindow)
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() == Qt.Key_Escape:
+    @Slot()
+    def closeMdiWindow(self):
+        mdi_window = self.parent()
+        if mdi_window is not None:
+            mdi_window.close()
+        else:
             self.close()
-            event.accept()
-            return
-        super().keyPressEvent(event)
 
     def OnCountryChange(self, item_id):
         if item_id == TaxReport.PORTUGAL:
