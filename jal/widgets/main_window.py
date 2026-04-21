@@ -1,13 +1,14 @@
 import json
 import base64
 import logging
+from copy import deepcopy
 from math import log10
 from decimal import Decimal
 from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QDir, QLocale, QMetaObject
 from PySide6.QtGui import QActionGroup, QAction
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressBar, QMenu, QPushButton
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressBar, QMenu, QPushButton, QFileDialog
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
@@ -69,6 +70,10 @@ class MainWindow(QMainWindow):
 
         self.actionAbout = QAction(text=self.tr("About"), parent=self)
         self.ui.MainMenu.addAction(self.actionAbout)
+        self.menuTools = QMenu(self.tr("&Tools"), self.ui.MainMenu)
+        self.actionMergeDe5 = QAction(self.tr("Merge de5"), self)
+        self.menuTools.addAction(self.actionMergeDe5)
+        self.ui.MainMenu.insertMenu(self.ui.menuLanguage.menuAction(), self.menuTools)
 
         self.langGroup = QActionGroup(self.ui.menuLanguage)
         self.createLanguageMenu()
@@ -94,6 +99,7 @@ class MainWindow(QMainWindow):
         self.reportsGroup.triggered.connect(self.reports.show)
         self.ui.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
         self.ui.actionImportShopReceipt.triggered.connect(self.importShopReceipt)
+        self.actionMergeDe5.triggered.connect(self.mergeDe5Files)
         self.ui.actionBackup.triggered.connect(self.backup.create)
         self.ui.actionRestore.triggered.connect(self.backup.restore)
         self.ui.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
@@ -260,6 +266,34 @@ class MainWindow(QMainWindow):
         self.ledger.rebuild()
 
     @Slot()
+    def mergeDe5Files(self):
+        input_files, _ = QFileDialog.getOpenFileNames(
+            self,
+            self.tr("Open de5 files"),
+            '',
+            self.tr("Declaration files (*.de5)")
+        )
+        if len(input_files) < 2:
+            return
+
+        output_file, _ = QFileDialog.getSaveFileName(
+            self,
+            self.tr("Save merged de5 file"),
+            input_files[0],
+            self.tr("Declaration files (*.de5)")
+        )
+        if not output_file:
+            return
+
+        try:
+            merged_data = self._merge_de5_data(input_files)
+            with open(output_file, 'w', encoding='utf-8') as out:
+                json.dump(merged_data, out, ensure_ascii=False, indent=2)
+            logging.info(self.tr("de5 files merged successfully: ") + output_file)
+        except Exception as err:
+            QMessageBox().warning(self, self.tr("Merge de5"), str(err), QMessageBox.Ok)
+
+    @Slot()
     def onDataDialog(self, dlg_type):
         if dlg_type == "accounts":
             AccountListDialog().exec()
@@ -311,3 +345,40 @@ class MainWindow(QMainWindow):
 
     def onUpdatePorgressDisplay(self, progress_percent: float):
         self.ProgressBar.setValue(int(progress_percent))
+
+    def _merge_de5_data(self, filenames: list[str]) -> dict:
+        files_data = []
+        for filename in filenames:
+            try:
+                with open(filename, 'r', encoding='utf-8') as src:
+                    content = json.load(src)
+            except Exception as err:
+                raise ValueError(self.tr("Failed to read de5 file: ") + f"{filename}: {err}")
+            if not isinstance(content, dict):
+                raise ValueError(self.tr("Unsupported de5 file format: ") + filename)
+            files_data.append(content)
+
+        merged = {}
+        all_keys = set().union(*(item.keys() for item in files_data))
+        for key in all_keys:
+            if key == 'CurrencyIncomeList':
+                merged[key] = []
+                for content in files_data:
+                    value = content.get(key, [])
+                    if isinstance(value, list):
+                        merged[key].extend(deepcopy(value))
+                continue
+            merged[key] = deepcopy(max(files_data, key=lambda item: self._de5_completeness(item.get(key)) ).get(key))
+
+        merged['CurrencyQuantity'] = len(merged.get('CurrencyIncomeList', []))
+        if isinstance(merged.get('SourseInfoList'), list):
+            merged['SourseInfoQuantity'] = len(merged['SourseInfoList'])
+        return merged
+
+    def _de5_completeness(self, value) -> int:
+        if isinstance(value, dict):
+            return sum(self._de5_completeness(item) for item in value.values()) + \
+                   sum(1 for item in value.values() if item not in ('', None, [], {}, 0, 0.0, False, '0'))
+        if isinstance(value, list):
+            return len(value) + sum(self._de5_completeness(item) for item in value)
+        return 0 if value in ('', None, [], {}, 0, 0.0, False, '0') else 1
