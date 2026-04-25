@@ -15,36 +15,37 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QDateEdit,
-    QCheckBox, QDialog, QDialogButtonBox, QGridLayout, QLabel,
-    QListWidget, QListWidgetItem, QSizePolicy, QSpacerItem, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QCheckBox,
+    QDateEdit, QDialog, QDialogButtonBox, QGridLayout,
+    QLabel, QListWidget, QListWidgetItem, QSizePolicy,
+    QWidget)
 
 class Ui_UpdateQuotesDlg(object):
     def setupUi(self, UpdateQuotesDlg):
         if not UpdateQuotesDlg.objectName():
             UpdateQuotesDlg.setObjectName(u"UpdateQuotesDlg")
-        UpdateQuotesDlg.setWindowModality(Qt.ApplicationModal)
+        UpdateQuotesDlg.setWindowModality(Qt.WindowModality.ApplicationModal)
         UpdateQuotesDlg.resize(256, 308)
         self.gridLayout = QGridLayout(UpdateQuotesDlg)
         self.gridLayout.setObjectName(u"gridLayout")
         self.StartDateEdit = QDateEdit(UpdateQuotesDlg)
         self.StartDateEdit.setObjectName(u"StartDateEdit")
         self.StartDateEdit.setCalendarPopup(True)
-        self.StartDateEdit.setTimeSpec(Qt.UTC)
+        self.StartDateEdit.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.gridLayout.addWidget(self.StartDateEdit, 0, 1, 1, 1)
 
         self.buttonBox = QDialogButtonBox(UpdateQuotesDlg)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
         self.gridLayout.addWidget(self.buttonBox, 4, 1, 1, 1)
 
         self.EndDateEdit = QDateEdit(UpdateQuotesDlg)
         self.EndDateEdit.setObjectName(u"EndDateEdit")
         self.EndDateEdit.setCalendarPopup(True)
-        self.EndDateEdit.setTimeSpec(Qt.UTC)
+        self.EndDateEdit.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.gridLayout.addWidget(self.EndDateEdit, 1, 1, 1, 1)
 
@@ -66,7 +67,7 @@ class Ui_UpdateQuotesDlg(object):
 
         self.SourcesList = QListWidget(UpdateQuotesDlg)
         self.SourcesList.setObjectName(u"SourcesList")
-        self.SourcesList.setEditTriggers(QAbstractItemView.EditKeyPressed)
+        self.SourcesList.setEditTriggers(QAbstractItemView.EditTrigger.EditKeyPressed)
         self.SourcesList.setAlternatingRowColors(True)
         self.SourcesList.setSortingEnabled(True)
 
@@ -76,10 +77,6 @@ class Ui_UpdateQuotesDlg(object):
         self.SourcesLbl.setObjectName(u"SourcesLbl")
 
         self.gridLayout.addWidget(self.SourcesLbl, 3, 0, 1, 1)
-
-        self.horizontalSpacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Minimum)
-
-        self.gridLayout.addItem(self.horizontalSpacer, 2, 0, 1, 1)
 
 
         self.retranslateUi(UpdateQuotesDlg)
