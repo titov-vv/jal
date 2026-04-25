@@ -1925,7 +1925,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../ui/main_window.ui" line="125"/>
         <source>&amp;Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Инструменты</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="140"/>
@@ -1990,7 +1990,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../ui/main_window.ui" line="228"/>
         <source>Merge Russian tax-files (*.de5)</source>
-        <translation type="unfinished"></translation>
+        <translation>Объединить файлы деклараций РФ (*.de5)</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="193"/>
@@ -2678,32 +2678,32 @@ Application will be terminated now.</source>
     <message>
         <location filename="../ui/merge_dialog.ui" line="28"/>
         <source>Merge tax files</source>
-        <translation type="unfinished"></translation>
+        <translation>Объединить налоговые файлы</translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="46"/>
         <source>Input files:</source>
-        <translation type="unfinished"></translation>
+        <translation>Исходные файлы:</translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="53"/>
         <source>Output file:</source>
-        <translation type="unfinished">Файл с результатом:</translation>
+        <translation>Файл с результатом:</translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="60"/>
         <source>Add file</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить файл</translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="93"/>
         <source>Remove file</source>
-        <translation type="unfinished"></translation>
+        <translation>Убрать файл</translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="116"/>
         <source> ... </source>
-        <translation type="unfinished"> ... </translation>
+        <translation> ... </translation>
     </message>
 </context>
 <context>
@@ -2756,7 +2756,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../widgets/tax_widget.py" line="238"/>
         <source>Excel money flow report was saved to file </source>
-        <translation type="unfinished"></translation>
+        <translation>Excel-отчёт движения денежных средств сохранён в файл</translation>
     </message>
 </context>
 <context>
@@ -4194,7 +4194,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_export/ru_ndfl3.py" line="107"/>
         <source>Account country is not set, dividend isn&apos;t exported into 3-NDFL </source>
-        <translation type="unfinished"></translation>
+        <translation>Страна счёта не указана, дивиденд не экспортирован в 3-НДФЛ </translation>
     </message>
     <message>
         <location filename="../data_export/ru_ndfl3.py" line="114"/>
@@ -4572,62 +4572,62 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="23"/>
         <source>Freedom Broker (XML Eng)</source>
-        <translation type="unfinished"></translation>
+        <translation>Freedom Broker (XML Eng)</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="25"/>
         <source>Freedom Finance statement (*.xml)</source>
-        <translation type="unfinished"></translation>
+        <translation>Freedom Finance statement (*.xml)</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="62"/>
         <source>Statement loaded successfully: </source>
-        <translation type="unfinished">Отчёт загружен успешно: </translation>
+        <translation>Отчёт загружен успешно: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="68"/>
         <source>Failed to parse XML file: </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно разобрать XML файл: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="70"/>
         <source>Failed to read file: </source>
-        <translation type="unfinished">Невозможно прочесть файл: </translation>
+        <translation>Невозможно прочесть файл: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="80"/>
         <source>Can&apos;t read account name from file name</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно определить имя счёта из имени файла</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="89"/>
         <source>Unsupported trade type: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неподдерживаемый тип сделки:</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="125"/>
         <source>Trades loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Сделок загружено: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="133"/>
         <source>Skipped unsupported corporate action: </source>
-        <translation type="unfinished"></translation>
+        <translation>Пропущено неподдерживаемое корпоративное событие:</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="166"/>
         <source>Asset payments loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Выплаты на ЦБ загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="171"/>
         <source>Mandatory field is empty: </source>
-        <translation type="unfinished"></translation>
+        <translation>Обязательное поле пустое: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="189"/>
         <source>Multiple accounts found: </source>
-        <translation type="unfinished">Несколько счетов найдено: </translation>
+        <translation>Несколько счетов найдено: </translation>
     </message>
 </context>
 <context>
@@ -5754,38 +5754,38 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../widgets/tax_widget.py" line="259"/>
         <source>Select tax file to merge</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите налоговый файл для объединения</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="274"/>
         <source>Select file to save merged result</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите файл для сохранения объединённого результата</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="287"/>
         <source>de5 files merged successfully: </source>
-        <translation type="unfinished"></translation>
+        <translation>Файлы de5 успешно объединены: </translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="289"/>
         <source>Merge de5</source>
-        <translation type="unfinished"></translation>
+        <translation>Объединить de5</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="300"/>
         <source>Failed to read de5 file: </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно прочитать de5-файл: </translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="302"/>
         <source>Unsupported de5 file format: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неподдерживаемый формат de5-файла: </translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="260"/>
         <location filename="../widgets/tax_widget.py" line="275"/>
         <source>Declaration files (*.de5)</source>
-        <translation type="unfinished"></translation>
+        <translation>Файлы деклараций (*.de5)</translation>
     </message>
 </context>
 <context>
@@ -5961,12 +5961,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../widgets/tax_widget.py" line="135"/>
         <source>Selected account isn&apos;t bound to a broker or broker name isn&apos;t set. Tax form export may be incomplete.</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбранный счёт не привязан к брокеру или имя брокера не указано. Экспорт декларации может быть неполным.</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="138"/>
         <source>Warning</source>
-        <translation type="unfinished">Предупреждение</translation>
+        <translation>Предупреждение</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="144"/>
@@ -5986,7 +5986,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../widgets/tax_widget.py" line="168"/>
         <source>Excel tax report was saved to file </source>
-        <translation type="unfinished"></translation>
+        <translation>Налоговый отчёт сохранён в Excel-файл </translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="183"/>
@@ -6450,7 +6450,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/quotes_update.ui" line="73"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>Все</translation>
     </message>
     <message>
         <location filename="../ui/quotes_update.ui" line="96"/>
@@ -6492,7 +6492,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_export/xlsx.py" line="44"/>
         <source>Can&apos;t save Excel report into file </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно сохранить Excel-отчёт в файл </translation>
     </message>
     <message>
         <location filename="../data_export/xlsx.py" line="54"/>
