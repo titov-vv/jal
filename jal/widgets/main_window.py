@@ -70,10 +70,6 @@ class MainWindow(QMainWindow):
 
         self.actionAbout = QAction(text=self.tr("About"), parent=self)
         self.ui.MainMenu.addAction(self.actionAbout)
-        self.menuTools = QMenu(self.tr("&Tools"), self.ui.MainMenu)
-        self.actionMergeDe5 = QAction(self.tr("Merge de5"), self)
-        self.menuTools.addAction(self.actionMergeDe5)
-        self.ui.MainMenu.insertMenu(self.ui.menuLanguage.menuAction(), self.menuTools)
 
         self.langGroup = QActionGroup(self.ui.menuLanguage)
         self.createLanguageMenu()
@@ -99,7 +95,7 @@ class MainWindow(QMainWindow):
         self.reportsGroup.triggered.connect(self.reports.show)
         self.ui.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
         self.ui.actionImportShopReceipt.triggered.connect(self.importShopReceipt)
-        self.actionMergeDe5.triggered.connect(self.mergeDe5Files)
+        self.ui.actionMergeRuTaxFiles.triggered.connect(self.mergeDe5Files)
         self.ui.actionBackup.triggered.connect(self.backup.create)
         self.ui.actionRestore.triggered.connect(self.backup.restore)
         self.ui.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))

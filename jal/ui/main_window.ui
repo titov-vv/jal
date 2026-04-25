@@ -45,7 +45,7 @@
     <item>
      <widget class="QSplitter" name="splitter">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
       <widget class="TabbedMdiArea" name="mdiArea" native="true"/>
       <widget class="LogViewer" name="Logs"/>
@@ -59,7 +59,7 @@
      <x>0</x>
      <y>0</y>
      <width>835</width>
-     <height>23</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMain">
@@ -120,11 +120,18 @@
      <string>&amp;Reports</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menu_Tools">
+    <property name="title">
+     <string>&amp;Tools</string>
+    </property>
+    <addaction name="actionMergeRuTaxFiles"/>
+   </widget>
    <addaction name="menuMain"/>
    <addaction name="menu_Data"/>
    <addaction name="menuReports"/>
    <addaction name="menuImport"/>
    <addaction name="menu_Export"/>
+   <addaction name="menu_Tools"/>
    <addaction name="menuLanguage"/>
   </widget>
   <widget class="QStatusBar" name="StatusBar"/>
@@ -133,7 +140,7 @@
     <string>&amp;Exit</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::QuitRole</enum>
+    <enum>QAction::MenuRole::QuitRole</enum>
    </property>
   </action>
   <action name="action_Re_build_Ledger">
@@ -214,6 +221,11 @@
   <action name="actionCleanAll">
    <property name="text">
     <string>Clean All</string>
+   </property>
+  </action>
+  <action name="actionMergeRuTaxFiles">
+   <property name="text">
+    <string>Merge Russian tax-files (*.de5)</string>
    </property>
   </action>
  </widget>
