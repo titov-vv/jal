@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressB
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
-from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget
+from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget, TaxMergeDialog
 from jal.widgets.helpers import dependency_present
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_dialogs import AccountListDialog, AssetListDialog, TagsListDialog,\
@@ -94,6 +94,7 @@ class MainWindow(QMainWindow):
         self.reportsGroup.triggered.connect(self.reports.show)
         self.ui.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
         self.ui.actionImportShopReceipt.triggered.connect(self.importShopReceipt)
+        self.ui.actionMergeRuTaxFiles.triggered.connect(self.mergeRuTaxFiles)
         self.ui.actionBackup.triggered.connect(self.backup.create)
         self.ui.actionRestore.triggered.connect(self.backup.restore)
         self.ui.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
@@ -258,6 +259,10 @@ class MainWindow(QMainWindow):
     @Slot()
     def onSlipImportFinished(self):
         self.ledger.rebuild()
+
+    @Slot()
+    def mergeRuTaxFiles(self):
+        TaxMergeDialog().exec()
 
     @Slot()
     def onDataDialog(self, dlg_type):
