@@ -64,7 +64,10 @@ class Ru_NDFL3:
         self.broker_iso_country = "000"
         self.stored_data = {
             "Дивиденды": {"dividend": self.append_dividend},
-            "Акции": {"trade": self.append_stock_trade},
+            "Акции": {
+                "trade": self.append_stock_trade,
+                "corporate_action": self.append_stock_trade
+            },
             "Облигации": {"bond_trade": self.append_stock_trade, "bond_interest": self.append_bond_interest},
             "ПФИ": {"trade": self.append_derivative_trade},
             "Проценты": {"interest": self.append_other_income}

@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QDateEdit,
-    QDialog, QDialogButtonBox, QGridLayout, QLabel,
-    QListWidget, QListWidgetItem, QSizePolicy, QWidget)
+    QCheckBox, QDialog, QDialogButtonBox, QGridLayout, QLabel,
+    QListWidget, QListWidgetItem, QSizePolicy, QSpacerItem, QWidget)
 
 class Ui_UpdateQuotesDlg(object):
     def setupUi(self, UpdateQuotesDlg):
@@ -39,7 +39,7 @@ class Ui_UpdateQuotesDlg(object):
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
 
-        self.gridLayout.addWidget(self.buttonBox, 3, 1, 1, 1)
+        self.gridLayout.addWidget(self.buttonBox, 4, 1, 1, 1)
 
         self.EndDateEdit = QDateEdit(UpdateQuotesDlg)
         self.EndDateEdit.setObjectName(u"EndDateEdit")
@@ -58,18 +58,28 @@ class Ui_UpdateQuotesDlg(object):
 
         self.gridLayout.addWidget(self.StartDateLbl, 0, 0, 1, 1)
 
+        self.AllSourcesCheck = QCheckBox(UpdateQuotesDlg)
+        self.AllSourcesCheck.setObjectName(u"AllSourcesCheck")
+        self.AllSourcesCheck.setTristate(True)
+
+        self.gridLayout.addWidget(self.AllSourcesCheck, 2, 1, 1, 1)
+
         self.SourcesList = QListWidget(UpdateQuotesDlg)
         self.SourcesList.setObjectName(u"SourcesList")
         self.SourcesList.setEditTriggers(QAbstractItemView.EditKeyPressed)
         self.SourcesList.setAlternatingRowColors(True)
         self.SourcesList.setSortingEnabled(True)
 
-        self.gridLayout.addWidget(self.SourcesList, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.SourcesList, 3, 1, 1, 1)
 
         self.SourcesLbl = QLabel(UpdateQuotesDlg)
         self.SourcesLbl.setObjectName(u"SourcesLbl")
 
-        self.gridLayout.addWidget(self.SourcesLbl, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.SourcesLbl, 3, 0, 1, 1)
+
+        self.horizontalSpacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+        self.gridLayout.addItem(self.horizontalSpacer, 2, 0, 1, 1)
 
 
         self.retranslateUi(UpdateQuotesDlg)
@@ -85,6 +95,7 @@ class Ui_UpdateQuotesDlg(object):
         self.EndDateEdit.setDisplayFormat(QCoreApplication.translate("UpdateQuotesDlg", u"dd/MM/yyyy", None))
         self.EndDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"End date", None))
         self.StartDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"Start date", None))
+        self.AllSourcesCheck.setText(QCoreApplication.translate("UpdateQuotesDlg", u"All", None))
         self.SourcesLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"Sources", None))
     # retranslateUi
 
