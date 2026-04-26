@@ -114,6 +114,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         'NYSE': MarketDataFeed.US,
         'ARCA': MarketDataFeed.US,
         'NASDAQ': MarketDataFeed.US,
+        'US': MarketDataFeed.US,
         'TSE': MarketDataFeed.CA,
         'SBF': MarketDataFeed.EU,
         'AMEX': MarketDataFeed.US,

@@ -33,6 +33,8 @@ class QuotesUpdateDialog(QDialog):
         super().__init__(parent=parent)
         self.ui = Ui_UpdateQuotesDlg()
         self.ui.setupUi(self)
+        self._updating_all_sources = False
+        self._all_sources_state_before_click = Qt.Unchecked
         self.ui.StartDateEdit.setDate(QDate.currentDate().addMonths(-1))
         self.ui.EndDateEdit.setDate(QDate.currentDate())
         sources = JalAsset.get_sources_list()
@@ -41,6 +43,10 @@ class QuotesUpdateDialog(QDialog):
             item.setData(DATA_SOURCE_ROLE, source)
             item.setCheckState(Qt.Checked)
             self.ui.SourcesList.addItem(item)
+        self.ui.SourcesList.itemChanged.connect(self._on_sources_item_changed)
+        self.ui.AllSourcesCheck.pressed.connect(self._on_all_sources_pressed)
+        self.ui.AllSourcesCheck.clicked.connect(self._on_all_sources_clicked)
+        self._sync_all_sources_check()
 
         # center dialog with respect to parent window
         x = parent.x() + parent.width() / 2 - self.width() / 2
@@ -61,6 +67,47 @@ class QuotesUpdateDialog(QDialog):
             if item.checkState() == Qt.Checked:
                 checked.append(item.data(DATA_SOURCE_ROLE))
         return checked
+
+    @Slot(QListWidgetItem)
+    def _on_sources_item_changed(self, _item):
+        if self._updating_all_sources:
+            return
+        self._sync_all_sources_check()
+
+    @Slot()
+    def _on_all_sources_pressed(self):
+        self._all_sources_state_before_click = self.ui.AllSourcesCheck.checkState()
+
+    @Slot(bool)
+    def _on_all_sources_clicked(self, _checked):
+        if self._updating_all_sources:
+            return
+        target_state = Qt.Unchecked if self._all_sources_state_before_click == Qt.Checked else Qt.Checked
+        self._updating_all_sources = True
+        try:
+            for item_index in range(self.ui.SourcesList.count()):
+                self.ui.SourcesList.item(item_index).setCheckState(target_state)
+        finally:
+            self._updating_all_sources = False
+        self._sync_all_sources_check()
+
+    def _sync_all_sources_check(self):
+        checked_count = 0
+        item_count = self.ui.SourcesList.count()
+        for item_index in range(item_count):
+            if self.ui.SourcesList.item(item_index).checkState() == Qt.Checked:
+                checked_count += 1
+
+        self._updating_all_sources = True
+        try:
+            if checked_count == 0:
+                self.ui.AllSourcesCheck.setCheckState(Qt.Unchecked)
+            elif checked_count == item_count:
+                self.ui.AllSourcesCheck.setCheckState(Qt.Checked)
+            else:
+                self.ui.AllSourcesCheck.setCheckState(Qt.PartiallyChecked)
+        finally:
+            self._updating_all_sources = False
 
 
 # ===================================================================================================================

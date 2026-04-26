@@ -59,11 +59,15 @@ class Ru_NDFL3:
         self._broker_as_income = broker_as_income
         self._year = year
         self.currency = None
+        self.account_name = ''
         self.broker_name = ''
         self.broker_iso_country = "000"
         self.stored_data = {
             "Дивиденды": {"dividend": self.append_dividend},
-            "Акции": {"trade": self.append_stock_trade},
+            "Акции": {
+                "trade": self.append_stock_trade,
+                "corporate_action": self.append_stock_trade
+            },
             "Облигации": {"bond_trade": self.append_stock_trade, "bond_interest": self.append_bond_interest},
             "ПФИ": {"trade": self.append_derivative_trade},
             "Проценты": {"interest": self.append_other_income}
@@ -82,6 +86,7 @@ class Ru_NDFL3:
             return
         self.broker_name = parameters['broker_name']
         self.broker_iso_country = parameters['broker_iso_country']
+        self.account_name = parameters.get('account_name', '')
         for section in tax_report:
             if section in self.stored_data:
                 for template in self.stored_data[section]:
@@ -99,13 +104,16 @@ class Ru_NDFL3:
             income_source = self.broker_name
             income_iso_country = self.broker_iso_country
             if income_iso_country == '000':
-                logging.error(self.tr("Account country is not set for asset, dividend isn't exported into 3-NDFL ") + f"'{income_source}'")
+                logging.error(self.tr("Account country is not set, dividend isn't exported into 3-NDFL ") +
+                              f"account='{self.account_name}', broker='{income_source}', asset='{dividend['symbol']}'")
                 return
         else:
             income_source = f"Дивиденд от {dividend['symbol']} ({dividend['full_name']})"
             income_iso_country = dividend["country_iso"]
             if income_iso_country == '000':
-                logging.error(self.tr("Country is not set for asset, dividend isn't exported into 3-NDFL ") + f"'{income_source}'")
+                logging.error(self.tr("Country is not set for asset, dividend isn't exported into 3-NDFL ") +
+                              f"asset='{dividend['symbol']}', isin='{dividend['isin']}', "
+                              f"name='{dividend['full_name']}'")
                 return
         dividend_record = {
           "SourseName": income_source,

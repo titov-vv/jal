@@ -72,9 +72,9 @@ class LogViewer(QPlainTextEdit):
         colors = {
             logging.DEBUG: CustomColor.Grey,
             logging.INFO: None,
-            logging.WARNING: CustomColor.LightRed,
+            logging.WARNING: CustomColor.DarkYellow,
             logging.ERROR: CustomColor.LightRed,
-            logging.CRITICAL: CustomColor.LightRed
+            logging.CRITICAL: CustomColor.DarkRed
         }
         message_color = colors[log_level]
         color = self.clear_color if message_color is None else message_color

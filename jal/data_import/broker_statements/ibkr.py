@@ -646,17 +646,29 @@ class StatementIBKR(StatementXML):
     # Find record in list 'parts_b' (second parts of corporate actions) which matches
     # given asset and description with more details from corp_action itself
     def find_corp_action_pair(self, asset, description, action, parts_b):
+        expected = self.normalize_corp_action_description(description)
         paired_record = list(filter(
             lambda pair: pair['asset'] == asset
-                         and (pair['description'].startswith(description + ", ")
-                              or pair['description'].startswith(description + ".OLD, ")
-                              or pair['description'].startswith(description + "D, ")
-                              or pair['description'].startswith(description + "D.OLD, "))
+                         and (self.normalize_corp_action_description(pair['description']).startswith(expected + ", ")
+                              or self.normalize_corp_action_description(pair['description']).startswith(expected + ".OLD, ")
+                              or self.normalize_corp_action_description(pair['description']).startswith(expected + "D, ")
+                              or self.normalize_corp_action_description(pair['description']).startswith(expected + "D.OLD, "))
                          and pair['type'] == action['type']
                          and pair['timestamp'] == action['timestamp'], parts_b))
         if len(paired_record) != 1:
             raise Statement_ImportError(self.tr("Can't find paired record for ") + f"{action}")
         return paired_record
+
+    @staticmethod
+    def normalize_corp_action_symbol(symbol: str) -> str:
+        # Some IBKR descriptions prefix the old symbol with a 14-digit timestamp-like value.
+        normalized = re.sub(r"^\d{14}(?=\w)", "", symbol)
+        return normalized if normalized else symbol
+
+    @classmethod
+    def normalize_corp_action_description(cls, description: str) -> str:
+        # IBKR may also prepend the same 14-digit value to the symbol inside parentheses.
+        return re.sub(r"\((\d{14})(?=\w)", "(", description)
 
     # Takes cancelled corporate actions and tries to find and remove original one form actions list
     def remove_cancelled_corporate_actions(self, actions):
@@ -703,6 +715,7 @@ class StatementIBKR(StatementXML):
         if len(merger_a) != MergerPatterns[pattern_id].count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Merger description miss some data ") + f"'{action}'")
 
+        merger_a['symbol_old'] = self.normalize_corp_action_symbol(merger_a['symbol_old'])
         description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old']
         asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
 
@@ -761,13 +774,17 @@ class StatementIBKR(StatementXML):
         spinoff = parts.groupdict()
         if len(spinoff) != SpinOffPattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Spin-off description miss some data ") + f"'{action}'")
+        spinoff['symbol_old'] = self.normalize_corp_action_symbol(spinoff['symbol_old'])
         asset_old = self.locate_asset(spinoff['symbol_old'], spinoff['isin_old'])
         if not asset_old:
             raise Statement_ImportError(self.tr("Spin-off initial asset not found ") + f"'{action}'")
         qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
-        if abs(round(qty_old) - qty_old) > 0.01:
+        rounded_qty_old = round(qty_old)
+        # IBKR may report a rounded whole-number spin-off quantity after dropping fractional entitlements.
+        implied_spinoff_qty = rounded_qty_old * int(spinoff['X']) / int(spinoff['Y'])
+        if abs(rounded_qty_old - qty_old) > 0.01 and abs(implied_spinoff_qty - action['quantity']) >= 1.0:
             raise Statement_ImportError(self.tr("Spin-off rounding error is too big ") + f"'{action}'")
-        qty_old = round(qty_old)
+        qty_old = rounded_qty_old
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['outcome'] = [{'asset': asset_old, 'quantity': qty_old, 'share': 0.0},
                              {'asset': action['asset'], 'quantity': action['quantity'], 'share': 0.0}]
@@ -786,6 +803,7 @@ class StatementIBKR(StatementXML):
         isin_change = parts.groupdict()
         if len(isin_change) != SymbolChangePattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Symbol Change description miss some data ") + f"'{action}'")
+        isin_change['symbol_old'] = self.normalize_corp_action_symbol(isin_change['symbol_old'])
         description_b = action['description'][:parts.span('symbol')[0]] + isin_change['symbol_old']
         asset_b = self.locate_asset(isin_change['symbol_old'], isin_change['isin_old'])
         paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
@@ -823,6 +841,7 @@ class StatementIBKR(StatementXML):
         split = parts.groupdict()
         if len(split) != SplitPattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Split description miss some data ") + f"'{action}'")
+        split['symbol_old'] = self.normalize_corp_action_symbol(split['symbol_old'])
         if parts['id'] is None or parts['isin_old'] == parts['id']:  # Simple split without ISIN change
             qty_delta = action['quantity']
             qty_old = qty_delta / (int(split['X']) / int(split['Y']) - 1)
@@ -1003,6 +1022,33 @@ class StatementIBKR(StatementXML):
     # Method takes a list of taxes and checks if we have the same amount added and deducted the same day
     # First it tries to find exact match. Second it does it again ignoring reportDate.
     def aggregate_taxes(self, taxes: list) -> list:
+        def is_mlp_extra_tax(tax: dict) -> bool:
+            if tax['amount'] >= 0:
+                return False
+            dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
+                         (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
+                         and x['asset'] == tax['asset'] and x['account'] == tax['account'] and x['timestamp'] == tax['timestamp']]
+            try:
+                db_account = self._map_db_account(tax['account'])
+                db_asset = self._map_db_asset(tax['asset'])
+            except RuntimeError:
+                db_account = 0
+                db_asset = 0
+            if db_account and db_asset:
+                db_dividends = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
+                db_dividends += AssetPayment.get_list(db_account, db_asset, AssetPayment.StockDividend)
+                for db_dividend in db_dividends:
+                    if db_dividend.timestamp() == tax['timestamp']:
+                        dividends.append({
+                            "amount": float(db_dividend.amount()),
+                        })
+            tax_amount = abs(Decimal(str(tax['amount'])))
+            for dividend in dividends:
+                dividend_amount = abs(Decimal(str(dividend['amount'])))
+                if abs(Decimal('0.1') * dividend_amount - tax_amount) <= Decimal('0.01'):
+                    return True
+            return False
+
         payments = [x for x in deepcopy(taxes) if x['amount'] < 0]
         reversals = [x for x in deepcopy(taxes) if x['amount'] > 0]
         not_matched_reversals = []
@@ -1046,17 +1092,18 @@ class StatementIBKR(StatementXML):
         non_mlp_taxes = [x for x in taxes_aggregated if x not in mlp_taxes]
         mlp_processed  = []
         for k, group in groupby(mlp_taxes, key=key_func):
-            group_list = sorted(list(group), key=lambda x: (x['amount']))  # sort to have higher tax first
-            if len(group_list) > 2:
-                raise Statement_ImportError(self.tr("Too many records for MLP tax: ") + f"{group_list}")
-            if len(group_list) == 2:  # 1st line is expected to be a base tax and 2nd line seems to be additional 10%
-                tax = group_list[1]   # Store 2nd line as separate asset payment record
+            group_list = sorted(list(group), key=lambda x: (x['amount']))
+            extra_taxes = [x for x in group_list if is_mlp_extra_tax(x)]
+            for tax in extra_taxes:
                 tax['id'] = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
                 tax['type'] = FOF.PAYMENT_FEE
                 tax['description'] += " - Extra 10% tax due to IRS section 1446"
                 self.drop_extra_fields(tax, ["source", "currency", "reported"])
                 self._data[FOF.ASSET_PAYMENTS].append(tax)
-            mlp_processed.append(group_list[0])  # Keep only base tax
+            group_list = [x for x in group_list if x not in extra_taxes]
+            if len(group_list) > 2:
+                raise Statement_ImportError(self.tr("Too many records for MLP tax: ") + f"{group_list}")
+            mlp_processed.extend(group_list)
         taxes_processed = sorted(non_mlp_taxes + mlp_processed, key=key_func)
         return taxes_processed
 
@@ -1161,7 +1208,9 @@ class StatementIBKR(StatementXML):
         db_account = self._map_db_account(account_id)
         db_asset = self._map_db_asset(asset_id)
         if db_account and db_asset:
-            for db_dividend in AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend):
+            db_dividends = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
+            db_dividends += AssetPayment.get_list(db_account, db_asset, AssetPayment.StockDividend)
+            for db_dividend in db_dividends:
                 dividends.append({
                     "id": -db_dividend.oid(),
                     "account": account_id,
@@ -1175,7 +1224,8 @@ class StatementIBKR(StatementXML):
         if datetime.fromtimestamp(timestamp, tz=timezone.utc).timetuple().tm_yday < 75:
             # We may have wrong date in taxes before March, 15 due to tax correction
             range_start, _range_end = ManipulateDate.PreviousYear(day=datetime.fromtimestamp(timestamp, tz=timezone.utc))
-            dividends = [x for x in dividends if x['timestamp'] >= range_start]
+            # Allow matching to earlier dividends from the previous year, but never to future payments.
+            dividends = [x for x in dividends if range_start <= x['timestamp'] <= timestamp]
         else:
             # For any other day - use exact time match
             dividends = [x for x in dividends if x['timestamp'] == timestamp]

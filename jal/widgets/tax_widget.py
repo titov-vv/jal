@@ -2,12 +2,16 @@ from functools import partial
 from datetime import datetime
 import logging
 import traceback
+import json
+from copy import deepcopy
 
-from PySide6.QtCore import Property, Slot
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication
+from PySide6.QtCore import Property, Slot, Qt
+from PySide6.QtGui import QShortcut, QKeySequence
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog
 
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
+from jal.ui.ui_merge_dialog import Ui_MergeFilesToolDialog
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d, dt2ts
 from jal.widgets.icons import JalIcon
@@ -15,6 +19,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings, FolderFor
+from jal.constants import PredefinedAgents
 from jal.data_export.taxes import TaxReport
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
@@ -48,6 +53,18 @@ class TaxWidget(MdiWidget):
         self.ui.IRS_Modelo3SelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.PT_Modelo3_XML))
         self.ui.SaveButton.pressed.connect(self.SaveReport)
         self.ui.Country.setCurrentIndex(TaxReport.RUSSIA)
+        self.OnYearChange(self.ui.Year.value())
+        self._close_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        self._close_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
+        self._close_shortcut.activated.connect(self.closeMdiWindow)
+
+    @Slot()
+    def closeMdiWindow(self):
+        mdi_window = self.parent()
+        if mdi_window is not None:
+            mdi_window.close()
+        else:
+            self.close()
 
     def OnCountryChange(self, item_id):
         if item_id == TaxReport.PORTUGAL:
@@ -110,6 +127,17 @@ class TaxWidget(MdiWidget):
     modelo3_filename = Property(str, fget=lambda self: self.ui.IRS_Modelo3Filename.text())
     no_settlement = Property(bool, fget=lambda self: self.ui.Ru_NoSettlement.isChecked())
 
+    def _warn_missing_broker(self, account: JalAccount) -> bool:
+        broker_id = account.organization()
+        broker_name = JalPeer(broker_id).name() if broker_id else ''
+        if broker_id and broker_id != PredefinedAgents.Empty and broker_name and broker_name.strip():
+            return True
+        warning = self.tr("Selected account isn't bound to a broker or broker name isn't set. "
+                          "Tax form export may be incomplete.")
+        logging.warning(warning)
+        reply = QMessageBox().warning(self, self.tr("Warning"), warning, QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Cancel)
+        return reply == QMessageBox.Ok
+
     @Slot()
     def SaveReport(self):
         if not self.account:
@@ -129,16 +157,19 @@ class TaxWidget(MdiWidget):
         parameters = {
             "period": f"{ts2d(taxes.year_begin)} - {ts2d(taxes.year_end - 1)}",
             "account": f"{taxes.account.number()} ({JalAsset(taxes.account.currency()).symbol()})",
+            "account_name": taxes.account.name(),
             "currency": JalAsset(taxes.account.currency()).symbol(),
             "broker_name": JalPeer(taxes.account.organization()).name(),
             "broker_iso_country": taxes.account.country().iso_code()
         }
         for section in tax_report:
             reports_xls.output_data(tax_report[section], taxes.report_template(section), parameters)
-        reports_xls.save()
-        logging.info(self.tr("Tax report was saved to file ") + f"'{self.xls_filename}'")
+        if reports_xls.save():
+            logging.info(self.tr("Excel tax report was saved to file ") + f"'{self.xls_filename}'")
 
         if self.update_ndfl3 or self.update_modelo3:
+            if self.update_ndfl3 and not self._warn_missing_broker(taxes.account):
+                return
             tax_forms = None
             if self.update_ndfl3:
                 tax_forms = Ru_NDFL3(self.year, broker_as_income=self.ndfl3_broker_as_income, only_dividends=self.ndfl3_dividends_only)
@@ -155,6 +186,7 @@ class TaxWidget(MdiWidget):
                               f"\n{traceback.format_exc()}")
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class MoneyFlowWidget(MdiWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -202,7 +234,95 @@ class MoneyFlowWidget(MdiWidget):
             "period": f"{ts2d(taxes_flow.year_begin)} - {ts2d(taxes_flow.year_end - 1)}"
         }
         reports_xls.output_data(flow_report, "tax_rus_flow.json", parameters)
-        reports_xls.save()
+        if reports_xls.save():
+            logging.info(self.tr("Excel money flow report was saved to file ") + f"'{self.xls_filename}'")
+            self.close()
 
-        logging.info(self.tr("Money flow report saved to file ") + f"'{self.xls_filename}'")
-        self.close()
+
+# ----------------------------------------------------------------------------------------------------------------------
+class TaxMergeDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_MergeFilesToolDialog()
+        self.ui.setupUi(self)
+
+        self.ui.AddBtn.setIcon(JalIcon[JalIcon.ADD])
+        self.ui.RemoveBtn.setIcon(JalIcon[JalIcon.REMOVE])
+
+        self.ui.AddBtn.clicked.connect(self.OnAdd)
+        self.ui.RemoveBtn.clicked.connect(self.OnRemove)
+        self.ui.OutputSelectBtn.clicked.connect(self.OnOutputSelect)
+
+    # Add file name into the list of merged files
+    @Slot()
+    def OnAdd(self):
+        filename = QFileDialog.getOpenFileName(self, self.tr("Select tax file to merge"),
+                                                      '', self.tr("Declaration files (*.de5)"))
+        if filename[0]:
+            self.ui.InputFilesList.addItem(filename[0])
+
+    # Removes currently selected filename from the list of merged files
+    @Slot()
+    def OnRemove(self):
+        item = self.ui.InputFilesList.currentItem()
+        if item is not None:
+            self.ui.InputFilesList.takeItem(self.ui.InputFilesList.row(item))
+
+    # Select a file to store a merged data
+    @Slot()
+    def OnOutputSelect(self):
+        filename = QFileDialog.getSaveFileName(self, self.tr("Select file to save merged result"),
+                                                     '', self.tr("Declaration files (*.de5)"))
+        if filename[0]:
+            self.ui.OutputFileName.setText(filename[0])
+
+    @Slot()
+    def accept(self):
+        input_files = [self.ui.InputFilesList.item(i).text() for i in range(self.ui.InputFilesList.count())]
+        output_file = self.ui.OutputFileName.text()
+        try:
+            merged_data = self._merge_de5_data(input_files)
+            with open(output_file, 'w', encoding='utf-8') as out:
+                json.dump(merged_data, out, ensure_ascii=False, indent=2)
+            logging.info(self.tr("de5 files merged successfully: ") + output_file)
+        except Exception as err:
+            QMessageBox().warning(self, self.tr("Merge de5"), str(err), QMessageBox.Ok)
+        super().accept()
+
+    #FIXME Move this functions to Ru_NDFL3 class (while keep this dialog for other countries)
+    def _merge_de5_data(self, filenames: list[str]) -> dict:
+        files_data = []
+        for filename in filenames:
+            try:
+                with open(filename, 'r', encoding='utf-8') as src:
+                    content = json.load(src)
+            except Exception as err:
+                raise ValueError(self.tr("Failed to read de5 file: ") + f"{filename}: {err}")
+            if not isinstance(content, dict):
+                raise ValueError(self.tr("Unsupported de5 file format: ") + filename)
+            files_data.append(content)
+
+        merged = {}
+        all_keys = set().union(*(item.keys() for item in files_data))
+        for key in all_keys:
+            if key == 'CurrencyIncomeList':
+                merged[key] = []
+                for content in files_data:
+                    value = content.get(key, [])
+                    if isinstance(value, list):
+                        merged[key].extend(deepcopy(value))
+                continue
+            merged[key] = deepcopy(max(files_data, key=lambda item: self._de5_completeness(item.get(key)) ).get(key))
+
+        merged['CurrencyQuantity'] = len(merged.get('CurrencyIncomeList', []))
+        if isinstance(merged.get('SourseInfoList'), list):
+            merged['SourseInfoQuantity'] = len(merged['SourseInfoList'])
+        return merged
+
+    def _de5_completeness(self, value) -> int:
+        if isinstance(value, dict):
+            return sum(self._de5_completeness(item) for item in value.values()) + \
+                   sum(1 for item in value.values() if item not in ('', None, [], {}, 0, 0.0, False, '0'))
+        if isinstance(value, list):
+            return len(value) + sum(self._de5_completeness(item) for item in value)
+        return 0 if value in ('', None, [], {}, 0, 0.0, False, '0') else 1
