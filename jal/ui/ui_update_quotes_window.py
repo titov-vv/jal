@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'quotes_update.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.2
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,36 +15,37 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QDateEdit,
-    QDialog, QDialogButtonBox, QGridLayout, QLabel,
-    QListWidget, QListWidgetItem, QSizePolicy, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QCheckBox,
+    QDateEdit, QDialog, QDialogButtonBox, QGridLayout,
+    QLabel, QListWidget, QListWidgetItem, QSizePolicy,
+    QWidget)
 
 class Ui_UpdateQuotesDlg(object):
     def setupUi(self, UpdateQuotesDlg):
         if not UpdateQuotesDlg.objectName():
             UpdateQuotesDlg.setObjectName(u"UpdateQuotesDlg")
-        UpdateQuotesDlg.setWindowModality(Qt.ApplicationModal)
+        UpdateQuotesDlg.setWindowModality(Qt.WindowModality.ApplicationModal)
         UpdateQuotesDlg.resize(256, 308)
         self.gridLayout = QGridLayout(UpdateQuotesDlg)
         self.gridLayout.setObjectName(u"gridLayout")
         self.StartDateEdit = QDateEdit(UpdateQuotesDlg)
         self.StartDateEdit.setObjectName(u"StartDateEdit")
         self.StartDateEdit.setCalendarPopup(True)
-        self.StartDateEdit.setTimeSpec(Qt.UTC)
+        self.StartDateEdit.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.gridLayout.addWidget(self.StartDateEdit, 0, 1, 1, 1)
 
         self.buttonBox = QDialogButtonBox(UpdateQuotesDlg)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
-        self.gridLayout.addWidget(self.buttonBox, 3, 1, 1, 1)
+        self.gridLayout.addWidget(self.buttonBox, 4, 1, 1, 1)
 
         self.EndDateEdit = QDateEdit(UpdateQuotesDlg)
         self.EndDateEdit.setObjectName(u"EndDateEdit")
         self.EndDateEdit.setCalendarPopup(True)
-        self.EndDateEdit.setTimeSpec(Qt.UTC)
+        self.EndDateEdit.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.gridLayout.addWidget(self.EndDateEdit, 1, 1, 1, 1)
 
@@ -58,18 +59,24 @@ class Ui_UpdateQuotesDlg(object):
 
         self.gridLayout.addWidget(self.StartDateLbl, 0, 0, 1, 1)
 
+        self.AllSourcesCheck = QCheckBox(UpdateQuotesDlg)
+        self.AllSourcesCheck.setObjectName(u"AllSourcesCheck")
+        self.AllSourcesCheck.setTristate(True)
+
+        self.gridLayout.addWidget(self.AllSourcesCheck, 2, 1, 1, 1)
+
         self.SourcesList = QListWidget(UpdateQuotesDlg)
         self.SourcesList.setObjectName(u"SourcesList")
-        self.SourcesList.setEditTriggers(QAbstractItemView.EditKeyPressed)
+        self.SourcesList.setEditTriggers(QAbstractItemView.EditTrigger.EditKeyPressed)
         self.SourcesList.setAlternatingRowColors(True)
         self.SourcesList.setSortingEnabled(True)
 
-        self.gridLayout.addWidget(self.SourcesList, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.SourcesList, 3, 1, 1, 1)
 
         self.SourcesLbl = QLabel(UpdateQuotesDlg)
         self.SourcesLbl.setObjectName(u"SourcesLbl")
 
-        self.gridLayout.addWidget(self.SourcesLbl, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.SourcesLbl, 3, 0, 1, 1)
 
 
         self.retranslateUi(UpdateQuotesDlg)
@@ -85,6 +92,7 @@ class Ui_UpdateQuotesDlg(object):
         self.EndDateEdit.setDisplayFormat(QCoreApplication.translate("UpdateQuotesDlg", u"dd/MM/yyyy", None))
         self.EndDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"End date", None))
         self.StartDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"Start date", None))
+        self.AllSourcesCheck.setText(QCoreApplication.translate("UpdateQuotesDlg", u"All", None))
         self.SourcesLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"Sources", None))
     # retranslateUi
 

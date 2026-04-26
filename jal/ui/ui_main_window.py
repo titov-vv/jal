@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.2
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -31,7 +31,7 @@ class Ui_JAL_MainWindow(object):
         JAL_MainWindow.setMinimumSize(QSize(0, 0))
         self.actionExit = QAction(JAL_MainWindow)
         self.actionExit.setObjectName(u"actionExit")
-        self.actionExit.setMenuRole(QAction.QuitRole)
+        self.actionExit.setMenuRole(QAction.MenuRole.QuitRole)
         self.action_Re_build_Ledger = QAction(JAL_MainWindow)
         self.action_Re_build_Ledger.setObjectName(u"action_Re_build_Ledger")
         self.action_LoadQuotes = QAction(JAL_MainWindow)
@@ -64,6 +64,8 @@ class Ui_JAL_MainWindow(object):
         self.actionBaseCurrency.setObjectName(u"actionBaseCurrency")
         self.actionCleanAll = QAction(JAL_MainWindow)
         self.actionCleanAll.setObjectName(u"actionCleanAll")
+        self.actionMergeRuTaxFiles = QAction(JAL_MainWindow)
+        self.actionMergeRuTaxFiles.setObjectName(u"actionMergeRuTaxFiles")
         self.centralwidget = QWidget(JAL_MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
@@ -73,7 +75,7 @@ class Ui_JAL_MainWindow(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.splitter = QSplitter(self.centralwidget)
         self.splitter.setObjectName(u"splitter")
-        self.splitter.setOrientation(Qt.Vertical)
+        self.splitter.setOrientation(Qt.Orientation.Vertical)
         self.mdiArea = TabbedMdiArea(self.splitter)
         self.mdiArea.setObjectName(u"mdiArea")
         self.splitter.addWidget(self.mdiArea)
@@ -86,7 +88,7 @@ class Ui_JAL_MainWindow(object):
         JAL_MainWindow.setCentralWidget(self.centralwidget)
         self.MainMenu = QMenuBar(JAL_MainWindow)
         self.MainMenu.setObjectName(u"MainMenu")
-        self.MainMenu.setGeometry(QRect(0, 0, 835, 23))
+        self.MainMenu.setGeometry(QRect(0, 0, 835, 24))
         self.menuMain = QMenu(self.MainMenu)
         self.menuMain.setObjectName(u"menuMain")
         self.menu_Data = QMenu(self.MainMenu)
@@ -101,6 +103,8 @@ class Ui_JAL_MainWindow(object):
         self.menuStatement.setObjectName(u"menuStatement")
         self.menuReports = QMenu(self.MainMenu)
         self.menuReports.setObjectName(u"menuReports")
+        self.menu_Tools = QMenu(self.MainMenu)
+        self.menu_Tools.setObjectName(u"menu_Tools")
         JAL_MainWindow.setMenuBar(self.MainMenu)
         self.StatusBar = QStatusBar(JAL_MainWindow)
         self.StatusBar.setObjectName(u"StatusBar")
@@ -111,6 +115,7 @@ class Ui_JAL_MainWindow(object):
         self.MainMenu.addAction(self.menuReports.menuAction())
         self.MainMenu.addAction(self.menuImport.menuAction())
         self.MainMenu.addAction(self.menu_Export.menuAction())
+        self.MainMenu.addAction(self.menu_Tools.menuAction())
         self.MainMenu.addAction(self.menuLanguage.menuAction())
         self.menuMain.addAction(self.actionOperations)
         self.menuMain.addAction(self.actionExit)
@@ -135,6 +140,7 @@ class Ui_JAL_MainWindow(object):
         self.menuImport.addAction(self.action_LoadQuotes)
         self.menuImport.addAction(self.menuStatement.menuAction())
         self.menuImport.addAction(self.actionImportShopReceipt)
+        self.menu_Tools.addAction(self.actionMergeRuTaxFiles)
 
         self.retranslateUi(JAL_MainWindow)
 
@@ -160,6 +166,7 @@ class Ui_JAL_MainWindow(object):
         self.PrepareFlowReport.setText(QCoreApplication.translate("JAL_MainWindow", u"Foreign accounts &flow report", None))
         self.actionBaseCurrency.setText(QCoreApplication.translate("JAL_MainWindow", u"&Base Currency", None))
         self.actionCleanAll.setText(QCoreApplication.translate("JAL_MainWindow", u"Clean All", None))
+        self.actionMergeRuTaxFiles.setText(QCoreApplication.translate("JAL_MainWindow", u"Merge Russian tax-files (*.de5)", None))
         self.menuMain.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Main", None))
         self.menu_Data.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Data", None))
         self.menu_Export.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Export", None))
@@ -167,5 +174,6 @@ class Ui_JAL_MainWindow(object):
         self.menuImport.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Import", None))
         self.menuStatement.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Statement", None))
         self.menuReports.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Reports", None))
+        self.menu_Tools.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Tools", None))
     # retranslateUi
 
