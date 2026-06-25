@@ -11,7 +11,8 @@ from PySide6.QtWidgets import QApplication
 # {c_amount} - amount of realization (sale) in EUR
 # {o_amount} - amount of acquisition (purchase) in EUR
 # {fee} - expenses in EUR related to these operations
-AnexoJ_catG_template = "<AnexoJq092AT01-Linha><CodPais>{cc}</CodPais><Codigo>G01</Codigo><AnoRealizacao>{c_y}</AnoRealizacao><MesRealizacao>{c_m}</MesRealizacao><DiaRealizacao>{c_d}</DiaRealizacao><ValorRealizacao>{c_amount}</ValorRealizacao><AnoAquisicao>{o_y}</AnoAquisicao><MesAquisicao>{o_m}</MesAquisicao><DiaAquisicao>{o_d}</DiaAquisicao><ValorAquisicao>{o_amount}</ValorAquisicao><DespesasEncargos>{fee}</DespesasEncargos></AnexoJq092AT01-Linha>"
+# {stock} - can have value S (Sim) or N (Nao) to indicate if this line is for stock/ETF or not
+AnexoJ_catG_template = "<AnexoJq092AT01-Linha><CodPais>{cc}</CodPais><Codigo>G01</Codigo><AnoRealizacao>{c_y}</AnoRealizacao><MesRealizacao>{c_m}</MesRealizacao><DiaRealizacao>{c_d}</DiaRealizacao><ValorRealizacao>{c_amount}</ValorRealizacao><AnoAquisicao>{o_y}</AnoAquisicao><MesAquisicao>{o_m}</MesAquisicao><DiaAquisicao>{o_d}</DiaAquisicao><ValorAquisicao>{o_amount}</ValorAquisicao><DespesasEncargos>{fee}</DespesasEncargos><RespeitaValoresMobiliarios>{stock}</RespeitaValoresMobiliarios></AnexoJq092AT01-Linha>"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class IRS_Modelo3:
@@ -26,7 +27,7 @@ class IRS_Modelo3:
         for report_line in [x for x in tax_report['Shares'] if x['report_template'] == "trade"]:
             c_date = datetime.fromtimestamp(report_line['c_date'], tz=timezone.utc)
             o_date = datetime.fromtimestamp(report_line['o_date'], tz=timezone.utc)
-            tax_line = AnexoJ_catG_template.format(cc=country, fee=round(report_line['o_fee_eur'] + report_line['c_fee_eur'], 2),
+            tax_line = AnexoJ_catG_template.format(cc=country, fee=round(report_line['o_fee_eur'] + report_line['c_fee_eur'], 2), stock='S',
                                                    c_y=c_date.year, c_m=c_date.month, c_d=c_date.day,
                                                    o_y=o_date.year, o_m=o_date.month, o_d=o_date.day,
                                                    c_amount=round(report_line['c_amount_eur'], 2), o_amount=round(report_line['o_amount_eur'], 2))
