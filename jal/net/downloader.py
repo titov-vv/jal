@@ -385,12 +385,12 @@ class QuoteDownloader(QObject):
 
     # noinspection PyMethodMayBeStatic
     def Euronext_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
-        suffix = "ETFP" if asset.type() == PredefinedAsset.ETF else "XPAR"  # Dates don't work for ETFP due to glitch on their site
+        suffix = "ETFP" if asset.type() == PredefinedAsset.ETF else "BGEM"  # Dates don't work for ETFP due to glitch on their site, 'BGEM' - global equity market
         url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-{suffix}"
         params = {
             'format': 'csv',
             'decimal_separator': '.',
-            'date_form': 'd%2Fm%2FY',
+            'date_form': 'd/m/Y',
             'op': '',
             'adjusted': 'N',
             'base100': '',
