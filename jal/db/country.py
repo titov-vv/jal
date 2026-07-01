@@ -4,6 +4,7 @@ from jal.db.settings import JalSettings
 
 class JalCountry(JalDB):
     db_cache = []
+    _name_cache = {}   # Cache of {(country_id, language): name} for non-default language lookups
 
     def __init__(self, country_id: int = 0, data: dict = None, search=False) -> None:
         super().__init__(cached=True)
@@ -40,11 +41,16 @@ class JalCountry(JalDB):
 
     # Returns country name in given language or in current interface language if no argument is given
     def name(self, language: str='') -> str:
-        if not language:
-            language = JalSettings().getLanguage()
-        return self._read("SELECT c.name FROM country_names c LEFT JOIN languages l ON c.language_id=l.id "
-                          "WHERE country_id=:country_id AND l.language=:language",
-                          [(":country_id", self._id), (":language", language)])
+        current_language = JalSettings().getLanguage()
+        if not language or language == current_language:
+            return self._name    # already loaded for current interface language via countries_ext
+        key = (self._id, language)
+        if key not in JalCountry._name_cache:
+            JalCountry._name_cache[key] = self._read(
+                "SELECT c.name FROM country_names c LEFT JOIN languages l ON c.language_id=l.id "
+                "WHERE country_id=:country_id AND l.language=:language",
+                [(":country_id", self._id), (":language", language)])
+        return JalCountry._name_cache[key]
 
     def code(self) -> str:
         return self._code
