@@ -54,6 +54,8 @@ INSERT INTO quote_source (asset_id, currency_id, datafeed_id)
 --------------------------------------------------------------------------------
 -- Remove ISIN column from assets table
 ALTER TABLE assets DROP COLUMN isin;
+-- Remove base_asset column from assets table - never used by any logic, only added UI complexity
+ALTER TABLE assets DROP COLUMN base_asset;
 --------------------------------------------------------------------------------
 -- Alter asset symbols table
 -- Remove custom error triggers

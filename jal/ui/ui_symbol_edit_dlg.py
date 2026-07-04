@@ -98,7 +98,7 @@ class Ui_SymbolDialog(object):
         self.AddDataButton = QPushButton(self.AssetFrame)
         self.AddDataButton.setObjectName(u"AddDataButton")
 
-        self.gridLayout_5.addWidget(self.AddDataButton, 4, 2, 1, 1)
+        self.gridLayout_5.addWidget(self.AddDataButton, 3, 2, 1, 1)
 
         self.CountryLbl = QLabel(self.AssetFrame)
         self.CountryLbl.setObjectName(u"CountryLbl")
@@ -107,7 +107,7 @@ class Ui_SymbolDialog(object):
 
         self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout_5.addItem(self.horizontalSpacer_3, 4, 1, 1, 1)
+        self.gridLayout_5.addItem(self.horizontalSpacer_3, 3, 1, 1, 1)
 
         self.NameLbl = QLabel(self.AssetFrame)
         self.NameLbl.setObjectName(u"NameLbl")
@@ -122,20 +122,10 @@ class Ui_SymbolDialog(object):
 
         self.gridLayout_5.addWidget(self.CountryCombo, 2, 1, 1, 3)
 
-        self.BaseLbl = QLabel(self.AssetFrame)
-        self.BaseLbl.setObjectName(u"BaseLbl")
-
-        self.gridLayout_5.addWidget(self.BaseLbl, 3, 0, 1, 1)
-
         self.DataLbl = QLabel(self.AssetFrame)
         self.DataLbl.setObjectName(u"DataLbl")
 
-        self.gridLayout_5.addWidget(self.DataLbl, 4, 0, 1, 1)
-
-        self.BaseAssetSelector = ReferenceSelectorWidget(self.AssetFrame)
-        self.BaseAssetSelector.setObjectName(u"BaseAssetSelector")
-
-        self.gridLayout_5.addWidget(self.BaseAssetSelector, 3, 1, 1, 3)
+        self.gridLayout_5.addWidget(self.DataLbl, 3, 0, 1, 1)
 
         self.TypeLbl = QLabel(self.AssetFrame)
         self.TypeLbl.setObjectName(u"TypeLbl")
@@ -145,7 +135,7 @@ class Ui_SymbolDialog(object):
         self.RemoveDataButton = QPushButton(self.AssetFrame)
         self.RemoveDataButton.setObjectName(u"RemoveDataButton")
 
-        self.gridLayout_5.addWidget(self.RemoveDataButton, 4, 3, 1, 1)
+        self.gridLayout_5.addWidget(self.RemoveDataButton, 3, 3, 1, 1)
 
         self.DataTable = QTableView(self.AssetFrame)
         self.DataTable.setObjectName(u"DataTable")
@@ -157,7 +147,7 @@ class Ui_SymbolDialog(object):
         self.DataTable.verticalHeader().setMinimumSectionSize(20)
         self.DataTable.verticalHeader().setDefaultSectionSize(20)
 
-        self.gridLayout_5.addWidget(self.DataTable, 5, 0, 1, 4)
+        self.gridLayout_5.addWidget(self.DataTable, 4, 0, 1, 4)
 
         self.TypeCombo = AssetTypeComboBox(self.AssetFrame)
         self.TypeCombo.setObjectName(u"TypeCombo")
@@ -306,7 +296,6 @@ class Ui_SymbolDialog(object):
         self.AddDataButton.setText("")
         self.CountryLbl.setText(QCoreApplication.translate("SymbolDialog", u"Country: ", None))
         self.NameLbl.setText(QCoreApplication.translate("SymbolDialog", u"Asset name:", None))
-        self.BaseLbl.setText(QCoreApplication.translate("SymbolDialog", u"Base asset:", None))
         self.DataLbl.setText(QCoreApplication.translate("SymbolDialog", u"Asset attributes", None))
         self.TypeLbl.setText(QCoreApplication.translate("SymbolDialog", u"Type: ", None))
 #if QT_CONFIG(tooltip)

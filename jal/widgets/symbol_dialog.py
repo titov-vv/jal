@@ -6,12 +6,11 @@ from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, Q
 from jal.ui.ui_symbol_edit_dlg import Ui_SymbolDialog
 from jal.constants import PredefinedAsset, AssetData, AssetId, AssetLocation
 from jal.db.helpers import localize_decimal, db_row2dict
-from jal.db.asset_models import SymbolsListModel, AssetRecordModel, AssetSymbolsModel, AssetIdentifiersModel, AssetDataModel
+from jal.db.asset_models import AssetRecordModel, AssetSymbolsModel, AssetIdentifiersModel, AssetDataModel
 from jal.db.common_models import TagTreeModel
 from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantLookupDelegate
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_selector import ReferenceSelectorWidget
-from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.widgets.reference_dialogs import TagsListDialog
 
 
@@ -147,9 +146,6 @@ class SymbolDialog(QDialog):
         self._data_model.select()
         self._configure_data_view()
 
-        self._symbols_dialog = SymbolListDialog(self)
-        self.ui.BaseAssetSelector.setup_selector(SymbolsListModel(self), self._symbols_dialog)
-
         self.ui.AddSymbolButton.setIcon(JalIcon[JalIcon.ADD])
         self.ui.RemoveSymbolButton.setIcon(JalIcon[JalIcon.REMOVE])
         self.ui.AddIdButton.setIcon(JalIcon[JalIcon.ADD])
@@ -159,7 +155,6 @@ class SymbolDialog(QDialog):
         self.ui.OkButton.setIcon(JalIcon[JalIcon.OK])
         self.ui.CancelButton.setIcon(JalIcon[JalIcon.CANCEL])
 
-        self.ui.TypeCombo.currentIndexChanged.connect(self.onTypeUpdate)
         self.ui.SymbolsTable.selectionModel().selectionChanged.connect(self.onSymbolSelected)
         self.ui.AddSymbolButton.clicked.connect(self.onAddSymbol)
         self.ui.RemoveSymbolButton.clicked.connect(self.onRemoveSymbol)
@@ -167,7 +162,6 @@ class SymbolDialog(QDialog):
         self.ui.RemoveIdButton.clicked.connect(self.onRemoveIdentifier)
         self.ui.AddDataButton.clicked.connect(self.onAddData)
         self.ui.RemoveDataButton.clicked.connect(self.onRemoveData)
-        self.ui.BaseAssetSelector.changed.connect(self.onBaseAssetChanged)
 
     def _configure_symbols_view(self):
         model = self._symbols_model
@@ -218,8 +212,6 @@ class SymbolDialog(QDialog):
         self._data_model.filterBy("asset_id", self._asset_id)
         self._id_model.setFilter("1=0")
         self._current_symbol_id = 0
-        self.onTypeUpdate(0)   # need to update manually as it isn't triggered from mapper
-        self._load_base_asset()
         if self._symbols_model.rowCount() > 0:
             self.ui.SymbolsTable.selectRow(0)
 
@@ -245,28 +237,6 @@ class SymbolDialog(QDialog):
         self._data_model.filterBy("asset_id", self._asset_id)
         self._id_model.setFilter("1=0")
         self._current_symbol_id = 0
-        self.ui.BaseAssetSelector.selected_id = 0
-        self.onTypeUpdate(0)
-
-    def _load_base_asset(self):
-        base_asset_id = self._model.getFieldValue(self._asset_id, "base_asset") if self._asset_id else None
-        symbol_id = self._symbols_model.first_symbol_id(base_asset_id) if base_asset_id else None
-        self.ui.BaseAssetSelector.selected_id = symbol_id if symbol_id else 0
-
-    @Slot()
-    def onBaseAssetChanged(self):
-        if not self._asset_id:
-            return
-        symbol_id = self.ui.BaseAssetSelector.selected_id
-        base_asset_id = self._symbols_model.asset_id_of(symbol_id)
-        self._model._exec("UPDATE assets SET base_asset=:base WHERE id=:id",
-                          [(":base", base_asset_id), (":id", self._asset_id)])
-
-    @Slot()
-    def onTypeUpdate(self, _index):
-        is_derivative = self.ui.TypeCombo.key == PredefinedAsset.Derivative
-        self.ui.BaseLbl.setVisible(is_derivative)
-        self.ui.BaseAssetSelector.setVisible(is_derivative)
 
     @Slot()
     def onSymbolSelected(self, selected, _deselected):

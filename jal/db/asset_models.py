@@ -139,15 +139,14 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Editable single-row model of the 'assets' table itself - used together with QDataWidgetMapper to edit
-# top-level asset fields (name/type/country/base_asset) in SymbolDialog.
+# top-level asset fields (name/type/country) in SymbolDialog.
 class AssetRecordModel(AbstractReferenceListModel):
     def __init__(self, parent=None):
         columns = [
             CmColumn("id", '', hide=True),
             CmColumn("type_id", self.tr("Type")),
             CmColumn("full_name", self.tr("Name"), default=True, width=CmWidth.WIDTH_STRETCH),
-            CmColumn("country_id", self.tr("Country")),
-            CmColumn("base_asset", '', hide=True)
+            CmColumn("country_id", self.tr("Country"))
         ]
         super().__init__("assets", columns, parent)
 
@@ -184,17 +183,6 @@ class AssetSymbolsModel(AbstractReferenceListModel):
     def id_of_last_added(self):
         return self._read("SELECT id FROM asset_symbol WHERE asset_id=:aid AND symbol='' AND currency_id=:currency",
                           [(":aid", self._filter_value), (":currency", self._default_values['currency_id'])])
-
-    # Returns id of first active symbol of a given asset (or None) - used to show a base asset via its symbol
-    def first_symbol_id(self, asset_id):
-        return self._read("SELECT id FROM asset_symbol WHERE asset_id=:id AND active=1 ORDER BY id LIMIT 1",
-                          [(":id", asset_id)])
-
-    # Returns asset_id that a given symbol belongs to
-    def asset_id_of(self, symbol_id):
-        if not symbol_id:
-            return None
-        return self._read("SELECT asset_id FROM asset_symbol WHERE id=:id", [(":id", symbol_id)])
 
 
 # ----------------------------------------------------------------------------------------------------------------------
