@@ -155,7 +155,7 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
             if error_code == '1299' and self.lastError().databaseText().startswith(null_pfx):
                     field_name = self.lastError().databaseText()[len(null_pfx):]
                     header_title = self.tableName() + ":" + self.headerData(self.fieldIndex(field_name))
-                    QMessageBox().warning(self._view, self.tr("Data are incomplete"),
+                    QMessageBox().warning(None, self.tr("Data are incomplete"),
                                           self.tr("Column has no valid value: " + header_title), QMessageBox.Ok)
             else:
                 error = JalSqlError(self.lastError().databaseText())

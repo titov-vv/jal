@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'asset_list_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.11.0
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -80,10 +80,10 @@ class Ui_AssetsListDialog(object):
 
         self.edit_layout.addWidget(self.AddBtn)
 
-        self.AddChildBtn = QPushButton(self.DisplayFrame)
-        self.AddChildBtn.setObjectName(u"AddChildBtn")
+        self.EditBtn = QPushButton(self.DisplayFrame)
+        self.EditBtn.setObjectName(u"EditBtn")
 
-        self.edit_layout.addWidget(self.AddChildBtn)
+        self.edit_layout.addWidget(self.EditBtn)
 
         self.RemoveBtn = QPushButton(self.DisplayFrame)
         self.RemoveBtn.setObjectName(u"RemoveBtn")
@@ -145,9 +145,9 @@ class Ui_AssetsListDialog(object):
 #endif // QT_CONFIG(tooltip)
         self.AddBtn.setText("")
 #if QT_CONFIG(tooltip)
-        self.AddChildBtn.setToolTip(QCoreApplication.translate("AssetsListDialog", u"Add child", None))
+        self.EditBtn.setToolTip(QCoreApplication.translate("AssetsListDialog", u"Edit", None))
 #endif // QT_CONFIG(tooltip)
-        self.AddChildBtn.setText("")
+        self.EditBtn.setText("")
 #if QT_CONFIG(tooltip)
         self.RemoveBtn.setToolTip(QCoreApplication.translate("AssetsListDialog", u"Delete", None))
 #endif // QT_CONFIG(tooltip)

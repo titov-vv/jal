@@ -1,8 +1,13 @@
+from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtSql import QSqlQueryModel, QSqlTableModel
-from PySide6.QtWidgets import QCompleter
+from PySide6.QtWidgets import QCompleter, QMessageBox
 from jal.db.db import JalDB
-from jal.constants import CmColumn, CmWidth
+from jal.db.common_models_abstract import AbstractReferenceListModel
+from jal.db.asset import JalAsset
+from jal.db.tag import JalTag
+from jal.constants import CmColumn, CmWidth, AssetData, AssetId
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -102,3 +107,157 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         id = self.getId(index)
         self._exec(f"UPDATE {self._table} SET {self._group_by}=:new_type WHERE id=:id",
                    [(":new_type", new_type), (":id", id)])
+
+    # Returns True if given symbol is the only symbol its asset has
+    def is_last_symbol(self, symbol_id) -> bool:
+        other_symbols = self._read("SELECT COUNT(id) FROM asset_symbol WHERE "
+                                   "asset_id=(SELECT asset_id FROM asset_symbol WHERE id=:id) AND id!=:id",
+                                   [(":id", symbol_id)])
+        return not other_symbols
+
+    # Deletes given symbol. If it was the last symbol of its asset, deletes the (now empty) asset too, together
+    # with its attributes and cached trade history (asset_data/trades_opened/trades_closed cascade via FK,
+    # ledger.asset_id is set to NULL instead of a cascading delete - see jal_init.sql).
+    # Both deletes run in a single transaction: if dropping the (now empty) asset fails - e.g. it is still
+    # referenced elsewhere as accounts.currency_id, which is ON DELETE RESTRICT - the symbol deletion is rolled
+    # back too, so we never leave a still-referenced asset with zero symbols behind.
+    # Returns True if deletion succeeded.
+    def remove_symbol(self, symbol_id) -> bool:
+        asset_id = self._read("SELECT asset_id FROM asset_symbol WHERE id=:id", [(":id", symbol_id)])
+        drop_asset = self.is_last_symbol(symbol_id)
+        self.connection().transaction()
+        if self._exec("DELETE FROM asset_symbol WHERE id=:id", [(":id", symbol_id)]) is None:
+            self.connection().rollback()
+            return False
+        if drop_asset:
+            if self._exec("DELETE FROM assets WHERE id=:id", [(":id", asset_id)]) is None:
+                self.connection().rollback()
+                return False
+        self.connection().commit()
+        return True
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Editable single-row model of the 'assets' table itself - used together with QDataWidgetMapper to edit
+# top-level asset fields (name/type/country/base_asset) in SymbolDialog.
+class AssetRecordModel(AbstractReferenceListModel):
+    def __init__(self, parent=None):
+        columns = [
+            CmColumn("id", '', hide=True),
+            CmColumn("type_id", self.tr("Type")),
+            CmColumn("full_name", self.tr("Name"), default=True, width=CmWidth.WIDTH_STRETCH),
+            CmColumn("country_id", self.tr("Country")),
+            CmColumn("base_asset", '', hide=True)
+        ]
+        super().__init__("assets", columns, parent)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Editable model of 'asset_symbol' table - list of symbols (tickers) that belong to a single asset.
+# Use filterBy("asset_id", asset_id) to bind it to a particular asset.
+class AssetSymbolsModel(AbstractReferenceListModel):
+    def __init__(self, parent=None):
+        columns = [
+            CmColumn("id", '', hide=True),
+            CmColumn("asset_id", '', hide=True),
+            CmColumn("symbol", self.tr("Symbol"), default=True, sort=True, width=CmWidth.WIDTH_STRETCH),
+            CmColumn("currency_id", self.tr("Currency")),
+            CmColumn("location_id", self.tr("Location")),
+            CmColumn("active", self.tr("Act.")),
+            CmColumn("icon", '', hide=True)
+        ]
+        super().__init__("asset_symbol", columns, parent)
+        self.set_default_values({'symbol': '', 'currency_id': JalAsset.get_base_currency(), 'location_id': 0, 'active': 1})
+
+    # 'symbol' is left blank for the user to fill in right away. As (asset_id, symbol, currency_id) must be
+    # unique, only one blank-symbol row (with the default currency) may exist per asset at a time - adding
+    # another one is refused until the pending row is given a real symbol.
+    def addElement(self, index, in_group=0):
+        if self._read("SELECT id FROM asset_symbol WHERE asset_id=:aid AND symbol='' AND currency_id=:currency",
+                      [(":aid", self._filter_value), (":currency", self._default_values['currency_id'])]) is not None:
+            QMessageBox().warning(None, self.tr("Row not added"),
+                                  self.tr("Please fill in the previously added symbol before adding a new one"), QMessageBox.Ok)
+            return
+        super().addElement(index, in_group)
+
+    # Returns id of the row most recently created via addElement() (call after submitAll()+select())
+    def id_of_last_added(self):
+        return self._read("SELECT id FROM asset_symbol WHERE asset_id=:aid AND symbol='' AND currency_id=:currency",
+                          [(":aid", self._filter_value), (":currency", self._default_values['currency_id'])])
+
+    # Returns id of first active symbol of a given asset (or None) - used to show a base asset via its symbol
+    def first_symbol_id(self, asset_id):
+        return self._read("SELECT id FROM asset_symbol WHERE asset_id=:id AND active=1 ORDER BY id LIMIT 1",
+                          [(":id", asset_id)])
+
+    # Returns asset_id that a given symbol belongs to
+    def asset_id_of(self, symbol_id):
+        if not symbol_id:
+            return None
+        return self._read("SELECT asset_id FROM asset_symbol WHERE id=:id", [(":id", symbol_id)])
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Editable model of 'asset_id' table - list of various identifiers (ISIN/FIGI/CUSIP/...) that belong to a
+# particular symbol (not to the asset as a whole). Use filterBy("symbol_id", symbol_id) to bind it.
+class AssetIdentifiersModel(AbstractReferenceListModel):
+    def __init__(self, parent=None):
+        columns = [
+            CmColumn("id", '', hide=True),
+            CmColumn("symbol_id", '', hide=True),
+            CmColumn("id_type", self.tr("Type")),
+            CmColumn("id_value", self.tr("Value"), default=True, width=CmWidth.WIDTH_STRETCH)
+        ]
+        super().__init__("asset_id", columns, parent)
+        self.set_default_values({'id_type': AssetId.ISIN, 'id_value': ''})
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Editable model of 'asset_data' table - a flexible set of typed attributes that belong to an asset as a whole
+# (registration code, expiry date, principal value, tag, ...). Use filterBy("asset_id", asset_id) to bind it.
+class AssetDataModel(AbstractReferenceListModel):
+    def __init__(self, parent=None):
+        columns = [
+            CmColumn("id", '', hide=True),
+            CmColumn("asset_id", '', hide=True),
+            CmColumn("datatype", self.tr("Attribute"), default=True),
+            CmColumn("value", self.tr("Value"), width=CmWidth.WIDTH_STRETCH)
+        ]
+        super().__init__("asset_data", columns, parent)
+        self._types = AssetData()
+        self.set_default_values({'datatype': AssetData.RegistrationCode, 'value': ''})
+
+    # (asset_id, datatype) must be unique, so adding another row with the default attribute type is refused
+    # while one already exists for this asset - the user has to change its type first.
+    def addElement(self, index, in_group=0):
+        if self._read("SELECT id FROM asset_data WHERE asset_id=:aid AND datatype=:dt",
+                      [(":aid", self._filter_value), (":dt", self._default_values['datatype'])]) is not None:
+            QMessageBox().warning(None, self.tr("Row not added"),
+                                  self.tr("Please fill in the previously added attribute before adding a new one"), QMessageBox.Ok)
+            return
+        super().addElement(index, in_group)
+
+    # Displays translated attribute name and value formatted according to its type
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole and index.isValid():
+            if index.column() == self.fieldIndex("datatype"):
+                return self._types.get_name(super().data(index, role))
+            if index.column() == self.fieldIndex("value"):
+                datatype = super().data(index.sibling(index.row(), self.fieldIndex("datatype")), role)
+                return self._format_value(datatype, super().data(index, role))
+        return super().data(index, role)
+
+    def _format_value(self, datatype, value):
+        datatype_of = self._types.get_type(datatype)
+        try:
+            if datatype_of == "str" or datatype_of == "int":
+                return value
+            elif datatype_of == "date":
+                return datetime.fromtimestamp(int(value), tz=timezone.utc).strftime("%d/%m/%Y")
+            elif datatype_of == "float":
+                return f"{Decimal(value):.2f}"
+            elif datatype_of == "tag":
+                return JalTag(int(value)).name()
+        except (ValueError, InvalidOperation, TypeError):
+            return ''
+        return value

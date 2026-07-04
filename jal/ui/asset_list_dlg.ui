@@ -110,9 +110,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="AddChildBtn">
+       <widget class="QPushButton" name="EditBtn">
         <property name="toolTip">
-         <string>Add child</string>
+         <string>Edit</string>
         </property>
         <property name="text">
          <string/>

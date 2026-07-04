@@ -1,11 +1,12 @@
 import base64
 from PySide6.QtCore import Signal, Slot, QPoint
-from PySide6.QtWidgets import QAbstractItemView, QDialog, QHeaderView
+from PySide6.QtWidgets import QAbstractItemView, QDialog, QHeaderView, QMessageBox
 from jal.ui.ui_asset_list_dlg import Ui_AssetsListDialog
 from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
 from jal.db.asset_models import SymbolsListModel
 from jal.constants import CmWidth, PredefinedAsset, AssetLocation
+from jal.widgets.icons import JalIcon
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -25,11 +26,18 @@ class SymbolListDialog(QDialog):
         self.model = SymbolsListModel(self)
         self.setup_ui()
 
+        self.ui.AddBtn.setIcon(JalIcon[JalIcon.ADD])
+        self.ui.EditBtn.setIcon(JalIcon[JalIcon.DETAILS])
+        self.ui.RemoveBtn.setIcon(JalIcon[JalIcon.REMOVE])
+
         self.ui.AssetTypeCombo.currentIndexChanged.connect(self.subset_changed)
         self.ui.CurrencyCombo.currentIndexChanged.connect(self.subset_changed)
         self.ui.LocationCombo.currentIndexChanged.connect(self.subset_changed)
         self.ui.SearchString.textChanged.connect(self.search_changed)
         self.ui.DataView.doubleClicked.connect(self.OnDoubleClicked)
+        self.ui.AddBtn.clicked.connect(self.onAdd)
+        self.ui.EditBtn.clicked.connect(self.onEdit)
+        self.ui.RemoveBtn.clicked.connect(self.onRemove)
 
     def setup_ui(self):
         self.ui.DataView.setModel(self.model)
@@ -91,6 +99,46 @@ class SymbolListDialog(QDialog):
                     self.ui.DataView.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
                 else:
                     self.ui.DataView.setColumnWidth(col, spec.width)
+
+    @Slot()
+    def onAdd(self):
+        # Deferred import: SymbolDialog uses SymbolListDialog (to pick a base asset), so importing it at module level here would create a circular import.
+        from jal.widgets.symbol_dialog import SymbolDialog   #TODO Check if it can be avoided
+        dialog = SymbolDialog(self)
+        dialog.createNewRecord()
+        if dialog.exec() == QDialog.Accepted:
+            self.setFilter()
+
+    @Slot()
+    def onEdit(self):
+        idx = self.ui.DataView.currentIndex()
+        if not idx.isValid():
+            return
+        asset_id = self.model.record(idx.row()).value('asset_id')
+        # Deferred import: SymbolDialog uses SymbolListDialog (to pick a base asset), so importing it at module level here would create a circular import.
+        from jal.widgets.symbol_dialog import SymbolDialog    #TODO Check if it can be avoided
+        dialog = SymbolDialog(self)
+        dialog.setSelectedId(asset_id)
+        if dialog.exec() == QDialog.Accepted:
+            self.setFilter()
+
+    @Slot()
+    def onRemove(self):
+        idx = self.ui.DataView.currentIndex()
+        if not idx.isValid():
+            return
+        symbol_id = self.model.getId(idx)
+        symbol = self.model.getName(idx)
+        if self.model.is_last_symbol(symbol_id):
+            asset_name = self.model.getValueDetails(symbol_id)
+            question = self.tr(f"'{symbol}' is the last symbol of asset '{asset_name}'. Removing it will also remove the asset "
+                               "itself together with its full transaction history. Continue?")
+        else:
+            question = self.tr(f"Remove symbol '{symbol}'?")
+        if QMessageBox().warning(self, self.tr("Confirmation"), question, QMessageBox.Yes, QMessageBox.No) != QMessageBox.Yes:
+            return
+        if self.model.remove_symbol(symbol_id):
+            self.setFilter()
 
     @Slot()
     def OnDoubleClicked(self, index):
