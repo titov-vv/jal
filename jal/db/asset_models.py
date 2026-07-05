@@ -213,7 +213,7 @@ class AssetDataModel(AbstractReferenceListModel):
         ]
         super().__init__("asset_data", columns, parent)
         self._types = AssetData()
-        self.set_default_values({'datatype': AssetData.RegistrationCode, 'value': ''})
+        self.set_default_values({'datatype': AssetData.ExpiryDate, 'value': ''})
 
     # (asset_id, datatype) must be unique, so adding another row with the default attribute type is refused
     # while one already exists for this asset - the user has to change its type first.
