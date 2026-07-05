@@ -52,7 +52,7 @@ CREATE TABLE assets (
 );
 
 -- Table to keep various asset identifiers
-CREATE TABLE IF NOT EXISTS asset_id (
+CREATE TABLE IF NOT EXISTS symbol_ids (
     id        INTEGER PRIMARY KEY UNIQUE NOT NULL,
     symbol_id INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     id_type   INTEGER NOT NULL,
@@ -666,14 +666,14 @@ INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_
 
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');
-INSERT INTO asset_id (id, symbol_id, id_type, id_value) VALUES (1, 1, 6, 'RUB');
+INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (1, 1, 6, 'RUB');
 INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) VALUES (1, 1, 'RUB', 1, 1);
 INSERT INTO assets (id, type_id, full_name) VALUES (2, 1, 'Доллар США');
-INSERT INTO asset_id (id, symbol_id, id_type, id_value) VALUES (2, 2, 6, 'USD');
+INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (2, 2, 6, 'USD');
 INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) VALUES (2, 2, 'USD', 2, 1);
 INSERT INTO quote_source (asset_id, currency_id, datafeed_id) VALUES (2, 2, 0);
 INSERT INTO assets (id, type_id, full_name) VALUES (3, 1, 'Евро');
-INSERT INTO asset_id (id, symbol_id, id_type, id_value) VALUES (3, 3, 6, 'EUR');
+INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (3, 3, 6, 'EUR');
 INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) VALUES (3, 3, 'EUR', 3, 1);
 INSERT INTO quote_source (asset_id, currency_id, datafeed_id) VALUES (3, 3, 0);
 

@@ -221,8 +221,8 @@ class DepositActions(PredefinedList, QObject):
         }
 
 
-# Possible types of asset identifiers that are used in "asset_id" table
-class AssetId(PredefinedList, QObject):
+# Possible types of symbol identifiers that are used in "symbol_ids" table
+class SymbolId(PredefinedList, QObject):
     UUID = 0
     FIGI = 1
     ISIN = 2

@@ -4,9 +4,9 @@ from PySide6.QtCore import Qt, Slot, QDateTime, QTimeZone, QLocale
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_symbol_edit_dlg import Ui_SymbolDialog
-from jal.constants import PredefinedAsset, AssetData, AssetId, AssetLocation
+from jal.constants import PredefinedAsset, AssetData, SymbolId, AssetLocation
 from jal.db.helpers import localize_decimal, db_row2dict
-from jal.db.asset_models import AssetRecordModel, AssetSymbolsModel, AssetIdentifiersModel, AssetDataModel
+from jal.db.asset_models import AssetRecordModel, AssetSymbolsModel, SymbolIdentifiersModel, AssetDataModel
 from jal.db.common_models import TagTreeModel
 from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantLookupDelegate
 from jal.widgets.icons import JalIcon
@@ -134,7 +134,7 @@ class SymbolDialog(QDialog):
         self._symbols_model.select()
         self._configure_symbols_view()
 
-        self._id_model = AssetIdentifiersModel(self)
+        self._id_model = SymbolIdentifiersModel(self)
         self.ui.IdentifiersTable.setModel(self._id_model)
         self._id_model.select()
         self._configure_identifiers_view()
@@ -184,7 +184,7 @@ class SymbolDialog(QDialog):
         view.setColumnHidden(model.fieldIndex("id"), True)
         view.setColumnHidden(model.fieldIndex("symbol_id"), True)
         view.horizontalHeader().setSectionResizeMode(model.fieldIndex("id_value"), QHeaderView.Stretch)
-        self._idtype_delegate = ConstantLookupDelegate(AssetId, view)
+        self._idtype_delegate = ConstantLookupDelegate(SymbolId, view)
         view.setItemDelegateForColumn(model.fieldIndex("id_type"), self._idtype_delegate)
 
     def _configure_data_view(self):

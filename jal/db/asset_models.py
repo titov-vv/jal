@@ -7,7 +7,7 @@ from jal.db.db import JalDB
 from jal.db.common_models_abstract import AbstractReferenceListModel
 from jal.db.asset import JalAsset
 from jal.db.tag import JalTag
-from jal.constants import CmColumn, CmWidth, AssetData, AssetId
+from jal.constants import CmColumn, CmWidth, AssetData, SymbolId
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -186,9 +186,9 @@ class AssetSymbolsModel(AbstractReferenceListModel):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Editable model of 'asset_id' table - list of various identifiers (ISIN/FIGI/CUSIP/...) that belong to a
+# Editable model of 'symbol_ids' table - list of various identifiers (ISIN/FIGI/CUSIP/...) that belong to a
 # particular symbol (not to the asset as a whole). Use filterBy("symbol_id", symbol_id) to bind it.
-class AssetIdentifiersModel(AbstractReferenceListModel):
+class SymbolIdentifiersModel(AbstractReferenceListModel):
     def __init__(self, parent=None):
         columns = [
             CmColumn("id", '', hide=True),
@@ -196,8 +196,8 @@ class AssetIdentifiersModel(AbstractReferenceListModel):
             CmColumn("id_type", self.tr("Type")),
             CmColumn("id_value", self.tr("Value"), default=True, width=CmWidth.WIDTH_STRETCH)
         ]
-        super().__init__("asset_id", columns, parent)
-        self.set_default_values({'id_type': AssetId.ISIN, 'id_value': ''})
+        super().__init__("symbol_ids", columns, parent)
+        self.set_default_values({'id_type': SymbolId.ISIN, 'id_value': ''})
 
 
 # ----------------------------------------------------------------------------------------------------------------------

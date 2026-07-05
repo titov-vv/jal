@@ -3,7 +3,7 @@ import math
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
-from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset, AssetId
+from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset, SymbolId
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal, year_begin, year_end, day_begin
 from jal.db.country import JalCountry
@@ -41,9 +41,9 @@ class JalAsset(JalDB):
                      (":country", data['country'])], commit=True)
                 self._id = query.lastInsertId()
                 if 'isin' in data and data['isin']:
-                    _ = self._exec("INSERT INTO asset_id (asset_id, id_type, id_value) "
+                    _ = self._exec("INSERT INTO symbol_ids (asset_id, id_type, id_value) "
                                    "VALUES(:asset_id, :id_type, :id_value)",
-                                   [(":asset_id", self._id), (":id_type", AssetId.ISIN), (":id_value", data['isin'])])
+                                   [(":asset_id", self._id), (":id_type", SymbolId.ISIN), (":id_value", data['isin'])])
         self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))  # Load asset data from cache or DB
         self._type = self._data.get('type_id', None)
         self._name = self._data.get('full_name', '')
@@ -69,7 +69,7 @@ class JalAsset(JalDB):
                 symbol = self._read_record(symbols_query, named=True)
                 del symbol['asset_id']
                 asset_data['symbols'].append(symbol)
-                id_query = self._exec("SELECT id_type, id_value FROM asset_id WHERE symbol_id=:id ORDER BY id_type",
+                id_query = self._exec("SELECT id_type, id_value FROM symbol_ids WHERE symbol_id=:id ORDER BY id_type",
                                         [(":id", symbol['id'])])
                 while id_query.next():
                     it_type, id_value = self._read_record(id_query)
@@ -108,7 +108,7 @@ class JalAsset(JalDB):
     def name(self) -> str:
         return self._name
 
-    def ID(self, id_type: int) -> str:  # Returns asset ID of given type or None if not present
+    def symbol_id(self, id_type: int) -> str:  # Returns asset ID of given type or None if not present
         return self._data['ID'].get(id_type, None)
 
     # Returns asset symbol for given currency or all symbols if no currency is given
@@ -279,15 +279,15 @@ class JalAsset(JalDB):
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
     def _update_isin(self, new_isin: str) -> None:
-        _isin = self.ID(AssetId.ISIN)
+        _isin = self.symbol_id(SymbolId.ISIN)
         if _isin:
             if new_isin != _isin:
                 logging.error(self.tr("Unexpected attempt to update ISIN for ") + f"{self.symbol()}: {_isin} -> {new_isin}")
         else:
-            _ = self._exec("INSERT INTO asset_id (asset_id, id_type, id_value) "
+            _ = self._exec("INSERT INTO symbol_ids (asset_id, id_type, id_value) "
                            "VALUES(:asset_id, :id_type, :id_value)",
-                           [(":asset_id", self._id), (":id_type", AssetId.ISIN), (":id_value", new_isin)])
-            self._data['ID'][AssetId.ISIN] = new_isin
+                           [(":asset_id", self._id), (":id_type", SymbolId.ISIN), (":id_value", new_isin)])
+            self._data['ID'][SymbolId.ISIN] = new_isin
 
     def _update_name(self, new_name: str) -> None:
         if not self._name:
@@ -306,12 +306,12 @@ class JalAsset(JalDB):
                              + f"{self.symbol()}: {self._country.name()} -> {new_country.name()}")
 
     def _update_reg_number(self, new_number: str) -> None:
-        _reg_number = self.ID(AssetId.REG_CODE)
+        _reg_number = self.symbol_id(SymbolId.REG_CODE)
         if new_number != _reg_number:
-            _ = self._exec("INSERT INTO asset_id (asset_id, id_type, id_value) "
+            _ = self._exec("INSERT INTO symbol_ids (asset_id, id_type, id_value) "
                            "VALUES(:asset_id, :id_type, :id_value)",
-                           [(":asset_id", self._id), (":id_type", AssetId.REG_CODE), (":id_value", new_number)])
-            self._data['ID'][AssetId.REG_CODE] = new_number
+                           [(":asset_id", self._id), (":id_type", SymbolId.REG_CODE), (":id_value", new_number)])
+            self._data['ID'][SymbolId.REG_CODE] = new_number
             logging.info(self.tr("Reg.number updated for ") + f"{self.symbol()}: {_reg_number} -> {new_number}")
 
     def _update_expiration(self, new_expiration: int) -> None:
@@ -346,8 +346,8 @@ class JalAsset(JalDB):
     def _find_asset(self, data: dict) -> int:
         aid = None
         if data['isin']:
-            query = self._exec("SELECT s.asset_id, s.symbol FROM asset_id i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:isin",
-                               [(":datatype", AssetId.ISIN), (":isin", data['isin'])])
+            query = self._exec("SELECT s.asset_id, s.symbol FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:isin",
+                               [(":datatype", SymbolId.ISIN), (":isin", data['isin'])])
             while query.next():
                 aid, symbol = self._read_record(query, cast=[int, str])
                 if data['symbol'] and data['symbol'] == symbol:  # Try to match by ISIN and symbol first
@@ -357,8 +357,8 @@ class JalAsset(JalDB):
             else:
                 return aid
         if data['reg_number']:
-            aid = self._read("SELECT s.asset_id FROM asset_id i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:reg_code",
-                            [(":datatype", AssetId.REG_CODE), (":reg_code", data['reg_number'])], check_unique=True)
+            aid = self._read("SELECT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:reg_code",
+                            [(":datatype", SymbolId.REG_CODE), (":reg_code", data['reg_number'])], check_unique=True)
             if aid is not None:
                 return aid
         if data['symbol']:

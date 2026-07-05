@@ -3,29 +3,29 @@ BEGIN TRANSACTION;
 DROP VIEW IF EXISTS currencies;  -- Remove views to prevent dependency errors
 DROP VIEW IF EXISTS assets_ext;  -- Remove view as it isn't used anymore
 --------------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS asset_id (
+CREATE TABLE IF NOT EXISTS symbol_ids (
     id        INTEGER PRIMARY KEY UNIQUE NOT NULL,
     symbol_id INTEGER REFERENCES asset_tickers (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     id_type   INTEGER NOT NULL,
     id_value  TEXT NOT NULL
 );
--- Migrate existing ISINs to new asset_id table
-INSERT INTO asset_id (symbol_id, id_type, id_value)
+-- Migrate existing ISINs to new symbol_ids table
+INSERT INTO symbol_ids (symbol_id, id_type, id_value)
   SELECT t.id, 2, isin
   FROM assets a
   LEFT JOIN asset_tickers t ON a.id = t.asset_id
   WHERE NOT (isin='' OR isin LIKE ' %');
 -- Remove ISINs that were stored as registration code in asset_data table
 DELETE FROM asset_data WHERE id IN (SELECT d.id FROM asset_data d JOIN assets a ON d.asset_id=a.id AND d.value=a.isin);
--- Migrate existing MOEX registration codes from asset_data to new asset_id table
-INSERT INTO asset_id (symbol_id, id_type, id_value)
+-- Migrate existing MOEX registration codes from asset_data to new symbol_ids table
+INSERT INTO symbol_ids (symbol_id, id_type, id_value)
   SELECT t.id, 5, value
   FROM asset_data d
   LEFT JOIN asset_tickers t ON d.asset_id = t.asset_id
   WHERE datatype=1 AND value LIKE '1-__-%' AND NOT t.id IS NULL;
 DELETE FROM asset_data WHERE datatype=1 AND value LIKE '1-__-%';
 -- Migrate what looks like CUSIPs
-INSERT INTO asset_id (symbol_id, id_type, id_value)
+INSERT INTO symbol_ids (symbol_id, id_type, id_value)
   SELECT t.id, 4, value
   FROM asset_data d
   LEFT JOIN asset_tickers t ON d.asset_id = t.asset_id
@@ -93,17 +93,17 @@ CREATE TABLE asset_symbol (
 INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) SELECT id, asset_id, symbol, currency_id, active FROM asset_tickers;
 PRAGMA foreign_keys = OFF;  -- Prevent deletion of linked asset_ids
 DROP TABLE asset_tickers;
--- Re-create asset_id table to recover foreign keys (otherwise it will be linked to an old non-existing table asset_tickers
-CREATE TABLE IF NOT EXISTS asset_id_new (
+-- Re-create symbol_ids table to recover foreign keys (otherwise it will be linked to an old non-existing table asset_tickers
+CREATE TABLE IF NOT EXISTS symbol_ids_new (
     id        INTEGER PRIMARY KEY UNIQUE NOT NULL,
     symbol_id INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     id_type   INTEGER NOT NULL,
     id_value  TEXT NOT NULL
 );
-INSERT INTO asset_id_new (id, symbol_id, id_type, id_value)
-  SELECT id, symbol_id, id_type, id_value FROM asset_id;
-DROP TABLE asset_id;
-ALTER TABLE asset_id_new RENAME TO asset_id;
+INSERT INTO symbol_ids_new (id, symbol_id, id_type, id_value)
+  SELECT id, symbol_id, id_type, id_value FROM symbol_ids;
+DROP TABLE symbol_ids;
+ALTER TABLE symbol_ids_new RENAME TO symbol_ids;
 PRAGMA foreign_keys = ON;  -- Prevent deletion of linked asset_ids
 CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id);
 --------------------------------------------------------------------------------
