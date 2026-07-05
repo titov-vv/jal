@@ -34,6 +34,15 @@ DELETE FROM asset_data WHERE datatype=1 AND value REGEXP '^.{5}[A-Z].{3}$';
 -- Clean up any remaining registration data from asset_data table (There was a bit of mess)
 DELETE FROM asset_data WHERE datatype=1;
 --------------------------------------------------------------------------------
+-- Re-number AssetData.Tag from 4 to 1 (freed up by the registration code cleanup above)
+UPDATE asset_data SET datatype=1 WHERE datatype=4;
+DROP TRIGGER IF EXISTS tags_after_delete;
+CREATE TRIGGER tags_after_delete AFTER DELETE ON tags FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE tag_id=OLD.id);
+    DELETE FROM asset_data WHERE datatype=1 AND value=OLD.id;
+END;
+--------------------------------------------------------------------------------
 -- Create quote source table
 CREATE TABLE IF NOT EXISTS quote_source (
     asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,

@@ -249,21 +249,21 @@ class AssetId(PredefinedList, QObject):
 
 
 class AssetData(PredefinedList, QObject):
+    Tag = 1  # This value is used in database trigger(s) after tag deletion
     ExpiryDate = 2
     PrincipalValue = 3
-    Tag = 4   # This value is used in database trigger(s) after tag deletion
 
     def __init__(self):
         super().__init__()
         self._names = {
+            self.Tag: self.tr("Tag"),
             self.ExpiryDate: self.tr("expiry"),
-            self.PrincipalValue: self.tr("principal"),
-            self.Tag: self.tr("Tag")
+            self.PrincipalValue: self.tr("principal")
         }
         self._types = {
+            self.Tag: "tag",
             self.ExpiryDate: "date",
-            self.PrincipalValue: "float",
-            self.Tag: "tag"
+            self.PrincipalValue: "float"
         }
 
     def get_type(self, type_id, default='') -> str:

@@ -597,7 +597,7 @@ DROP TRIGGER IF EXISTS tags_after_delete;
 CREATE TRIGGER tags_after_delete AFTER DELETE ON tags FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE tag_id=OLD.id);
-    DELETE FROM asset_data WHERE datatype=4 AND value=OLD.id;
+    DELETE FROM asset_data WHERE datatype=1 AND value=OLD.id;
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
