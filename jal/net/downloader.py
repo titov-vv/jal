@@ -13,7 +13,7 @@ from PySide6.QtCore import Qt, QObject, Signal, Slot, QDate
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
-from jal.constants import MarketDataFeed, PredefinedAsset, SymbolId
+from jal.constants import AssetLocation, PredefinedAsset, SymbolId
 from jal.db.asset import JalAsset
 from jal.net.web_request import WebRequest
 from jal.net.moex import MOEX
@@ -150,7 +150,7 @@ class QuoteDownloader(QObject):
         self._cancelled = False
         self.show_progress.emit(True)
         try:
-            if MarketDataFeed.FX in sources_list:
+            if AssetLocation.BANK_ACCOUNT in sources_list:
                 self.download_currency_rates(start_timestamp, end_timestamp)
             self.download_asset_prices(start_timestamp, end_timestamp, sources_list)
         except KeyboardInterrupt:
@@ -183,7 +183,7 @@ class QuoteDownloader(QObject):
             "RUB": self.CBR_DataReader,
             "EUR": self.ECB_DataReader
         }
-        currencies = [x for x in JalAsset.get_currencies() if x.quote_source(None) == MarketDataFeed.FX]
+        currencies = [x for x in JalAsset.get_currencies() if x.location(None) == AssetLocation.BANK_ACCOUNT]
         for base in set([x[1] for x in JalAsset.get_base_currency_history(start_timestamp, end_timestamp)]):
             base_symbol = JalAsset(base).symbol()
             logging.info(self.tr("Loading currency rates for " + base_symbol))
@@ -202,25 +202,26 @@ class QuoteDownloader(QObject):
 
     def download_asset_prices(self, start_timestamp, end_timestamp, sources_list):
         data_loaders = {
-            MarketDataFeed.RU: self.MOEX_DataReader,
-            MarketDataFeed.EU: self.Euronext_DataReader,
-            MarketDataFeed.US: self.Yahoo_Downloader,
-            MarketDataFeed.CA: self.TMX_Downloader,
-            MarketDataFeed.GB: self.YahooLSE_Downloader,
-            MarketDataFeed.FRA: self.YahooFRA_Downloader,
-            MarketDataFeed.SMA_VICTORIA: self.Victoria_Downloader,
-            MarketDataFeed.COIN: self.Coinbase_Downloader,
-            MarketDataFeed.MILAN: self.EuronextMilan_DataReader,
-            MarketDataFeed.WSE: self.Stooq_DataReader
+            AssetLocation.MOEX_EXCHANGE: self.MOEX_DataReader,
+            AssetLocation.EURONEXT_EXCHANGE: self.Euronext_DataReader,
+            AssetLocation.NYSE_EXCHANGE: self.Yahoo_Downloader,
+            AssetLocation.NASDAQ_EXCHANGE: self.Yahoo_Downloader,
+            AssetLocation.TMX_EXCHANGE: self.TMX_Downloader,
+            AssetLocation.LSE_EXCHANGE: self.YahooLSE_Downloader,
+            AssetLocation.FRA_EXCHANGE: self.YahooFRA_Downloader,
+            AssetLocation.SMA_VICTORIA: self.Victoria_Downloader,
+            AssetLocation.ETH_BLOCKCHAIN: self.Coinbase_Downloader,   # stub - crypto isn't really implemented yet
+            AssetLocation.MILAN_EXCHANGE: self.EuronextMilan_DataReader,
+            AssetLocation.WSE_EXCHANGE: self.Stooq_DataReader
         }
         assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)
-        assets = [(x['asset'], x['currency']) for x in assets if x['asset'].quote_source(x['currency']) in sources_list]
+        assets = [(x['asset'], x['currency']) for x in assets if x['asset'].location(x['currency']) in sources_list]
         logging.info(self.tr("Loading assets prices"))
         for i, (asset, currency) in enumerate(assets):
             from_timestamp = self._adjust_start(asset, currency, start_timestamp)
             try:
                 if from_timestamp <= end_timestamp:
-                    data = data_loaders[asset.quote_source(currency)](asset, currency, from_timestamp, end_timestamp)
+                    data = data_loaders[asset.location(currency)](asset, currency, from_timestamp, end_timestamp)
                     self._store_quotations(asset, currency, data)
             except (pd.errors.EmptyDataError, KeyError, json.decoder.JSONDecodeError):
                 logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.symbol()}")

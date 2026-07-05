@@ -3,7 +3,7 @@ from decimal import Decimal
 from datetime import datetime, timezone
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.operations import LedgerTransaction, AssetPayment
-from constants import PredefinedAsset, MarketDataFeed, SymbolId
+from constants import PredefinedAsset, AssetLocation, SymbolId
 from jal.data_export.xlsx import XLSX
 
 
@@ -65,7 +65,7 @@ def json_decimal2float(json_obj):
 def create_stocks(assets, currency_id):
     for item in assets:
         creator = JalAssetCreator(PredefinedAsset.Stock, item[1])
-        creator.add_symbol(item[0], currency_id, data_source=MarketDataFeed.FX)
+        creator.add_symbol(item[0], currency_id, location_id=AssetLocation.UNDEFINED)
         creator.commit()
 
 
@@ -75,7 +75,7 @@ def create_stocks(assets, currency_id):
 def create_assets(assets, data=[]):
     for item in assets:
         creator = JalAssetCreator(item[4], item[1], country=item[5])
-        symbol_id = creator.add_symbol(item[0], item[3], data_source=MarketDataFeed.FX)
+        symbol_id = creator.add_symbol(item[0], item[3], location_id=AssetLocation.UNDEFINED)
         if item[2]:
             creator.add_identifier(symbol_id, SymbolId.ISIN, item[2])
         creator.commit()

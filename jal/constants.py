@@ -285,8 +285,10 @@ class AssetLocation(PredefinedList, QObject):
     WSE_EXCHANGE = 206
     TMX_EXCHANGE = 207
     MOEX_EXCHANGE = 208
+    EURONEXT_EXCHANGE = 209
     ETH_BLOCKCHAIN = 301
     ARB_BLOCKCHAIN = 302
+    SMA_VICTORIA = 999
 
     def __init__(self):
         super().__init__()
@@ -297,43 +299,15 @@ class AssetLocation(PredefinedList, QObject):
             self.NYSE_EXCHANGE: self.tr("NYSE"),
             self.NASDAQ_EXCHANGE: self.tr("Nasdaq"),
             self.LSE_EXCHANGE: self.tr("LSE"),
+            self.EURONEXT_EXCHANGE: self.tr("Euronext"),
             self.FRA_EXCHANGE: self.tr("Frankfurt Borse"),
             self.MILAN_EXCHANGE: self.tr("Borsa Italiana"),
             self.WSE_EXCHANGE: self.tr("Warsaw Stock Exchange"),
             self.TMX_EXCHANGE: self.tr("TMX TSX"),
             self.MOEX_EXCHANGE: self.tr("MOEX"),
             self.ETH_BLOCKCHAIN: self.tr("Ethereum"),
-            self.ARB_BLOCKCHAIN: self.tr("Arbitrum")
-            # self.SMA_VICTORIA: self.tr("Victoria Seguros"),
-        }
-
-class MarketDataFeed(PredefinedList, QObject):
-    FX = 0
-    RU = 1  # MOEX
-    US = 2
-    EU = 3
-    CA = 4
-    GB = 5
-    FRA = 6  # Frankfurt Borse
-    SMA_VICTORIA = 7
-    COIN = 8
-    MILAN = 9  # Borsa Italiana, Milan Stock Exchange
-    WSE = 10    # Warsaw Stock Exchange (WSE)
-
-    def __init__(self):
-        super().__init__()
-        self._names = {
-            self.FX: self.tr("Central banks"),
-            self.RU: self.tr("MOEX"),
-            self.US: self.tr("NYSE/Nasdaq"),
-            self.EU: self.tr("Euronext"),
-            self.CA: self.tr("TMX TSX"),
-            self.GB: self.tr("LSE"),
-            self.FRA: self.tr("Frankfurt Borse"),
-            self.SMA_VICTORIA: self.tr("Victoria Seguros"),
-            self.COIN: self.tr("Coinbase"),
-            self.MILAN: self.tr("Borsa Italiana"),
-            self.WSE: self.tr("Warsaw Stock Exchange")
+            self.ARB_BLOCKCHAIN: self.tr("Arbitrum"),
+            self.SMA_VICTORIA: self.tr("Victoria Seguros")   #TODO - validate if it is actually a location
         }
 
 

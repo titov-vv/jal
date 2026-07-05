@@ -243,16 +243,6 @@ CREATE TABLE quotes (
 );
 CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
 
-
--- Create quote source table
-DROP TABLE IF EXISTS quote_source;
-CREATE TABLE quote_source (
-    asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    datafeed_id INTEGER NOT NULL
-);
-CREATE UNIQUE INDEX datafeed_pk ON quote_source (asset_id ASC, currency_id ASC);
-
 -- Table to store application settings
 DROP TABLE IF EXISTS settings;
 CREATE TABLE settings (
@@ -667,15 +657,13 @@ INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');
 INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (1, 1, 6, 'RUB');
-INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) VALUES (1, 1, 'RUB', 1, 1);
+INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active, location_id) VALUES (1, 1, 'RUB', 1, 1, 101);
 INSERT INTO assets (id, type_id, full_name) VALUES (2, 1, 'Доллар США');
 INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (2, 2, 6, 'USD');
-INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) VALUES (2, 2, 'USD', 2, 1);
-INSERT INTO quote_source (asset_id, currency_id, datafeed_id) VALUES (2, 2, 0);
+INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active, location_id) VALUES (2, 2, 'USD', 2, 1, 101);
 INSERT INTO assets (id, type_id, full_name) VALUES (3, 1, 'Евро');
 INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (3, 3, 6, 'EUR');
-INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) VALUES (3, 3, 'EUR', 3, 1);
-INSERT INTO quote_source (asset_id, currency_id, datafeed_id) VALUES (3, 3, 0);
+INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active, location_id) VALUES (3, 3, 'EUR', 3, 1, 101);
 
 -- Initialize countries
 INSERT INTO countries (id, code, iso_code) VALUES (0, 'xx', '000');

@@ -43,24 +43,6 @@ BEGIN
     DELETE FROM asset_data WHERE datatype=1 AND value=OLD.id;
 END;
 --------------------------------------------------------------------------------
--- Create quote source table
-CREATE TABLE IF NOT EXISTS quote_source (
-    asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    datafeed_id INTEGER NOT NULL
-);
-CREATE UNIQUE INDEX datafeed_pk ON quote_source (asset_id ASC, currency_id ASC);
--- Copy data from symbols table
-INSERT INTO quote_source (asset_id, currency_id, datafeed_id)
-  SELECT asset_id, currency_id, quote_source
-  FROM asset_tickers
-  WHERE quote_source>0 AND active=1;
--- Insert data for currencies (it had NULL in currency_id previously)
-INSERT INTO quote_source (asset_id, currency_id, datafeed_id)
-  SELECT asset_id, asset_id, quote_source
-  FROM asset_tickers
-  WHERE quote_source=0;
---------------------------------------------------------------------------------
 -- Remove ISIN column from assets table
 ALTER TABLE assets DROP COLUMN isin;
 -- Remove base_asset column from assets table - never used by any logic, only added UI complexity
@@ -90,7 +72,24 @@ CREATE TABLE asset_symbol (
     active      INTEGER NOT NULL DEFAULT (1),
     icon        BLOB
 );
-INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active) SELECT id, asset_id, symbol, currency_id, active FROM asset_tickers;
+-- Translate old MarketDataFeed quote_source numbering into new AssetLocation location_id numbering
+INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active, location_id)
+  SELECT id, asset_id, symbol, currency_id, active,
+    CASE quote_source
+      WHEN 0 THEN 101   -- FX (Central banks) -> BANK_ACCOUNT
+      WHEN 1 THEN 208   -- RU (MOEX) -> MOEX_EXCHANGE
+      WHEN 2 THEN 201   -- US (NYSE/Nasdaq) -> NYSE_EXCHANGE (can't disambiguate Nasdaq from here)
+      WHEN 3 THEN 209   -- EU (Euronext) -> EURONEXT_EXCHANGE
+      WHEN 4 THEN 207   -- CA (TMX) -> TMX_EXCHANGE
+      WHEN 5 THEN 203   -- GB (LSE) -> LSE_EXCHANGE
+      WHEN 6 THEN 204   -- FRA (Frankfurt Borse) -> FRA_EXCHANGE
+      WHEN 7 THEN 999   -- SMA_VICTORIA -> SMA_VICTORIA
+      WHEN 8 THEN 301   -- COIN (Coinbase) -> ETH_BLOCKCHAIN (stub, crypto isn't really implemented)
+      WHEN 9 THEN 205   -- MILAN (Borsa Italiana) -> MILAN_EXCHANGE
+      WHEN 10 THEN 206  -- WSE -> WSE_EXCHANGE
+      ELSE 0            -- unset/unknown -> UNDEFINED
+    END
+  FROM asset_tickers;
 PRAGMA foreign_keys = OFF;  -- Prevent deletion of linked asset_ids
 DROP TABLE asset_tickers;
 -- Re-create symbol_ids table to recover foreign keys (otherwise it will be linked to an old non-existing table asset_tickers

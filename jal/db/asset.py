@@ -3,7 +3,7 @@ import math
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
-from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset, SymbolId
+from jal.constants import BookAccount, AssetLocation, AssetData, PredefinedAsset, SymbolId
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal, year_begin, year_end, day_begin
 from jal.db.country import JalCountry
@@ -112,18 +112,18 @@ class JalAsset(JalDB):
 
     # Adds a new symbol to the asset (or returns the existing one's id if it already exists).
     # Returns the id of the resulting asset_symbol row.
-    def add_symbol(self, symbol: str, currency_id, data_source: int) -> int:
-        existing = self._read("SELECT id, symbol, quote_source FROM asset_symbol "
+    def add_symbol(self, symbol: str, currency_id, location_id: int) -> int:
+        existing = self._read("SELECT id, symbol, location_id FROM asset_symbol "
                               "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id IS :currency",
                               [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)
         if existing is None:  # Deactivate old symbols and create a new one
             _ = self._exec("UPDATE asset_symbol SET active=0 WHERE asset_id=:asset_id AND currency_id IS :currency",
                            [(":asset_id", self._id), (":currency", currency_id)])
             query = self._exec(
-                "INSERT INTO asset_symbol (asset_id, symbol, currency_id, quote_source) "
-                "VALUES (:asset_id, :symbol, :currency, :data_source)",
+                "INSERT INTO asset_symbol (asset_id, symbol, currency_id, location_id) "
+                "VALUES (:asset_id, :symbol, :currency, :location_id)",
                 [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
-                 (":data_source", data_source)])
+                 (":location_id", location_id)])
             new_id = query.lastInsertId() if query is not None else 0
         else:
             new_id = existing['id']
@@ -203,17 +203,17 @@ class JalAsset(JalDB):
         end = db_timestamp2int(end)
         return begin, end
 
-    # Returns a quote source id defined for given currency (currency_id can be None)
-    def quote_source(self, currency_id: int) -> int:
-        source_id = self._read("SELECT quote_source FROM asset_symbol "
-                               "WHERE asset_id=:asset AND currency_id IS :currency",
-                               [(":asset", self._id), (":currency", currency_id)])
-        return source_id
+    # Returns the location (see AssetLocation) of the symbol defined for given currency (currency_id can be None)
+    def location(self, currency_id: int) -> int:
+        location_id = self._read("SELECT location_id FROM asset_symbol "
+                                 "WHERE asset_id=:asset AND currency_id IS :currency",
+                                 [(":asset", self._id), (":currency", currency_id)])
+        return location_id
 
-    # Returns a dict (ID-Name) of all available data sources
+    # Returns a dict (ID-Name) of all available locations
     @classmethod
     def get_sources_list(cls) -> dict:
-        return MarketDataFeed().get_all_names()
+        return AssetLocation().get_all_names()
 
     # Set quotations for given currency_id. Quotations is a list of {'timestamp':int, 'quote':Decimal} values
     def set_quotes(self, quotations: list, currency_id: int) -> None:
@@ -466,12 +466,12 @@ class JalAssetCreator(JalDB):
         return self._id
 
     # Returns the id of the newly created asset_symbol row.
-    def add_symbol(self, symbol: str, currency_id, data_source: int) -> int:
+    def add_symbol(self, symbol: str, currency_id, location_id: int) -> int:
         query = self._exec(
-            "INSERT INTO asset_symbol (asset_id, symbol, currency_id, quote_source) "
-            "VALUES (:asset_id, :symbol, :currency, :data_source)",
+            "INSERT INTO asset_symbol (asset_id, symbol, currency_id, location_id) "
+            "VALUES (:asset_id, :symbol, :currency, :location_id)",
             [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
-             (":data_source", data_source)])
+             (":location_id", location_id)])
         return query.lastInsertId() if query is not None else 0
 
     # Attaches an identifier to a specific symbol id (obtained from add_symbol() above) - never guesses.

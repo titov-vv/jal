@@ -11,7 +11,7 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset, SymbolId
+from jal.constants import Setup, AssetLocation, PredefinedAsset, SymbolId
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset, JalAssetCreator
@@ -111,18 +111,18 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         FOF.ACTION_DELISTING: CorporateAction.Delisting
     }
     _sources = {
-        'NYSE': MarketDataFeed.US,
-        'ARCA': MarketDataFeed.US,
-        'NASDAQ': MarketDataFeed.US,
-        'US': MarketDataFeed.US,
-        'TSE': MarketDataFeed.CA,
-        'SBF': MarketDataFeed.EU,
-        'AMEX': MarketDataFeed.US,
-        'MOEX': MarketDataFeed.RU,
-        'COIN': MarketDataFeed.COIN,
-        'BVME': MarketDataFeed.MILAN,
-        'BVME.ETF': MarketDataFeed.MILAN,
-        'WSE': MarketDataFeed.WSE
+        'NYSE': AssetLocation.NYSE_EXCHANGE,
+        'ARCA': AssetLocation.NYSE_EXCHANGE,
+        'NASDAQ': AssetLocation.NASDAQ_EXCHANGE,
+        'US': AssetLocation.NYSE_EXCHANGE,
+        'TSE': AssetLocation.TMX_EXCHANGE,
+        'SBF': AssetLocation.EURONEXT_EXCHANGE,
+        'AMEX': AssetLocation.NYSE_EXCHANGE,
+        'MOEX': AssetLocation.MOEX_EXCHANGE,
+        'COIN': AssetLocation.ETH_BLOCKCHAIN,   # stub - crypto isn't really implemented yet
+        'BVME': AssetLocation.MILAN_EXCHANGE,
+        'BVME.ETF': AssetLocation.MILAN_EXCHANGE,
+        'WSE': AssetLocation.WSE_EXCHANGE
     }
     
     def __init__(self):
@@ -405,15 +405,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             asset = self._find_in_list(self._data[FOF.ASSETS], "id", symbol['asset'])
             if asset['type'] == FOF.ASSET_MONEY:
                 currency = None
-                source = MarketDataFeed.FX
+                location = AssetLocation.BANK_ACCOUNT
             else:
                 currency = -symbol['currency']
                 try:
-                    source = self._sources[symbol['note']]
+                    location = self._sources[symbol['note']]
                 except KeyError:
-                    source = None
+                    location = AssetLocation.UNDEFINED
             db_asset = JalAsset(-symbol['asset'])
-            symbol_id = db_asset.add_symbol(symbol['symbol'], currency, data_source=source)
+            symbol_id = db_asset.add_symbol(symbol['symbol'], currency, location_id=location)
             isin = self._pending_isin.pop(symbol['asset'], None)
             if isin:
                 db_asset.add_identifier(symbol_id, SymbolId.ISIN, isin)
