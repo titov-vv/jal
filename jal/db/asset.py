@@ -24,26 +24,12 @@ def db_timestamp2int(timestamp_string: str) -> int:
 class JalAsset(JalDB):
     db_cache = UniversalCache()
 
-    def __init__(self, asset_id: int = 0, symbol_id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
+    def __init__(self, asset_id: int = 0, symbol_id: int = 0) -> None:
         super().__init__(cached=True)
         try:
             self._id = int(asset_id)
         except (TypeError, ValueError):
             self._id = 0
-        if self._valid_data(data, search, create):
-            if search:
-                self._id = self._find_asset(data)
-            if create and not self._id:   # If we haven't found peer before and requested to create new record
-                query = self._exec(
-                    "INSERT INTO assets (type_id, full_name, country_id) "
-                    "VALUES (:type, :full_name, coalesce((SELECT id FROM countries WHERE code=:country), 0))",
-                    [(":type", data['type']), (":full_name", data['name']),
-                     (":country", data['country'])], commit=True)
-                self._id = query.lastInsertId()
-                if 'isin' in data and data['isin']:
-                    _ = self._exec("INSERT INTO symbol_ids (asset_id, id_type, id_value) "
-                                   "VALUES(:asset_id, :id_type, :id_value)",
-                                   [(":asset_id", self._id), (":id_type", SymbolId.ISIN), (":id_value", data['isin'])])
         self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))  # Load asset data from cache or DB
         self._type = self._data.get('type_id', None)
         self._name = self._data.get('full_name', '')
@@ -124,18 +110,31 @@ class JalAsset(JalDB):
             symbol = [x['symbol'] for x in self._data['symbols'] if x['active'] == 1 and x['currency_id'] == currency]
             return ''.join(x for x in symbol)   # return symbol or empty string (there shouldn't be more than one)
 
-    def add_symbol(self, symbol: str, currency_id, data_source: int) -> None:
+    # Adds a new symbol to the asset (or returns the existing one's id if it already exists).
+    # Returns the id of the resulting asset_symbol row.
+    def add_symbol(self, symbol: str, currency_id, data_source: int) -> int:
         existing = self._read("SELECT id, symbol, quote_source FROM asset_symbol "
                               "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id IS :currency",
                               [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)
         if existing is None:  # Deactivate old symbols and create a new one
             _ = self._exec("UPDATE asset_symbol SET active=0 WHERE asset_id=:asset_id AND currency_id IS :currency",
                            [(":asset_id", self._id), (":currency", currency_id)])
-            _ = self._exec(
+            query = self._exec(
                 "INSERT INTO asset_symbol (asset_id, symbol, currency_id, quote_source) "
                 "VALUES (:asset_id, :symbol, :currency, :data_source)",
                 [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
                  (":data_source", data_source)])
+            new_id = query.lastInsertId() if query is not None else 0
+        else:
+            new_id = existing['id']
+        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
+        return new_id
+
+    # Attaches an identifier of given type (see SymbolId) to a specific, caller-supplied symbol id.
+    # Never guesses which symbol an identifier belongs to - the caller must know it already.
+    def add_identifier(self, symbol_id: int, id_type: int, id_value: str) -> None:
+        _ = self._exec("INSERT INTO symbol_ids (symbol_id, id_type, id_value) VALUES (:symbol_id, :id_type, :id_value)",
+                       [(":symbol_id", symbol_id), (":id_type", id_type), (":id_value", id_value)])
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
     # Returns country object for the asset
@@ -333,23 +332,22 @@ class JalAsset(JalDB):
                            [(":asset_id", self._id), (":datatype", AssetData.PrincipalValue),
                             (":principal", str(principal))])
 
-    def _valid_data(self, data: dict, search: bool = False, create: bool = False) -> bool:
-        if data is None:
-            return False
-        data['isin'] = data['isin'] if 'isin' in data else ''
-        data['name'] = data['name'] if 'name' in data else ''
-        data['country'] = data['country'] if 'country' in data else ''
-        data['symbol'] = data['symbol'] if 'symbol' in data else ''
-        data['reg_number'] = data['reg_number'] if 'reg_number' in data else ''
-        return True
+    # Searches for an asset matching the given heuristic data (isin -> reg_number -> symbol(+type+expiry) -> name,
+    # in that priority order) and returns a JalAsset for it (whose .id() is 0 if nothing was found).
+    @classmethod
+    def find(cls, data: dict) -> "JalAsset":
+        for key in ('isin', 'name', 'country', 'symbol', 'reg_number'):
+            data.setdefault(key, '')
+        return cls(cls._find_asset(data))
 
-    def _find_asset(self, data: dict) -> int:
+    @classmethod
+    def _find_asset(cls, data: dict) -> int:
         aid = None
         if data['isin']:
-            query = self._exec("SELECT s.asset_id, s.symbol FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:isin",
+            query = cls._exec("SELECT s.asset_id, s.symbol FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:isin",
                                [(":datatype", SymbolId.ISIN), (":isin", data['isin'])])
             while query.next():
-                aid, symbol = self._read_record(query, cast=[int, str])
+                aid, symbol = cls._read_record(query, cast=[int, str])
                 if data['symbol'] and data['symbol'] == symbol:  # Try to match by ISIN and symbol first
                     return aid
             if aid is None:
@@ -357,12 +355,12 @@ class JalAsset(JalDB):
             else:
                 return aid
         if data['reg_number']:
-            aid = self._read("SELECT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:reg_code",
+            aid = cls._read("SELECT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:reg_code",
                             [(":datatype", SymbolId.REG_CODE), (":reg_code", data['reg_number'])], check_unique=True)
             if aid is not None:
                 return aid
         if data['symbol']:
-            symbols = self._read_to_list("SELECT s.asset_id, a.type_id, d.value AS expiry FROM asset_symbol s "
+            symbols = cls._read_to_list("SELECT s.asset_id, a.type_id, d.value AS expiry FROM asset_symbol s "
                                          "LEFT JOIN assets a ON s.asset_id=a.id "
                                          "LEFT JOIN asset_data d ON s.asset_id=d.asset_id AND d.datatype=:datatype "
                                          "WHERE s.symbol=:symbol COLLATE NOCASE",
@@ -377,7 +375,7 @@ class JalAsset(JalDB):
             if aid is not None:
                 return aid
         if data['name']:
-            aid = self._read("SELECT id FROM assets WHERE full_name=:name COLLATE NOCASE", [(":name", data['name'])])
+            aid = cls._read("SELECT id FROM assets WHERE full_name=:name COLLATE NOCASE", [(":name", data['name'])])
         if aid is None:
             return 0
         else:
@@ -447,3 +445,40 @@ class JalAsset(JalDB):
         while query.next():
             history.append(cls._read_record(query, cast=[int, int]))
         return history
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Stages a brand-new asset (assets row + symbol(s) + identifiers) before it becomes a real JalAsset.
+# Deliberately NOT a JalAsset subclass: JalAsset carries a shared, class-level cache keyed by asset id
+# (db_cache / class_cache()), and touching that cache mid-assembly would risk handing an incomplete asset
+# to unrelated code that just does JalAsset(id) for some other purpose. This class talks to the DB directly
+# and only ever creates a real, cacheable JalAsset once commit() is called.
+class JalAssetCreator(JalDB):
+    def __init__(self, type_id: int, name: str, country: str = '') -> None:
+        super().__init__(cached=False)
+        query = self._exec(
+            "INSERT INTO assets (type_id, full_name, country_id) "
+            "VALUES (:type, :full_name, coalesce((SELECT id FROM countries WHERE code=:country), 0))",
+            [(":type", type_id), (":full_name", name), (":country", country)])
+        self._id = query.lastInsertId() if query is not None else 0
+
+    def id(self) -> int:
+        return self._id
+
+    # Returns the id of the newly created asset_symbol row.
+    def add_symbol(self, symbol: str, currency_id, data_source: int) -> int:
+        query = self._exec(
+            "INSERT INTO asset_symbol (asset_id, symbol, currency_id, quote_source) "
+            "VALUES (:asset_id, :symbol, :currency, :data_source)",
+            [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
+             (":data_source", data_source)])
+        return query.lastInsertId() if query is not None else 0
+
+    # Attaches an identifier to a specific symbol id (obtained from add_symbol() above) - never guesses.
+    def add_identifier(self, symbol_id: int, id_type: int, id_value: str) -> None:
+        self._exec("INSERT INTO symbol_ids (symbol_id, id_type, id_value) VALUES (:symbol_id, :id_type, :id_value)",
+                   [(":symbol_id", symbol_id), (":id_type", id_type), (":id_value", id_value)])
+
+    # Finalizes staging and returns a normal, cacheable JalAsset for subsequent use.
+    def commit(self) -> JalAsset:
+        return JalAsset(self._id)

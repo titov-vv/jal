@@ -123,8 +123,7 @@ class TaxEstimator(MdiWidget):
         except KeyError:
             tax_rate = Decimal('0')
             logging.warning(self.tr("Tax rate not found for: ") + self.country.code())
-        tax_currency = JalAsset(data={'symbol': self.tax_currency_symbol, 'type_id': PredefinedAsset.Money},
-                                search=True, create=False).id()
+        tax_currency = JalAsset.find({'symbol': self.tax_currency_symbol, 'type_id': PredefinedAsset.Money}).id()
         account = JalAccount(self.account_id)
         asset = JalAsset(self.asset_id)
         account_currency = JalAsset(account.currency())

@@ -14,7 +14,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, MarketDataFeed, PredefinedAsset, SymbolId
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
-from jal.db.asset import JalAsset
+from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
@@ -130,6 +130,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         self._data = {}
         self._previous_accounts = {}
         self._last_selected_account = None
+        # Maps a freshly-created asset's real (negative) id -> its isin, for assets created via
+        # _import_assets() this run whose isin can't be attached yet because no symbol exists for them
+        # until _import_symbol_tickers() runs later. Consumed (popped) there.
+        # FIXME: this is a stopgap; revisit together with a broader statement-import refactor (the
+        # assets/symbols/assets_data sections are processed as three separate passes, which is what
+        # forces this cross-pass bookkeeping in the first place).
+        self._pending_isin = {}
         self._section_loaders = {
             FOF.PERIOD: self._check_period,
             FOF.ASSETS: self._import_assets,
@@ -177,7 +184,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def _map_db_account(self, account_id: int) -> int:
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == account['currency']][0]['symbol']
-        db_currency = JalAsset(data={'symbol': currency_symbol, 'type': PredefinedAsset.Money}, search=True, create=False).id()
+        db_currency = JalAsset.find({'symbol': currency_symbol, 'type': PredefinedAsset.Money}).id()
         db_account = JalAccount(data={'number': account['number'], 'currency': db_currency}, search=True, create=False).id()
         return db_account
 
@@ -186,7 +193,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         asset = self._asset(asset_id)
         isin = asset['isin'] if 'isin' in asset else ''
         symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
-        db_asset = JalAsset(data={'isin': isin, 'symbol': symbols[0]['symbol']}, search=True, create=False).id()
+        db_asset = JalAsset.find({'isin': isin, 'symbol': symbols[0]['symbol']}).id()
         return db_asset
 
     # Loads JSON statement format from file defined by 'filename'
@@ -220,8 +227,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['type'] != FOF.ASSET_MONEY:
                 continue
             symbol = self._find_in_list(self._data[FOF.SYMBOLS], "asset", asset['id'])
-            asset_id = JalAsset(data={'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]},
-                                search=True, create=False).id()
+            asset_id = JalAsset.find({'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]}).id()
             if asset_id:
                 symbol['asset'] = -asset_id
                 old_id, asset['id'] = asset['id'], -asset_id
@@ -234,7 +240,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['id'] < 0:  # already matched
                 continue
             if 'isin' in asset:
-                asset_id = JalAsset(data={'isin': asset['isin']}, search=True, create=False).id()
+                asset_id = JalAsset.find({'isin': asset['isin']}).id()
                 if asset_id:
                     old_id, asset['id'] = asset['id'], -asset_id
                     self._update_id("asset", old_id, asset_id)
@@ -245,7 +251,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['asset'] < 0:  # already matched
                 continue
             if 'reg_number' in asset:
-                asset_id = JalAsset(data={'reg_number': asset['reg_number']}, search=True, create=False).id()
+                asset_id = JalAsset.find({'reg_number': asset['reg_number']}).id()
                 if asset_id:
                     asset = self._find_in_list(self._data[FOF.ASSETS], "id", asset['asset'])
                     old_id, asset['id'] = asset['id'], -asset_id
@@ -263,7 +269,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if data is not None:
                 self._uppend_keys_from(search_data, data, ['expiry'])
                 reg_number = data['reg_number'] if 'reg_number' in data else ''
-            db_asset = JalAsset(data=search_data, search=True, create=False)
+            db_asset = JalAsset.find(search_data)
             db_id = db_asset.id()
             if db_id:
                 if db_asset.symbol_id(SymbolId.ISIN) and 'isin' in asset and asset['isin'] and db_asset.symbol_id(SymbolId.ISIN) != asset['isin']:
@@ -375,14 +381,18 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['id'] < 0:
                 JalAsset(-asset['id']).update_data(asset)
                 continue
-            asset_data = asset.copy()
-            asset_data['type'] = self._asset_types[asset_data['type']]
-            new_asset = JalAsset(data=asset_data, search=False, create=True)
+            asset_type = self._asset_types[asset['type']]
+            creator = JalAssetCreator(asset_type, asset.get('name', ''), asset.get('country', ''))
+            new_asset = creator.commit()
             if new_asset.id():
                 old_id, asset['id'] = asset['id'], -new_asset.id()
                 self._update_id("asset", old_id, new_asset.id())
                 if asset['type'] == FOF.ASSET_MONEY:
                     self._update_id("currency", old_id, new_asset.id())
+                if asset.get('isin'):
+                    # No symbol exists yet to attach this isin to - _import_symbol_tickers() picks it
+                    # up once it creates the first symbol for this asset.
+                    self._pending_isin[asset['id']] = asset['isin']
             else:
                 raise Statement_ImportError(self.tr("Can't create asset: ") + f"{asset}")
 
@@ -402,7 +412,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     source = self._sources[symbol['note']]
                 except KeyError:
                     source = None
-            JalAsset(-symbol['asset']).add_symbol(symbol['symbol'], currency, data_source=source)
+            db_asset = JalAsset(-symbol['asset'])
+            symbol_id = db_asset.add_symbol(symbol['symbol'], currency, data_source=source)
+            isin = self._pending_isin.pop(symbol['asset'], None)
+            if isin:
+                db_asset.add_identifier(symbol_id, SymbolId.ISIN, isin)
 
     def _import_asset_data(self, data):
         for detail in data:
@@ -659,7 +673,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if symbol is not None:
                 asset = self._find_in_list(self._data[FOF.ASSETS], 'id', symbol['asset'])
         if asset_info.get('search_offline', False):   # If allowed fetch asset data from database
-            db_asset = JalAsset(data=asset_info, search=True, create=False)
+            db_asset = JalAsset.find(asset_info)
             if db_asset.id():
                 asset = {'id': -db_asset.id(), 'type': FOF.convert_predefined_asset_type(db_asset.type()), 'name': db_asset.name(), 'isin': db_asset.symbol_id(SymbolId.ISIN)}
                 self._data[FOF.ASSETS].append(asset)

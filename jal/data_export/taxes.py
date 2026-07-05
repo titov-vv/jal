@@ -24,8 +24,7 @@ class TaxReport:
     country_name = ''   # The name of the country for tax preparation
 
     def __init__(self):
-        self._currency_id = JalAsset(data={'symbol': self.currency_name, 'type_id': PredefinedAsset.Money},
-                                     search=True, create=False).id()
+        self._currency_id = JalAsset.find({'symbol': self.currency_name, 'type_id': PredefinedAsset.Money}).id()
         if not self._currency_id:  # Zero value if no currency was found in DB for given currency symbol
             self.reports = {}
             logging.error(self.tr("Currency is not defined: ") + self.currency_name)

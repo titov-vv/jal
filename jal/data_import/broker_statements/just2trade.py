@@ -273,7 +273,7 @@ class StatementJ2T(StatementXLS):
         candidates = [x for x in self._data[FOF.ASSETS] if 'name' in x and x['name'] == asset_name]
         if len(candidates) == 1:
             return candidates[0]["id"]
-        asset_id = JalAsset(data={'name': asset_name}, search=True, create=False).id()
+        asset_id = JalAsset.find({'name': asset_name}).id()
         return -asset_id  # Negative value to indicate that asset was found in db
 
     # This method finds dividend with given parameters in already loaded JSON data

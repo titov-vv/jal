@@ -1,9 +1,9 @@
 import os
 from decimal import Decimal
 from datetime import datetime, timezone
-from jal.db.asset import JalAsset
+from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.operations import LedgerTransaction, AssetPayment
-from constants import PredefinedAsset
+from constants import PredefinedAsset, MarketDataFeed, SymbolId
 from jal.data_export.xlsx import XLSX
 
 
@@ -64,8 +64,9 @@ def json_decimal2float(json_obj):
 # Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples (symbol, full_name)
 def create_stocks(assets, currency_id):
     for item in assets:
-        asset = JalAsset(data={'type': PredefinedAsset.Stock, 'name': item[1]}, create=True)
-        asset.add_symbol(item[0], currency_id)
+        creator = JalAssetCreator(PredefinedAsset.Stock, item[1])
+        creator.add_symbol(item[0], currency_id, data_source=MarketDataFeed.FX)
+        creator.commit()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -73,8 +74,11 @@ def create_stocks(assets, currency_id):
 # (symbol, full_name, isin, currency_id, asset_type, country_id)
 def create_assets(assets, data=[]):
     for item in assets:
-        asset = JalAsset(data={'type': item[4], 'name': item[1], 'isin': item[2], 'country': item[5]}, create=True)
-        asset.add_symbol(item[0], item[3])
+        creator = JalAssetCreator(item[4], item[1], country=item[5])
+        symbol_id = creator.add_symbol(item[0], item[3], data_source=MarketDataFeed.FX)
+        if item[2]:
+            creator.add_identifier(symbol_id, SymbolId.ISIN, item[2])
+        creator.commit()
     for item in data:
         JalAsset(item[0]).update_data({item[1]: item[2]})
 
