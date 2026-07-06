@@ -1,10 +1,28 @@
 import os
 from decimal import Decimal
 from datetime import datetime, timezone
+from jal.db.db import JalDB
 from jal.db.asset import JalAsset, JalAssetCreator
+from jal.db.account import JalAccount
 from jal.db.operations import LedgerTransaction, AssetPayment
 from constants import PredefinedAsset, AssetLocation, SymbolId
 from jal.data_export.xlsx import XLSX
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Resolves an asset id (as used throughout test fixtures) into its symbol id. Test fixtures are single-symbol
+# almost everywhere, so the first (oldest) symbol found for the asset is the unambiguous one - except a few
+# multi-symbol fixtures that deliberately test one asset traded under different symbols per currency/account,
+# where currency_id disambiguates which of the asset's symbols is meant.
+def symbol_id_for(asset_id, currency_id=None):
+    if asset_id is None:
+        return None
+    if currency_id is not None:
+        symbol_id = JalDB._read("SELECT id FROM asset_symbol WHERE asset_id=:asset_id AND currency_id=:currency_id "
+                                "ORDER BY id LIMIT 1", [(":asset_id", asset_id), (":currency_id", currency_id)])
+        if symbol_id is not None:
+            return symbol_id
+    return JalDB._read("SELECT id FROM asset_symbol WHERE asset_id=:asset_id ORDER BY id LIMIT 1", [(":asset_id", asset_id)])
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -107,8 +125,8 @@ def create_actions(actions):
 # (timestamp, account, asset_id, amount, tax, note)
 def create_dividends(dividends):
     for dividend in dividends:
-        data = {'timestamp': dividend[0], 'type': AssetPayment.Dividend, 'account_id': dividend[1], 'asset_id': dividend[2],
-                'amount': dividend[3], 'tax': dividend[4], 'note': dividend[5]}
+        data = {'timestamp': dividend[0], 'type': AssetPayment.Dividend, 'account_id': dividend[1],
+                'symbol_id': symbol_id_for(dividend[2]), 'amount': dividend[3], 'tax': dividend[4], 'note': dividend[5]}
         LedgerTransaction.create_new(LedgerTransaction.AssetPayment, data)
 
 
@@ -117,8 +135,9 @@ def create_dividends(dividends):
 # (timestamp, account, asset_id, amount, tax, note, number)
 def create_coupons(coupons):
     for coupon in coupons:
-        data = {'timestamp': coupon[0], 'type': AssetPayment.BondInterest, 'account_id': coupon[1], 'asset_id': coupon[2],
-                'amount': coupon[3], 'tax': coupon[4], 'note': coupon[5], 'number': coupon[6]}
+        data = {'timestamp': coupon[0], 'type': AssetPayment.BondInterest, 'account_id': coupon[1],
+                'symbol_id': symbol_id_for(coupon[2]), 'amount': coupon[3], 'tax': coupon[4], 'note': coupon[5],
+                'number': coupon[6]}
         LedgerTransaction.create_new(LedgerTransaction.AssetPayment, data)
 
 
@@ -129,8 +148,8 @@ def create_coupons(coupons):
 def create_stock_dividends(dividends):
     for dividend in dividends:
         create_quotes(dividend[3], dividend[5], [(dividend[1], dividend[6])])
-        data = {'timestamp': dividend[1], 'type': dividend[0], 'account_id': dividend[2], 'asset_id': dividend[3],
-                'amount': dividend[4], 'tax': dividend[7], 'note': dividend[8]}
+        data = {'timestamp': dividend[1], 'type': dividend[0], 'account_id': dividend[2],
+                'symbol_id': symbol_id_for(dividend[3]), 'amount': dividend[4], 'tax': dividend[7], 'note': dividend[8]}
         LedgerTransaction.create_new(LedgerTransaction.AssetPayment, data)
 
 
@@ -138,10 +157,12 @@ def create_stock_dividends(dividends):
 # Create trades for given account_id in database: trades is a list of trades as tuples
 # (timestamp, settlement, asset_id, qty, price, fee, [number])
 def create_trades(account_id, trades):
+    currency_id = JalAccount(account_id).currency()
     for trade in trades:
         number = trade[6] if len(trade) > 6 else ''
-        data = {'timestamp': trade[0], 'settlement': trade[1], 'account_id': account_id, 'asset_id': trade[2],
-                'qty': trade[3], 'price': trade[4], 'fee': trade[5], 'number': number}
+        data = {'timestamp': trade[0], 'settlement': trade[1], 'account_id': account_id,
+                'symbol_id': symbol_id_for(trade[2], currency_id), 'qty': trade[3], 'price': trade[4], 'fee': trade[5],
+                'number': number}
         LedgerTransaction.create_new(LedgerTransaction.Trade, data)
 
 
@@ -152,9 +173,9 @@ def create_corporate_actions(account_id, actions):
     for action in actions:
         outcomes = []
         for result in action[5]:
-            outcomes.append({"asset_id": result[0], "qty": result[1], "value_share": result[2]})
-        data = {'timestamp': action[0], 'account_id': account_id, 'type': action[1], 'asset_id': action[2],
-                'qty': action[3], 'note': action[4], 'outcome': outcomes}
+            outcomes.append({"symbol_id": symbol_id_for(result[0]), "qty": result[1], "value_share": result[2]})
+        data = {'timestamp': action[0], 'account_id': account_id, 'type': action[1],
+                'symbol_id': symbol_id_for(action[2]), 'qty': action[3], 'note': action[4], 'outcome': outcomes}
         LedgerTransaction.create_new(LedgerTransaction.CorporateAction, data)
 
 
@@ -163,9 +184,10 @@ def create_corporate_actions(account_id, actions):
 # (timestamp, withdrawal_account, withdrawal, deposit_account, deposit, asset_id)
 def create_transfers(transfers):
     for transfer in transfers:
+        currency_id = JalAccount(transfer[1]).currency() if transfer[5] is not None else None
         data = {'withdrawal_timestamp': transfer[0], 'withdrawal_account': transfer[1], 'withdrawal': transfer[2],
                 'deposit_timestamp': transfer[0], 'deposit_account': transfer[3], 'deposit': transfer[4],
-                'asset': transfer[5]}
+                'symbol_id': symbol_id_for(transfer[5], currency_id)}
         LedgerTransaction.create_new(LedgerTransaction.Transfer, data)
 
 

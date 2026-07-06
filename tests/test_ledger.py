@@ -3,7 +3,7 @@ from decimal import Decimal
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_quotes, \
     create_corporate_actions, create_stock_dividends, create_transfers
-from constants import BookAccount, PredefinedCategory
+from constants import BookAccount, PredefinedCategory, AssetLocation
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
@@ -497,7 +497,7 @@ def test_asset_transfer(prepare_db):
 
     # Prepare single stock
     create_stocks([('A.USD', 'A SHARE')], currency_id=2)   # id = 4
-    JalAsset(4).add_symbol('A.RUB', 1)
+    JalAsset(4).add_symbol('A.RUB', 1, location_id=AssetLocation.UNDEFINED)
 
     create_trades(1, [(d2t(220201), d2t(220203), 4, 2.0, 100.0, 1.0)])  # Buy A on account.USD in 2 transactions
     create_trades(1, [(d2t(220205), d2t(220207), 4, 3.0, 100.0, 1.0)])

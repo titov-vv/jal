@@ -414,6 +414,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     location = AssetLocation.UNDEFINED
             db_asset = JalAsset(-symbol['asset'])
             symbol_id = db_asset.add_symbol(symbol['symbol'], currency, location_id=location)
+            self._update_id("symbol", symbol['id'], symbol_id)
             isin = self._pending_isin.pop(symbol['asset'], None)
             if isin:
                 db_asset.add_identifier(symbol_id, SymbolId.ISIN, isin)

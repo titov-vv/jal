@@ -147,7 +147,7 @@ class JalAccount(JalDB):
         while query.next():
             actions.append(self._read_record(query))
         for action in actions:
-            query = self._exec("SELECT * FROM action_results WHERE action_id=:id", [(":id", action[0])])
+            query = self._exec("SELECT * FROM asset_action_results WHERE action_id=:id", [(":id", action[0])])
             while query.next():
                 action.append(self._read_record(query))
         return actions

@@ -474,13 +474,13 @@ class AssetPayment(LedgerTransaction):
         payments = []
         if skip_accrued:
             query = "SELECT p.oid FROM asset_payments p LEFT JOIN trades t ON p.account_id=t.account_id "\
-                    "AND p.asset_id=t.asset_id AND p.number=t.number AND t.number!='' "\
+                    "AND p.symbol_id=t.symbol_id AND p.number=t.number AND t.number!='' "\
                     "WHERE p.account_id=:account AND t.oid IS NULL"
         else:
             query = "SELECT p.oid FROM asset_payments p WHERE p.account_id=:account"
         params = [(":account", account_id)]
         if asset_id:
-            query += " AND p.asset_id=:asset"
+            query += " AND p.symbol_id IN (SELECT id FROM asset_symbol WHERE asset_id=:asset)"
             params += [(":asset", asset_id)]
         if subtype:
             query += " AND p.type=:type"
@@ -773,8 +773,9 @@ class Trade(LedgerTransaction):
     # This dividend represents accrued interest for this operation.
     # Returns value of accrued interest or 0 if such isn't found
     def accrued_interest(self,currency_id: int = 0) -> Decimal:
-        oid = self._read("SELECT oid FROM asset_payments WHERE timestamp=:timestamp AND account_id=:account "
-                         "AND asset_id=:asset AND number=:number AND type=:interest",
+        oid = self._read("SELECT p.oid FROM asset_payments AS p LEFT JOIN asset_symbol AS s ON p.symbol_id=s.id "
+                         "WHERE p.timestamp=:timestamp AND p.account_id=:account "
+                         "AND s.asset_id=:asset AND p.number=:number AND p.type=:interest",
                          [(":timestamp", self._timestamp), (":account", self._account.id()), (":number", self._number),
                           (":asset", self._asset.id()), (":interest", AssetPayment.BondInterest)])
         value = AssetPayment(oid).amount() if oid else Decimal('0')
@@ -1082,7 +1083,7 @@ class CorporateAction(LedgerTransaction):
         "note": {"mandatory": False, "validation": False},
         "outcome": {
             "mandatory": True, "validation": False, "children": True,
-            "child_table": "action_results", "child_pid": "action_id",
+            "child_table": "asset_action_results", "child_pid": "action_id",
             "child_fields": {
                 "action_id": {"mandatory": True, "validation": False},    # TODO Check if mandatory requirement is true here and works as expected
                 "symbol_id": {"mandatory": True, "validation": False},
@@ -1207,8 +1208,8 @@ class CorporateAction(LedgerTransaction):
     def set_result_share(self, asset, share: Decimal) -> None:
         out = [x for x in self._results if x['asset_id'] == asset.id()]
         if len(out) == 1:
-            self._exec("UPDATE asset_action_results SET value_share=:share WHERE action_id=:action_id AND asset_id=:asset_id",
-                       [(":share", format_decimal(share)), (":action_id", self._oid), (":asset_id", asset.id())])
+            self._exec("UPDATE asset_action_results SET value_share=:share WHERE action_id=:action_id AND symbol_id=:symbol_id",
+                       [(":share", format_decimal(share)), (":action_id", self._oid), (":symbol_id", out[0]['symbol_id'])])
             out[0]['value_share'] = format_decimal(share)
         else:
             raise LedgerError(self.tr("Asset isn't a part of corporate action results: ") + f"{asset.name()}")
@@ -1219,8 +1220,9 @@ class CorporateAction(LedgerTransaction):
     def get_payments(cls, account) -> list:
         payments = []
         query = cls._exec("SELECT a.timestamp, r.qty, a.note FROM asset_actions AS a "
-                          "LEFT JOIN action_results AS r ON r.action_id=a.oid "
-                          "WHERE a.account_id=:account_id AND r.asset_id=:account_currency",
+                          "LEFT JOIN asset_action_results AS r ON r.action_id=a.oid "
+                          "LEFT JOIN asset_symbol AS s ON r.symbol_id=s.id "
+                          "WHERE a.account_id=:account_id AND s.asset_id=:account_currency",
                           [(":account_id", account.id()), (":account_currency", account.currency())])
         while query.next():
             timestamp, amount, note = cls._read_record(query, cast=[int, Decimal, str])

@@ -95,12 +95,12 @@ class JalAsset(JalDB):
         return self._name
 
     # Returns identifier of given type for this asset's symbol (see __init__'s symbol_id param) if one was
-    # given, otherwise the first matching identifier found across any of the asset's symbols. None if not present.
+    # given, otherwise the first matching identifier found across any of the asset's symbols. '' if not present.
     def symbol_id(self, id_type: int) -> str:
         if self._symbol_id:
-            return self._data['ID'].get((self._symbol_id, id_type), None)
+            return self._data['ID'].get((self._symbol_id, id_type), '')
         matches = self._get_id(id_type)
-        return matches[0] if matches else None
+        return matches[0] if matches else ''
 
     # Returns asset symbol for given currency or all symbols if no currency is given
     def symbol(self, currency: int = None) -> str:  # TODO check if currency_id is still used after asset/symbol change
@@ -179,8 +179,9 @@ class JalAsset(JalDB):
         splits = {}  # Dictionary of timestamp:coefficient for splits
         if adjust_splits:  # Get all splits recorded for the asset and create and fill the dictionary
             query = self._exec("SELECT a.timestamp, a.qty AS x, r.qty AS y "
-                               "FROM asset_actions AS a LEFT JOIN action_results AS r ON a.oid=r.action_id "
-                               "WHERE a.asset_id=:asset_id AND a.type=:split ORDER BY a.timestamp",
+                               "FROM asset_actions AS a LEFT JOIN asset_action_results AS r ON a.oid=r.action_id "
+                               "LEFT JOIN asset_symbol AS s ON a.symbol_id=s.id "
+                               "WHERE s.asset_id=:asset_id AND a.type=:split ORDER BY a.timestamp",
                                [(":asset_id", self._id), (":split", 4)])  #FIXME 4->CorporateAction.Split
             while query.next():
                 timestamp, x, y = self._read_record(query, cast=[int, Decimal, Decimal])
