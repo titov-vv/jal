@@ -144,7 +144,7 @@ class StatementVTB(StatementXLS):
             assets = [x for x in self._data[FOF.ASSETS] if x.get('broker_name') == asset_name]
             if len(assets) != 1:
                 raise Statement_ImportError(self.tr("No asset match in deals for ") + f"'{asset_name}'")
-            asset_id = assets[0]['id']
+            symbol_id = self._single_symbol_of(assets[0]['id'])
             if self._statement[headers['B/S']][row] == 'Покупка':
                 qty = str2num(self._statement[headers['qty']][row])
                 bond_interest = -str2num(self._statement[headers['accrued_int']][row])
@@ -167,12 +167,12 @@ class StatementVTB(StatementXLS):
             account_id = self._find_account_id(self._account_number, currency)
             new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
-                     "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "fee": fee}
+                     "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
             self._data[FOF.TRADES].append(trade)
             if bond_interest != 0:
                 new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
                 payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
-                           "number": deal_number, "asset": asset_id, "amount": bond_interest, "description": "НКД"}
+                           "number": deal_number, "symbol": symbol_id, "amount": bond_interest, "description": "НКД"}
                 self._data[FOF.ASSET_PAYMENTS].append(payment)
             cnt += 1
             row += 1
@@ -196,7 +196,7 @@ class StatementVTB(StatementXLS):
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row] == '':
                 break
-            asset_id = self.asset_id({'symbol': self._statement[headers['symbol']][row], 'search_online': "MOEX"})
+            symbol_id = self.symbol_id({'symbol': self._statement[headers['symbol']][row], 'search_online': "MOEX"})
             if self._statement[headers['B/S']][row] == 'Покупка':
                 qty = self._statement[headers['qty']][row]
             elif self._statement[headers['B/S']][row] == 'Продажа':
@@ -212,7 +212,7 @@ class StatementVTB(StatementXLS):
             account_id = self._find_account_id(self._account_number, 'RUR')
             new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp,
-                     "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "fee": fee}
+                     "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
             self._data[FOF.TRADES].append(trade)
             cnt += 1
             row += 1
@@ -262,7 +262,7 @@ class StatementVTB(StatementXLS):
             description = self._statement[headers['description']][row]
             new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
             transfer = {"id": new_id, "account": [account_from, account_to, account_fee], "timestamp": timestamp, "number" : number,
-                        "asset": [self.currency_id(symbols_data['A']), self.currency_id(symbols_data['B'])],
+                        "symbol": [self.currency_symbol_id(symbols_data['A']), self.currency_symbol_id(symbols_data['B'])],
                         "withdrawal": withdrawal, "deposit": deposit, "fee": fee, "description": description}
             self._data[FOF.TRANSFERS].append(transfer)
             cnt += 1
@@ -301,21 +301,21 @@ class StatementVTB(StatementXLS):
             assets = [x for x in self._data[FOF.ASSETS] if x.get('broker_name') == asset_name]
             if len(assets) != 1:
                 raise Statement_ImportError(self.tr("No asset match in asset transactions ") + f"'{asset_name}'")
-            asset_id = assets[0]['id']
+            symbol_id = self._single_symbol_of(assets[0]['id'])
             timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
             try:
                 qty = float(self._statement[headers['qty']][row])
             except ValueError:
                 raise Statement_ImportError(self.tr("Failed to convert asset amount ") + f"'{self._statement[headers['qty']][row]}'")
             if operations[operation] is not None:
-                operations[operation](timestamp, asset_id, qty)
+                operations[operation](timestamp, symbol_id, qty)
             cnt += 1
             row += 1
         logging.info(self.tr("Asset transactions loaded: ") + f"{cnt}")
 
-    def asset_cancellation(self, timestamp, asset_id, qty):
+    def asset_cancellation(self, timestamp, symbol_id, qty):
         # Statement has negative value for cancellation - will be used to create sell trade
-        self.asset_withdrawal.append({"timestamp": timestamp, "asset": asset_id, "quantity": qty})
+        self.asset_withdrawal.append({"timestamp": timestamp, "symbol": symbol_id, "quantity": qty})
 
     def _load_cash_transactions(self):
         cnt = 0
@@ -364,16 +364,18 @@ class StatementVTB(StatementXLS):
     def transfer_in(self, timestamp, account_id, amount, description):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [0, account_id, 0],
-                    "asset": [account['currency'], account['currency']], "timestamp": timestamp,
+                    "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
                     "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": description}
         self._data[FOF.TRANSFERS].append(transfer)
 
     def transfer_out(self, timestamp, account_id, amount, description):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [account_id, 0, 0],
-                    "asset": [account['currency'], account['currency']], "timestamp": timestamp,
+                    "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
                     "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": description}
         self._data[FOF.TRANSFERS].append(transfer)
 
@@ -386,7 +388,7 @@ class StatementVTB(StatementXLS):
         asset_id = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', interest_data['reg_number'])['asset']
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
-                   "asset": asset_id, "amount": amount, "description": description}
+                   "symbol": self._single_symbol_of(asset_id), "amount": amount, "description": description}
         self._data[FOF.ASSET_PAYMENTS].append(payment)
 
     def dividend(self, timestamp, account_id, amount, description):
@@ -403,7 +405,7 @@ class StatementVTB(StatementXLS):
             raise Statement_ImportError(self.tr("Failed to convert dividend tax ") + f"'{description}'")
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
-                   "asset": asset_id, "amount": amount, "tax": tax, "description": description}
+                   "symbol": self._single_symbol_of(asset_id), "amount": amount, "tax": tax, "description": description}
         self._data[FOF.ASSET_PAYMENTS].append(payment)
 
     def bond_maturity(self, timestamp, account_id, amount, description):
@@ -412,10 +414,9 @@ class StatementVTB(StatementXLS):
         if parts is None:
             raise Statement_ImportError(self.tr("Can't parse bond maturity description ") + f"'{description}'")
         bond_maturity = parts.groupdict()
-        asset_id = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', bond_maturity['reg_number'])['asset']
-        match = [x for x in self.asset_withdrawal if x['asset'] == asset_id and (timestamp - x['timestamp']) <= MAX_T_DELTA*86400]
+        symbol_id = self._single_symbol_of(self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', bond_maturity['reg_number'])['asset'])
+        match = [x for x in self.asset_withdrawal if x['symbol'] == symbol_id and (timestamp - x['timestamp']) <= MAX_T_DELTA*86400]
         if not match:
-            breakpoint()
             raise Statement_ImportError(self.tr("Can't find asset cancellation record for ") + f"'{description}'")
         if len(match) != 1:
             raise Statement_ImportError(self.tr("Multiple asset cancellation match for ") + f"'{description}'")
@@ -424,7 +425,7 @@ class StatementVTB(StatementXLS):
         price = abs(amount / qty)  # Price is always positive
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
         trade = {"id": new_id, "timestamp": timestamp, "settlement": timestamp, "account": account_id,
-                 "asset": asset_id, "quantity": qty, "price": price, "fee": 0.0, "note": description}
+                 "symbol": symbol_id, "quantity": qty, "price": price, "fee": 0.0, "note": description}
         self._data[FOF.TRADES].append(trade)
 
     def broker_fee(self, timestamp, account_id, amount, description):

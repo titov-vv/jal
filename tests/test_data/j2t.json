@@ -12,7 +12,8 @@
     {"id": 6, "type": "crypto", "name": "Bitcoin"},
     {"id": 7, "type": "stock", "name": "PFIZER Inc", "isin": "US7170811035"},
     {"id": 8, "type": "stock", "name": "Ubisoft Entertainment SA", "isin": "FR0000054470"},
-    {"id": 9, "type": "crypto", "name": "Ethereum"}
+    {"id": 9, "type": "crypto", "name": "Ethereum"},
+    {"id": -9, "type": "stock", "name": "JOHNSON & JOHNSON", "isin": "US4781601046"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "USD"},
@@ -23,19 +24,20 @@
     {"id": 6, "asset": 6, "symbol": "Bitcoin", "currency": 1},
     {"id": 7, "asset": 7, "symbol": "PFE", "currency": 1},
     {"id": 8, "asset": 8, "symbol": "UBI.XPAR", "currency": 1},
-    {"id": 9, "asset": 9, "symbol": "Ethereum", "currency": 1}
+    {"id": 9, "asset": 9, "symbol": "Ethereum", "currency": 1},
+    {"id": 10, "asset": -9, "symbol": "JNJ", "currency": 1}
   ],
   "assets_data": [
     {"id": 1, "asset": 3, "principal": 0.09, "reg_number": "1-05-01669-A"},
     {"id": 2, "asset": 4, "principal": 0.01}
   ],
   "trades": [
-    {"id": 1, "number": "TR264656807", "timestamp": 1614772579, "settlement": 1614902400, "account": 1, "asset": 4, "price": 0.5516000000000001, "quantity": -50, "fee": 0.01},
-    {"id": 2, "number": "TR264657748", "timestamp": 1614782596, "settlement": 1614902400, "account": 1, "asset": 5, "price": 364.97, "quantity": 1, "fee": 1.52},
-    {"id": 3, "number": "TR265763834", "timestamp": 1615386986, "settlement": 1615507200, "account": 1, "asset": 5, "price": 348.89, "quantity": -1, "fee": 1.52},
-    {"id": 4, "number": "TR264860704", "timestamp": 1614853841, "settlement": 1615161600, "account": 1, "asset": 8, "price": 79.32062499999999, "quantity": -16, "fee": 3.8},
-    {"id": 5, "number": "TR265176832", "timestamp": 1615159775, "settlement": 1615161600, "account": 1, "asset": 9, "price": 1714.0, "quantity": -0.4, "fee": 2.4},
-    {"id": 6, "number": "TR265517274", "timestamp": 1615297612, "settlement": 1615248000, "account": 1, "asset": 6, "price": 54615.0, "quantity": -0.01, "fee": 1.91}
+    {"id": 1, "number": "TR264656807", "timestamp": 1614772579, "settlement": 1614902400, "account": 1, "symbol": 4, "price": 0.5516000000000001, "quantity": -50, "fee": 0.01},
+    {"id": 2, "number": "TR264657748", "timestamp": 1614782596, "settlement": 1614902400, "account": 1, "symbol": 5, "price": 364.97, "quantity": 1, "fee": 1.52},
+    {"id": 3, "number": "TR265763834", "timestamp": 1615386986, "settlement": 1615507200, "account": 1, "symbol": 5, "price": 348.89, "quantity": -1, "fee": 1.52},
+    {"id": 4, "number": "TR264860704", "timestamp": 1614853841, "settlement": 1615161600, "account": 1, "symbol": 8, "price": 79.32062499999999, "quantity": -16, "fee": 3.8},
+    {"id": 5, "number": "TR265176832", "timestamp": 1615159775, "settlement": 1615161600, "account": 1, "symbol": 9, "price": 1714.0, "quantity": -0.4, "fee": 2.4},
+    {"id": 6, "number": "TR265517274", "timestamp": 1615297612, "settlement": 1615248000, "account": 1, "symbol": 6, "price": 54615.0, "quantity": -0.01, "fee": 1.91}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1639353600, "account": 1, "peer": 0, "lines": [{"amount": -0.24, "category": -5, "description": "Депозитарная комиссия за выплату дивидендов; Начисление дивидендов полученных по счету \"JT222222\"\". Инструмент Sony Group Corp; Дата отсечки 29/09/2021"}]},
@@ -44,12 +46,12 @@
     {"id": 4, "timestamp": 1614729600, "account": 1, "peer": 0, "lines": [{"amount": -2.92, "category": -5, "description": "Комиссия компании::Комиссия брокерская::За выплату доходов по ЦБ. Комиссия за выплату дивидендов; Инструмент ConocoPhillips; Дата отсечки 12/02/2021"}]}
   ],
   "transfers": [
-    {"id": 1, "account": [0, 1, 0], "asset": [1, 1], "timestamp": 1605744000, "withdrawal": 100, "deposit": 100, "fee": 0.0, "description": ""},
-    {"id": 2, "account": [1, 0, 0], "asset": [1, 1], "timestamp": 1622592000, "withdrawal": 200, "deposit": 200, "fee": 0.0, "description": " "}
+    {"id": 1, "account": [0, 1, 0], "symbol": [1, 1], "timestamp": 1605744000, "withdrawal": 100, "deposit": 100, "fee": 0.0, "description": ""},
+    {"id": 2, "account": [1, 0, 0], "symbol": [1, 1], "timestamp": 1622592000, "withdrawal": 200, "deposit": 200, "fee": 0.0, "description": " "}
   ],
   "corporate_actions": [],
   "asset_payments": [
-    {"id": 1, "type": "dividend", "account": 1, "timestamp": 1615248000, "ex_date": 1611878400, "asset": 7, "amount": 9.75, "tax": 1.46, "description": "Дивиденды; Инструмент PFIZER Inc; Дата отсечки 29/01/2021"},
-    {"id": 2, "type": "dividend", "account": 1, "timestamp": 1615334400, "ex_date": 1614038400, "asset": -9, "amount": 4.04, "tax": 0.61, "description": "Дивиденды; Начисление дивидендов полученных по счету \"JT222222\"\". Инструмент JOHNSON & JOHNSON; Дата отсечки 23/02/2021"}
+    {"id": 1, "type": "dividend", "account": 1, "timestamp": 1615248000, "ex_date": 1611878400, "symbol": 7, "amount": 9.75, "tax": 1.46, "description": "Дивиденды; Инструмент PFIZER Inc; Дата отсечки 29/01/2021"},
+    {"id": 2, "type": "dividend", "account": 1, "timestamp": 1615334400, "ex_date": 1614038400, "symbol": 10, "amount": 4.04, "tax": 0.61, "description": "Дивиденды; Начисление дивидендов полученных по счету \"JT222222\"\". Инструмент JOHNSON & JOHNSON; Дата отсечки 23/02/2021"}
   ]
 }

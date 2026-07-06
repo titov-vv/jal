@@ -57,8 +57,8 @@ class StatementKIT(StatementXLS):
                 code = self.currency_id(self.currency_substitutions[self._statement[headers['currency']][row]])
             except KeyError:
                 code = self.currency_id(self._statement[headers['currency']][row])
-            asset_id = self.asset_id({'isin': self._statement[headers['isin']][row],
-                                      'currency': code, 'search_online': "MOEX"})
+            symbol_id = self.symbol_id({'isin': self._statement[headers['isin']][row],
+                                        'currency': code, 'search_online': "MOEX"})
             if self._statement[headers['B/S']][row] == 'Покупка':
                 amount = -self._statement[headers['amount']][row]
                 qty = self._statement[headers['qty']][row]
@@ -85,12 +85,12 @@ class StatementKIT(StatementXLS):
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
             trade = {"id": new_id, "number": str(number), "timestamp": timestamp, "settlement": settlement,
-                     "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "fee": fee}
+                     "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
             self._data[FOF.TRADES].append(trade)
             if bond_interest != 0:
                 new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
                 payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
-                           "number": str(number), "asset": asset_id, "amount": bond_interest, "description": "НКД"}
+                           "number": str(number), "symbol": symbol_id, "amount": bond_interest, "description": "НКД"}
                 self._data[FOF.ASSET_PAYMENTS].append(payment)
             cnt += 1
             row += 1
@@ -142,8 +142,9 @@ class StatementKIT(StatementXLS):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         description = reason + ", " + note
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [0, account_id, 0],
-                    "asset": [account['currency'], account['currency']], "timestamp": timestamp,
+                    "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
                     "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": description}
         self._data[FOF.TRANSFERS].append(transfer)
 
@@ -151,8 +152,9 @@ class StatementKIT(StatementXLS):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         description = reason + ", " + note  # amount is negative in XLSX file
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [account_id, 0, 0],
-                    "asset": [account['currency'], account['currency']], "timestamp": timestamp,
+                    "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
                     "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": description}
         self._data[FOF.TRANSFERS].append(transfer)
 

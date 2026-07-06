@@ -343,6 +343,7 @@ class JalAsset(JalDB):
     # in that priority order) and returns a JalAsset for it (whose .id() is 0 if nothing was found).
     @classmethod
     def find(cls, data: dict) -> "JalAsset":
+        data = dict(data)   # don't pollute caller's dict with the defaults below
         for key in ('isin', 'name', 'country', 'symbol', 'reg_number'):
             data.setdefault(key, '')
         return cls(cls._find_asset(data))

@@ -26,10 +26,10 @@
     {"id": 3, "asset": 6, "principal":  0.03}
   ],
   "trades": [
-    {"id": 1, "number": "3312348787", "timestamp": 1615647620, "settlement": 1615766400, "account": 1, "asset": 4, "quantity": 10, "price": 987.65, "fee": 6.9},
-    {"id": 2, "number": "3720000652", "timestamp": 1615909088, "settlement": 1615939200, "account": 1, "asset": 5, "quantity": 1, "price": 1005.7, "fee": 0.5},
-    {"id": 3, "number": "3725000743", "timestamp": 1615976923, "settlement": 1616025600, "account": 1, "asset": 5, "quantity": -1, "price": 1004.1, "fee": 0.5},
-    {"id": 4, "number": "3720123978", "timestamp": 1616770797, "settlement": 1616889600, "account": 1, "asset": 6, "quantity": 10, "price": 1532.1, "fee": 8.66}
+    {"id": 1, "number": "3312348787", "timestamp": 1615647620, "settlement": 1615766400, "account": 1, "symbol": 4, "quantity": 10, "price": 987.65, "fee": 6.9},
+    {"id": 2, "number": "3720000652", "timestamp": 1615909088, "settlement": 1615939200, "account": 1, "symbol": 5, "quantity": 1, "price": 1005.7, "fee": 0.5},
+    {"id": 3, "number": "3725000743", "timestamp": 1615976923, "settlement": 1616025600, "account": 1, "symbol": 5, "quantity": -1, "price": 1004.1, "fee": 0.5},
+    {"id": 4, "number": "3720123978", "timestamp": 1616770797, "settlement": 1616889600, "account": 1, "symbol": 6, "quantity": 10, "price": 1532.1, "fee": 8.66}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1618617600, "account": 1, "peer": 0, "lines": [{"amount": 43.21, "category": -8, "description": "Проценты по договору займа ЦБ ДЗ/16042021-1"}]},
@@ -37,11 +37,11 @@
     {"id": 3, "timestamp": 1617148800, "account": 1, "peer": 0, "lines": [{"amount": -200, "category": -5, "description": "Абонентская плата за обслуживание счета 11249"}]}
   ],
   "transfers": [
-    {"id": 1, "account": [0, 1, 0], "asset": [1, 1], "timestamp": 1615766400, "withdrawal": 123, "deposit": 123, "fee": 0.0, "description": "зачисление - неторговое поручение от 15.03.2021, НП/в/А/150321/74123"}
+    {"id": 1, "account": [0, 1, 0], "symbol": [1, 1], "timestamp": 1615766400, "withdrawal": 123, "deposit": 123, "fee": 0.0, "description": "зачисление - неторговое поручение от 15.03.2021, НП/в/А/150321/74123"}
   ],
   "corporate_actions": [],
   "asset_payments": [
-    {"id": 1, "type": "interest", "account": 1, "timestamp": 1615909088, "number": "3720000652", "asset": 5, "amount": -16.83, "description": "НКД"},
-    {"id": 2, "type": "interest", "account": 1, "timestamp": 1615976923, "number": "3725000743", "asset": 5, "amount": 17.03, "description": "НКД"}
+    {"id": 1, "type": "interest", "account": 1, "timestamp": 1615909088, "number": "3720000652", "symbol": 5, "amount": -16.83, "description": "НКД"},
+    {"id": 2, "type": "interest", "account": 1, "timestamp": 1615976923, "number": "3725000743", "symbol": 5, "amount": 17.03, "description": "НКД"}
   ]
 }
