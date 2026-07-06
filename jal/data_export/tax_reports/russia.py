@@ -116,7 +116,7 @@ class TaxesRussia(TaxReport):
             line = {
                 'report_template': report_template,
                 'c_symbol': trade.asset().symbol(self.account_currency.id()),
-                'c_isin': trade.asset().symbol_id(SymbolId.ISIN),  # May be not used in template (for derivatives as example)
+                'c_isin': trade.close_operation().asset().symbol_id(SymbolId.ISIN),  # May be not used in template (for derivatives as example)
                 'c_qty': trade.qty(),
                 'o_symbol': trade.open_operation().asset().symbol(),
                 'o_isin': trade.open_operation().asset().symbol_id(SymbolId.ISIN),
@@ -187,7 +187,7 @@ class TaxesRussia(TaxReport):
             line = {
                 'report_template': "bond_trade",
                 'c_symbol': trade.asset().symbol(self.account_currency.id()),
-                'c_isin': trade.asset().symbol_id(SymbolId.ISIN),  # May be not used in template (for derivatives as example)
+                'c_isin': trade.close_operation().asset().symbol_id(SymbolId.ISIN),  # May be not used in template (for derivatives as example)
                 'c_qty': trade.qty(),
                 'o_symbol': trade.open_operation().asset().symbol(),
                 'o_isin': trade.open_operation().asset().symbol_id(SymbolId.ISIN),

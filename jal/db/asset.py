@@ -94,8 +94,13 @@ class JalAsset(JalDB):
     def name(self) -> str:
         return self._name
 
-    def symbol_id(self, id_type: int) -> str:  # Returns asset ID of given type or None if not present
-        return self._data['ID'].get(id_type, None)
+    # Returns identifier of given type for this asset's symbol (see __init__'s symbol_id param) if one was
+    # given, otherwise the first matching identifier found across any of the asset's symbols. None if not present.
+    def symbol_id(self, id_type: int) -> str:
+        if self._symbol_id:
+            return self._data['ID'].get((self._symbol_id, id_type), None)
+        matches = self._get_id(id_type)
+        return matches[0] if matches else None
 
     # Returns asset symbol for given currency or all symbols if no currency is given
     def symbol(self, currency: int = None) -> str:  # TODO check if currency_id is still used after asset/symbol change
@@ -381,23 +386,29 @@ class JalAsset(JalDB):
         else:
             return aid
 
-    # Method returns a list of {"asset": JalAsset, "currency" currency_id} that describes assets involved into ledger
-    # operations between begin and end timestamps or that have non-zero value in ledger
+    # Method returns a list of {"asset": JalAsset, "currency": currency_id} that describes symbols involved into
+    # ledger operations between begin and end timestamps or that have non-zero value in ledger. Each 'asset' is
+    # scoped to the specific symbol active for its currency (see __init__'s symbol_id param), so identifier
+    # lookups like symbol_id() resolve against that exact listing rather than an arbitrary one.
     @classmethod
-    def get_active_assets(cls, begin: int, end: int) -> list:
+    def get_active_symbols(cls, begin: int, end: int) -> list:
         assets = []
-        query = cls._exec("SELECT DISTINCT l.asset_id, a.currency_id "
+        query = cls._exec("SELECT DISTINCT l.asset_id, a.currency_id, s.id "
                           "FROM ledger l LEFT JOIN accounts a ON a.id=l.account_id "
+                          "LEFT JOIN asset_symbol s ON s.asset_id=l.asset_id AND s.currency_id=a.currency_id AND s.active=1 "
                           "WHERE l.book_account=:assets "
-                          "GROUP BY l.asset_id, a.currency_id, l.account_id "
+                          "GROUP BY l.asset_id, a.currency_id, l.account_id, s.id "
                           "HAVING l.id = MAX(l.id) AND (l.amount_acc!='0' OR l.value_acc!='0' OR (l.timestamp>=:begin AND l.timestamp<=:end))",
                           [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
         while query.next():
             try:
-                asset_id, currency_id = super(JalAsset, JalAsset)._read_record(query, cast=[int, int])
+                # symbol_id may legitimately be NULL (no active asset_symbol row for this currency) -
+                # default to 0 (unscoped) rather than treating it like a malformed asset_id/currency_id
+                asset_id, currency_id, symbol_id = super(JalAsset, JalAsset)._read_record(
+                    query, cast=[int, int, lambda x: int(x) if x is not None else 0])
             except TypeError:  # Skip if None is returned (i.e. there are no assets)
                 continue
-            assets.append({"asset": JalAsset(asset_id), "currency": currency_id})
+            assets.append({"asset": JalAsset(asset_id, symbol_id=symbol_id), "currency": currency_id})
         return assets
 
     # Method returns a list of JalAsset objects that describe all assets defined in ledger

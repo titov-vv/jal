@@ -72,7 +72,7 @@ class TaxesPortugal(TaxReport):
             line = {
                 'report_template': "trade",
                 'symbol': trade.asset().symbol(self.account_currency.id()),
-                'isin': trade.asset().symbol_id(SymbolId.ISIN),
+                'isin': trade.close_operation().asset().symbol_id(SymbolId.ISIN),
                 'qty': trade.qty(),
                 'o_type': "Aquisição" if trade.qty() >= Decimal('0') else "Venda",
                 'o_number': trade.open_operation().number(),

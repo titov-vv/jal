@@ -214,7 +214,7 @@ class QuoteDownloader(QObject):
             AssetLocation.MILAN_EXCHANGE: self.EuronextMilan_DataReader,
             AssetLocation.WSE_EXCHANGE: self.Stooq_DataReader
         }
-        assets = JalAsset.get_active_assets(start_timestamp, end_timestamp)
+        assets = JalAsset.get_active_symbols(start_timestamp, end_timestamp)
         assets = [(x['asset'], x['currency']) for x in assets if x['asset'].location(x['currency']) in sources_list]
         logging.info(self.tr("Loading assets prices"))
         for i, (asset, currency) in enumerate(assets):
