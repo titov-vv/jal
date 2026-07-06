@@ -101,7 +101,7 @@ class StatementFreedomFinance(Statement):
             settlement = self._parse_date(self._required_text(node, 'pay_d'))
             account_id = self._find_account_id(account_number, currency)
             currency_id = self.currency_id(currency)
-            asset_id = self.asset_id({
+            symbol_id = self.symbol_id({
                 'type': FOF.ASSET_STOCK,
                 'symbol': self._normalize_symbol(ticker),
                 'isin': isin,
@@ -115,7 +115,7 @@ class StatementFreedomFinance(Statement):
                 'timestamp': timestamp,
                 'settlement': settlement,
                 'account': account_id,
-                'asset': asset_id,
+                'symbol': symbol_id,
                 'quantity': float(quantity),
                 'price': float(price),
                 'fee': float(fee),
@@ -143,7 +143,7 @@ class StatementFreedomFinance(Statement):
             ex_date = self._parse_date(self._required_text(node, 'ex_date'))
             account_id = self._find_account_id(account_number, currency)
             currency_id = self.currency_id(currency)
-            asset_id = self.asset_id({
+            symbol_id = self.symbol_id({
                 'type': FOF.ASSET_STOCK,
                 'symbol': self._normalize_symbol(ticker),
                 'isin': isin,
@@ -157,7 +157,7 @@ class StatementFreedomFinance(Statement):
                 'account': account_id,
                 'timestamp': timestamp,
                 'ex_date': ex_date,
-                'asset': asset_id,
+                'symbol': symbol_id,
                 'amount': float(gross_amount),
                 'tax': float(tax),
                 'description': self._text(node, 'comment')

@@ -134,12 +134,13 @@ class StatementOpenPortfolio(Statement):
                 account_to = self._find_account_id(account['number'], currency_symbol['symbol'])
                 account_fee = self._find_account_id(account['number'], trade['fee-currency'])
                 transfer = {"id": new_id, "account": [account_from, account_to, account_fee], "number": trade['trade-id'],
-                            "asset": [self.currency_id('RUB'), self.currency_id(currency_symbol['symbol'])],
+                            "symbol": [self.currency_symbol_id('RUB'), self.currency_symbol_id(currency_symbol['symbol'])],
                             "timestamp": trade['timestamp'],
                             "withdrawal": abs(trade['summa']), "deposit": abs(trade['count']), "fee": abs(trade['fee']),
                             "description": trade['description']}
                 self._data[FOF.TRANSFERS].append(transfer)
             else:  # Create trade
+                trade["symbol"] = self._single_symbol_of(trade.pop("asset"))
                 trade["number"] = trade["trade-id"]
                 trade["quantity"] = trade["count"]
                 trade["note"] = trade["description"]

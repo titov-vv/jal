@@ -29,17 +29,17 @@
 
   ],
   "trades": [
-    {"id": 1, "number": "1313074529", "timestamp": 1539637200, "settlement": 0, "account": 10, "asset": 45, "quantity": 150, "price": 167.58000183105, "fee": 0,"note": "\"Газпром\" (ПАО) ао"},
-    {"id": 2, "number": "3407729597", "timestamp": 1582578000, "settlement": 0, "account": 10, "asset": 44, "quantity": -50, "price": 245, "fee": 0, "note": "Сбербанк России ПАО ао"},
-    {"id": 3, "number": "465e9b6f2c683de80b4d06480f49b1f1", "timestamp": 1593723600, "settlement": 0, "account": 10, "asset": 44, "quantity": 30, "price": 210.85, "fee": 0, "note": "Сбербанк России ПАО ао"},
-    {"id": 4, "number": "38159322496", "timestamp": 1722866873, "settlement": 0, "account": 10, "asset": 14, "quantity": 1, "price": 6629.6, "fee": 59.67, "note": "GLD/RUB_TOM - GLD/РУБ"}
+    {"id": 1, "number": "1313074529", "timestamp": 1539637200, "settlement": 0, "account": 10, "symbol": 4, "quantity": 150, "price": 167.58000183105, "fee": 0,"note": "\"Газпром\" (ПАО) ао"},
+    {"id": 2, "number": "3407729597", "timestamp": 1582578000, "settlement": 0, "account": 10, "symbol": 3, "quantity": -50, "price": 245, "fee": 0, "note": "Сбербанк России ПАО ао"},
+    {"id": 3, "number": "465e9b6f2c683de80b4d06480f49b1f1", "timestamp": 1593723600, "settlement": 0, "account": 10, "symbol": 3, "quantity": 30, "price": 210.85, "fee": 0, "note": "Сбербанк России ПАО ао"},
+    {"id": 4, "number": "38159322496", "timestamp": 1722866873, "settlement": 0, "account": 10, "symbol": 7, "quantity": 1, "price": 6629.6, "fee": 59.67, "note": "GLD/RUB_TOM - GLD/РУБ"}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1548104400, "account": 10, "peer": 0, "lines": [{"amount": -149, "category": -5, "description": "Списание комиссий"}]},
     {"id": 2, "timestamp": 1562014800, "account": 10, "peer": 0, "lines": [{"amount": 13000, "category": -1, "description": "Налоговый вычет"}]}
   ],
   "transfers": [
-    {"id": 1, "account": [10, 11, 10], "number": "PP230319000000069703", "asset": [0, 69], "timestamp": 1723219200, "withdrawal": 1692.18, "deposit": 152, "fee": 0, "description": "HKD/RUB_TOM - HKD/РУБ"},
-    {"id": 2, "account": [10, 12, 10], "number": "33918678504", "asset": [0, 1], "timestamp": 1698306811, "withdrawal": 4670.5, "deposit": 50, "fee": 18.68, "description": "USDRUB_TOM - USD/РУБ"}
+    {"id": 1, "account": [10, 11, 10], "number": "PP230319000000069703", "symbol": [1, 10], "timestamp": 1723219200, "withdrawal": 1692.18, "deposit": 152, "fee": 0, "description": "HKD/RUB_TOM - HKD/РУБ"},
+    {"id": 2, "account": [10, 12, 10], "number": "33918678504", "symbol": [1, 2], "timestamp": 1698306811, "withdrawal": 4670.5, "deposit": 50, "fee": 18.68, "description": "USDRUB_TOM - USD/РУБ"}
   ]
 }
