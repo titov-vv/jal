@@ -196,6 +196,14 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         db_asset = JalAsset.find({'isin': isin, 'symbol': symbols[0]['symbol']}).id()
         return db_asset
 
+    # Finds an asset in jal database by statement symbol reference and returns its id
+    def _map_db_asset_by_symbol(self, symbol_id: int) -> int:
+        symbol = self._symbol(symbol_id)
+        asset = self._asset(symbol['asset'])
+        isin = asset['isin'] if 'isin' in asset else ''
+        db_asset = JalAsset.find({'isin': isin, 'symbol': symbol['symbol']}).id()
+        return db_asset
+
     # Loads JSON statement format from file defined by 'filename'
     def load(self, filename: str) -> None:
         self._data = {}
@@ -414,7 +422,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     location = AssetLocation.UNDEFINED
             db_asset = JalAsset(-symbol['asset'])
             symbol_id = db_asset.add_symbol(symbol['symbol'], currency, location_id=location)
-            self._update_id("symbol", symbol['id'], symbol_id)
+            old_id, symbol['id'] = symbol['id'], -symbol_id
+            self._update_id("symbol", old_id, symbol_id)
             isin = self._pending_isin.pop(symbol['asset'], None)
             if isin:
                 db_asset.add_identifier(symbol_id, SymbolId.ISIN, isin)
@@ -634,6 +643,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             raise Statement_ImportError(self.tr("Asset id not found") + f"{asset_id}")
         return asset
 
+    # Returns symbol dictionary by symbol id
+    def _symbol(self, symbol_id) -> dict:
+        symbol = self._find_in_list(self._data[FOF.SYMBOLS], 'id', symbol_id)
+        if symbol is None:
+            raise Statement_ImportError(self.tr("Symbol id not found: ") + f"{symbol_id}")
+        return symbol
+
     # Helper function that takes list of dictionaries and returns one element where key=value
     # exception is raised if multiple elements found
     # Returns None if nothing was found in the list
@@ -663,6 +679,17 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             currency = {"id": symbol_id, "asset": asset_id, "symbol": currency_symbol}
             self._data[FOF.SYMBOLS].append(currency)
             return asset_id
+
+    # Returns the id of the single symbol record that belongs to given money asset
+    def _symbol_of_money(self, asset_id) -> int:
+        match = [x for x in self._data[FOF.SYMBOLS] if x['asset'] == asset_id]
+        if len(match) != 1:
+            raise Statement_ImportError(self.tr("Can't find exact symbol for currency: ") + f"{asset_id}: {match}")
+        return match[0]['id']
+
+    # Same as currency_id() but returns the id of the currency symbol record, not the money asset
+    def currency_symbol_id(self, currency_symbol) -> int:
+        return self._symbol_of_money(self.currency_id(currency_symbol))
 
     # Method finds asset in current statement data. New asset is created if no asset was found.
     # Returns asset id
@@ -740,6 +767,22 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 self.update_asset_data(asset['id'], asset_info)
         return asset['id']
 
+    # Method finds/creates asset in current statement data (same as asset_id()) and pins the exact
+    # symbol record that matches asset_info. Returns symbol id.
+    # Operations must reference an exact symbol, so any ambiguity here is a hard failure.
+    def symbol_id(self, asset_info) -> int:
+        asset_id = self.asset_id(asset_info)
+        symbols = [x for x in self._data[FOF.SYMBOLS] if x['asset'] == asset_id]
+        if len(symbols) == 1:  # Exactly one symbol exists for the asset - no ambiguity possible
+            return symbols[0]['id']
+        if asset_info.get('symbol'):
+            symbols = [x for x in symbols if x['symbol'] == asset_info['symbol']]
+        if asset_info.get('currency'):
+            symbols = [x for x in symbols if 'currency' not in x or x['currency'] == asset_info['currency']]
+        if len(symbols) != 1:
+            raise Statement_ImportError(self.tr("Can't resolve an exact symbol for: ") + f"'{asset_info}': {symbols}")
+        return symbols[0]['id']
+
     # takes key from keys one by one and copies it from src to dst if it exists in src
     def _uppend_keys_from(self, dst, src, keys):
         for key in keys:
@@ -776,8 +819,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 return
         self._uppend_keys_from(asset_data, asset_info, ['reg_number', 'expiry'])
 
-    # Removes asset and all links to it from self._data
+    # Removes asset and all links to it from self._data (operations link assets via symbol records)
     def remove_asset(self, asset_id):
+        symbol_ids = [x['id'] for x in self._data[FOF.SYMBOLS] if 'asset' in x and x['asset'] == asset_id]
+        for symbol_id in symbol_ids:
+            self._delete_with_id("symbol", symbol_id)
         self._delete_with_id("asset", asset_id)
         self._data[FOF.ASSETS] = [x for x in self._data[FOF.ASSETS] if x['id'] != asset_id]
 

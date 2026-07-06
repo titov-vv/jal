@@ -188,7 +188,7 @@ class StatementIBKR(StatementXML):
             'Trades': {'tag': 'Trade',
                        'level': 'EXECUTION',
                        'values': [('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
-                                  ('symbol', 'asset', IBKR_Asset, None),
+                                  ('symbol', 'symbol', IBKR_Asset, None),
                                   ('accountId', 'account', IBKR_Account, None),
                                   ('dateTime', 'timestamp', datetime, None),
                                   ('settleDateTarget', 'settlement', datetime, 0),
@@ -204,7 +204,7 @@ class StatementIBKR(StatementXML):
             'OptionEAE': {'tag': 'OptionEAE',
                           'level': '',
                           'values': [('transactionType', 'operation', str, None),
-                                     ('symbol', 'asset', IBKR_Asset, None),
+                                     ('symbol', 'symbol', IBKR_Asset, None),
                                      ('accountId', 'account', IBKR_Account, None),
                                      ('date', 'timestamp', datetime, None),
                                      ('tradePrice', 'price', float, None),
@@ -218,7 +218,7 @@ class StatementIBKR(StatementXML):
                                  'level': 'DETAIL',
                                  'values': [('type', 'type', IBKR_CorpActionType, IBKR_CorpActionType.NotSupported),
                                             ('accountId', 'account', IBKR_Account, None),
-                                            ('symbol', 'asset', IBKR_Asset, None),
+                                            ('symbol', 'symbol', IBKR_Asset, None),
                                             ('assetCategory', 'asset_type', IBKR_AssetType, IBKR_AssetType.NotSupported),
                                             ('dateTime', 'timestamp', datetime, None),
                                             ('transactionID', 'number', str, ''),
@@ -232,7 +232,7 @@ class StatementIBKR(StatementXML):
                                  'level': 'DETAIL',
                                  'values': [('type', 'type', str, None),
                                             ('accountId', 'account', IBKR_Account, None),
-                                            ('symbol', 'asset', IBKR_Asset, 0),
+                                            ('symbol', 'symbol', IBKR_Asset, 0),
                                             ('currency', 'currency', IBKR_Currency, None),
                                             ('dateTime', 'timestamp', datetime, None),
                                             ('reportDate', 'reported', datetime, None),
@@ -245,7 +245,7 @@ class StatementIBKR(StatementXML):
                                          'level': 'DETAIL',
                                          'values': [('code', 'code', str, None),
                                                     ('accountId', 'account', IBKR_Account, None),
-                                                    ('symbol', 'asset', IBKR_Asset, 0),
+                                                    ('symbol', 'symbol', IBKR_Asset, 0),
                                                     ('currency', 'currency', IBKR_Currency, None),
                                                     ('date', 'timestamp', datetime, None),
                                                     ('exDate', 'ex_date', datetime, None),
@@ -255,7 +255,7 @@ class StatementIBKR(StatementXML):
             'StockGrantActivities': {'tag': 'StockGrantActivity',
                                      'level': '',
                                      'values': [('accountId', 'account', IBKR_Account, None),
-                                                ('symbol', 'asset', IBKR_Asset, None),
+                                                ('symbol', 'symbol', IBKR_Asset, None),
                                                 ('awardDate', 'award_date', datetime, None),
                                                 ('vestingDate', 'vesting_date', datetime, None),
                                                 ('activityDescription', 'description', str, None),
@@ -265,7 +265,7 @@ class StatementIBKR(StatementXML):
             'TransactionTaxes': {'tag': 'TransactionTax',
                                  'level': 'SUMMARY',
                                  'values': [('accountId', 'account', IBKR_Account, None),
-                                            ('symbol', 'asset', IBKR_Asset, None),
+                                            ('symbol', 'symbol', IBKR_Asset, None),
                                             ('date', 'timestamp', datetime, None),
                                             ('taxAmount', 'amount', float, None),
                                             ('taxDescription', 'description', str, None),
@@ -287,7 +287,7 @@ class StatementIBKR(StatementXML):
             'CFDCharges': {'tag': 'CFDCharge',
                            'level': '',
                            'values': [('accountId', 'account', IBKR_Account, None),
-                                      ('symbol', 'asset', IBKR_Asset, self.NoAsset),
+                                      ('symbol', 'symbol', IBKR_Asset, self.NoAsset),
                                       ('date', 'timestamp', datetime, None),
                                       ('total', 'amount', float, None),
                                       ('transactionID', 'number', str, ''),
@@ -296,7 +296,7 @@ class StatementIBKR(StatementXML):
             'Transfers': {'tag': 'Transfer',
                           'level': '',
                           'values': [('accountId', 'account', IBKR_Account, None),
-                                     ('symbol', 'asset', IBKR_Asset, self.NoAsset),
+                                     ('symbol', 'symbol', IBKR_Asset, self.NoAsset),
                                      ('account', 'account2', IBKR_Account, 0),
                                      ('dateTime', 'timestamp', datetime, None),
                                      ('quantity', 'quantity', float, None),
@@ -317,22 +317,23 @@ class StatementIBKR(StatementXML):
     def capabilities() -> set:
         return {Statement_Capabilities.MULTIPLE_LOAD}
 
-    # Saves information from XML that is related with a given asset
-    def save_debug_info(self, account, asset):
-        # Dump statement info relevant to given asset
+    # Saves information from XML that is related with a given symbol's asset
+    def save_debug_info(self, account, symbol):
+        # Dump statement info relevant to given symbol's asset
         debug_info = 'Statement data:\n----------------------------------------------------------------\n'
         assert self._statement is not None
+        asset = self._symbol(symbol)['asset']
         symbols = [x['symbol'] for x in self._data[FOF.SYMBOLS] if x["asset"] == asset]
-        for symbol in symbols:
-            elements = self._statement.findall(f".//*[@symbol='{symbol}']")
+        for symbol_name in symbols:
+            elements = self._statement.findall(f".//*[@symbol='{symbol_name}']")
             for element in elements:
                 if 'accountId' in element.attrib:
                     element.attrib['accountId'] = 'U7654321'  # Hide real account number
                 debug_info += etree.tostring(element).decode("utf-8")
         debug_info += "----------------------------------------------------------------\n"
-        # Dump asset_payments info from database for the given asset from
+        # Dump asset_payments info from database for the given symbol's asset
         db_account = self._map_db_account(account)
-        db_asset = self._map_db_asset(asset)
+        db_asset = self._map_db_asset_by_symbol(symbol)
         payments = JalAccount(db_account).dump_asset_payments()
         payments = [x for x in payments if x[DIVIDENDS_TABLE_ASSET_FIELD] == db_asset]
         debug_info += "Database data:\n----------------------------------------------------------------\n"
@@ -383,12 +384,12 @@ class StatementIBKR(StatementXML):
             asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
         if xml_element.tag == 'Trade' and asset_category == FOF.ASSET_MONEY:
             currency = xml_element.attrib[attr_name].split('.')
-            asset_id = [self.currency_id(code) for code in currency]
-            if not asset_id:
+            symbol_id = [self.currency_symbol_id(code) for code in currency]
+            if not symbol_id:
                 return default_value
         elif xml_element.tag == 'Transfer' and asset_category == FOF.ASSET_MONEY:
-            asset_id = self.currency_id(xml_element.attrib['currency'])
-            if not asset_id:
+            symbol_id = self.currency_symbol_id(xml_element.attrib['currency'])
+            if not symbol_id:
                 return default_value
         else:
             symbol = xml_element.attrib[attr_name]
@@ -408,8 +409,8 @@ class StatementIBKR(StatementXML):
             if 'listingExchange' in xml_element.attrib and xml_element.attrib['listingExchange'] \
                     and xml_element.attrib['listingExchange'] != 'VALUE':  # don't store 'VALUE' or empty exchange
                 asset_data['note'] = xml_element.attrib['listingExchange']
-            asset_id = self.asset_id(asset_data)
-        return asset_id
+            symbol_id = self.symbol_id(asset_data)
+        return symbol_id
 
     def attr_account(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
@@ -434,17 +435,25 @@ class StatementIBKR(StatementXML):
         else:
             return account_id
 
-    def locate_asset(self, symbol, isin) -> int:
-        candidates = [x for x in self._data[FOF.ASSETS] if 'isin' in x and x['isin'] == isin]
-        if len(candidates) == 1:
-            return candidates[0]["id"]
+    # Returns the id of the exact symbol record matching given ticker/isin (0 if not found).
+    # Ambiguity (an isin-matched asset trading under several symbols, none matching the ticker) is a hard failure.
+    def locate_symbol(self, symbol, isin) -> int:
+        assets = [x for x in self._data[FOF.ASSETS] if 'isin' in x and x['isin'] == isin]
+        if len(assets) == 1:
+            candidates = [x for x in self._data[FOF.SYMBOLS] if 'asset' in x and x['asset'] == assets[0]['id']]
+            if len(candidates) == 1:
+                return candidates[0]['id']
+            named = [x for x in candidates if x['symbol'] == symbol]
+            if len(named) == 1:
+                return named[0]['id']
+            raise Statement_ImportError(self.tr("Can't resolve an exact symbol for: ") + f"'{symbol}' ({isin})")
         candidates = [x for x in self._data[FOF.SYMBOLS] if 'symbol' in x and x['symbol'] == symbol]
         if len(candidates) == 1:
-            return candidates[0]["asset"]
+            return candidates[0]["id"]
         return 0
 
-    def set_asset_country(self, asset_id, country):
-        assets = [x for x in self._data[FOF.ASSETS] if 'id' in x and x['id'] == asset_id]
+    def set_asset_country(self, symbol_id, country):
+        assets = [x for x in self._data[FOF.ASSETS] if 'id' in x and x['id'] == self._symbol(symbol_id)['asset']]
         if len(assets) != 1:
             return
         assets[0]["country"] = country
@@ -495,10 +504,10 @@ class StatementIBKR(StatementXML):
         logging.info(self.tr("Securities loaded: ") + f"{asset_count} ({len(assets)})")
 
     def load_ib_trades(self, ib_trades):
-        trades = [trade for trade in ib_trades if type(trade['asset']) == int]
+        trades = [trade for trade in ib_trades if type(trade['symbol']) == int]
         trades_loaded = self.load_trades(trades)
 
-        transfers = [transfer for transfer in ib_trades if type(transfer['asset']) == list]
+        transfers = [transfer for transfer in ib_trades if type(transfer['symbol']) == list]
         transfers_loaded = self.load_cash_deposits_withdrawals(transfers)
 
         logging.info(self.tr("Trades loaded: ") + f"{trades_loaded + transfers_loaded} ({len(ib_trades)})")
@@ -511,7 +520,7 @@ class StatementIBKR(StatementXML):
             trade['quantity'] = trade['quantity'] * trade['multiplier']
             if trade['settlement'] == 0:
                 trade['settlement'] = trade['timestamp']
-            asset = [x for x in self._data[FOF.ASSETS] if x['id'] == trade['asset']][0]
+            asset = self._asset(self._symbol(trade['symbol'])['asset'])
             if asset['type'] == FOF.ASSET_BOND:
                 trade['quantity'] = trade['quantity'] / IBKR_Asset.BondPrincipal
                 trade['price'] = trade['price'] * IBKR_Asset.BondPrincipal / 100.0  # Bonds are priced in percents of principal
@@ -530,7 +539,7 @@ class StatementIBKR(StatementXML):
             transfer['id'] = transfer_base + i
             if transfer['quantity'] > 0:
                 transfer['account'][0], transfer['account'][1] = transfer['account'][1], transfer['account'][0]
-                transfer['asset'][0], transfer['asset'][1] = transfer['asset'][1], transfer['asset'][0]
+                transfer['symbol'][0], transfer['symbol'][1] = transfer['symbol'][1], transfer['symbol'][0]
                 transfer['quantity'], transfer['proceeds'] = transfer['proceeds'], transfer['quantity']
             transfer['withdrawal'] = abs(transfer.pop('quantity'))
             transfer['deposit'] = abs(transfer.pop('proceeds'))
@@ -548,7 +557,7 @@ class StatementIBKR(StatementXML):
             transfer['id'] = transfer_base + i
             if transfer['type'] != "INTERNAL":
                 raise Statement_ImportError(self.tr("Only internal transfers are supported: ") + f"{transfer}")
-            if self._find_in_list(self._data[FOF.ASSETS], 'id', transfer['asset'])['type'] == FOF.ASSET_MONEY:
+            if self._asset(self._symbol(transfer['symbol'])['asset'])['type'] == FOF.ASSET_MONEY:
                 if transfer['direction'] == "OUT":
                     transfer['account'] = [transfer['account'], transfer.pop('account2'), 0]
                     transfer['withdrawal'] = transfer['deposit'] = -transfer.pop('amount')
@@ -557,7 +566,7 @@ class StatementIBKR(StatementXML):
                     transfer['withdrawal'] = transfer['deposit'] = transfer.pop('amount')
                 else:
                     raise Statement_ImportError(self.tr("Unknown transfer direction: ") + f"{transfer}")
-                transfer['asset'] = [transfer['asset'], transfer['asset']]
+                transfer['symbol'] = [transfer['symbol'], transfer['symbol']]
                 transfer['description'] = transfer.pop('type') + ' ' + transfer['description']
                 transfer['fee'] = 0.0
                 self.drop_extra_fields(transfer, ["direction", "amount", "company", "quantity"])
@@ -565,7 +574,7 @@ class StatementIBKR(StatementXML):
                 if transfer['direction'] != "IN":
                     raise Statement_ImportError(self.tr("Outgoing asset transfer not implemented yet: ") + f"{transfer}")
                 transfer['account'] = [transfer.pop('account2'), transfer['account'], 0]
-                transfer['asset'] = [transfer['asset'], transfer['asset']]
+                transfer['symbol'] = [transfer['symbol'], transfer['symbol']]
                 transfer['withdrawal'] = transfer['deposit'] = transfer.pop('quantity')
                 transfer['description'] = transfer.pop('type') + f" TRANSFER ({transfer.pop('company')})"
                 transfer['fee'] = 0.0
@@ -592,7 +601,7 @@ class StatementIBKR(StatementXML):
                     self.tr("Option E&A&E action isn't implemented: ") + f"{option['transactionType']}")
             if description:
                 trade = [x for x in self._data[FOF.TRADES] if x['account'] == option['account']
-                         and x['asset'] == option['asset'] and x['number'] == option['number']]
+                         and x['symbol'] == option['symbol'] and x['number'] == option['number']]
                 if len(trade) == 1:
                     trade[0]['note'] = description
                 else:
@@ -618,7 +627,7 @@ class StatementIBKR(StatementXML):
 
         # If stocks were bought/sold on a corporate action day IBKR may put several records for one corporate
         # action. So first step is to aggregate quantity.
-        key_func = lambda x: (x['account'], x['asset'], x['type'], x['description'], x['timestamp'])
+        key_func = lambda x: (x['account'], x['symbol'], x['type'], x['description'], x['timestamp'])
         actions_sorted = sorted(actions, key=key_func)
         actions_aggregated = []
         for k, group in groupby(actions_sorted, key=key_func):
@@ -644,11 +653,11 @@ class StatementIBKR(StatementXML):
         logging.info(self.tr("Corporate actions loaded: ") + f"{cnt} ({len(actions)})")
 
     # Find record in list 'parts_b' (second parts of corporate actions) which matches
-    # given asset and description with more details from corp_action itself
-    def find_corp_action_pair(self, asset, description, action, parts_b):
+    # given symbol and description with more details from corp_action itself
+    def find_corp_action_pair(self, symbol, description, action, parts_b):
         expected = self.normalize_corp_action_description(description)
         paired_record = list(filter(
-            lambda pair: pair['asset'] == asset
+            lambda pair: pair['symbol'] == symbol
                          and (self.normalize_corp_action_description(pair['description']).startswith(expected + ", ")
                               or self.normalize_corp_action_description(pair['description']).startswith(expected + ".OLD, ")
                               or self.normalize_corp_action_description(pair['description']).startswith(expected + "D, ")
@@ -677,7 +686,7 @@ class StatementIBKR(StatementXML):
         for c_id, c_action in cancelled_actions:
             matched = [idx for (idx, action) in enumerate(actions) if
                        action["type"] == c_action["type"] and action["account"] == c_action["account"] and
-                       action["asset"] == c_action["asset"] and action["timestamp"] == c_action["timestamp"] and
+                       action["symbol"] == c_action["symbol"] and action["timestamp"] == c_action["timestamp"] and
                        action["description"] == c_action["description"] and action["quantity"] == -c_action["quantity"]]
             if len(matched) == 1:
                 delete_elements += [c_id, matched[0]]
@@ -717,7 +726,7 @@ class StatementIBKR(StatementXML):
 
         merger_a['symbol_old'] = self.normalize_corp_action_symbol(merger_a['symbol_old'])
         description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old']
-        asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
+        symbol_b = self.locate_symbol(merger_a['symbol_old'], merger_a['isin_old'])
 
         if pattern_id == 4:  # Asset converted to money -> store it as a sell trade
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
@@ -729,36 +738,36 @@ class StatementIBKR(StatementXML):
             self._data[FOF.TRADES].append(action)
             return 1
 
-        paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
+        paired_record = self.find_corp_action_pair(symbol_b, description_b, action, parts_b)
         # Adjust quantity for bonds
         adj_factor = IBKR_Asset.BondPrincipal if action['asset_type'] == FOF.ASSET_BOND else 1.0
         existing_action = None
         # Special processing if 1 asset is converted into two other assets
         if pattern_id == 2 or pattern_id == 5:
             existing_action = self.locate_existing_merger(action['timestamp'],
-                                                          action['account'], paired_record[0]['asset'])
+                                                          action['account'], paired_record[0]['symbol'])
         if existing_action is None:
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-            action['outcome'] = [{'asset': action['asset'], 'quantity': action['quantity']/adj_factor, 'share': 0.0}]
-            action['asset'] = paired_record[0]['asset']
+            action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity']/adj_factor, 'share': 0.0}]
+            action['symbol'] = paired_record[0]['symbol']
             action['quantity'] = -paired_record[0]['quantity']/adj_factor
             # Process cash payment if it is present as part of corporate action
             if pattern_id == 1 or pattern_id == 2:
-                payment = {'asset': self.currency_id(parts['currency']),
+                payment = {'symbol': self.currency_symbol_id(parts['currency']),
                            'quantity': paired_record[0]['proceeds'], 'share': 0.0}
                 action['outcome'].insert(0, payment)
             self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[FOF.CORP_ACTIONS].append(action)
         else:
-            next_outcome = {'asset': action['asset'], 'quantity': action['quantity']/adj_factor, 'share': 0.0}
+            next_outcome = {'symbol': action['symbol'], 'quantity': action['quantity']/adj_factor, 'share': 0.0}
             existing_action['outcome'].append(next_outcome)
         paired_record[0]['jal_processed'] = True
         return 2
 
-    def locate_existing_merger(self, timestamp, account, asset):
+    def locate_existing_merger(self, timestamp, account, symbol):
         existing_merger = list(filter(
             lambda merger: merger['type'] == FOF.ACTION_MERGER and merger['timestamp'] == timestamp
-                           and merger['account'] == account and merger['asset'] == asset, self._data[FOF.CORP_ACTIONS]))
+                           and merger['account'] == account and merger['symbol'] == symbol, self._data[FOF.CORP_ACTIONS]))
         if len(existing_merger) == 0:
             return None
         if len(existing_merger) != 1:
@@ -775,8 +784,8 @@ class StatementIBKR(StatementXML):
         if len(spinoff) != SpinOffPattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Spin-off description miss some data ") + f"'{action}'")
         spinoff['symbol_old'] = self.normalize_corp_action_symbol(spinoff['symbol_old'])
-        asset_old = self.locate_asset(spinoff['symbol_old'], spinoff['isin_old'])
-        if not asset_old:
+        symbol_old = self.locate_symbol(spinoff['symbol_old'], spinoff['isin_old'])
+        if not symbol_old:
             raise Statement_ImportError(self.tr("Spin-off initial asset not found ") + f"'{action}'")
         qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
         rounded_qty_old = round(qty_old)
@@ -786,9 +795,9 @@ class StatementIBKR(StatementXML):
             raise Statement_ImportError(self.tr("Spin-off rounding error is too big ") + f"'{action}'")
         qty_old = rounded_qty_old
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-        action['outcome'] = [{'asset': asset_old, 'quantity': qty_old, 'share': 0.0},
-                             {'asset': action['asset'], 'quantity': action['quantity'], 'share': 0.0}]
-        action['asset'] = asset_old
+        action['outcome'] = [{'symbol': symbol_old, 'quantity': qty_old, 'share': 0.0},
+                             {'symbol': action['symbol'], 'quantity': action['quantity'], 'share': 0.0}]
+        action['symbol'] = symbol_old
         action['quantity'] = qty_old
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
@@ -805,11 +814,11 @@ class StatementIBKR(StatementXML):
             raise Statement_ImportError(self.tr("Symbol Change description miss some data ") + f"'{action}'")
         isin_change['symbol_old'] = self.normalize_corp_action_symbol(isin_change['symbol_old'])
         description_b = action['description'][:parts.span('symbol')[0]] + isin_change['symbol_old']
-        asset_b = self.locate_asset(isin_change['symbol_old'], isin_change['isin_old'])
-        paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
+        symbol_b = self.locate_symbol(isin_change['symbol_old'], isin_change['isin_old'])
+        paired_record = self.find_corp_action_pair(symbol_b, description_b, action, parts_b)
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-        action['outcome'] = [{'asset': action['asset'], 'quantity': action['quantity'], 'share': 1.0}]
-        action['asset'] = paired_record[0]['asset']
+        action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': 1.0}]
+        action['symbol'] = paired_record[0]['symbol']
         action['quantity'] = -paired_record[0]['quantity']
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
@@ -847,18 +856,18 @@ class StatementIBKR(StatementXML):
             qty_old = qty_delta / (int(split['X']) / int(split['Y']) - 1)
             qty_new = qty_old + qty_delta
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-            action['outcome'] = [{'asset': action['asset'], 'quantity': qty_new, 'share': 1.0}]
+            action['outcome'] = [{'symbol': action['symbol'], 'quantity': qty_new, 'share': 1.0}]
             action['quantity'] = qty_old
             self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[FOF.CORP_ACTIONS].append(action)
             return 1
         else:  # Split together with ISIN change and there should be 2nd record available
             description_b = action['description'][:parts.span('symbol')[0]] + split['symbol_old']
-            asset_b = self.locate_asset(split['symbol_old'], split['isin_old'])
-            paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
+            symbol_b = self.locate_symbol(split['symbol_old'], split['isin_old'])
+            paired_record = self.find_corp_action_pair(symbol_b, description_b, action, parts_b)
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-            action['outcome'] = [{'asset': action['asset'], 'quantity': action['quantity'], 'share': 1.0}]
-            action['asset'] = paired_record[0]['asset']
+            action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': 1.0}]
+            action['symbol'] = paired_record[0]['symbol']
             action['quantity'] = -paired_record[0]['quantity']
             self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[FOF.CORP_ACTIONS].append(action)
@@ -880,11 +889,10 @@ class StatementIBKR(StatementXML):
 
     def load_delisting(self, action, parts_b) -> int:
         # There might be delisting for issued rights - we don't need to store it as it isn't a real asset
-        asset = [x for x in self._data[FOF.ASSETS] if x['id'] == action['asset']][0]
+        asset = self._asset(self._symbol(action['symbol'])['asset'])
         if asset['type'] == FOF.ASSET_RIGHTS:
             return 0
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-        action['asset'] = action['asset']
         action['quantity'] = -action['quantity']
         action['outcome'] = []
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
@@ -953,7 +961,7 @@ class StatementIBKR(StatementXML):
         for i, transfer in enumerate(transfers):
             transfer['id'] = transfer_base + i
             transfer['number'] = transfer.pop('tid')
-            transfer['asset'] = [transfer['currency'], transfer['currency']]
+            transfer['symbol'] = [self._symbol_of_money(transfer['currency'])] * 2
             if transfer['amount'] >= 0:  # Deposit
                 transfer['account'] = [0, transfer['account'], 0]
                 transfer['withdrawal'] = transfer['deposit'] = transfer['amount']
@@ -978,7 +986,7 @@ class StatementIBKR(StatementXML):
             else:
                 category = -PredefinedCategory.Fees
             fee['lines'] = [{'amount': fee['amount'], 'category': category, 'description': fee['description']}]
-            self.drop_extra_fields(fee, ["type", "amount", "description", "asset", "number", "currency", "reported", "tid"])
+            self.drop_extra_fields(fee, ["type", "amount", "description", "symbol", "number", "currency", "reported", "tid"])
             self._data[FOF.INCOME_SPENDING].append(fee)
             cnt += 1
 
@@ -1027,10 +1035,10 @@ class StatementIBKR(StatementXML):
                 return False
             dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
                          (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
-                         and x['asset'] == tax['asset'] and x['account'] == tax['account'] and x['timestamp'] == tax['timestamp']]
+                         and x['symbol'] == tax['symbol'] and x['account'] == tax['account'] and x['timestamp'] == tax['timestamp']]
             try:
                 db_account = self._map_db_account(tax['account'])
-                db_asset = self._map_db_asset(tax['asset'])
+                db_asset = self._map_db_asset_by_symbol(tax['symbol'])
             except RuntimeError:
                 db_account = 0
                 db_asset = 0
@@ -1074,7 +1082,7 @@ class StatementIBKR(StatementXML):
 
         # Sometimes IB split tax in several parts for Payment in Lieu of Dividend
         # Below code aggregates such taxes but only negative values (positive might be a correction of previous tax)
-        key_func = lambda x: (x['account'], x['asset'], x['currency'], x['description'], x['timestamp'], x['reported'])
+        key_func = lambda x: (x['account'], x['symbol'], x['currency'], x['description'], x['timestamp'], x['reported'])
         taxes_sorted = sorted(taxes, key=key_func)
         tax_in_lieu = [x for x in taxes_sorted if x['amount'] < 0 and 'PAYMENT IN LIEU OF DIVIDEND' in x['description']]
         other_taxes = [x for x in taxes_sorted if x not in tax_in_lieu]
@@ -1087,8 +1095,8 @@ class StatementIBKR(StatementXML):
         taxes_aggregated = sorted(other_taxes + lieu_aggregated, key=key_func)
 
         # There might be additional record to withhold 10% of extra tax on partnerships (currently faced for MLP) reported in different dates
-        key_func = lambda x: (x['account'], x['asset'], x['currency'], x['description'], x['timestamp'])
-        mlp_taxes = [x for x in taxes_aggregated if self._find_in_list(self._data[FOF.ASSETS], 'id', x['asset'])['type'] == FOF.ASSET_MLP]
+        key_func = lambda x: (x['account'], x['symbol'], x['currency'], x['description'], x['timestamp'])
+        mlp_taxes = [x for x in taxes_aggregated if self._asset(self._symbol(x['symbol'])['asset'])['type'] == FOF.ASSET_MLP]
         non_mlp_taxes = [x for x in taxes_aggregated if x not in mlp_taxes]
         mlp_processed  = []
         for k, group in groupby(mlp_taxes, key=key_func):
@@ -1144,11 +1152,11 @@ class StatementIBKR(StatementXML):
         cnt = 0
         charges_base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
         for i, charge in enumerate(charges):
-            if charge['asset'] != self.NoAsset and not charge['description'].startswith('CFD BORROW FEE FOR'):
+            if charge['symbol'] != self.NoAsset and not charge['description'].startswith('CFD BORROW FEE FOR'):
                 # FIXME if asset is present -> put this charge not in Income/Spending but in Asset Payments section
                 logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
                 continue
-            if charge['asset'] == self.NoAsset and not (
+            if charge['symbol'] == self.NoAsset and not (
                     charge['description'].startswith('LONG CFD INTEREST FOR') or
                     charge['description'].startswith('SHORT CFD INTEREST FOR')):
                 logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
@@ -1156,7 +1164,7 @@ class StatementIBKR(StatementXML):
             charge['id'] = charges_base + i
             charge['peer'] = 0
             charge['lines'] = [{'amount': charge['amount'], 'category': -PredefinedCategory.Fees, 'description': charge['description']}]
-            self.drop_extra_fields(charge, ["amount", "asset", "description", "number"])
+            self.drop_extra_fields(charge, ["amount", "symbol", "description", "number"])
             self._data[FOF.INCOME_SPENDING].append(charge)
             cnt += 1
         logging.info(self.tr("CFD charges loaded: ") + f"{cnt} ({len(charges)})")
@@ -1173,14 +1181,14 @@ class StatementIBKR(StatementXML):
             logging.warning(self.tr("Unhandled tax country pattern found: ") + f"{tax['description']}")
             return 0
         parts = parts.groupdict()
-        self.set_asset_country(tax['asset'], parts['country'].lower())
+        self.set_asset_country(tax['symbol'], parts['country'].lower())
         description = parts['description']
         previous_tax = Decimal(tax['amount']) if Decimal(tax['amount']) >= Decimal('0') else Decimal('0')
         new_tax = -tax['amount'] if tax['amount'] < 0 else 0
 
-        dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['asset'], previous_tax, new_tax, description)
+        dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['symbol'], previous_tax, new_tax, description)
         if dividend is None:
-            self.save_debug_info(account=tax['account'], asset=tax['asset'])
+            self.save_debug_info(account=tax['account'], symbol=tax['symbol'])
             raise Statement_ImportError(self.tr("Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
         if dividend['id'] < 0:  # Notification is required if we adjust data for dividend that is already in Jal DB
             logging.info(self.tr("Tax adjustment for dividend: ") +
@@ -1197,16 +1205,16 @@ class StatementIBKR(StatementXML):
     # - tax amount withheld from dividend should be equal to provided 'tax' value
     # - timestamp should be the same or within previous year for weak match of Q1 taxes
     # - note should be exactly the same or contain the same key elements
-    def find_dividend4tax(self, timestamp, account_id, asset_id, prev_tax, new_tax, note):
+    def find_dividend4tax(self, timestamp, account_id, symbol_id, prev_tax, new_tax, note):
         PaymentInLiueOfDividend = 'PAYMENT IN LIEU OF DIVIDEND'
         TaxNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\)(?P<prefix>( \w*)+) +(?P<amount>\d+\.\d+)?(?P<suffix>.*)$"
         DividendNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\)(?P<prefix>( \w*)+) +(?P<amount>\d+\.\d+)?(?P<suffix>.*) \(.*\)$"
 
         dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
                      (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
-                     and x['asset'] == asset_id and x['account'] == account_id]
+                     and x['symbol'] == symbol_id and x['account'] == account_id]
         db_account = self._map_db_account(account_id)
-        db_asset = self._map_db_asset(asset_id)
+        db_asset = self._map_db_asset_by_symbol(symbol_id)
         if db_account and db_asset:
             db_dividends = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
             db_dividends += AssetPayment.get_list(db_account, db_asset, AssetPayment.StockDividend)
@@ -1214,7 +1222,7 @@ class StatementIBKR(StatementXML):
                 dividends.append({
                     "id": -db_dividend.oid(),
                     "account": account_id,
-                    "asset": asset_id,
+                    "symbol": symbol_id,
                     "timestamp": db_dividend.timestamp(),
                     "number": db_dividend.number(),
                     "amount": float(db_dividend.amount()),
@@ -1292,7 +1300,7 @@ class StatementIBKR(StatementXML):
     def load_dividend_accruals(self, accruals):
         posted = [x for x in accruals if x['code'] == StatementIBKR.ReversalCode]
         for accrual in posted:
-            dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if x['account']==accrual['account'] and x['asset']==accrual['asset'] and ts2d(x['timestamp'])==ts2d(accrual['timestamp']) and x['amount']==-accrual['amount']]
+            dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if x['account']==accrual['account'] and x['symbol']==accrual['symbol'] and ts2d(x['timestamp'])==ts2d(accrual['timestamp']) and x['amount']==-accrual['amount']]
             if len(dividends) == 1:
                 dividend = dividends[0]
             else:

@@ -20,16 +20,16 @@
     {"id": 2, "asset": 3, "reg_number": "37611X100"}
   ],
   "corporate_actions": [
-    {"id": 1, "type": "merger", "account": 1, "timestamp": 1631823900, "number": "17747623336", "asset": 4, "quantity": 111.0,
-      "outcome": [{"asset": 1, "quantity": 136.53, "share": 0.0}, {"asset": 2, "quantity": 22.0, "share": 0.0}, {"asset": 3, "quantity": 111.0, "share": 0.0}],
+    {"id": 1, "type": "merger", "account": 1, "timestamp": 1631823900, "number": "17747623336", "symbol": 4, "quantity": 111.0,
+      "outcome": [{"symbol": 1, "quantity": 136.53, "share": 0.0}, {"symbol": 2, "quantity": 22.0, "share": 0.0}, {"symbol": 3, "quantity": 111.0, "share": 0.0}],
       "description": "SRNGU(G8354H100) CASH and STOCK MERGER (Acquisition) DNA WS 1 FOR 5, US37611X1000 1 FOR 1 AND USD 1.23 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)"}
   ],
   "trades": [
-    {"id": 1, "account": 1, "timestamp": 1631008683, "settlement": 1631145600, "number": "4057396877", "asset": 4, "quantity": 61.0, "price": 10.388, "fee": 0.36245725},
-    {"id": 2, "account": 1, "timestamp": 1631534345, "settlement": 1631664000, "number": "4072660868", "asset": 4, "quantity": 50.0, "price": 9.86, "fee": 0.36025725},
-    {"id": 3, "account": 1, "timestamp": 1632483314, "settlement": 1632787200, "number": "4103255040", "asset": 2, "quantity": -22.0, "price": 3.94, "fee": 0.423717318},
-    {"id": 4, "account": 1, "timestamp": 1633533335, "settlement": 1633651200, "number": "4131958719", "asset": 3, "quantity": -60.0, "price": 10.05, "fee": 0.20447255},
-    {"id": 5, "account": 1, "timestamp": 1634655039, "settlement": 1634774400, "number": "4160926315", "asset": 3, "quantity": -51.0, "price": 14.35, "fee": 0.309058685}
+    {"id": 1, "account": 1, "timestamp": 1631008683, "settlement": 1631145600, "number": "4057396877", "symbol": 4, "quantity": 61.0, "price": 10.388, "fee": 0.36245725},
+    {"id": 2, "account": 1, "timestamp": 1631534345, "settlement": 1631664000, "number": "4072660868", "symbol": 4, "quantity": 50.0, "price": 9.86, "fee": 0.36025725},
+    {"id": 3, "account": 1, "timestamp": 1632483314, "settlement": 1632787200, "number": "4103255040", "symbol": 2, "quantity": -22.0, "price": 3.94, "fee": 0.423717318},
+    {"id": 4, "account": 1, "timestamp": 1633533335, "settlement": 1633651200, "number": "4131958719", "symbol": 3, "quantity": -60.0, "price": 10.05, "fee": 0.20447255},
+    {"id": 5, "account": 1, "timestamp": 1634655039, "settlement": 1634774400, "number": "4160926315", "symbol": 3, "quantity": -51.0, "price": 14.35, "fee": 0.309058685}
   ],
   "income_spending": [],
   "asset_payments": [],

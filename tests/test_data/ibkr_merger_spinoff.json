@@ -22,14 +22,14 @@
       {"id": 3, "asset": 4, "reg_number": "87167T102"}
     ],
     "trades": [
-      {"id": 1, "number": "2543065342", "timestamp": 1630844624, "settlement": 1631145600, "account": 1, "asset": 2, "quantity": 100.0, "price": 4.74, "fee": 1.0},
-      {"id": 2, "number": "2543065352", "timestamp": 1630844625, "settlement": 1631145600, "account": 1, "asset": 2, "quantity": 10.0, "price": 4.74, "fee": 0.0}
+      {"id": 1, "number": "2543065342", "timestamp": 1630844624, "settlement": 1631145600, "account": 1, "symbol": 2, "quantity": 100.0, "price": 4.74, "fee": 1.0},
+      {"id": 2, "number": "2543065352", "timestamp": 1630844625, "settlement": 1631145600, "account": 1, "symbol": 2, "quantity": 10.0, "price": 4.74, "fee": 0.0}
     ],
     "corporate_actions": [
-      {"id": 1, "type": "merger", "account": 1, "timestamp": 1638390300, "number": "14466531593", "asset": 2, "quantity": 110.0,
-       "outcome": [{"asset": 3, "quantity": 22.0, "share": 0.0}], "description": "NTRP(US64129T2078) MERGED(Acquisition) WITH US71678J1007 1 FOR 5 (PTPI, PETROS PHARMACEUTICALS INC, US71678J1007)"},
-      {"id": 2, "type": "spin-off", "account": 1, "timestamp": 1637958300, "number": "14533718279", "asset": 2, "quantity": 110,
-       "outcome": [{"asset": 2, "quantity": 110, "share": 0.0}, {"asset": 4, "quantity": 22.0, "share": 0.0}], "description": "NTRP(US64129T2078) SPINOFF  1 FOR 5 (SNPX, SYNAPTOGENIX INC, US87167T1025)"}
+      {"id": 1, "type": "merger", "account": 1, "timestamp": 1638390300, "number": "14466531593", "symbol": 2, "quantity": 110.0,
+       "outcome": [{"symbol": 3, "quantity": 22.0, "share": 0.0}], "description": "NTRP(US64129T2078) MERGED(Acquisition) WITH US71678J1007 1 FOR 5 (PTPI, PETROS PHARMACEUTICALS INC, US71678J1007)"},
+      {"id": 2, "type": "spin-off", "account": 1, "timestamp": 1637958300, "number": "14533718279", "symbol": 2, "quantity": 110,
+       "outcome": [{"symbol": 2, "quantity": 110, "share": 0.0}, {"symbol": 4, "quantity": 22.0, "share": 0.0}], "description": "NTRP(US64129T2078) SPINOFF  1 FOR 5 (SNPX, SYNAPTOGENIX INC, US87167T1025)"}
     ],
     "asset_payments": [],
     "income_spending": [],
@@ -62,14 +62,14 @@
       {"id": 4, "asset": 5, "reg_number": "71678J100"}
     ],
     "trades": [
-      {"id": 1,  "number": "", "timestamp": 1652905500, "settlement": 1652905500, "account": 1, "asset": 2, "quantity": -0.5, "price": 6.24, "fee": 0.0},
-      {"id": 2, "number": "", "timestamp": 1669839900, "settlement": 1669839900, "account": 1, "asset": 4, "quantity": -0.2, "price": 4.111, "fee": 0.0}
+      {"id": 1,  "number": "", "timestamp": 1652905500, "settlement": 1652905500, "account": 1, "symbol": 6, "quantity": -0.5, "price": 6.24, "fee": 0.0},
+      {"id": 2, "number": "", "timestamp": 1669839900, "settlement": 1669839900, "account": 1, "symbol": 4, "quantity": -0.2, "price": 4.111, "fee": 0.0}
     ],
     "corporate_actions": [
-      {"id": 1, "type": "split", "account": 1, "timestamp": 1652905500, "number": "16441206180", "asset": 3, "quantity": 22.0,
-       "outcome": [{"asset": 2, "quantity": 5.5, "share": 1.0}], "description": "SNPX(US87167T1025) SPLIT 1 FOR 4 (SNPXD, SYNAPTOGENIX INC, US87167T2015)"},
-      {"id": 2, "type": "split", "account": 1, "timestamp": 1669839900, "number": "22349072094", "asset": 5, "quantity": 22.0,
-       "outcome": [{"asset": 4, "quantity": 2.2, "share": 1.0}], "description": "PTPI(US71678J1007) SPLIT 1 FOR 10 (PTPI, PETROS PHARMACEUTICALS INC, US71678J2096)"}
+      {"id": 1, "type": "split", "account": 1, "timestamp": 1652905500, "number": "16441206180", "symbol": 3, "quantity": 22.0,
+       "outcome": [{"symbol": 6, "quantity": 5.5, "share": 1.0}], "description": "SNPX(US87167T1025) SPLIT 1 FOR 4 (SNPXD, SYNAPTOGENIX INC, US87167T2015)"},
+      {"id": 2, "type": "split", "account": 1, "timestamp": 1669839900, "number": "22349072094", "symbol": 5, "quantity": 22.0,
+       "outcome": [{"symbol": 4, "quantity": 2.2, "share": 1.0}], "description": "PTPI(US71678J1007) SPLIT 1 FOR 10 (PTPI, PETROS PHARMACEUTICALS INC, US71678J2096)"}
     ],
     "asset_payments": [],
     "income_spending": [],
