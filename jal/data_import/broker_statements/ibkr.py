@@ -961,7 +961,7 @@ class StatementIBKR(StatementXML):
         for i, transfer in enumerate(transfers):
             transfer['id'] = transfer_base + i
             transfer['number'] = transfer.pop('tid')
-            transfer['symbol'] = [self._symbol_of_money(transfer['currency'])] * 2
+            transfer['symbol'] = [self._single_symbol_of(transfer["currency"])] * 2
             if transfer['amount'] >= 0:  # Deposit
                 transfer['account'] = [0, transfer['account'], 0]
                 transfer['withdrawal'] = transfer['deposit'] = transfer['amount']

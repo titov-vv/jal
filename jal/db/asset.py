@@ -374,9 +374,12 @@ class JalAsset(JalDB):
                                          [(":datatype", AssetData.ExpiryDate), (":symbol", data['symbol'])], named=True)
             if 'type' in data:
                 if 'expiry' in data:
-                    # asset_data values are stored as strings while statement provides int timestamp
-                    symbols = list(filter(lambda x: x['type_id'] == data['type']
-                                          and x['expiry'] is not None and int(x['expiry']) == int(data['expiry']), symbols))
+                    def expiry_match(x):  # asset_data values are stored as strings while statement provides int timestamp
+                        try:
+                            return int(x['expiry']) == int(data['expiry'])
+                        except (TypeError, ValueError):
+                            return False
+                    symbols = list(filter(lambda x: x['type_id'] == data['type'] and expiry_match(x), symbols))
                 else:
                     symbols = list(filter(lambda x: x['type_id'] == data['type'], symbols))
             if len(symbols) == 1:

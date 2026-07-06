@@ -697,16 +697,17 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             self._data[FOF.SYMBOLS].append(currency)
             return asset_id
 
-    # Returns the id of the single symbol record that belongs to given money asset
-    def _symbol_of_money(self, asset_id) -> int:
+    # Returns the id of the single symbol record that belongs to given asset. Operations must
+    # reference an exact symbol, so multiple candidates are a hard failure.
+    def _single_symbol_of(self, asset_id) -> int:
         match = [x for x in self._data[FOF.SYMBOLS] if x['asset'] == asset_id]
         if len(match) != 1:
-            raise Statement_ImportError(self.tr("Can't find exact symbol for currency: ") + f"{asset_id}: {match}")
+            raise Statement_ImportError(self.tr("Can't find exact symbol for asset: ") + f"{asset_id}: {match}")
         return match[0]['id']
 
     # Same as currency_id() but returns the id of the currency symbol record, not the money asset
     def currency_symbol_id(self, currency_symbol) -> int:
-        return self._symbol_of_money(self.currency_id(currency_symbol))
+        return self._single_symbol_of(self.currency_id(currency_symbol))
 
     # Method finds asset in current statement data. New asset is created if no asset was found.
     # Returns asset id
