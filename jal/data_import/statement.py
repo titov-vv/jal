@@ -11,9 +11,9 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, AssetLocation, PredefinedAsset, SymbolId
+from jal.constants import Setup, AssetLocation, PredefinedAsset, PredefinedAgents, SymbolId
 from jal.db.settings import JalSettings
-from jal.db.account import JalAccount
+from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.widgets.helpers import ts2d
@@ -185,7 +185,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == account['currency']][0]['symbol']
         db_currency = JalAsset.find({'symbol': currency_symbol, 'type': PredefinedAsset.Money}).id()
-        db_account = JalAccount(data={'number': account['number'], 'currency': db_currency}, search=True, create=False).id()
+        db_account = JalAccount.find({'number': account['number'], 'currency': db_currency}).id()
         return db_account
 
     # Finds an asset in jal database and returns its id
@@ -287,7 +287,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 account_id = self.select_account(account['selection_text'], 0, self._last_selected_account)
             else:
                 account_data['currency'] = -account['currency']
-                account_id = JalAccount(data=account_data, search=True, create=False).id()
+                account_id = JalAccount.find(account_data).id()
             if account_id:
                 old_id, account['id'] = account['id'], -account_id
                 self._update_id("account", old_id, account_id)
@@ -433,7 +433,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             account_data = account.copy()
             account_data['investing'] = 1 # if 'type' not in account_data else account_data['type']
             account_data['currency'] = -account_data['currency']  # all currencies are already in db
-            new_account = JalAccount(data=account_data, search=True, create=True)
+            new_account = JalAccount.find(account_data)
+            if not new_account.id():
+                new_account = JalAccountCreator(
+                    currency_id=account_data['currency'], number=account_data['number'],
+                    name=account_data.get('name', ''), investing=account_data['investing'],
+                    organization=account_data.get('organization', PredefinedAgents.Empty),
+                    country=account_data.get('country', ''),
+                    precision=account_data.get('precision', Setup.DEFAULT_ACCOUNT_PRECISION)
+                ).commit()
             if new_account.id():
                 old_id, account['id'] = account['id'], -new_account.id()
                 self._update_id("account", old_id, new_account.id())

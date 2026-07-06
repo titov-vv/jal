@@ -14,29 +14,11 @@ class JalAccount(JalDB):
     MONEY_FLOW = 1
     ASSETS_FLOW = 2
 
-    def __init__(self, account_id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
+    def __init__(self, account_id: int = 0) -> None:
         super().__init__(cached=True)
         if not JalAccount.db_cache:
             self._fetch_data()
         self._id = account_id
-        if self._valid_data(data, search, create):
-            if search:
-                self._id = self._find_account(data)
-            if create and not self._id:   # If we haven't found peer before and requested to create new record
-                similar_id = self._read("SELECT id FROM accounts WHERE :number=number", [(":number", data['number'])])
-                if similar_id:
-                    self._id = self.__copy_similar_account(similar_id, data)
-                else:   # Create new account record
-                    query = self._exec(
-                        "INSERT INTO accounts (name, active, investing, number, currency_id, organization_id, "
-                        "country_id, precision, credit) "
-                        "VALUES(:name, 1, :investing, :number, :currency, :organization, "
-                        "coalesce((SELECT id FROM countries WHERE code=:country), 0), :precision, 0)",
-                        [(":name", data['name']), (":investing", data['investing']), (":number", data['number']),
-                         (":currency", data['currency']), (":organization", data['organization']),
-                         (":country", data['country']), (":precision", data['precision'])], commit=True)
-                    self._id = query.lastInsertId()
-                self._fetch_data(only_self=True)
         self._data = next((x for x in self.db_cache if x['id']==self._id), None)
         self._tag = JalTag(self._data['tag_id']) if self._data is not None else None
         self._name = self._data['name'] if self._data is not None else JalTag(0)
@@ -57,6 +39,20 @@ class JalAccount(JalDB):
     @classmethod
     def class_cache(cls) -> True:
         return True
+
+    # Returns a JalAccount matching 'number'+'currency' in 'data', or an empty JalAccount (id()==0) if not found
+    @classmethod
+    def find(cls, data: dict) -> "JalAccount":
+        if 'number' not in data or 'currency' not in data:
+            return cls(0)
+        return cls(cls._find_account(data))
+
+    @classmethod
+    def _find_account(cls, data: dict) -> int:
+        account_id = cls._read("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
+                               [(":account_number", data['number']), (":currency", data['currency'])],
+                               check_unique=True)
+        return account_id if account_id else 0
 
     def _fetch_data(self, only_self=False):
         if only_self:
@@ -361,50 +357,6 @@ class JalAccount(JalDB):
             amount = Decimal('0')
         return amount
 
-    def _valid_data(self, data: dict, search: bool = False, create: bool = False) -> bool:
-        if data is None:
-            return False
-        if search and not create:
-            if 'number' in data and 'currency' in data:
-                return True
-            else:
-                return False
-        if 'currency' not in data:
-            return False
-        if 'name' not in data and "number" not in data:
-            return False
-        if "name" not in data:
-            data['name'] = data['number'] + '.' + JalAsset(data['currency']).symbol()
-        data['investing'] = data['investing'] if 'investing' in data else 0
-        data['organization'] = data['organization'] if 'organization' in data else PredefinedAgents.Empty
-        data['country'] = data['country'] if 'country' in data else 0
-        data['precision'] = data['precision'] if "precision" in data else Setup.DEFAULT_ACCOUNT_PRECISION
-        return True
-
-    def _find_account(self, data: dict) -> int:
-        id = self._read("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
-                        [(":account_number", data['number']), (":currency", data['currency'])], check_unique=True)
-        if id is None:
-            return 0
-        else:
-            return id
-
-    # Creates new account with different based on existing one.
-    # Currency is taken from data['currency']. Name is auto-generated in form of AccountNumber.CurrencyName
-    def __copy_similar_account(self, similar_id: int, data: dict) -> int:
-        similar = JalAccount(similar_id)
-        currency = JalAsset(similar.currency())
-        new_currency = JalAsset(data['currency'])
-        if similar.name()[-len(currency.symbol()):] == currency.symbol():
-            name = similar.name()[:-len(currency.symbol())] + new_currency.symbol()
-        else:
-            name = similar.name() + '.' + new_currency.symbol()
-        query = self._exec(
-            "INSERT INTO accounts (name, currency_id, active, investing, number, organization_id, country_id, precision, credit) "
-            "SELECT :name, :currency, active, investing, number, organization_id, country_id, precision, credit "
-            "FROM accounts WHERE id=:id", [(":id", similar.id()), (":name", name), (":currency", new_currency.id())])
-        return query.lastInsertId()
-
     # This method is used only in TaxesFlowRus.prepare_flow_report() to get money/asset flow for russian tax report
     # direction is "in" or "out"
     # flow_type: MONEY_FLOW or ASSETS_FLOW to get flow of money or assets value
@@ -433,3 +385,61 @@ class JalAccount(JalDB):
         money = self.get_asset_amount(timestamp, self.currency())
         value += money
         return value
+
+
+class JalAccountCreator(JalDB):
+    # Creates a new account, or - if an account with the same 'number' already exists under a different
+    # currency - clones that account into 'currency_id' instead (name is then derived from the existing
+    # account's name with the currency symbol swapped, ignoring 'name' below; see _copy_similar_account()).
+    def __init__(self, currency_id: int, number: str, name: str = '', investing: int = 0,
+                 organization: int = PredefinedAgents.Empty, country: str = '',
+                 precision: int = Setup.DEFAULT_ACCOUNT_PRECISION) -> None:
+        super().__init__(cached=False)
+        similar_id = self._read("SELECT id FROM accounts WHERE number=:number", [(":number", number)])
+        if similar_id:
+            self._id = self._copy_similar_account(similar_id, currency_id)
+        else:
+            if not name:
+                name = number + '.' + JalAsset(currency_id).symbol()
+            query = self._exec(
+                "INSERT INTO accounts (name, active, investing, number, currency_id, organization_id, "
+                "country_id, precision, credit) "
+                "VALUES(:name, 1, :investing, :number, :currency, :organization, "
+                "coalesce((SELECT id FROM countries WHERE code=:country), 0), :precision, 0)",
+                [(":name", name), (":investing", investing), (":number", number),
+                 (":currency", currency_id), (":organization", organization),
+                 (":country", country), (":precision", precision)], commit=True)
+            self._id = query.lastInsertId()
+        # Splice the newly created row into JalAccount's shared cache - without this, a plain
+        # JalAccount(self._id) right after would find no cached row and load as empty (JalAccount
+        # never queries the DB itself on a cache miss, it only looks up its own class-level cache).
+        element = next((x for x in JalAccount.db_cache if x['id'] == self._id), None)
+        data = self._read("SELECT * FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
+        if data is not None:
+            if element is not None:
+                JalAccount.db_cache[JalAccount.db_cache.index(element)] = data
+            else:
+                JalAccount.db_cache.append(data)
+
+    def id(self) -> int:
+        return self._id
+
+    # Finalizes staging and returns a normal, cacheable JalAccount for subsequent use.
+    def commit(self) -> JalAccount:
+        return JalAccount(self._id)
+
+    # Creates a new account based on 'similar_id', with currency swapped to 'currency_id'.
+    # Name is auto-generated by swapping the old currency symbol for the new one in the similar account's name.
+    def _copy_similar_account(self, similar_id: int, currency_id: int) -> int:
+        similar = JalAccount(similar_id)
+        old_currency = JalAsset(similar.currency())
+        new_currency = JalAsset(currency_id)
+        if similar.name()[-len(old_currency.symbol()):] == old_currency.symbol():
+            name = similar.name()[:-len(old_currency.symbol())] + new_currency.symbol()
+        else:
+            name = similar.name() + '.' + new_currency.symbol()
+        query = self._exec(
+            "INSERT INTO accounts (name, currency_id, active, investing, number, organization_id, country_id, precision, credit) "
+            "SELECT :name, :currency, active, investing, number, organization_id, country_id, precision, credit "
+            "FROM accounts WHERE id=:id", [(":id", similar.id()), (":name", name), (":currency", new_currency.id())])
+        return query.lastInsertId()

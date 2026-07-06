@@ -5,7 +5,7 @@ from tests.helpers import d2t, create_stocks, create_actions, create_trades, cre
     create_corporate_actions, create_stock_dividends, create_transfers
 from constants import BookAccount, PredefinedCategory
 from jal.db.ledger import Ledger, LedgerAmounts
-from jal.db.account import JalAccount
+from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.operations import LedgerTransaction, AssetPayment
@@ -223,9 +223,8 @@ def test_stock_dividend_change(prepare_db_fifo):
 
 def test_fifo(prepare_db_fifo):
     # Prepare an account to transfer asset from
-    transfer_account = JalAccount(
-        data={'name': 'Transfer Acc.', 'number': '12345', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1, 'precision': 10},
-        create=True)
+    transfer_account = JalAccountCreator(currency_id=2, number='12345', name='Transfer Acc.', investing=1,
+                                         organization=1, precision=10).commit()
     assert transfer_account.id() == 2
     create_actions([(d2t(240101), 2, 1, [(PredefinedCategory.StartingBalance, 1000.0)])])
     # Prepare trades and corporate actions setup
@@ -486,12 +485,10 @@ def test_open_price(prepare_db_fifo):
 
 def test_asset_transfer(prepare_db):
     peer = JalPeer(data={'name': 'Test Peer', 'parent': 0}, create=True)
-    account1 = JalAccount(
-        data={'name': 'account.USD', 'number': 'U7654321', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1, 'precision': 10},
-        create=True)
-    account2 = JalAccount(
-        data={'name': 'account.RUB', 'number': 'U7654321', 'currency': 1, 'active': 1, 'investing': 1, 'organization': 1, 'precision': 10},
-        create=True)
+    account1 = JalAccountCreator(currency_id=2, number='U7654321', name='account.USD', investing=1,
+                                 organization=1, precision=10).commit()
+    account2 = JalAccountCreator(currency_id=1, number='U7654321', name='account.RUB', investing=1,
+                                 organization=1, precision=10).commit()
     assert account1.id() == 1
     assert account2.id() == 2
 

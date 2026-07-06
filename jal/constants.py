@@ -307,7 +307,7 @@ class AssetLocation(PredefinedList, QObject):
             self.MOEX_EXCHANGE: self.tr("MOEX"),
             self.ETH_BLOCKCHAIN: self.tr("Ethereum"),
             self.ARB_BLOCKCHAIN: self.tr("Arbitrum"),
-            self.SMA_VICTORIA: self.tr("Victoria Seguros")   #TODO - validate if it is actually a location
+            self.SMA_VICTORIA: self.tr("Victoria Seguros")
         }
 
 

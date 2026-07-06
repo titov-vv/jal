@@ -6,7 +6,7 @@ from PySide6.QtSql import QSqlDatabase
 
 from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.db import JalDB, JalDBError
-from jal.db.account import JalAccount
+from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.settings import JalSettings
 from tests.helpers import d2t, dt2t, create_assets, create_actions, create_dividends
 
@@ -57,16 +57,14 @@ def prepare_db(project_root, tmp_path, data_path):
 
 @pytest.fixture
 def prepare_db_ledger(prepare_db):
-    account = JalAccount(data={'name': 'Wallet', 'number': 'N/A', 'currency': 1, 'active': 1, 'investing': 0},
-                         create=True)
+    account = JalAccountCreator(currency_id=1, number='N/A', name='Wallet', investing=0).commit()
     assert account.id() == 1
 
 
 @pytest.fixture
 def prepare_db_ibkr(prepare_db):
-    account = JalAccount(
-        data={'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1, 'precision': 10},
-        create=True)
+    account = JalAccountCreator(currency_id=2, number='U7654321', name='Inv. Account', investing=1,
+                                organization=1, precision=10).commit()
     assert account.id() == 1
     test_assets = [
         ('VUG', 'Growth ETF', '', 2, PredefinedAsset.ETF, 0),  # ID = 4
@@ -84,9 +82,8 @@ def prepare_db_ibkr(prepare_db):
 
 @pytest.fixture
 def prepare_db_fifo(prepare_db):
-    account = JalAccount(
-        data={'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1},
-        create=True)
+    account = JalAccountCreator(currency_id=2, number='U7654321', name='Inv. Account', investing=1,
+                                organization=1).commit()
     assert account.id() == 1
     create_actions([(d2t(201101), 1, 1, [(PredefinedCategory.StartingBalance, 10000.0)])])  # starting balance
 
@@ -105,8 +102,7 @@ def prepare_db_moex(prepare_db):   # Create assets in database to be updated fro
 
 @pytest.fixture
 def prepare_db_taxes(prepare_db):
-    account = JalAccount(
-        data={'name': 'Inv. Account', 'number': 'U7654321', 'currency': 2, 'active': 1, 'investing': 1, 'organization': 1, 'country': 'us', 'precision': 3},
-        create=True)
+    account = JalAccountCreator(currency_id=2, number='U7654321', name='Inv. Account', investing=1,
+                                organization=1, country='us', precision=3).commit()
     assert account.id() == 1
     yield
