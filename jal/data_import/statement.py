@@ -387,7 +387,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def _import_assets(self, assets):
         for asset in assets:
             if asset['id'] < 0:
-                JalAsset(-asset['id']).update_data(asset)
+                if asset.get('isin'):
+                    # Identifiers are linked to exact symbols - the FOF->DB symbol correspondence is
+                    # established only in _import_symbol_tickers(), so the attachment is deferred there.
+                    self._pending_isin[asset['id']] = asset['isin']
+                JalAsset(-asset['id']).update_data({k: v for k, v in asset.items() if k != 'isin'})
                 continue
             asset_type = self._asset_types[asset['type']]
             creator = JalAssetCreator(asset_type, asset.get('name', ''), asset.get('country', ''))
@@ -412,7 +416,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 raise Statement_ImportError(self.tr("Symbol currency isn't linked to asset: ") + f"{symbol}")
             asset = self._find_in_list(self._data[FOF.ASSETS], "id", symbol['asset'])
             if asset['type'] == FOF.ASSET_MONEY:
-                currency = None
+                currency = -symbol['asset']   # Money symbols are denominated in their own asset
                 location = AssetLocation.BANK_ACCOUNT
             else:
                 currency = -symbol['currency']
@@ -424,15 +428,27 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             symbol_id = db_asset.add_symbol(symbol['symbol'], currency, location_id=location)
             old_id, symbol['id'] = symbol['id'], -symbol_id
             self._update_id("symbol", old_id, symbol_id)
-            isin = self._pending_isin.pop(symbol['asset'], None)
-            if isin:
-                db_asset.add_identifier(symbol_id, SymbolId.ISIN, isin)
+        # Attach ISINs deferred by _import_assets() now that exact DB symbol ids are known.
+        # An ISIN identifies the security, not the listing - every symbol the statement declares
+        # for the asset carries it.
+        while self._pending_isin:
+            fof_asset_id, isin = self._pending_isin.popitem()
+            db_asset = JalAsset(-fof_asset_id)
+            for symbol in [x for x in self._data[FOF.SYMBOLS] if x['asset'] == fof_asset_id]:
+                db_asset.update_identifier(-symbol['id'], SymbolId.ISIN, isin)
 
     def _import_asset_data(self, data):
+        # Runs after _import_symbol_tickers(), so FOF symbol records already carry real (negative) DB ids.
+        # reg_number is security-level (like ISIN) - it is attached to every statement symbol of the asset.
         for detail in data:
             if detail['asset'] > 0:
                 raise Statement_ImportError(self.tr("Asset data aren't linked to asset: ") + f"{detail}")
-            JalAsset(-detail['asset']).update_data(detail)
+            db_asset = JalAsset(-detail['asset'])
+            reg_number = detail.pop('reg_number', None)
+            if reg_number:
+                for symbol in [x for x in self._data[FOF.SYMBOLS] if x['asset'] == detail['asset']]:
+                    db_asset.update_identifier(-symbol['id'], SymbolId.REG_CODE, reg_number)
+            db_asset.update_data(detail)
     
     def _import_accounts(self, accounts):
         for account in accounts:
@@ -480,10 +496,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             for account in transfer['account']:
                 if account > 0:
                     raise Statement_ImportError(self.tr("Unmatched account for transfer: ") + f"{transfer}")
-            for asset in transfer['asset']:
-                if asset > 0:
-                    raise Statement_ImportError(self.tr("Unmatched asset for transfer: ") + f"{transfer}")
-            asset_types = [JalAsset(-x).type() for x in transfer['asset']]
+            for symbol in transfer['symbol']:
+                if symbol > 0:
+                    raise Statement_ImportError(self.tr("Unmatched symbol for transfer: ") + f"{transfer}")
+            asset_ids = [-self._symbol(x)['asset'] for x in transfer['symbol']]
+            asset_types = [JalAsset(x).type() for x in asset_ids]
             if asset_types[0] != asset_types[1]:
                 raise Statement_ImportError(self.tr("Impossible to convert asset type in transfer: ") + f"{transfer}")
             if transfer['account'][0] == 0 or transfer['account'][1] == 0:
@@ -491,12 +508,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 pair_account = 1
                 if transfer['account'][0] == 0:  # Deposit
                     text = self.tr("Deposit of ") + f"{transfer['deposit']:.2f} " + \
-                           f"{JalAsset(-transfer['asset'][1]).symbol()} @{ts2d(transfer['timestamp'])}\n" + \
+                           f"{JalAsset(asset_ids[1]).symbol()} @{ts2d(transfer['timestamp'])}\n" + \
                            self.tr("Select account to withdraw from:")
                     pair_account = -transfer['account'][1]
                 if transfer['account'][1] == 0:  # Withdrawal
                     text = self.tr("Withdrawal of ") + f"{transfer['withdrawal']:.2f} " + \
-                           f"{JalAsset(-transfer['asset'][0]).symbol()} @{ts2d(transfer['timestamp'])}\n" + \
+                           f"{JalAsset(asset_ids[0]).symbol()} @{ts2d(transfer['timestamp'])}\n" + \
                            self.tr("Select account to deposit to:")
                     pair_account = -transfer['account'][0]
                 try:
@@ -511,9 +528,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 if transfer['account'][1] == 0:
                     transfer['account'][1] = -chosen_account
             if asset_types[0] != PredefinedAsset.Money:
-                transfer['asset'] = -transfer['asset'][0]
-            else:
-                transfer.pop('asset')
+                transfer['symbol_id'] = -transfer['symbol'][0]
+            transfer.pop('symbol')
             if 'description' in transfer:
                 transfer['note'] = transfer.pop('description')
             transfer['withdrawal_timestamp'] = transfer['deposit_timestamp'] = transfer.pop('timestamp')
@@ -531,9 +547,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if trade['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for trade: ") + f"{trade}")
             trade['account_id'] = -trade.pop('account')
-            if trade['asset'] > 0:
-                raise Statement_ImportError(self.tr("Unmatched asset for trade: ") + f"{trade}")
-            trade['asset_id'] = -trade.pop('asset')
+            if trade['symbol'] > 0:
+                raise Statement_ImportError(self.tr("Unmatched symbol for trade: ") + f"{trade}")
+            trade['symbol_id'] = -trade.pop('symbol')
             trade['qty'] = trade.pop('quantity')
             if 'cancelled' in trade and trade['cancelled']:
                 del trade['cancelled']          # Remove extra data
@@ -549,12 +565,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if payment['account'] >= 0:
                 raise Statement_ImportError(self.tr("Unmatched account for payment: ") + f"{payment}")
             payment['account_id'] = -payment.pop('account')
-            if payment['asset'] >= 0:
-                raise Statement_ImportError(self.tr("Unmatched asset for payment: ") + f"{payment}")
-            payment['asset_id'] = -payment.pop('asset')
+            if payment['symbol'] >= 0:
+                raise Statement_ImportError(self.tr("Unmatched symbol for payment: ") + f"{payment}")
+            symbol = payment.pop('symbol')
+            payment['symbol_id'] = -symbol
             payment['note'] = payment.pop('description')
             if 'price' in payment:
-                JalAsset(payment['asset_id']).set_quotes(
+                JalAsset(-self._symbol(symbol)['asset']).set_quotes(
                     [{'timestamp': payment['timestamp'], 'quote': Decimal(payment.pop('price'))}],
                     JalAccount(payment['account_id']).currency())
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
@@ -591,15 +608,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if action['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for corporate action: ") + f"{action}")
             action['account_id'] = -action.pop('account')
-            if action['asset'] > 0:
-                raise Statement_ImportError(self.tr("Unmatched asset for corporate action: ") + f"{action}")
-            action['asset_id'] = -action.pop('asset')
+            if action['symbol'] > 0:
+                raise Statement_ImportError(self.tr("Unmatched symbol for corporate action: ") + f"{action}")
+            action['symbol_id'] = -action.pop('symbol')
             action['qty'] = action.pop('quantity')
             action['note'] = action.pop('description')
             for item in action['outcome']:
-                if item['asset'] > 0:
-                    raise Statement_ImportError(self.tr("Unmatched asset for corporate action: ") + f"{action}")
-                item['asset_id'] = -item.pop('asset')
+                if item['symbol'] > 0:
+                    raise Statement_ImportError(self.tr("Unmatched symbol for corporate action: ") + f"{action}")
+                item['symbol_id'] = -item.pop('symbol')
                 item['qty'] = item.pop('quantity')
                 item['value_share'] = item.pop('share')
             try:

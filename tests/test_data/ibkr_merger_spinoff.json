@@ -66,10 +66,10 @@
       {"id": 2, "number": "", "timestamp": 1669839900, "settlement": 1669839900, "account": 1, "symbol": 4, "quantity": -0.2, "price": 4.111, "fee": 0.0}
     ],
     "corporate_actions": [
-      {"id": 1, "type": "split", "account": 1, "timestamp": 1652905500, "number": "16441206180", "symbol": 3, "quantity": 22.0,
-       "outcome": [{"symbol": 6, "quantity": 5.5, "share": 1.0}], "description": "SNPX(US87167T1025) SPLIT 1 FOR 4 (SNPXD, SYNAPTOGENIX INC, US87167T2015)"},
-      {"id": 2, "type": "split", "account": 1, "timestamp": 1669839900, "number": "22349072094", "symbol": 5, "quantity": 22.0,
-       "outcome": [{"symbol": 4, "quantity": 2.2, "share": 1.0}], "description": "PTPI(US71678J1007) SPLIT 1 FOR 10 (PTPI, PETROS PHARMACEUTICALS INC, US71678J2096)"}
+      {"id": 1, "type": "split", "account": 1, "timestamp": 1669839900, "number": "22349072094", "symbol": 5, "quantity": 22.0,
+       "outcome": [{"symbol": 4, "quantity": 2.2, "share": 1.0}], "description": "PTPI(US71678J1007) SPLIT 1 FOR 10 (PTPI, PETROS PHARMACEUTICALS INC, US71678J2096)"},
+      {"id": 2, "type": "split", "account": 1, "timestamp": 1652905500, "number": "16441206180", "symbol": 3, "quantity": 22.0,
+       "outcome": [{"symbol": 6, "quantity": 5.5, "share": 1.0}], "description": "SNPX(US87167T1025) SPLIT 1 FOR 4 (SNPXD, SYNAPTOGENIX INC, US87167T2015)"}
     ],
     "asset_payments": [],
     "income_spending": [],

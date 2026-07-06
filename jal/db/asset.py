@@ -142,6 +142,21 @@ class JalAsset(JalDB):
                        [(":symbol_id", symbol_id), (":id_type", id_type), (":id_value", id_value)])
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
+    # Adds identifier of given type to given symbol of the asset unless the symbol already has one.
+    # An existing identifier is never overwritten - a mismatching new value is only reported as an error.
+    def update_identifier(self, symbol_id: int, id_type: int, id_value: str) -> None:
+        if not symbol_id:
+            logging.error(self.tr("No exact symbol to link identifier with: ")
+                          + f"{self.symbol()}: {id_type} = {id_value}")
+            return
+        existing = self._data['ID'].get((symbol_id, id_type), '')
+        if existing:
+            if existing != id_value:
+                logging.error(self.tr("Unexpected attempt to update identifier for ")
+                              + f"{self.symbol()}: {existing} -> {id_value}")
+            return
+        self.add_identifier(symbol_id, id_type, id_value)
+
     # Returns country object for the asset
     def country(self) -> JalCountry:
         return self._country
@@ -284,15 +299,7 @@ class JalAsset(JalDB):
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
     def _update_isin(self, new_isin: str) -> None:
-        _isin = self.symbol_id(SymbolId.ISIN)
-        if _isin:
-            if new_isin != _isin:
-                logging.error(self.tr("Unexpected attempt to update ISIN for ") + f"{self.symbol()}: {_isin} -> {new_isin}")
-        else:
-            _ = self._exec("INSERT INTO symbol_ids (asset_id, id_type, id_value) "
-                           "VALUES(:asset_id, :id_type, :id_value)",
-                           [(":asset_id", self._id), (":id_type", SymbolId.ISIN), (":id_value", new_isin)])
-            self._data['ID'][SymbolId.ISIN] = new_isin
+        self.update_identifier(self._symbol_id, SymbolId.ISIN, new_isin)
 
     def _update_name(self, new_name: str) -> None:
         if not self._name:
@@ -311,13 +318,7 @@ class JalAsset(JalDB):
                              + f"{self.symbol()}: {self._country.name()} -> {new_country.name()}")
 
     def _update_reg_number(self, new_number: str) -> None:
-        _reg_number = self.symbol_id(SymbolId.REG_CODE)
-        if new_number != _reg_number:
-            _ = self._exec("INSERT INTO symbol_ids (asset_id, id_type, id_value) "
-                           "VALUES(:asset_id, :id_type, :id_value)",
-                           [(":asset_id", self._id), (":id_type", SymbolId.REG_CODE), (":id_value", new_number)])
-            self._data['ID'][SymbolId.REG_CODE] = new_number
-            logging.info(self.tr("Reg.number updated for ") + f"{self.symbol()}: {_reg_number} -> {new_number}")
+        self.update_identifier(self._symbol_id, SymbolId.REG_CODE, new_number)
 
     def _update_expiration(self, new_expiration: int) -> None:
         _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
@@ -356,10 +357,10 @@ class JalAsset(JalDB):
                 aid, symbol = cls._read_record(query, cast=[int, str])
                 if data['symbol'] and data['symbol'] == symbol:  # Try to match by ISIN and symbol first
                     return aid
-            if aid is None:
-                return 0
-            else:
+            if aid is not None:
                 return aid
+            # Unknown ISIN - fall through to the remaining criteria (callers like _match_asset_symbol
+            # guard against ISIN conflicts themselves after the match)
         if data['reg_number']:
             aid = cls._read("SELECT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:reg_code",
                             [(":datatype", SymbolId.REG_CODE), (":reg_code", data['reg_number'])], check_unique=True)
@@ -373,7 +374,9 @@ class JalAsset(JalDB):
                                          [(":datatype", AssetData.ExpiryDate), (":symbol", data['symbol'])], named=True)
             if 'type' in data:
                 if 'expiry' in data:
-                    symbols = list(filter(lambda x: x['type_id'] == data['type'] and x['expiry'] == data['expiry'], symbols))
+                    # asset_data values are stored as strings while statement provides int timestamp
+                    symbols = list(filter(lambda x: x['type_id'] == data['type']
+                                          and x['expiry'] is not None and int(x['expiry']) == int(data['expiry']), symbols))
                 else:
                     symbols = list(filter(lambda x: x['type_id'] == data['type'], symbols))
             if len(symbols) == 1:

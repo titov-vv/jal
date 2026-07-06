@@ -98,7 +98,7 @@ def create_assets(assets, data=[]):
             creator.add_identifier(symbol_id, SymbolId.ISIN, item[2])
         creator.commit()
     for item in data:
-        JalAsset(item[0]).update_data({item[1]: item[2]})
+        JalAsset(item[0], symbol_id=symbol_id_for(item[0])).update_data({item[1]: item[2]})
 
 
 # ----------------------------------------------------------------------------------------------------------------------
