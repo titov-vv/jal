@@ -73,7 +73,7 @@ def prepare_db_ibkr(prepare_db):
         ('EDV', 'VANGUARD EXTENDED DUR TREAS', '', 2, PredefinedAsset.ETF, 0),  # ID = 5
         ('ZROZ', '', 'US72201R8824', 2, PredefinedAsset.ETF, 0)  # ID = 6
     ]
-    create_assets(test_assets, data=[(5, 'reg_number', "921910709")])
+    create_assets(test_assets, data=[(5, 'cusip', "921910709")])
     dividends = [
         (dt2t(1806212020), 1, 5, 16.76, 1.68, "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"),
         (dt2t(1808072020), 1, 5, 20.35, 2.04, "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)")

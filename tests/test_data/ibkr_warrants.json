@@ -17,7 +17,7 @@
   ],
   "assets_data": [
     {"id": 1, "asset": 2, "expiry": 1830211200},
-    {"id": 2, "asset": 3, "reg_number": "37611X100"}
+    {"id": 2, "asset": 3, "cusip": "37611X100"}
   ],
   "trades": [],
   "corporate_actions": [

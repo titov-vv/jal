@@ -253,13 +253,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     old_id, asset['id'] = asset['id'], -asset_id
                     self._update_id("asset", old_id, asset_id)
 
-    # Check and replace IDs for Assets matched by reg_number
+    # Check and replace IDs for Assets matched by reg_number or cusip
     def _match_asset_reg_number(self):
         for asset in self._data[FOF.ASSETS_DATA]:
             if asset['asset'] < 0:  # already matched
                 continue
-            if 'reg_number' in asset:
-                asset_id = JalAsset.find({'reg_number': asset['reg_number']}).id()
+            search = {}
+            self._uppend_keys_from(search, asset, ['reg_number', 'cusip'])
+            if search:
+                asset_id = JalAsset.find(search).id()
                 if asset_id:
                     asset = self._find_in_list(self._data[FOF.ASSETS], "id", asset['asset'])
                     old_id, asset['id'] = asset['id'], -asset_id
@@ -274,9 +276,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             self._uppend_keys_from(search_data, asset, ['isin'])
             data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset", symbol['asset'])
             reg_number = ''
+            cusip = ''
             if data is not None:
                 self._uppend_keys_from(search_data, data, ['expiry'])
                 reg_number = data['reg_number'] if 'reg_number' in data else ''
+                cusip = data['cusip'] if 'cusip' in data else ''
             db_asset = JalAsset.find(search_data)
             db_id = db_asset.id()
             if db_id:
@@ -284,6 +288,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     continue  # verify that we don't have ISIN mismatch
                 if db_asset.symbol_id(SymbolId.REG_CODE) and reg_number and db_asset.symbol_id(SymbolId.REG_CODE) != reg_number:
                     continue  # verify that we don't have reg.number mismatch
+                if db_asset.symbol_id(SymbolId.CUSIP) and cusip and db_asset.symbol_id(SymbolId.CUSIP) != cusip:
+                    continue  # verify that we don't have CUSIP mismatch
                 old_id, asset['id'] = asset['id'], -db_id
                 self._update_id("asset", old_id, db_id)
 
@@ -448,6 +454,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if reg_number:
                 for symbol in [x for x in self._data[FOF.SYMBOLS] if x['asset'] == detail['asset']]:
                     db_asset.update_identifier(-symbol['id'], SymbolId.REG_CODE, reg_number)
+            cusip = detail.pop('cusip', None)
+            if cusip:
+                for symbol in [x for x in self._data[FOF.SYMBOLS] if x['asset'] == detail['asset']]:
+                    db_asset.update_identifier(-symbol['id'], SymbolId.CUSIP, cusip)
             db_asset.update_data(detail)
     
     def _import_accounts(self, accounts):
@@ -720,8 +730,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             asset_data = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', asset_info['reg_number'])
             if asset_data is not None:
                 asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_data['asset'])
+        if asset is None and 'cusip' in asset_info:
+            asset_data = self._find_in_list(self._data[FOF.ASSETS_DATA], 'cusip', asset_info['cusip'])
+            if asset_data is not None:
+                asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_data['asset'])
         # FIXME - all asset handling should be changed in order to allow multiple symbols per asset with different currencies, ISINs, etc.
-        has_code = asset_info.get('isin','') or asset_info.get('reg_number','')
+        has_code = asset_info.get('isin','') or asset_info.get('reg_number','') or asset_info.get('cusip','')
         if not has_code and asset is None and 'symbol' in asset_info:
             symbol = self._find_in_list(self._data[FOF.SYMBOLS], 'symbol', asset_info['symbol'])
             if symbol is not None:
@@ -734,10 +748,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
                 symbol = {"id": symbol_id, "asset": -db_asset.id(), 'symbol': db_asset.symbol(asset_info['currency']), 'currency': asset_info['currency']}
                 self._data[FOF.SYMBOLS].append(symbol)
-                if asset_info.get('reg_number'):
+                if asset_info.get('reg_number') or asset_info.get('cusip'):
                     data_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS_DATA]]) + 1
-                    reg_number = {"id": data_id, "asset": -db_asset.id(), "reg_number": asset_info['reg_number']}
-                    self._data[FOF.ASSETS_DATA].append(reg_number)
+                    asset_data = {"id": data_id, "asset": -db_asset.id()}
+                    self._uppend_keys_from(asset_data, asset_info, ['reg_number', 'cusip'])
+                    self._data[FOF.ASSETS_DATA].append(asset_data)
                 return asset['id']
         if asset is None and 'search_online' in asset_info:
             if asset_info['search_online'] == "MOEX":
@@ -774,7 +789,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 self._uppend_keys_from(symbol, asset_info, ['symbol', 'currency', 'note'])
                 self._data[FOF.SYMBOLS].append(symbol)
             data = {}
-            self._uppend_keys_from(data, asset_info, ['reg_number', 'expiry', 'principal'])
+            self._uppend_keys_from(data, asset_info, ['reg_number', 'cusip', 'expiry', 'principal'])
             if data:
                 data_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS_DATA]]) + 1
                 data['id'] = data_id
@@ -827,7 +842,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         # Update the rest of asset data
         asset_data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset", asset_id)
         if asset_data is None:
-            if {'reg_number', 'expiry', 'principal'}.intersection(set(asset_info)):  # if keys are present in info
+            if {'reg_number', 'cusip', 'expiry', 'principal'}.intersection(set(asset_info)):  # if keys are present in info
                 asset_data = {}
                 data_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS_DATA]]) + 1
                 asset_data['id'] = data_id
@@ -835,7 +850,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 self._data[FOF.ASSETS_DATA].append(asset_data)
             else:
                 return
-        self._uppend_keys_from(asset_data, asset_info, ['reg_number', 'expiry'])
+        self._uppend_keys_from(asset_data, asset_info, ['reg_number', 'cusip', 'expiry'])
 
     # Removes asset and all links to it from self._data (operations link assets via symbol records)
     def remove_asset(self, asset_id):

@@ -179,7 +179,7 @@ class StatementIBKR(StatementXML):
                                           ('description', 'name', str, None),
                                           ('isin', 'isin', str, ''),
                                           # ('figi', 'figi', str, ''),
-                                          ('cusip', 'reg_number', str, ''),
+                                          ('cusip', 'cusip', str, ''),
                                           ('expiry', 'expiry', datetime, 0),
                                           ('maturity', 'maturity', datetime, 0),
                                           ('principalAdjustFactor', 'principal', str, ''),
@@ -405,7 +405,7 @@ class StatementIBKR(StatementXML):
             if 'isin' in xml_element.attrib and xml_element.attrib['isin']:
                 asset_data['isin'] = xml_element.attrib['isin']
             if 'cusip' in xml_element.attrib and xml_element.attrib['cusip']:
-                asset_data['reg_number'] = xml_element.attrib['cusip']
+                asset_data['cusip'] = xml_element.attrib['cusip']
             if 'listingExchange' in xml_element.attrib and xml_element.attrib['listingExchange'] \
                     and xml_element.attrib['listingExchange'] != 'VALUE':  # don't store 'VALUE' or empty exchange
                 asset_data['note'] = xml_element.attrib['listingExchange']

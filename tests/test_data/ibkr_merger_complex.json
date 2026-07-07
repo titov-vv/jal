@@ -17,7 +17,7 @@
   ],
   "assets_data": [
     {"id": 1, "asset": 2, "expiry": 1830211200},
-    {"id": 2, "asset": 3, "reg_number": "37611X100"}
+    {"id": 2, "asset": 3, "cusip": "37611X100"}
   ],
   "corporate_actions": [
     {"id": 1, "type": "merger", "account": 1, "timestamp": 1631823900, "number": "17747623336", "symbol": 4, "quantity": 111.0,

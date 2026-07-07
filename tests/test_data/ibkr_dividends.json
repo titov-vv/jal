@@ -18,9 +18,9 @@
     {"id": 5, "asset": 5, "symbol": "USAC", "currency": 1, "note": "NYSE"}
   ],
   "assets_data": [
-    {"id": 1, "asset": 3, "reg_number": "879382208"},
-    {"id": 2, "asset": 4, "reg_number": "69121K104"},
-    {"id": 3, "asset": 5, "reg_number": "90290N109"}
+    {"id": 1, "asset": 3, "cusip": "879382208"},
+    {"id": 2, "asset": 4, "cusip": "69121K104"},
+    {"id": 3, "asset": 5, "cusip": "90290N109"}
   ],
   "asset_payments": [
     {"id": 1, "type": "stock_dividend", "account": 1, "timestamp": 1595017200, "number": "13259965038", "symbol": 3, "amount": 3.0, "price": "4.73", "tax": 0, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000"},

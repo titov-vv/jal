@@ -285,6 +285,7 @@ class JalAsset(JalDB):
             'name': self._update_name,
             'country': self._update_country,
             'reg_number': self._update_reg_number,
+            'cusip': self._update_cusip,
             'expiry': self._update_expiration,
             'principal': self._update_principal
         }
@@ -320,6 +321,9 @@ class JalAsset(JalDB):
     def _update_reg_number(self, new_number: str) -> None:
         self.update_identifier(self._symbol_id, SymbolId.REG_CODE, new_number)
 
+    def _update_cusip(self, new_cusip: str) -> None:
+        self.update_identifier(self._symbol_id, SymbolId.CUSIP, new_cusip)
+
     def _update_expiration(self, new_expiration: int) -> None:
         _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                        "VALUES(:asset_id, :datatype, :expiry)",
@@ -344,7 +348,7 @@ class JalAsset(JalDB):
     @classmethod
     def find(cls, data: dict) -> "JalAsset":
         data = dict(data)   # don't pollute caller's dict with the defaults below
-        for key in ('isin', 'name', 'country', 'symbol', 'reg_number'):
+        for key in ('isin', 'name', 'country', 'symbol', 'reg_number', 'cusip'):
             data.setdefault(key, '')
         return cls(cls._find_asset(data))
 
@@ -365,6 +369,11 @@ class JalAsset(JalDB):
         if data['reg_number']:
             aid = cls._read("SELECT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:reg_code",
                             [(":datatype", SymbolId.REG_CODE), (":reg_code", data['reg_number'])], check_unique=True)
+            if aid is not None:
+                return aid
+        if data['cusip']:
+            aid = cls._read("SELECT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:cusip",
+                            [(":datatype", SymbolId.CUSIP), (":cusip", data['cusip'])], check_unique=True)
             if aid is not None:
                 return aid
         if data['symbol']:

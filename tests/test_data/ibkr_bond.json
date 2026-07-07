@@ -16,9 +16,9 @@
     {"id": 4, "asset": 4, "symbol": "AAPL", "currency": 1,"note": "NASDAQ"}
   ],
   "assets_data": [
-    {"id": 1, "asset": 2, "reg_number": "912909AN8", "expiry": 1773532800, "principal": 1000},
-    {"id": 2, "asset": 3, "reg_number": "912CALAN8", "expiry": 1773532800, "principal": 1000},
-    {"id": 3, "asset": 4, "reg_number": "037833100"}
+    {"id": 1, "asset": 2, "cusip": "912909AN8", "expiry": 1773532800, "principal": 1000},
+    {"id": 2, "asset": 3, "cusip": "912CALAN8", "expiry": 1773532800, "principal": 1000},
+    {"id": 3, "asset": 4, "cusip": "037833100"}
   ],
   "trades": [
     {"id": 1, "number": "2882737839", "timestamp": 1622131065, "settlement": 1622246400, "account": 1, "symbol": 2, "quantity": 2.0, "price": 637.09, "fee": 2.0},
