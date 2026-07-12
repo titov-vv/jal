@@ -31,7 +31,7 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         self._base_query = "SELECT s.id, s.symbol, s.asset_id, a.type_id, s.currency_id, c.symbol AS currency, s.location_id, a.full_name, s.icon "\
                            "FROM asset_symbol s "\
                            "LEFT JOIN assets a ON a.id=s.asset_id "\
-                           "LEFT JOIN asset_symbol c ON s.currency_id=c.asset_id"
+                           "LEFT JOIN asset_symbol c ON s.currency_id=c.asset_id AND c.active=1"
         self._filter_clause = ''
         self._sort_clause = "ORDER BY s.symbol"
         self._current_query = self._base_query + " " + self._sort_clause

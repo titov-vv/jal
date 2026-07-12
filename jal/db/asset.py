@@ -82,6 +82,12 @@ class JalAsset(JalDB):
     def class_cache(cls) -> True:
         return True
 
+    # Creates JalAsset object from a symbol id: resolves the owning asset and keeps the symbol reference
+    @classmethod
+    def from_symbol(cls, symbol_id: int) -> "JalAsset":
+        asset_id = cls._read("SELECT asset_id FROM asset_symbol WHERE id=:id", [(":id", symbol_id)])
+        return cls(asset_id, symbol_id=symbol_id)
+
     def dump(self) -> dict:
         return self._data
 
@@ -114,6 +120,10 @@ class JalAsset(JalDB):
         else:
             symbol = [x['symbol'] for x in self._data['symbols'] if x['active'] == 1 and x['currency_id'] == currency]
             return ''.join(x for x in symbol)   # return symbol or empty string (there shouldn't be more than one)
+
+    # Returns list of ids of asset's active symbols
+    def active_symbol_ids(self) -> list:
+        return [x['id'] for x in self._data.get('symbols', []) if x['active'] == 1]
 
     # Adds a new symbol to the asset (or returns the existing one's id if it already exists).
     # Returns the id of the resulting asset_symbol row.

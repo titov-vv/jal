@@ -45,6 +45,7 @@ class CmReference:
     TAG = 1
     PEER = 2
     SYMBOL = 3
+    ASSET_VIA_SYMBOL = 4  # column stores an asset id, but user selects it via one of asset's symbols
 
 class CmDelegate:
     BOOL = 'bool'

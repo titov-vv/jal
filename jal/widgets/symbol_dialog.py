@@ -336,6 +336,15 @@ class SymbolDialog(QDialog):
         self._mapper.submit()  # AutoSubmit normally fires on focus-out; force it in case OK was reached otherwise
         if not self.validated():
             return
+        # Grid models are OnManualSubmit - pending cell edits must be written out explicitly here.
+        # Symbols go first as identifiers reference them. On failure the dialog stays open with the
+        # transaction alive, so the user may correct the data or cancel (which rolls everything back).
+        for name, model in ((self.tr("Symbols"), self._symbols_model),
+                            (self.tr("Identifiers"), self._id_model),
+                            (self.tr("Asset data"), self._data_model)):
+            if not model.submitAll():
+                logging.fatal(name + self.tr(" submit failed: ") + model.lastError().text())
+                return
         if not self._model.submitAll():
             logging.fatal(self.tr("Asset submit failed: ") + self._model.lastError().text())
             return

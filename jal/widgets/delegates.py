@@ -7,6 +7,7 @@ from jal.constants import CustomColor, Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.widgets.icons import JalIcon
 
 
@@ -306,6 +307,24 @@ class LookupSelectorDelegate(QStyledItemDelegate):
     def setModelData(self, editor, model, index):
         if editor.selected_id:  # Check if lookup index is valid or 0
             model.setData(index, editor.selected_id)
+        else:
+            model.setData(index, None)  # replace invalid index with NULL value
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Variant of LookupSelectorDelegate for columns that store an asset id while the user thinks in symbols:
+# selector model/dialog operate on symbols and symbol<->asset conversion happens at the delegate boundary.
+class AssetSelectorDelegate(LookupSelectorDelegate):
+    def displayText(self, value, locale):
+        return JalAsset(value).symbol()   # active symbols of the asset, comma-separated
+
+    def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
+        symbol_ids = JalAsset(index.data()).active_symbol_ids()
+        editor.selected_id = symbol_ids[0] if symbol_ids else 0
+
+    def setModelData(self, editor, model, index):
+        if editor.selected_id:  # Check if lookup index is valid or 0
+            model.setData(index, JalAsset.from_symbol(editor.selected_id).id())
         else:
             model.setData(index, None)  # replace invalid index with NULL value
 

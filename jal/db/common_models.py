@@ -132,7 +132,7 @@ class QuotesListModel(AbstractReferenceListModel):
         columns = [
             CmColumn("id", '', hide=True),
             CmColumn("timestamp", self.tr("Date"), sort=True, width=CmWidth.WIDTH_DATETIME, delegate_type=CmDelegate.TIMESTAMP),
-            CmColumn("asset_id", self.tr("Asset"), width=CmWidth.WIDTH_STRETCH, delegate_type=CmDelegate.REFERENCE, delegate_details=CmReference.SYMBOL),
+            CmColumn("asset_id", self.tr("Asset"), width=CmWidth.WIDTH_STRETCH, delegate_type=CmDelegate.REFERENCE, delegate_details=CmReference.ASSET_VIA_SYMBOL),
             CmColumn("currency_id", self.tr("Currency"), delegate_type=CmDelegate.LOOKUP),
             CmColumn("quote", self.tr("Quote"), default=True, width=100, delegate_type=CmDelegate.FLOAT, delegate_details=4)
         ]

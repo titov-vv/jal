@@ -13,7 +13,7 @@ from jal.db.category import JalCategory
 from jal.db.tag import JalTag
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from jal.widgets.delegates import BoolDelegate, FloatDelegate, GridLinesDelegate, TimestampDelegate, LookupSelectorDelegate
+from jal.widgets.delegates import BoolDelegate, FloatDelegate, GridLinesDelegate, TimestampDelegate, LookupSelectorDelegate, AssetSelectorDelegate
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.widgets.assets_dialogs import SymbolListDialog
@@ -191,6 +191,7 @@ class ReferenceDataDialog(QDialog):
             elif spec.delegate_type == CmDelegate.LOOKUP:
                 delegate = QSqlRelationalDelegate(self._view)
             elif spec.delegate_type == CmDelegate.REFERENCE:
+                delegate_class = LookupSelectorDelegate
                 if spec.delegate_details == CmReference.TAG:
                     model = TagTreeModel(self)
                     dialog = TagsListDialog(self)
@@ -200,10 +201,14 @@ class ReferenceDataDialog(QDialog):
                 elif spec.delegate_details == CmReference.SYMBOL:
                     model = SymbolsListModel(self)
                     dialog = SymbolListDialog(self)
+                elif spec.delegate_details == CmReference.ASSET_VIA_SYMBOL:
+                    model = SymbolsListModel(self)
+                    dialog = SymbolListDialog(self)
+                    delegate_class = AssetSelectorDelegate
                 else:
                     raise NotImplementedError(f"Unsupported reference delegate type {spec.delegate_details}")
                 self._delegates.append((model, dialog))
-                delegate = LookupSelectorDelegate(self._view, model, dialog)
+                delegate = delegate_class(self._view, model, dialog)
             elif spec.delegate_type == CmDelegate.TIMESTAMP:
                 delegate = TimestampDelegate(display_format=spec.delegate_details, parent=self._view)
             else:
@@ -544,7 +549,7 @@ class QuotesListDialog(ReferenceDataDialog):
         self.setup_ui()
 
     def setup_ui(self):
-        self.search_field = "asset_id-asset_symbol-id-symbol"
+        self.search_field = "asset_id-asset_symbol-asset_id-symbol"
         self.ui.SearchFrame.setVisible(True)
         self.ui.Toggle.setVisible(False)
         super().setup_ui()

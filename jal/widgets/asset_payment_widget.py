@@ -91,7 +91,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
     def refreshAssetPrice(self):
         if self.ui.type.currentIndex() == AssetPayment.StockDividend or self.ui.type.currentIndex() == AssetPayment.StockVesting:
             dividend_timestamp = self.ui.timestamp_editor.dateTime().toSecsSinceEpoch()
-            timestamp, price = JalAsset(self.ui.symbol_widget.selected_id).quote(dividend_timestamp,
+            timestamp, price = JalAsset.from_symbol(self.ui.symbol_widget.selected_id).quote(dividend_timestamp,
                                                                              JalAccount(self.ui.account_widget.selected_id).currency())
             if timestamp == dividend_timestamp:
                 self.ui.price_edit.setText(str(price))
