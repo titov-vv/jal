@@ -14,7 +14,7 @@ INSERT INTO symbol_ids (symbol_id, id_type, id_value)
   SELECT t.id, 2, isin
   FROM assets a
   LEFT JOIN asset_tickers t ON a.id = t.asset_id
-  WHERE NOT (isin='' OR isin LIKE ' %');
+  WHERE NOT (isin='' OR isin LIKE ' %') AND NOT t.id IS NULL;
 -- Remove ISINs that were stored as registration code in asset_data table
 DELETE FROM asset_data WHERE id IN (SELECT d.id FROM asset_data d JOIN assets a ON d.asset_id=a.id AND d.value=a.isin);
 -- Migrate existing MOEX registration codes from asset_data to new symbol_ids table
@@ -54,14 +54,48 @@ DROP TRIGGER IF EXISTS validate_ticker_currency_insert;
 DROP TRIGGER IF EXISTS  validate_ticker_currency_update;
 -- Remove NULL values from currency_id
 UPDATE asset_tickers SET currency_id=asset_id WHERE currency_id IS NULL;
--- Fix absent symbols for non-default currency
-INSERT INTO asset_tickers (asset_id, symbol, currency_id)
-  SELECT DISTINCT p.asset_id, s2.symbol, a.currency_id
-  FROM asset_payments p
-  LEFT JOIN accounts a ON p.account_id=a.id
-  LEFT JOIN asset_tickers s1 ON p.asset_id=s1.asset_id AND a.currency_id=s1.currency_id AND s1.active=1
-  LEFT JOIN asset_tickers s2 ON p.asset_id=s2.asset_id AND s2.currency_id=1 AND s2.active=1
-  WHERE s1.symbol IS NULL;
+-- Fabricate symbols that are absent for (asset, operation account currency) pairs,
+-- so that every operation backfill below finds an active symbol to link to
+CREATE TABLE symbol_gaps AS
+  SELECT q.asset_id, q.currency_id FROM (
+    SELECT t.asset_id AS asset_id, a.currency_id AS currency_id
+      FROM trades t LEFT JOIN accounts a ON t.account_id=a.id
+    UNION
+    SELECT p.asset_id, a.currency_id
+      FROM asset_payments p LEFT JOIN accounts a ON p.account_id=a.id
+    UNION
+    SELECT t.asset, a.currency_id
+      FROM transfers t LEFT JOIN accounts a ON t.withdrawal_account=a.id
+      WHERE NOT t.asset IS NULL
+    UNION
+    SELECT o.asset_id, a.currency_id
+      FROM asset_actions o LEFT JOIN accounts a ON o.account_id=a.id
+    UNION
+    SELECT r.asset_id, a.currency_id
+      FROM action_results r
+      LEFT JOIN asset_actions aa ON r.action_id=aa.oid
+      LEFT JOIN accounts a ON aa.account_id=a.id
+  ) q
+  WHERE NOT q.currency_id IS NULL
+    AND NOT EXISTS (SELECT 1 FROM asset_tickers s
+                    WHERE s.asset_id=q.asset_id AND s.currency_id=q.currency_id AND s.active=1);
+-- Symbol text is taken from any active ticker of the asset, then any ticker, then asset name
+INSERT OR IGNORE INTO asset_tickers (asset_id, symbol, currency_id)
+  SELECT g.asset_id,
+         COALESCE((SELECT s.symbol FROM asset_tickers s WHERE s.asset_id=g.asset_id AND s.active=1 ORDER BY s.id LIMIT 1),
+                  (SELECT s.symbol FROM asset_tickers s WHERE s.asset_id=g.asset_id ORDER BY s.id LIMIT 1),
+                  (SELECT a.full_name FROM assets a WHERE a.id=g.asset_id)),
+         g.currency_id
+  FROM symbol_gaps g;
+-- Re-activate inactive symbols that were skipped by INSERT OR IGNORE due to uniq_symbols index
+UPDATE asset_tickers SET active=1 WHERE id IN (
+  SELECT MIN(s.id) FROM asset_tickers s
+  JOIN symbol_gaps g ON s.asset_id=g.asset_id AND s.currency_id=g.currency_id
+  WHERE NOT EXISTS (SELECT 1 FROM asset_tickers x
+                    WHERE x.asset_id=g.asset_id AND x.currency_id=g.currency_id AND x.active=1)
+  GROUP BY s.asset_id, s.currency_id
+);
+DROP TABLE symbol_gaps;
 -- Create new symbols table
 CREATE TABLE asset_symbol (
     id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
@@ -105,6 +139,13 @@ DROP TABLE symbol_ids;
 ALTER TABLE symbol_ids_new RENAME TO symbol_ids;
 PRAGMA foreign_keys = ON;  -- Prevent deletion of linked asset_ids
 CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id);
+-- Seed / codes for currency symbols (fresh installs get them from jal_init.sql)
+INSERT INTO symbol_ids (symbol_id, id_type, id_value)
+  SELECT s.id, 6, s.symbol
+  FROM asset_symbol s
+  JOIN assets a ON s.asset_id=a.id AND a.type_id=1
+  WHERE s.active=1
+    AND NOT EXISTS (SELECT 1 FROM symbol_ids i WHERE i.symbol_id=s.id AND i.id_type=6);
 --------------------------------------------------------------------------------
 -- Update currencies view
 CREATE VIEW currencies AS
@@ -130,10 +171,11 @@ CREATE TABLE asset_payments (
     note       TEXT
 );
 INSERT INTO asset_payments (oid, otype, timestamp, ex_date, number, type, account_id, symbol_id, amount, tax, note)
-  SELECT p.oid, p.otype, p.timestamp, p.ex_date, p.number, p.type, p.account_id, s.id AS symbol_id, p.amount, p.tax, p.note
+  SELECT p.oid, p.otype, p.timestamp, p.ex_date, p.number, p.type, p.account_id,
+         (SELECT MIN(s.id) FROM asset_symbol s WHERE p.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1) AS symbol_id,
+         p.amount, p.tax, p.note
   FROM old_asset_payments p
-  LEFT JOIN accounts a ON p.account_id=a.id
-  LEFT JOIN asset_symbol s ON p.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1;
+  LEFT JOIN accounts a ON p.account_id=a.id;
 DROP TABLE old_asset_payments;
 -- re-create triggers
 CREATE TRIGGER asset_payments_after_delete AFTER DELETE ON asset_payments FOR EACH ROW
@@ -169,10 +211,11 @@ CREATE TABLE trades (
     note       TEXT     NOT NULL DEFAULT ('')         -- Free text comment
 );
 INSERT INTO trades (oid, otype, timestamp, settlement, number, account_id, symbol_id, qty, price, fee, note)
-  SELECT t.oid, t.otype, t.timestamp, t.settlement, t.number, t.account_id, s.id AS symbol_id, t.qty, t.price, t.fee, t.note
+  SELECT t.oid, t.otype, t.timestamp, t.settlement, t.number, t.account_id,
+         (SELECT MIN(s.id) FROM asset_symbol s WHERE t.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1) AS symbol_id,
+         t.qty, t.price, t.fee, t.note
   FROM old_trades t
-  LEFT JOIN accounts a ON t.account_id=a.id
-  LEFT JOIN asset_symbol s ON t.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1;
+  LEFT JOIN accounts a ON t.account_id=a.id;
 DROP TABLE old_trades;
 -- re-create triggers
 CREATE TRIGGER trades_after_delete AFTER DELETE ON trades FOR EACH ROW
@@ -210,10 +253,11 @@ CREATE TABLE transfers (
     note                 TEXT                                         -- Free text comment
 );
 INSERT INTO transfers (oid, otype, withdrawal_timestamp, withdrawal_account, withdrawal, deposit_timestamp, deposit_account, deposit, fee_account, fee, number, symbol_id, note)
-  SELECT t.oid, t.otype, t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.number, s.id AS symbol_id, t.note
+  SELECT t.oid, t.otype, t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, t.number,
+         (SELECT MIN(s.id) FROM asset_symbol s WHERE t.asset=s.asset_id AND a.currency_id=s.currency_id AND s.active=1) AS symbol_id,
+         t.note
   FROM old_transfers t
-  LEFT JOIN accounts a ON t.withdrawal_account=a.id
-  LEFT JOIN asset_symbol s ON t.asset=s.asset_id AND a.currency_id=s.currency_id AND s.active=1;
+  LEFT JOIN accounts a ON t.withdrawal_account=a.id;
 DROP TABLE old_transfers;
 -- re-create triggers
 CREATE TRIGGER transfers_after_delete AFTER DELETE ON transfers FOR EACH ROW
@@ -241,10 +285,12 @@ CREATE TABLE asset_action_results (
     value_share TEXT    NOT NULL                                 -- Which share of total 100% this asset takes in the action results
 );
 INSERT INTO asset_action_results (id, action_id, symbol_id, qty, value_share)
-  SELECT r.id, r.action_id, s.id AS symbol_id, r.qty, r.value_share FROM old_action_results r
+  SELECT r.id, r.action_id,
+         (SELECT MIN(s.id) FROM asset_symbol s WHERE r.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1) AS symbol_id,
+         r.qty, r.value_share
+  FROM old_action_results r
   LEFT JOIN asset_actions aa ON r.action_id=aa.oid
-  LEFT JOIN accounts a ON aa.account_id=a.id
-  LEFT JOIN asset_symbol s ON r.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1;
+  LEFT JOIN accounts a ON aa.account_id=a.id;
 DROP TABLE old_action_results;
 -- re-create triggers
 CREATE TRIGGER asset_result_after_delete AFTER DELETE ON asset_action_results FOR EACH ROW
@@ -276,9 +322,11 @@ CREATE TABLE asset_actions (
     note       TEXT                                              -- Free text comment
 );
 INSERT INTO asset_actions (oid, otype, timestamp, number, account_id, type, symbol_id, qty, note)
-  SELECT o.oid, o.otype, o.timestamp, o.number, o.account_id, o.type, s.id AS symbol_id, o.qty, o.note FROM old_asset_actions o
-  LEFT JOIN accounts a ON o.account_id=a.id
-  LEFT JOIN asset_symbol s ON o.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1;
+  SELECT o.oid, o.otype, o.timestamp, o.number, o.account_id, o.type,
+         (SELECT MIN(s.id) FROM asset_symbol s WHERE o.asset_id=s.asset_id AND a.currency_id=s.currency_id AND s.active=1) AS symbol_id,
+         o.qty, o.note
+  FROM old_asset_actions o
+  LEFT JOIN accounts a ON o.account_id=a.id;
 DROP TABLE old_asset_actions;
 PRAGMA foreign_keys = ON;
 -- re-create triggers
@@ -301,5 +349,5 @@ END;
 -------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=60 WHERE name='SchemaVersion';
---INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);
+INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);
 COMMIT;
