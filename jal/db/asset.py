@@ -234,8 +234,12 @@ class JalAsset(JalDB):
         end = db_timestamp2int(end)
         return begin, end
 
-    # Returns the location (see AssetLocation) of the symbol defined for given currency (currency_id can be None)
+    # Returns the location (see AssetLocation) of the symbol defined for given currency (currency_id can be None).
+    # If the object references an exact symbol (see __init__'s symbol_id param) its location has priority -
+    # this way two same-currency listings of one asset keep their own quote feeds.
     def location(self, currency_id: int) -> int:
+        if self._symbol_id:
+            return self._read("SELECT location_id FROM asset_symbol WHERE id=:id", [(":id", self._symbol_id)])
         location_id = self._read("SELECT location_id FROM asset_symbol "
                                  "WHERE asset_id=:asset AND currency_id IS :currency",
                                  [(":asset", self._id), (":currency", currency_id)])

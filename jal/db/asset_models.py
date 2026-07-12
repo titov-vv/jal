@@ -78,6 +78,7 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         if location_id is not None:
             filter_clauses.append(f"s.location_id={location_id}")
         if text:
+            text = text.replace("'", "''")  # Escape single quotes for SQL string literal
             filter_clauses.append(f"(s.symbol LIKE '%{text}%' OR a.full_name LIKE '%{text}%')")
         self._filter_clause = ' AND '.join(filter_clauses)
         self._current_query = f"{self._base_query} WHERE {self._filter_clause} {self._sort_clause}"
@@ -102,11 +103,6 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         if row is None:
             return QModelIndex()
         return self.index(row - 1, 0)
-
-    def updateItemType(self, index, new_type):   # FIXME - needs adaptation to new query structure
-        id = self.getId(index)
-        self._exec(f"UPDATE {self._table} SET {self._group_by}=:new_type WHERE id=:id",
-                   [(":new_type", new_type), (":id", id)])
 
     # Returns True if given symbol is the only symbol its asset has
     def is_last_symbol(self, symbol_id) -> bool:

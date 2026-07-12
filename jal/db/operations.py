@@ -472,9 +472,11 @@ class AssetPayment(LedgerTransaction):
     @classmethod
     def get_list(cls, account_id: int, asset_id: int = 0, subtype: int = 0, skip_accrued: bool = False) -> list:
         payments = []
-        if skip_accrued:
-            query = "SELECT p.oid FROM asset_payments p LEFT JOIN trades t ON p.account_id=t.account_id "\
-                    "AND p.symbol_id=t.symbol_id AND p.number=t.number AND t.number!='' "\
+        if skip_accrued:  # Paired trade is matched via asset, not symbol (consistent with Trade.accrued_interest())
+            query = "SELECT p.oid FROM asset_payments p LEFT JOIN asset_symbol ps ON p.symbol_id=ps.id "\
+                    "LEFT JOIN trades t ON p.account_id=t.account_id "\
+                    "AND t.symbol_id IN (SELECT id FROM asset_symbol WHERE asset_id=ps.asset_id) "\
+                    "AND p.number=t.number AND t.number!='' "\
                     "WHERE p.account_id=:account AND t.oid IS NULL"
         else:
             query = "SELECT p.oid FROM asset_payments p WHERE p.account_id=:account"
