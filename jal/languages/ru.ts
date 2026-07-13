@@ -19,17 +19,17 @@
     <message>
         <location filename="../db/common_models_abstract.py" line="158"/>
         <source>Data are incomplete</source>
-        <translation type="unfinished">Данные неполные</translation>
+        <translation>Данные неполные</translation>
     </message>
     <message>
         <location filename="../db/common_models_abstract.py" line="159"/>
         <source>Column has no valid value: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неверное значение в столбце: </translation>
     </message>
     <message>
         <location filename="../db/common_models_abstract.py" line="165"/>
         <source>Submit failed: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка записи: </translation>
     </message>
 </context>
 <context>
@@ -112,68 +112,69 @@
     <message>
         <location filename="../db/common_models.py" line="17"/>
         <source>Name</source>
-        <translation type="unfinished">Наименование</translation>
+        <translation>Наименование</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="18"/>
         <source>Currency</source>
-        <translation type="unfinished">Валюта</translation>
+        <translation>Валюта</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="19"/>
         <source>Act.</source>
-        <translation type="unfinished">Акт.</translation>
+        <translation>Акт.</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="20"/>
         <source>Invest.</source>
-        <translation type="unfinished"></translation>
+        <translation>Инвест.</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="21"/>
         <source>Tag</source>
-        <translation type="unfinished"></translation>
+        <translation>Метка</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="22"/>
         <source>Account #</source>
-        <translation type="unfinished"></translation>
+        <translation>№ счёта</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="23"/>
         <source>Reconciled @</source>
-        <translation type="unfinished"></translation>
+        <translation>Сверен @</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="24"/>
         <source>Bank/Broker</source>
-        <translation type="unfinished"></translation>
+        <translation>Банк/Брокер</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="25"/>
         <source>Country</source>
-        <translation type="unfinished">Страна</translation>
+        <translation>Страна</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="26"/>
         <source>Precision</source>
-        <translation type="unfinished"></translation>
+        <translation>Точность</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="27"/>
         <source>Credit limit</source>
-        <translation type="unfinished"></translation>
+        <translation>Кредитный лимит</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="42"/>
         <source>Warning</source>
-        <translation type="unfinished">Предупреждение</translation>
+        <translation>Предупреждение</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="42"/>
         <source>All transactions related with this account will be deleted.
 Do you want to delete the account anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>Все транзакции связанные с этим счётом будут удалены.
+Вы ходите продолжить удаление счёта?</translation>
     </message>
 </context>
 <context>
@@ -199,22 +200,22 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="209"/>
         <source>Attribute</source>
-        <translation type="unfinished"></translation>
+        <translation>Аттрибут</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="210"/>
         <source>Value</source>
-        <translation type="unfinished">Оценка</translation>
+        <translation>Значение</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="221"/>
         <source>Row not added</source>
-        <translation type="unfinished"></translation>
+        <translation>Строка не добавлена</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="222"/>
         <source>Please fill in the previously added attribute before adding a new one</source>
-        <translation type="unfinished"></translation>
+        <translation>Пожалуйста, перед заполением нового, заполните предыдущий добавленный аттрибут</translation>
     </message>
 </context>
 <context>
@@ -252,7 +253,7 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../constants.py" line="302"/>
         <source>Euronext</source>
-        <translation type="unfinished">Euronext</translation>
+        <translation>Euronext</translation>
     </message>
     <message>
         <location filename="../constants.py" line="303"/>
@@ -292,7 +293,7 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../constants.py" line="310"/>
         <source>Victoria Seguros</source>
-        <translation type="unfinished">Victoria Seguros</translation>
+        <translation>Victoria Seguros</translation>
     </message>
 </context>
 <context>
@@ -532,17 +533,17 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="145"/>
         <source>Type</source>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="146"/>
         <source>Name</source>
-        <translation type="unfinished">Наименование</translation>
+        <translation>Наименование</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="147"/>
         <source>Country</source>
-        <translation type="unfinished">Страна</translation>
+        <translation>Страна</translation>
     </message>
 </context>
 <context>
@@ -550,32 +551,32 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="160"/>
         <source>Symbol</source>
-        <translation type="unfinished">Символ</translation>
+        <translation>Символ</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="161"/>
         <source>Currency</source>
-        <translation type="unfinished">Валюта</translation>
+        <translation>Валюта</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="162"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Место</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="163"/>
         <source>Act.</source>
-        <translation type="unfinished">Акт.</translation>
+        <translation>Акт.</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="175"/>
         <source>Row not added</source>
-        <translation type="unfinished"></translation>
+        <translation>Строка не добавлена</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="176"/>
         <source>Please fill in the previously added symbol before adding a new one</source>
-        <translation type="unfinished"></translation>
+        <translation>Перед добавлением нового, пожалуйста, заполните данные предыдущего символа</translation>
     </message>
 </context>
 <context>
@@ -583,42 +584,42 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="14"/>
         <source>Assets</source>
-        <translation type="unfinished">ЦБ</translation>
+        <translation>ЦБ</translation>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="62"/>
         <source>Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип:</translation>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="72"/>
         <source>Currency:</source>
-        <translation type="unfinished">Валюта:</translation>
+        <translation>Валюта:</translation>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="82"/>
         <source>Location:</source>
-        <translation type="unfinished"></translation>
+        <translation>Место:</translation>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="105"/>
         <source>Add new</source>
-        <translation type="unfinished">Добавить новый</translation>
+        <translation>Добавить новый</translation>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="115"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактировать</translation>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="125"/>
         <source>Delete</source>
-        <translation type="unfinished">Удалить</translation>
+        <translation>Удалить</translation>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="162"/>
         <source>Search:</source>
-        <translation type="unfinished">Поиск:</translation>
+        <translation>Поиск:</translation>
     </message>
 </context>
 <context>
@@ -779,12 +780,12 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../db/common_models.py" line="148"/>
         <source>Date</source>
-        <translation type="unfinished">Дата</translation>
+        <translation>Дата</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="149"/>
         <source>Currency</source>
-        <translation type="unfinished">Валюта</translation>
+        <translation>Валюта</translation>
     </message>
 </context>
 <context>
@@ -874,30 +875,32 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../db/common_models.py" line="91"/>
         <source>Name</source>
-        <translation type="unfinished">Наименование</translation>
+        <translation>Наименование</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="94"/>
         <source>New category</source>
-        <translation type="unfinished"></translation>
+        <translation>Новая категория</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="99"/>
         <location filename="../db/common_models.py" line="102"/>
         <source>Warning</source>
-        <translation type="unfinished">Предупреждение</translation>
+        <translation>Предупреждение</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="99"/>
         <source>You can&apos;t delete a predefined category.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы не можете удалить предопределённую категорию</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="102"/>
         <source>Category or one of its subcategories are in use.
 All related transactions will be deleted together with the category.
 Do you want to delete the category anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>Категория или одна из её подкатегорий использоуется.
+Все связанные транзакции будут удалены вместе с удалением категории.
+Вы хотите продолжить удаление категории?</translation>
     </message>
 </context>
 <context>
@@ -1932,7 +1935,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../ui/main_window.ui" line="125"/>
         <source>&amp;Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Инструменты</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="140"/>
@@ -1997,7 +2000,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../ui/main_window.ui" line="228"/>
         <source>Merge Russian tax-files (*.de5)</source>
-        <translation type="unfinished"></translation>
+        <translation>Объединить файлы российской декларации (*.de5)</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="193"/>
@@ -2060,12 +2063,12 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../db/asset.py" line="159"/>
         <source>No exact symbol to link identifier with: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестен символ, с которым связать идентификатор: </translation>
     </message>
     <message>
         <location filename="../db/asset.py" line="165"/>
         <source>Unexpected attempt to update identifier for </source>
-        <translation type="unfinished"></translation>
+        <translation>Неожиданная попытка обновить идентификатор для </translation>
     </message>
     <message>
         <location filename="../db/asset.py" line="194"/>
@@ -2617,32 +2620,32 @@ Application will be terminated now.</source>
     <message>
         <location filename="../ui/merge_dialog.ui" line="28"/>
         <source>Merge tax files</source>
-        <translation type="unfinished"></translation>
+        <translation>Объединить файлы декларации</translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="46"/>
         <source>Input files:</source>
-        <translation type="unfinished"></translation>
+        <translation>Входные файлы:</translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="53"/>
         <source>Output file:</source>
-        <translation type="unfinished">Файл с результатом:</translation>
+        <translation>Файл с результатом:</translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="60"/>
         <source>Add file</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить файл</translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="93"/>
         <source>Remove file</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить файл</translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="116"/>
         <source> ... </source>
-        <translation type="unfinished"> ... </translation>
+        <translation> ... </translation>
     </message>
 </context>
 <context>
@@ -2695,7 +2698,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../widgets/tax_widget.py" line="238"/>
         <source>Excel money flow report was saved to file </source>
-        <translation type="unfinished"></translation>
+        <translation>Отчёт Excel о движении денежных средств сохранён в файл </translation>
     </message>
 </context>
 <context>
@@ -2967,40 +2970,42 @@ Application will be terminated now.</source>
     <message>
         <location filename="../db/common_models.py" line="54"/>
         <source>Name</source>
-        <translation type="unfinished">Наименование</translation>
+        <translation>Наименование</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="55"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Место</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="56"/>
         <source>Docs count</source>
-        <translation type="unfinished"></translation>
+        <translation>Кол-во документов</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="59"/>
         <source>New peer</source>
-        <translation type="unfinished"></translation>
+        <translation>Новый контрагент</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="75"/>
         <location filename="../db/common_models.py" line="78"/>
         <source>Warning</source>
-        <translation type="unfinished">Предупреждение</translation>
+        <translation>Предупреждение</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="75"/>
         <source>You can&apos;t delete a predefined peer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы не можете удалить предопределённого контрагента.</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="78"/>
         <source>Peer or one of its child peers are in use.
 All related transactions will be deleted together with the peer.
 Do you want to delete the peer anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>Контрагент или один из его дочерних элементов используется.
+Все связанные транзакции будут удалены вместе с контрагентом.
+Вы хотите продолжить удаление?</translation>
     </message>
 </context>
 <context>
@@ -3567,22 +3572,22 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../db/common_models.py" line="134"/>
         <source>Date</source>
-        <translation type="unfinished">Дата</translation>
+        <translation>Дата</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="135"/>
         <source>Asset</source>
-        <translation type="unfinished"></translation>
+        <translation>ЦБ</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="136"/>
         <source>Currency</source>
-        <translation type="unfinished">Валюта</translation>
+        <translation>Валюта</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="137"/>
         <source>Quote</source>
-        <translation type="unfinished"></translation>
+        <translation>Котировка</translation>
     </message>
 </context>
 <context>
@@ -4151,7 +4156,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_export/ru_ndfl3.py" line="107"/>
         <source>Account country is not set, dividend isn&apos;t exported into 3-NDFL </source>
-        <translation type="unfinished"></translation>
+        <translation>Не указана страна счёта, дивиденд не будет экспортирован в 3-НДФЛ.</translation>
     </message>
     <message>
         <location filename="../data_export/ru_ndfl3.py" line="114"/>
@@ -4267,7 +4272,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../db/common_models_abstract.py" line="357"/>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>Новый</translation>
     </message>
 </context>
 <context>
@@ -4285,22 +4290,22 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/statement.py" line="238"/>
         <source>Unsupported db_ids domain: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неподдерживаемый домен db_ids: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="329"/>
         <source>Statement is not a valid JSF document</source>
-        <translation type="unfinished"></translation>
+        <translation>JSF-документ некорректен</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="336"/>
         <source>Invalid statement section: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неверная секция отчёта: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="339"/>
         <source>Invalid asset record: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неверная запись ЦБ: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="378"/>
@@ -4320,38 +4325,38 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/statement.py" line="408"/>
         <source>Unmatched currency for symbol: </source>
-        <translation type="unfinished"></translation>
+        <translation>Не найдена валюта для символа: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="452"/>
         <source>Invalid category for income/spending: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неверная категория дохода/расхода: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="469"/>
         <source>Unmatched symbol for transfer: </source>
-        <translation type="unfinished"></translation>
+        <translation>Не найден символ для трансфера: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="522"/>
         <source>Unmatched symbol for trade: </source>
-        <translation type="unfinished"></translation>
+        <translation>Не найден символ для сделки: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="542"/>
         <source>Unmatched symbol for payment: </source>
-        <translation type="unfinished"></translation>
+        <translation>Не найден символ для платежа: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="587"/>
         <location filename="../data_import/statement.py" line="593"/>
         <source>Unmatched symbol for corporate action: </source>
-        <translation type="unfinished"></translation>
+        <translation>Не найден символ для корпоративного события: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="802"/>
         <source>Can&apos;t resolve an exact symbol for: </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно определить симвод для: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="422"/>
@@ -4442,7 +4447,7 @@ Do you want to delete the peer anyway?</source>
         <location filename="../data_import/statement.py" line="656"/>
         <location filename="../data_import/statement.py" line="664"/>
         <source>Symbol id not found: </source>
-        <translation type="unfinished"></translation>
+        <translation>ID символа не найден: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="673"/>
@@ -4459,7 +4464,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/statement.py" line="710"/>
         <source>Can&apos;t find exact symbol for asset: </source>
-        <translation type="unfinished"></translation>
+        <translation>Не найден символ для ЦБ: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="763"/>
@@ -4518,62 +4523,62 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="23"/>
         <source>Freedom Broker (XML Eng)</source>
-        <translation type="unfinished"></translation>
+        <translation>Freedom Broker (XML Eng)</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="25"/>
         <source>Freedom Finance statement (*.xml)</source>
-        <translation type="unfinished"></translation>
+        <translation>Отчёт Freedom Finance (*.xml)</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="61"/>
         <source>Statement loaded successfully: </source>
-        <translation type="unfinished">Отчёт загружен успешно: </translation>
+        <translation>Отчёт загружен успешно: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="67"/>
         <source>Failed to parse XML file: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка парсинга XML-файла: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="69"/>
         <source>Failed to read file: </source>
-        <translation type="unfinished">Невозможно прочесть файл: </translation>
+        <translation>Невозможно прочесть файл: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="79"/>
         <source>Can&apos;t read account name from file name</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно определить счёт из имени файла</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="88"/>
         <source>Unsupported trade type: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неподдерживаемый тип сделки: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="124"/>
         <source>Trades loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Сделок загружено: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="132"/>
         <source>Skipped unsupported corporate action: </source>
-        <translation type="unfinished"></translation>
+        <translation>Пропущенное корпоративное событие: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="165"/>
         <source>Asset payments loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Платежи по ЦБ загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="170"/>
         <source>Mandatory field is empty: </source>
-        <translation type="unfinished"></translation>
+        <translation>Обязательное поле отсутствует: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/freedom.py" line="185"/>
         <source>Multiple accounts found: </source>
-        <translation type="unfinished">Несколько счетов найдено: </translation>
+        <translation>Несколько счетов найдено: </translation>
     </message>
 </context>
 <context>
@@ -4712,7 +4717,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="448"/>
         <source>Can&apos;t resolve an exact symbol for: </source>
-        <translation type="unfinished"></translation>
+        <translation>Навозможно определить символ для: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="465"/>
@@ -5443,124 +5448,124 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="17"/>
         <source>Asset</source>
-        <translation type="unfinished"></translation>
+        <translation>ЦБ</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="78"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Отмена</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="85"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="168"/>
         <source>Add new attribute</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить новый аттрибут</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="178"/>
         <source>Country: </source>
-        <translation type="unfinished"></translation>
+        <translation>Страна: </translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="198"/>
         <source>Asset name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Наименование ЦБ:</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="218"/>
         <source>Asset attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>Аттрибуты ЦБ</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="225"/>
         <source>Type: </source>
-        <translation type="unfinished"></translation>
+        <translation>Тип: </translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="232"/>
         <source>Remove selected attribute</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить выбранный аттрибут</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="341"/>
         <location filename="../widgets/symbol_dialog.py" line="151"/>
         <source>Symbols</source>
-        <translation type="unfinished"></translation>
+        <translation>Символы</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="348"/>
         <source>Remove selected symbol</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить выбранный символ</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="371"/>
         <source>Add new symbol</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить новый символ</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="440"/>
         <source>Remove selected identifier</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить выбранный идентификатор</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="463"/>
         <location filename="../widgets/symbol_dialog.py" line="152"/>
         <source>Identifiers</source>
-        <translation type="unfinished"></translation>
+        <translation>Идентификаторы</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="470"/>
         <source>Add new identifier</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить новый идентификатор</translation>
     </message>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="153"/>
         <source>Asset data</source>
-        <translation type="unfinished"></translation>
+        <translation>Данные ЦБ</translation>
     </message>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="236"/>
         <source>Failed to create new asset: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка создания новой ЦБ: </translation>
     </message>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="271"/>
         <source>Failed to add symbol: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка добавления символа: </translation>
     </message>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="293"/>
         <source>No symbol selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Не выбран символ</translation>
     </message>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="294"/>
         <source>Please select a symbol to add an identifier to it</source>
-        <translation type="unfinished"></translation>
+        <translation>Пожалуйста, выберите символ для добавления идентификатора</translation>
     </message>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="336"/>
         <source>Incomplete data</source>
-        <translation type="unfinished">Неполные данные</translation>
+        <translation>Неполные данные</translation>
     </message>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="337"/>
         <source>Can&apos;t save asset without active symbols</source>
-        <translation type="unfinished"></translation>
+        <translation>Невоможно сохранить ЦБ без активных символов</translation>
     </message>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="350"/>
         <source> submit failed: </source>
-        <translation type="unfinished"></translation>
+        <translation> ошибка записи: </translation>
     </message>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="353"/>
         <source>Asset submit failed: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка записи ЦБ: </translation>
     </message>
 </context>
 <context>
@@ -5568,47 +5573,47 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../constants.py" line="239"/>
         <source>UUID</source>
-        <translation type="unfinished">UUID</translation>
+        <translation>UUID</translation>
     </message>
     <message>
         <location filename="../constants.py" line="240"/>
         <source>FIGI</source>
-        <translation type="unfinished">FIGI</translation>
+        <translation>FIGI</translation>
     </message>
     <message>
         <location filename="../constants.py" line="241"/>
         <source>ISIN</source>
-        <translation type="unfinished">ISIN</translation>
+        <translation>ISIN</translation>
     </message>
     <message>
         <location filename="../constants.py" line="242"/>
         <source>ITIN</source>
-        <translation type="unfinished"></translation>
+        <translation>ITIN</translation>
     </message>
     <message>
         <location filename="../constants.py" line="243"/>
         <source>CUSIP</source>
-        <translation type="unfinished">CUSIP</translation>
+        <translation>CUSIP</translation>
     </message>
     <message>
         <location filename="../constants.py" line="244"/>
         <source>Reg.code</source>
-        <translation type="unfinished">Рег.код</translation>
+        <translation>Рег.код</translation>
     </message>
     <message>
         <location filename="../constants.py" line="245"/>
         <source>ISO4217 currency code</source>
-        <translation type="unfinished">Код валюты ISO4217</translation>
+        <translation>Код валюты ISO4217</translation>
     </message>
     <message>
         <location filename="../constants.py" line="246"/>
         <source>ETH address</source>
-        <translation type="unfinished">ETH-адрес</translation>
+        <translation>ETH-адрес</translation>
     </message>
     <message>
         <location filename="../constants.py" line="247"/>
         <source>ARB address</source>
-        <translation type="unfinished">ARB-адрес</translation>
+        <translation>ARB-адрес</translation>
     </message>
 </context>
 <context>
@@ -5616,12 +5621,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="194"/>
         <source>Type</source>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="195"/>
         <source>Value</source>
-        <translation type="unfinished">Оценка</translation>
+        <translation>Значение</translation>
     </message>
 </context>
 <context>
@@ -5629,17 +5634,17 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../widgets/assets_dialogs.py" line="134"/>
         <source>&apos;{symbol}&apos; is the last symbol of asset &apos;{asset_name}&apos;. Removing it will also remove the asset itself together with its full transaction history. Continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;{symbol}&apos; является последним символом ЦБ &apos;{asset_name}&apos;. Его удаление приведёт к полному удалению всех транзакций, связанных с этой ЦБ. Продолжить?</translation>
     </message>
     <message>
         <location filename="../widgets/assets_dialogs.py" line="137"/>
         <source>Remove symbol &apos;{symbol}&apos;?</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить символ &apos;{symbol}&apos;?</translation>
     </message>
     <message>
         <location filename="../widgets/assets_dialogs.py" line="138"/>
         <source>Confirmation</source>
-        <translation type="unfinished">Подтверждение</translation>
+        <translation>Подтверждение</translation>
     </message>
 </context>
 <context>
@@ -5652,12 +5657,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="20"/>
         <source>Asset</source>
-        <translation type="unfinished"></translation>
+        <translation>ЦБ</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="21"/>
         <source>Asset type</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип ЦБ</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="22"/>
@@ -5668,12 +5673,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="24"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Место</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="25"/>
         <source>Name</source>
-        <translation type="unfinished">Наименование</translation>
+        <translation>Наименование</translation>
     </message>
 </context>
 <context>
@@ -5720,17 +5725,17 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../db/common_models.py" line="115"/>
         <source>Tag</source>
-        <translation type="unfinished"></translation>
+        <translation>Метка</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="116"/>
         <source>Icon filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Имя файла иконки</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="119"/>
         <source>New tag</source>
-        <translation type="unfinished"></translation>
+        <translation>Новая метка</translation>
     </message>
 </context>
 <context>
@@ -5857,38 +5862,38 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../widgets/tax_widget.py" line="259"/>
         <source>Select tax file to merge</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите файл декларации для объединения</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="260"/>
         <location filename="../widgets/tax_widget.py" line="275"/>
         <source>Declaration files (*.de5)</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл декларации (*.de5)</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="274"/>
         <source>Select file to save merged result</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите файл для сохранения объединённого результата</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="287"/>
         <source>de5 files merged successfully: </source>
-        <translation type="unfinished"></translation>
+        <translation>de5-файлы объединены успешно: </translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="289"/>
         <source>Merge de5</source>
-        <translation type="unfinished"></translation>
+        <translation>Объединить de5</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="300"/>
         <source>Failed to read de5 file: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка чтения de5-файла: </translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="302"/>
         <source>Unsupported de5 file format: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неподдерживаемый формат de5-файла: </translation>
     </message>
 </context>
 <context>
@@ -6064,12 +6069,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../widgets/tax_widget.py" line="135"/>
         <source>Selected account isn&apos;t bound to a broker or broker name isn&apos;t set. Tax form export may be incomplete.</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбранный счёт не связан с брокером или наименование брокера не указано. Экспорт налоговой декларации может быть неполным.</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="138"/>
         <source>Warning</source>
-        <translation type="unfinished">Предупреждение</translation>
+        <translation>Предупреждение</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="144"/>
@@ -6089,7 +6094,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../widgets/tax_widget.py" line="168"/>
         <source>Excel tax report was saved to file </source>
-        <translation type="unfinished"></translation>
+        <translation>Налоговый отчёт Excel был сохранён в файл </translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="183"/>
@@ -6553,7 +6558,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/quotes_update.ui" line="73"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>Все</translation>
     </message>
     <message>
         <location filename="../ui/quotes_update.ui" line="96"/>
@@ -6595,7 +6600,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_export/xlsx.py" line="44"/>
         <source>Can&apos;t save Excel report into file </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно сохранить отчёт Excel в файл </translation>
     </message>
     <message>
         <location filename="../data_export/xlsx.py" line="54"/>
