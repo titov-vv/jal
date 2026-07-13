@@ -5,7 +5,7 @@ import xml.etree.ElementTree as xml_tree
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from jal.data_import.statement import FOF, Statement, Statement_ImportError, Statement_Capabilities
+from jal.data_import.statement import JSF, Statement, Statement_ImportError, Statement_Capabilities
 
 
 JAL_STATEMENT_CLASS = "StatementFreedomFinance"
@@ -42,17 +42,16 @@ class StatementFreedomFinance(Statement):
         return sorted(statement_files, key=sort_key)
 
     def load(self, filename: str) -> None:
+        self._reset_id_map()
         self._data = {
-            FOF.PERIOD: [None, None],
-            FOF.ACCOUNTS: [],
-            FOF.ASSETS: [],
-            FOF.SYMBOLS: [],
-            FOF.ASSETS_DATA: [],
-            FOF.TRADES: [],
-            FOF.TRANSFERS: [],
-            FOF.CORP_ACTIONS: [],
-            FOF.ASSET_PAYMENTS: [],
-            FOF.INCOME_SPENDING: []
+            JSF.PERIOD: [None, None],
+            JSF.ACCOUNTS: [],
+            JSF.ASSETS: [],
+            JSF.TRADES: [],
+            JSF.TRANSFERS: [],
+            JSF.CORP_ACTIONS: [],
+            JSF.ASSET_PAYMENTS: [],
+            JSF.INCOME_SPENDING: []
         }
         root = self._load_xml_root(filename)
         account_number = self._account_number_from_filename(filename)
@@ -72,7 +71,7 @@ class StatementFreedomFinance(Statement):
     def _load_period(self, root) -> None:
         start = self._parse_datetime(self._required_text(root, './date_start'))
         end = self._parse_datetime(self._required_text(root, './date_end'))
-        self._data[FOF.PERIOD] = [start, end]
+        self._data[JSF.PERIOD] = [start, end]
 
     def _account_number_from_filename(self, filename: str) -> str:
         account_number = os.path.basename(filename).split('_', 1)[0].strip()
@@ -102,15 +101,15 @@ class StatementFreedomFinance(Statement):
             account_id = self._find_account_id(account_number, currency)
             currency_id = self.currency_id(currency)
             symbol_id = self.symbol_id({
-                'type': FOF.ASSET_STOCK,
+                'type': JSF.ASSET_STOCK,
                 'symbol': self._normalize_symbol(ticker),
                 'isin': isin,
                 'currency': currency_id,
                 'note': self._symbol_market(ticker),
                 'search_offline': True
             })
-            self._data[FOF.TRADES].append({
-                'id': self._next_id(FOF.TRADES),
+            self._data[JSF.TRADES].append({
+                'id': self._next_id(JSF.TRADES),
                 'number': self._text(node, 'id') or self._text(node, 'trade_id') or self._text(node, 'order_id'),
                 'timestamp': timestamp,
                 'settlement': settlement,
@@ -144,16 +143,16 @@ class StatementFreedomFinance(Statement):
             account_id = self._find_account_id(account_number, currency)
             currency_id = self.currency_id(currency)
             symbol_id = self.symbol_id({
-                'type': FOF.ASSET_STOCK,
+                'type': JSF.ASSET_STOCK,
                 'symbol': self._normalize_symbol(ticker),
                 'isin': isin,
                 'currency': currency_id,
                 'note': self._symbol_market(ticker),
                 'search_offline': True
             })
-            self._data[FOF.ASSET_PAYMENTS].append({
-                'id': self._next_id(FOF.ASSET_PAYMENTS),
-                'type': FOF.PAYMENT_DIVIDEND,
+            self._data[JSF.ASSET_PAYMENTS].append({
+                'id': self._next_id(JSF.ASSET_PAYMENTS),
+                'type': JSF.PAYMENT_DIVIDEND,
                 'account': account_id,
                 'timestamp': timestamp,
                 'ex_date': ex_date,
@@ -177,18 +176,15 @@ class StatementFreedomFinance(Statement):
             return ''
         return found.text.strip()
 
-    def _next_id(self, section: str) -> int:
-        return max([0] + [item['id'] for item in self._data[section]]) + 1
-
     def _find_account_id(self, number, currency):
         currency_id = self.currency_id(currency)
-        match = [x for x in self._data[FOF.ACCOUNTS] if x.get('number') == number and x['currency'] == currency_id]
+        match = [x for x in self._data[JSF.ACCOUNTS] if x.get('number') == number and x['currency'] == currency_id]
         if match:
             if len(match) == 1:
                 return match[0]['id']
             raise Statement_ImportError(self.tr("Multiple accounts found: ") + f"{number}/{currency}")
-        new_id = self._next_id(FOF.ACCOUNTS)
-        self._data[FOF.ACCOUNTS].append({
+        new_id = self._next_id(JSF.ACCOUNTS)
+        self._data[JSF.ACCOUNTS].append({
             'id': new_id,
             'name': number,
             'number': number,

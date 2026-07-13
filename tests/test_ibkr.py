@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
-from jal.data_import.statement import FOF
+from jal.data_import.statement import JSF
 from tests.helpers import d2t
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
@@ -272,10 +272,10 @@ def test_ibkr_q1_tax_correction_does_not_match_future_dividend():
     # A Q1 correction for February must not be attached to that future dividend.
     ibkr = StatementIBKR()
     ibkr._data = {
-        FOF.ASSET_PAYMENTS: [
-            {'id': 1, 'type': FOF.PAYMENT_DIVIDEND, 'account': 1, 'symbol': 95, 'timestamp': d2t(250214),
+        JSF.ASSET_PAYMENTS: [
+            {'id': 1, 'type': JSF.PAYMENT_DIVIDEND, 'account': 1, 'symbol': 95, 'timestamp': d2t(250214),
              'amount': 13.73, 'tax': 0.79, 'description': 'O(US7561091049) CASH DIVIDEND USD 0.264 PER SHARE (Ordinary Dividend)'},
-            {'id': 2, 'type': FOF.PAYMENT_DIVIDEND, 'account': 1, 'symbol': 95, 'timestamp': d2t(250314),
+            {'id': 2, 'type': JSF.PAYMENT_DIVIDEND, 'account': 1, 'symbol': 95, 'timestamp': d2t(250314),
              'amount': 13.94, 'tax': 4.12, 'description': 'O(US7561091049) CASH DIVIDEND USD 0.268 PER SHARE (Ordinary Dividend)'},
         ]
     }
@@ -297,7 +297,7 @@ def test_ibkr_q1_tax_correction_does_not_match_future_dividend():
 # ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_merger_with_prefixed_old_symbol_pairs_correctly():
     ibkr = StatementIBKR()
-    ibkr._data = {FOF.CORP_ACTIONS: []}
+    ibkr._data = {JSF.CORP_ACTIONS: []}
     ibkr.locate_symbol = lambda symbol, isin: {
         ('BGTK', 'US34520J2078'): 28,
     }.get((symbol, isin))
@@ -335,8 +335,8 @@ def test_ibkr_merger_with_prefixed_old_symbol_pairs_correctly():
 
     assert loaded == 2
     assert parts_b[0]['jal_processed'] is True
-    assert len(ibkr._data[FOF.CORP_ACTIONS]) == 1
-    merger = ibkr._data[FOF.CORP_ACTIONS][0]
+    assert len(ibkr._data[JSF.CORP_ACTIONS]) == 1
+    merger = ibkr._data[JSF.CORP_ACTIONS][0]
     assert merger['symbol'] == 28
     assert merger['quantity'] == 10000.0
     assert merger['outcome'] == [{'symbol': 29, 'quantity': 10000.0, 'share': 0.0}]
@@ -345,7 +345,7 @@ def test_ibkr_merger_with_prefixed_old_symbol_pairs_correctly():
 # ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_split_with_prefixed_parenthetical_symbol_pairs_correctly():
     ibkr = StatementIBKR()
-    ibkr._data = {FOF.CORP_ACTIONS: []}
+    ibkr._data = {JSF.CORP_ACTIONS: []}
     ibkr.locate_symbol = lambda symbol, isin: {
         ('VYNE', 'US92941V2097'): 171,
     }.get((symbol, isin))
@@ -383,8 +383,8 @@ def test_ibkr_split_with_prefixed_parenthetical_symbol_pairs_correctly():
 
     assert loaded == 2
     assert parts_b[0]['jal_processed'] is True
-    assert len(ibkr._data[FOF.CORP_ACTIONS]) == 1
-    split = ibkr._data[FOF.CORP_ACTIONS][0]
+    assert len(ibkr._data[JSF.CORP_ACTIONS]) == 1
+    split = ibkr._data[JSF.CORP_ACTIONS][0]
     assert split['symbol'] == 171
     assert split['quantity'] == 12.5
     assert split['outcome'] == [{'symbol': 170, 'quantity': 0.6944, 'share': 1.0}]
@@ -419,7 +419,7 @@ def test_ibkr_find_db_stock_dividend_for_tax_correction(monkeypatch):
     monkeypatch.setattr('data_import.broker_statements.ibkr.AssetPayment.get_list', fake_get_list)
 
     ibkr = StatementIBKR()
-    ibkr._data = {FOF.ASSET_PAYMENTS: []}
+    ibkr._data = {JSF.ASSET_PAYMENTS: []}
     ibkr._map_db_account = lambda _: 1
     ibkr._map_db_asset_by_symbol = lambda _: 294
 
@@ -433,19 +433,19 @@ def test_ibkr_find_db_stock_dividend_for_tax_correction(monkeypatch):
     )
 
     assert dividend is not None
-    assert dividend['id'] == -332
+    assert dividend['id'] == 1   # first free statement payment id, reserved for the db record
+    assert ibkr._id_map[JSF.ASSET_PAYMENTS] == {1: 332}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_mlp_extra_tax_reported_separately_is_saved_as_fee():
     ibkr = StatementIBKR()
     ibkr._data = {
-        FOF.ASSET_PAYMENTS: [
-            {'id': 1, 'type': FOF.PAYMENT_DIVIDEND, 'account': 1, 'symbol': 161, 'timestamp': 1699042800,
+        JSF.ASSET_PAYMENTS: [
+            {'id': 1, 'type': JSF.PAYMENT_DIVIDEND, 'account': 1, 'symbol': 161, 'timestamp': 1699042800,
              'amount': 5.25, 'tax': 1.94, 'description': 'USAC(US90290N1090) CASH DIVIDEND USD 0.525 PER SHARE (Ordinary Dividend)'},
         ],
-        FOF.ASSETS: [{'id': 61, 'type': FOF.ASSET_MLP}],
-        FOF.SYMBOLS: [{'id': 161, 'asset': 61, 'symbol': 'USAC'}],
+        JSF.ASSETS: [{'id': 61, 'type': JSF.ASSET_MLP, JSF.SYMBOLS: [{'id': 161, 'symbol': 'USAC'}]}],
     }
     ibkr._map_db_account = lambda _: 0
     ibkr._map_db_asset_by_symbol = lambda _: 0
@@ -462,7 +462,7 @@ def test_ibkr_mlp_extra_tax_reported_separately_is_saved_as_fee():
     aggregated = ibkr.aggregate_taxes(taxes)
 
     assert [tax['amount'] for tax in aggregated] == [-1.94, 1.94]
-    extra_fees = [x for x in ibkr._data[FOF.ASSET_PAYMENTS] if x['type'] == FOF.PAYMENT_FEE]
+    extra_fees = [x for x in ibkr._data[JSF.ASSET_PAYMENTS] if x['type'] == JSF.PAYMENT_FEE]
     assert len(extra_fees) == 1
     assert extra_fees[0]['amount'] == -0.53
     assert extra_fees[0]['description'].endswith(' - Extra 10% tax due to IRS section 1446')
@@ -472,15 +472,11 @@ def test_ibkr_mlp_extra_tax_reported_separately_is_saved_as_fee():
 def test_ibkr_spinoff_allows_fractional_entitlement_rounding():
     ibkr = StatementIBKR()
     ibkr._data = {
-        FOF.ASSETS: [
-            {'id': 1, 'isin': 'US85521J1097'},
-            {'id': 2, 'isin': 'US23284C1100'},
+        JSF.ASSETS: [
+            {'id': 1, JSF.SYMBOLS: [{'id': 11, 'symbol': 'SVAC', 'isin': 'US85521J1097'}]},
+            {'id': 2, JSF.SYMBOLS: [{'id': 12, 'symbol': 'CYXTW', 'isin': 'US23284C1100'}]},
         ],
-        FOF.SYMBOLS: [
-            {'id': 11, 'asset': 1, 'symbol': 'SVAC'},
-            {'id': 12, 'asset': 2, 'symbol': 'CYXTW'},
-        ],
-        FOF.CORP_ACTIONS: [],
+        JSF.CORP_ACTIONS: [],
     }
 
     action = {
@@ -499,5 +495,5 @@ def test_ibkr_spinoff_allows_fractional_entitlement_rounding():
     }
 
     assert ibkr.load_spinoff(action, None) == 1
-    assert ibkr._data[FOF.CORP_ACTIONS][0]['symbol'] == 11
-    assert ibkr._data[FOF.CORP_ACTIONS][0]['quantity'] == 50
+    assert ibkr._data[JSF.CORP_ACTIONS][0]['symbol'] == 11
+    assert ibkr._data[JSF.CORP_ACTIONS][0]['quantity'] == 50

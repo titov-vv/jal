@@ -3,7 +3,7 @@ import re
 from datetime import datetime, timezone
 
 from jal.constants import PredefinedCategory
-from jal.data_import.statement import FOF, Statement_ImportError
+from jal.data_import.statement import JSF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
 from jal.db.asset import JalAsset
 
@@ -66,14 +66,14 @@ class StatementJ2T(StatementXLS):
                 asset_name = asset_name[:-1]
             currency_code = self.currency_id('USD')      # FIXME put account currency here
             if not self._statement[headers['isin']][row]:
-                self.asset_id({'type': FOF.ASSET_CRYPTO, 'symbol': asset_name,
+                self.asset_id({'type': JSF.ASSET_CRYPTO, 'symbol': asset_name,
                                'name': asset_name, 'currency': currency_code})
             elif self._statement[headers['symbol']][row]:
-                self.asset_id({'type': FOF.ASSET_STOCK, 'isin': self._statement[headers['isin']][row],
+                self.asset_id({'type': JSF.ASSET_STOCK, 'isin': self._statement[headers['isin']][row],
                                'symbol': self._statement[headers['symbol']][row],
                                'name': asset_name, 'currency': currency_code})
             else:
-                self.asset_id({'type': FOF.ASSET_STOCK, 'isin': self._statement[headers['isin']][row],
+                self.asset_id({'type': JSF.ASSET_STOCK, 'isin': self._statement[headers['isin']][row],
                                'name': asset_name, 'currency': currency_code, 'search_online': "MOEX"})
             cnt += 1
             row += 1
@@ -112,7 +112,7 @@ class StatementJ2T(StatementXLS):
                 row += 1
                 continue
             deal_number = str(self._statement[headers['number']][row])
-            symbol_id = self.symbol_id({'type': FOF.ASSET_STOCK, 'isin': self._statement[headers['isin']][row],
+            symbol_id = self.symbol_id({'type': JSF.ASSET_STOCK, 'isin': self._statement[headers['isin']][row],
                                         'symbol': self._statement[headers['asset']][row],
                                         'name': self._statement[headers['asset_name']][row],
                                         'currency': self.currency_id('USD')})  # FIXME - replace hardcoded 'USD'
@@ -135,10 +135,10 @@ class StatementJ2T(StatementXLS):
             # Settlement is stored as date in Excel report file
             settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
             account_id = self._find_account_id(self._account_number, 'USD')   # FIXME - replace hardcoded 'USD'
-            new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+            new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
                      "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
-            self._data[FOF.TRADES].append(trade)
+            self._data[JSF.TRADES].append(trade)
             cnt += 1
             row += 1
         logging.info(self.tr("Stock trades loaded: ") + f"{cnt}")
@@ -169,7 +169,7 @@ class StatementJ2T(StatementXLS):
             timestamp = int(self._statement[headers['timestamp']][row].replace(tzinfo=timezone.utc).timestamp())
             settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
             deal_number = str(self._statement[headers['number']][row])
-            symbol_id = self.symbol_id({'type': FOF.ASSET_CRYPTO, 'symbol': self._statement[headers['asset_name']][row],
+            symbol_id = self.symbol_id({'type': JSF.ASSET_CRYPTO, 'symbol': self._statement[headers['asset_name']][row],
                                         'name': self._statement[headers['asset_name']][row],
                                         'currency': self.currency_id('USD')})  # FIXME - replace hardcoded 'USD'
             if self._statement[headers['B/S']][row].startswith('Купля'):
@@ -189,10 +189,10 @@ class StatementJ2T(StatementXLS):
             price = -(amount + fee) / qty
             assert price > 0.0
             account_id = self._find_account_id(self._account_number, self._statement[headers['account_currency']][row])
-            new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+            new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
                      "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
-            self._data[FOF.TRADES].append(trade)
+            self._data[JSF.TRADES].append(trade)
             cnt += 1
             row += 1
         logging.info(self.tr("Crypto trades loaded: ") + f"{cnt}")
@@ -270,7 +270,7 @@ class StatementJ2T(StatementXLS):
 
     # Locate exact symbol of an asset by its full name either in loaded JSON data (first) or in JAL database (next)
     def _find_symbol_by_name(self, asset_name) -> int:
-        candidates = [x for x in self._data[FOF.ASSETS] if 'name' in x and x['name'] == asset_name]
+        candidates = [x for x in self._data[JSF.ASSETS] if 'name' in x and x['name'] == asset_name]
         if len(candidates) == 1:
             return self._single_symbol_of(candidates[0]["id"])
         # symbol_id()'s search_offline path creates statement asset+symbol records for the db match
@@ -279,8 +279,8 @@ class StatementJ2T(StatementXLS):
 
     # This method finds dividend with given parameters in already loaded JSON data
     def _locate_dividend(self, symbol_id, timestamp, ex_date):
-        for dividend in self._data[FOF.ASSET_PAYMENTS]:
-            if dividend['type'] == FOF.PAYMENT_DIVIDEND and dividend['timestamp'] == timestamp and \
+        for dividend in self._data[JSF.ASSET_PAYMENTS]:
+            if dividend['type'] == JSF.PAYMENT_DIVIDEND and dividend['timestamp'] == timestamp and \
                     dividend['ex_date'] == ex_date and dividend['symbol'] == symbol_id:
                 return dividend
         return None
@@ -319,10 +319,10 @@ class StatementJ2T(StatementXLS):
             raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
         symbol_id = self._find_symbol_by_name(dividend['asset'])
         ex_date = int(datetime.strptime(dividend['date'], "%d/%m/%Y").replace(tzinfo=timezone.utc).timestamp())
-        new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
-        payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
+        new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        payment = {"id": new_id, "type": JSF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
                    "ex_date": ex_date, "symbol": symbol_id, "amount": amount, "description": note}
-        self._data[FOF.ASSET_PAYMENTS].append(payment)
+        self._data[JSF.ASSET_PAYMENTS].append(payment)
 
     def tax(self, timestamp, amount, note):
         TaxPattern = r"Налог на дивиденды;\s+(Начисление дивидендов полученных по счету.*\.\s+)?Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
@@ -341,28 +341,28 @@ class StatementJ2T(StatementXLS):
             dividend_record['tax'] = amount
 
     def fee(self, timestamp, account_id, amount, note):
-        new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        new_id = max([0] + [x['id'] for x in self._data[JSF.INCOME_SPENDING]]) + 1
         fee = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
-               "lines": [{"amount": amount, "category": -PredefinedCategory.Fees, "description": note}]}
-        self._data[FOF.INCOME_SPENDING].append(fee)
+               "lines": [{"amount": amount, "category": PredefinedCategory.Fees, "description": note}]}
+        self._data[JSF.INCOME_SPENDING].append(fee)
 
     def transfer_in(self, timestamp, account_id, amount, note):
-        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
-        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        account = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]
+        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [0, account_id, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
                     "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": note}
-        self._data[FOF.TRANSFERS].append(transfer)
+        self._data[JSF.TRANSFERS].append(transfer)
 
     def transfer_out(self, timestamp, account_id, amount, note):
-        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
-        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        account = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]
+        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [account_id, 0, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
                     "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": note}
-        self._data[FOF.TRANSFERS].append(transfer)
+        self._data[JSF.TRANSFERS].append(transfer)
 
     def skip_warning(self, _timestamp, _account_id, amount, note):
         logging.warning(self.tr("Import skipped of transaction: ") + f"'{note}' ({amount})")

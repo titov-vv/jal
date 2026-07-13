@@ -75,6 +75,7 @@ class JalDB:
     _instances_with_cache = []
     _sql_call_count = 0
     _trace_sql_requests = os.environ.get('TRACE_SQL', '').upper() == 'YES'
+    _in_transaction = False   # True while an explicit transaction is open (see start_transaction())
     PATH_APP = auto()
     PATH_DB_FILE = auto()
     PATH_LANG = auto()
@@ -221,7 +222,7 @@ class JalDB:
             else:
                 logging.error(f"SQL failure: '{error.message()}' for query '{sql_text}' with params '{params}'")
             return None
-        if commit:
+        if commit and not cls._in_transaction:
             db.commit()
         return query
 
@@ -358,8 +359,24 @@ class JalDB:
         self.enable_fk(True)
         return JalDBError(JalDBError.NoError)
 
-    def commit(self):
+    # Opens an explicit db transaction. While it is active, commit requests coming from regular
+    # queries (commit() method or _exec(commit=True)) are suppressed so the whole transaction is
+    # decided by commit_transaction()/rollback_transaction() only.
+    def start_transaction(self):
+        self.connection().transaction()
+        JalDB._in_transaction = True
+
+    def commit_transaction(self):
+        JalDB._in_transaction = False
         self.connection().commit()
+
+    def rollback_transaction(self):
+        JalDB._in_transaction = False
+        self.connection().rollback()
+
+    def commit(self):
+        if not JalDB._in_transaction:
+            self.connection().commit()
 
     # This method creates a db record in 'table' name that describes relevant operation.
     # 'data' is a dict that contains operation data and dict 'fields' describes it having

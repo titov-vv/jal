@@ -20,7 +20,6 @@ class Setup:
     IMPORT_PATH = "data_import"
     EXPORT_PATH = "data_export"
     NDFL3_TEMPLATE_PATH = "ru_ndfl3"
-    IMPORT_SCHEMA_NAME = "import_schema.json"
     LANG_PATH = "languages"
     REPORT_PATH = "reports"
     STATEMENT_PATH = "broker_statements"

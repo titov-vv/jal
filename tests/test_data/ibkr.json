@@ -1,220 +1,1490 @@
 {
-  "period": [1577836800, 1607903999],
-  "accounts": [
-    {"id": 1, "number": "U7654321", "currency": 1, "precision": 10, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 2, "number": "U7654321", "currency": 2, "precision": 10, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89},
-    {"id": 3, "number": "TEST_ACC", "currency": 2, "precision": 10, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 4, "number": "U7654321", "currency": 3, "precision": 10, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 5, "number": "TEST_ACC", "currency": 3, "precision": 10, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 6, "number": "U7654321", "currency": 32, "precision": 10}
-  ],
-  "assets": [
-    {"id": 1, "type": "money", "name":  "RUB"},
-    {"id": 2, "type": "money", "name":  "USD"},
-    {"id": 3, "type": "money", "name":  "CAD"},
-    {"id": 4, "type": "stock", "name": "AMAZON.COM INC", "isin": "US0231351067"},
-    {"id": 5, "type": "etf", "name": "VANGUARD GROWTH ETF", "isin": "US9229087369", "country": "us"},
-    {"id": 6, "type": "adr", "name": "ALIBABA GROUP HOLDING-SP ADR", "isin": "US01609W1027"},
-    {"id": 7, "type": "stock", "name": "DOMINION ENERGY INC"},
-    {"id": 8, "type": "stock", "name": "DOMINION ENERGY MIDSTREAM PA"},
-    {"id": 9, "type": "bond", "name": "X 6 1/4 03/15/26", "isin": "US912909AN84"},
-    {"id": 10, "type": "option", "name": "SPY 29MAY20 295.0 C"},
-    {"id": 11, "type": "warrant", "name": "DSKEW 27FEB22 11.5 C", "isin": "US23753F1158"},
-    {"id": 12, "type": "stock", "name": "MYLAN NV", "isin": "NL0011031208"},
-    {"id": 13, "type": "stock", "name": "VIATRIS INC-W/I",  "isin": "US92556V1061"},
-    {"id": 14, "type": "stock", "name": "WABTEC CORP"},
-    {"id": 15, "type": "adr", "name": "TELEFONICA SA-SPON ADR", "isin": "US8793822086"},
-    {"id": 16, "type": "stock", "name": "EQM MIDSTREAM PARTNERS LP", "isin": "US26885B1008"},
-    {"id": 17, "type": "stock", "name": "EQUITRANS MIDSTREAM CORP", "isin": "US2946001011"},
-    {"id": 18, "type": "stock", "name": "GENERAL ELECTRIC CO", "isin": "US3696041033"},
-    {"id": 19, "type": "stock", "name": "EWELLNESS HEALTHCARE CORP", "isin": "US30051D1063"},
-    {"id": 20, "type": "stock", "name": "EWELLNESS HEALTHCARE CORP", "isin": "US30051D2053"},
-    {"id": 21, "type": "etf", "name": "PIMCO 25+ YR ZERO CPN US TIF", "isin": "US72201R8824", "country": "us"},
-    {"id": 22, "type": "stock", "name": "LIVONGO HEALTH INC", "isin": "US5391831030"},
-    {"id": 23, "type": "stock", "name": "TELADOC HEALTH INC", "isin": "US87918A1051"},
-    {"id": 24, "type": "stock", "name": "LUMEN TECHNOLOGIES INC", "isin": "US5502411037"},
-    {"id": 25, "type": "stock", "name": "CENTURYLINK INC", "isin": "US1567001060"},
-    {"id": 26, "type": "bond", "name": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "isin": "US912CALAN84"},
-    {"id": 27, "type": "warrant", "name": "BKSY 30DEC24 11.5 C", "isin": "US68839R1207"},
-    {"id": 28, "type": "warrant", "name": "BKSY 30DEC24 11.5 C","isin": "US09263B1162"},
-    {"id": 29, "type": "stock", "name": "APPLE INC", "isin": "US0378331005"},
-    {"id": 30, "type": "option", "name": "VLO 24JUL20 64.0 P"},
-    {"id": 31, "type": "stock", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001"},
-    {"id": 32, "type": "money", "name":  "EUR"},
-    {"id": 33, "type": "stock", "isin": "US5543821012"},
-    {"id": 34, "type": "stock", "isin": "US3696043013"},
-    {"id": 35, "type": "bond", "isin": "US345370CV02"},
-    {"id": 36, "type": "stock", "isin": "CA1125851040"},
-    {"id": 37, "type": "stock", "isin": "BMG1624R1079"},
-    {"id": 38, "type": "stock", "isin": "US11282X1037"},
-    {"id": 39, "type": "stock", "isin": "US8713321029"},
-    {"id": 40, "type": "stock", "isin": "US2183521028"},
-    {"id": 41, "type": "stock", "isin": "US218NSPODD6"},
-    {"id": 42, "type": "stock", "isin": "CA6295231014"},
-    {"id": 43, "type": "stock", "country": "us"}
-  ],
-  "symbols": [
-    {"id": 1, "asset": 1, "symbol": "RUB"},
-    {"id": 2, "asset": 2, "symbol": "USD"},
-    {"id": 3, "asset": 3, "symbol": "CAD"},
-    {"id": 4, "asset": 4, "symbol": "AMZN", "currency": 2, "note": "NASDAQ"},
-    {"id": 5, "asset": 5, "symbol": "VUG", "currency": 2, "note": "ARCA"},
-    {"id": 6, "asset": 6, "symbol": "BABA", "currency": 2, "note": "NYSE"},
-    {"id": 7, "asset": 7, "symbol": "D", "currency": 2, "note": "NYSE"},
-    {"id": 8, "asset": 8, "symbol": "DM", "currency": 2, "note": "NYSE"},
-    {"id": 9, "asset": 9, "symbol": "X 6 1/4 03/15/26", "currency": 2},
-    {"id": 10, "asset": 10, "symbol": "SPY   200529C00295000", "currency": 2},
-    {"id": 11, "asset": 11, "symbol": "DSKEW", "currency": 2, "note": "NASDAQ"},
-    {"id": 12, "asset": 12, "symbol": "MYL", "currency": 2},
-    {"id": 13, "asset": 13, "symbol": "VTRS", "currency": 2, "note": "NASDAQ"},
-    {"id": 14, "asset": 14, "symbol": "WAB", "currency": 2, "note": "NYSE"},
-    {"id": 15, "asset": 14, "symbol": "WBB", "currency": 3, "note": "TSE"},
-    {"id": 16, "asset": 15, "symbol": "TEF", "currency": 2, "note": "NYSE"},
-    {"id": 17, "asset": 16, "symbol": "EQM", "currency": 2, "note": "NYSE"},
-    {"id": 18, "asset": 17, "symbol": "ETRN", "currency": 2, "note": "NYSE"},
-    {"id": 19, "asset": 18, "symbol": "GE", "currency": 2, "note": "NYSE"},
-    {"id": 20, "asset": 19, "symbol": "EWLL", "currency": 2, "note": "PINK"},
-    {"id": 21, "asset": 20, "symbol": "EWLL", "currency": 2, "note": "PINK"},
-    {"id": 22, "asset": 21, "symbol": "ZROZ", "currency": 2, "note": "ARCA"},
-    {"id": 23, "asset": 22, "symbol": "LVGO", "currency": 2},
-    {"id": 24, "asset": 23, "symbol": "TDOC", "currency": 2, "note": "NYSE"},
-    {"id": 25, "asset": 24, "symbol": "LUMN", "currency": 2, "note": "NYSE"},
-    {"id": 26, "asset": 25, "symbol": "LUMN", "currency": 2, "note": "NYSE"},
-    {"id": 27, "asset": 26, "symbol": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "currency": 2},
-    {"id": 28, "asset": 27, "symbol": "SFTW WS", "currency": 2, "note": "NYSE"},
-    {"id": 29, "asset": 28, "symbol": "BKSY WS", "currency": 2, "note": "NYSE"},
-    {"id": 30, "asset": 29, "symbol": "AAPL", "currency": 2, "note": "NASDAQ"},
-    {"id": 31, "asset": 30, "symbol": "VLO   200724P00064000", "currency": 2, "note": "CBOE"},
-    {"id": 32, "asset": 31, "symbol": "VLO", "currency": 2, "note": "NYSE"},
-    {"id": 33, "asset": 32, "symbol": "EUR"},
-    {"id": 34, "asset": 33, "symbol": "MAC", "currency": 2, "note": "NYSE"},
-    {"id": 35, "asset": 20, "symbol": "EWLLD", "currency": 2, "note": "PINK"},
-    {"id": 36, "asset": 34, "symbol": "GE", "currency": 2, "note": "NYSE"},
-    {"id": 37, "asset": 35, "symbol": "F 8 1/2 04/21/23", "currency": 2},
-    {"id": 38, "asset": 36, "symbol": "BAM", "currency": 2, "note": "NYSE"},
-    {"id": 39, "asset": 37, "symbol": "BPYPM", "currency": 2, "note": "NASDAQ"},
-    {"id": 40, "asset": 38, "symbol": "BPYU", "currency": 2},
-    {"id": 41, "asset": 39, "symbol": "SLVM", "currency": 2, "note": "NYSE"},
-    {"id": 42, "asset": 40, "symbol": "CORT", "currency": 2, "note": "NASDAQ"},
-    {"id": 43, "asset": 41, "symbol": "CORT.OD2", "currency": 2, "note": "CORPACT"},
-    {"id": 44, "asset": 42, "currency": 2, "symbol": "NABIF"},
-    {"id": 45, "asset": 43, "symbol": "EDV", "currency": 2, "note": "ARCA"}
-  ],
-  "assets_data": [
-    {"id": 1, "asset": 4, "cusip": "023135106"},
-    {"id": 2, "asset": 6, "cusip": "01609W102"},
-    {"id": 3, "asset": 7, "cusip": "25746U109"},
-    {"id": 4, "asset": 8, "cusip": "257454108"},
-    {"id": 5, "asset": 9, "cusip": "912909AN8", "expiry": 1773532800, "principal": 1000},
-    {"id": 6, "asset": 10, "expiry": 1590710400},
-    {"id": 7, "asset": 11, "cusip": "23753F115", "expiry": 1645920000},
-    {"id": 8, "asset": 13, "cusip": "92556V106"},
-    {"id": 9, "asset": 14, "cusip": "929740108"},
-    {"id": 10, "asset": 15, "cusip": "879382208"},
-    {"id": 11, "asset": 16, "cusip": "26885B100"},
-    {"id": 12, "asset": 17, "cusip": "294600101"},
-    {"id": 13, "asset": 18, "cusip": "369604103"},
-    {"id": 14, "asset": 19, "cusip": "30051D106"},
-    {"id": 15, "asset": 20, "cusip": "30051D205"},
-    {"id": 16, "asset": 21, "cusip": "72201R882"},
-    {"id": 17, "asset": 22, "cusip": "539183103"},
-    {"id": 18, "asset": 23, "cusip": "87918A105"},
-    {"id": 19, "asset": 24, "cusip": "550241103"},
-    {"id": 20, "asset": 25, "cusip": "156700106"},
-    {"id": 21, "asset": 26, "cusip": "912CALAN8", "expiry": 1773532800, "principal": 1000},
-    {"id": 22, "asset": 27, "cusip": "68839R120", "expiry": 1735516800},
-    {"id": 23, "asset": 28, "expiry": 1735516800},
-    {"id": 24, "asset": 29, "cusip": "037833100"},
-    {"id": 25, "asset": 5, "cusip": "922908736"},
-    {"id": 26, "asset": 31, "cusip": "91913Y100"},
-    {"id": 27, "asset": 33, "cusip": "554382101"},
-    {"id": 28, "asset": 34, "cusip": "369604301"},
-    {"id": 29, "asset": 35, "cusip": "345370CV0"},
-    {"id": 30, "asset": 36, "cusip": "112585104"},
-    {"id": 31, "asset": 38, "cusip": "11282X103"},
-    {"id": 32, "asset": 39, "cusip": "871332102"},
-    {"id": 33, "asset": 40, "cusip": "218352102"},
-    {"id": 34, "asset": 41, "cusip": "218NSPODD"},
-    {"id": 35, "asset": 42, "cusip": "629523101"},
-    {"id": 36, "asset": 43, "cusip": "921910709"}
-  ],
-  "trades": [
-    {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "symbol": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
-    {"id": 2, "number": "", "timestamp": 1553545500, "settlement": 1553545500, "account": 2, "symbol": 6, "quantity": -0.777, "price": 169.15, "fee": 0.0},
-    {"id": 3, "number": "", "timestamp": 1553545500, "settlement": 1553545500, "account": 2, "symbol": 6, "quantity": 0.777, "price": 169.15, "fee": 0.0, "cancelled": true},
-    {"id": 4, "number": "", "timestamp": 1553545500, "settlement": 1553545500, "account": 2, "symbol": 6, "quantity": -0.777, "price": 168.37, "fee": 0.0},
-    {"id": 5, "number": "2661774904", "timestamp": 1579094694, "settlement": 1579219200, "account": 2, "symbol": 20, "quantity": 45000.0, "price": 0.0012, "fee": 0.54},
-    {"id": 6, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "symbol": 5, "quantity": -1240.0, "price": 54.84, "fee": 7.75519312},
-    {"id": 7, "number": "2674741000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "symbol": 30, "quantity": -148.0, "price": 316.68, "fee": -5.007792848},
-    {"id": 8, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "symbol": 9, "quantity": 2.0, "price": 637.09, "fee": 2.0},
-    {"id": 9, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "symbol": 31, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
-    {"id": 10, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "symbol": 31, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
-    {"id": 11, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "symbol": 32, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
-    {"id": 12, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": 2, "symbol": 21, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675},
-    {"id": 13, "number": "18952523919", "timestamp": 1640895900, "settlement": 1640895900, "account": 2, "symbol": 29, "quantity": -30.0, "price": 0.1, "fee": 0.0, "note": "BKSY WS(US09263B1162) MERGED(Liquidation) FOR USD 0.10 PER SHARE (BKSY WS, BKSY 30OCT24 11.5 C, US09263B1162)"},
-    {"id": 14, "number": "18694975077", "timestamp": 1638822300, "settlement": 1638822300, "account": 2, "symbol": 37, "quantity": -8.0, "price": 1103.06815, "fee": 0.0, "note": "(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)"},
-    {"id": 15, "number": "18882610202", "timestamp": 1640031900, "settlement": 1640031900, "account": 2, "symbol": 43, "quantity": -99.0, "price": 20.75, "fee": 0.0, "note": "CORT.OD2(US218NSPODD6) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)"}
-  ],
-  "income_spending": [
-    {"id": 1, "timestamp": 1578073286, "account": 2, "peer": 0, "lines": [{"amount": -7.96, "category": -5, "description": "BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019"}]},
-    {"id": 2, "timestamp": 1601462520, "account": 2, "peer": 0, "lines": [{"amount": 0.6905565, "category": -5, "description": "COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)"}]},
-    {"id": 3, "timestamp": 1591142400, "account": 1, "peer": 0, "lines": [{"amount": 0.5, "category": -8, "description": "RUB CREDIT INT FOR MAY-2020"}]},
-    {"id": 4, "timestamp": 1604534400, "account": 2, "peer": 0, "lines": [{"amount": -0.0105, "category": -6, "description": "VAT Spain 21%: 0.05 USD t*****71:Global Snapshot PnP"}]}
-  ],
-  "transfers": [
-    {"id": 1, "account": [6, 2, 2], "number": "2674343226","symbol": [33, 2], "timestamp": 1580443370, "withdrawal": 890.47, "deposit": 1000.0, "fee": 3.0, "description": "IDEALFX"},
-    {"id": 2, "account": [1, 2, 2], "number": "2645393202", "symbol": [1, 2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": 2.0, "description": "IDEALFX"},
-    {"id": 3, "account": [1, 2, 2], "number": "2845906676", "symbol": [1, 2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0, "description": "IDEALFX"},
-    {"id": 4, "account": [0, 1, 0], "number": "13778635822", "symbol": [1, 1], "timestamp": 1600374600, "withdrawal": 123456.78, "deposit": 123456.78, "fee": 0.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS"},
-    {"id": 5, "account": [2, 0, 0], "number": "14333901913", "symbol": [2, 2], "timestamp": 1605744000, "withdrawal": 1234.0, "deposit": 1234.0, "fee": 0.0, "description": "DISBURSEMENT INITIATED BY John Doe"},
-    {"id": 6, "account": [0, 2, 0], "number": "1234567890", "symbol": [2, 2], "timestamp": 1663372800, "withdrawal": 100.0, "deposit": 100.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS", "fee": 0.0},
-    {"id": 7, "account": [0, 2, 0], "number": "1234567891", "symbol": [2, 2], "timestamp": 1663372800, "withdrawal": 100.0, "deposit": 100.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS", "fee": 0.0},
-    {"id": 8, "account": [3, 2, 0], "number": "24055511103", "symbol": [4, 4], "timestamp": 1685702720, "withdrawal": 7.0, "deposit": 7.0, "description": "INTERNAL TRANSFER (--)", "fee": 0.0},
-    {"id": 9, "account": [2, 3, 0], "number": "21632131212", "symbol": [2, 2], "timestamp": 1694777165, "withdrawal": 12345.0, "deposit": 12345.0, "description": "INTERNAL TRANSFER FROM U7654321 TO TEST_ACC","fee": 0.0},
-    {"id": 10, "account": [3, 2, 0], "number": "16377745681", "symbol": [2, 2], "timestamp": 1683361518, "withdrawal": 150.0, "deposit": 150.0, "description": "INTERNAL TRANSFER FROM TEST_ACC TO U7654321", "fee": 0.0}
-  ],
-  "corporate_actions": [
-    {"id": 1, "type": "split", "account": 2, "timestamp": 1618345500, "number": "16074977038", "symbol": 4, "quantity": 217.0,
-      "outcome": [{"symbol": 4, "quantity": 271.25, "share":  1.0}], "description": "AMZN(US0231351067) SPLIT 5 FOR 4 (AMZN, AMAZON.COM INC, US0231351067)"},
-    {"id": 2, "type": "merger", "account": 2, "timestamp": 1605731100, "number": "10162291403", "symbol": 8, "quantity": 70.0,
-      "outcome": [{"symbol": 7, "quantity": 17.444, "share":  0.0}], "description": "DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)"},
-    {"id": 3, "type": "symbol_change", "account": 2, "timestamp": 1605558300, "number": "14302257657", "symbol": 12, "quantity": 5.0,
-      "outcome": [{"symbol": 13, "quantity": 5.0, "share":  1.0}], "description": "MYL(NL0011031208) CUSIP/ISIN CHANGE TO (US92556V1061) (VTRS, VIATRIS INC-W/I, US92556V1061)"},
-    {"id": 4, "type": "spin-off", "account": 2, "timestamp": 1605817500, "number": "10302900848", "symbol": 19, "quantity": 100,
-      "outcome": [{"symbol": 19, "quantity": 100, "share":  0.0}, {"symbol": 14, "quantity": 0.5371, "share":  0.0}], "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"},
-    {"id": 5, "type": "merger", "account": 2, "timestamp": 1592339100, "number": "13006963996", "symbol": 17, "quantity": 70.0,
-      "outcome": [{"symbol": 18, "quantity": 170.8, "share":  0.0}], "description": "EQM(US26885B1008) MERGED(Voluntary Offer Allocation) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)"},
-    {"id": 6, "type": "merger", "account": 2, "timestamp": 1604089500, "number": "14147163475", "symbol": 23, "quantity": 10.0,
-      "outcome": [{"symbol": 33, "quantity": 42.4, "share": 0.0}, {"symbol": 24, "quantity": 5.92, "share":  0.0}], "description": "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"},
-    {"id": 7, "type": "merger", "account": 2, "timestamp": 1611260700, "number": "15015004953", "symbol": 26, "quantity": 200.0,
-      "outcome": [{"symbol": 25, "quantity": 200.0, "share":  0.0}], "description": "LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)"},
-    {"id": 8, "type": "merger", "account": 2, "timestamp": 1630007100, "number": "17569476329", "symbol": 9, "quantity": 2.0,
-      "outcome": [{"symbol": 27, "quantity": 2.0, "share":  0.0}], "description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"},
-    {"id": 9, "type": "symbol_change", "account": 2, "timestamp": 1631219100, "number": "17667047189", "symbol": 28, "quantity": 20.0,
-      "outcome": [{"symbol": 29, "quantity": 20.0, "share":  1.0}], "description": "SFTW WS(US68839R1207) CUSIP/ISIN CHANGE TO (US09263B1162) (BKSY WS, BKSY 30OCT24 11.5 C, US09263B1162)"},
-    {"id": 10, "type": "split", "account": 2, "timestamp": 1581452700, "number": "12029570527", "symbol": 20, "quantity": 45000.0,
-      "outcome": [{"symbol": 35, "quantity": 900.0, "share":  1.0}], "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"},
-    {"id": 11, "type": "split", "account": 2, "timestamp": 1627676700, "number": "17240033443", "symbol": 19, "quantity": 104.0,
-      "outcome": [{"symbol": 36, "quantity": 13.0, "share":  1.0}], "description": "GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)"},
-    {"id": 12, "type": "merger", "account": 2, "timestamp": 1627331100, "number": "17200082800", "symbol": 40, "quantity": 610.0,
-      "outcome": [{"symbol": 2, "quantity": 7554.3909201, "share": 0.0}, {"symbol": 38, "quantity": 55.7151, "share":  0.0}, {"symbol": 39, "quantity": 40.0895, "share":  0.0}], "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"},
-    {"id": 13, "type": "spin-off", "account": 2, "timestamp": 1633033500, "number": "17897699521", "symbol": 19, "quantity": 320,
-      "outcome": [{"symbol": 19, "quantity": 320, "share":  0.0}, {"symbol": 41, "quantity": 29.0909, "share":  0.0}], "description": "GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)"},
-    {"id": 14, "type": "merger", "account": 2, "timestamp": 1639597500, "number": "18787960371", "symbol": 42, "quantity": 99.0,
-      "outcome": [{"symbol": 43, "quantity": 99.0, "share":  0.0}], "description": "CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)"},
-    {"id": 15, "type": "delisting", "account": 2, "timestamp": 1612470300, "number": "15238437826", "symbol": 44, "quantity": 20000.0,
-      "outcome": [], "description": "(CA6295231014) DELISTED (NABIF, NABIS HOLDINGS INC, CA6295231014)"}
-  ],
-  "asset_payments": [
-    {"id": 1, "type": "stock_dividend", "account": 2, "timestamp": 1633033200, "number": "16054321038", "symbol": 5, "amount": 5.887, "price": "25.73", "tax": 15.0, "description": "VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000"},
-    {"id": 2, "type": "stock_dividend", "account": 2, "timestamp": 1595017200, "number": "13259965038", "symbol": 16, "amount": 3.0, "price": "4.73", "tax": 0,  "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000"},
-    {"id": 3, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "symbol": 34, "amount": 3.0, "price": "8.59", "tax": 0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000"},
-    {"id": 4, "type": "dividend", "account": 2, "timestamp": 1578082800, "ex_date": 1577664000, "number": "", "symbol": 22, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
-    {"id": 5, "type": "dividend", "account": 2, "timestamp": 1633033200, "number": "", "symbol": 5, "amount": 158.6, "tax": 15.86, "description": "VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)"},
-    {"id": 6, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "symbol": 9, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
-    {"id": 7, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "symbol": 9, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
-    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "symbol": 45, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
-    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "symbol": 45, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"},
-    {"id": 8, "type": "fee", "account": 2, "timestamp": 1549843200, "symbol": 6, "amount": -0.249018, "description": "French Transaction Tax"}
-  ]
+ "period": [
+  1577836800,
+  1607903999
+ ],
+ "accounts": [
+  {
+   "id": 1,
+   "number": "U7654321",
+   "currency": 1,
+   "precision": 10,
+   "cash_begin": 0.0,
+   "cash_end": 0.0,
+   "cash_end_settled": 0.0
+  },
+  {
+   "id": 2,
+   "number": "U7654321",
+   "currency": 2,
+   "precision": 10,
+   "cash_begin": 12.345,
+   "cash_end": 1234567.249966388,
+   "cash_end_settled": 1234567.89
+  },
+  {
+   "id": 3,
+   "number": "TEST_ACC",
+   "currency": 2,
+   "precision": 10,
+   "cash_begin": 0.0,
+   "cash_end": 0.0,
+   "cash_end_settled": 0.0
+  },
+  {
+   "id": 4,
+   "number": "U7654321",
+   "currency": 3,
+   "precision": 10,
+   "cash_begin": 0.0,
+   "cash_end": 0.0,
+   "cash_end_settled": 0.0
+  },
+  {
+   "id": 5,
+   "number": "TEST_ACC",
+   "currency": 3,
+   "precision": 10,
+   "cash_begin": 0.0,
+   "cash_end": 0.0,
+   "cash_end_settled": 0.0
+  },
+  {
+   "id": 6,
+   "number": "U7654321",
+   "currency": 32,
+   "precision": 10
+  }
+ ],
+ "assets": [
+  {
+   "id": 1,
+   "type": "money",
+   "name": "RUB",
+   "symbols": [
+    {
+     "id": 1,
+     "symbol": "RUB"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "type": "money",
+   "name": "USD",
+   "symbols": [
+    {
+     "id": 2,
+     "symbol": "USD"
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "type": "money",
+   "name": "CAD",
+   "symbols": [
+    {
+     "id": 3,
+     "symbol": "CAD"
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "type": "stock",
+   "name": "AMAZON.COM INC",
+   "symbols": [
+    {
+     "id": 4,
+     "symbol": "AMZN",
+     "currency": 2,
+     "note": "NASDAQ",
+     "isin": "US0231351067",
+     "cusip": "023135106"
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "type": "etf",
+   "name": "VANGUARD GROWTH ETF",
+   "country": "us",
+   "symbols": [
+    {
+     "id": 5,
+     "symbol": "VUG",
+     "currency": 2,
+     "note": "ARCA",
+     "isin": "US9229087369",
+     "cusip": "922908736"
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "type": "adr",
+   "name": "ALIBABA GROUP HOLDING-SP ADR",
+   "symbols": [
+    {
+     "id": 6,
+     "symbol": "BABA",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US01609W1027",
+     "cusip": "01609W102"
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "type": "stock",
+   "name": "DOMINION ENERGY INC",
+   "symbols": [
+    {
+     "id": 7,
+     "symbol": "D",
+     "currency": 2,
+     "note": "NYSE",
+     "cusip": "25746U109"
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "type": "stock",
+   "name": "DOMINION ENERGY MIDSTREAM PA",
+   "symbols": [
+    {
+     "id": 8,
+     "symbol": "DM",
+     "currency": 2,
+     "note": "NYSE",
+     "cusip": "257454108"
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "type": "bond",
+   "name": "X 6 1/4 03/15/26",
+   "expiry": 1773532800,
+   "principal": 1000,
+   "symbols": [
+    {
+     "id": 9,
+     "symbol": "X 6 1/4 03/15/26",
+     "currency": 2,
+     "isin": "US912909AN84",
+     "cusip": "912909AN8"
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "type": "option",
+   "name": "SPY 29MAY20 295.0 C",
+   "expiry": 1590710400,
+   "symbols": [
+    {
+     "id": 10,
+     "symbol": "SPY   200529C00295000",
+     "currency": 2
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "type": "warrant",
+   "name": "DSKEW 27FEB22 11.5 C",
+   "expiry": 1645920000,
+   "symbols": [
+    {
+     "id": 11,
+     "symbol": "DSKEW",
+     "currency": 2,
+     "note": "NASDAQ",
+     "isin": "US23753F1158",
+     "cusip": "23753F115"
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "type": "stock",
+   "name": "MYLAN NV",
+   "symbols": [
+    {
+     "id": 12,
+     "symbol": "MYL",
+     "currency": 2,
+     "isin": "NL0011031208"
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "type": "stock",
+   "name": "VIATRIS INC-W/I",
+   "symbols": [
+    {
+     "id": 13,
+     "symbol": "VTRS",
+     "currency": 2,
+     "note": "NASDAQ",
+     "isin": "US92556V1061",
+     "cusip": "92556V106"
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "type": "stock",
+   "name": "WABTEC CORP",
+   "symbols": [
+    {
+     "id": 14,
+     "symbol": "WAB",
+     "currency": 2,
+     "note": "NYSE",
+     "cusip": "929740108"
+    },
+    {
+     "id": 15,
+     "symbol": "WBB",
+     "currency": 3,
+     "note": "TSE",
+     "cusip": "929740108"
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "type": "adr",
+   "name": "TELEFONICA SA-SPON ADR",
+   "symbols": [
+    {
+     "id": 16,
+     "symbol": "TEF",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US8793822086",
+     "cusip": "879382208"
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "type": "stock",
+   "name": "EQM MIDSTREAM PARTNERS LP",
+   "symbols": [
+    {
+     "id": 17,
+     "symbol": "EQM",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US26885B1008",
+     "cusip": "26885B100"
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "type": "stock",
+   "name": "EQUITRANS MIDSTREAM CORP",
+   "symbols": [
+    {
+     "id": 18,
+     "symbol": "ETRN",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US2946001011",
+     "cusip": "294600101"
+    }
+   ]
+  },
+  {
+   "id": 18,
+   "type": "stock",
+   "name": "GENERAL ELECTRIC CO",
+   "symbols": [
+    {
+     "id": 19,
+     "symbol": "GE",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US3696041033",
+     "cusip": "369604103"
+    }
+   ]
+  },
+  {
+   "id": 19,
+   "type": "stock",
+   "name": "EWELLNESS HEALTHCARE CORP",
+   "symbols": [
+    {
+     "id": 20,
+     "symbol": "EWLL",
+     "currency": 2,
+     "note": "PINK",
+     "isin": "US30051D1063",
+     "cusip": "30051D106"
+    }
+   ]
+  },
+  {
+   "id": 20,
+   "type": "stock",
+   "name": "EWELLNESS HEALTHCARE CORP",
+   "symbols": [
+    {
+     "id": 21,
+     "symbol": "EWLL",
+     "currency": 2,
+     "note": "PINK",
+     "isin": "US30051D2053",
+     "cusip": "30051D205"
+    },
+    {
+     "id": 35,
+     "symbol": "EWLLD",
+     "currency": 2,
+     "note": "PINK",
+     "isin": "US30051D2053",
+     "cusip": "30051D205"
+    }
+   ]
+  },
+  {
+   "id": 21,
+   "type": "etf",
+   "name": "PIMCO 25+ YR ZERO CPN US TIF",
+   "country": "us",
+   "symbols": [
+    {
+     "id": 22,
+     "symbol": "ZROZ",
+     "currency": 2,
+     "note": "ARCA",
+     "isin": "US72201R8824",
+     "cusip": "72201R882"
+    }
+   ]
+  },
+  {
+   "id": 22,
+   "type": "stock",
+   "name": "LIVONGO HEALTH INC",
+   "symbols": [
+    {
+     "id": 23,
+     "symbol": "LVGO",
+     "currency": 2,
+     "isin": "US5391831030",
+     "cusip": "539183103"
+    }
+   ]
+  },
+  {
+   "id": 23,
+   "type": "stock",
+   "name": "TELADOC HEALTH INC",
+   "symbols": [
+    {
+     "id": 24,
+     "symbol": "TDOC",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US87918A1051",
+     "cusip": "87918A105"
+    }
+   ]
+  },
+  {
+   "id": 24,
+   "type": "stock",
+   "name": "LUMEN TECHNOLOGIES INC",
+   "symbols": [
+    {
+     "id": 25,
+     "symbol": "LUMN",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US5502411037",
+     "cusip": "550241103"
+    }
+   ]
+  },
+  {
+   "id": 25,
+   "type": "stock",
+   "name": "CENTURYLINK INC",
+   "symbols": [
+    {
+     "id": 26,
+     "symbol": "LUMN",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US1567001060",
+     "cusip": "156700106"
+    }
+   ]
+  },
+  {
+   "id": 26,
+   "type": "bond",
+   "name": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26",
+   "expiry": 1773532800,
+   "principal": 1000,
+   "symbols": [
+    {
+     "id": 27,
+     "symbol": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26",
+     "currency": 2,
+     "isin": "US912CALAN84",
+     "cusip": "912CALAN8"
+    }
+   ]
+  },
+  {
+   "id": 27,
+   "type": "warrant",
+   "name": "BKSY 30DEC24 11.5 C",
+   "expiry": 1735516800,
+   "symbols": [
+    {
+     "id": 28,
+     "symbol": "SFTW WS",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US68839R1207",
+     "cusip": "68839R120"
+    }
+   ]
+  },
+  {
+   "id": 28,
+   "type": "warrant",
+   "name": "BKSY 30DEC24 11.5 C",
+   "expiry": 1735516800,
+   "symbols": [
+    {
+     "id": 29,
+     "symbol": "BKSY WS",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US09263B1162"
+    }
+   ]
+  },
+  {
+   "id": 29,
+   "type": "stock",
+   "name": "APPLE INC",
+   "symbols": [
+    {
+     "id": 30,
+     "symbol": "AAPL",
+     "currency": 2,
+     "note": "NASDAQ",
+     "isin": "US0378331005",
+     "cusip": "037833100"
+    }
+   ]
+  },
+  {
+   "id": 30,
+   "type": "option",
+   "name": "VLO 24JUL20 64.0 P",
+   "symbols": [
+    {
+     "id": 31,
+     "symbol": "VLO   200724P00064000",
+     "currency": 2,
+     "note": "CBOE"
+    }
+   ]
+  },
+  {
+   "id": 31,
+   "type": "stock",
+   "name": "VALERO ENERGY CORP",
+   "symbols": [
+    {
+     "id": 32,
+     "symbol": "VLO",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US91913Y1001",
+     "cusip": "91913Y100"
+    }
+   ]
+  },
+  {
+   "id": 32,
+   "type": "money",
+   "name": "EUR",
+   "symbols": [
+    {
+     "id": 33,
+     "symbol": "EUR"
+    }
+   ]
+  },
+  {
+   "id": 33,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 34,
+     "symbol": "MAC",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US5543821012",
+     "cusip": "554382101"
+    }
+   ]
+  },
+  {
+   "id": 34,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 36,
+     "symbol": "GE",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US3696043013",
+     "cusip": "369604301"
+    }
+   ]
+  },
+  {
+   "id": 35,
+   "type": "bond",
+   "symbols": [
+    {
+     "id": 37,
+     "symbol": "F 8 1/2 04/21/23",
+     "currency": 2,
+     "isin": "US345370CV02",
+     "cusip": "345370CV0"
+    }
+   ]
+  },
+  {
+   "id": 36,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 38,
+     "symbol": "BAM",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "CA1125851040",
+     "cusip": "112585104"
+    }
+   ]
+  },
+  {
+   "id": 37,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 39,
+     "symbol": "BPYPM",
+     "currency": 2,
+     "note": "NASDAQ",
+     "isin": "BMG1624R1079"
+    }
+   ]
+  },
+  {
+   "id": 38,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 40,
+     "symbol": "BPYU",
+     "currency": 2,
+     "isin": "US11282X1037",
+     "cusip": "11282X103"
+    }
+   ]
+  },
+  {
+   "id": 39,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 41,
+     "symbol": "SLVM",
+     "currency": 2,
+     "note": "NYSE",
+     "isin": "US8713321029",
+     "cusip": "871332102"
+    }
+   ]
+  },
+  {
+   "id": 40,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 42,
+     "symbol": "CORT",
+     "currency": 2,
+     "note": "NASDAQ",
+     "isin": "US2183521028",
+     "cusip": "218352102"
+    }
+   ]
+  },
+  {
+   "id": 41,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 43,
+     "symbol": "CORT.OD2",
+     "currency": 2,
+     "note": "CORPACT",
+     "isin": "US218NSPODD6",
+     "cusip": "218NSPODD"
+    }
+   ]
+  },
+  {
+   "id": 42,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 44,
+     "currency": 2,
+     "symbol": "NABIF",
+     "isin": "CA6295231014",
+     "cusip": "629523101"
+    }
+   ]
+  },
+  {
+   "id": 43,
+   "type": "stock",
+   "country": "us",
+   "symbols": [
+    {
+     "id": 45,
+     "symbol": "EDV",
+     "currency": 2,
+     "note": "ARCA",
+     "cusip": "921910709"
+    }
+   ]
+  }
+ ],
+ "trades": [
+  {
+   "id": 1,
+   "number": "",
+   "timestamp": 1548447900,
+   "settlement": 1548447900,
+   "account": 2,
+   "symbol": 7,
+   "quantity": 0.567,
+   "price": 69.2215,
+   "fee": 0.0,
+   "cancelled": true
+  },
+  {
+   "id": 2,
+   "number": "",
+   "timestamp": 1553545500,
+   "settlement": 1553545500,
+   "account": 2,
+   "symbol": 6,
+   "quantity": -0.777,
+   "price": 169.15,
+   "fee": 0.0
+  },
+  {
+   "id": 3,
+   "number": "",
+   "timestamp": 1553545500,
+   "settlement": 1553545500,
+   "account": 2,
+   "symbol": 6,
+   "quantity": 0.777,
+   "price": 169.15,
+   "fee": 0.0,
+   "cancelled": true
+  },
+  {
+   "id": 4,
+   "number": "",
+   "timestamp": 1553545500,
+   "settlement": 1553545500,
+   "account": 2,
+   "symbol": 6,
+   "quantity": -0.777,
+   "price": 168.37,
+   "fee": 0.0
+  },
+  {
+   "id": 5,
+   "number": "2661774904",
+   "timestamp": 1579094694,
+   "settlement": 1579219200,
+   "account": 2,
+   "symbol": 20,
+   "quantity": 45000.0,
+   "price": 0.0012,
+   "fee": 0.54
+  },
+  {
+   "id": 6,
+   "number": "2674740000",
+   "timestamp": 1580215513,
+   "settlement": 1580215513,
+   "account": 2,
+   "symbol": 5,
+   "quantity": -1240.0,
+   "price": 54.84,
+   "fee": 7.75519312
+  },
+  {
+   "id": 7,
+   "number": "2674741000",
+   "timestamp": 1580215566,
+   "settlement": 1580342400,
+   "account": 2,
+   "symbol": 30,
+   "quantity": -148.0,
+   "price": 316.68,
+   "fee": -5.007792848
+  },
+  {
+   "id": 8,
+   "number": "2882737839",
+   "timestamp": 1590595065,
+   "settlement": 1590710400,
+   "account": 2,
+   "symbol": 9,
+   "quantity": 2.0,
+   "price": 637.09,
+   "fee": 2.0
+  },
+  {
+   "id": 9,
+   "number": "2931083780",
+   "timestamp": 1592575273,
+   "settlement": 1592784000,
+   "account": 2,
+   "symbol": 31,
+   "quantity": -100.0,
+   "price": 4.54,
+   "fee": 1.1058334
+  },
+  {
+   "id": 10,
+   "number": "2997636969",
+   "timestamp": 1595607600,
+   "settlement": 1595808000,
+   "account": 2,
+   "symbol": 31,
+   "quantity": 100.0,
+   "price": 0.0,
+   "fee": 0.0,
+   "note": "Option assignment"
+  },
+  {
+   "id": 11,
+   "number": "2997636973",
+   "timestamp": 1595607600,
+   "settlement": 1595607600,
+   "account": 2,
+   "symbol": 32,
+   "quantity": 100.0,
+   "price": 64.0,
+   "fee": 0.0,
+   "note": "Option assignment/exercise"
+  },
+  {
+   "id": 12,
+   "number": "3183801882",
+   "timestamp": 1603882231,
+   "settlement": 1604016000,
+   "account": 2,
+   "symbol": 21,
+   "quantity": 500000.0,
+   "price": 0.0001,
+   "fee": 0.7503675
+  },
+  {
+   "id": 13,
+   "number": "18952523919",
+   "timestamp": 1640895900,
+   "settlement": 1640895900,
+   "account": 2,
+   "symbol": 29,
+   "quantity": -30.0,
+   "price": 0.1,
+   "fee": 0.0,
+   "note": "BKSY WS(US09263B1162) MERGED(Liquidation) FOR USD 0.10 PER SHARE (BKSY WS, BKSY 30OCT24 11.5 C, US09263B1162)"
+  },
+  {
+   "id": 14,
+   "number": "18694975077",
+   "timestamp": 1638822300,
+   "settlement": 1638822300,
+   "account": 2,
+   "symbol": 37,
+   "quantity": -8.0,
+   "price": 1103.06815,
+   "fee": 0.0,
+   "note": "(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)"
+  },
+  {
+   "id": 15,
+   "number": "18882610202",
+   "timestamp": 1640031900,
+   "settlement": 1640031900,
+   "account": 2,
+   "symbol": 43,
+   "quantity": -99.0,
+   "price": 20.75,
+   "fee": 0.0,
+   "note": "CORT.OD2(US218NSPODD6) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)"
+  }
+ ],
+ "income_spending": [
+  {
+   "id": 1,
+   "timestamp": 1578073286,
+   "account": 2,
+   "peer": 0,
+   "lines": [
+    {
+     "amount": -7.96,
+     "category": 5,
+     "description": "BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "timestamp": 1601462520,
+   "account": 2,
+   "peer": 0,
+   "lines": [
+    {
+     "amount": 0.6905565,
+     "category": 5,
+     "description": "COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)"
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "timestamp": 1591142400,
+   "account": 1,
+   "peer": 0,
+   "lines": [
+    {
+     "amount": 0.5,
+     "category": 8,
+     "description": "RUB CREDIT INT FOR MAY-2020"
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "timestamp": 1604534400,
+   "account": 2,
+   "peer": 0,
+   "lines": [
+    {
+     "amount": -0.0105,
+     "category": 6,
+     "description": "VAT Spain 21%: 0.05 USD t*****71:Global Snapshot PnP"
+    }
+   ]
+  }
+ ],
+ "transfers": [
+  {
+   "id": 1,
+   "account": [
+    6,
+    2,
+    2
+   ],
+   "number": "2674343226",
+   "symbol": [
+    33,
+    2
+   ],
+   "timestamp": 1580443370,
+   "withdrawal": 890.47,
+   "deposit": 1000.0,
+   "fee": 3.0,
+   "description": "IDEALFX"
+  },
+  {
+   "id": 2,
+   "account": [
+    1,
+    2,
+    2
+   ],
+   "number": "2645393202",
+   "symbol": [
+    1,
+    2
+   ],
+   "timestamp": 1581322108,
+   "withdrawal": 78986.6741,
+   "deposit": 1234.0,
+   "fee": 2.0,
+   "description": "IDEALFX"
+  },
+  {
+   "id": 3,
+   "account": [
+    1,
+    2,
+    2
+   ],
+   "number": "2845906676",
+   "symbol": [
+    1,
+    2
+   ],
+   "timestamp": 1590522832,
+   "withdrawal": 44.07,
+   "deposit": 0.621778209,
+   "fee": 0.0,
+   "description": "IDEALFX"
+  },
+  {
+   "id": 4,
+   "account": [
+    0,
+    1,
+    0
+   ],
+   "number": "13778635822",
+   "symbol": [
+    1,
+    1
+   ],
+   "timestamp": 1600374600,
+   "withdrawal": 123456.78,
+   "deposit": 123456.78,
+   "fee": 0.0,
+   "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS"
+  },
+  {
+   "id": 5,
+   "account": [
+    2,
+    0,
+    0
+   ],
+   "number": "14333901913",
+   "symbol": [
+    2,
+    2
+   ],
+   "timestamp": 1605744000,
+   "withdrawal": 1234.0,
+   "deposit": 1234.0,
+   "fee": 0.0,
+   "description": "DISBURSEMENT INITIATED BY John Doe"
+  },
+  {
+   "id": 6,
+   "account": [
+    0,
+    2,
+    0
+   ],
+   "number": "1234567890",
+   "symbol": [
+    2,
+    2
+   ],
+   "timestamp": 1663372800,
+   "withdrawal": 100.0,
+   "deposit": 100.0,
+   "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS",
+   "fee": 0.0
+  },
+  {
+   "id": 7,
+   "account": [
+    0,
+    2,
+    0
+   ],
+   "number": "1234567891",
+   "symbol": [
+    2,
+    2
+   ],
+   "timestamp": 1663372800,
+   "withdrawal": 100.0,
+   "deposit": 100.0,
+   "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS",
+   "fee": 0.0
+  },
+  {
+   "id": 8,
+   "account": [
+    3,
+    2,
+    0
+   ],
+   "number": "24055511103",
+   "symbol": [
+    4,
+    4
+   ],
+   "timestamp": 1685702720,
+   "withdrawal": 7.0,
+   "deposit": 7.0,
+   "description": "INTERNAL TRANSFER (--)",
+   "fee": 0.0
+  },
+  {
+   "id": 9,
+   "account": [
+    2,
+    3,
+    0
+   ],
+   "number": "21632131212",
+   "symbol": [
+    2,
+    2
+   ],
+   "timestamp": 1694777165,
+   "withdrawal": 12345.0,
+   "deposit": 12345.0,
+   "description": "INTERNAL TRANSFER FROM U7654321 TO TEST_ACC",
+   "fee": 0.0
+  },
+  {
+   "id": 10,
+   "account": [
+    3,
+    2,
+    0
+   ],
+   "number": "16377745681",
+   "symbol": [
+    2,
+    2
+   ],
+   "timestamp": 1683361518,
+   "withdrawal": 150.0,
+   "deposit": 150.0,
+   "description": "INTERNAL TRANSFER FROM TEST_ACC TO U7654321",
+   "fee": 0.0
+  }
+ ],
+ "corporate_actions": [
+  {
+   "id": 1,
+   "type": "split",
+   "account": 2,
+   "timestamp": 1618345500,
+   "number": "16074977038",
+   "symbol": 4,
+   "quantity": 217.0,
+   "outcome": [
+    {
+     "symbol": 4,
+     "quantity": 271.25,
+     "share": 1.0
+    }
+   ],
+   "description": "AMZN(US0231351067) SPLIT 5 FOR 4 (AMZN, AMAZON.COM INC, US0231351067)"
+  },
+  {
+   "id": 2,
+   "type": "merger",
+   "account": 2,
+   "timestamp": 1605731100,
+   "number": "10162291403",
+   "symbol": 8,
+   "quantity": 70.0,
+   "outcome": [
+    {
+     "symbol": 7,
+     "quantity": 17.444,
+     "share": 0.0
+    }
+   ],
+   "description": "DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)"
+  },
+  {
+   "id": 3,
+   "type": "symbol_change",
+   "account": 2,
+   "timestamp": 1605558300,
+   "number": "14302257657",
+   "symbol": 12,
+   "quantity": 5.0,
+   "outcome": [
+    {
+     "symbol": 13,
+     "quantity": 5.0,
+     "share": 1.0
+    }
+   ],
+   "description": "MYL(NL0011031208) CUSIP/ISIN CHANGE TO (US92556V1061) (VTRS, VIATRIS INC-W/I, US92556V1061)"
+  },
+  {
+   "id": 4,
+   "type": "spin-off",
+   "account": 2,
+   "timestamp": 1605817500,
+   "number": "10302900848",
+   "symbol": 19,
+   "quantity": 100,
+   "outcome": [
+    {
+     "symbol": 19,
+     "quantity": 100,
+     "share": 0.0
+    },
+    {
+     "symbol": 14,
+     "quantity": 0.5371,
+     "share": 0.0
+    }
+   ],
+   "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"
+  },
+  {
+   "id": 5,
+   "type": "merger",
+   "account": 2,
+   "timestamp": 1592339100,
+   "number": "13006963996",
+   "symbol": 17,
+   "quantity": 70.0,
+   "outcome": [
+    {
+     "symbol": 18,
+     "quantity": 170.8,
+     "share": 0.0
+    }
+   ],
+   "description": "EQM(US26885B1008) MERGED(Voluntary Offer Allocation) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)"
+  },
+  {
+   "id": 6,
+   "type": "merger",
+   "account": 2,
+   "timestamp": 1604089500,
+   "number": "14147163475",
+   "symbol": 23,
+   "quantity": 10.0,
+   "outcome": [
+    {
+     "symbol": 33,
+     "quantity": 42.4,
+     "share": 0.0
+    },
+    {
+     "symbol": 24,
+     "quantity": 5.92,
+     "share": 0.0
+    }
+   ],
+   "description": "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"
+  },
+  {
+   "id": 7,
+   "type": "merger",
+   "account": 2,
+   "timestamp": 1611260700,
+   "number": "15015004953",
+   "symbol": 26,
+   "quantity": 200.0,
+   "outcome": [
+    {
+     "symbol": 25,
+     "quantity": 200.0,
+     "share": 0.0
+    }
+   ],
+   "description": "LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)"
+  },
+  {
+   "id": 8,
+   "type": "merger",
+   "account": 2,
+   "timestamp": 1630007100,
+   "number": "17569476329",
+   "symbol": 9,
+   "quantity": 2.0,
+   "outcome": [
+    {
+     "symbol": 27,
+     "quantity": 2.0,
+     "share": 0.0
+    }
+   ],
+   "description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"
+  },
+  {
+   "id": 9,
+   "type": "symbol_change",
+   "account": 2,
+   "timestamp": 1631219100,
+   "number": "17667047189",
+   "symbol": 28,
+   "quantity": 20.0,
+   "outcome": [
+    {
+     "symbol": 29,
+     "quantity": 20.0,
+     "share": 1.0
+    }
+   ],
+   "description": "SFTW WS(US68839R1207) CUSIP/ISIN CHANGE TO (US09263B1162) (BKSY WS, BKSY 30OCT24 11.5 C, US09263B1162)"
+  },
+  {
+   "id": 10,
+   "type": "split",
+   "account": 2,
+   "timestamp": 1581452700,
+   "number": "12029570527",
+   "symbol": 20,
+   "quantity": 45000.0,
+   "outcome": [
+    {
+     "symbol": 35,
+     "quantity": 900.0,
+     "share": 1.0
+    }
+   ],
+   "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"
+  },
+  {
+   "id": 11,
+   "type": "split",
+   "account": 2,
+   "timestamp": 1627676700,
+   "number": "17240033443",
+   "symbol": 19,
+   "quantity": 104.0,
+   "outcome": [
+    {
+     "symbol": 36,
+     "quantity": 13.0,
+     "share": 1.0
+    }
+   ],
+   "description": "GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)"
+  },
+  {
+   "id": 12,
+   "type": "merger",
+   "account": 2,
+   "timestamp": 1627331100,
+   "number": "17200082800",
+   "symbol": 40,
+   "quantity": 610.0,
+   "outcome": [
+    {
+     "symbol": 2,
+     "quantity": 7554.3909201,
+     "share": 0.0
+    },
+    {
+     "symbol": 38,
+     "quantity": 55.7151,
+     "share": 0.0
+    },
+    {
+     "symbol": 39,
+     "quantity": 40.0895,
+     "share": 0.0
+    }
+   ],
+   "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"
+  },
+  {
+   "id": 13,
+   "type": "spin-off",
+   "account": 2,
+   "timestamp": 1633033500,
+   "number": "17897699521",
+   "symbol": 19,
+   "quantity": 320,
+   "outcome": [
+    {
+     "symbol": 19,
+     "quantity": 320,
+     "share": 0.0
+    },
+    {
+     "symbol": 41,
+     "quantity": 29.0909,
+     "share": 0.0
+    }
+   ],
+   "description": "GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)"
+  },
+  {
+   "id": 14,
+   "type": "merger",
+   "account": 2,
+   "timestamp": 1639597500,
+   "number": "18787960371",
+   "symbol": 42,
+   "quantity": 99.0,
+   "outcome": [
+    {
+     "symbol": 43,
+     "quantity": 99.0,
+     "share": 0.0
+    }
+   ],
+   "description": "CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)"
+  },
+  {
+   "id": 15,
+   "type": "delisting",
+   "account": 2,
+   "timestamp": 1612470300,
+   "number": "15238437826",
+   "symbol": 44,
+   "quantity": 20000.0,
+   "outcome": [],
+   "description": "(CA6295231014) DELISTED (NABIF, NABIS HOLDINGS INC, CA6295231014)"
+  }
+ ],
+ "asset_payments": [
+  {
+   "account": 2,
+   "amount": 5.887,
+   "description": "VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000",
+   "id": 1,
+   "number": "16054321038",
+   "price": "25.73",
+   "symbol": 5,
+   "tax": 15.0,
+   "timestamp": 1633033200,
+   "type": "stock_dividend"
+  },
+  {
+   "account": 2,
+   "amount": 3.0,
+   "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000",
+   "id": 2,
+   "number": "13259965038",
+   "price": "4.73",
+   "symbol": 16,
+   "tax": 0,
+   "timestamp": 1595017200,
+   "type": "stock_dividend"
+  },
+  {
+   "account": 2,
+   "amount": 3.0,
+   "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000",
+   "id": 3,
+   "number": "12882908488",
+   "price": "8.59",
+   "symbol": 34,
+   "tax": 0,
+   "timestamp": 1591215600,
+   "type": "stock_dividend"
+  },
+  {
+   "account": 2,
+   "amount": 60.2,
+   "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)",
+   "ex_date": 1577664000,
+   "id": 4,
+   "number": "",
+   "symbol": 22,
+   "tax": 6.02,
+   "timestamp": 1578082800,
+   "type": "dividend"
+  },
+  {
+   "account": 2,
+   "amount": 158.6,
+   "description": "VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)",
+   "id": 5,
+   "number": "",
+   "symbol": 5,
+   "tax": 15.86,
+   "timestamp": 1633033200,
+   "type": "dividend"
+  },
+  {
+   "account": 2,
+   "amount": -25.69,
+   "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26",
+   "id": 6,
+   "number": "2882737839",
+   "symbol": 9,
+   "timestamp": 1590595065,
+   "type": "interest"
+  },
+  {
+   "account": 2,
+   "amount": 62.5,
+   "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)",
+   "id": 7,
+   "number": "",
+   "symbol": 9,
+   "timestamp": 1600128000,
+   "type": "interest"
+  },
+  {
+   "account": 2,
+   "amount": 16.76,
+   "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)",
+   "id": 8,
+   "number": "",
+   "symbol": 45,
+   "tax": 0,
+   "timestamp": 1529612400,
+   "type": "dividend"
+  },
+  {
+   "account": 2,
+   "amount": 20.35,
+   "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)",
+   "id": 9,
+   "number": "",
+   "symbol": 45,
+   "tax": 0.54,
+   "timestamp": 1533673200,
+   "type": "dividend"
+  },
+  {
+   "account": 2,
+   "amount": -0.249018,
+   "description": "French Transaction Tax",
+   "id": 10,
+   "symbol": 6,
+   "timestamp": 1549843200,
+   "type": "fee"
+  }
+ ],
+ "db_ids": {
+  "asset_payments": {
+   "8": 1,
+   "9": 2
+  }
+ }
 }

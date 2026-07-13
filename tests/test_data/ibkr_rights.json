@@ -1,28 +1,97 @@
 {
-  "period": [1609459200, 1640995199],
-  "accounts": [
-    {"id": 1, "number": "U1234567", "currency": 1, "precision": 10, "cash_begin": 0.0, "cash_end": 10659.073152, "cash_end_settled": -81667.430698},
-    {"id": 2, "number": "U1234567", "currency": 2, "precision": 10, "cash_begin": 0.0, "cash_end": -935.800878369, "cash_end_settled": -935.800878369}
-  ],
- "assets": [{"id": 1, "name": "HKD", "type": "money"},
-            {"id": 2, "name": "USD", "type": "money"},
-            {"id": 3, "type": "stock", "name": "TONGDA GROUP HOLDINGS LTD", "isin": "KYG8917X1218"},
-            {"id": 5, "type": "stock", "name": "INTERACTIVE BROKERS GRO-CL A", "isin": "US45841N1072" },
-            {"id": 6, "type": "stock", "isin": "KYG8917X1RTS"}
+ "period": [
+  1609459200,
+  1640995199
  ],
- "assets_data": [
-   {"asset": 5, "id": 1, "cusip": "45841N107"}
+ "accounts": [
+  {
+   "id": 1,
+   "number": "U1234567",
+   "currency": 1,
+   "precision": 10,
+   "cash_begin": 0.0,
+   "cash_end": 10659.073152,
+   "cash_end_settled": -81667.430698
+  },
+  {
+   "id": 2,
+   "number": "U1234567",
+   "currency": 2,
+   "precision": 10,
+   "cash_begin": 0.0,
+   "cash_end": -935.800878369,
+   "cash_end_settled": -935.800878369
+  }
  ],
- "symbols": [{"id": 1, "asset": 1, "symbol": "HKD"},
-             {"id": 2, "asset": 2, "symbol": "USD"},
-             {"id": 3, "asset": 3, "currency": 1, "symbol": "698", "note": "SEHK"},
-             {"id": 5, "asset": 5, "currency": 2, "symbol": "IBKR", "note": "NASDAQ"},
-             {"id": 6, "asset": 6, "currency": 1, "symbol": "2965", "note": "CORPACT"}
+ "assets": [
+  {
+   "id": 1,
+   "name": "HKD",
+   "type": "money",
+   "symbols": [
+    {
+     "id": 1,
+     "symbol": "HKD"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "name": "USD",
+   "type": "money",
+   "symbols": [
+    {
+     "id": 2,
+     "symbol": "USD"
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "type": "stock",
+   "name": "TONGDA GROUP HOLDINGS LTD",
+   "symbols": [
+    {
+     "id": 3,
+     "currency": 1,
+     "symbol": "698",
+     "note": "SEHK",
+     "isin": "KYG8917X1218"
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "type": "stock",
+   "name": "INTERACTIVE BROKERS GRO-CL A",
+   "symbols": [
+    {
+     "id": 5,
+     "currency": 2,
+     "symbol": "IBKR",
+     "note": "NASDAQ",
+     "isin": "US45841N1072",
+     "cusip": "45841N107"
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 6,
+     "currency": 1,
+     "symbol": "2965",
+     "note": "CORPACT",
+     "isin": "KYG8917X1RTS"
+    }
+   ]
+  }
  ],
- "asset_payments": [
- ],
- "corporate_actions": [
- ],
+ "asset_payments": [],
+ "corporate_actions": [],
  "income_spending": [],
  "trades": [],
- "transfers": []}
+ "transfers": []
+}

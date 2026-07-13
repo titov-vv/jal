@@ -1,47 +1,233 @@
 {
-  "period": [1617235200, 1621555199],
-  "accounts": [
-    {"id": 1, "currency": 1, "number": "12345"},
-    {"id": 2, "currency": 2, "number": "12345"}
-  ],
-  "assets": [
-    {"id": 1, "type": "money", "name":  "RUB"},
-    {"id": 2, "type": "money", "name":  "USD"},
-    {"id": 3, "type": "stock", "name": "Аэрофлот-росс.авиалин(ПАО)ао", "isin": "RU0009062285"},
-    {"id": 4, "type": "etf", "name": "FinEx Gold ETF USD", "isin": "IE00B8XB7377"},
-    {"id": 5, "type": "bond", "name": "АО \"Тинькофф Банк\" БО-07", "isin": "RU000A0JWM31"},
-    {"id": 6, "type": "stock", "name": "Polymetal International plc", "isin": "JE00B6T5S470"}
-  ],
-  "symbols": [
-    {"id": 1, "asset": 1, "symbol": "RUB"},
-    {"id": 2, "asset": 2, "symbol": "USD"},
-    {"id": 3, "asset": 3, "symbol": "AFLT", "currency": 1, "note": "MOEX"},
-    {"id": 4, "asset": 4, "symbol": "FXGD", "currency": 1, "note": "MOEX"},
-    {"id": 5, "asset": 5, "symbol": "ТинькоффБ7", "currency": 1, "note": "MOEX"},
-    {"id": 6, "asset": 6, "symbol": "POLY", "currency": 1, "note": "MOEX"}
-  ],
-  "assets_data": [
-    {"id": 1, "asset": 3, "reg_number": "1-01-00010-A", "principal": 1.0},
-    {"id": 2, "asset": 5, "reg_number": "4B020702673B", "principal": 1000.0, "expiry": 1624492800},
-    {"id": 3, "asset": 6, "principal":  0.03}
-  ],
-  "trades": [
-    {"id": 1, "number": "3312348787", "timestamp": 1615647620, "settlement": 1615766400, "account": 1, "symbol": 4, "quantity": 10, "price": 987.65, "fee": 6.9},
-    {"id": 2, "number": "3720000652", "timestamp": 1615909088, "settlement": 1615939200, "account": 1, "symbol": 5, "quantity": 1, "price": 1005.7, "fee": 0.5},
-    {"id": 3, "number": "3725000743", "timestamp": 1615976923, "settlement": 1616025600, "account": 1, "symbol": 5, "quantity": -1, "price": 1004.1, "fee": 0.5},
-    {"id": 4, "number": "3720123978", "timestamp": 1616770797, "settlement": 1616889600, "account": 1, "symbol": 6, "quantity": 10, "price": 1532.1, "fee": 8.66}
-  ],
-  "income_spending": [
-    {"id": 1, "timestamp": 1618617600, "account": 1, "peer": 0, "lines": [{"amount": 43.21, "category": -8, "description": "Проценты по договору займа ЦБ ДЗ/16042021-1"}]},
-    {"id": 2, "timestamp": 1622332800, "account": 1, "peer": 0, "lines": [{"amount": -17.6, "category": -5, "description": "Счет НКО АО НРД за хранение ЦБ №H000/02923468 от 28.05.2021 г."}]},
-    {"id": 3, "timestamp": 1617148800, "account": 1, "peer": 0, "lines": [{"amount": -200, "category": -5, "description": "Абонентская плата за обслуживание счета 11249"}]}
-  ],
-  "transfers": [
-    {"id": 1, "account": [0, 1, 0], "symbol": [1, 1], "timestamp": 1615766400, "withdrawal": 123, "deposit": 123, "fee": 0.0, "description": "зачисление - неторговое поручение от 15.03.2021, НП/в/А/150321/74123"}
-  ],
-  "corporate_actions": [],
-  "asset_payments": [
-    {"id": 1, "type": "interest", "account": 1, "timestamp": 1615909088, "number": "3720000652", "symbol": 5, "amount": -16.83, "description": "НКД"},
-    {"id": 2, "type": "interest", "account": 1, "timestamp": 1615976923, "number": "3725000743", "symbol": 5, "amount": 17.03, "description": "НКД"}
-  ]
+ "period": [
+  1617235200,
+  1621555199
+ ],
+ "accounts": [
+  {
+   "id": 1,
+   "currency": 1,
+   "number": "12345"
+  },
+  {
+   "id": 2,
+   "currency": 2,
+   "number": "12345"
+  }
+ ],
+ "assets": [
+  {
+   "id": 1,
+   "type": "money",
+   "name": "RUB",
+   "symbols": [
+    {
+     "id": 1,
+     "symbol": "RUB"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "type": "money",
+   "name": "USD",
+   "symbols": [
+    {
+     "id": 2,
+     "symbol": "USD"
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "type": "stock",
+   "name": "Аэрофлот-росс.авиалин(ПАО)ао",
+   "principal": 1.0,
+   "symbols": [
+    {
+     "id": 3,
+     "symbol": "AFLT",
+     "currency": 1,
+     "note": "MOEX",
+     "isin": "RU0009062285",
+     "reg_number": "1-01-00010-A"
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "type": "etf",
+   "name": "FinEx Gold ETF USD",
+   "symbols": [
+    {
+     "id": 4,
+     "symbol": "FXGD",
+     "currency": 1,
+     "note": "MOEX",
+     "isin": "IE00B8XB7377"
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "type": "bond",
+   "name": "АО \"Тинькофф Банк\" БО-07",
+   "expiry": 1624492800,
+   "principal": 1000.0,
+   "symbols": [
+    {
+     "id": 5,
+     "symbol": "ТинькоффБ7",
+     "currency": 1,
+     "note": "MOEX",
+     "isin": "RU000A0JWM31",
+     "reg_number": "4B020702673B"
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "type": "stock",
+   "name": "Polymetal International plc",
+   "principal": 0.03,
+   "symbols": [
+    {
+     "id": 6,
+     "symbol": "POLY",
+     "currency": 1,
+     "note": "MOEX",
+     "isin": "JE00B6T5S470"
+    }
+   ]
+  }
+ ],
+ "trades": [
+  {
+   "id": 1,
+   "number": "3312348787",
+   "timestamp": 1615647620,
+   "settlement": 1615766400,
+   "account": 1,
+   "symbol": 4,
+   "quantity": 10,
+   "price": 987.65,
+   "fee": 6.9
+  },
+  {
+   "id": 2,
+   "number": "3720000652",
+   "timestamp": 1615909088,
+   "settlement": 1615939200,
+   "account": 1,
+   "symbol": 5,
+   "quantity": 1,
+   "price": 1005.7,
+   "fee": 0.5
+  },
+  {
+   "id": 3,
+   "number": "3725000743",
+   "timestamp": 1615976923,
+   "settlement": 1616025600,
+   "account": 1,
+   "symbol": 5,
+   "quantity": -1,
+   "price": 1004.1,
+   "fee": 0.5
+  },
+  {
+   "id": 4,
+   "number": "3720123978",
+   "timestamp": 1616770797,
+   "settlement": 1616889600,
+   "account": 1,
+   "symbol": 6,
+   "quantity": 10,
+   "price": 1532.1,
+   "fee": 8.66
+  }
+ ],
+ "income_spending": [
+  {
+   "id": 1,
+   "timestamp": 1618617600,
+   "account": 1,
+   "peer": 0,
+   "lines": [
+    {
+     "amount": 43.21,
+     "category": 8,
+     "description": "Проценты по договору займа ЦБ ДЗ/16042021-1"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "timestamp": 1622332800,
+   "account": 1,
+   "peer": 0,
+   "lines": [
+    {
+     "amount": -17.6,
+     "category": 5,
+     "description": "Счет НКО АО НРД за хранение ЦБ №H000/02923468 от 28.05.2021 г."
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "timestamp": 1617148800,
+   "account": 1,
+   "peer": 0,
+   "lines": [
+    {
+     "amount": -200,
+     "category": 5,
+     "description": "Абонентская плата за обслуживание счета 11249"
+    }
+   ]
+  }
+ ],
+ "transfers": [
+  {
+   "id": 1,
+   "account": [
+    0,
+    1,
+    0
+   ],
+   "symbol": [
+    1,
+    1
+   ],
+   "timestamp": 1615766400,
+   "withdrawal": 123,
+   "deposit": 123,
+   "fee": 0.0,
+   "description": "зачисление - неторговое поручение от 15.03.2021, НП/в/А/150321/74123"
+  }
+ ],
+ "corporate_actions": [],
+ "asset_payments": [
+  {
+   "id": 1,
+   "type": "interest",
+   "account": 1,
+   "timestamp": 1615909088,
+   "number": "3720000652",
+   "symbol": 5,
+   "amount": -16.83,
+   "description": "НКД"
+  },
+  {
+   "id": 2,
+   "type": "interest",
+   "account": 1,
+   "timestamp": 1615976923,
+   "number": "3725000743",
+   "symbol": 5,
+   "amount": 17.03,
+   "description": "НКД"
+  }
+ ]
 }

@@ -3,7 +3,7 @@ import re
 import pandas
 from datetime import datetime, timezone
 from zipfile import ZipFile
-from jal.data_import.statement import Statement, FOF, Statement_ImportError
+from jal.data_import.statement import Statement, JSF, Statement_ImportError
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -34,17 +34,16 @@ class StatementXLS(Statement):
 
     # Loads xls(x) or zipped xls(x) file into pandas dataset
     def load(self, filename: str) -> None:
+        self._reset_id_map()
         self._data = {
-            FOF.PERIOD: [None, None],
-            FOF.ACCOUNTS: [],
-            FOF.ASSETS: [],
-            FOF.SYMBOLS: [],
-            FOF.ASSETS_DATA: [],
-            FOF.TRADES: [],
-            FOF.TRANSFERS: [],
-            FOF.CORP_ACTIONS: [],
-            FOF.ASSET_PAYMENTS: [],
-            FOF.INCOME_SPENDING: []
+            JSF.PERIOD: [None, None],
+            JSF.ACCOUNTS: [],
+            JSF.ASSETS: [],
+            JSF.TRADES: [],
+            JSF.TRANSFERS: [],
+            JSF.CORP_ACTIONS: [],
+            JSF.ASSET_PAYMENTS: [],
+            JSF.INCOME_SPENDING: []
         }
 
         if filename.endswith(".zip"):
@@ -124,7 +123,7 @@ class StatementXLS(Statement):
         statement_dates = parts.groupdict()
         start_day = int(datetime.strptime(statement_dates['S'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
         end_day = int(datetime.strptime(statement_dates['E'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-        self._data[FOF.PERIOD] = [start_day, self._end_of_date(end_day)]
+        self._data[JSF.PERIOD] = [start_day, self._end_of_date(end_day)]
 
     def _get_account_number(self):
         if self.AccountPattern[2] is None:
@@ -176,11 +175,11 @@ class StatementXLS(Statement):
                 self.currency_id(code)
 
     def _load_accounts(self):
-        currencies = [x for x in self._data[FOF.ASSETS] if x['type'] == FOF.ASSET_MONEY]
+        currencies = [x for x in self._data[JSF.ASSETS] if x['type'] == JSF.ASSET_MONEY]
         for currency in currencies:
-            id = max([0] + [x['id'] for x in self._data[FOF.ACCOUNTS]]) + 1
+            id = max([0] + [x['id'] for x in self._data[JSF.ACCOUNTS]]) + 1
             account = {"id": id, "number": self._account_number, "currency": currency['id']}
-            self._data[FOF.ACCOUNTS].append(account)
+            self._data[JSF.ACCOUNTS].append(account)
 
     # Find section with start/end amounts of money per account
     def _load_money(self):
@@ -202,7 +201,7 @@ class StatementXLS(Statement):
     # Update account data with cash balance values
     def _update_account_balance(self, currency, begin, end, settled_end):
         account_id = self._find_account_id(self._account_number, currency)
-        account = [x for x in self._data[FOF.ACCOUNTS] if x['id'] == account_id][0]
+        account = [x for x in self._data[JSF.ACCOUNTS] if x['id'] == account_id][0]
         account["cash_begin"] = begin
         account["cash_end"] = end
         account["cash_end_settled"] = settled_end

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from lxml import etree
 from PySide6.QtWidgets import QApplication
-from jal.data_import.statement import Statement, FOF, Statement_ImportError
+from jal.data_import.statement import Statement, JSF, Statement_ImportError
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -25,17 +25,16 @@ class StatementXML(Statement):
         }
 
     def _init_data(self):
+        self._reset_id_map()
         self._data = {
-            FOF.PERIOD: [None, None],
-            FOF.ACCOUNTS: [],
-            FOF.ASSETS: [],
-            FOF.SYMBOLS: [],
-            FOF.ASSETS_DATA: [],
-            FOF.TRADES: [],
-            FOF.TRANSFERS: [],
-            FOF.CORP_ACTIONS: [],
-            FOF.ASSET_PAYMENTS: [],
-            FOF.INCOME_SPENDING: []
+            JSF.PERIOD: [None, None],
+            JSF.ACCOUNTS: [],
+            JSF.ASSETS: [],
+            JSF.TRADES: [],
+            JSF.TRANSFERS: [],
+            JSF.CORP_ACTIONS: [],
+            JSF.ASSET_PAYMENTS: [],
+            JSF.INCOME_SPENDING: []
         }
 
     # -----------------------------------------------------------------------------------------------------------------------

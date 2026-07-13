@@ -1,8 +1,7 @@
-import json
 from decimal import Decimal
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr, prepare_db_moex
 
-from jal.data_import.statement import Statement
+from jal.data_import.statement import Statement, JSF
 from tests.helpers import d2t
 from jal.constants import PredefinedAsset, SymbolId, AssetLocation
 from jal.db.account import JalAccount
@@ -15,10 +14,15 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     statement.validate_format()
     statement.match_db_ids()
 
-    with open(data_path + 'matched.json', 'r', encoding='utf-8') as json_file:
-        expected_result = json.load(json_file)
-
-    assert statement._data == expected_result
+    # Only pre-existing db elements are matched: RUB/USD/EUR currencies, VUG (by symbol),
+    # EDV (by cusip), ZROZ (by isin), the USD account and the two dividends listed in the
+    # fixture's 'db_ids' section (tax updates). Symbols are matched during import.
+    assert statement._id_map == {
+        JSF.ACCOUNTS: {2: 1},
+        JSF.ASSETS: {1: 1, 2: 2, 32: 3, 5: 4, 43: 5, 21: 6},
+        JSF.SYMBOLS: {},
+        JSF.ASSET_PAYMENTS: {8: 1, 9: 2}
+    }
 
     statement.import_into_db()
 
