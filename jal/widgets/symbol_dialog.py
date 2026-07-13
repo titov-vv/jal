@@ -146,6 +146,12 @@ class SymbolDialog(QDialog):
         self._data_model.select()
         self._configure_data_view()
 
+        # Single registry of the dialog's grid sub-models (all OnManualSubmit): accept() submits
+        # them in this order (symbols first as identifiers reference them), reject() reverts in reverse
+        self._grid_models = ((self.tr("Symbols"), self._symbols_model),
+                             (self.tr("Identifiers"), self._id_model),
+                             (self.tr("Asset data"), self._data_model))
+
         self.ui.AddSymbolButton.setIcon(JalIcon[JalIcon.ADD])
         self.ui.RemoveSymbolButton.setIcon(JalIcon[JalIcon.REMOVE])
         self.ui.AddIdButton.setIcon(JalIcon[JalIcon.ADD])
@@ -337,11 +343,9 @@ class SymbolDialog(QDialog):
         if not self.validated():
             return
         # Grid models are OnManualSubmit - pending cell edits must be written out explicitly here.
-        # Symbols go first as identifiers reference them. On failure the dialog stays open with the
-        # transaction alive, so the user may correct the data or cancel (which rolls everything back).
-        for name, model in ((self.tr("Symbols"), self._symbols_model),
-                            (self.tr("Identifiers"), self._id_model),
-                            (self.tr("Asset data"), self._data_model)):
+        # On failure the dialog stays open with the transaction alive, so the user may correct the
+        # data or cancel (which rolls everything back).
+        for name, model in self._grid_models:
             if not model.submitAll():
                 logging.fatal(name + self.tr(" submit failed: ") + model.lastError().text())
                 return
@@ -353,6 +357,7 @@ class SymbolDialog(QDialog):
 
     def reject(self) -> None:
         self._model.database().rollback()
-        for model in (self._data_model, self._id_model, self._symbols_model, self._model):
+        for _, model in reversed(self._grid_models):
             model.revertAll()
+        self._model.revertAll()
         super().reject()

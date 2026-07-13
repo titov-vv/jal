@@ -33,6 +33,7 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
                            "LEFT JOIN assets a ON a.id=s.asset_id "\
                            "LEFT JOIN asset_symbol c ON s.currency_id=c.asset_id AND c.active=1"
         self._filter_clause = ''
+        self._filter_params = []   # bound parameters of _current_query (carried into locateItem's wrapper query)
         self._sort_clause = "ORDER BY s.symbol"
         self._current_query = self._base_query + " " + self._sort_clause
         self.setQuery(self._exec(self._current_query, forward_only=False))
@@ -71,6 +72,7 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
 
     def setFilter(self, asset_type=None, currency_id=None, location_id=None, text=''):
         filter_clauses = []
+        self._filter_params = []
         if asset_type is not None:
             filter_clauses.append(f"a.type_id={asset_type}")
         if currency_id is not None:
@@ -78,11 +80,11 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         if location_id is not None:
             filter_clauses.append(f"s.location_id={location_id}")
         if text:
-            text = text.replace("'", "''")  # Escape single quotes for SQL string literal
-            filter_clauses.append(f"(s.symbol LIKE '%{text}%' OR a.full_name LIKE '%{text}%')")
+            filter_clauses.append("(s.symbol LIKE :text OR a.full_name LIKE :text)")
+            self._filter_params.append((":text", f"%{text}%"))
         self._filter_clause = ' AND '.join(filter_clauses)
         self._current_query = f"{self._base_query} WHERE {self._filter_clause} {self._sort_clause}"
-        self.setQuery(self._exec(self._current_query, forward_only=False))
+        self.setQuery(self._exec(self._current_query, self._filter_params, forward_only=False))
 
     def getId(self, index):
         return self.record(index.row()).value('id')
@@ -94,21 +96,21 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         return self._read("SELECT symbol FROM asset_symbol WHERE id=:id", [(":id", item_id)])
 
     def getValueDetails(self, item_id) -> str:
-        return self._read("SELECT full_name FROM assets WHERE id=(SELECT asset_id FROM asset_symbol WHERE id=:id)", [(":id", item_id)])
+        return JalAsset.from_symbol(item_id).name()
 
     def locateItem(self, item_id):
         row = self._read(f"SELECT row_number FROM ("
                          f"SELECT ROW_NUMBER() OVER (ORDER BY symbol) AS row_number, id "
-                         f"FROM ({self._current_query})) WHERE id=:id", [(":id", item_id)])
+                         f"FROM ({self._current_query})) WHERE id=:id",
+                         [(":id", item_id)] + self._filter_params)
         if row is None:
             return QModelIndex()
         return self.index(row - 1, 0)
 
     # Returns True if given symbol is the only symbol its asset has
     def is_last_symbol(self, symbol_id) -> bool:
-        other_symbols = self._read("SELECT COUNT(id) FROM asset_symbol WHERE "
-                                   "asset_id=(SELECT asset_id FROM asset_symbol WHERE id=:id) AND id!=:id",
-                                   [(":id", symbol_id)])
+        other_symbols = self._read("SELECT COUNT(id) FROM asset_symbol WHERE asset_id=:asset AND id!=:id",
+                                   [(":asset", JalAsset.from_symbol(symbol_id).id()), (":id", symbol_id)])
         return not other_symbols
 
     # Deletes given symbol. If it was the last symbol of its asset, deletes the (now empty) asset too, together
@@ -119,7 +121,7 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
     # back too, so we never leave a still-referenced asset with zero symbols behind.
     # Returns True if deletion succeeded.
     def remove_symbol(self, symbol_id) -> bool:
-        asset_id = self._read("SELECT asset_id FROM asset_symbol WHERE id=:id", [(":id", symbol_id)])
+        asset_id = JalAsset.from_symbol(symbol_id).id()
         drop_asset = self.is_last_symbol(symbol_id)
         self.connection().transaction()
         if self._exec("DELETE FROM asset_symbol WHERE id=:id", [(":id", symbol_id)]) is None:

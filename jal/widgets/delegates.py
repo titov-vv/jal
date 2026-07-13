@@ -304,9 +304,13 @@ class LookupSelectorDelegate(QStyledItemDelegate):
     def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
         editor.selected_id = index.data()
 
+    # Value that gets written into the model for a valid selection - subclasses may translate it
+    def _stored_value(self, editor):
+        return editor.selected_id
+
     def setModelData(self, editor, model, index):
         if editor.selected_id:  # Check if lookup index is valid or 0
-            model.setData(index, editor.selected_id)
+            model.setData(index, self._stored_value(editor))
         else:
             model.setData(index, None)  # replace invalid index with NULL value
 
@@ -322,11 +326,8 @@ class AssetSelectorDelegate(LookupSelectorDelegate):
         symbol_ids = JalAsset(index.data()).active_symbol_ids()
         editor.selected_id = symbol_ids[0] if symbol_ids else 0
 
-    def setModelData(self, editor, model, index):
-        if editor.selected_id:  # Check if lookup index is valid or 0
-            model.setData(index, JalAsset.from_symbol(editor.selected_id).id())
-        else:
-            model.setData(index, None)  # replace invalid index with NULL value
+    def _stored_value(self, editor):
+        return JalAsset.from_symbol(editor.selected_id).id()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

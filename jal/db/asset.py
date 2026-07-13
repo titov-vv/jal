@@ -236,7 +236,8 @@ class JalAsset(JalDB):
 
     # Returns the location (see AssetLocation) of the symbol defined for given currency (currency_id can be None).
     # If the object references an exact symbol (see __init__'s symbol_id param) its location has priority -
-    # this way two same-currency listings of one asset keep their own quote feeds.
+    # each listing then downloads quotes from its own feed (quote storage stays keyed by asset and currency,
+    # so two same-currency listings still share one quote series - see LONG_TERM_IMPROVEMENTS.md).
     def location(self, currency_id: int) -> int:
         if self._symbol_id:
             return self._read("SELECT location_id FROM asset_symbol WHERE id=:id", [(":id", self._symbol_id)])
