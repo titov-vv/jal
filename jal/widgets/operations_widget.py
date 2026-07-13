@@ -14,7 +14,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.balances_model import BalancesModel
 from jal.db.operations_model import OperationsModel
-from db.common_models import TagTreeModel
+from jal.db.common_models import TagTreeModel
 from jal.db.operations import LedgerTransaction
 
 

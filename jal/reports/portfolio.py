@@ -9,7 +9,7 @@ from jal.db.asset import JalAsset
 from jal.db.holdings_model import HoldingsModel
 from jal.widgets.mdi import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
-from db.common_models import TagTreeModel
+from jal.db.common_models import TagTreeModel
 from jal.widgets.icons import JalIcon
 from jal.widgets.price_chart import ChartWindow
 from jal.widgets.selection_dialog import SelectReferenceDialog
