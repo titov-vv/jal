@@ -12,3 +12,12 @@ __pycache__
 /jal.egg-info
 *.log
 jal_faults.log
+
+# build artifacts
+/dist
+
+# personal working data
+/data
+
+# personal backups/archive
+/archive
