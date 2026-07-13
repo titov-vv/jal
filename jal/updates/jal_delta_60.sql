@@ -139,13 +139,23 @@ DROP TABLE symbol_ids;
 ALTER TABLE symbol_ids_new RENAME TO symbol_ids;
 PRAGMA foreign_keys = ON;  -- Prevent deletion of linked asset_ids
 CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id);
--- Seed / codes for currency symbols (fresh installs get them from jal_init.sql)
+-- Seed ISO4217 numeric codes for currency symbols (fresh installs get them from jal_init.sql).
+-- Currencies with unrecognized symbols are skipped and may be filled in manually.
 INSERT INTO symbol_ids (symbol_id, id_type, id_value)
-  SELECT s.id, 6, s.symbol
-  FROM asset_symbol s
-  JOIN assets a ON s.asset_id=a.id AND a.type_id=1
-  WHERE s.active=1
-    AND NOT EXISTS (SELECT 1 FROM symbol_ids i WHERE i.symbol_id=s.id AND i.id_type=6);
+  SELECT q.id, 6, q.code FROM (
+    SELECT s.id,
+      CASE s.symbol
+        WHEN 'RUB' THEN '643' WHEN 'USD' THEN '840' WHEN 'EUR' THEN '978'
+        WHEN 'CNY' THEN '156' WHEN 'GBP' THEN '826' WHEN 'GEL' THEN '981'
+        WHEN 'HUF' THEN '348' WHEN 'ILS' THEN '376' WHEN 'KZT' THEN '398'
+        WHEN 'PLN' THEN '985' WHEN 'TRY' THEN '949'
+      END AS code
+    FROM asset_symbol s
+    JOIN assets a ON s.asset_id=a.id AND a.type_id=1
+    WHERE s.active=1
+      AND NOT EXISTS (SELECT 1 FROM symbol_ids i WHERE i.symbol_id=s.id AND i.id_type=6)
+  ) q
+  WHERE NOT q.code IS NULL;
 --------------------------------------------------------------------------------
 -- Update currencies view
 CREATE VIEW currencies AS

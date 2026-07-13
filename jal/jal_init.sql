@@ -656,13 +656,13 @@ INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_
 
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');
-INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (1, 1, 6, 'RUB');
+INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (1, 1, 6, '643');
 INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active, location_id) VALUES (1, 1, 'RUB', 1, 1, 101);
 INSERT INTO assets (id, type_id, full_name) VALUES (2, 1, 'Доллар США');
-INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (2, 2, 6, 'USD');
+INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (2, 2, 6, '840');
 INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active, location_id) VALUES (2, 2, 'USD', 2, 1, 101);
 INSERT INTO assets (id, type_id, full_name) VALUES (3, 1, 'Евро');
-INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (3, 3, 6, 'EUR');
+INSERT INTO symbol_ids (id, symbol_id, id_type, id_value) VALUES (3, 3, 6, '978');
 INSERT INTO asset_symbol (id, asset_id, symbol, currency_id, active, location_id) VALUES (3, 3, 'EUR', 3, 1, 101);
 
 -- Initialize countries
