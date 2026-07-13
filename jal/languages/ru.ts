@@ -204,7 +204,7 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="210"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Оценка</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="221"/>
@@ -5439,6 +5439,131 @@ Do you want to delete the peer anyway?</source>
     </message>
 </context>
 <context>
+    <name>SymbolDialog</name>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="17"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="78"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="85"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="168"/>
+        <source>Add new attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="178"/>
+        <source>Country: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="198"/>
+        <source>Asset name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="218"/>
+        <source>Asset attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="225"/>
+        <source>Type: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="232"/>
+        <source>Remove selected attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="341"/>
+        <location filename="../widgets/symbol_dialog.py" line="151"/>
+        <source>Symbols</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="348"/>
+        <source>Remove selected symbol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="371"/>
+        <source>Add new symbol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="440"/>
+        <source>Remove selected identifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="463"/>
+        <location filename="../widgets/symbol_dialog.py" line="152"/>
+        <source>Identifiers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/symbol_edit_dlg.ui" line="470"/>
+        <source>Add new identifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/symbol_dialog.py" line="153"/>
+        <source>Asset data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/symbol_dialog.py" line="236"/>
+        <source>Failed to create new asset: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/symbol_dialog.py" line="271"/>
+        <source>Failed to add symbol: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/symbol_dialog.py" line="293"/>
+        <source>No symbol selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/symbol_dialog.py" line="294"/>
+        <source>Please select a symbol to add an identifier to it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/symbol_dialog.py" line="336"/>
+        <source>Incomplete data</source>
+        <translation type="unfinished">Неполные данные</translation>
+    </message>
+    <message>
+        <location filename="../widgets/symbol_dialog.py" line="337"/>
+        <source>Can&apos;t save asset without active symbols</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/symbol_dialog.py" line="350"/>
+        <source> submit failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/symbol_dialog.py" line="353"/>
+        <source>Asset submit failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SymbolId</name>
     <message>
         <location filename="../constants.py" line="239"/>
@@ -5496,7 +5621,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="195"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Оценка</translation>
     </message>
 </context>
 <context>
