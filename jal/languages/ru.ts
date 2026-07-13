@@ -174,7 +174,7 @@
         <source>All transactions related with this account will be deleted.
 Do you want to delete the account anyway?</source>
         <translation>Все транзакции связанные с этим счётом будут удалены.
-Вы ходите продолжить удаление счёта?</translation>
+Вы хотите продолжить удаление счёта?</translation>
     </message>
 </context>
 <context>
@@ -200,7 +200,7 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="209"/>
         <source>Attribute</source>
-        <translation>Аттрибут</translation>
+        <translation>Атрибут</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="210"/>
@@ -215,7 +215,7 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="222"/>
         <source>Please fill in the previously added attribute before adding a new one</source>
-        <translation>Пожалуйста, перед заполением нового, заполните предыдущий добавленный аттрибут</translation>
+        <translation>Пожалуйста, перед заполнением нового, заполните предыдущий добавленный атрибут</translation>
     </message>
 </context>
 <context>
@@ -258,7 +258,7 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../constants.py" line="303"/>
         <source>Frankfurt Borse</source>
-        <translation>Франкфунтская биржа</translation>
+        <translation>Франкфуртская биржа</translation>
     </message>
     <message>
         <location filename="../constants.py" line="304"/>
@@ -404,7 +404,7 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../ui/widgets/asset_payment_operation.ui" line="101"/>
         <source>Asset</source>
-        <translation>ЦБ</translation>
+        <translation>Актив</translation>
     </message>
     <message>
         <location filename="../ui/widgets/asset_payment_operation.ui" line="129"/>
@@ -637,7 +637,7 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../reports/assets_payments.py" line="20"/>
         <source>Asset</source>
-        <translation>ЦБ</translation>
+        <translation>Актив</translation>
     </message>
     <message>
         <location filename="../reports/assets_payments.py" line="20"/>
@@ -898,7 +898,7 @@ Do you want to delete the account anyway?</source>
         <source>Category or one of its subcategories are in use.
 All related transactions will be deleted together with the category.
 Do you want to delete the category anyway?</source>
-        <translation>Категория или одна из её подкатегорий использоуется.
+        <translation>Категория или одна из её подкатегорий используется.
 Все связанные транзакции будут удалены вместе с удалением категории.
 Вы хотите продолжить удаление категории?</translation>
     </message>
@@ -926,7 +926,7 @@ Do you want to delete the category anyway?</source>
     <message>
         <location filename="../db/trades_model.py" line="112"/>
         <source>Asset</source>
-        <translation>Ценная бумага</translation>
+        <translation>Актив</translation>
     </message>
     <message>
         <location filename="../db/trades_model.py" line="113"/>
@@ -1034,12 +1034,12 @@ Do you want to delete the category anyway?</source>
     <message>
         <location filename="../db/operations.py" line="1241"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
-        <translation>Количетво ценных бумаг недостаточно для обработки корпоративного события. Дата: </translation>
+        <translation>Количество ценных бумаг недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="1245"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
-        <translation>Неподерживаемый случай: Корпоративное событие покрывает не всю открытую позицию. Дата: </translation>
+        <translation>Неподдерживаемый случай: Корпоративное событие покрывает не всю открытую позицию. Дата: </translation>
     </message>
     <message>
         <location filename="../db/operations.py" line="1251"/>
@@ -1062,7 +1062,7 @@ Do you want to delete the category anyway?</source>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="42"/>
         <source>Asset</source>
-        <translation>ЦБ</translation>
+        <translation>Актив</translation>
     </message>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="52"/>
@@ -1182,7 +1182,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="116"/>
         <source>Symbol change should have only 1 result row</source>
-        <translation>Смена символа дожна иметь только 1 ценную бумагу в результате</translation>
+        <translation>Смена символа должна иметь только 1 ценную бумагу в результате</translation>
     </message>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="122"/>
@@ -1339,7 +1339,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../reports/deals.py" line="31"/>
         <source>Asset</source>
-        <translation>Ценная бумага</translation>
+        <translation>Актив</translation>
     </message>
     <message>
         <location filename="../reports/deals.py" line="32"/>
@@ -2113,7 +2113,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../db/backup_restore.py" line="130"/>
         <source>Backup restored from: </source>
-        <translation>Резервная копия восставновлена из: </translation>
+        <translation>Резервная копия восстановлена из: </translation>
     </message>
     <message>
         <location filename="../db/backup_restore.py" line="131"/>
@@ -2142,7 +2142,7 @@ Application will be terminated now</source>
     <message>
         <location filename="../db/backup_restore.py" line="116"/>
         <source>Backup saved in: </source>
-        <translation>Резервная копия сохранёна в: </translation>
+        <translation>Резервная копия сохранена в: </translation>
     </message>
     <message>
         <location filename="../db/backup_restore.py" line="48"/>
@@ -2181,7 +2181,7 @@ Application will be terminated now</source>
     <message>
         <location filename="../widgets/operations_tabs.py" line="44"/>
         <source>You have unsaved changes</source>
-        <translation>Есть несохранённые изменния</translation>
+        <translation>Есть несохранённые изменения</translation>
     </message>
     <message>
         <location filename="../widgets/operations_tabs.py" line="46"/>
@@ -2214,7 +2214,7 @@ do you want to save it?</source>
     <message>
         <location filename="../db/ledger.py" line="163"/>
         <source>No category set for: </source>
-        <translation>Ну указана категория для: </translation>
+        <translation>Не указана категория для: </translation>
     </message>
     <message>
         <location filename="../db/ledger.py" line="165"/>
@@ -2229,7 +2229,7 @@ do you want to save it?</source>
     <message>
         <location filename="../db/ledger.py" line="241"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
-        <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
+        <translation> операций требуют перерасчета. Вы хотите выполнить его прямо сейчас?</translation>
     </message>
     <message>
         <location filename="../db/ledger.py" line="267"/>
@@ -2668,7 +2668,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../ui/flow_export_widget.ui" line="26"/>
         <source>Select file</source>
-        <translation>Выберит файл</translation>
+        <translation>Выберите файл</translation>
     </message>
     <message>
         <location filename="../ui/flow_export_widget.ui" line="29"/>
@@ -2870,7 +2870,7 @@ Application will be terminated now.</source>
     <message>
         <location filename="../data_import/shop_receipt.py" line="62"/>
         <source>Tag</source>
-        <translation>Тэг</translation>
+        <translation>Метка</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="64"/>
@@ -3028,7 +3028,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../reports/portfolio.py" line="41"/>
         <source>Asset</source>
-        <translation>ЦБ</translation>
+        <translation>Актив</translation>
     </message>
     <message>
         <location filename="../reports/portfolio.py" line="42"/>
@@ -3577,7 +3577,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../db/common_models.py" line="135"/>
         <source>Asset</source>
-        <translation>ЦБ</translation>
+        <translation>Актив</translation>
     </message>
     <message>
         <location filename="../db/common_models.py" line="136"/>
@@ -3658,7 +3658,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/receipt_api/receipts.py" line="63"/>
         <source>No API found for QR data: </source>
-        <translation>На найдено API для QR-кода: </translation>
+        <translation>Не найдено API для QR-кода: </translation>
     </message>
 </context>
 <context>
@@ -3686,7 +3686,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="69"/>
         <source>No Lidl Plus access token available</source>
-        <translation>Отсутствует токен доступе Lidl Plus</translation>
+        <translation>Отсутствует токен доступа Lidl Plus</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="76"/>
@@ -3789,7 +3789,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="147"/>
         <source>Receipt load failed: </source>
-        <translation></translation>
+        <translation>Ошибка загрузки чека: </translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="152"/>
@@ -3847,7 +3847,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="125"/>
         <source>Get ticket id failed: </source>
-        <translation>Невозиожно получить ID чека: </translation>
+        <translation>Невозможно получить ID чека: </translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="127"/>
@@ -3857,7 +3857,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="137"/>
         <source>Receipt load failed: </source>
-        <translation>Неуспешная загрузка чека: </translation>
+        <translation>Ошибка загрузки чека: </translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="139"/>
@@ -3877,17 +3877,17 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="155"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos; from FNS</source>
-        <translation>На нейден тэг &apos;receipt&apos; внутри тега &apos;document&apos; данных от ФНС</translation>
+        <translation>Не найден тэг &apos;receipt&apos; внутри тега &apos;document&apos; данных от ФНС</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="158"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos; from FNS</source>
-        <translation>На нейден тэг &apos;document&apos; внутри тега &apos;ticket&apos; данных от ФНС</translation>
+        <translation>Не найден тэг &apos;document&apos; внутри тега &apos;ticket&apos; данных от ФНС</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="175"/>
         <source>Incorrect length of INN. Can&apos;t get company name.</source>
-        <translation>Неверная длина ИНН. Невозможно загрузить наименвание компании.</translation>
+        <translation>Неверная длина ИНН. Невозможно загрузить наименование компании.</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="199"/>
@@ -4356,12 +4356,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/statement.py" line="802"/>
         <source>Can&apos;t resolve an exact symbol for: </source>
-        <translation>Невозможно определить симвод для: </translation>
+        <translation>Невозможно определить символ для: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="422"/>
         <source>Unmatched currency for account: </source>
-        <translation>Невозмоно сопоставить валюту для счёта: </translation>
+        <translation>Невозможно сопоставить валюту для счёта: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="438"/>
@@ -4376,12 +4376,12 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/statement.py" line="463"/>
         <source>Unmatched account for transfer: </source>
-        <translation>Невзоможно сопоставить счёт для перевода: </translation>
+        <translation>Невозможно сопоставить счёт для перевода: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="474"/>
         <source>Impossible to convert asset type in transfer: </source>
-        <translation>Невозможно контвертировать тип актива в трансфере: </translation>
+        <translation>Невозможно конвертировать тип актива в трансфере: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="479"/>
@@ -4484,7 +4484,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/statement.py" line="775"/>
         <source>Can&apos;t locate asset in statement data: </source>
-        <translation>Невозможно найте ЦБ в отчёте: </translation>
+        <translation>Невозможно найти ЦБ в отчёте: </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="381"/>
@@ -4596,7 +4596,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="427"/>
         <source>Can&apos;t get account currency for account: </source>
-        <translation>Невоможно определить валюту для счёта: </translation>
+        <translation>Невозможно определить валюту для счёта: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="471"/>
@@ -4611,7 +4611,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="509"/>
         <source>Trades loaded: </source>
-        <translation></translation>
+        <translation>Сделок загружено: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="555"/>
@@ -4717,7 +4717,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="448"/>
         <source>Can&apos;t resolve an exact symbol for: </source>
-        <translation>Навозможно определить символ для: </translation>
+        <translation>Невозможно определить символ для: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="465"/>
@@ -4797,7 +4797,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="925"/>
         <source>Stock grant operations loaded: </source>
-        <translation>Нацисления акций загружены: </translation>
+        <translation>Начисления акций загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="989"/>
@@ -4858,7 +4858,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="1166"/>
         <source>CFD charges loaded: </source>
-        <translation>Комиссии CFD заружены: </translation>
+        <translation>Комиссии CFD загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="1176"/>
@@ -4994,7 +4994,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/kit.py" line="97"/>
         <source>Trades loaded: </source>
-        <translation>Сделки загружены: </translation>
+        <translation>Сделок загружено: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/kit.py" line="130"/>
@@ -5037,7 +5037,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/psb.py" line="123"/>
         <source>Trades loaded: </source>
-        <translation></translation>
+        <translation>Сделок загружено: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/psb.py" line="154"/>
@@ -5091,7 +5091,7 @@ Do you want to delete the peer anyway?</source>
         <location filename="../data_import/broker_statements/tvoy.py" line="120"/>
         <location filename="../data_import/broker_statements/tvoy.py" line="264"/>
         <source>No match for </source>
-        <translation>Нет найдено совпадение для </translation>
+        <translation>Не найдено совпадение для </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/tvoy.py" line="132"/>
@@ -5251,7 +5251,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="252"/>
         <source>Unknown currency trade type: </source>
-        <translation>Неизвестныей тип сделки при обмене валюты: </translation>
+        <translation>Неизвестный тип сделки при обмене валюты: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="270"/>
@@ -5266,7 +5266,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="303"/>
         <source>No asset match in asset transactions </source>
-        <translation>Нет найдена ЦБ для транзакции с ценной бумагой </translation>
+        <translation>Не найдена ЦБ для транзакции с ценной бумагой </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/vtb.py" line="309"/>
@@ -5397,7 +5397,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../data_import/statement_xml.py" line="139"/>
         <source>Failed to load attribute: </source>
-        <translation>Невозможно загрузить аттрибут: </translation>
+        <translation>Невозможно загрузить атрибут: </translation>
     </message>
 </context>
 <context>
@@ -5448,7 +5448,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="17"/>
         <source>Asset</source>
-        <translation>ЦБ</translation>
+        <translation>Актив</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="78"/>
@@ -5463,7 +5463,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="168"/>
         <source>Add new attribute</source>
-        <translation>Добавить новый аттрибут</translation>
+        <translation>Добавить новый атрибут</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="178"/>
@@ -5478,7 +5478,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="218"/>
         <source>Asset attributes</source>
-        <translation>Аттрибуты ЦБ</translation>
+        <translation>Атрибуты актива</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="225"/>
@@ -5488,7 +5488,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="232"/>
         <source>Remove selected attribute</source>
-        <translation>Удалить выбранный аттрибут</translation>
+        <translation>Удалить выбранный атрибут</translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="341"/>
@@ -5555,7 +5555,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="337"/>
         <source>Can&apos;t save asset without active symbols</source>
-        <translation>Невоможно сохранить ЦБ без активных символов</translation>
+        <translation>Невозможно сохранить ЦБ без активных символов</translation>
     </message>
     <message>
         <location filename="../widgets/symbol_dialog.py" line="350"/>
@@ -5657,7 +5657,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../db/asset_models.py" line="20"/>
         <source>Asset</source>
-        <translation>ЦБ</translation>
+        <translation>Актив</translation>
     </message>
     <message>
         <location filename="../db/asset_models.py" line="21"/>
@@ -5971,7 +5971,7 @@ Do you want to delete the peer anyway?</source>
         <location filename="../ui/tax_export_widget.ui" line="171"/>
         <location filename="../ui/tax_export_widget.ui" line="292"/>
         <source>Select file</source>
-        <translation>Выберит файл</translation>
+        <translation>Выберите файл</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="50"/>
@@ -6293,7 +6293,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="83"/>
         <source>Asset</source>
-        <translation>ЦБ</translation>
+        <translation>Актив</translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="76"/>
