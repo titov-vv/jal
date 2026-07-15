@@ -3,8 +3,9 @@ from decimal import Decimal
 from pandas._testing import assert_frame_equal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
-from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets
+from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets, symbol_id_for
 from jal.db.asset import JalAsset
+from jal.db.symbol import JalSymbol
 from jal.constants import PredefinedAsset, SymbolId
 from jal.net.downloader import QuoteDownloader
 from jal.net.moex import MOEX
@@ -135,7 +136,7 @@ def test_MOEX_downloader(prepare_db_moex):
     metal_quotes = metal_quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(4), 1, d2t(210413), d2t(210414))
+    quotes_downloaded = downloader.MOEX_DataReader(JalSymbol(symbol_id_for(4, 1)), 1, d2t(210413), d2t(210414))
     assert_frame_equal(stock_quotes, quotes_downloaded)
     sber = JalAsset(4)
     assert sber.type() == PredefinedAsset.Stock
@@ -144,7 +145,7 @@ def test_MOEX_downloader(prepare_db_moex):
     assert sber.name() == ''
     assert sber.symbol_id(SymbolId.REG_CODE)== '10301481B'
 
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(6), 1, d2t(210722), d2t(210723))
+    quotes_downloaded = downloader.MOEX_DataReader(JalSymbol(symbol_id_for(6, 1)), 1, d2t(210722), d2t(210723))
     assert_frame_equal(bond_quotes, quotes_downloaded)
     bond = JalAsset(6)
     assert bond.type() == PredefinedAsset.Bond
@@ -155,7 +156,7 @@ def test_MOEX_downloader(prepare_db_moex):
     assert bond.expiry() == d2t(410515)
     assert bond.principal() == Decimal('1000')
 
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(7), 1, d2t(210722), d2t(210723))
+    quotes_downloaded = downloader.MOEX_DataReader(JalSymbol(symbol_id_for(7, 1)), 1, d2t(210722), d2t(210723))
     assert_frame_equal(corp_quotes, quotes_downloaded)
     bond2 = JalAsset(7)
     assert bond2.type() == PredefinedAsset.Bond
@@ -166,16 +167,16 @@ def test_MOEX_downloader(prepare_db_moex):
     assert bond2.expiry() == d2t(211130)
     assert bond2.principal() == Decimal('1000')
     # Test of quotes download for PNK Rental Fund
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(9), 1, d2t(211213), d2t(211214), update_symbol=False)
+    quotes_downloaded = downloader.MOEX_DataReader(JalSymbol(symbol_id_for(9, 1)), 1, d2t(211213), d2t(211214), update_symbol=False)
     assert_frame_equal(etf_quotes, quotes_downloaded)
     # Test of non-existing asset download
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(10), 1, d2t(211213), d2t(211214), update_symbol=False)
+    quotes_downloaded = downloader.MOEX_DataReader(JalSymbol(symbol_id_for(10, 1)), 1, d2t(211213), d2t(211214), update_symbol=False)
     assert quotes_downloaded is None
     # Bond with high risk
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(11), 1, d2t(230913), d2t(230914), update_symbol=False)
+    quotes_downloaded = downloader.MOEX_DataReader(JalSymbol(symbol_id_for(11, 1)), 1, d2t(230913), d2t(230914), update_symbol=False)
     assert_frame_equal(bond_quotes2, quotes_downloaded)
     # Metal
-    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(12), 1, d2t(240206), d2t(240207), update_symbol=False)
+    quotes_downloaded = downloader.MOEX_DataReader(JalSymbol(symbol_id_for(12, 1)), 1, d2t(240206), d2t(240207), update_symbol=False)
     assert_frame_equal(metal_quotes, quotes_downloaded)
 
 
@@ -186,7 +187,7 @@ def test_MOEX_downloader_USD(prepare_db_moex):
     bond_usd_quotes = pd.DataFrame({'Close': [Decimal('846.509'), Decimal('844.998')],
                                     'Date': [d2dt(240213), d2dt(240214)]})
     bond_usd_quotes = bond_usd_quotes.set_index('Date')
-    bond_quotes = downloader.MOEX_DataReader(JalAsset(9), 2, d2t(240213), d2t(240214))
+    bond_quotes = downloader.MOEX_DataReader(JalSymbol(symbol_id_for(9, 2)), 2, d2t(240213), d2t(240214))
     assert_frame_equal(bond_quotes, bond_usd_quotes)
 
 def test_NYSE_downloader(prepare_db):
@@ -196,7 +197,7 @@ def test_NYSE_downloader(prepare_db):
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Yahoo_Downloader(JalAsset(4), 2, d2t(210413), d2t(210415))
+    quotes_downloaded = downloader.Yahoo_Downloader(JalSymbol(symbol_id_for(4, 2)), 2, d2t(210413), d2t(210415))
     assert_frame_equal(quotes, quotes_downloaded)
 
 
@@ -207,7 +208,7 @@ def test_LSE_downloader(prepare_db):
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.YahooLSE_Downloader(JalAsset(4), 3, d2t(210413), d2t(210415))
+    quotes_downloaded = downloader.YahooLSE_Downloader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(210413), d2t(210415))
     assert_frame_equal(quotes, quotes_downloaded)
 
 
@@ -218,7 +219,7 @@ def test_Euronext_downloader(prepare_db):
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Euronext_DataReader(JalAsset(4), 3, d2t(230412), d2t(230414))
+    quotes_downloaded = downloader.Euronext_DataReader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(230412), d2t(230414))
     assert_frame_equal(quotes, quotes_downloaded)
 
 def test_EuronextMilan_DataReader(prepare_db):
@@ -228,7 +229,7 @@ def test_EuronextMilan_DataReader(prepare_db):
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.EuronextMilan_DataReader(JalAsset(4), 3, d2t(241203), d2t(241205))
+    quotes_downloaded = downloader.EuronextMilan_DataReader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(241203), d2t(241205))
     assert_frame_equal(quotes, quotes_downloaded)
 
 
@@ -239,7 +240,7 @@ def test_TMX_downloader(prepare_db):
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.TMX_Downloader(JalAsset(4), 3, 1618272000, 1618444800)
+    quotes_downloaded = downloader.TMX_Downloader(JalSymbol(symbol_id_for(4, 3)), 3, 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)
 
 
@@ -250,7 +251,7 @@ def test_Frankfurt_downloader(prepare_db):
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.YahooFRA_Downloader(JalAsset(4), 3, d2t(210413), d2t(210415))
+    quotes_downloaded = downloader.YahooFRA_Downloader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(210413), d2t(210415))
     assert_frame_equal(quotes, quotes_downloaded)
 
 
@@ -261,7 +262,7 @@ def test_Coinbase_downloader(prepare_db):
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Coinbase_Downloader(JalAsset(4), 3, d2t(230412), d2t(230414))
+    quotes_downloaded = downloader.Coinbase_Downloader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(230412), d2t(230414))
     assert_frame_equal(quotes, quotes_downloaded)
 
 
@@ -272,5 +273,5 @@ def test_Stooq_downloader(prepare_db):
         'Date': [d2dt(200102)],
         'Close': [Decimal('271.81')]
     }).set_index('Date')
-    result = downloader.Stooq_DataReader(JalAsset(4), 3, d2t(200102), d2t(200102))
+    result = downloader.Stooq_DataReader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(200102), d2t(200102))
     assert_frame_equal(expected, result)

@@ -3,7 +3,7 @@ import math
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
-from jal.constants import BookAccount, AssetLocation, AssetData, PredefinedAsset, SymbolId
+from jal.constants import AssetLocation, AssetData, PredefinedAsset, SymbolId
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal, year_begin, year_end, day_begin
 from jal.db.country import JalCountry
@@ -24,7 +24,7 @@ def db_timestamp2int(timestamp_string: str) -> int:
 class JalAsset(JalDB):
     db_cache = UniversalCache()
 
-    def __init__(self, asset_id: int = 0, symbol_id: int = 0) -> None:
+    def __init__(self, asset_id: int = 0) -> None:
         super().__init__(cached=True)
         try:
             self._id = int(asset_id)
@@ -33,7 +33,6 @@ class JalAsset(JalDB):
         self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))  # Load asset data from cache or DB
         self._type = self._data.get('type_id', None)
         self._name = self._data.get('full_name', '')
-        self._symbol_id = symbol_id
         self._country = JalCountry(self._data.get('country_id', 0))
         self._expiry = int(self._data.get('data', {}).get(AssetData.ExpiryDate, 0))
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '')
@@ -82,11 +81,11 @@ class JalAsset(JalDB):
     def class_cache(cls) -> True:
         return True
 
-    # Creates JalAsset object from a symbol id: resolves the owning asset and keeps the symbol reference
+    # Creates a JalAsset object from a symbol id by resolving the owning asset (see also JalSymbol.asset())
     @classmethod
     def from_symbol(cls, symbol_id: int) -> "JalAsset":
         asset_id = cls._read("SELECT asset_id FROM asset_symbol WHERE id=:id", [(":id", symbol_id)])
-        return cls(asset_id, symbol_id=symbol_id)
+        return cls(asset_id)
 
     def dump(self) -> dict:
         return self._data
@@ -100,20 +99,17 @@ class JalAsset(JalDB):
     def name(self) -> str:
         return self._name
 
-    # Returns identifier of given type for this asset's symbol (see __init__'s symbol_id param) if one was
-    # given, otherwise the first matching identifier found across any of the asset's symbols. '' if not present.
+    # Returns the first identifier of given type found across any of the asset's symbols ('' if not present).
+    # For an identifier scoped to a specific listing use JalSymbol.identifier().
     def symbol_id(self, id_type: int) -> str:
-        if self._symbol_id:
-            return self._data['ID'].get((self._symbol_id, id_type), '')
         matches = self._get_id(id_type)
         return matches[0] if matches else ''
 
-    # Returns asset symbol for given currency or all symbols if no currency is given
-    def symbol(self, currency: int = None) -> str:  # TODO check if currency_id is still used after asset/symbol change
+    # Returns asset symbol for given currency or all symbols if no currency is given.
+    # For a specific listing's symbol text use JalSymbol.symbol().
+    def symbol(self, currency: int = None) -> str:
         if not self._data:
             return ''
-        if self._symbol_id:
-            return ''.join([x['symbol'] for x in self._data['symbols'] if x['id'] == self._symbol_id])
         currency = None if self._type == PredefinedAsset.Money else currency  # Money have one unique symbol
         if currency is None:
             return ','.join([x['symbol'] for x in self._data['symbols'] if x['active'] == 1])  # concatenate all symbols via comma
@@ -124,6 +120,14 @@ class JalAsset(JalDB):
     # Returns list of ids of asset's active symbols
     def active_symbol_ids(self) -> list:
         return [x['id'] for x in self._data.get('symbols', []) if x['active'] == 1]
+
+    # A symbol/identifier write touches both this (asset-keyed) cache and the separate JalSymbol (symbol-keyed)
+    # cache - e.g. add_symbol deactivates sibling symbols and add_identifier changes a symbol's identifiers.
+    # JalSymbol can't be imported here (it imports JalAsset), so the global invalidation is used to clear every
+    # JalDB cache at once (mirrors JalTag.replace_with); this asset's data is then reloaded for continued use.
+    def _refresh_after_symbol_write(self) -> None:
+        JalDB().invalidate_cache()
+        self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))
 
     # Adds a new symbol to the asset (or returns the existing one's id if it already exists).
     # Returns the id of the resulting asset_symbol row.
@@ -142,7 +146,7 @@ class JalAsset(JalDB):
             new_id = query.lastInsertId() if query is not None else 0
         else:
             new_id = existing['id']
-        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
+        self._refresh_after_symbol_write()  # add_symbol may deactivate sibling symbols - refresh JalSymbol cache too
         return new_id
 
     # Attaches an identifier of given type (see SymbolId) to a specific, caller-supplied symbol id.
@@ -150,7 +154,7 @@ class JalAsset(JalDB):
     def add_identifier(self, symbol_id: int, id_type: int, id_value: str) -> None:
         _ = self._exec("INSERT INTO symbol_ids (symbol_id, id_type, id_value) VALUES (:symbol_id, :id_type, :id_value)",
                        [(":symbol_id", symbol_id), (":id_type", id_type), (":id_value", id_value)])
-        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
+        self._refresh_after_symbol_write()  # identifiers are part of the JalSymbol cache too - refresh it
 
     # Adds identifier of given type to given symbol of the asset unless the symbol already has one.
     # An existing identifier is never overwritten - a mismatching new value is only reported as an error.
@@ -235,12 +239,8 @@ class JalAsset(JalDB):
         return begin, end
 
     # Returns the location (see AssetLocation) of the symbol defined for given currency (currency_id can be None).
-    # If the object references an exact symbol (see __init__'s symbol_id param) its location has priority -
-    # each listing then downloads quotes from its own feed (quote storage stays keyed by asset and currency,
-    # so two same-currency listings still share one quote series - see LONG_TERM_IMPROVEMENTS.md).
+    # For a specific listing's location use JalSymbol.location().
     def location(self, currency_id: int) -> int:
-        if self._symbol_id:
-            return self._read("SELECT location_id FROM asset_symbol WHERE id=:id", [(":id", self._symbol_id)])
         location_id = self._read("SELECT location_id FROM asset_symbol "
                                  "WHERE asset_id=:asset AND currency_id IS :currency",
                                  [(":asset", self._id), (":currency", currency_id)])
@@ -293,14 +293,12 @@ class JalAsset(JalDB):
         self._tag = JalTag(tag_id)
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
-    # Updates relevant asset data fields with information provided in data dictionary
+    # Updates asset-level data fields with information provided in data dictionary. Per-symbol identifiers
+    # (isin/reg_number/cusip) are NOT handled here - they belong to a listing and are written via JalSymbol.
     def update_data(self, data: dict) -> None:
         updaters = {
-            'isin': self._update_isin,
             'name': self._update_name,
             'country': self._update_country,
-            'reg_number': self._update_reg_number,
-            'cusip': self._update_cusip,
             'expiry': self._update_expiration,
             'principal': self._update_principal
         }
@@ -313,9 +311,6 @@ class JalAsset(JalDB):
                 except KeyError:  # No updater for this key is present
                     continue
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
-
-    def _update_isin(self, new_isin: str) -> None:
-        self.update_identifier(self._symbol_id, SymbolId.ISIN, new_isin)
 
     def _update_name(self, new_name: str) -> None:
         if not self._name:
@@ -332,12 +327,6 @@ class JalAsset(JalDB):
                 self._country_id = new_country.id()
                 logging.info(self.tr("Country updated for ")
                              + f"{self.symbol()}: {self._country.name()} -> {new_country.name()}")
-
-    def _update_reg_number(self, new_number: str) -> None:
-        self.update_identifier(self._symbol_id, SymbolId.REG_CODE, new_number)
-
-    def _update_cusip(self, new_cusip: str) -> None:
-        self.update_identifier(self._symbol_id, SymbolId.CUSIP, new_cusip)
 
     def _update_expiration(self, new_expiration: int) -> None:
         _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
@@ -417,31 +406,6 @@ class JalAsset(JalDB):
             return 0
         else:
             return aid
-
-    # Method returns a list of {"asset": JalAsset, "currency": currency_id} that describes symbols involved into
-    # ledger operations between begin and end timestamps or that have non-zero value in ledger. Each 'asset' is
-    # scoped to the specific symbol active for its currency (see __init__'s symbol_id param), so identifier
-    # lookups like symbol_id() resolve against that exact listing rather than an arbitrary one.
-    @classmethod
-    def get_active_symbols(cls, begin: int, end: int) -> list:
-        assets = []
-        query = cls._exec("SELECT DISTINCT l.asset_id, a.currency_id, s.id "
-                          "FROM ledger l LEFT JOIN accounts a ON a.id=l.account_id "
-                          "LEFT JOIN asset_symbol s ON s.asset_id=l.asset_id AND s.currency_id=a.currency_id AND s.active=1 "
-                          "WHERE l.book_account=:assets "
-                          "GROUP BY l.asset_id, a.currency_id, l.account_id, s.id "
-                          "HAVING l.id = MAX(l.id) AND (l.amount_acc!='0' OR l.value_acc!='0' OR (l.timestamp>=:begin AND l.timestamp<=:end))",
-                          [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
-        while query.next():
-            try:
-                # symbol_id may legitimately be NULL (no active asset_symbol row for this currency) -
-                # default to 0 (unscoped) rather than treating it like a malformed asset_id/currency_id
-                asset_id, currency_id, symbol_id = super(JalAsset, JalAsset)._read_record(
-                    query, cast=[int, int, lambda x: int(x) if x is not None else 0])
-            except TypeError:  # Skip if None is returned (i.e. there are no assets)
-                continue
-            assets.append({"asset": JalAsset(asset_id, symbol_id=symbol_id), "currency": currency_id})
-        return assets
 
     # Method returns a list of JalAsset objects that describe all assets defined in ledger
     @classmethod

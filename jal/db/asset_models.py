@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QCompleter, QMessageBox
 from jal.db.db import JalDB
 from jal.db.common_models_abstract import AbstractReferenceListModel
 from jal.db.asset import JalAsset
+from jal.db.symbol import JalSymbol
 from jal.db.tag import JalTag
 from jal.constants import CmColumn, CmWidth, AssetData, SymbolId
 
@@ -90,13 +91,13 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         return self.record(index.row()).value('id')
 
     def getName(self, index):
-        return self._read("SELECT symbol FROM asset_symbol WHERE id=:id", [(":id", self.getId(index))])
+        return JalSymbol(self.getId(index)).symbol()
 
     def getValue(self, item_id):
-        return self._read("SELECT symbol FROM asset_symbol WHERE id=:id", [(":id", item_id)])
+        return JalSymbol(item_id).symbol()
 
     def getValueDetails(self, item_id) -> str:
-        return JalAsset.from_symbol(item_id).name()
+        return JalSymbol(item_id).asset().name()
 
     def locateItem(self, item_id):
         row = self._read(f"SELECT row_number FROM ("
@@ -110,7 +111,7 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
     # Returns True if given symbol is the only symbol its asset has
     def is_last_symbol(self, symbol_id) -> bool:
         other_symbols = self._read("SELECT COUNT(id) FROM asset_symbol WHERE asset_id=:asset AND id!=:id",
-                                   [(":asset", JalAsset.from_symbol(symbol_id).id()), (":id", symbol_id)])
+                                   [(":asset", JalSymbol(symbol_id).asset().id()), (":id", symbol_id)])
         return not other_symbols
 
     # Deletes given symbol. If it was the last symbol of its asset, deletes the (now empty) asset too, together
@@ -121,7 +122,7 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
     # back too, so we never leave a still-referenced asset with zero symbols behind.
     # Returns True if deletion succeeded.
     def remove_symbol(self, symbol_id) -> bool:
-        asset_id = JalAsset.from_symbol(symbol_id).id()
+        asset_id = JalSymbol(symbol_id).asset().id()
         drop_asset = self.is_last_symbol(symbol_id)
         self.connection().transaction()
         if self._exec("DELETE FROM asset_symbol WHERE id=:id", [(":id", symbol_id)]) is None:
@@ -132,6 +133,7 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
                 self.connection().rollback()
                 return False
         self.connection().commit()
+        JalDB().invalidate_cache()  # Removed symbol (and possibly its asset) is cached by JalSymbol/JalAsset
         return True
 
 

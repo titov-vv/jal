@@ -8,6 +8,7 @@ from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.symbol import JalSymbol
 from jal.widgets.icons import JalIcon
 
 
@@ -327,7 +328,7 @@ class AssetSelectorDelegate(LookupSelectorDelegate):
         editor.selected_id = symbol_ids[0] if symbol_ids else 0
 
     def _stored_value(self, editor):
-        return JalAsset.from_symbol(editor.selected_id).id()
+        return JalSymbol(editor.selected_id).asset().id()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

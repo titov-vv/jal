@@ -7,6 +7,7 @@ from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
 from jal.db.asset import JalAsset
+from jal.db.symbol import JalSymbol
 from jal.db.closed_trade import JalClosedTrade, JalOpenTrade
 from jal.widgets.helpers import ts2dt
 from jal.widgets.icons import JalIcon
@@ -438,10 +439,9 @@ class AssetPayment(LedgerTransaction):
         self._otype = LedgerTransaction.AssetPayment
         self._opart = opart
         self._view_rows = 2
-        self._data = self._read("SELECT p.type, p.timestamp, p.ex_date, p.number, p.account_id, s.asset_id, "
+        self._data = self._read("SELECT p.type, p.timestamp, p.ex_date, p.number, p.account_id, "
                                 "p.symbol_id, p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
                                 "FROM asset_payments AS p "
-                                "LEFT JOIN asset_symbol AS s ON p.symbol_id=s.id "
                                 "LEFT JOIN ledger_totals AS l ON l.otype=p.otype AND l.oid=p.oid "
                                 "AND l.book_account = :book_assets WHERE p.oid=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
@@ -459,7 +459,8 @@ class AssetPayment(LedgerTransaction):
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
-        self._asset = JalAsset(self._data['asset_id'], symbol_id=self._data['symbol_id'])
+        self._symbol = JalSymbol(self._data['symbol_id'])
+        self._asset = self._symbol.asset()
         self._number = self._data['number']
         self._amount = Decimal(self._data['amount'])
         self._tax = Decimal(self._data['tax'])
@@ -546,7 +547,7 @@ class AssetPayment(LedgerTransaction):
         return self._note
 
     def description(self, part_only=False) -> str:
-        text = self._note if self._note else self.tr("Dividend payment for:") + f" {self._asset.symbol()} ({self._asset.name()})"
+        text = self._note if self._note else self.tr("Dividend payment for:") + f" {self._symbol.symbol()} ({self._asset.name()})"
         tax_text = self.tr("Tax: ") + self._asset.country_name()
         if part_only and self._opart is not None:
             if self._opart == self.PART_VALUE:
@@ -574,9 +575,9 @@ class AssetPayment(LedgerTransaction):
     def value_currency(self) -> str:
         if (self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting) and not self._opart:
             if self._tax:
-                return f" {self._asset.symbol()}\n {self._account_currency}"
+                return f" {self._symbol.symbol()}\n {self._account_currency}"
             else:
-                return f" {self._asset.symbol()}"
+                return f" {self._symbol.symbol()}"
         else:
             return f" {self._account_currency}"
 
@@ -684,9 +685,8 @@ class Trade(LedgerTransaction):
         self._otype = LedgerTransaction.Trade
         self._opart = opart
         self._view_rows = 2
-        self._data = self._read("SELECT t.timestamp, t.settlement, t.number, t.account_id, s.asset_id, "
+        self._data = self._read("SELECT t.timestamp, t.settlement, t.number, t.account_id, "
                                 "t.symbol_id, t.qty, t.price, t.fee, t.note FROM trades AS t "
-                                "LEFT JOIN asset_symbol AS s ON t.symbol_id=s.id "
                                 "WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         self._timestamp = int(self._data['timestamp'])
@@ -695,7 +695,8 @@ class Trade(LedgerTransaction):
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
-        self._asset = JalAsset(self._data['asset_id'], symbol_id=self._data['symbol_id'])
+        self._symbol = JalSymbol(self._data['symbol_id'])
+        self._asset = self._symbol.asset()
         self._number = self._data['number']
         self._qty = Decimal(self._data['qty'])
         self._price = Decimal(self._data['price'])
@@ -740,7 +741,7 @@ class Trade(LedgerTransaction):
         return self._price * self._qty
 
     def description(self, part_only=False) -> str:
-        deal_text = f"{self._qty:+.2f} {self._asset.symbol()} @ {self._price:.4f}"
+        deal_text = f"{self._qty:+.2f} {self._symbol.symbol()} @ {self._price:.4f}"
         fee_text = f"({self._fee:.2f})"
         text = deal_text + " " + fee_text if self._fee != Decimal('0') else deal_text
         if part_only and self._opart is not None:
@@ -761,7 +762,7 @@ class Trade(LedgerTransaction):
         if self._opart:
             return f" {self._account_currency}"
         else:
-            return f" {self._account_currency}\n {self._asset.symbol()}"
+            return f" {self._account_currency}\n {self._symbol.symbol()}"
 
     def value_total(self) -> list:
         amount = self._money_total(self._account.id())
@@ -863,8 +864,7 @@ class Transfer(LedgerTransaction):
         self._opart = opart
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
                                 "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, "
-                                "s.asset_id, t.symbol_id, t.number, t.note FROM transfers AS t "
-                                "LEFT JOIN asset_symbol AS s ON t.symbol_id=s.id "
+                                "t.symbol_id, t.number, t.note FROM transfers AS t "
                                 "WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
@@ -883,7 +883,8 @@ class Transfer(LedgerTransaction):
         self._fee_currency = JalAsset(self._fee_account.currency()).symbol()
         self._fee_account_name = self._fee_account.name()
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
-        self._asset = JalAsset(self._data['asset_id'], symbol_id=self._data['symbol_id'])
+        self._symbol = JalSymbol(self._data['symbol_id'])
+        self._asset = self._symbol.asset()
         self._number = self._data['number']
         self._account = self._withdrawal_account
         self._note = self._data['note']
@@ -969,12 +970,12 @@ class Transfer(LedgerTransaction):
     def value_currency(self) -> str:
         if self._opart == Transfer.Outgoing:
             if self._asset.id():
-                return self._asset.symbol()
+                return self._symbol.symbol()
             else:
                 return self._withdrawal_currency
         elif self._opart == Transfer.Incoming:
             if self._asset.id():
-                return self._asset.symbol()
+                return self._symbol.symbol()
             else:
                 return self._deposit_currency
         elif self._opart == Transfer.Fee:
@@ -1114,8 +1115,8 @@ class CorporateAction(LedgerTransaction):
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.CorporateAction
-        self._data = self._read("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, s.asset_id, a.symbol_id, a.note "
-                                "FROM asset_actions AS a LEFT JOIN asset_symbol AS s ON a.symbol_id=s.id WHERE a.oid=:oid",
+        self._data = self._read("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.symbol_id, a.note "
+                                "FROM asset_actions AS a WHERE a.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
@@ -1136,7 +1137,8 @@ class CorporateAction(LedgerTransaction):
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
-        self._asset = JalAsset(self._data['asset_id'], symbol_id=self._data['symbol_id'])
+        self._symbol = JalSymbol(self._data['symbol_id'])
+        self._asset = self._symbol.asset()
         self._qty = Decimal(self._data['qty'])
         self._number = self._data['number']
         self._note = self._data['note']
@@ -1169,11 +1171,11 @@ class CorporateAction(LedgerTransaction):
 
     def value_currency(self) -> str:
         if self._subtype != CorporateAction.SpinOff:
-            symbol = f" {self._asset.symbol(self._account.currency())}\n"
+            symbol = f" {self._symbol.symbol()}\n"
         else:
             symbol = ""
         for x in self._results:
-            symbol += f" {JalAsset(x['asset_id'], symbol_id=x['symbol_id']).symbol()}\n"
+            symbol += f" {JalSymbol(x['symbol_id']).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
 
     def value_total(self) -> list:
@@ -1234,7 +1236,7 @@ class CorporateAction(LedgerTransaction):
     def processLedger(self, ledger):
         if self._subtype == CorporateAction.NA:
             raise LedgerError(self.tr("Corporate action type isn't defined. Date: ") \
-                  + f"{ts2dt(self._timestamp)}, " + f"{self._account.name()} - {self._asset.symbol()}")
+                  + f"{ts2dt(self._timestamp)}, " + f"{self._account.name()} - {self._symbol.symbol()}")
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
         if asset_amount < self._qty:
@@ -1260,7 +1262,7 @@ class CorporateAction(LedgerTransaction):
         # Process assets after corporate action
         closed_trades = self._deals_closed_by_operation()
         for result in self._results:
-            asset = JalAsset(result['asset_id'], symbol_id=result['symbol_id'])
+            asset = JalSymbol(result['symbol_id']).asset()
             qty = Decimal(result['qty'])
             share = Decimal(result['value_share'])
             value = share * processed_value

@@ -8,6 +8,7 @@ from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.db import JalDB, JalDBError
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
+from jal.db.symbol import JalSymbol
 from jal.db.settings import JalSettings
 from tests.helpers import d2t, dt2t, create_assets, create_actions, create_dividends
 
@@ -42,7 +43,9 @@ def prepare_db(project_root, tmp_path, data_path):
         app = QApplication.instance()
 
     # Activate db connection
-    JalAsset.db_cache.clear_cache()  # Each test gets a fresh db file - stale cache entries would leak stale rows in
+    # Each test gets a fresh db file - stale cache entries would leak stale rows in
+    JalAsset.db_cache.clear_cache()
+    JalSymbol.db_cache.clear_cache()
     error = JalDB().init_db()
     assert error.code == JalDBError.NoError
     db = QSqlDatabase.database(Setup.DB_CONNECTION)

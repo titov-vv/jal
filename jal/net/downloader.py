@@ -15,6 +15,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import AssetLocation, PredefinedAsset, SymbolId
 from jal.db.asset import JalAsset
+from jal.db.symbol import JalSymbol
 from jal.net.web_request import WebRequest
 from jal.net.moex import MOEX
 try:
@@ -214,19 +215,19 @@ class QuoteDownloader(QObject):
             AssetLocation.MILAN_EXCHANGE: self.EuronextMilan_DataReader,
             AssetLocation.WSE_EXCHANGE: self.Stooq_DataReader
         }
-        assets = JalAsset.get_active_symbols(start_timestamp, end_timestamp)
-        assets = [(x['asset'], x['currency']) for x in assets if x['asset'].location(x['currency']) in sources_list]
+        symbols = JalSymbol.get_active_symbols(start_timestamp, end_timestamp)
+        symbols = [(x['symbol'], x['currency']) for x in symbols if x['symbol'].location() in sources_list]
         logging.info(self.tr("Loading assets prices"))
-        for i, (asset, currency) in enumerate(assets):
-            from_timestamp = self._adjust_start(asset, currency, start_timestamp)
+        for i, (symbol, currency) in enumerate(symbols):
+            from_timestamp = self._adjust_start(symbol.asset(), currency, start_timestamp)
             try:
                 if from_timestamp <= end_timestamp:
-                    data = data_loaders[asset.location(currency)](asset, currency, from_timestamp, end_timestamp)
-                    self._store_quotations(asset, currency, data)
+                    data = data_loaders[symbol.location()](symbol, currency, from_timestamp, end_timestamp)
+                    self._store_quotations(symbol.asset(), currency, data)
             except (pd.errors.EmptyDataError, KeyError, json.decoder.JSONDecodeError):
-                logging.warning(self.tr("No quotes were downloaded for ") + f"{asset.symbol()}")
+                logging.warning(self.tr("No quotes were downloaded for ") + f"{symbol.symbol()}")
                 continue
-            self.update_progress.emit(100.0 * i / len(assets))
+            self.update_progress.emit(100.0 * i / len(symbols))
 
     def PrepareRussianCBReader(self):
         rows = []
@@ -302,26 +303,26 @@ class QuoteDownloader(QObject):
         return rates
 
     # noinspection PyMethodMayBeStatic
-    def MOEX_DataReader(self, asset, currency_id, start_timestamp, end_timestamp, update_symbol=True):
+    def MOEX_DataReader(self, symbol, currency_id, start_timestamp, end_timestamp, update_symbol=True):
         currency = JalAsset(currency_id).symbol()
-        moex_info = MOEX().asset_info(symbol=asset.symbol(currency_id), isin=asset.symbol_id(SymbolId.ISIN), currency=currency, special=True)
+        moex_info = MOEX().asset_info(symbol=symbol.symbol(), isin=symbol.identifier(SymbolId.ISIN), currency=currency, special=True)
         if not ('engine' in moex_info and 'market' in moex_info and 'board' in moex_info) or \
                 (moex_info['engine'] is None) or (moex_info['market'] is None) or (moex_info['board'] is None):
-            logging.warning(f"Failed to find {asset.symbol(currency_id)} ({asset.symbol_id(SymbolId.ISIN)}) on moex.com")
+            logging.warning(f"Failed to find {symbol.symbol()} ({symbol.identifier(SymbolId.ISIN)}) on moex.com")
             return None
         if (moex_info['market'] == 'bonds') and (moex_info['board'] in ['TQCB', 'TQIR']):
-            asset_code = asset.symbol_id(SymbolId.ISIN)   # Corporate bonds are quoted by ISIN
+            asset_code = symbol.identifier(SymbolId.ISIN)   # Corporate bonds are quoted by ISIN
         elif (moex_info['market'] == 'shares') and (moex_info['board'] == 'TQIF'):
-            asset_code = asset.symbol_id(SymbolId.ISIN)   # ETFs are quoted by ISIN
+            asset_code = symbol.identifier(SymbolId.ISIN)   # ETFs are quoted by ISIN
         else:
-            asset_code = asset.symbol(currency_id)
+            asset_code = symbol.symbol()
         if update_symbol:
             isin = moex_info['isin'] if 'isin' in moex_info else ''
             reg_number = moex_info['reg_number'] if 'reg_number' in moex_info else ''
             expiry = moex_info['expiry'] if 'expiry' in moex_info else 0
             principal = moex_info['principal'] if 'principal' in moex_info else 0
             details = {'isin': isin, 'reg_number': reg_number, 'expiry': expiry, 'principal': principal}
-            asset.update_data(details)
+            symbol.update_data(details)
         # Get price history
         url = f"http://iss.moex.com/iss/history/engines/{moex_info['engine']}/markets/{moex_info['market']}/" \
               f"boards/{moex_info['board']}/securities/{asset_code}.json"
@@ -347,8 +348,8 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def Yahoo_Downloader(self, asset, currency_id, start_timestamp, end_timestamp, suffix=''):
-        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{asset.symbol(currency_id)+suffix}"
+    def Yahoo_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp, suffix=''):
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol.symbol()+suffix}"
         params = {
             'period1': start_timestamp,
             'period2': end_timestamp,
@@ -375,17 +376,17 @@ class QuoteDownloader(QObject):
         return close
 
     # The same as Yahoo_Downloader but it adds ".L" suffix to asset_code and returns prices in GBP
-    def YahooLSE_Downloader(self, asset, currency_id, start_timestamp, end_timestamp):
-        return self.Yahoo_Downloader(asset, currency_id, start_timestamp, end_timestamp, suffix='.L')
+    def YahooLSE_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
+        return self.Yahoo_Downloader(symbol, currency_id, start_timestamp, end_timestamp, suffix='.L')
 
     # The same as Yahoo_Downloader but it adds ".F" suffix to asset_code and returns prices in EUR
-    def YahooFRA_Downloader(self, asset, currency_id, start_timestamp, end_timestamp):
-        return self.Yahoo_Downloader(asset, currency_id, start_timestamp, end_timestamp, suffix='.F')
+    def YahooFRA_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
+        return self.Yahoo_Downloader(symbol, currency_id, start_timestamp, end_timestamp, suffix='.F')
 
     # noinspection PyMethodMayBeStatic
-    def Euronext_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
-        suffix = "ETFP" if asset.type() == PredefinedAsset.ETF else "BGEM"  # Dates don't work for ETFP due to glitch on their site, 'BGEM' - global equity market
-        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.symbol_id(SymbolId.ISIN)}-{suffix}"
+    def Euronext_DataReader(self, symbol, currency_id, start_timestamp, end_timestamp):
+        suffix = "ETFP" if symbol.asset().type() == PredefinedAsset.ETF else "BGEM"  # Dates don't work for ETFP due to glitch on their site, 'BGEM' - global equity market
+        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{symbol.identifier(SymbolId.ISIN)}-{suffix}"
         params = {
             'format': 'csv',
             'decimal_separator': '.',
@@ -406,7 +407,7 @@ class QuoteDownloader(QObject):
         if quotes_text[0] != '"Historical Data"':
             logging.warning(self.tr("Euronext quotes header not found in: ") + quotes)
             return None
-        if quotes_text[2] != asset.symbol_id(SymbolId.ISIN):
+        if quotes_text[2] != symbol.identifier(SymbolId.ISIN):
             logging.warning(self.tr("Euronext quotes ISIN mismatch in: ") + quotes)
             return None
         quotes_text = [x.replace("'", "") for x in quotes_text]   # Some lines have occasional quote in some places
@@ -427,8 +428,8 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def EuronextMilan_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
-        suffix = "ETF" if asset.type() == PredefinedAsset.ETF else "MTA"
+    def EuronextMilan_DataReader(self, symbol, currency_id, start_timestamp, end_timestamp):
+        suffix = "ETF" if symbol.asset().type() == PredefinedAsset.ETF else "MTA"
         url = "https://charts.borsaitaliana.it/charts/services/ChartWService.asmx/GetPricesWithVolume"
         params = {
             "request": {
@@ -436,7 +437,7 @@ class QuoteDownloader(QObject):
                 "TimeFrame":None,
                 "RequestedDataSetType":"ohlc",
                 "ChartPriceType":"price",
-                "Key": asset.symbol(currency_id) + "." + suffix,
+                "Key": symbol.symbol() + "." + suffix,
                 "OffSet":0,
                 "FromDate":start_timestamp,
                 "ToDate":end_timestamp,
@@ -460,13 +461,13 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def TMX_Downloader(self, asset, _currency_id, start_timestamp, end_timestamp):
+    def TMX_Downloader(self, symbol, _currency_id, start_timestamp, end_timestamp):
         url = 'https://app-money.tmx.com/graphql'
         params = {
             "operationName": "getCompanyPriceHistoryForDownload",
             "variables":
                 {
-                    "symbol": asset.symbol(),
+                    "symbol": symbol.symbol(),
                     "start": datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
                     "end": datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
                     "adjusted": False,
@@ -495,14 +496,14 @@ class QuoteDownloader(QObject):
         close.sort_index(inplace=True)
         return close
 
-    def Victoria_Downloader(self, asset, _currency_id, _start_timestamp, _end_timestamp):
+    def Victoria_Downloader(self, symbol, _currency_id, _start_timestamp, _end_timestamp):
         quotes = self._get_victoria_quotes()
         if not quotes:
             return None
         # Filter asset price
-        asset_quotes = [x for x in quotes if x['name'] == asset.name()]
+        asset_quotes = [x for x in quotes if x['name'] == symbol.asset().name()]
         if len(asset_quotes) != 1:
-            logging.warning(self.tr("Can't find quote for Victoria Seguros fund: ") + asset.name())
+            logging.warning(self.tr("Can't find quote for Victoria Seguros fund: ") + symbol.asset().name())
             return None
         data = pd.DataFrame([{'Date': self._victoria_date, 'Close': asset_quotes[0]['price']}])
         close = data.set_index("Date")
@@ -570,11 +571,11 @@ class QuoteDownloader(QObject):
             self._victoria_quotes.append({'name': fund_name, 'price': Decimal(price.replace(',', '.'))})
         return self._victoria_quotes
 
-    def Stooq_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
+    def Stooq_DataReader(self, symbol, currency_id, start_timestamp, end_timestamp):
         """Fetches historical data from Warsaw Stock Exchange (GPW) using Stooq API"""
         url = "https://stooq.com/q/d/l/"
         params = {
-            's': asset.symbol(currency_id),
+            's': symbol.symbol(),
             'd1': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y%m%d'),
             'd2': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y%m%d'),
             'i': 'd'
@@ -602,9 +603,9 @@ class QuoteDownloader(QObject):
             logging.error(f"Failed to parse Stooq data: {str(e)}")
             return None
 
-    def Coinbase_Downloader(self, asset, currency_id, start_timestamp, end_timestamp):
+    def Coinbase_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
         currency_symbol = JalAsset(currency_id).symbol()
-        url = f"https://api.coinbase.com/v2/prices/{asset.symbol(currency_id)}-{currency_symbol}/spot"
+        url = f"https://api.coinbase.com/v2/prices/{symbol.symbol()}-{currency_symbol}/spot"
         quotes = []
         for ts in timestamp_range(start_timestamp, end_timestamp):
             date_string = datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
