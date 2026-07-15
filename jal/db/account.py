@@ -188,9 +188,10 @@ class JalAccount(JalDB):
 
     def set_organization(self, peer_id: int) -> None:
         if not peer_id:
-            peer_id = None
+            peer_id = PredefinedAgents.Empty   # 'organization_id' is NOT NULL DEFAULT (1)
         _ = self._exec("UPDATE accounts SET organization_id=:peer_id WHERE id=:id",
                        [(":id", self._id), (":peer_id", peer_id)])
+        self._data = self.db_cache.update_data(self._load_account_data, (self._id,))  # Refresh cached row from DB
         self._organization_id = peer_id
 
     def reconciled_at(self) -> int:
