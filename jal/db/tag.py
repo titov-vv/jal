@@ -1,28 +1,30 @@
 from jal.db.db import JalDB
 from jal.constants import AssetData
+from jal.universal_cache import UniversalCache
 
 class JalTag(JalDB):
-    db_cache = []
+    db_cache = UniversalCache()
 
     def __init__(self, tag_id: int = 0) -> None:
         super().__init__(cached=True)
-        if not JalTag.db_cache:
-            self._fetch_data()
         self._id = tag_id
-        try:
-            self._data = [x for x in self.db_cache if x['id'] == self._id][0]
-        except IndexError:
-            self._data = None
+        self._data = self.db_cache.get_data(self._load_tag_data, (self._id,))  # Load tag data from cache or DB
         self._name = self._data['tag'] if self._data is not None else ''
         self._iconfile = self._data['icon_file'] if self._data is not None else ''
 
     def invalidate_cache(self):
-        self._fetch_data()
+        self.db_cache.clear_cache()
 
-    # JalCountry maintains single cache available for all instances
+    # JalTag maintains single cache available for all instances
     @classmethod
     def class_cache(cls) -> True:
         return True
+
+    # Loads a single tag row (as a dict) from the DB by its id, or None if there is no such tag.
+    # Used as the loader function behind the shared UniversalCache (keyed by tag id).
+    @classmethod
+    def _load_tag_data(cls, tag_id: int) -> dict:
+        return cls._read("SELECT * FROM tags WHERE id=:id", [(":id", tag_id)], named=True)
 
     # Returns a dict {tag_id: 'icon_filename'} of all tags that have icons assigned
     @classmethod
@@ -33,12 +35,6 @@ class JalTag(JalDB):
             tag_id, filename = cls._read_record(query)
             icons[tag_id] = filename
         return icons
-
-    def _fetch_data(self):
-        JalTag.db_cache = []
-        query = self._exec("SELECT * FROM tags ORDER BY id")
-        while query.next():
-            JalTag.db_cache.append(self._read_record(query, named=True))
 
     def id(self) -> int:
         return self._id
