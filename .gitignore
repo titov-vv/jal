@@ -21,3 +21,6 @@ jal_faults.log
 
 # personal backups/archive
 /archive
+
+# private setup
+CLAUDE.md

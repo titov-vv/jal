@@ -352,7 +352,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         except Exception:
             db.rollback_transaction()
             JalAsset.db_cache.clear_cache()   # Caches may reference rolled back rows
-            JalAccount(0)._fetch_data()
+            JalAccount.db_cache.clear_cache()
             raise
         db.commit_transaction()
 

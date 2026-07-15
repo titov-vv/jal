@@ -7,19 +7,18 @@ from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents
 from jal.db.tag import JalTag
 from jal.db.country import JalCountry
 from jal.db.helpers import format_decimal, now_ts, year_begin, year_end
+from jal.universal_cache import UniversalCache
 
 
 class JalAccount(JalDB):
-    db_cache = []
+    db_cache = UniversalCache()
     MONEY_FLOW = 1
     ASSETS_FLOW = 2
 
     def __init__(self, account_id: int = 0) -> None:
         super().__init__(cached=True)
-        if not JalAccount.db_cache:
-            self._fetch_data()
         self._id = account_id
-        self._data = next((x for x in self.db_cache if x['id']==self._id), None)
+        self._data = self.db_cache.get_data(self._load_account_data, (self._id,))  # Load account data from cache or DB
         self._tag = JalTag(self._data['tag_id']) if self._data is not None else None
         self._name = self._data['name'] if self._data is not None else JalTag(0)
         self._number = self._data['number'] if self._data is not None else None
@@ -33,12 +32,18 @@ class JalAccount(JalDB):
         self._credit_limit = Decimal(self._data['credit']) if self._data is not None else Decimal('0')
 
     def invalidate_cache(self):
-        self._fetch_data()
+        self.db_cache.clear_cache()
 
     # JalAccount maintains single cache available for all instances
     @classmethod
     def class_cache(cls) -> True:
         return True
+
+    # Loads a single account row (as a dict) from the DB by its id, or None if there is no such account.
+    # Used as the loader function behind the shared UniversalCache (keyed by account id).
+    @classmethod
+    def _load_account_data(cls, account_id: int) -> dict:
+        return cls._read("SELECT * FROM accounts WHERE id=:id", [(":id", account_id)], named=True)
 
     # Returns a JalAccount matching 'number'+'currency' in 'data', or an empty JalAccount (id()==0) if not found
     @classmethod
@@ -53,21 +58,6 @@ class JalAccount(JalDB):
                                [(":account_number", data['number']), (":currency", data['currency'])],
                                check_unique=True)
         return account_id if account_id else 0
-
-    def _fetch_data(self, only_self=False):
-        if only_self:
-            element = next((x for x in self.db_cache if x['id']==self._id), None)
-            data = self._read("SELECT * FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
-            if data is not None:
-                if element is not None:
-                    JalAccount.db_cache[JalAccount.db_cache.index(element)] = data
-                else:
-                    JalAccount.db_cache.append(data)
-        else:
-            JalAccount.db_cache = []
-            query = self._exec("SELECT * FROM accounts ORDER BY id")
-            while query.next():
-                JalAccount.db_cache.append(self._read_record(query, named=True))
 
     # Method returns a list of JalAccount objects with given filters (combined with AND):
     # investing_only - return only investing accounts (false by default)
@@ -209,7 +199,7 @@ class JalAccount(JalDB):
     def reconcile(self, timestamp: int):
         _ = self._exec("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
                        [(":timestamp", timestamp), (":account_id", self._id)])
-        self._fetch_data(only_self=True)
+        self._data = self.db_cache.update_data(self._load_account_data, (self._id,))  # Refresh cached row from DB
 
     def precision(self) -> int:
         return self._precision
@@ -410,16 +400,10 @@ class JalAccountCreator(JalDB):
                  (":currency", currency_id), (":organization", organization),
                  (":country", country), (":precision", precision)], commit=True)
             self._id = query.lastInsertId()
-        # Splice the newly created row into JalAccount's shared cache - without this, a plain
-        # JalAccount(self._id) right after would find no cached row and load as empty (JalAccount
-        # never queries the DB itself on a cache miss, it only looks up its own class-level cache).
-        element = next((x for x in JalAccount.db_cache if x['id'] == self._id), None)
-        data = self._read("SELECT * FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
-        if data is not None:
-            if element is not None:
-                JalAccount.db_cache[JalAccount.db_cache.index(element)] = data
-            else:
-                JalAccount.db_cache.append(data)
+        # Refresh the newly created row in JalAccount's shared cache. A plain JalAccount(self._id) would
+        # self-load on a cache miss, but doing it explicitly also overwrites a possibly stale (e.g. None)
+        # entry cached for this id before the account existed.
+        JalAccount.db_cache.update_data(JalAccount._load_account_data, (self._id,))
 
     def id(self) -> int:
         return self._id
