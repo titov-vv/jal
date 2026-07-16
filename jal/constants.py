@@ -154,7 +154,7 @@ class PredefinedCategory(PredefinedList, QObject):  # These constants are linked
             self.Profit: self.tr("Results of investments")
         }
 
-class PredefinedTags(PredefinedList, QObject):   # These constants are linked with 'tags' table initial values but are not mandatory as not used in code
+class PredefinedTags(PredefinedList, QObject):   # Legacy 'Account type' tag seed rows (2-5); superseded by PredefinedAccountType. Kept only to document the still-seeded tag rows; no longer referenced in code.
     db_update_query = "UPDATE tags SET tag=:name WHERE id=:id"
     AccountType = 1
     CashAccount = 2
@@ -170,6 +170,24 @@ class PredefinedTags(PredefinedList, QObject):   # These constants are linked wi
             self.BankAccount: self.tr("Bank account"),
             self.CardAccount: self.tr("Card"),
             self.BrokerAccount: self.tr("Broker account")
+        }
+
+
+class PredefinedAccountType(PredefinedList, QObject):
+    Cash = 2
+    Bank = 3
+    Card = 4
+    Broker = 5
+    Wallet = 6     # Crypto wallet
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.Cash: self.tr("Cash"),
+            self.Bank: self.tr("Bank account"),
+            self.Card: self.tr("Card"),
+            self.Broker: self.tr("Broker account"),
+            self.Wallet: self.tr("Wallet")
         }
 
 
@@ -264,6 +282,35 @@ class AssetData(PredefinedList, QObject):
             self.Tag: "tag",
             self.ExpiryDate: "date",
             self.PrincipalValue: "float"
+        }
+
+    def get_type(self, type_id, default='') -> str:
+        try:
+            return self._types[type_id]
+        except KeyError:
+            return default
+
+
+# Types of per-account attributes stored in the 'account_data' table
+class AccountData(PredefinedList, QObject):
+    Number = 1         # Human-readable account number (bank/broker reference)
+    Credit = 2         # Credit limit for the account
+    Country = 3        # Country of the account, stored as countries.id
+    Precision = 4      # Number of decimal digits used by the account (default is 2)
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.Number: self.tr("Account #"),
+            self.Credit: self.tr("Credit limit"),
+            self.Country: self.tr("Country"),
+            self.Precision: self.tr("Precision")
+        }
+        self._types = {
+            self.Number: "str",
+            self.Credit: "float",
+            self.Country: "country",
+            self.Precision: "int"
         }
 
     def get_type(self, type_id, default='') -> str:
