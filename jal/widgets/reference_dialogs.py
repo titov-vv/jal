@@ -373,13 +373,13 @@ class AccountListDialog(ReferenceDataDialog):
         self.ui.Toggle.setText(self.tr("Show inactive"))
 
         self.ui.GroupLbl.setVisible(True)
-        self.ui.GroupLbl.setText(self.tr("Account tag:"))
+        self.ui.GroupLbl.setText(self.tr("Account type:"))
         self.ui.GroupCombo.setVisible(True)
         self.group_field = self.model.group_by
         self.ui.GroupCombo.clear()
-        self.ui.GroupCombo.addItem(self.tr("All tags"), userData=None)
-        for tag_id, tag in sorted(JalAccount.get_all_tags().items(), key=lambda x: x[1]):
-            self.ui.GroupCombo.addItem(JalIcon[JalTag(tag_id).icon()], tag, tag_id)
+        self.ui.GroupCombo.addItem(self.tr("All types"), userData=None)
+        for type_id, type_name in sorted(JalAccount.get_all_types().items(), key=lambda x: x[1]):
+            self.ui.GroupCombo.addItem(JalIcon[JalAccount.get_type_icon(type_id)], type_name, type_id)
         self.group_id = self.ui.GroupCombo.itemData(0)
         super().setup_ui()
 

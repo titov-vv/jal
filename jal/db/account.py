@@ -3,8 +3,7 @@ from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 import jal.db.operations
 import jal.db.closed_trade
-from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents
-from jal.db.tag import JalTag
+from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountData
 from jal.db.country import JalCountry
 from jal.db.helpers import format_decimal, now_ts, year_begin, year_end
 from jal.universal_cache import UniversalCache
@@ -15,21 +14,35 @@ class JalAccount(JalDB):
     MONEY_FLOW = 1
     ASSETS_FLOW = 2
 
+    _TYPE_ICONS = {
+        PredefinedAccountType.Cash: "tag_cash.ico",
+        PredefinedAccountType.Bank: "tag_bank.ico",
+        PredefinedAccountType.Card: "tag_card.ico",
+        PredefinedAccountType.Broker: "tag_investing.ico",
+        PredefinedAccountType.Wallet: "tag_investing.ico",  # TODO: dedicated wallet icon
+    }
+
     def __init__(self, account_id: int = 0) -> None:
         super().__init__(cached=True)
         self._id = account_id
         self._data = self.db_cache.get_data(self._load_account_data, (self._id,))  # Load account data from cache or DB
-        self._tag = JalTag(self._data['tag_id']) if self._data is not None else None
-        self._name = self._data['name'] if self._data is not None else JalTag(0)
-        self._number = self._data['number'] if self._data is not None else None
+        self._name = self._data['name'] if self._data is not None else None
         self._currency_id = self._data['currency_id'] if self._data is not None else None
         self._active = self._data['active'] if self._data is not None else None
         self._investing = bool(self._data['investing']) if self._data is not None else False
         self._organization_id = int(self._data['organization_id']) if self._data is not None else PredefinedAgents.Empty
-        self._country = JalCountry(self._data['country_id']) if self._data is not None else JalCountry(0)
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
-        self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
-        self._credit_limit = Decimal(self._data['credit']) if self._data is not None else Decimal('0')
+        self._type = int(self._data['account_type']) if self._data is not None else PredefinedAccountType.Cash
+        self._apply_account_data()
+
+    # Resolves the fields stored in the 'account_data' table, applying a default when an attribute row is absent
+    def _apply_account_data(self) -> None:
+        attributes = self._data['data'] if self._data is not None else {}
+        self._number = attributes.get(AccountData.Number, None)
+        self._country = JalCountry(int(attributes[AccountData.Country])) if AccountData.Country in attributes else JalCountry(0)
+        self._precision = int(attributes[AccountData.Precision]) if AccountData.Precision in attributes else Setup.DEFAULT_ACCOUNT_PRECISION
+        credit = attributes.get(AccountData.Credit, '0')
+        self._credit_limit = Decimal(credit) if credit else Decimal('0')
 
     def invalidate_cache(self):
         self.db_cache.clear_cache()
@@ -40,10 +53,21 @@ class JalAccount(JalDB):
         return True
 
     # Loads a single account row (as a dict) from the DB by its id, or None if there is no such account.
+    # The per-account attributes from 'account_data' are attached under the 'data' key as {datatype: value}.
     # Used as the loader function behind the shared UniversalCache (keyed by account id).
     @classmethod
     def _load_account_data(cls, account_id: int) -> dict:
-        return cls._read("SELECT * FROM accounts WHERE id=:id", [(":id", account_id)], named=True)
+        data = cls._read("SELECT * FROM accounts WHERE id=:id", [(":id", account_id)], named=True)
+        if data is None:
+            return None
+        attributes = {}
+        query = cls._exec("SELECT datatype, value FROM account_data WHERE account_id=:id ORDER BY datatype",
+                          [(":id", account_id)])
+        while query.next():
+            datatype, value = cls._read_record(query, cast=[int, str])
+            attributes[datatype] = value
+        data['data'] = attributes
+        return data
 
     # Returns a JalAccount matching 'number'+'currency' in 'data', or an empty JalAccount (id()==0) if not found
     @classmethod
@@ -54,8 +78,11 @@ class JalAccount(JalDB):
 
     @classmethod
     def _find_account(cls, data: dict) -> int:
-        account_id = cls._read("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
-                               [(":account_number", data['number']), (":currency", data['currency'])],
+        account_id = cls._read("SELECT a.id FROM accounts a "
+                               "JOIN account_data d ON d.account_id=a.id AND d.datatype=:number_type "
+                               "WHERE d.value=:account_number AND a.currency_id=:currency",
+                               [(":number_type", AccountData.Number),
+                                (":account_number", data['number']), (":currency", data['currency'])],
                                check_unique=True)
         return account_id if account_id else 0
 
@@ -146,19 +173,33 @@ class JalAccount(JalDB):
     def id(self) -> int:
         return self._id
 
-    # Returns tag of the account
-    def tag(self) -> JalTag:
-        return self._tag
+    # Returns the account type (one of PredefinedAccountType values)
+    def account_type(self) -> int:
+        return self._type
+
+    # Returns the translated name of the account type
+    def type_name(self) -> str:
+        return PredefinedAccountType().get_name(self._type)
+
+    # Returns the icon filename (a JalIcon key) for this account's type
+    def type_icon(self) -> str:
+        return self._TYPE_ICONS.get(self._type, '')
+
+    # Returns the icon filename (a JalIcon key) for a given account type
+    @classmethod
+    def get_type_icon(cls, type_id: int) -> str:
+        return cls._TYPE_ICONS.get(type_id, '')
 
     @classmethod
-    # Returns a list of tags used for accounts in form {tag_id(int): tag_name(str)}
-    def get_all_tags(cls) -> dict:
-        tags = {}
-        query = cls._exec("SELECT DISTINCT a.tag_id, t.tag FROM accounts a JOIN tags t ON t.id=a.tag_id")
+    # Returns account types actually used by accounts, as {type_id(int): type_name(str)}
+    def get_all_types(cls) -> dict:
+        types = {}
+        names = PredefinedAccountType()
+        query = cls._exec("SELECT DISTINCT account_type FROM accounts")
         while query.next():
-            tag = cls._read_record(query, cast=[int, str])
-            tags[tag[0]] = tag[1]
-        return tags
+            type_id = cls._read_record(query, cast=[int])
+            types[type_id] = names.get_name(type_id)
+        return types
 
     # Returns name of the account
     def name(self) -> str:
@@ -207,6 +248,26 @@ class JalAccount(JalDB):
 
     def credit_limit(self) -> Decimal:
         return self._credit_limit
+
+    # Returns a raw per-account attribute value from 'account_data' (or 'default' if it is not set)
+    def get_data(self, datatype: int, default=None):
+        if self._data is None:
+            return default
+        return self._data['data'].get(datatype, default)
+
+    # Writes (or, when 'value' is None, removes) a per-account attribute in 'account_data' and refreshes the cache
+    def set_data(self, datatype: int, value) -> None:
+        if not self._id:
+            return
+        if value is None:
+            _ = self._exec("DELETE FROM account_data WHERE account_id=:id AND datatype=:datatype",
+                           [(":id", self._id), (":datatype", datatype)])
+        else:
+            _ = self._exec("INSERT OR REPLACE INTO account_data(account_id, datatype, value) "
+                           "VALUES(:id, :datatype, :value)",
+                           [(":id", self._id), (":datatype", datatype), (":value", str(value))])
+        self._data = self.db_cache.update_data(self._load_account_data, (self._id,))  # Refresh cached row from DB
+        self._apply_account_data()
 
     # Returns timestamp of last operation recorded for the account
     # If future=True then include future operations
@@ -384,23 +445,25 @@ class JalAccountCreator(JalDB):
     # account's name with the currency symbol swapped, ignoring 'name' below; see _copy_similar_account()).
     def __init__(self, currency_id: int, number: str, name: str = '', investing: int = 0,
                  organization: int = PredefinedAgents.Empty, country: str = '',
-                 precision: int = Setup.DEFAULT_ACCOUNT_PRECISION) -> None:
+                 precision: int = Setup.DEFAULT_ACCOUNT_PRECISION,
+                 account_type: int = PredefinedAccountType.Cash) -> None:
         super().__init__(cached=False)
-        similar_id = self._read("SELECT id FROM accounts WHERE number=:number", [(":number", number)])
+        similar_id = None
+        if number:
+            similar_id = self._read("SELECT account_id FROM account_data WHERE datatype=:number_type AND value=:number",
+                                    [(":number_type", AccountData.Number), (":number", number)])
         if similar_id:
             self._id = self._copy_similar_account(similar_id, currency_id)
         else:
             if not name:
                 name = number + '.' + JalAsset(currency_id).symbol()
             query = self._exec(
-                "INSERT INTO accounts (name, active, investing, number, currency_id, organization_id, "
-                "country_id, precision, credit) "
-                "VALUES(:name, 1, :investing, :number, :currency, :organization, "
-                "coalesce((SELECT id FROM countries WHERE code=:country), 0), :precision, 0)",
-                [(":name", name), (":investing", investing), (":number", number),
-                 (":currency", currency_id), (":organization", organization),
-                 (":country", country), (":precision", precision)], commit=True)
+                "INSERT INTO accounts (name, active, investing, currency_id, organization_id, account_type) "
+                "VALUES(:name, 1, :investing, :currency, :organization, :account_type)",
+                [(":name", name), (":investing", investing), (":currency", currency_id),
+                 (":organization", organization), (":account_type", account_type)], commit=True)
             self._id = query.lastInsertId()
+            self._store_attributes(number=number, country=country, precision=precision, account_type=account_type)
         # Refresh the newly created row in JalAccount's shared cache. A plain JalAccount(self._id) would
         # self-load on a cache miss, but doing it explicitly also overwrites a possibly stale (e.g. None)
         # entry cached for this id before the account existed.
@@ -413,6 +476,38 @@ class JalAccountCreator(JalDB):
     def commit(self) -> JalAccount:
         return JalAccount(self._id)
 
+    # Optional per-type mandatory attributes, keyed by account type -> [AccountData.* ...]. Populated by later
+    # (crypto) steps, e.g. {PredefinedAccountType.Wallet: [AccountData.Address]}. Empty for now.
+    _MANDATORY_ATTRIBUTES = {}
+
+    # Writes the sparse per-account attributes into 'account_data' (only values that differ from their default),
+    # then enforces the per-type mandatory minimal set for the import/programmatic creation path.
+    def _store_attributes(self, number: str, country: str, precision: int, account_type: int) -> None:
+        if number:
+            self._store_attribute(AccountData.Number, number)
+        if country:
+            country_id = self._read("SELECT id FROM countries WHERE code=:code", [(":code", country)])
+            if country_id:
+                self._store_attribute(AccountData.Country, country_id)
+        if precision != Setup.DEFAULT_ACCOUNT_PRECISION:
+            self._store_attribute(AccountData.Precision, precision)
+        self._enforce_mandatory_attributes(account_type)
+
+    def _store_attribute(self, datatype: int, value) -> None:
+        _ = self._exec("INSERT INTO account_data(account_id, datatype, value) VALUES(:id, :datatype, :value)",
+                       [(":id", self._id), (":datatype", datatype), (":value", str(value))])
+
+    # Raises ValueError if the created account lacks an attribute its type requires (e.g. a Wallet without an
+    # address). No-op while _MANDATORY_ATTRIBUTES is empty; the crypto steps populate it.
+    def _enforce_mandatory_attributes(self, account_type: int) -> None:
+        names = AccountData()
+        for datatype in self._MANDATORY_ATTRIBUTES.get(account_type, []):
+            present = self._read("SELECT id FROM account_data WHERE account_id=:id AND datatype=:datatype",
+                                 [(":id", self._id), (":datatype", datatype)])
+            if not present:
+                raise ValueError(f"Account {self._id} of type {account_type} is missing required attribute "
+                                 f"'{names.get_name(datatype)}'")
+
     # Creates a new account based on 'similar_id', with currency swapped to 'currency_id'.
     # Name is auto-generated by swapping the old currency symbol for the new one in the similar account's name.
     def _copy_similar_account(self, similar_id: int, currency_id: int) -> int:
@@ -424,7 +519,12 @@ class JalAccountCreator(JalDB):
         else:
             name = similar.name() + '.' + new_currency.symbol()
         query = self._exec(
-            "INSERT INTO accounts (name, currency_id, active, investing, number, organization_id, country_id, precision, credit) "
-            "SELECT :name, :currency, active, investing, number, organization_id, country_id, precision, credit "
+            "INSERT INTO accounts (name, currency_id, active, investing, organization_id, account_type) "
+            "SELECT :name, :currency, active, investing, organization_id, account_type "
             "FROM accounts WHERE id=:id", [(":id", similar.id()), (":name", name), (":currency", new_currency.id())])
-        return query.lastInsertId()
+        new_id = query.lastInsertId()
+        # Clone the source account's per-account attributes (number/credit/country/precision, ...) too
+        self._exec("INSERT INTO account_data (account_id, datatype, value) "
+                   "SELECT :new_id, datatype, value FROM account_data WHERE account_id=:old_id",
+                   [(":new_id", new_id), (":old_id", similar_id)])
+        return new_id
