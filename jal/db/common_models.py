@@ -1,11 +1,13 @@
+from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlRelation
 from PySide6.QtWidgets import QMessageBox
-from jal.constants import CmColumn, CmWidth, CmDelegate, CmReference
+from jal.constants import CmColumn, CmWidth, CmDelegate, CmReference, PredefinedAccountType, AccountData
 from jal.db.category import JalCategory
+from jal.db.account import JalAccount
+from jal.db.country import JalCountry
 from jal.db.common_models_abstract import AbstractReferenceListModel, SqlTreeModel
 from jal.db.peer import JalPeer
-from jal.db.tag import JalTag
 from jal.widgets.icons import JalIcon
 
 
@@ -18,24 +20,19 @@ class AccountListModel(AbstractReferenceListModel):
             CmColumn("currency_id", self.tr("Currency"), delegate_type=CmDelegate.LOOKUP),
             CmColumn("active", self.tr("Act."), width=64, delegate_type=CmDelegate.BOOL),
             CmColumn("investing", self.tr("Invest."), width=64, delegate_type=CmDelegate.BOOL),
-            CmColumn("tag_id", self.tr("Tag"), group=True, delegate_type=CmDelegate.REFERENCE, delegate_details=CmReference.TAG),
-            CmColumn("number", self.tr("Account #")),
             CmColumn("reconciled_on", self.tr("Reconciled @"), width=CmWidth.WIDTH_DATETIME, delegate_type=CmDelegate.TIMESTAMP),
             CmColumn("organization_id", self.tr("Bank/Broker"), delegate_type=CmDelegate.REFERENCE, delegate_details=CmReference.PEER),
-            CmColumn("country_id", self.tr("Country"), width=80, delegate_type=CmDelegate.LOOKUP),
-            CmColumn("precision", self.tr("Precision")),
-            CmColumn("credit", self.tr("Credit limit"), delegate_type=CmDelegate.FLOAT, delegate_details=2)
+            CmColumn("account_type", self.tr("Type"), group=True, delegate_type=CmDelegate.CONSTANT, delegate_details=PredefinedAccountType)
         ]
         super().__init__("accounts", columns, parent)
-        self.set_default_values({'active': 1, 'reconciled_on': 0, 'country_id': 0, 'precision': 2, 'credit': '0'})
+        self.set_default_values({'active': 1, 'reconciled_on': 0, 'account_type': PredefinedAccountType.Cash})
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
-        self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
 
-    def data(self, index, role=Qt.DisplayRole):   # Display tag icon as decoration role
+    def data(self, index, role=Qt.DisplayRole):   # Display account-type icon as decoration role
         if not index.isValid():
             return None
-        if role == Qt.DecorationRole and index.column() == self.fieldIndex('tag_id'):
-            return JalIcon[JalTag(super().data(index, Qt.DisplayRole)).icon()]
+        if role == Qt.DecorationRole and index.column() == self.fieldIndex('account_type'):
+            return JalIcon[JalAccount.get_type_icon(super().data(index, Qt.DisplayRole))]
         return super().data(index, role)
 
     def removeElement(self, index) -> bool:
@@ -45,6 +42,55 @@ class AccountListModel(AbstractReferenceListModel):
         if reply != QMessageBox.Yes:
             return False
         return super().removeElement(index)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Editable model of the 'account_data' table - the flexible set of per-account attributes (number/credit/country/
+# precision etc). Bind it to a particular account with filterBy("account_id", account_id).
+class AccountDataModel(AbstractReferenceListModel):
+    def __init__(self, parent=None):
+        columns = [
+            CmColumn("id", '', hide=True),
+            CmColumn("account_id", '', hide=True),
+            CmColumn("datatype", self.tr("Attribute"), default=True),
+            CmColumn("value", self.tr("Value"), width=CmWidth.WIDTH_STRETCH)
+        ]
+        super().__init__("account_data", columns, parent)
+        self._types = AccountData()
+        self.set_default_values({'datatype': AccountData.Number, 'value': ''})
+
+    # (account_id, datatype) must be unique, so adding another row with the default attribute type is refused
+    # while one already exists for this account - the user has to change its type first.
+    def addElement(self, index, in_group=0):
+        if self._read("SELECT id FROM account_data WHERE account_id=:aid AND datatype=:dt",
+                      [(":aid", self._filter_value), (":dt", self._default_values['datatype'])]) is not None:
+            QMessageBox().warning(None, self.tr("Row not added"),
+                                  self.tr("Please fill in the previously added attribute before adding a new one"), QMessageBox.Ok)
+            return
+        super().addElement(index, in_group)
+
+    # Displays translated attribute name and value formatted according to its type
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole and index.isValid():
+            if index.column() == self.fieldIndex("datatype"):
+                return self._types.get_name(super().data(index, role))
+            if index.column() == self.fieldIndex("value"):
+                datatype = super().data(index.sibling(index.row(), self.fieldIndex("datatype")), role)
+                return self._format_value(datatype, super().data(index, role))
+        return super().data(index, role)
+
+    def _format_value(self, datatype, value):
+        datatype_of = self._types.get_type(datatype)
+        try:
+            if datatype_of == "str" or datatype_of == "int":
+                return value
+            elif datatype_of == "float":
+                return f"{Decimal(value):.2f}"
+            elif datatype_of == "country":
+                return JalCountry(int(value)).name()
+        except (ValueError, InvalidOperation, TypeError):
+            return ''
+        return value
 
 
 # ----------------------------------------------------------------------------------------------------------------------

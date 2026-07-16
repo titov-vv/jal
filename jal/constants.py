@@ -48,6 +48,7 @@ class CmReference:
 
 class CmDelegate:
     BOOL = 'bool'
+    CONSTANT = 'constant'  # fixed code enum (delegate_details = a PredefinedList subclass, e.g. PredefinedAccountType)
     FLOAT = 'float'
     GRID = 'grid'
     LOOKUP = 'lookup'
