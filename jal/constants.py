@@ -10,7 +10,7 @@ class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 60
+    DB_REQUIRED_VERSION = 61
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'

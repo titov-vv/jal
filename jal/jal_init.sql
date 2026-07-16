@@ -9,14 +9,20 @@ CREATE TABLE accounts (
     currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,                  -- accounting currency for the account
     active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,                                              -- 1 = account is active, 0 = inactive (hidden in UI)
     investing       INTEGER   DEFAULT (0) NOT NULL,                                                                  -- 1 if account can hold investment assets, 0 otherwise
-    tag_id          INTEGER   REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,                             -- optional tag of the account
-    number          TEXT (32),                                                                                       -- human-readable number of account (as a reference to bank/broker documents)
     reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,                                              -- timestamp of last confirmed operation
     organization_id INTEGER   REFERENCES agents (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (1),   -- Bank/Broker that handles account
-    country_id      INTEGER   REFERENCES countries (id) ON DELETE SET DEFAULT ON UPDATE CASCADE DEFAULT (0) NOT NULL,-- Location of the account
-    precision       INTEGER   DEFAULT (2) NOT NULL,                                                                  -- number of digits after decimal points that is used by this account
-    credit          TEXT      DEFAULT ('0') NOT NULL                                                                 -- credit limit for the account
+    account_type    INTEGER   DEFAULT (2) NOT NULL                                                                   -- account type (see PredefinedAccountType); replaces the former 'tag_id'
 );
+-- Flexible per-account attributes (number/credit/country/precision etc)
+DROP TABLE IF EXISTS account_data;
+CREATE TABLE account_data (
+    id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    account_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    datatype   INTEGER NOT NULL,
+    value      TEXT    NOT NULL
+);
+DROP INDEX IF EXISTS account_data_uniqueness;
+CREATE UNIQUE INDEX account_data_uniqueness ON account_data (account_id, datatype);
 ------------------------------------------------------------------------------------------------------------------------
 -- tables to store information about Income/Spending transactions
 -- action_details keeps details about each transaction
@@ -591,7 +597,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 60);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 61);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
