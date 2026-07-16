@@ -19,7 +19,7 @@ class JalAccount(JalDB):
         PredefinedAccountType.Bank: "tag_bank.ico",
         PredefinedAccountType.Card: "tag_card.ico",
         PredefinedAccountType.Broker: "tag_investing.ico",
-        PredefinedAccountType.Wallet: "tag_investing.ico",  # TODO: dedicated wallet icon
+        PredefinedAccountType.Wallet: "tag_wallet.ico",
     }
 
     def __init__(self, account_id: int = 0) -> None:

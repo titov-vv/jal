@@ -11,6 +11,7 @@ from jal.db.tag import JalTag
 ICON_PREFIX = "ui_"
 FLAG_PREFIX = "flag_"
 AUX_PREFIX = "aux_"
+TAG_PREFIX = "tag_"
 
 class JalIcon(UserDict):
     NONE = auto()
@@ -124,6 +125,11 @@ class JalIcon(UserDict):
             match = re.match(f"^{AUX_PREFIX}.*", filename)
             if match:
                 self._icons[filename] = self.load_icon(img_path + filename)
+        # Account-type icons live as tag_*.ico files and are keyed by filename, independent of any 'tags' row
+        # (e.g. tag_wallet.ico has no tag row) - so load them straight from disk.
+        for filename in os.listdir(img_path):
+            if re.match(f"^{TAG_PREFIX}.*\\.ico$", filename):
+                self._icons[filename] = self.add_disabled_state(self.load_icon(img_path + filename))
         for tag_id, filename in JalTag.icon_files().items():
             self._icons[filename] = self.add_disabled_state(self.load_icon(img_path + filename))
 
