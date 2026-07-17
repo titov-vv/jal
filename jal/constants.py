@@ -251,6 +251,7 @@ class SymbolId(PredefinedList, QObject):
     ISO4217_CODE = 6  # Currency code according to ISO 4217 standard
     ETH_ADDRESS = 7  # Ethereum contract address
     ARB_ADDRESS = 8  # Arbitrum contract address
+    SOL_ADDRESS = 9  # Solana SPL mint address
 
     def __init__(self):
         super().__init__()
@@ -263,7 +264,8 @@ class SymbolId(PredefinedList, QObject):
             self.REG_CODE: self.tr("Reg.code"),
             self.ISO4217_CODE: self.tr("ISO4217 currency code"),
             self.ETH_ADDRESS: self.tr("ETH address"),
-            self.ARB_ADDRESS: self.tr("ARB address")
+            self.ARB_ADDRESS: self.tr("ARB address"),
+            self.SOL_ADDRESS: self.tr("SOL address")
         }
 
 
@@ -336,6 +338,8 @@ class AssetLocation(PredefinedList, QObject):
     EURONEXT_EXCHANGE = 209
     ETH_BLOCKCHAIN = 301
     ARB_BLOCKCHAIN = 302
+    BTC_BLOCKCHAIN = 303
+    SOL_BLOCKCHAIN = 304
     SMA_VICTORIA = 999
 
     def __init__(self):
@@ -355,6 +359,8 @@ class AssetLocation(PredefinedList, QObject):
             self.MOEX_EXCHANGE: self.tr("MOEX"),
             self.ETH_BLOCKCHAIN: self.tr("Ethereum"),
             self.ARB_BLOCKCHAIN: self.tr("Arbitrum"),
+            self.BTC_BLOCKCHAIN: self.tr("Bitcoin"),
+            self.SOL_BLOCKCHAIN: self.tr("Solana"),
             self.SMA_VICTORIA: self.tr("Victoria Seguros")
         }
 
