@@ -110,6 +110,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="EditBtn">
+        <property name="toolTip">
+         <string>Edit</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="RemoveBtn">
         <property name="toolTip">
          <string>Delete</string>

@@ -237,6 +237,8 @@ class BoolDelegate(GridLinesDelegate):
         self.paint_grid(painter, option, index)
 
     def editorEvent(self, event, model, option, index):
+        if not (index.flags() & Qt.ItemIsEditable):  # honor the model: don't toggle a read-only cell on click
+            return super().editorEvent(event, model, option, index)
         if event.type() == QEvent.MouseButtonPress:
             if model.data(index, Qt.DisplayRole):  # Toggle value - from 1 to 0 and from 0 to 1
                 model.setData(index, 0)

@@ -1,26 +1,23 @@
 import base64
 import logging
-from decimal import Decimal, InvalidOperation
-from PySide6.QtCore import Qt, Slot, Signal, Property, QDate, QPoint, QLocale
+from PySide6.QtCore import Qt, Slot, Signal, Property, QDate, QPoint
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QMenu, QDialog, QMessageBox, QHeaderView, QAbstractItemView, \
-    QStyledItemDelegate, QComboBox, QLineEdit, QTableView, QPushButton, QLabel, QHBoxLayout
-from PySide6.QtSql import QSqlRelationalDelegate, QSqlTableModel
-from jal.constants import CmWidth, CmDelegate, CmReference, AccountData
-from jal.db.common_models import AccountListModel, AccountDataModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, QuotesListModel, BaseCurrencyListModel
+from PySide6.QtWidgets import QMenu, QDialog, QMessageBox, QHeaderView, QAbstractItemView
+from PySide6.QtSql import QSqlRelationalDelegate
+from jal.constants import CmWidth, CmDelegate, CmReference
+from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, QuotesListModel, BaseCurrencyListModel
 from jal.db.asset_models import SymbolsListModel
 from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
-from jal.db.helpers import localize_decimal
-from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.delegates import BoolDelegate, FloatDelegate, GridLinesDelegate, TimestampDelegate, LookupSelectorDelegate, AssetSelectorDelegate, ConstantLookupDelegate
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.widgets.assets_dialogs import SymbolListDialog
+from jal.widgets.account_dialog import AccountDialog
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -60,12 +57,14 @@ class ReferenceDataDialog(QDialog):
                               # it also can keep tuples (model, dialog) for LookupSelectorDelegate
 
         self.ui.AddChildBtn.setVisible(False)
+        self.ui.EditBtn.setVisible(False)
         self.ui.GroupLbl.setVisible(False)
         self.ui.GroupCombo.setVisible(False)
         self.ui.SearchFrame.setVisible(False)
 
         self.ui.AddBtn.setIcon(JalIcon[JalIcon.ADD])
         self.ui.AddChildBtn.setIcon(JalIcon[JalIcon.ADD_CHILD])
+        self.ui.EditBtn.setIcon(JalIcon[JalIcon.DETAILS])
         self.ui.RemoveBtn.setIcon(JalIcon[JalIcon.REMOVE])
         self.ui.CommitBtn.setIcon(JalIcon[JalIcon.OK])
         self.ui.RevertBtn.setIcon(JalIcon[JalIcon.CANCEL])
@@ -75,6 +74,7 @@ class ReferenceDataDialog(QDialog):
         self.ui.Toggle.stateChanged.connect(self.OnToggleChange)
         self.ui.AddBtn.clicked.connect(self.OnAdd)
         self.ui.AddChildBtn.clicked.connect(self.OnChildAdd)
+        self.ui.EditBtn.clicked.connect(self.OnEdit)
         self.ui.RemoveBtn.clicked.connect(self.OnRemove)
         self.ui.CommitBtn.clicked.connect(self.OnCommit)
         self.ui.RevertBtn.clicked.connect(self.OnRevert)
@@ -259,6 +259,12 @@ class ReferenceDataDialog(QDialog):
             self.ui.CommitBtn.setEnabled(True)
             self.ui.RevertBtn.setEnabled(True)
 
+    # 'EditBtn' is hidden by default; child classes that edit records via a modal dialog make it visible and
+    # override this slot. The base grid edits cells in-line, so there is nothing to do here.
+    @Slot()
+    def OnEdit(self):
+        pass
+
     @Slot()
     def OnRemove(self):
         idx = self._view.selectionModel().selection().indexes()
@@ -361,114 +367,12 @@ class ReferenceDataDialog(QDialog):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Compound delegate for the account details grid (mirrors SymbolDialog's AssetAttributeDelegate): the 'datatype'
-# column picks an AccountData attribute, the 'value' column shows an editor that depends on the picked attribute's
-# type (str/int/float/country).
-class AccountAttributeDelegate(QStyledItemDelegate):
-    def __init__(self, key_column, value_column, parent=None):
-        super().__init__(parent=parent)
-        self._key = key_column
-        self._value = value_column
-        self._types = AccountData()
-
-    def _value_type(self, index):
-        type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
-        return self._types.get_type(type_idx)
-
-    def createEditor(self, aParent, option, index):
-        if index.column() == self._key:
-            editor = QComboBox(aParent)
-            self._types.load2combo(editor)
-            return editor
-        datatype_of = self._value_type(index)
-        if datatype_of == "country":
-            editor = DbLookupComboBox(aParent)
-            editor.setKeyField("id")
-            editor.setTable("countries_ext")
-            editor.setField("name")
-            return editor
-        return QLineEdit(aParent)  # str / int / float share a plain line editor
-
-    def setEditorData(self, editor, index):
-        if index.column() == self._key:
-            editor.setCurrentIndex(editor.findData(index.model().data(index, Qt.EditRole)))
-            return
-        datatype_of = self._value_type(index)
-        raw = index.model().data(index, Qt.EditRole)
-        if datatype_of == "str":
-            editor.setText(raw if raw else '')
-        elif datatype_of == "int":
-            try:
-                editor.setText(str(int(raw)))
-            except (TypeError, ValueError):
-                editor.setText('0')
-        elif datatype_of == "float":
-            try:
-                amount = Decimal(raw)
-            except (InvalidOperation, TypeError):
-                amount = Decimal('0')
-            editor.setText(localize_decimal(amount))
-        elif datatype_of == "country":
-            try:
-                editor.setKey(int(raw))
-            except (TypeError, ValueError):
-                editor.setKey(0)
-
-    def setModelData(self, editor, model, index):
-        if index.column() == self._key:
-            model.setData(index, editor.currentData())
-            model.setData(index.sibling(index.row(), self._value), '')  # Reset value on attribute-type change
-            return
-        datatype_of = self._value_type(index)
-        if datatype_of == "str":
-            model.setData(index, editor.text())
-        elif datatype_of == "int":
-            model.setData(index, str(QLocale().toInt(editor.text())[0]))
-        elif datatype_of == "float":
-            model.setData(index, str(QLocale().toDouble(editor.text())[0]))
-        elif datatype_of == "country":
-            model.setData(index, str(editor.getKey()))
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 class AccountListDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent, window_title=self.tr("Accounts"))
         self.model = AccountListModel(self)
         self.ui.DataView.setModel(self.model)
-        self._build_details_panel()
         self.setup_ui()
-
-    # Docked table below the accounts grid to view/add/edit/remove the currently selected account's attributes
-    # (number/credit/country/precision, ...) stored in the 'account_data' table.
-    def _build_details_panel(self):
-        self._details_model = AccountDataModel(self)
-        self._details_model.setEditStrategy(QSqlTableModel.OnFieldChange)  # attributes are persisted as edited
-        self._details_model.setFilter("1=0")  # no account selected yet
-        self._details_view = QTableView(self)
-        self._details_view.setModel(self._details_model)
-        self._details_view.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self._details_view.setColumnHidden(self._details_model.fieldIndex("id"), True)
-        self._details_view.setColumnHidden(self._details_model.fieldIndex("account_id"), True)
-        self._details_view.horizontalHeader().setSectionResizeMode(self._details_model.fieldIndex("value"), QHeaderView.Stretch)
-        self._details_view.verticalHeader().setDefaultSectionSize(20)
-        self._attribute_delegate = AccountAttributeDelegate(self._details_model.fieldIndex("datatype"),
-                                                            self._details_model.fieldIndex("value"), self._details_view)
-        self._details_view.setItemDelegateForColumn(self._details_model.fieldIndex("datatype"), self._attribute_delegate)
-        self._details_view.setItemDelegateForColumn(self._details_model.fieldIndex("value"), self._attribute_delegate)
-
-        self._add_data_btn = QPushButton(JalIcon[JalIcon.ADD], '', self)
-        self._remove_data_btn = QPushButton(JalIcon[JalIcon.REMOVE], '', self)
-        self._add_data_btn.clicked.connect(self.onAddData)
-        self._remove_data_btn.clicked.connect(self.onRemoveData)
-        header_row = QHBoxLayout()
-        header_row.addWidget(QLabel(self.tr("Account details:"), self))
-        header_row.addStretch()
-        header_row.addWidget(self._add_data_btn)
-        header_row.addWidget(self._remove_data_btn)
-        self.ui.verticalLayout.addLayout(header_row)
-        self.ui.verticalLayout.addWidget(self._details_view)
-        self._set_details_enabled(False)
 
     def setup_ui(self):
         self.search_field = "accounts.name"
@@ -487,41 +391,50 @@ class AccountListDialog(ReferenceDataDialog):
             self.ui.GroupCombo.addItem(JalIcon[JalAccount.get_type_icon(type_id)], type_name, type_id)
         self.group_id = self.ui.GroupCombo.itemData(0)
         super().setup_ui()
-        self.ui.DataView.selectionModel().selectionChanged.connect(self.onAccountSelected)
+        # Accounts (and their account_data attributes) are edited in the modal AccountDialog.
+        self.ui.EditBtn.setVisible(True)
+        self.ui.DataView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.ui.CommitBtn.setVisible(False)
+        self.ui.RevertBtn.setVisible(False)
 
-    def _set_details_enabled(self, enabled: bool):
-        self._details_view.setEnabled(enabled)
-        self._add_data_btn.setEnabled(enabled)
-        self._remove_data_btn.setEnabled(enabled)
-
-    # Binds the details table to the account selected in the main grid (disabled when nothing/no saved row selected)
+    # Add/Edit open the modal AccountDialog to create/edit an account and its account_data attributes.
     @Slot()
-    def onAccountSelected(self, selected, _deselected):
-        idx = selected.indexes()
-        account_id = self.model.getId(idx[0]) if idx else 0
-        if account_id:
-            self._details_model.filterBy("account_id", account_id)
-            self._set_details_enabled(True)
-        else:
-            self._details_model.setFilter("1=0")
-            self._set_details_enabled(False)
+    def OnAdd(self):
+        dialog = AccountDialog(self)
+        dialog.createNewRecord()
+        if dialog.exec() == QDialog.Accepted:
+            self._reload()
 
     @Slot()
-    def onAddData(self):
-        idx = self._details_view.selectionModel().selection().indexes()
-        current_index = idx[0] if idx else self._details_model.index(0, 0)
-        self._details_model.addElement(current_index)
-        self._details_model.submitAll()
-        self._details_model.select()
-
-    @Slot()
-    def onRemoveData(self):
-        idx = self._details_view.selectionModel().selection().indexes()
-        if not idx:
+    def OnEdit(self):
+        idx = self._view.currentIndex()
+        if not idx.isValid():
             return
-        if self._details_model.removeElement(idx[0]):
-            self._details_model.submitAll()
-            self._details_model.select()
+        account_id = self.model.getId(idx)
+        dialog = AccountDialog(self)
+        dialog.setSelectedId(account_id)
+        if dialog.exec() == QDialog.Accepted:
+            self._reload()
+
+    @Slot()
+    def OnRemove(self):
+        idx = self._view.selectionModel().selection().indexes()
+        current_index = idx[0] if idx else self.model.index(0, 0)
+        if self.model.removeElement(current_index):  # AccountListModel.removeElement asks for confirmation
+            self.model.submitAll()                   # accounts are removed immediately, there is no pending state
+            self._reload()
+
+    # In management mode a double-click opens the editor; in selection mode it keeps the base 'pick & close' behavior
+    @Slot()
+    def OnDoubleClicked(self, index):
+        if self.selection_enabled:
+            super().OnDoubleClicked(index)
+        else:
+            self.OnEdit()
+
+    def _reload(self):
+        self.model.invalidate_cache()
+        self.setFilter()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

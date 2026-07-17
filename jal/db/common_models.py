@@ -2,9 +2,10 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlRelation
 from PySide6.QtWidgets import QMessageBox
-from jal.constants import CmColumn, CmWidth, CmDelegate, CmReference, PredefinedAccountType, AccountData
+from jal.constants import CmColumn, CmWidth, CmDelegate, CmReference, PredefinedAccountType, PredefinedAgents, AccountData
 from jal.db.category import JalCategory
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
 from jal.db.common_models_abstract import AbstractReferenceListModel, SqlTreeModel
 from jal.db.peer import JalPeer
@@ -28,6 +29,11 @@ class AccountListModel(AbstractReferenceListModel):
         self.set_default_values({'active': 1, 'reconciled_on': 0, 'account_type': PredefinedAccountType.Cash})
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
 
+    # Accounts are edited via the modal AccountDialog, not in-line - the grid is display/selection only. Marking the
+    # cells non-editable makes every delegate (including BoolDelegate's click-to-toggle) honor that automatically.
+    def flags(self, index):
+        return super().flags(index) & ~Qt.ItemIsEditable
+
     def data(self, index, role=Qt.DisplayRole):   # Display account-type icon as decoration role
         if not index.isValid():
             return None
@@ -42,6 +48,29 @@ class AccountListModel(AbstractReferenceListModel):
         if reply != QMessageBox.Yes:
             return False
         return super().removeElement(index)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Single-record model of the 'accounts' table, used by AccountDialog via a QDataWidgetMapper to edit one account.
+# The column list must enumerate every 'accounts' field in physical table order, because the mapper addresses model
+# sections by index (fieldIndex() returns the position within this list). No relations are set here so that the mapped
+# lookup fields (currency_id, organization_id) expose their raw ids to the DbLookupComboBox editors.
+class AccountRecordModel(AbstractReferenceListModel):
+    def __init__(self, parent=None):
+        columns = [
+            CmColumn("id", '', hide=True),
+            CmColumn("name", self.tr("Name"), default=True, width=CmWidth.WIDTH_STRETCH),
+            CmColumn("currency_id", self.tr("Currency")),
+            CmColumn("active", self.tr("Active")),
+            CmColumn("investing", self.tr("Investing")),
+            CmColumn("reconciled_on", self.tr("Reconciled @")),
+            CmColumn("organization_id", self.tr("Bank/Broker")),
+            CmColumn("account_type", self.tr("Type"))
+        ]
+        super().__init__("accounts", columns, parent)
+        self.set_default_values({'name': '', 'currency_id': JalAsset.get_base_currency(), 'active': 1,
+                                 'investing': 0, 'reconciled_on': 0, 'organization_id': PredefinedAgents.Empty,
+                                 'account_type': PredefinedAccountType.Cash})
 
 
 # ----------------------------------------------------------------------------------------------------------------------

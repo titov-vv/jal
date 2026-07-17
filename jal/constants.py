@@ -386,3 +386,17 @@ class AssetTypeComboBox(QComboBox):
         self.setCurrentIndex(self.findData(value))
 
     key = Property(int, get_key, set_key, user=True)
+
+
+class AccountTypeComboBox(QComboBox):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        PredefinedAccountType().load2combo(self)
+
+    def get_key(self):
+        return self.currentData()
+
+    def set_key(self, value):
+        self.setCurrentIndex(self.findData(value))
+
+    key = Property(int, get_key, set_key, user=True)

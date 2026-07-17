@@ -102,8 +102,11 @@ class SymbolListDialog(QDialog):
 
     @Slot()
     def onAdd(self):
-        # Deferred import: SymbolDialog uses SymbolListDialog (to pick a base asset), so importing it at module level here would create a circular import.
-        from jal.widgets.symbol_dialog import SymbolDialog   #TODO Check if it can be avoided
+        # Deferred import to break a real circular import: this module -> symbol_dialog -> reference_dialogs
+        # (for TagsListDialog) -> this module (for SymbolListDialog). A module-level import here fails because
+        # SymbolListDialog isn't defined yet when reference_dialogs is pulled in mid-load.
+        # TODO - refactor code to remove deferred import
+        from jal.widgets.symbol_dialog import SymbolDialog
         dialog = SymbolDialog(self)
         dialog.createNewRecord()
         if dialog.exec() == QDialog.Accepted:
@@ -115,8 +118,11 @@ class SymbolListDialog(QDialog):
         if not idx.isValid():
             return
         asset_id = self.model.record(idx.row()).value('asset_id')
-        # Deferred import: SymbolDialog uses SymbolListDialog (to pick a base asset), so importing it at module level here would create a circular import.
-        from jal.widgets.symbol_dialog import SymbolDialog    #TODO Check if it can be avoided
+        # Deferred import to break a real circular import: this module -> symbol_dialog -> reference_dialogs
+        # (for TagsListDialog) -> this module (for SymbolListDialog). A module-level import here fails because
+        # SymbolListDialog isn't defined yet when reference_dialogs is pulled in mid-load.
+        # TODO - refactor code to remove deferred import
+        from jal.widgets.symbol_dialog import SymbolDialog
         dialog = SymbolDialog(self)
         dialog.setSelectedId(asset_id)
         if dialog.exec() == QDialog.Accepted:

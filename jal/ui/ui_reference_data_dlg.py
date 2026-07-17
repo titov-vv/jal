@@ -72,6 +72,11 @@ class Ui_ReferenceDataDialog(object):
 
         self.edit_layout.addWidget(self.AddChildBtn)
 
+        self.EditBtn = QPushButton(self.EditFrame)
+        self.EditBtn.setObjectName(u"EditBtn")
+
+        self.edit_layout.addWidget(self.EditBtn)
+
         self.RemoveBtn = QPushButton(self.EditFrame)
         self.RemoveBtn.setObjectName(u"RemoveBtn")
 
@@ -153,6 +158,10 @@ class Ui_ReferenceDataDialog(object):
         self.AddChildBtn.setToolTip(QCoreApplication.translate("ReferenceDataDialog", u"Add child", None))
 #endif // QT_CONFIG(tooltip)
         self.AddChildBtn.setText("")
+#if QT_CONFIG(tooltip)
+        self.EditBtn.setToolTip(QCoreApplication.translate("ReferenceDataDialog", u"Edit", None))
+#endif // QT_CONFIG(tooltip)
+        self.EditBtn.setText("")
 #if QT_CONFIG(tooltip)
         self.RemoveBtn.setToolTip(QCoreApplication.translate("ReferenceDataDialog", u"Delete", None))
 #endif // QT_CONFIG(tooltip)
