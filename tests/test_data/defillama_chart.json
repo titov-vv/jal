@@ -1,0 +1,27 @@
+{
+    "coins": {
+        "arbitrum:0xaf88d065e77c8cC2239327C5EDb3A432268e5831": {
+            "symbol": "USDC",
+            "confidence": 0.99,
+            "decimals": 6,
+            "prices": [
+                {
+                    "timestamp": 1719792081,
+                    "price": 0.999386
+                },
+                {
+                    "timestamp": 1719878421,
+                    "price": 1
+                },
+                {
+                    "timestamp": 1719964837,
+                    "price": 0.999924
+                },
+                {
+                    "timestamp": 1720051234,
+                    "price": 0.999194
+                }
+            ]
+        }
+    }
+}

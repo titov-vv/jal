@@ -15,6 +15,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import AssetLocation, PredefinedAsset, SymbolId
 from jal.db.asset import JalAsset
+from jal.db.helpers import day_begin
 from jal.db.symbol import JalSymbol
 from jal.net.web_request import WebRequest
 from jal.net.moex import MOEX
@@ -25,6 +26,83 @@ except ImportError:
     pass  # PDF files won't be downloaded without dependency
 
 DATA_SOURCE_ROLE = Qt.UserRole + 1
+
+SECONDS_IN_DAY = 86400
+
+# ===================================================================================================================
+# Crypto quotes from DeFiLlama (coins.llama.fi) - free and keyless.
+# Locations that are priced by this source. They are quoted in USD only, so a single (asset, USD) series is stored
+# for a crypto asset no matter which currency its listings or accounts are denominated in - see download_asset_prices().
+BLOCKCHAIN_LOCATIONS = [AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN,
+                        AssetLocation.BTC_BLOCKCHAIN, AssetLocation.SOL_BLOCKCHAIN]
+
+# The API identifies a token as '{chain}:{contract_address}' - this maps a location to the chain name that the API
+# uses and to the type of contract address identifier that a listing carries on that chain (see SymbolId).
+_LLAMA_CHAINS = {
+    AssetLocation.ETH_BLOCKCHAIN: ('ethereum', SymbolId.ETH_ADDRESS),
+    AssetLocation.ARB_BLOCKCHAIN: ('arbitrum', SymbolId.ARB_ADDRESS),
+    AssetLocation.SOL_BLOCKCHAIN: ('solana', SymbolId.SOL_ADDRESS)
+}
+
+# Native coin of each chain, used for a listing that has no contract address. Mind that a listing on Arbitrum with
+# no address is bridged ETH (the gas token of that chain) and not the ARB token - the latter is a contract and thus
+# resolved via _LLAMA_CHAINS above. Bitcoin has no token contracts at all and is always native.
+_LLAMA_NATIVE_COINS = {
+    AssetLocation.ETH_BLOCKCHAIN: "coingecko:ethereum",
+    AssetLocation.ARB_BLOCKCHAIN: "coingecko:ethereum",
+    AssetLocation.BTC_BLOCKCHAIN: "coingecko:bitcoin",
+    AssetLocation.SOL_BLOCKCHAIN: "coingecko:solana"
+}
+
+# Number of daily points requested in one '/chart' call. Verified 2026-07-18: a span of 500 is served but 1000 is
+# rejected, so longer intervals are downloaded in several chunks with some headroom left.
+_LLAMA_MAX_SPAN = 365
+
+# How far the API may look around a requested point to find a price. A wide window may repeat the same price for
+# several days for a thinly traded token, which is still preferable to having no quote at all.
+_LLAMA_SEARCH_WIDTH = '4h'
+
+# Prices that the API reports with a lower confidence are dropped instead of being stored as a valid quote
+_LLAMA_MIN_CONFIDENCE = Decimal('0.7')
+
+
+# Returns the DeFiLlama coin key for a given listing, or '' if the listing doesn't belong to a supported blockchain
+def llama_coin_key(symbol: JalSymbol) -> str:
+    chain, id_type = _LLAMA_CHAINS.get(symbol.location(), ('', 0))
+    address = symbol.identifier(id_type) if chain else ''
+    if address:
+        return f"{chain}:{address}"
+    return _LLAMA_NATIVE_COINS.get(symbol.location(), '')
+
+
+# Converts a '/chart' API answer into a dataframe of daily quotes (Date index, Close values), dropping low
+# confidence points. It is a pure function of the downloaded data, so it may be tested with a stored sample.
+def parse_llama_chart(content, coin_key: str) -> pd.DataFrame:
+    quotes = []
+    try:  # parse_float keeps full precision of a price as it was given in the answer
+        coin = json.loads(content, parse_float=Decimal)['coins'][coin_key]
+        prices = coin['prices']
+    except (json.decoder.JSONDecodeError, KeyError, TypeError):
+        return pd.DataFrame([], columns=["Date", "Close"]).set_index("Date")
+    # '/chart' reports one confidence value for the whole coin while '/batchHistorical' gives it per point,
+    # so a point value is taken when present and the value of the coin is used otherwise.
+    confidence = coin.get('confidence', 1)
+    for point in prices:
+        try:
+            if Decimal(point.get('confidence', confidence)) < _LLAMA_MIN_CONFIDENCE:
+                continue
+            # Answer timestamps drift around the requested time and a point of one day may come back as 23:59:5x
+            # of the previous one. As a quote is stored at the beginning of a day each point is put to the
+            # midnight that is nearest to it, not to the midnight of the day it formally belongs to.
+            timestamp = day_begin(int(point['timestamp']) + SECONDS_IN_DAY // 2)
+            quotes.append({"Date": datetime.fromtimestamp(timestamp, tz=timezone.utc),
+                           "Close": Decimal(point['price'])})
+        except (KeyError, TypeError, ArithmeticError):
+            continue  # Skip a malformed point rather than lose the whole answer
+    data = pd.DataFrame(quotes, columns=["Date", "Close"])
+    data = data.drop_duplicates(subset="Date", keep="first").set_index("Date")
+    return data.sort_index()
+
 
 # ===================================================================================================================
 # UI dialog class
@@ -224,12 +302,13 @@ class QuoteDownloader(QObject):
             AssetLocation.LSE_EXCHANGE: self.YahooLSE_Downloader,
             AssetLocation.FRA_EXCHANGE: self.YahooFRA_Downloader,
             AssetLocation.SMA_VICTORIA: self.Victoria_Downloader,
-            AssetLocation.ETH_BLOCKCHAIN: self.Coinbase_Downloader,   # stub - crypto isn't really implemented yet
             AssetLocation.MILAN_EXCHANGE: self.EuronextMilan_DataReader,
             AssetLocation.WSE_EXCHANGE: self.Stooq_DataReader
         }
+        data_loaders.update({x: self.Llama_Downloader for x in BLOCKCHAIN_LOCATIONS})
         symbols = JalSymbol.get_active_symbols(start_timestamp, end_timestamp)
         symbols = [(x['symbol'], x['currency']) for x in symbols if x['symbol'].location() in sources_list]
+        symbols = self._quote_series(symbols)
         logging.info(self.tr("Loading assets prices"))
         for i, (symbol, currency) in enumerate(symbols):
             from_timestamp = self._adjust_start(symbol.asset(), currency, start_timestamp)
@@ -240,7 +319,30 @@ class QuoteDownloader(QObject):
             except (pd.errors.EmptyDataError, KeyError, json.decoder.JSONDecodeError):
                 logging.warning(self.tr("No quotes were downloaded for ") + f"{symbol.symbol()}")
                 continue
-            self.update_progress.emit(100.0 * i / len(symbols))
+            self.update_progress.emit(100.0 * (i + 1) / len(symbols))
+
+    # Takes a list of (symbol, account currency) pairs and returns a list of (symbol, quote currency) pairs that
+    # describe the quote series to download - one pair per series.
+    # Quotes are stored per (asset, currency) while an asset may have several listings, so listings that share a
+    # series have to be collapsed into one download. Blockchain sources are quoted in USD only, which means that
+    # all listings of a crypto asset share a single USD series regardless of the currency of the account holding
+    # it; for other sources listings in different currencies are separate series and are all kept.
+    def _quote_series(self, symbols: list) -> list:
+        usd = [x.id() for x in JalAsset.get_currencies() if x.symbol() == 'USD']
+        series = []
+        stored = set()
+        for symbol, currency in symbols:
+            if symbol.location() in BLOCKCHAIN_LOCATIONS:
+                if not usd:
+                    logging.warning(self.tr("Can't store crypto quotes as there is no USD currency in the ledger: ")
+                                    + f"{symbol.symbol()}")
+                    continue
+                currency = usd[0]
+            if (symbol.asset().id(), currency) in stored:
+                continue
+            stored.add((symbol.asset().id(), currency))
+            series.append((symbol, currency))
+        return series
 
     def PrepareRussianCBReader(self):
         rows = []
@@ -616,6 +718,35 @@ class QuoteDownloader(QObject):
             logging.error(f"Failed to parse Stooq data: {str(e)}")
             return None
 
+    # Downloads daily crypto quotes from DeFiLlama. The source quotes in USD only, therefore 'currency_id' is
+    # ignored here - the caller stores the result as a USD series (see download_asset_prices) and conversion into
+    # any other currency is a matter of quote look-up, not of download.
+    def Llama_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
+        coin = llama_coin_key(symbol)
+        if not coin:
+            logging.warning(self.tr("Can't identify crypto asset to download quotes: ") + f"{symbol.symbol()}")
+            return None
+        chunks = []
+        start = day_begin(start_timestamp)
+        while start <= end_timestamp:
+            span = min(int((end_timestamp - start) / SECONDS_IN_DAY) + 1, _LLAMA_MAX_SPAN)
+            self._request = WebRequest(WebRequest.GET, f"https://coins.llama.fi/chart/{coin}",
+                                       params={'start': start, 'span': span, 'period': '1d',
+                                               'searchWidth': _LLAMA_SEARCH_WIDTH})
+            self._wait_for_event()
+            chunk = parse_llama_chart(self._request.data(), coin)
+            if chunk.empty:   # There is no data for this interval and it is unlikely to appear in the next ones
+                break
+            chunks.append(chunk)
+            start += span * SECONDS_IN_DAY
+        if not chunks:
+            logging.warning(self.tr("No quotes were received from DeFiLlama for ") + f"{symbol.symbol()} ({coin})")
+            return None
+        data = pd.concat(chunks)
+        return data[~data.index.duplicated(keep='first')].sort_index()
+
+    # Not used for quotes update since Llama_Downloader took over the blockchain locations - it makes one request
+    # per asset per day and is keyed by ticker, which makes it unusable for a backfill. Kept as an alternative source.
     def Coinbase_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
         currency_symbol = JalAsset(currency_id).symbol()
         url = f"https://api.coinbase.com/v2/prices/{symbol.symbol()}-{currency_symbol}/spot"

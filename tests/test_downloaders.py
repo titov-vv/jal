@@ -4,10 +4,10 @@ from pandas._testing import assert_frame_equal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
 from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets, symbol_id_for
-from jal.db.asset import JalAsset
+from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
-from jal.constants import PredefinedAsset, SymbolId
-from jal.net.downloader import QuoteDownloader
+from jal.constants import AssetLocation, PredefinedAsset, SymbolId
+from jal.net.downloader import QuoteDownloader, llama_coin_key, parse_llama_chart
 from jal.net.moex import MOEX
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 
@@ -275,3 +275,158 @@ def test_Stooq_downloader(prepare_db):
     }).set_index('Date')
     result = downloader.Stooq_DataReader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(200102), d2t(200102))
     assert_frame_equal(expected, result)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Creates a crypto asset with one listing on given blockchain location and returns (asset_id, symbol_id).
+# 'address' is the contract address of the token on that chain - an empty one means the native coin of the chain.
+def create_crypto(name: str, symbol: str, currency_id: int, location_id: int, address: str = '',
+                  id_type: int = 0) -> tuple:
+    creator = JalAssetCreator(PredefinedAsset.Crypto, name)
+    symbol_id = creator.add_symbol(symbol, currency_id, location_id=location_id)
+    if address:
+        creator.add_identifier(symbol_id, id_type, address)
+    asset = creator.commit()
+    return asset.id(), symbol_id
+
+
+def test_llama_coin_key(prepare_db):
+    # A token is identified by its contract address on the chain it is listed at
+    _, usdc_arb = create_crypto('USD Coin', 'USDC', 2, AssetLocation.ARB_BLOCKCHAIN,
+                                '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', SymbolId.ARB_ADDRESS)
+    assert llama_coin_key(JalSymbol(usdc_arb)) == 'arbitrum:0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+    _, usdc_eth = create_crypto('USD Coin ETH', 'USDC', 2, AssetLocation.ETH_BLOCKCHAIN,
+                                '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', SymbolId.ETH_ADDRESS)
+    assert llama_coin_key(JalSymbol(usdc_eth)) == 'ethereum:0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+    _, sol_token = create_crypto('Jupiter', 'JUP', 2, AssetLocation.SOL_BLOCKCHAIN,
+                                 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', SymbolId.SOL_ADDRESS)
+    assert llama_coin_key(JalSymbol(sol_token)) == 'solana:JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'
+
+    # A listing without a contract address is the native coin of its chain
+    _, btc = create_crypto('Bitcoin', 'BTC', 2, AssetLocation.BTC_BLOCKCHAIN)
+    assert llama_coin_key(JalSymbol(btc)) == 'coingecko:bitcoin'
+    _, eth = create_crypto('Ether', 'ETH', 2, AssetLocation.ETH_BLOCKCHAIN)
+    assert llama_coin_key(JalSymbol(eth)) == 'coingecko:ethereum'
+    _, sol = create_crypto('Solana', 'SOL', 2, AssetLocation.SOL_BLOCKCHAIN)
+    assert llama_coin_key(JalSymbol(sol)) == 'coingecko:solana'
+    # Native coin of Arbitrum is bridged ETH and not the ARB token (the latter has a contract address)
+    _, eth_arb = create_crypto('Ether ARB', 'ETH', 2, AssetLocation.ARB_BLOCKCHAIN)
+    assert llama_coin_key(JalSymbol(eth_arb)) == 'coingecko:ethereum'
+
+    # A listing that isn't on a blockchain has no key at all
+    _, stock = create_crypto('Not a coin', 'NPC', 2, AssetLocation.NYSE_EXCHANGE)
+    assert llama_coin_key(JalSymbol(stock)) == ''
+
+
+def test_llama_chart_parsing(data_path):
+    coin = 'arbitrum:0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+    with open(data_path + 'defillama_chart.json', 'r') as sample:
+        content = sample.read()
+    # Prices of the sample are given a few seconds after midnight and are expected at the midnight of the same day
+    expected = pd.DataFrame({'Close': [Decimal('0.999386'), Decimal('1'), Decimal('0.999924'), Decimal('0.999194')],
+                             'Date': [d2dt(240701), d2dt(240702), d2dt(240703), d2dt(240704)]}).set_index('Date')
+    assert_frame_equal(expected, parse_llama_chart(content, coin))
+
+    # An answer for another coin, a broken answer or an empty one give no quotes but don't raise
+    assert parse_llama_chart(content, 'coingecko:bitcoin').empty
+    assert parse_llama_chart('{"coins": {}}', coin).empty
+    assert parse_llama_chart('not a json', coin).empty
+    assert parse_llama_chart('', coin).empty
+
+
+def test_llama_chart_parsing_details():
+    coin = 'coingecko:bitcoin'
+    # A price given before midnight belongs to the day that starts right after it, not to the day it falls into
+    content = '{"coins": {"' + coin + '": {"confidence": 0.99, "prices": [' \
+              '{"timestamp": 1719791998, "price": 100}, {"timestamp": 1719878421, "price": 200}]}}}'
+    expected = pd.DataFrame({'Close': [Decimal('100'), Decimal('200')],
+                             'Date': [d2dt(240701), d2dt(240702)]}).set_index('Date')
+    assert_frame_equal(expected, parse_llama_chart(content, coin))
+
+    # Low confidence prices are dropped - both when confidence is set for the coin and for a single point
+    content = '{"coins": {"' + coin + '": {"confidence": 0.5, "prices": [{"timestamp": 1719792081, "price": 100}]}}}'
+    assert parse_llama_chart(content, coin).empty
+    content = '{"coins": {"' + coin + '": {"confidence": 0.99, "prices": [' \
+              '{"timestamp": 1719792081, "price": 100, "confidence": 0.1}, ' \
+              '{"timestamp": 1719878421, "price": 200}]}}}'
+    expected = pd.DataFrame({'Close': [Decimal('200')], 'Date': [d2dt(240702)]}).set_index('Date')
+    assert_frame_equal(expected, parse_llama_chart(content, coin))
+
+    # A malformed point is skipped but the rest of the answer is kept
+    content = '{"coins": {"' + coin + '": {"confidence": 0.99, "prices": [' \
+              '{"timestamp": 1719792081}, {"timestamp": 1719878421, "price": 200}]}}}'
+    expected = pd.DataFrame({'Close': [Decimal('200')], 'Date': [d2dt(240702)]}).set_index('Date')
+    assert_frame_equal(expected, parse_llama_chart(content, coin))
+
+    # Several prices that fall into the same day are stored once
+    content = '{"coins": {"' + coin + '": {"confidence": 0.99, "prices": [' \
+              '{"timestamp": 1719792081, "price": 100}, {"timestamp": 1719792999, "price": 300}]}}}'
+    expected = pd.DataFrame({'Close': [Decimal('100')], 'Date': [d2dt(240701)]}).set_index('Date')
+    assert_frame_equal(expected, parse_llama_chart(content, coin))
+
+
+def test_llama_downloader(prepare_db):
+    _, symbol_id = create_crypto('USD Coin', 'USDC', 2, AssetLocation.ARB_BLOCKCHAIN,
+                                 '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', SymbolId.ARB_ADDRESS)
+    expected = pd.DataFrame({'Close': [Decimal('0.999386'), Decimal('1'), Decimal('0.999924')],
+                             'Date': [d2dt(240701), d2dt(240702), d2dt(240703)]}).set_index('Date')
+    downloader = QuoteDownloader()
+    assert_frame_equal(expected, downloader.Llama_Downloader(JalSymbol(symbol_id), 2, d2t(240701), d2t(240703)))
+
+
+def test_quote_series_selection(prepare_db):
+    downloader = QuoteDownloader()
+    usd, eur = 2, 3
+
+    # All listings of a crypto asset share one USD series: same asset on two chains and in two account
+    # currencies has to be downloaded once and stored as USD
+    asset_id, arb_symbol = create_crypto('USD Coin', 'USDC', usd, AssetLocation.ARB_BLOCKCHAIN,
+                                         '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', SymbolId.ARB_ADDRESS)
+    eth_symbol = JalAsset(asset_id).add_symbol('USDC', usd, location_id=AssetLocation.ETH_BLOCKCHAIN)
+    JalAsset(asset_id).add_identifier(eth_symbol, SymbolId.ETH_ADDRESS,
+                                      '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
+    series = downloader._quote_series([(JalSymbol(arb_symbol), usd), (JalSymbol(eth_symbol), usd),
+                                       (JalSymbol(arb_symbol), eur), (JalSymbol(eth_symbol), eur)])
+    assert len(series) == 1
+    assert series[0][0].id() == arb_symbol   # the first listing of the series is the one that is downloaded
+    assert series[0][1] == usd               # ... and it is stored as a USD series despite the EUR accounts
+
+    # Listings of a non-crypto asset in different currencies are different series and all of them are kept
+    stock = JalAssetCreator(PredefinedAsset.Stock, 'Some Company')
+    usd_listing = stock.add_symbol('SC', usd, location_id=AssetLocation.NYSE_EXCHANGE)
+    eur_listing = stock.add_symbol('SC', eur, location_id=AssetLocation.EURONEXT_EXCHANGE)
+    stock.commit()
+    series = downloader._quote_series([(JalSymbol(usd_listing), usd), (JalSymbol(eur_listing), eur)])
+    assert [(x[0].id(), x[1]) for x in series] == [(usd_listing, usd), (eur_listing, eur)]
+
+    # A repeated listing of a non-crypto asset (several accounts in one currency) is downloaded once
+    series = downloader._quote_series([(JalSymbol(usd_listing), usd), (JalSymbol(usd_listing), usd)])
+    assert [(x[0].id(), x[1]) for x in series] == [(usd_listing, usd)]
+
+
+def test_crypto_quotes_are_stored_as_usd(prepare_db, monkeypatch):
+    usd, eur = 2, 3
+    # One asset listed on two chains, held in accounts of two different currencies
+    asset_id, arb_symbol = create_crypto('USD Coin', 'USDC', usd, AssetLocation.ARB_BLOCKCHAIN,
+                                         '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', SymbolId.ARB_ADDRESS)
+    eth_symbol = JalAsset(asset_id).add_symbol('USDC', eur, location_id=AssetLocation.ETH_BLOCKCHAIN)
+    JalAsset(asset_id).add_identifier(eth_symbol, SymbolId.ETH_ADDRESS,
+                                      '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
+    monkeypatch.setattr(JalSymbol, 'get_active_symbols',
+                        classmethod(lambda cls, begin, end: [{"symbol": JalSymbol(arb_symbol), "currency": usd},
+                                                             {"symbol": JalSymbol(eth_symbol), "currency": eur}]))
+    downloaded = []
+    quotes = pd.DataFrame({'Close': [Decimal('0.99')], 'Date': [d2dt(240701)]}).set_index('Date')
+    def fake_download(symbol, currency_id, start_timestamp, end_timestamp):
+        downloaded.append((symbol.id(), currency_id))
+        return quotes
+    downloader = QuoteDownloader()
+    monkeypatch.setattr(downloader, 'Llama_Downloader', fake_download)
+    downloader.download_asset_prices(d2t(240701), d2t(240701),
+                                     [AssetLocation.ARB_BLOCKCHAIN, AssetLocation.ETH_BLOCKCHAIN])
+
+    # Both listings share one series, so a single download is made and it is requested in USD
+    assert downloaded == [(arb_symbol, usd)]
+    # ... and the quote is stored as USD even though one of the accounts is in EUR
+    assert JalAsset(asset_id).quotes(d2t(240701), d2t(240701), usd) == [(d2t(240701), Decimal('0.99'))]
+    assert JalAsset(asset_id).quotes(d2t(240701), d2t(240701), eur) == []
