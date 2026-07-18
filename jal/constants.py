@@ -31,6 +31,8 @@ class Setup:
     DEFAULT_ACCOUNT_PRECISION = 2
     NULL_VALUE = '-.--'
     MAX_TIMESTAMP = 9999999999
+    TOKEN_LIST_REFRESH_INTERVAL = 7 * 24 * 60 * 60   # How often allow/block token lists are re-downloaded, seconds
+    TOKEN_DUST_THRESHOLD = '1'                       # Incoming token transfer below this value is treated as dust
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Constants to define presentation of database columns in UI views.
@@ -363,6 +365,45 @@ class AssetLocation(PredefinedList, QObject):
             self.SOL_BLOCKCHAIN: self.tr("Solana"),
             self.SMA_VICTORIA: self.tr("Victoria Seguros")
         }
+
+
+# Role that a downloaded token list plays - stored in 'token_list_cache.kind' so that a membership check is
+# a property of the cached row and never has to be inferred from the list it came from.
+class TokenListKind(PredefinedList, QObject):
+    Allow = 1
+    Block = 2
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.Allow: self.tr("Allow-list"),
+            self.Block: self.tr("Block-list")
+        }
+
+
+# Known sources of token allow-/block- lists.
+class TokenList(PredefinedList, QObject):
+    JUPITER_VERIFIED = 1
+    UNISWAP_DEFAULT = 2
+    COINGECKO_LIST = 3
+    DAPPRADAR_BLACKLIST = 4
+    MEW_TOKENS = 5
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.JUPITER_VERIFIED: self.tr("Jupiter verified tokens"),
+            self.UNISWAP_DEFAULT: self.tr("Uniswap default list"),
+            self.COINGECKO_LIST: self.tr("CoinGecko token list"),
+            self.DAPPRADAR_BLACKLIST: self.tr("DappRadar tokens blacklist"),
+            self.MEW_TOKENS: self.tr("MyEtherWallet token list")
+        }
+
+
+# Result of the unknown/spam token policy (see jal.data_import.token_filter)
+class TokenVerdict:
+    Import = 1
+    Blacklist = 2
 
 
 class CustomColor:

@@ -249,6 +249,48 @@ CREATE TABLE quotes (
 );
 CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
 
+-- Unknown/spam token policy: blacklisted tokens are never imported and never become assets/symbols,
+-- so scam names/tickers stay out of the asset tables entirely
+DROP TABLE IF EXISTS token_blacklist;
+CREATE TABLE token_blacklist (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    location_id INTEGER NOT NULL,                    -- blockchain, see AssetLocation.*_BLOCKCHAIN
+    address     TEXT    NOT NULL,                    -- contract/mint address, normalized
+    name_hint   TEXT    NOT NULL DEFAULT (''),       -- ticker/name seen on-chain, informational only
+    added_ts    INTEGER NOT NULL DEFAULT (0),
+    auto        INTEGER NOT NULL DEFAULT (1)         -- 1 = auto-quarantined, 0 = added by user
+);
+DROP INDEX IF EXISTS token_blacklist_uniqueness;
+CREATE UNIQUE INDEX token_blacklist_uniqueness ON token_blacklist (location_id, address);
+
+-- Local cache of downloaded allow-/block- token lists (see TokenList / TokenListKind)
+DROP TABLE IF EXISTS token_list_cache;
+CREATE TABLE token_list_cache (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    list_id     INTEGER NOT NULL,                    -- source list, see TokenList
+    kind        INTEGER NOT NULL,                    -- TokenListKind: 1 = allow, 2 = block
+    location_id INTEGER NOT NULL,
+    address     TEXT    NOT NULL,                    -- normalized
+    symbol      TEXT    NOT NULL DEFAULT (''),
+    name        TEXT    NOT NULL DEFAULT ('')
+);
+DROP INDEX IF EXISTS token_list_cache_uniqueness;
+CREATE UNIQUE INDEX token_list_cache_uniqueness ON token_list_cache (list_id, location_id, address);
+-- Membership is always asked as "is this address on ANY allow/block list for this chain"
+DROP INDEX IF EXISTS token_list_cache_lookup;
+CREATE INDEX token_list_cache_lookup ON token_list_cache (kind, location_id, address);
+
+-- Timestamp of the last successful fetch per (list, chain) - drives the refresh interval
+DROP TABLE IF EXISTS token_list_updates;
+CREATE TABLE token_list_updates (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    list_id     INTEGER NOT NULL,
+    location_id INTEGER NOT NULL,
+    updated_ts  INTEGER NOT NULL DEFAULT (0)
+);
+DROP INDEX IF EXISTS token_list_updates_uniqueness;
+CREATE UNIQUE INDEX token_list_updates_uniqueness ON token_list_updates (list_id, location_id);
+
 -- Table to store application settings
 DROP TABLE IF EXISTS settings;
 CREATE TABLE settings (
@@ -629,6 +671,8 @@ INSERT INTO settings(name, value) VALUES('DlgGeometry_Quotes', '');
 INSERT INTO settings(name, value) VALUES('DlgViewState_Quotes', '');
 INSERT INTO settings(name, value) VALUES('DlgGeometry_Base currency', '');
 INSERT INTO settings(name, value) VALUES('DlgViewState_Base currency', '');
+INSERT INTO settings(name, value) VALUES('DlgGeometry_Token blacklist', '');
+INSERT INTO settings(name, value) VALUES('DlgViewState_Token blacklist', '');
 INSERT INTO settings(name, value) VALUES('ShowInactiveAccountBalances', 0);
 INSERT INTO settings(name, value) VALUES('UseAccountCreditLimit', 1);
 

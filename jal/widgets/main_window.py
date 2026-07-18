@@ -15,7 +15,7 @@ from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget, TaxMergeDialog
 from jal.widgets.helpers import dependency_present
 from jal.widgets.icons import JalIcon
-from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog
+from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog, TokenBlacklistDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.constants import Setup, JalGlobals
 from jal.db.db import JalDB
@@ -105,6 +105,7 @@ class MainWindow(QMainWindow):
         self.ui.actionCategories.triggered.connect(partial(self.onDataDialog, CategoryListDialog))
         self.ui.actionTags.triggered.connect(partial(self.onDataDialog, TagsListDialog))
         self.ui.actionQuotes.triggered.connect(partial(self.onDataDialog, QuotesListDialog))
+        self.ui.actionTokenBlacklist.triggered.connect(partial(self.onDataDialog, TokenBlacklistDialog))
         self.ui.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, BaseCurrencyDialog))
         self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInMDI, self.ui.mdiArea))
         self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInMDI, self.ui.mdiArea))

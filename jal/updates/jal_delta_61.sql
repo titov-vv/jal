@@ -31,6 +31,43 @@ ALTER TABLE accounts DROP COLUMN country_id;
 ALTER TABLE accounts DROP COLUMN precision;
 ALTER TABLE accounts DROP COLUMN credit;
 --------------------------------------------------------------------------------
+-- Unknown/spam token policy: locally blacklisted tokens are never imported and never
+-- become assets/symbols, so scam names/tickers stay out of the asset tables entirely.
+CREATE TABLE token_blacklist (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    location_id INTEGER NOT NULL,                    -- blockchain, see AssetLocation.*_BLOCKCHAIN
+    address     TEXT    NOT NULL,                    -- contract/mint address, normalized
+    name_hint   TEXT    NOT NULL DEFAULT (''),       -- ticker/name seen on-chain, informational only
+    added_ts    INTEGER NOT NULL DEFAULT (0),
+    auto        INTEGER NOT NULL DEFAULT (1)         -- 1 = auto-quarantined, 0 = added by user
+);
+CREATE UNIQUE INDEX token_blacklist_uniqueness ON token_blacklist (location_id, address);
+--------------------------------------------------------------------------------
+-- Local cache of downloaded allow-/block- token lists (see TokenList / TokenListKind)
+CREATE TABLE token_list_cache (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    list_id     INTEGER NOT NULL,                    -- source list, see TokenList
+    kind        INTEGER NOT NULL,                    -- TokenListKind: 1 = allow, 2 = block
+    location_id INTEGER NOT NULL,
+    address     TEXT    NOT NULL,                    -- normalized
+    symbol      TEXT    NOT NULL DEFAULT (''),
+    name        TEXT    NOT NULL DEFAULT ('')
+);
+CREATE UNIQUE INDEX token_list_cache_uniqueness ON token_list_cache (list_id, location_id, address);
+-- Membership is always asked as "is this address on ANY allow/block list for this chain"
+CREATE INDEX token_list_cache_lookup ON token_list_cache (kind, location_id, address);
+-- Timestamp of the last successful fetch per (list, chain) - drives the refresh interval
+CREATE TABLE token_list_updates (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    list_id     INTEGER NOT NULL,
+    location_id INTEGER NOT NULL,
+    updated_ts  INTEGER NOT NULL DEFAULT (0)
+);
+CREATE UNIQUE INDEX token_list_updates_uniqueness ON token_list_updates (list_id, location_id);
+--------------------------------------------------------------------------------
+INSERT INTO settings(name, value) VALUES('DlgGeometry_Token blacklist', '');
+INSERT INTO settings(name, value) VALUES('DlgViewState_Token blacklist', '');
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=61 WHERE name='SchemaVersion';
 COMMIT;

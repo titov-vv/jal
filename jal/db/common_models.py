@@ -2,13 +2,15 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlRelation
 from PySide6.QtWidgets import QMessageBox
-from jal.constants import CmColumn, CmWidth, CmDelegate, CmReference, PredefinedAccountType, PredefinedAgents, AccountData
+from jal.constants import CmColumn, CmWidth, CmDelegate, CmReference, PredefinedAccountType, PredefinedAgents, \
+    AccountData, AssetLocation
 from jal.db.category import JalCategory
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
 from jal.db.common_models_abstract import AbstractReferenceListModel, SqlTreeModel
 from jal.db.peer import JalPeer
+from jal.db.token_blacklist import JalTokenBlacklist
 from jal.widgets.icons import JalIcon
 
 
@@ -225,3 +227,28 @@ class BaseCurrencyListModel(AbstractReferenceListModel):
         ]
         super().__init__("base_currency", columns, parent)
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Tokens that were found in a wallet but must never be imported (see jal.data_import.token_filter).
+# Deleting a row un-blacklists the token, so it will be imported by the next fetch from the blockchain.
+class TokenBlacklistModel(AbstractReferenceListModel):
+    def __init__(self, parent=None):
+        columns = [
+            CmColumn("id", '', hide=True),
+            CmColumn("location_id", self.tr("Chain"), group=True, delegate_type=CmDelegate.CONSTANT, delegate_details=AssetLocation),
+            CmColumn("address", self.tr("Address"), sort=True, default=True, width=CmWidth.WIDTH_STRETCH),
+            CmColumn("name_hint", self.tr("Token")),
+            CmColumn("added_ts", self.tr("Added @"), width=CmWidth.WIDTH_DATETIME, delegate_type=CmDelegate.TIMESTAMP),
+            CmColumn("auto", self.tr("Auto"), width=64, delegate_type=CmDelegate.BOOL)
+        ]
+        super().__init__("token_blacklist", columns, parent)
+        self.set_default_values({'location_id': AssetLocation.ETH_BLOCKCHAIN, 'address': '', 'name_hint': '', 'added_ts': 0, 'auto': 0})   # A manually added token is not an automatic one
+
+    # The table is maintained by the token filter and by this dialog only, so the shared cache of
+    # JalTokenBlacklist has to be dropped after any change made here.
+    def submitAll(self):
+        result = super().submitAll()
+        if result:
+            JalTokenBlacklist.db_cache.clear_cache()
+        return result

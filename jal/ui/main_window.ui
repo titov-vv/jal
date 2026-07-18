@@ -82,6 +82,7 @@
     <addaction name="actionCategories"/>
     <addaction name="actionTags"/>
     <addaction name="actionQuotes"/>
+    <addaction name="actionTokenBlacklist"/>
     <addaction name="separator"/>
     <addaction name="actionBaseCurrency"/>
     <addaction name="separator"/>
@@ -211,6 +212,11 @@
   <action name="PrepareFlowReport">
    <property name="text">
     <string>Foreign accounts &amp;flow report</string>
+   </property>
+  </action>
+  <action name="actionTokenBlacklist">
+   <property name="text">
+    <string>To&amp;ken blacklist</string>
    </property>
   </action>
   <action name="actionBaseCurrency">

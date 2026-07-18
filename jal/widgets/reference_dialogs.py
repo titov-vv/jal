@@ -5,7 +5,8 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog, QMessageBox, QHeaderView, QAbstractItemView
 from PySide6.QtSql import QSqlRelationalDelegate
 from jal.constants import CmWidth, CmDelegate, CmReference
-from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, QuotesListModel, BaseCurrencyListModel
+from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, QuotesListModel, \
+    BaseCurrencyListModel, TokenBlacklistModel
 from jal.db.asset_models import SymbolsListModel
 from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
@@ -614,5 +615,23 @@ class BaseCurrencyDialog(ReferenceDataDialog):
         self.setup_ui()
 
     def setup_ui(self):
+        self.ui.Toggle.setVisible(False)
+        super().setup_ui()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Tokens that were found in a wallet but are never imported (unsolicited dust airdrops, scam tokens or tokens
+# rejected by the user). Removing a record here un-blacklists the token and it will be imported by the next
+# fetch from the blockchain.
+class TokenBlacklistDialog(ReferenceDataDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent, window_title=self.tr("Token blacklist"))
+        self.model = TokenBlacklistModel(self)
+        self.ui.DataView.setModel(self.model)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.search_field = "address"
+        self.ui.SearchFrame.setVisible(True)
         self.ui.Toggle.setVisible(False)
         super().setup_ui()
