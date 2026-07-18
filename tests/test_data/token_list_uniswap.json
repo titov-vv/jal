@@ -1,0 +1,107 @@
+{
+ "name": "Uniswap Labs Default",
+ "timestamp": "2026-07-16T22:27:30.508Z",
+ "version": {
+  "major": 22,
+  "minor": 6,
+  "patch": 0
+ },
+ "tags": {},
+ "logoURI": "ipfs://QmNa8mQkrNKp1WEEeGjFezDmDeodkWRevGFN8JCV7b4Xir",
+ "keywords": [
+  "uniswap",
+  "default"
+ ],
+ "tokens": [
+  {
+   "chainId": 1,
+   "address": "0x111111111117dC0aa78b770fA6A738034120C302",
+   "name": "1inch",
+   "symbol": "1INCH",
+   "decimals": 18,
+   "logoURI": "https://assets.coingecko.com/coins/images/13469/thumb/1inch-token.png?1608803028",
+   "extensions": {
+    "bridgeInfo": {
+     "10": {
+      "tokenAddress": "0xAd42D013ac31486B73b6b059e748172994736426"
+     },
+     "56": {
+      "tokenAddress": "0x111111111117dC0aa78b770fA6A738034120C302"
+     },
+     "130": {
+      "tokenAddress": "0xbe41cde1C5e75a7b6c2c70466629878aa9ACd06E"
+     },
+     "8453": {
+      "tokenAddress": "0xc5fecC3a29Fb57B5024eEc8a2239d4621e111CBE"
+     },
+     "42161": {
+      "tokenAddress": "0x6314C31A7a1652cE482cffe247E9CB7c3f4BB9aF"
+     },
+     "43114": {
+      "tokenAddress": "0xd501281565bf7789224523144Fe5D98e8B28f267"
+     }
+    }
+   }
+  },
+  {
+   "chainId": 1,
+   "address": "0x3E5A19c91266aD8cE2477B91585d1856B84062dF",
+   "name": "Ancient8",
+   "symbol": "A8",
+   "decimals": 18,
+   "logoURI": "https://assets.coingecko.com/coins/images/39170/standard/A8_Token-04_200x200.png?1720798300",
+   "extensions": {
+    "bridgeInfo": {
+     "130": {
+      "tokenAddress": "0x44D618C366D7bC85945Bfc922ACad5B1feF7759A"
+     }
+    }
+   }
+  },
+  {
+   "chainId": 42161,
+   "address": "0x6314C31A7a1652cE482cffe247E9CB7c3f4BB9aF",
+   "name": "1inch",
+   "symbol": "1INCH",
+   "decimals": 18,
+   "logoURI": "https://assets.coingecko.com/coins/images/13469/thumb/1inch-token.png?1608803028",
+   "extensions": {
+    "bridgeInfo": {
+     "1": {
+      "tokenAddress": "0x111111111117dC0aa78b770fA6A738034120C302"
+     }
+    }
+   }
+  },
+  {
+   "chainId": 42161,
+   "address": "0xba5DdD1f9d7F570dc94a51479a000E3BCE967196",
+   "name": "Aave",
+   "symbol": "AAVE",
+   "decimals": 18,
+   "logoURI": "https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1601374110",
+   "extensions": {
+    "bridgeInfo": {
+     "1": {
+      "tokenAddress": "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9"
+     }
+    }
+   }
+  },
+  {
+   "chainId": 56,
+   "address": "0x111111111117dC0aa78b770fA6A738034120C302",
+   "name": "1inch",
+   "symbol": "1INCH",
+   "decimals": 18,
+   "logoURI": "https://assets.coingecko.com/coins/images/13469/thumb/1inch-token.png?1608803028",
+   "extensions": {
+    "bridgeInfo": {
+     "1": {
+      "tokenAddress": "0x111111111117dC0aa78b770fA6A738034120C302"
+     }
+    }
+   }
+  }
+ ]
+}

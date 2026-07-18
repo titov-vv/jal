@@ -24,6 +24,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.net.downloader import QuoteDownloader
+from jal.net.token_lists import TokenListProvider
 from jal.db.ledger import Ledger
 from jal.data_import.statements import Statements
 from jal.reports.reports import Reports
@@ -59,6 +60,7 @@ class MainWindow(QMainWindow):
         self.ui.Logs.startLogging()
 
         self.downloader = QuoteDownloader()
+        self.token_lists = TokenListProvider()
         self.statements = Statements(self)
         self.reports = Reports(self, self.ui.mdiArea)
         self.backup = JalBackup(self)
@@ -93,6 +95,7 @@ class MainWindow(QMainWindow):
         self.statementGroup.triggered.connect(self.statements.load)
         self.reportsGroup.triggered.connect(self.reports.show)
         self.ui.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
+        self.ui.actionLoadTokenLists.triggered.connect(self.loadTokenLists)
         self.ui.actionImportShopReceipt.triggered.connect(self.importShopReceipt)
         self.ui.actionMergeRuTaxFiles.triggered.connect(self.mergeRuTaxFiles)
         self.ui.actionBackup.triggered.connect(self.backup.create)
@@ -111,6 +114,9 @@ class MainWindow(QMainWindow):
         self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInMDI, self.ui.mdiArea))
         self.CancelButton.clicked.connect(self.downloader.on_cancel)
         self.CancelButton.clicked.connect(self.ledger.on_cancel)
+        self.CancelButton.clicked.connect(self.token_lists.on_cancel)
+        self.token_lists.show_progress.connect(self.onToggleProgressDisplay)
+        self.token_lists.update_progress.connect(self.onUpdatePorgressDisplay)
         self.downloader.download_completed.connect(self.updateWidgets)
         self.downloader.show_progress.connect(self.onToggleProgressDisplay)
         self.downloader.update_progress.connect(self.onUpdatePorgressDisplay)
@@ -150,6 +156,8 @@ class MainWindow(QMainWindow):
         JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
         JalSettings().setValue('WindowState', base64.encodebytes(self.saveState().data()).decode('utf-8'))
         self.ui.Logs.stopLogging()
+        self.downloader.wait_for_pending()
+        self.token_lists.wait_for_pending()
         super().closeEvent(event)
 
     def createLanguageMenu(self):
@@ -250,6 +258,21 @@ class MainWindow(QMainWindow):
         self.CancelButton.setVisible(visible)
         self.ui.centralwidget.setEnabled(not visible)
         self.ui.MainMenu.setEnabled(not visible)
+
+    # Downloads the token allow-/block- lists that back the unknown/spam token policy.
+    # Normally lists are refreshed lazily, this menu entry re-downloads all of them on demand.
+    @Slot()
+    def loadTokenLists(self):
+        entries = self.token_lists.refresh(force=True)
+        if self.token_lists.was_cancelled():
+            return   # Interruption is reported into the log by the provider itself
+        if entries:
+            QMessageBox().information(self, self.tr("Token lists"),
+                                      self.tr("Token lists were updated, entries loaded: ") + f"{entries}",
+                                      QMessageBox.Ok)
+        else:   # Every download failed - details of each failure are in the log
+            QMessageBox().warning(self, self.tr("Token lists"),
+                                  self.tr("Failed to download token lists, see log for details"), QMessageBox.Ok)
 
     @Slot()
     def importShopReceipt(self):

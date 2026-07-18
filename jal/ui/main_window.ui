@@ -113,6 +113,7 @@
      </property>
     </widget>
     <addaction name="action_LoadQuotes"/>
+    <addaction name="actionLoadTokenLists"/>
     <addaction name="menuStatement"/>
     <addaction name="actionImportShopReceipt"/>
    </widget>
@@ -152,6 +153,11 @@
   <action name="action_LoadQuotes">
    <property name="text">
     <string>&amp;Quotes...</string>
+   </property>
+  </action>
+  <action name="actionLoadTokenLists">
+   <property name="text">
+    <string>Token &amp;lists...</string>
    </property>
   </action>
   <action name="actionAccounts">

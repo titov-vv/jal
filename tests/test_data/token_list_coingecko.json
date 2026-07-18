@@ -1,0 +1,31 @@
+{
+ "name": "CoinGecko",
+ "logoURI": "https://static.coingecko.com/gecko-new.svg",
+ "keywords": [
+  "defi"
+ ],
+ "timestamp": "2026-07-18T00:03:41.465+00:00",
+ "version": {
+  "major": 1565,
+  "minor": 3,
+  "patch": 0
+ },
+ "tokens": [
+  {
+   "chainId": 1,
+   "address": "0x77c6e4a580c0dce4e5c7a17d0bc077188a83a059",
+   "name": "Swerve.fi USD",
+   "symbol": "SWUSD",
+   "decimals": 18,
+   "logoURI": "https://assets.coingecko.com/coins/images/12918/thumb/swerve.png?1696512706"
+  },
+  {
+   "chainId": 1,
+   "address": "0xf8e57ac2730d3088d98b79209739b0d5ba085a03",
+   "name": "Optopia AI",
+   "symbol": "OPAI",
+   "decimals": 18,
+   "logoURI": "https://assets.coingecko.com/coins/images/39332/thumb/OPAI.jpg?1721777150"
+  }
+ ]
+}

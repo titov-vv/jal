@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime, timezone
+from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup, AssetLocation, TokenList, TokenListKind
 from jal.db.db import JalDB
@@ -83,7 +84,10 @@ def _parse_mew(content: bytes, chains: list) -> list:   # Flat list of tokens, c
 # 'token_list_updates' and drives Setup.TOKEN_LIST_REFRESH_INTERVAL.
 # Downloading is best-effort: a failed request is logged and the previously cached (stale) content is kept,
 # because a missing list must never break the import of on-chain data.
-class TokenListProvider(JalDB):
+class TokenListProvider(QObject, JalDB):
+    show_progress = Signal(bool)     # Signal is emitted when provider wants to start or stop display progress
+    update_progress = Signal(float)  # Signal is emitted to report current % of execution
+
     # Registry of known remote lists - the only place to modify in order to add or remove a source.
     # 'chains' declares the blockchains a list is authoritative for: a list is never consulted for any other
     # chain, so e.g. a Solana allow-list can't vouch for an EVM address.
@@ -126,13 +130,40 @@ class TokenListProvider(JalDB):
     # 'fetcher' is a callable url -> bytes; the default one performs a real HTTP GET. Tests supply their own.
     def __init__(self, fetcher=None):
         super().__init__()
+        self._cancelled = False
+        self._pending = []   # Requests that are still running, see _http_get()
         self._fetch = fetcher if fetcher is not None else self._http_get
 
-    @staticmethod
-    def _http_get(url: str) -> bytes:
+    @Slot()
+    def on_cancel(self):
+        self._cancelled = True
+
+    # True if the last refresh() was interrupted by the user
+    def was_cancelled(self) -> bool:
+        return self._cancelled
+
+    # Blocks until the requests abandoned by a cancelled refresh() are over. Must be called before the
+    # application quits - destroying a running QThread aborts the process.
+    def wait_for_pending(self) -> None:
+        for request in self._pending:
+            request.wait()
+        self._pending = []
+
+    # Waits for the download to complete, keeping the UI responsive. Raises KeyboardInterrupt if the user
+    # pressed 'Stop' meanwhile.
+    # A cancelled request can't be stopped: WebRequest is a QThread with an overridden run() that blocks in
+    # 'requests', so it has no event loop for quit() to end. Abandoning it isn't an option either - destroying
+    # a running QThread aborts the application. Therefore an interrupted request is kept in self._pending
+    # until it finishes on its own and is only dropped later, when it is no longer running.
+    def _http_get(self, url: str) -> bytes:
+        self._pending = [x for x in self._pending if x.isRunning()]
         request = WebRequest(WebRequest.GET, url)
+        self._pending.append(request)
         while request.isRunning():
             QApplication.processEvents()
+            if self._cancelled:
+                raise KeyboardInterrupt
+        self._pending.remove(request)
         return request.data()
 
     # True if the address is present on any allow-list that covers the given chain
@@ -154,21 +185,34 @@ class TokenListProvider(JalDB):
 
     # Downloads the lists that cover 'location_id' (or all known lists if it is None). Pairs downloaded less than
     # Setup.TOKEN_LIST_REFRESH_INTERVAL ago are skipped unless 'force' is set.
-    def refresh(self, location_id: int = None, force: bool = False) -> None:
-        for list_id, source in self.SOURCES.items():
-            chains = [x for x in source['chains'] if location_id is None or x == location_id]
-            chains = [x for x in chains if force or self._stale(list_id, x)]
-            if not chains:
-                continue
-            try:
-                content = self._fetch(source['url'])
-                entries = source['parser'](content, chains)
-            except Exception as error:   # Any network or format problem keeps the previously cached content
-                logging.warning(f"Failed to update token list '{TokenList().get_name(list_id)}': {error}")
-                continue
-            for chain in chains:
-                self._store(list_id, source['kind'], chain,
-                            [x for x in entries if x['location_id'] == chain])
+    # Returns the number of entries cached during this call (0 if everything was up to date or all fetches failed).
+    # Downloading may be interrupted by on_cancel(), in this case the lists downloaded so far stay cached
+    # (each list is committed separately) and the count of their entries is returned.
+    def refresh(self, location_id: int = None, force: bool = False) -> int:
+        total = 0
+        self._cancelled = False
+        self.show_progress.emit(True)
+        try:
+            for i, (list_id, source) in enumerate(self.SOURCES.items()):
+                chains = [x for x in source['chains'] if location_id is None or x == location_id]
+                chains = [x for x in chains if force or self._stale(list_id, x)]
+                if chains:
+                    try:
+                        content = self._fetch(source['url'])
+                        entries = source['parser'](content, chains)
+                    except Exception as error:  # Any network or format problem keeps previously cached content
+                        logging.warning(f"Failed to update token list '{TokenList().get_name(list_id)}': {error}")
+                        entries = None
+                    if entries is not None:
+                        for chain in chains:
+                            total += self._store(list_id, source['kind'], chain,
+                                                 [x for x in entries if x['location_id'] == chain])
+                self.update_progress.emit(100.0 * (i + 1) / len(self.SOURCES))
+        except KeyboardInterrupt:
+            logging.warning(self.tr("Interrupted by user"))
+        finally:
+            self.show_progress.emit(False)
+        return total
 
     # True if the (list, chain) pair was never downloaded or was downloaded too long ago
     def _stale(self, list_id: int, location_id: int) -> bool:
@@ -180,8 +224,10 @@ class TokenListProvider(JalDB):
         age = int(datetime.now(tz=timezone.utc).timestamp()) - int(updated)
         return age >= Setup.TOKEN_LIST_REFRESH_INTERVAL
 
-    # Replaces the cached content of one (list, chain) pair and marks it as updated now
-    def _store(self, list_id: int, kind: int, location_id: int, entries: list) -> None:
+    # Replaces the cached content of one (list, chain) pair and marks it as updated now.
+    # Returns the number of rows actually cached, which may be less than len(entries) as a list may
+    # mention the same address twice and duplicates are collapsed by the uniqueness index.
+    def _store(self, list_id: int, kind: int, location_id: int, entries: list) -> int:
         self._exec("DELETE FROM token_list_cache WHERE list_id=:list_id AND location_id=:location_id",
                    [(":list_id", list_id), (":location_id", location_id)])
         for entry in entries:
@@ -197,5 +243,9 @@ class TokenListProvider(JalDB):
                    ":list_id, :location_id, :updated_ts)",
                    [(":list_id", list_id), (":location_id", location_id),
                     (":updated_ts", int(datetime.now(tz=timezone.utc).timestamp()))], commit=True)
+        stored = self._read("SELECT count(*) FROM token_list_cache "
+                            "WHERE list_id=:list_id AND location_id=:location_id",
+                            [(":list_id", list_id), (":location_id", location_id)])
         logging.info(f"Token list '{TokenList().get_name(list_id)}' for chain {location_id}: "
-                     f"{len(entries)} entries cached")
+                     f"{stored} entries cached")
+        return int(stored)

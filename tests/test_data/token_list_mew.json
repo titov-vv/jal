@@ -1,0 +1,57 @@
+[
+ {
+  "network": "eth",
+  "symbol": "$AAPL",
+  "name": "$AAPL",
+  "decimals": 18,
+  "contract_address": "0x41eFc0253ee7Ea44400abB5F907FDbfdEbc82bec",
+  "icon": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/icons/$AAPL-0x41eFc0253ee7Ea44400abB5F907FDbfdEbc82bec-eth.png",
+  "icon_png": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/icons/$AAPL-0x41eFc0253ee7Ea44400abB5F907FDbfdEbc82bec-eth.png",
+  "link": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/tokens/eth/0x41eFc0253ee7Ea44400abB5F907FDbfdEbc82bec.json",
+  "website": "https://www.applescash.com/"
+ },
+ {
+  "network": "eth",
+  "symbol": "$ANRX",
+  "name": "AnRKey X",
+  "decimals": 18,
+  "contract_address": "0xCae72A7A0Fd9046cf6b165CA54c9e3a3872109E0",
+  "icon": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/icons/$ANRX-0xCae72A7A0Fd9046cf6b165CA54c9e3a3872109E0-eth.png",
+  "icon_png": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/icons/$ANRX-0xCae72A7A0Fd9046cf6b165CA54c9e3a3872109E0-eth.png",
+  "link": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/tokens/eth/0xCae72A7A0Fd9046cf6b165CA54c9e3a3872109E0.json",
+  "website": "https://anrkeyx.io/"
+ },
+ {
+  "network": "arb",
+  "symbol": "0XBTC",
+  "name": "0xBitcoin",
+  "decimals": 8,
+  "contract_address": "0x7cb16cb78ea464aD35c8a50ABF95dff3c9e09d5d",
+  "icon": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/icons/0xBTC-0x7cb16cb78ea464aD35c8a50ABF95dff3c9e09d5d.png",
+  "icon_png": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/icons/0xBTC-0x7cb16cb78ea464aD35c8a50ABF95dff3c9e09d5d.png",
+  "link": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/tokens/arb/0x7cb16cb78ea464aD35c8a50ABF95dff3c9e09d5d.json",
+  "website": ""
+ },
+ {
+  "network": "arb",
+  "symbol": "2CRV",
+  "name": "Curve fi USDC USDT",
+  "decimals": 18,
+  "contract_address": "0x7f90122BF0700F9E7e1F688fe926940E8839F353",
+  "icon": "",
+  "icon_png": "",
+  "link": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/tokens/arb/0x7f90122BF0700F9E7e1F688fe926940E8839F353.json",
+  "website": ""
+ },
+ {
+  "network": "bsc",
+  "symbol": "$CWOLF",
+  "name": "CryptoWolf",
+  "decimals": 18,
+  "contract_address": "0x8c5921a9563E6d5dDa95cB46b572Bb1Cc9b04a27",
+  "icon": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/icons/CWOLF-0x8c5921a9563E6d5dDa95cB46b572Bb1Cc9b04a27.png",
+  "icon_png": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/icons/CWOLF-0x8c5921a9563E6d5dDa95cB46b572Bb1Cc9b04a27.png",
+  "link": "https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/tokens/bsc/0x8c5921a9563E6d5dDa95cB46b572Bb1Cc9b04a27.json",
+  "website": ""
+ }
+]
