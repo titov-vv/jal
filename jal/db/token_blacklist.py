@@ -96,6 +96,19 @@ def is_tron_address(address: str) -> bool:
     return sha256(sha256(payload).digest()).digest()[:4] == checksum
 
 
+# True if the address may belong to the given blockchain. Only the chains that JAL is able to check are checked -
+# an address of any other chain is accepted as it is, so that a missing validator never blocks the user. Validators
+# are added here as the fetcher of each chain is implemented.
+# The point of the check is that a wrong on-chain address doesn't fail loudly: it fetches an empty history and
+# looks exactly like a wallet with no transactions.
+def is_valid_address(location_id: int, address: str) -> bool:
+    if not address:
+        return False
+    if location_id == AssetLocation.TRX_BLOCKCHAIN:
+        return is_tron_address(address)
+    return True
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # A single row of the 'token_blacklist' table: a token that was found in a wallet but must never be imported
 # (unsolicited dust airdrop, scam/fake token, or a token the user rejected manually). Blacklisted tokens

@@ -304,6 +304,14 @@ class AccountData(PredefinedList, QObject):
     Credit = 2         # Credit limit for the account
     Country = 3        # Country of the account, stored as countries.id
     Precision = 4      # Number of decimal digits used by the account (default is 2)
+    Address = 5        # On-chain address of a wallet account, in the canonical form of its blockchain
+    Chain = 6          # Blockchain of a wallet account, stored as one of AssetLocation.BLOCKCHAINS
+    SyncCursor = 7     # Position of the last completed blockchain fetch, its format is defined by the fetcher
+
+    # Attributes that the application maintains itself and that must never be typed in by hand: they are kept
+    # out of the attribute selector and their rows are not editable in the account details grid. A wrong sync
+    # cursor doesn't look like an error - it silently skips the transactions that are not fetched because of it.
+    _INTERNAL = [SyncCursor]
 
     def __init__(self):
         super().__init__()
@@ -311,13 +319,19 @@ class AccountData(PredefinedList, QObject):
             self.Number: self.tr("Account #"),
             self.Credit: self.tr("Credit limit"),
             self.Country: self.tr("Country"),
-            self.Precision: self.tr("Precision")
+            self.Precision: self.tr("Precision"),
+            self.Address: self.tr("Address"),
+            self.Chain: self.tr("Blockchain"),
+            self.SyncCursor: self.tr("Sync cursor")
         }
         self._types = {
             self.Number: "str",
             self.Credit: "float",
             self.Country: "country",
-            self.Precision: "int"
+            self.Precision: "int",
+            self.Address: "str",
+            self.Chain: "chain",
+            self.SyncCursor: "str"
         }
 
     def get_type(self, type_id, default='') -> str:
@@ -325,6 +339,20 @@ class AccountData(PredefinedList, QObject):
             return self._types[type_id]
         except KeyError:
             return default
+
+    @classmethod
+    def is_internal(cls, type_id) -> bool:
+        return type_id in cls._INTERNAL
+
+    # Internal attributes are not offered for selection - only the application writes them
+    def load2combo(self, combobox, with_empty=False):
+        combobox.clear()
+        if with_empty:
+            combobox.addItem('', userData=None)
+        for item in self._names:
+            if self.is_internal(item):
+                continue
+            combobox.addItem(self._names[item], userData=item)
 
 
 class AssetLocation(PredefinedList, QObject):
@@ -346,6 +374,10 @@ class AssetLocation(PredefinedList, QObject):
     SOL_BLOCKCHAIN = 304
     TRX_BLOCKCHAIN = 305
     SMA_VICTORIA = 999
+
+    # Locations that are blockchains. It is the single definition of that set: the 'Chain' attribute of a wallet
+    # account and the crypto quote downloader are both restricted to it, so a new chain is added in one place.
+    BLOCKCHAINS = [ETH_BLOCKCHAIN, ARB_BLOCKCHAIN, BTC_BLOCKCHAIN, SOL_BLOCKCHAIN, TRX_BLOCKCHAIN]
 
     def __init__(self):
         super().__init__()

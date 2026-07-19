@@ -3,10 +3,12 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, Slot, QDateTime, QTimeZone, QLocale
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_account_edit_dlg import Ui_AccountDialog
-from jal.constants import AccountData, PredefinedAccountType, PredefinedAgents
+from jal.constants import AccountData, PredefinedAccountType, PredefinedAgents, AssetLocation
 from jal.db.helpers import localize_decimal
+from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.common_models import AccountRecordModel, AccountDataModel
+from jal.db.token_blacklist import normalize_address, is_valid_address
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
 from jal.widgets.icons import JalIcon
 
@@ -26,7 +28,15 @@ class AccountAttributeDelegate(QStyledItemDelegate):
         type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
         return self._types.get_type(type_idx)
 
+    # Returns the attribute type of the row the given index belongs to
+    def _row_datatype(self, index):
+        return index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
+
     def createEditor(self, aParent, option, index):
+        # Attributes maintained by the application are shown but never edited by hand - returning no editor
+        # makes both cells of such a row read-only.
+        if AccountData.is_internal(self._row_datatype(index)):
+            return None
         if index.column() == self._key:
             editor = QComboBox(aParent)
             self._types.load2combo(editor)
@@ -37,6 +47,12 @@ class AccountAttributeDelegate(QStyledItemDelegate):
             editor.setKeyField("id")
             editor.setTable("countries_ext")
             editor.setField("name")
+            return editor
+        if datatype_of == "chain":
+            editor = QComboBox(aParent)
+            locations = AssetLocation()
+            for location_id in AssetLocation.BLOCKCHAINS:   # Only blockchains, not the exchanges of the same list
+                editor.addItem(locations.get_name(location_id), userData=location_id)
             return editor
         return QLineEdit(aParent)  # str / int / float share a plain line editor
 
@@ -64,6 +80,11 @@ class AccountAttributeDelegate(QStyledItemDelegate):
                 editor.setKey(int(raw))
             except (TypeError, ValueError):
                 editor.setKey(0)
+        elif datatype_of == "chain":
+            try:
+                editor.setCurrentIndex(editor.findData(int(raw)))
+            except (TypeError, ValueError):
+                editor.setCurrentIndex(0)
 
     def setModelData(self, editor, model, index):
         if index.column() == self._key:
@@ -79,6 +100,8 @@ class AccountAttributeDelegate(QStyledItemDelegate):
             model.setData(index, str(QLocale().toDouble(editor.text())[0]))
         elif datatype_of == "country":
             model.setData(index, str(editor.getKey()))
+        elif datatype_of == "chain":
+            model.setData(index, str(editor.currentData()))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -207,12 +230,54 @@ class AccountDialog(QDialog):
             self._data_model.submitAll()
             self._data_model.select()
 
+    # Returns {datatype: (value, row)} of the attributes currently present in the details grid
+    def _attributes(self) -> dict:
+        model = self._data_model
+        type_column, value_column = model.fieldIndex("datatype"), model.fieldIndex("value")
+        attributes = {}
+        for row in range(model.rowCount()):
+            datatype = model.data(model.index(row, type_column), Qt.EditRole)
+            try:
+                attributes[int(datatype)] = (model.data(model.index(row, value_column), Qt.EditRole), row)
+            except (TypeError, ValueError):
+                continue
+        return attributes
+
+    def _warn(self, message: str) -> bool:
+        QMessageBox().warning(self, self.tr("Incomplete data"), message, QMessageBox.Ok)
+        return False
+
+    # A wallet account is useless without the address and the chain it tracks, so the per-type mandatory set is
+    # enforced here as well as in JalAccountCreator - imports bypass this dialog and the dialog bypasses the creator.
+    def _validated_wallet(self) -> bool:
+        attributes = self._attributes()
+        for datatype in JalAccountCreator._MANDATORY_ATTRIBUTES.get(PredefinedAccountType.Wallet, []):
+            if datatype not in attributes or not attributes[datatype][0]:
+                return self._warn(self.tr("A wallet account requires attribute: ") + AccountData().get_name(datatype))
+        try:
+            chain = int(attributes[AccountData.Chain][0])
+        except (TypeError, ValueError):
+            return self._warn(self.tr("A wallet account requires a valid blockchain"))
+        address, row = attributes[AccountData.Address]
+        # The address is stored in the canonical form of its chain, so the entered value is normalized here and
+        # written back into the grid before it is checked and submitted.
+        address = normalize_address(chain, address.strip())
+        self._data_model.setData(self._data_model.index(row, self._data_model.fieldIndex("value")), address)
+        if not is_valid_address(chain, address):
+            return self._warn(self.tr("This is not a valid address of the selected blockchain: ") + address)
+        return True
+
     def validated(self):
         name = self._model.data(self._model.index(0, self._model.fieldIndex("name")), Qt.EditRole)
         if not name:
-            QMessageBox().warning(self, self.tr("Incomplete data"),
-                                  self.tr("Account name can't be empty"), QMessageBox.Ok)
-            return False
+            return self._warn(self.tr("Account name can't be empty"))
+        account_type = self._model.data(self._model.index(0, self._model.fieldIndex("account_type")), Qt.EditRole)
+        try:
+            account_type = int(account_type)
+        except (TypeError, ValueError):
+            account_type = PredefinedAccountType.Cash
+        if account_type == PredefinedAccountType.Wallet:
+            return self._validated_wallet()
         return True
 
     def accept(self) -> None:

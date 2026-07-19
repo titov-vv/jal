@@ -3,8 +3,9 @@ from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 import jal.db.operations
 import jal.db.closed_trade
-from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountData
+from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountData, AssetLocation
 from jal.db.country import JalCountry
+from jal.db.token_blacklist import normalize_address, is_valid_address
 from jal.db.helpers import format_decimal, now_ts, year_begin, year_end
 from jal.universal_cache import UniversalCache
 
@@ -43,6 +44,11 @@ class JalAccount(JalDB):
         self._precision = int(attributes[AccountData.Precision]) if AccountData.Precision in attributes else Setup.DEFAULT_ACCOUNT_PRECISION
         credit = attributes.get(AccountData.Credit, '0')
         self._credit_limit = Decimal(credit) if credit else Decimal('0')
+        self._address = attributes.get(AccountData.Address, '')
+        try:
+            self._chain = int(attributes[AccountData.Chain])
+        except (KeyError, TypeError, ValueError):
+            self._chain = AssetLocation.UNDEFINED
 
     def invalidate_cache(self):
         self.db_cache.clear_cache()
@@ -184,6 +190,14 @@ class JalAccount(JalDB):
     # Returns the icon filename (a JalIcon key) for this account's type
     def type_icon(self) -> str:
         return self._TYPE_ICONS.get(self._type, '')
+
+    # Returns the on-chain address of a wallet account ('' if the account has none)
+    def address(self) -> str:
+        return self._address
+
+    # Returns the blockchain of a wallet account as one of AssetLocation.BLOCKCHAINS (UNDEFINED if not set)
+    def chain(self) -> int:
+        return self._chain
 
     # Returns the icon filename (a JalIcon key) for a given account type
     @classmethod
@@ -446,10 +460,17 @@ class JalAccountCreator(JalDB):
     def __init__(self, currency_id: int, number: str, name: str = '', investing: int = 0,
                  organization: int = PredefinedAgents.Empty, country: str = '',
                  precision: int = Setup.DEFAULT_ACCOUNT_PRECISION,
-                 account_type: int = PredefinedAccountType.Cash) -> None:
+                 account_type: int = PredefinedAccountType.Cash,
+                 address: str = '', chain: int = AssetLocation.UNDEFINED) -> None:
         super().__init__(cached=False)
+        # Chain and address are checked before anything is written: the account row is inserted and committed
+        # below, so a failure raised later would leave a half-created account behind.
+        address = self._validated_address(account_type, address, chain)
         similar_id = None
-        if number:
+        # Cloning by account number exists for a broker account held in several currencies. A wallet is identified
+        # by its address and never by a number, and the clone path doesn't store attributes at all - going through
+        # it would produce a wallet without an address, bypassing the mandatory set checked above.
+        if number and account_type != PredefinedAccountType.Wallet:
             similar_id = self._read("SELECT account_id FROM account_data WHERE datatype=:number_type AND value=:number",
                                     [(":number_type", AccountData.Number), (":number", number)])
         if similar_id:
@@ -463,7 +484,8 @@ class JalAccountCreator(JalDB):
                 [(":name", name), (":investing", investing), (":currency", currency_id),
                  (":organization", organization), (":account_type", account_type)], commit=True)
             self._id = query.lastInsertId()
-            self._store_attributes(number=number, country=country, precision=precision, account_type=account_type)
+            self._store_attributes(number=number, country=country, precision=precision, account_type=account_type,
+                                   address=address, chain=chain)
         # Refresh the newly created row in JalAccount's shared cache. A plain JalAccount(self._id) would
         # self-load on a cache miss, but doing it explicitly also overwrites a possibly stale (e.g. None)
         # entry cached for this id before the account existed.
@@ -476,13 +498,37 @@ class JalAccountCreator(JalDB):
     def commit(self) -> JalAccount:
         return JalAccount(self._id)
 
-    # Optional per-type mandatory attributes, keyed by account type -> [AccountData.* ...]. Populated by later
-    # (crypto) steps, e.g. {PredefinedAccountType.Wallet: [AccountData.Address]}. Empty for now.
-    _MANDATORY_ATTRIBUTES = {}
+    # Checks the chain/address pair given to the constructor and returns the address in the form it has to be
+    # stored in. SQLite compares TEXT case-sensitively, so an address is always kept in the canonical form of its
+    # chain - otherwise a lookup by the very same address may fail to find it back.
+    # Raises ValueError on anything that can't be stored, before any row is written.
+    @staticmethod
+    def _validated_address(account_type: int, address: str, chain: int) -> str:
+        if account_type == PredefinedAccountType.Wallet:
+            # The whole mandatory set of a wallet is checked here and not only in _enforce_mandatory_attributes():
+            # that one runs after the account row has been inserted and committed, so relying on it alone would
+            # leave a half-created wallet behind whenever it fires.
+            if chain not in AssetLocation.BLOCKCHAINS:
+                raise ValueError(f"A wallet account requires a blockchain, got '{chain}'")
+            if not address:
+                raise ValueError("A wallet account requires an address")
+        if not address:
+            return ''
+        address = normalize_address(chain, address)
+        if not is_valid_address(chain, address):
+            raise ValueError(f"'{address}' is not a valid address of {AssetLocation().get_name(chain)}")
+        return address
+
+    # Per-type mandatory attributes, keyed by account type -> [AccountData.* ...]. A wallet is useless without
+    # knowing which address on which chain it tracks, and both are needed before any transaction can be fetched.
+    _MANDATORY_ATTRIBUTES = {
+        PredefinedAccountType.Wallet: [AccountData.Address, AccountData.Chain]
+    }
 
     # Writes the sparse per-account attributes into 'account_data' (only values that differ from their default),
     # then enforces the per-type mandatory minimal set for the import/programmatic creation path.
-    def _store_attributes(self, number: str, country: str, precision: int, account_type: int) -> None:
+    def _store_attributes(self, number: str, country: str, precision: int, account_type: int,
+                          address: str = '', chain: int = AssetLocation.UNDEFINED) -> None:
         if number:
             self._store_attribute(AccountData.Number, number)
         if country:
@@ -491,6 +537,10 @@ class JalAccountCreator(JalDB):
                 self._store_attribute(AccountData.Country, country_id)
         if precision != Setup.DEFAULT_ACCOUNT_PRECISION:
             self._store_attribute(AccountData.Precision, precision)
+        if chain != AssetLocation.UNDEFINED:
+            self._store_attribute(AccountData.Chain, chain)
+        if address:
+            self._store_attribute(AccountData.Address, address)
         self._enforce_mandatory_attributes(account_type)
 
     def _store_attribute(self, datatype: int, value) -> None:

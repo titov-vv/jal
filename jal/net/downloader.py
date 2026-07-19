@@ -33,9 +33,7 @@ SECONDS_IN_DAY = 86400
 # Crypto quotes from DeFiLlama (coins.llama.fi) - free and keyless.
 # Locations that are priced by this source. They are quoted in USD only, so a single (asset, USD) series is stored
 # for a crypto asset no matter which currency its listings or accounts are denominated in - see download_asset_prices().
-BLOCKCHAIN_LOCATIONS = [AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN,
-                        AssetLocation.BTC_BLOCKCHAIN, AssetLocation.SOL_BLOCKCHAIN,
-                        AssetLocation.TRX_BLOCKCHAIN]
+BLOCKCHAIN_LOCATIONS = AssetLocation.BLOCKCHAINS
 
 # The API identifies a token as '{chain}:{contract_address}' - this maps a location to the chain name that the API
 # uses and to the type of contract address identifier that a listing carries on that chain (see SymbolId).

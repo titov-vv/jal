@@ -119,6 +119,8 @@ class AccountDataModel(AbstractReferenceListModel):
                 return f"{Decimal(value):.2f}"
             elif datatype_of == "country":
                 return JalCountry(int(value)).name()
+            elif datatype_of == "chain":
+                return AssetLocation().get_name(int(value))
         except (ValueError, InvalidOperation, TypeError):
             return ''
         return value
