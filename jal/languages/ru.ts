@@ -511,72 +511,72 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetPayment</name>
     <message>
-        <location filename="../db/operations.py" line="430"/>
+        <location filename="../db/operations.py" line="439"/>
         <source>UNDEFINED</source>
         <translation>НЕОПРЕДЕЛЕНО</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="431"/>
+        <location filename="../db/operations.py" line="440"/>
         <source>Dividend</source>
         <translation>Дивиденд</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="432"/>
+        <location filename="../db/operations.py" line="441"/>
         <source>Bond Interest</source>
         <translation>Купон</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="433"/>
+        <location filename="../db/operations.py" line="442"/>
         <source>Stock Dividend</source>
         <translation>Дивиденд акциями</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="434"/>
+        <location filename="../db/operations.py" line="443"/>
         <source>Stock Vesting</source>
         <translation>Передача акций</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="435"/>
+        <location filename="../db/operations.py" line="444"/>
         <source>Bond Amortization</source>
         <translation>Амортизация облигации</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="436"/>
+        <location filename="../db/operations.py" line="445"/>
         <source>Asset fee/tax</source>
         <translation>Комиссия / налог за ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="510"/>
+        <location filename="../db/operations.py" line="519"/>
         <source>No stock quote for stock dividend or vesting.</source>
         <translation>Нет котировки для дивиденда акциями или зачисления акций.</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="529"/>
+        <location filename="../db/operations.py" line="538"/>
         <source>No price data for stock dividend/vesting: </source>
         <translation>Не задана цена для выплаты ценными бумагами: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="550"/>
+        <location filename="../db/operations.py" line="559"/>
         <source>Dividend payment for:</source>
         <translation>Выплата дивиденда для:</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="551"/>
+        <location filename="../db/operations.py" line="560"/>
         <source>Tax: </source>
         <translation>Налог: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="608"/>
+        <location filename="../db/operations.py" line="617"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
         <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="622"/>
+        <location filename="../db/operations.py" line="631"/>
         <source>Unsupported dividend type.</source>
         <translation>Неподдерживаемый тип дивиденда.</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="642"/>
+        <location filename="../db/operations.py" line="651"/>
         <source>Not supported action: stock dividend or vesting closes short trade.</source>
         <translation>Неподдерживаемое действие: дивиденд акциями или зачисление акций закрывает короткую позицию.</translation>
     </message>
@@ -1199,57 +1199,57 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="1109"/>
+        <location filename="../db/operations.py" line="1175"/>
         <source>UNDEFINED</source>
         <translation>НЕОПРЕДЕЛЕНО</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1110"/>
+        <location filename="../db/operations.py" line="1176"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1111"/>
+        <location filename="../db/operations.py" line="1177"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1112"/>
+        <location filename="../db/operations.py" line="1178"/>
         <source>Spin-off</source>
         <translation>Выделение компании (спин-офф)</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1113"/>
+        <location filename="../db/operations.py" line="1179"/>
         <source>Merger</source>
         <translation>Реорганизация компании</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1114"/>
+        <location filename="../db/operations.py" line="1180"/>
         <source>Delisting</source>
         <translation>Делистинг</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1219"/>
+        <location filename="../db/operations.py" line="1285"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation>ЦБ не является результатом корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1238"/>
+        <location filename="../db/operations.py" line="1304"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation>Не задан тип корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1243"/>
+        <location filename="../db/operations.py" line="1309"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количество ценных бумаг недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1247"/>
+        <location filename="../db/operations.py" line="1313"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation>Неподдерживаемый случай: Корпоративное событие покрывает не всю открытую позицию. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1253"/>
+        <location filename="../db/operations.py" line="1319"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation>Результаты корпоративного события не распределяют 100% стоимости изначального актива. </translation>
     </message>
@@ -1931,22 +1931,22 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>IncomeSpending</name>
     <message>
-        <location filename="../db/operations.py" line="320"/>
+        <location filename="../db/operations.py" line="329"/>
         <source>Spending</source>
         <translation>Расход</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="323"/>
+        <location filename="../db/operations.py" line="332"/>
         <source>Income</source>
         <translation>Приход</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="340"/>
+        <location filename="../db/operations.py" line="349"/>
         <source>Rate: </source>
         <translation>Курс: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="382"/>
+        <location filename="../db/operations.py" line="391"/>
         <source>Income/Spending transaction has no details: </source>
         <translation>Доход/Расход не имеет детальных записей: </translation>
     </message>
@@ -2298,17 +2298,17 @@ one for ParentCo and second for Subsidiary</source>
         <translation>Неожиданная попытка обновить идентификатор для </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="198"/>
+        <location filename="../db/asset.py" line="201"/>
         <source>There are no quote/rate for </source>
         <translation>Нет котировки/курса для </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="266"/>
+        <location filename="../db/asset.py" line="290"/>
         <source>Quotations were updated: </source>
         <translation>Котировки обновлены: </translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="328"/>
+        <location filename="../db/asset.py" line="352"/>
         <source>Country updated for </source>
         <translation>Страна обновлёна для </translation>
     </message>
@@ -6461,7 +6461,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TermDeposit</name>
     <message>
-        <location filename="../db/operations.py" line="1371"/>
+        <location filename="../db/operations.py" line="1437"/>
         <source>Can&apos;t process deposit as bank isn&apos;t set for account: </source>
         <translation>Невозможно обработать депозит, т.к. не задан банк для счёта: </translation>
     </message>
@@ -6699,17 +6699,17 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>Trade</name>
     <message>
-        <location filename="../db/operations.py" line="708"/>
+        <location filename="../db/operations.py" line="717"/>
         <source>Sell</source>
         <translation>Продажа</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="711"/>
+        <location filename="../db/operations.py" line="720"/>
         <source>Buy</source>
         <translation>Покупка</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="792"/>
+        <location filename="../db/operations.py" line="801"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account: </source>
         <translation>Невозможно обработать сделку, т.к. не задан банк для инвестиционного счёта: </translation>
     </message>
@@ -6801,63 +6801,73 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>Transfer</name>
     <message>
-        <location filename="../db/operations.py" line="855"/>
+        <location filename="../db/operations.py" line="865"/>
         <source>Outgoing transfer</source>
         <translation>Исходящий перевод</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="856"/>
+        <location filename="../db/operations.py" line="866"/>
         <source>Incoming transfer</source>
         <translation>Входящий перевод</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="857"/>
-        <location filename="../db/operations.py" line="933"/>
+        <location filename="../db/operations.py" line="867"/>
+        <location filename="../db/operations.py" line="953"/>
         <source>Transfer fee</source>
         <translation>Комиссия за перевод</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="858"/>
+        <location filename="../db/operations.py" line="868"/>
         <source>Outgoing asset transfer</source>
         <translation>Исходящий перевод ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="859"/>
+        <location filename="../db/operations.py" line="869"/>
         <source>Incoming asset transfer</source>
         <translation>Входящий перевод ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="860"/>
+        <location filename="../db/operations.py" line="870"/>
         <source>Asset transfer fee</source>
         <translation>Комиссия за перевод ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="936"/>
+        <location filename="../db/operations.py" line="956"/>
         <source>Cost basis:</source>
         <translation>Стоимость позиции:</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="950"/>
+        <location filename="../db/operations.py" line="970"/>
         <source>Error. Zero rate</source>
         <translation>Ошибка. Курс равен нулю</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1013"/>
+        <location filename="../db/operations.py" line="1036"/>
         <source>Can&apos;t collect fee from the account &apos;{}&apos; ({}) as organization isn&apos;t set for it. Date: {}</source>
         <translation>Невозможно удержать комиссию со счёта &apos;{}&apos; ({}), т.к. для него не указана организация. Дата: {}</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1035"/>
+        <location filename="../db/operations.py" line="1077"/>
+        <source>Asset amount is not enough to pay the transfer fee. Date: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="1088"/>
+        <source>Processed asset amount is less than the transfer fee. Date: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="1101"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation>Количество актива недостаточно для обработки перевода. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1040"/>
+        <location filename="../db/operations.py" line="1106"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation>Обработанное количество меньше, чем количество в трансфере. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1053"/>
+        <location filename="../db/operations.py" line="1119"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation>Списание актива не найдено для трансфера.</translation>
     </message>
@@ -6880,7 +6890,7 @@ Do you want to delete the peer anyway?</source>
         <translation>С</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="252"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="255"/>
         <source>Asset transfer</source>
         <translation>Перевод ЦБ</translation>
     </message>
@@ -6902,7 +6912,7 @@ Do you want to delete the peer anyway?</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="280"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="283"/>
         <source>(asset cost basis in new currency)</source>
         <translation>(стоимость позиции в новой валюте)</translation>
     </message>
@@ -6913,7 +6923,7 @@ Do you want to delete the peer anyway?</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="259"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="262"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
@@ -6963,25 +6973,41 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="32"/>
+        <location filename="../widgets/transfer_widget.py" line="34"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="95"/>
-        <location filename="../widgets/transfer_widget.py" line="98"/>
+        <location filename="../widgets/transfer_widget.py" line="103"/>
+        <location filename="../widgets/transfer_widget.py" line="106"/>
+        <location filename="../widgets/transfer_widget.py" line="122"/>
         <source>Incomplete data</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="95"/>
+        <location filename="../widgets/transfer_widget.py" line="103"/>
         <source>An account isn&apos;t chosen for fee collection from</source>
         <translation>Не выбран счёт для удержания комиссии</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="98"/>
+        <location filename="../widgets/transfer_widget.py" line="106"/>
         <source>Can&apos;t collect fee from an account without organization assigned</source>
         <translation>Невозможно удержать комиссию со счёта без привязанной организации</translation>
+    </message>
+    <message>
+        <location filename="../widgets/transfer_widget.py" line="123"/>
+        <source>An asset is chosen for the fee, but the fee amount is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/transfer_widget.py" line="126"/>
+        <source>Wrong data</source>
+        <translation type="unfinished">Неверные данные</translation>
+    </message>
+    <message>
+        <location filename="../widgets/transfer_widget.py" line="127"/>
+        <source>A fee may be paid in a crypto asset only</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

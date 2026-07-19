@@ -161,21 +161,30 @@ class LedgerTransaction(JalDB):
     # deal_sign = +1 if closing deal is Buy operation and -1 if it is Sell operation.
     # qty - quantity of asset that closes previous open positions
     # price is None if we process corporate action or transfer where we keep initial value and don't have profit or loss
+    # 'asset'/'account' default to the single asset and account of the operation, which is what every operation
+    # dealing in one asset needs. They are given explicitly only when an operation consumes a second asset besides
+    # its own - a transfer paying on-chain gas in the native coin of the chain (see Transfer.processAssetFee).
+    # record_deals=False consumes the open positions without writing anything into 'trades_closed': the quantity and
+    # the cost basis leave the position, but no deal is created and therefore no profit or loss is realized.
     # Returns total qty, value of deals created.
-    def _close_deals_fifo(self, deal_sign, qty):
-        assert self._asset.id() == self.asset().id()      # The function works with these assumptions as any operation
-        assert self._account.id() == self.account().id()  # takes only one incoming asset and account
+    def _close_deals_fifo(self, deal_sign, qty, asset=None, account=None, record_deals=True):
+        if asset is None and account is None:
+            assert self._asset.id() == self.asset().id()      # The function works with these assumptions as any operation
+            assert self._account.id() == self.account().id()  # takes only one incoming asset and account
+        asset = self._asset if asset is None else asset
+        account = self._account if account is None else account
         processed_qty = Decimal('0')
         processed_value = Decimal('0')
-        open_trades = self._account.open_trades_list(self._asset)
+        open_trades = account.open_trades_list(asset)
         for trade in open_trades:
             remaining_qty = trade.open_qty(adjusted=True)
             next_deal_qty = remaining_qty
             if (processed_qty + next_deal_qty) > qty:  # We can't close full quantity with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
             trade.set_qty((remaining_qty - next_deal_qty)/trade.q_adjustment())
-            self._account.open_trade(trade, self._asset, modified_by=self)
-            JalClosedTrade.create_from_trades(trade, self, (-deal_sign) * next_deal_qty)
+            account.open_trade(trade, asset, modified_by=self)
+            if record_deals:
+                JalClosedTrade.create_from_trades(trade, self, (-deal_sign) * next_deal_qty)
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * trade.open_price(adjusted=True))
             if processed_qty == qty:
@@ -836,6 +845,7 @@ class Transfer(LedgerTransaction):
         "deposit": {"mandatory": True, "validation": True},
         "fee_account": {"mandatory": False, "validation": True, "default": None},
         "fee": {"mandatory": False, "validation": True, "default": None},
+        "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
         "number": {"mandatory": False, "validation": True, "default": ''},
         "symbol_id": {"mandatory": False, "validation": True, "default": None},
         "note": {"mandatory": False, "validation": False}
@@ -864,7 +874,7 @@ class Transfer(LedgerTransaction):
         self._opart = opart
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
                                 "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, "
-                                "t.symbol_id, t.number, t.note FROM transfers AS t "
+                                "t.fee_symbol_id, t.symbol_id, t.number, t.note FROM transfers AS t "
                                 "WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
@@ -885,11 +895,21 @@ class Transfer(LedgerTransaction):
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
         self._symbol = JalSymbol(self._data['symbol_id'])
         self._asset = self._symbol.asset()
+        self._fee_symbol = JalSymbol(self._data['fee_symbol_id'])
+        self._fee_asset = self._fee_symbol.asset()
         self._number = self._data['number']
         self._account = self._withdrawal_account
         self._note = self._data['note']
+        # Icon and name describe the transfer itself, so they are resolved from the transferred asset before the
+        # fee part re-points self._asset/_account below
         self._icon = JalIcon[icons[(opart, self._asset.id() == 0)]]
         self._oname = self.names[(opart, self._asset.id() == 0)]
+        if self._opart == Transfer.Fee and self._fee_asset.id():
+            # A fee paid in an asset is withdrawn from the fee account, not from the account the transfer starts at.
+            # FIFO processing and the closed-deal bookkeeping both read account()/asset(), so they must describe the
+            # fee here or the gas would be taken out of the transferred asset's position instead.
+            self._account = self._fee_account
+            self._asset = self._fee_asset
         if self._opart == Transfer.Outgoing:
             self._reconciled = self._withdrawal_account.reconciled_at() >= self._withdrawal_timestamp
         if self._opart == Transfer.Incoming:
@@ -979,7 +999,7 @@ class Transfer(LedgerTransaction):
             else:
                 return self._deposit_currency
         elif self._opart == Transfer.Fee:
-            return self._fee_currency
+            return self._fee_symbol.symbol() if self._fee_asset.id() else self._fee_currency
         else:
             assert False, "Unknown transfer type"
 
@@ -995,7 +1015,10 @@ class Transfer(LedgerTransaction):
             else:
                 amount = self._money_total(self._deposit_account.id())
         elif self._opart == Transfer.Fee:
-            amount = self._money_total(self._fee_account.id())
+            if self._fee_asset.id():
+                amount = self._asset_total(self._fee_account.id(), self._fee_asset.id())
+            else:
+                amount = self._money_total(self._fee_account.id())
         else:
             assert False, "Unknown transfer type"
         return [amount]
@@ -1012,10 +1035,13 @@ class Transfer(LedgerTransaction):
             if not self._fee_account.organization():
                 raise LedgerError(self.tr("Can't collect fee from the account '{}' ({}) as organization isn't set for it. Date: {}").format(
                     self._fee_account.name(), self._fee_account.number(), ts2dt(self._withdrawal_timestamp)))
-            credit_taken = ledger.takeCredit(self, self._fee_account.id(), self._fee)
-            ledger.appendTransaction(self, BookAccount.Money, -(self._fee - credit_taken))
-            ledger.appendTransaction(self, BookAccount.Costs, self._fee,
-                                     category=PredefinedCategory.Fees, peer=self._fee_account.organization())
+            if self._fee_asset.id():
+                self.processAssetFee(ledger)
+            else:
+                credit_taken = ledger.takeCredit(self, self._fee_account.id(), self._fee)
+                ledger.appendTransaction(self, BookAccount.Money, -(self._fee - credit_taken))
+                ledger.appendTransaction(self, BookAccount.Costs, self._fee,
+                                         category=PredefinedCategory.Fees, peer=self._fee_account.organization())
         elif self._opart == Transfer.Incoming:
             if self._asset.id():
                 self.processAssetTransfer(ledger)
@@ -1026,6 +1052,48 @@ class Transfer(LedgerTransaction):
                 ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit)
         else:
             assert False, "Unknown transfer type"
+
+    # Books a transfer fee that is paid in an asset instead of money - on-chain gas, which is always burned in the
+    # native coin of the blockchain (TRX on Tron, ETH on Ethereum/Arbitrum). That coin may or may not be the asset
+    # being transferred, so the fee is withdrawn from its own position in the fee account.
+    #
+    # The spent quantity is taken from the open positions in FIFO order and expensed to Costs at its own cost basis,
+    # which makes the value leaving the position equal to the value arriving in Costs - so no profit or loss is
+    # realized and no deal is recorded. The remaining position keeps its per-unit cost basis and simply holds fewer
+    # units.
+    #
+    # KNOWN SIMPLIFICATION - several jurisdictions treat *any* disposal of a crypto asset, including spending it on
+    # transaction fees, as a realization event that crystallizes capital gain or loss against the asset's cost basis.
+    # Among those known at the time of writing: the United States (crypto is property, so every disposition is a
+    # taxable event), the United Kingdom, Canada, Australia, Germany (private sale transactions, subject to its
+    # one-year holding exemption) and Portugal (gains on holdings held under 365 days). Booking gas at cost basis as
+    # done here therefore understates realized gains wherever that treatment applies. This is a deliberate choice to
+    # keep gas out of the cost-basis result until crypto tax treatment is designed as its own task; it must be
+    # revisited together with the country tax reports, and nothing here should be taken as tax advice.
+    def processAssetFee(self, ledger):
+        fee_amount = self._fee
+        asset_amount = ledger.getAmount(BookAccount.Assets, self._fee_account.id(), self._fee_asset.id())
+        if asset_amount < fee_amount:
+            raise LedgerError(self.tr("Asset amount is not enough to pay the transfer fee. Date: ")
+                              + f"{ts2dt(self._withdrawal_timestamp)}, Asset amount: {asset_amount}, "
+                              + f"Required: {fee_amount}, Operation: {self.dump()}")
+        # record_deals=False - the fee is an expense, not a deal, so it must not appear in 'trades_closed'. Beyond
+        # keeping the Deals report clean this is what makes the fee safe when it is paid in the very asset that is
+        # being transferred out of the same account: the incoming leg re-opens the lots the outgoing leg closed and
+        # selects them by operation, account and asset, every one of which a fee deal would match too. Measured
+        # consequence of recording one (transfer 50 TRX, burn 10 TRX of the same position): the destination ends up
+        # with the fee's 10-unit lot in place of the transferred 50, so its ledger balance and its open lots
+        # disagree - a corruption of cost basis that stays invisible until something is sold from that account.
+        processed_qty, processed_value = self._close_deals_fifo(
+            Decimal('-1.0'), fee_amount, asset=self._fee_asset, account=self._fee_account, record_deals=False)
+        if processed_qty < fee_amount:
+            raise LedgerError(self.tr("Processed asset amount is less than the transfer fee. Date: ")
+                              + f"{ts2dt(self._withdrawal_timestamp)}, Processed amount: {processed_qty}, "
+                              + f"Required: {fee_amount}, Operation: {self.dump()}")
+        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
+                                 asset_id=self._fee_asset.id(), value=-processed_value)
+        ledger.appendTransaction(self, BookAccount.Costs, processed_value,
+                                 category=PredefinedCategory.Fees, peer=self._fee_account.organization())
 
     def processAssetTransfer(self, ledger):
         transfer_amount = self._withdrawal

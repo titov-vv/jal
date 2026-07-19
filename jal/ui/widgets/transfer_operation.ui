@@ -246,6 +246,9 @@
    <item row="2" column="9">
     <widget class="ReferenceSelectorWidget" name="symbol_widget" native="true"/>
    </item>
+   <item row="5" column="8">
+    <widget class="ReferenceSelectorWidget" name="fee_symbol_widget" native="true"/>
+   </item>
    <item row="5" column="9">
     <widget class="QCheckBox" name="asset_check">
      <property name="text">

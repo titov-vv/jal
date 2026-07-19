@@ -10,8 +10,10 @@ from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.db.operations import LedgerTransaction
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.account import JalAccount
+from jal.db.symbol import JalSymbol
 from jal.db.common_models import AccountListModel
 from jal.db.asset_models import SymbolsListModel
+from jal.constants import PredefinedAsset
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -43,6 +45,9 @@ class TransferWidget(AbstractOperationDetails):
         self._symbols_model = SymbolsListModel(self)
         self._symbols_dialog = SymbolListDialog(self)
         self.ui.symbol_widget.setup_selector(self._symbols_model, self._symbols_dialog)
+        self._fee_symbols_model = SymbolsListModel(self)
+        self._fee_symbols_dialog = SymbolListDialog(self)
+        self.ui.fee_symbol_widget.setup_selector(self._fee_symbols_model, self._fee_symbols_dialog)
 
         self.ui.copy_date_btn.setFixedWidth(self.ui.copy_date_btn.fontMetrics().horizontalAdvance("XXXX"))
         self.ui.copy_amount_btn.setFixedWidth(self.ui.copy_amount_btn.fontMetrics().horizontalAdvance("XXXX"))
@@ -50,6 +55,7 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.deposit_timestamp.setFixedWidth(self.ui.deposit_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.fee_account_widget.setValidation(False)
         self.ui.symbol_widget.setValidation(False)
+        self.ui.fee_symbol_widget.setValidation(False)
 
         self.ui.copy_date_btn.clicked.connect(self.onCopyDate)
         self.ui.copy_amount_btn.clicked.connect(self.onCopyAmount)
@@ -65,6 +71,7 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.to_account_widget.changed.connect(self.account_changed)
         self.ui.fee_account_widget.changed.connect(self.mapper.submit)
         self.ui.symbol_widget.changed.connect(self.mapper.submit)
+        self.ui.fee_symbol_widget.changed.connect(self.mapper.submit)
         self.mapper.currentIndexChanged.connect(self.record_changed)
 
         self.mapper.addMapping(self.ui.withdrawal_timestamp, self.model.fieldIndex("withdrawal_timestamp"))
@@ -79,6 +86,7 @@ class TransferWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.fee_currency, self.model.fieldIndex("fee_account"))
         self.mapper.addMapping(self.ui.fee, self.model.fieldIndex("fee"))
         self.mapper.addMapping(self.ui.symbol_widget, self.model.fieldIndex("symbol_id"), QByteArray("selected_id_str"))
+        self.mapper.addMapping(self.ui.fee_symbol_widget, self.model.fieldIndex("fee_symbol_id"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
 
@@ -99,6 +107,25 @@ class TransferWidget(AbstractOperationDetails):
                 return False
         if fields['symbol_id'] == '0':   # Store None if asset isn't selected
             self.model.setData(self.model.index(0, self.model.fieldIndex("symbol_id")), None)
+        if not self._validated_fee_asset(fields):
+            return False
+        return True
+
+    # A fee paid in an asset instead of money exists to record on-chain gas, which is always burned in the native
+    # coin of the blockchain. Restricting it to crypto keeps the asset-denominated fee out of ordinary bank and
+    # broker transfers, where a fee is a money amount and the ledger has no position to take it from.
+    def _validated_fee_asset(self, fields) -> bool:
+        if fields.get('fee_symbol_id') in (None, '', '0'):   # Store None if no fee asset is selected
+            self.model.setData(self.model.index(0, self.model.fieldIndex("fee_symbol_id")), None)
+            return True
+        if not fields['fee'] or Decimal(fields['fee']) == Decimal('0'):
+            QMessageBox().warning(self, self.tr("Incomplete data"),
+                                  self.tr("An asset is chosen for the fee, but the fee amount is empty"), QMessageBox.Ok)
+            return False
+        if JalSymbol(int(fields['fee_symbol_id'])).asset().type() != PredefinedAsset.Crypto:
+            QMessageBox().warning(self, self.tr("Wrong data"),
+                                  self.tr("A fee may be paid in a crypto asset only"), QMessageBox.Ok)
+            return False
         return True
 
     def revertChanges(self):
@@ -116,6 +143,7 @@ class TransferWidget(AbstractOperationDetails):
         new_record.setNull("fee_account")
         new_record.setValue("fee", '0')
         new_record.setNull("symbol_id")
+        new_record.setNull("fee_symbol_id")
         new_record.setValue("number", None)
         new_record.setValue("note", None)
         return new_record
@@ -156,6 +184,7 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.fee_account_widget.setVisible(visible)
         self.ui.fee.setVisible(visible)
         self.ui.fee_currency.setVisible(visible)
+        self.ui.fee_symbol_widget.setVisible(visible)
 
     @Slot()
     def fee_toggled(self, _state):
@@ -163,6 +192,7 @@ class TransferWidget(AbstractOperationDetails):
         self.set_fee_data_visible(with_fee)
         if not with_fee:
             self.ui.fee_account_widget.selected_id = 0
+            self.ui.fee_symbol_widget.selected_id = 0
             self.ui.fee.setText('')
         self.mapper.submit()
 

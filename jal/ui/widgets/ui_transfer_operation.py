@@ -173,6 +173,11 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.symbol_widget, 2, 9, 1, 1)
 
+        self.fee_symbol_widget = ReferenceSelectorWidget(TransferOperation)
+        self.fee_symbol_widget.setObjectName(u"fee_symbol_widget")
+
+        self.layout.addWidget(self.fee_symbol_widget, 5, 8, 1, 1)
+
         self.asset_check = QCheckBox(TransferOperation)
         self.asset_check.setObjectName(u"asset_check")
 

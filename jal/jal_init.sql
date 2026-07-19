@@ -382,10 +382,8 @@ CREATE TABLE transfers (
     fee                  TEXT,                                        -- Fee amount
     number               TEXT        NOT NULL DEFAULT (''),           -- Number of operation in bank/broker systems
     symbol_id            INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- If it is an asset transfer
-    note                 TEXT,                                        -- Free text comment
-    -- Kept last to match the physical column order that ALTER TABLE ADD COLUMN produces in jal_delta_61.sql,
-    -- so a migrated database and a freshly created one stay identical
-    fee_symbol_id        INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE        -- Asset the fee is paid in (crypto only); NULL = fee account currency
+    fee_symbol_id        INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- Asset the fee is paid in (crypto only); NULL = fee account currency
+    note                 TEXT                                         -- Free text comment
 );
 
 
