@@ -1,0 +1,14 @@
+{
+  "_comment": [
+    "Copy this file to 'local_test_data.json' (same folder) and fill it with your own data.",
+    "'local_test_data.json' is excluded from commits by .gitignore and must stay that way:",
+    "an on-chain address can't be anonymized the way a broker account number can - publishing",
+    "one links its owner to a complete, permanent record of every transaction and balance.",
+    "Tests that need this data are skipped when the file is absent, so the suite stays green",
+    "for anyone who hasn't created it."
+  ],
+  "tron": {
+    "address": "T...",
+    "api_key": ""
+  }
+}

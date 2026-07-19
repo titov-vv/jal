@@ -382,7 +382,10 @@ CREATE TABLE transfers (
     fee                  TEXT,                                        -- Fee amount
     number               TEXT        NOT NULL DEFAULT (''),           -- Number of operation in bank/broker systems
     symbol_id            INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- If it is an asset transfer
-    note                 TEXT                                         -- Free text comment
+    note                 TEXT,                                        -- Free text comment
+    -- Kept last to match the physical column order that ALTER TABLE ADD COLUMN produces in jal_delta_61.sql,
+    -- so a migrated database and a freshly created one stay identical
+    fee_symbol_id        INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE        -- Asset the fee is paid in (crypto only); NULL = fee account currency
 );
 
 
@@ -595,7 +598,7 @@ BEGIN
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS transfers_after_update;
-CREATE TRIGGER transfers_after_update AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, fee_account, withdrawal, deposit, fee, symbol_id ON transfers FOR EACH ROW
+CREATE TRIGGER transfers_after_update AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, fee_account, withdrawal, deposit, fee, fee_symbol_id, symbol_id ON transfers FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;

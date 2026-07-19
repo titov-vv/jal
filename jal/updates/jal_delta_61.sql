@@ -65,6 +65,19 @@ CREATE TABLE token_list_updates (
 );
 CREATE UNIQUE INDEX token_list_updates_uniqueness ON token_list_updates (list_id, location_id);
 --------------------------------------------------------------------------------
+-- A transfer fee may be paid in an asset rather than in the money of the fee account: on-chain gas is
+-- burned in the native coin of the blockchain (TRX on Tron, ETH on Ethereum), which may or may not be
+-- the asset being transferred. NULL keeps the historical meaning - the fee is in the fee account currency.
+ALTER TABLE transfers ADD COLUMN fee_symbol_id INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE;
+-- The ledger-invalidation trigger lists the columns it watches explicitly, so it has to be recreated with
+-- the new one included - otherwise changing the fee asset would leave a stale ledger behind.
+DROP TRIGGER IF EXISTS transfers_after_update;
+CREATE TRIGGER transfers_after_update AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, fee_account, withdrawal, deposit, fee, fee_symbol_id, symbol_id ON transfers FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
+END;
+--------------------------------------------------------------------------------
 INSERT INTO settings(name, value) VALUES('DlgGeometry_Token blacklist', '');
 INSERT INTO settings(name, value) VALUES('DlgViewState_Token blacklist', '');
 --------------------------------------------------------------------------------

@@ -194,11 +194,35 @@ class JalAsset(JalDB):
                 rate2 = JalAsset(currency_id).quote(timestamp, self.get_base_currency(timestamp))[1]
                 rate = 0 if rate2 == Decimal('0') else rate1 / rate2
                 return timestamp, rate
-            else:
-                logging.warning(self.tr("There are no quote/rate for ") +
-                                f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) {ts2d(timestamp)}")
-                return 0, Decimal('0')
+            if self._type != PredefinedAsset.Money:
+                cross_quote = self._cross_currency_quote(timestamp, currency_id)
+                if cross_quote is not None:
+                    return cross_quote
+            logging.warning(self.tr("There are no quote/rate for ") +
+                            f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) {ts2d(timestamp)}")
+            return 0, Decimal('0')
         return int(quote[0]), Decimal(quote[1])
+
+    # A non-Money asset is often quoted in one currency only while it may be held in an account denominated in
+    # any other - crypto sources, for example.
+    # The value is taken from the asset's own most recent quote in whatever currency it exists and converted with
+    # the Money cross-rate of that currency. Without this the asset values at zero for every consumer - balances,
+    # holdings and reports alike - whenever the account currency differs from the currency of the source.
+    # Returns None when the asset has no quote at all, leaving the caller to report the miss.
+    # Only ever called for a non-Money asset: currencies resolve through the base-currency cross-rate above, and
+    # letting a currency in here could recurse endlessly between two currencies that quote each other.
+    def _cross_currency_quote(self, timestamp: int, currency_id: int):
+        quote = self._read("SELECT timestamp, quote, currency_id FROM quotes WHERE asset_id=:asset_id "
+                           "AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
+                           [(":asset_id", self._id), (":timestamp", timestamp)])
+        if quote is None:
+            return None
+        quote_timestamp, value, quote_currency = int(quote[0]), Decimal(quote[1]), int(quote[2])
+        # The pivot is a currency, so this recursion always lands in the Money branch above and never comes back here
+        rate = JalAsset(quote_currency).quote(timestamp, currency_id)[1]
+        if rate == Decimal('0'):
+            return None
+        return quote_timestamp, value * rate
 
     # Return a list of tuples (timestamp:int, quote:Decimal) of all quotes available for asset
     # for time interval begin-end

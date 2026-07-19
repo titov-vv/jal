@@ -1,5 +1,6 @@
 import pytest
 import os
+import json
 from shutil import copyfile
 from PySide6.QtWidgets import QApplication
 from PySide6.QtSql import QSqlDatabase
@@ -27,6 +28,24 @@ def project_root() -> str:
 @pytest.fixture
 def data_path(project_root) -> str:
     yield project_root + os.sep + "tests" + os.sep + "test_data" + os.sep
+
+
+# Real on-chain addresses and API keys, read at runtime from 'tests/local_test_data.json'. That file is excluded
+# from commits, because an on-chain address can't be anonymized: publishing one ties its owner to a permanent,
+# complete record of their transactions and balances. See local_test_data.json.example for its shape.
+# A test asking for a section that isn't there is skipped, so the suite stays green without the file.
+@pytest.fixture
+def local_test_data(project_root):
+    def section(name: str) -> dict:
+        filename = project_root + os.sep + "tests" + os.sep + "local_test_data.json"
+        if not os.path.isfile(filename):
+            pytest.skip(f"No local test data - create tests/local_test_data.json to run this test")
+        with open(filename, 'r', encoding='utf-8') as data_file:
+            data = json.load(data_file)
+        if name not in data:
+            pytest.skip(f"No '{name}' section in tests/local_test_data.json")
+        return data[name]
+    yield section
 
 
 @pytest.fixture
