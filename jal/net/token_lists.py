@@ -53,6 +53,16 @@ def _parse_jupiter(content: bytes, chains: list) -> list:   # Jupiter verified t
              'symbol': x.get('symbol', ''), 'name': x.get('name', '')} for x in tokens if 'id' in x]
 
 
+def _parse_tron_tokenlist(content: bytes, chains: list) -> list:   # 'tokenlists' schema, but Tron has no chainId
+    # CoinGecko serves its Tron list in the standard schema with 'chainId' set to null (Tron is not EVM, so it has
+    # no chain id at all) - the chain is implied by the URL. A few records carry a numeric internal id instead of
+    # an address, so only proper base58check addresses ('T' + 33 chars) are taken.
+    tokens = json.loads(content)['tokens']
+    return [{'location_id': AssetLocation.TRX_BLOCKCHAIN, 'address': x['address'],
+             'symbol': x.get('symbol', ''), 'name': x.get('name', '')}
+            for x in tokens if len(x.get('address', '')) == 34 and x['address'].startswith('T')]
+
+
 def _parse_dappradar(content: bytes, chains: list) -> list:   # {'tokens': [{'address', 'chainId'}]}, chainId as string
     tokens = json.loads(content)['tokens']
     entries = []
@@ -109,6 +119,15 @@ class TokenListProvider(QObject, JalDB):
             'chains': [AssetLocation.ETH_BLOCKCHAIN],
             'url': "https://tokens.coingecko.com/uniswap/all.json",
             'parser': _parse_tokenlist
+        },
+        # Tron's only allow-list in use. It is short (92 entries on 2026-07-19) but covers the tokens that are
+        # actually held - USDT, USDC, USDD, JST, SUN, BTT, WTRX. A token missing from it isn't rejected: it just
+        # falls through to the dust heuristic in TokenFilter like on any other chain.
+        TokenList.COINGECKO_TRON_LIST: {
+            'kind': TokenListKind.Allow,
+            'chains': [AssetLocation.TRX_BLOCKCHAIN],
+            'url': "https://tokens.coingecko.com/tron/all.json",
+            'parser': _parse_tron_tokenlist
         },
         TokenList.MEW_TOKENS: {
             'kind': TokenListKind.Allow,

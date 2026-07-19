@@ -34,14 +34,16 @@ SECONDS_IN_DAY = 86400
 # Locations that are priced by this source. They are quoted in USD only, so a single (asset, USD) series is stored
 # for a crypto asset no matter which currency its listings or accounts are denominated in - see download_asset_prices().
 BLOCKCHAIN_LOCATIONS = [AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN,
-                        AssetLocation.BTC_BLOCKCHAIN, AssetLocation.SOL_BLOCKCHAIN]
+                        AssetLocation.BTC_BLOCKCHAIN, AssetLocation.SOL_BLOCKCHAIN,
+                        AssetLocation.TRX_BLOCKCHAIN]
 
 # The API identifies a token as '{chain}:{contract_address}' - this maps a location to the chain name that the API
 # uses and to the type of contract address identifier that a listing carries on that chain (see SymbolId).
 _LLAMA_CHAINS = {
     AssetLocation.ETH_BLOCKCHAIN: ('ethereum', SymbolId.ETH_ADDRESS),
     AssetLocation.ARB_BLOCKCHAIN: ('arbitrum', SymbolId.ARB_ADDRESS),
-    AssetLocation.SOL_BLOCKCHAIN: ('solana', SymbolId.SOL_ADDRESS)
+    AssetLocation.SOL_BLOCKCHAIN: ('solana', SymbolId.SOL_ADDRESS),
+    AssetLocation.TRX_BLOCKCHAIN: ('tron', SymbolId.TRX_ADDRESS)
 }
 
 # Native coin of each chain, used for a listing that has no contract address. Mind that a listing on Arbitrum with
@@ -51,7 +53,8 @@ _LLAMA_NATIVE_COINS = {
     AssetLocation.ETH_BLOCKCHAIN: "coingecko:ethereum",
     AssetLocation.ARB_BLOCKCHAIN: "coingecko:ethereum",
     AssetLocation.BTC_BLOCKCHAIN: "coingecko:bitcoin",
-    AssetLocation.SOL_BLOCKCHAIN: "coingecko:solana"
+    AssetLocation.SOL_BLOCKCHAIN: "coingecko:solana",
+    AssetLocation.TRX_BLOCKCHAIN: "coingecko:tron"
 }
 
 # Number of daily points requested in one '/chart' call. Verified 2026-07-18: a span of 500 is served but 1000 is

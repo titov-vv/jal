@@ -6,7 +6,8 @@ from jal.universal_cache import UniversalCache
 
 
 # Chains where an address is a hex string and its case carries no meaning (EIP-55 checksum casing is
-# only a checksum). Solana mint addresses are base58 and ARE case-sensitive, Bitcoin has no tokens.
+# only a checksum). Solana mint addresses and Tron base58check addresses (the 'T...' form) ARE
+# case-sensitive and must be kept verbatim, Bitcoin has no tokens.
 _CASE_INSENSITIVE_CHAINS = [AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN]
 
 

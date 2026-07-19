@@ -301,6 +301,9 @@ def test_llama_coin_key(prepare_db):
     _, sol_token = create_crypto('Jupiter', 'JUP', 2, AssetLocation.SOL_BLOCKCHAIN,
                                  'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', SymbolId.SOL_ADDRESS)
     assert llama_coin_key(JalSymbol(sol_token)) == 'solana:JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'
+    _, usdt_trx = create_crypto('Tether', 'USDT', 2, AssetLocation.TRX_BLOCKCHAIN,
+                                'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', SymbolId.TRX_ADDRESS)
+    assert llama_coin_key(JalSymbol(usdt_trx)) == 'tron:TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
 
     # A listing without a contract address is the native coin of its chain
     _, btc = create_crypto('Bitcoin', 'BTC', 2, AssetLocation.BTC_BLOCKCHAIN)
@@ -309,6 +312,8 @@ def test_llama_coin_key(prepare_db):
     assert llama_coin_key(JalSymbol(eth)) == 'coingecko:ethereum'
     _, sol = create_crypto('Solana', 'SOL', 2, AssetLocation.SOL_BLOCKCHAIN)
     assert llama_coin_key(JalSymbol(sol)) == 'coingecko:solana'
+    _, trx = create_crypto('Tron', 'TRX', 2, AssetLocation.TRX_BLOCKCHAIN)
+    assert llama_coin_key(JalSymbol(trx)) == 'coingecko:tron'
     # Native coin of Arbitrum is bridged ETH and not the ARB token (the latter has a contract address)
     _, eth_arb = create_crypto('Ether ARB', 'ETH', 2, AssetLocation.ARB_BLOCKCHAIN)
     assert llama_coin_key(JalSymbol(eth_arb)) == 'coingecko:ethereum'

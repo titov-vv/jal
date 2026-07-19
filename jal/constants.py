@@ -254,6 +254,7 @@ class SymbolId(PredefinedList, QObject):
     ETH_ADDRESS = 7  # Ethereum contract address
     ARB_ADDRESS = 8  # Arbitrum contract address
     SOL_ADDRESS = 9  # Solana SPL mint address
+    TRX_ADDRESS = 10  # Tron TRC-20 contract address
 
     def __init__(self):
         super().__init__()
@@ -267,7 +268,8 @@ class SymbolId(PredefinedList, QObject):
             self.ISO4217_CODE: self.tr("ISO4217 currency code"),
             self.ETH_ADDRESS: self.tr("ETH address"),
             self.ARB_ADDRESS: self.tr("ARB address"),
-            self.SOL_ADDRESS: self.tr("SOL address")
+            self.SOL_ADDRESS: self.tr("SOL address"),
+            self.TRX_ADDRESS: self.tr("TRX address")
         }
 
 
@@ -342,6 +344,7 @@ class AssetLocation(PredefinedList, QObject):
     ARB_BLOCKCHAIN = 302
     BTC_BLOCKCHAIN = 303
     SOL_BLOCKCHAIN = 304
+    TRX_BLOCKCHAIN = 305
     SMA_VICTORIA = 999
 
     def __init__(self):
@@ -363,6 +366,7 @@ class AssetLocation(PredefinedList, QObject):
             self.ARB_BLOCKCHAIN: self.tr("Arbitrum"),
             self.BTC_BLOCKCHAIN: self.tr("Bitcoin"),
             self.SOL_BLOCKCHAIN: self.tr("Solana"),
+            self.TRX_BLOCKCHAIN: self.tr("Tron"),
             self.SMA_VICTORIA: self.tr("Victoria Seguros")
         }
 
@@ -388,6 +392,7 @@ class TokenList(PredefinedList, QObject):
     COINGECKO_LIST = 3
     DAPPRADAR_BLACKLIST = 4
     MEW_TOKENS = 5
+    COINGECKO_TRON_LIST = 6
 
     def __init__(self):
         super().__init__()
@@ -396,7 +401,8 @@ class TokenList(PredefinedList, QObject):
             self.UNISWAP_DEFAULT: self.tr("Uniswap default list"),
             self.COINGECKO_LIST: self.tr("CoinGecko token list"),
             self.DAPPRADAR_BLACKLIST: self.tr("DappRadar tokens blacklist"),
-            self.MEW_TOKENS: self.tr("MyEtherWallet token list")
+            self.MEW_TOKENS: self.tr("MyEtherWallet token list"),
+            self.COINGECKO_TRON_LIST: self.tr("CoinGecko Tron token list")
         }
 
 

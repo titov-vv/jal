@@ -23,6 +23,8 @@ SWUSD_ETH = "0x77c6e4a580c0dce4e5c7a17d0bc077188a83a059"     # CoinGecko list, c
 SCAM_ETH = "0x4527a3b4a8a150403090a99b87effc96f2195047"      # DappRadar block-list, chainId '1'
 BSC_ONLY = "0x6258d49ca4035431575d997b096723e68d8c92f9"      # DappRadar, chainId '56' - a chain JAL doesn't know
 WSOL = "So11111111111111111111111111111111111111112"         # Jupiter verified list
+USDT_TRX = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"              # CoinGecko Tron list, 'chainId' is null there
+BTTOLD_TRX = "1002000"                                       # CoinGecko Tron list, an internal id instead of an address
 NEW_ETH = "0x2222222222222222222222222222222222222222"       # deliberately on no list at all
 
 
@@ -38,8 +40,10 @@ class SampleFetcher:
         self.requests.append(url)
         if self.failing:
             raise ConnectionError("no network")
+        # Mind the order: both CoinGecko lists live on the same host, so the Tron one must be matched first
         for key, sample in [("jup.ag", "jupiter"), ("tokens.uniswap.org", "uniswap"),
-                            ("coingecko", "coingecko"), ("dappradar", "dappradar"), ("MyEtherWallet", "mew")]:
+                            ("coingecko.com/tron", "coingecko_tron"), ("coingecko", "coingecko"),
+                            ("dappradar", "dappradar"), ("MyEtherWallet", "mew")]:
             if key in url:
                 return open(self.path + f"token_list_{sample}.json", 'rb').read()
         raise AssertionError(f"Unexpected URL requested: {url}")
@@ -62,8 +66,10 @@ def test_address_normalization():
     # EVM addresses are hex - the checksum case carries no information and must not affect matching
     assert normalize_address(AssetLocation.ETH_BLOCKCHAIN, ONEINCH_ETH) == ONEINCH_ETH.lower()
     assert normalize_address(AssetLocation.ARB_BLOCKCHAIN, "  " + ONEINCH_ETH + " ") == ONEINCH_ETH.lower()
-    # Solana mint addresses are base58 - the case is meaningful and must be kept as is
+    # Solana mint and Tron base58check addresses are base58 - the case is meaningful and must be kept as is
     assert normalize_address(AssetLocation.SOL_BLOCKCHAIN, WSOL) == WSOL
+    assert normalize_address(AssetLocation.TRX_BLOCKCHAIN, "  " + USDT_TRX + " ") == USDT_TRX
+    assert normalize_address(AssetLocation.TRX_BLOCKCHAIN, USDT_TRX.lower()) != USDT_TRX
     assert normalize_address(AssetLocation.ETH_BLOCKCHAIN, '') == ''
 
 
@@ -102,10 +108,14 @@ def test_list_download_and_cache(lists):
     assert lists.is_allowlisted(AssetLocation.ETH_BLOCKCHAIN, SWUSD_ETH)
     assert lists.is_allowlisted(AssetLocation.ARB_BLOCKCHAIN, ARB_ON_ARB)            # chainId 42161 lands on Arbitrum
     assert lists.is_allowlisted(AssetLocation.SOL_BLOCKCHAIN, WSOL)
+    assert lists.is_allowlisted(AssetLocation.TRX_BLOCKCHAIN, USDT_TRX)              # null chainId, chain implied by URL
+    assert not lists.is_allowlisted(AssetLocation.TRX_BLOCKCHAIN, BTTOLD_TRX)        # not a base58check address
 
     # A token of one chain is never allow-listed on another one
     assert not lists.is_allowlisted(AssetLocation.ARB_BLOCKCHAIN, ONEINCH_ETH)
     assert not lists.is_allowlisted(AssetLocation.SOL_BLOCKCHAIN, ONEINCH_ETH)
+    assert not lists.is_allowlisted(AssetLocation.ETH_BLOCKCHAIN, USDT_TRX)
+    assert not lists.is_allowlisted(AssetLocation.TRX_BLOCKCHAIN, ONEINCH_ETH)
     assert not lists.is_allowlisted(AssetLocation.ETH_BLOCKCHAIN, WSOL)
     assert not lists.is_allowlisted(AssetLocation.ETH_BLOCKCHAIN, NEW_ETH)
 
