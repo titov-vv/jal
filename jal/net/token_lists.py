@@ -5,7 +5,7 @@ from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup, AssetLocation, TokenList, TokenListKind
 from jal.db.db import JalDB
-from jal.db.token_blacklist import normalize_address
+from jal.db.token_blacklist import normalize_address, is_tron_address
 from jal.net.web_request import WebRequest
 
 
@@ -56,11 +56,11 @@ def _parse_jupiter(content: bytes, chains: list) -> list:   # Jupiter verified t
 def _parse_tron_tokenlist(content: bytes, chains: list) -> list:   # 'tokenlists' schema, but Tron has no chainId
     # CoinGecko serves its Tron list in the standard schema with 'chainId' set to null (Tron is not EVM, so it has
     # no chain id at all) - the chain is implied by the URL. A few records carry a numeric internal id instead of
-    # an address, so only proper base58check addresses ('T' + 33 chars) are taken.
+    # an address, so the checksum of every address is verified and the malformed ones are dropped.
     tokens = json.loads(content)['tokens']
     return [{'location_id': AssetLocation.TRX_BLOCKCHAIN, 'address': x['address'],
              'symbol': x.get('symbol', ''), 'name': x.get('name', '')}
-            for x in tokens if len(x.get('address', '')) == 34 and x['address'].startswith('T')]
+            for x in tokens if is_tron_address(x.get('address', ''))]
 
 
 def _parse_dappradar(content: bytes, chains: list) -> list:   # {'tokens': [{'address', 'chainId'}]}, chainId as string

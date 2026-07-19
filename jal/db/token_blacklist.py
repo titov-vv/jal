@@ -1,4 +1,5 @@
 import logging
+from hashlib import sha256
 from datetime import datetime, timezone
 from jal.constants import AssetLocation
 from jal.db.db import JalDB
@@ -20,6 +21,79 @@ def normalize_address(location_id: int, address: str) -> str:
     if location_id in _CASE_INSENSITIVE_CHAINS:
         address = address.lower()
     return address
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Tron addresses have two encodings of the very same 20-byte value: the base58check 'T...' form that the user sees
+# everywhere (explorers, wallets, the TRC-20 endpoint of TronGrid) and a 21-byte hex form prefixed with 0x41 that
+# the raw transaction data of TronGrid returns - and keeps returning even when 'visible=true' is requested.
+# JAL stores the base58check form only, so hex addresses must be converted as they are read from the chain.
+_BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+_TRON_PREFIX = 0x41            # First byte of every Tron address in its binary form
+_TRON_ADDRESS_LENGTH = 34      # Length of a base58check address, always starting with 'T' due to the 0x41 prefix
+
+
+def _base58_encode(data: bytes) -> str:
+    value = int.from_bytes(data, 'big')
+    encoded = ''
+    while value:
+        value, index = divmod(value, 58)
+        encoded = _BASE58_ALPHABET[index] + encoded
+    for byte in data:   # Each leading zero byte is encoded as a leading '1' and would be lost by the math above
+        if byte:
+            break
+        encoded = _BASE58_ALPHABET[0] + encoded
+    return encoded
+
+
+def _base58_decode(text: str) -> bytes:
+    value = 0
+    for char in text:
+        index = _BASE58_ALPHABET.find(char)
+        if index < 0:
+            raise ValueError(f"Invalid base58 character '{char}'")
+        value = value * 58 + index
+    decoded = value.to_bytes((value.bit_length() + 7) // 8, 'big')
+    leading_zeros = len(text) - len(text.lstrip(_BASE58_ALPHABET[0]))
+    return b'\x00' * leading_zeros + decoded
+
+
+# Converts a Tron address from its hex form into the base58check 'T...' form that JAL stores.
+# Accepts the 21-byte '41...' form that TronGrid returns, with or without a '0x' prefix, and also the bare 20-byte
+# form (as an EVM-style address) - the 0x41 prefix is then added. Returns '' if the value isn't a Tron address,
+# so that a caller may pass any address through without checking its shape first.
+def tron_address_from_hex(address: str) -> str:
+    if not address:
+        return ''
+    address = address.strip()
+    if address.startswith('0x') or address.startswith('0X'):
+        address = address[2:]
+    try:
+        raw = bytes.fromhex(address)
+    except ValueError:
+        return ''
+    if len(raw) == 20:              # A bare 20-byte address gets the Tron prefix that its hex form omitted
+        raw = bytes([_TRON_PREFIX]) + raw
+    if len(raw) != 21 or raw[0] != _TRON_PREFIX:
+        return ''
+    checksum = sha256(sha256(raw).digest()).digest()[:4]
+    return _base58_encode(raw + checksum)
+
+
+# True if the given string is a valid Tron base58check address, checksum included. Tron addresses are handed over
+# by users (a wallet account address) and by token lists, and a mistyped one must never reach the database:
+# a wrong address silently fetches an empty history instead of failing.
+def is_tron_address(address: str) -> bool:
+    if not address or len(address) != _TRON_ADDRESS_LENGTH:
+        return False
+    try:
+        raw = _base58_decode(address)
+    except ValueError:
+        return False
+    if len(raw) != 25 or raw[0] != _TRON_PREFIX:
+        return False
+    payload, checksum = raw[:21], raw[21:]
+    return sha256(sha256(payload).digest()).digest()[:4] == checksum
 
 
 # ----------------------------------------------------------------------------------------------------------------------

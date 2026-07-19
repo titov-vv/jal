@@ -1,7 +1,8 @@
 import logging
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import Decimal, DecimalException
 from jal.constants import Setup, TokenVerdict
+from jal.db.settings import JalSettings
 from jal.db.token_blacklist import JalTokenBlacklist
 from jal.net.token_lists import TokenListProvider
 
@@ -36,7 +37,18 @@ class TokenCandidate:
 class TokenFilter:
     def __init__(self, lists: TokenListProvider = None, dust_threshold: Decimal = None):
         self._lists = lists if lists is not None else TokenListProvider()
-        self._dust_threshold = Decimal(Setup.TOKEN_DUST_THRESHOLD) if dust_threshold is None else dust_threshold
+        self._dust_threshold = self._configured_threshold() if dust_threshold is None else dust_threshold
+
+    # The threshold is user-editable in the preferences dialog ('TokenDustThreshold'). A value that isn't a
+    # number is ignored in favour of the built-in default - a broken setting must not stop an import.
+    @staticmethod
+    def _configured_threshold() -> Decimal:
+        value = JalSettings().getStr("TokenDustThreshold", Setup.TOKEN_DUST_THRESHOLD)
+        try:
+            return Decimal(value)
+        except DecimalException:
+            logging.warning(f"Invalid dust threshold setting '{value}', using default of {Setup.TOKEN_DUST_THRESHOLD}")
+            return Decimal(Setup.TOKEN_DUST_THRESHOLD)
 
     # Returns TokenVerdict.Import or TokenVerdict.Blacklist for the given token without modifying anything
     def classify(self, candidate: TokenCandidate) -> int:

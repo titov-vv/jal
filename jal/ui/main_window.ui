@@ -98,10 +98,17 @@
     <addaction name="PrepareTaxForms"/>
     <addaction name="PrepareFlowReport"/>
    </widget>
-   <widget class="QMenu" name="menuLanguage">
+   <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>L&amp;anguage</string>
+     <string>&amp;Settings</string>
     </property>
+    <widget class="QMenu" name="menuLanguage">
+     <property name="title">
+      <string>L&amp;anguage</string>
+     </property>
+    </widget>
+    <addaction name="actionPreferences"/>
+    <addaction name="menuLanguage"/>
    </widget>
    <widget class="QMenu" name="menuImport">
     <property name="title">
@@ -134,7 +141,7 @@
    <addaction name="menuImport"/>
    <addaction name="menu_Export"/>
    <addaction name="menu_Tools"/>
-   <addaction name="menuLanguage"/>
+   <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="StatusBar"/>
   <action name="actionExit">
@@ -228,6 +235,14 @@
   <action name="actionBaseCurrency">
    <property name="text">
     <string>&amp;Base Currency</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>&amp;Preferences</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::PreferencesRole</enum>
    </property>
   </action>
   <action name="actionCleanAll">

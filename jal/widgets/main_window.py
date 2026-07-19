@@ -17,6 +17,7 @@ from jal.widgets.helpers import dependency_present
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog, TokenBlacklistDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
+from jal.widgets.preferences_dialog import PreferencesDialog
 from jal.constants import Setup, JalGlobals
 from jal.db.db import JalDB
 from jal.db.backup_restore import JalBackup
@@ -110,6 +111,7 @@ class MainWindow(QMainWindow):
         self.ui.actionQuotes.triggered.connect(partial(self.onDataDialog, QuotesListDialog))
         self.ui.actionTokenBlacklist.triggered.connect(partial(self.onDataDialog, TokenBlacklistDialog))
         self.ui.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, BaseCurrencyDialog))
+        self.ui.actionPreferences.triggered.connect(self.showPreferences)
         self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInMDI, self.ui.mdiArea))
         self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInMDI, self.ui.mdiArea))
         self.CancelButton.clicked.connect(self.downloader.on_cancel)
@@ -292,6 +294,11 @@ class MainWindow(QMainWindow):
     def onDataDialog(self, dialog_class):
         dialog_class().exec()
         self.ledger.rebuild()
+
+    # Preferences change application settings only and never any operation, so no ledger rebuild is needed here
+    @Slot()
+    def showPreferences(self):
+        PreferencesDialog(parent=self).exec()
 
     @Slot()
     def updateWidgets(self):

@@ -7,7 +7,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from constants import AssetLocation, TokenVerdict
-from jal.db.token_blacklist import JalTokenBlacklist, normalize_address
+from jal.db.token_blacklist import JalTokenBlacklist, normalize_address, tron_address_from_hex, is_tron_address
 from jal.net.token_lists import TokenListProvider
 from jal.data_import.token_filter import TokenFilter, TokenCandidate
 from jal.widgets.reference_dialogs import TokenBlacklistDialog
@@ -71,6 +71,29 @@ def test_address_normalization():
     assert normalize_address(AssetLocation.TRX_BLOCKCHAIN, "  " + USDT_TRX + " ") == USDT_TRX
     assert normalize_address(AssetLocation.TRX_BLOCKCHAIN, USDT_TRX.lower()) != USDT_TRX
     assert normalize_address(AssetLocation.ETH_BLOCKCHAIN, '') == ''
+
+
+def test_tron_address_conversion():
+    # Reference pairs taken from live TronGrid answers (2026-07-19): the USDT contract and the wallet address
+    # whose raw transaction data carried the hex form while the TRC-20 endpoint reported the base58check one.
+    assert tron_address_from_hex('41a614f803b6fd780986a42c78ec9c7f77e6ded13c') == USDT_TRX
+    assert tron_address_from_hex('4182dd6b9966724ae2fdc79b416c7588da67ff1b35') == "TMuA6YqfCeX8EhbfYEg5y7S4DqzSJireY9"
+    # The '0x' prefix is optional and a bare 20-byte address gets the Tron prefix that its hex form omitted
+    assert tron_address_from_hex('0x41a614f803b6fd780986a42c78ec9c7f77e6ded13c') == USDT_TRX
+    assert tron_address_from_hex('a614f803b6fd780986a42c78ec9c7f77e6ded13c') == USDT_TRX
+    # Anything that isn't a Tron address converts to an empty string instead of raising
+    assert tron_address_from_hex(BTTOLD_TRX) == ''
+    assert tron_address_from_hex('nonsense') == ''
+    assert tron_address_from_hex('') == ''
+
+    assert is_tron_address(USDT_TRX)
+    assert not is_tron_address(USDT_TRX[:-1] + 'u')   # A single altered character breaks the checksum
+    assert not is_tron_address(USDT_TRX[:-1])         # Too short
+    assert not is_tron_address(ONEINCH_ETH)           # An EVM address is not a Tron one
+    assert not is_tron_address(BTTOLD_TRX)
+    assert not is_tron_address('')
+    # '0' is not a base58 character at all, so a decoding error must be reported as 'not an address'
+    assert not is_tron_address('T0' + USDT_TRX[2:])
 
 
 def test_blacklist_roundtrip(prepare_db):

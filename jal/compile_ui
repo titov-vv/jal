@@ -16,6 +16,7 @@
 /usr/lib/qt6/uic -g python -o ./ui/ui_login_fns_dlg.py ./ui/login_fns_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_login_lidl_plus_dlg.py ./ui/login_lidl_plus_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_login_pingo_doce_dlg.py ./ui/login_pingo_doce_dlg.ui
+/usr/lib/qt6/uic -g python -o ./ui/ui_preferences_dlg.py ./ui/preferences_dlg.ui
 /usr/lib/qt6/uic -g python -o ./ui/widgets/ui_income_spending_operation.py ./ui/widgets/income_spending_operation.ui
 /usr/lib/qt6/uic -g python -o ./ui/widgets/ui_asset_payment_operation.py ./ui/widgets/asset_payment_operation.ui
 /usr/lib/qt6/uic -g python -o ./ui/widgets/ui_trade_operation.py ./ui/widgets/trade_operation.ui
