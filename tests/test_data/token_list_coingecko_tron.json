@@ -1,0 +1,47 @@
+{
+ "name": "CoinGecko",
+ "logoURI": "https://static.coingecko.com/gecko-new.svg",
+ "keywords": [
+  "defi"
+ ],
+ "timestamp": "2026-07-10T01:00:46.216+00:00",
+ "tokens": [
+  {
+   "chainId": null,
+   "address": "TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S",
+   "name": "Sun Token",
+   "symbol": "SUN",
+   "decimals": 18,
+   "logoURI": "https://assets.coingecko.com/coins/images/12424/thumb/RSFOmQ.png?1696512245"
+  },
+  {
+   "chainId": null,
+   "address": "TCFLL5dx5ZJdKnWuesXxi1VPwjLVmWZZy9",
+   "name": "JUST",
+   "symbol": "JST",
+   "decimals": 18,
+   "logoURI": "https://assets.coingecko.com/coins/images/11095/thumb/JUST.jpg?1696511035"
+  },
+  {
+   "chainId": null,
+   "address": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+   "name": "Tether",
+   "symbol": "USDT",
+   "decimals": 6,
+   "logoURI": "https://assets.coingecko.com/coins/images/325/thumb/Tether.png?1696501661"
+  },
+  {
+   "chainId": null,
+   "address": "1002000",
+   "name": "BitTorrent [OLD]",
+   "symbol": "BTTOLD",
+   "decimals": 6,
+   "logoURI": "https://assets.coingecko.com/coins/images/7595/thumb/BTT_Token_Graphic.png?1696507854"
+  }
+ ],
+ "version": {
+  "major": 92,
+  "minor": 1,
+  "patch": 0
+ }
+}
