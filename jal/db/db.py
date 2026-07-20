@@ -12,6 +12,7 @@ from PySide6.QtCore import QStandardPaths
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlTableModel
 from jal.constants import Setup, PredefinedAgents, PredefinedCategory
+from jal.db.helpers import format_decimal
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -212,8 +213,16 @@ class JalDB:
         query_params = set(re.findall(r":(\w+)", sql_text, re.IGNORECASE))  # get all parameter names in query text
         assert len(query_params) == len(params), f"SQL: wrong number of parameters {params} for '{sql_text}'"
         for param in params:
-            query.bindValue(param[0], param[1])
-            assert query.boundValue(param[0]) == param[1], f"SQL: failed to assign parameter {param} in '{sql_text}'"
+            # SQLite has no decimal type, so exact amounts live in TEXT columns and Qt has no binding for Decimal.
+            # The conversion belongs here, at the single point every query binds through: doing it per call site
+            # once let an operation be INSERTed while the query that looks for an existing duplicate of it still
+            # passed a raw Decimal, so the duplicate was never found and the operation was written twice.
+            # format_decimal() is the one canonical spelling of a Decimal in this database - it normalizes, so a
+            # round number is stored in exponent form ('40' -> '4E+1'). That is the agreed convention: anything
+            # comparing these columns as strings has to expect it. Decimal() and SQLite's CAST both read it back.
+            value = format_decimal(param[1]) if isinstance(param[1], Decimal) else param[1]
+            query.bindValue(param[0], value)
+            assert query.boundValue(param[0]) == value, f"SQL: failed to assign parameter {param} in '{sql_text}'"
         if JalDB._trace_sql_requests:
             cls._log_query(query)
         if not query.exec():
@@ -448,12 +457,7 @@ class JalDB:
             if field in data:
                 query_text += f"{field}, "
                 values_text += f":{field}, "
-                value = data[field]
-                # Amounts live in TEXT columns and Qt has no binding for Decimal - it has to be spelled out.
-                # Going through float instead would round away the precision that crypto amounts need.
-                if isinstance(value, Decimal):
-                    value = str(value)
-                params.append((f":{field}", value))
+                params.append((f":{field}", data[field]))   # Decimal is converted where every query binds, in _exec()
         query_text = query_text[:-2] + ") " + values_text[:-2] + ")"
         query = self._exec(query_text, params, commit=True)
         return query.lastInsertId()

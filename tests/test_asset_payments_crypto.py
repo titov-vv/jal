@@ -129,3 +129,37 @@ def test_unpriced_reward_recovers_after_quotes_arrive(wallet):
     assert _amount() == Decimal('100')
     assert _open_lots() == Decimal('100')
     assert AssetPayment(1).price() == Decimal('0.30')
+
+
+def test_decimal_values_are_deduplicated(wallet):
+    # SQLite has no decimal type, so amounts are stored as TEXT and Decimal is converted where every query binds.
+    # Converting it only on the INSERT path let create_operation() insert an operation while the query looking for
+    # an existing duplicate of it still passed a raw Decimal - so the duplicate was never found and the very same
+    # operation was written twice.
+    data = {'timestamp': d2t(210201), 'settlement': d2t(210201), 'account_id': WALLET,
+            'symbol_id': symbol_id_for(TRX), 'qty': Decimal('10'), 'price': Decimal('0.20'),
+            'fee': Decimal('0'), 'number': 'tx1'}
+    LedgerTransaction.create_new(LedgerTransaction.Trade, dict(data))
+    LedgerTransaction.create_new(LedgerTransaction.Trade, dict(data))
+    assert int(JalDB._read("SELECT count(*) FROM trades")) == 1
+
+    # format_decimal() is the single canonical spelling of a Decimal in this database. It normalizes, so a round
+    # number is stored in exponent form - the agreed convention, which anything comparing these columns as strings
+    # has to expect. What matters is that the value round-trips exactly and that both the insert and the duplicate
+    # check spell it the same way, which is what makes the count above 1 and not 2.
+    stored = JalDB._read("SELECT qty FROM trades WHERE oid=1")
+    assert stored == '1E+1'
+    assert Decimal(stored) == Decimal('10')
+
+
+def test_format_decimal_is_lossless():
+    from jal.db.helpers import format_decimal
+    # normalize() rounds to the active decimal context - 28 significant digits by default - which silently
+    # truncated high-precision amounts. A token with 18 decimals held in a large balance exceeds that easily,
+    # and this is the canonical spelling every value written to the database goes through.
+    for text in ['0', '0.00', '40', '9.478350', '0.000001', '1E-18',
+                 '12345678901234.123456789012345678',              # 18 decimals, trillions - 32 digits
+                 '1234567890123456789.123456789012345678']:        # 37 digits
+        value = Decimal(text)
+        assert Decimal(format_decimal(value)) == value, f"{text} does not round-trip"
+    assert Decimal(format_decimal(Decimal('NaN'))).is_nan()

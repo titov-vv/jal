@@ -1,13 +1,27 @@
 from datetime import datetime, timezone, timedelta
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, localcontext
 from PySide6.QtCore import QLocale
 from jal.constants import Setup, JalGlobals
 
 
 # -------------------------------------------------------------------------------------------------------------------
-# Return "canonical" string for decimal number
+# Enough significant digits for any amount this application stores: a token with 18 decimals held in a balance of
+# any realistic size stays well inside it. Only used to keep normalize() below from rounding.
+DECIMAL_PRECISION = 60
+
+
+# Return "canonical" string for decimal number.
+# This is the single spelling of a Decimal in the database - every value bound to a query goes through it (see
+# JalDB._exec), so the same number is always stored the same way and a string comparison of two amounts is
+# meaningful. normalize() drops trailing zeros and puts round numbers in exponent form ('40' -> '4E+1'); both
+# Decimal() and SQLite's CAST read that back correctly.
 def format_decimal(d) -> str:
-    return str(d.normalize())
+    # normalize() rounds to the precision of the active decimal context, 28 significant digits by default. That
+    # silently truncates a high-precision amount - 12345678901234.123456789012345678 loses its last four digits -
+    # so the context is widened here to keep the canonical form exact.
+    with localcontext() as context:
+        context.prec = DECIMAL_PRECISION
+        return str(d.normalize())
 
 
 # Removes exponent and trailing zeros from Decimal number
