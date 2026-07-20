@@ -1178,7 +1178,11 @@ class Transfer(LedgerTransaction):
                                 (":id", self._oid)], check_unique=True)
             if not value:
                 raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
-            if self._withdrawal_account.currency() == self._deposit_account.currency():
+            # A zero withdrawn value is treated like the same-currency case: there is no rate that rescales zero to
+            # the destination value, and a zero-cost lot stays zero-cost whatever it is multiplied by. This happens
+            # when the asset was received with its cost basis left to be filled in later (e.g. a fetched transfer),
+            # and without this guard a single unfilled cost basis divides by zero and aborts the whole ledger rebuild.
+            if self._withdrawal_account.currency() == self._deposit_account.currency() or Decimal(value) == 0:
                 transfer_value = Decimal(value)
                 # Move open trades from previous account to new account
                 for trade in transfer_trades:
