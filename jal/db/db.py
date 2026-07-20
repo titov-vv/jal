@@ -1,4 +1,5 @@
 from typing import Union
+from decimal import Decimal
 from enum import auto
 import os
 import sys
@@ -447,7 +448,12 @@ class JalDB:
             if field in data:
                 query_text += f"{field}, "
                 values_text += f":{field}, "
-                params.append((f":{field}", data[field]))
+                value = data[field]
+                # Amounts live in TEXT columns and Qt has no binding for Decimal - it has to be spelled out.
+                # Going through float instead would round away the precision that crypto amounts need.
+                if isinstance(value, Decimal):
+                    value = str(value)
+                params.append((f":{field}", value))
         query_text = query_text[:-2] + ") " + values_text[:-2] + ")"
         query = self._exec(query_text, params, commit=True)
         return query.lastInsertId()

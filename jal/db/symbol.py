@@ -107,6 +107,17 @@ class JalSymbol(JalDB):
     def identifier(self, id_type: int) -> str:
         return self._data.get('ID', {}).get(id_type, '')
 
+    # Returns the symbol carrying the given identifier, or an empty JalSymbol if no listing has it.
+    # Used to resolve a token by its contract address, which is the only identity of a token that can be trusted.
+    # The value is compared exactly as stored, so an address must be normalized by the caller before the lookup.
+    @classmethod
+    def find_by_identifier(cls, id_type: int, id_value: str) -> "JalSymbol":
+        if not id_value:
+            return cls(0)
+        symbol_id = cls._read("SELECT symbol_id FROM symbol_ids WHERE id_type=:id_type AND id_value=:id_value",
+                              [(":id_type", id_type), (":id_value", id_value)], check_unique=True)
+        return cls(symbol_id) if symbol_id else cls(0)
+
     # Returns a dict {id_type: id_value} of all identifiers linked to this symbol
     def identifiers(self) -> dict:
         return dict(self._data.get('ID', {}))

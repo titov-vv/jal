@@ -42,7 +42,9 @@ class AssetPaymentWidget(AbstractOperationDetails):
                                              self.tr("Stock Dividend"),
                                              self.tr("Stock Vesting"),
                                              self.tr("Bond Amortization"),
-                                             self.tr("Fee / Tax")])
+                                             self.tr("Fee / Tax"),
+                                             self.tr("Gas fee"),
+                                             self.tr("Staking reward")])   # index == AssetPayment subtype
         self.ui.type.setModel(self.combo_model)
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.ex_date_editor.setFixedWidth(self.ui.ex_date_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
@@ -77,11 +79,15 @@ class AssetPaymentWidget(AbstractOperationDetails):
     @Slot()
     def typeChanged(self, dividend_type_id):
         if dividend_type_id == AssetPayment.BondAmortization:
-            self.ui.amount_label.setText("Repayment")
+            self.ui.amount_label.setText(self.tr("Repayment"))
         elif dividend_type_id == AssetPayment.Fee:
-            self.ui.amount_label.setText("Fee / Tax")
+            self.ui.amount_label.setText(self.tr("Fee / Tax"))
+        elif dividend_type_id == AssetPayment.GasFee:
+            self.ui.amount_label.setText(self.tr("Gas spent"))      # a quantity of the coin, not a sum of money
+        elif dividend_type_id == AssetPayment.StakingReward:
+            self.ui.amount_label.setText(self.tr("Coins received"))
         else:
-            self.ui.amount_label.setText("Dividend")
+            self.ui.amount_label.setText(self.tr("Dividend"))
         self.ui.price_label.setVisible(
             dividend_type_id == AssetPayment.StockDividend or dividend_type_id == AssetPayment.StockVesting)
         self.ui.price_edit.setVisible(

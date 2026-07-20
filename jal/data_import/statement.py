@@ -14,6 +14,8 @@ from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
+from jal.db.symbol import JalSymbol
+from jal.db.token_blacklist import normalize_address
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
@@ -65,6 +67,8 @@ class JSF:
     PAYMENT_STOCK_VESTING = 'stock_vesting'
     PAYMENT_AMORTIZATION = 'bond_amortization'
     PAYMENT_FEE = 'fee'
+    PAYMENT_GAS_FEE = 'gas_fee'                 # gas burned by a transaction that moved nothing
+    PAYMENT_STAKING_REWARD = 'staking_reward'   # coins received for staking (or as lending interest)
 
     def __init__(self):
         pass
@@ -268,11 +272,35 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 return symbol[key]
         return ''
 
+    # Matches a symbol record that carries a contract address ('address' + 'location', produced by the chain
+    # fetchers) against the database. The address is the only trustworthy identity of a token: its ticker and its
+    # name are chosen by whoever deployed the contract, so anyone may publish a token calling itself 'USDC'.
+    # Returns the db asset id or 0 when the token isn't known yet.
+    @staticmethod
+    def _match_by_address(symbol: dict) -> int:
+        id_type = AssetLocation.address_id_of(symbol['location'])
+        if id_type is None:
+            return 0
+        address = normalize_address(symbol['location'], symbol['address'])
+        db_symbol = JalSymbol.find_by_identifier(id_type, address)
+        return db_symbol.asset().id() if db_symbol.id() else 0
+
     # Matches non-money assets against the db: by isin first, then by reg_number/cusip, then by
     # symbol ticker (with identifier mismatch guards)
     def _match_assets(self):
         for asset in self._data[JSF.ASSETS]:
             if asset['type'] == JSF.ASSET_MONEY or self.mapped_id(JSF.ASSETS, asset['id']):
+                continue
+            # A token is matched by contract address and by nothing else. The ticker fallback further down must
+            # never run for it: tickers are attacker-controlled on a blockchain, so matching by one would merge a
+            # freshly deployed token calling itself 'USDC' into the real USDC asset and its position.
+            addressed = [s for s in asset[JSF.SYMBOLS] if s.get('address') and s.get('location')]
+            if addressed:
+                for symbol in addressed:
+                    asset_id = self._match_by_address(symbol)
+                    if asset_id:
+                        self.set_mapped_id(JSF.ASSETS, asset['id'], asset_id)
+                        break
                 continue
             isin = self._asset_identifier(asset, 'isin')
             reg_number = self._asset_identifier(asset, 'reg_number')
@@ -406,12 +434,22 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 currency = self.mapped_id(JSF.ASSETS, symbol['currency'])
                 if not currency:
                     raise Statement_ImportError(self.tr("Unmatched currency for symbol: ") + f"{symbol}")
-                location = self._sources.get(symbol.get('note', ''), AssetLocation.UNDEFINED)
+                # A chain fetcher states the location outright; a broker statement names a trading venue that
+                # is looked up in the table of known sources.
+                location = symbol['location'] if symbol.get('location') else \
+                    self._sources.get(symbol.get('note', ''), AssetLocation.UNDEFINED)
             symbol_id = db_asset.add_symbol(symbol['symbol'], currency, location_id=location)
             self.set_mapped_id(JSF.SYMBOLS, symbol['id'], symbol_id)
             for key in self.ID_KEYS:
                 if symbol.get(key):
                     db_asset.update_identifier(symbol_id, self._identifier_types[key], symbol[key])
+            # The contract address is stored under the identifier type of its own chain, so that the token stays
+            # findable by address later - by the next fetch and by the quote downloader alike
+            if symbol.get('address'):
+                address_id = AssetLocation.address_id_of(location)
+                if address_id is not None:
+                    db_asset.update_identifier(symbol_id, address_id,
+                                               normalize_address(location, symbol['address']))
 
     def _import_accounts(self, accounts):
         for account in accounts:
@@ -499,6 +537,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset_types[0] != PredefinedAsset.Money:
                 operation['symbol_id'] = symbols[0]
             operation.pop('symbol')
+            # A fee paid in an asset rather than in the money of the fee account - on-chain gas, which is burned
+            # in the native coin of the chain and may differ from the asset being transferred.
+            if 'fee_symbol' in operation:
+                fee_symbol_id = self.mapped_id(JSF.SYMBOLS, operation.pop('fee_symbol'))
+                if not fee_symbol_id:
+                    raise Statement_ImportError(self.tr("Unmatched fee symbol for transfer: ") + f"{transfer}")
+                operation['fee_symbol_id'] = fee_symbol_id
             if 'description' in operation:
                 operation['note'] = operation.pop('description')
             operation['withdrawal_timestamp'] = operation['deposit_timestamp'] = operation.pop('timestamp')
@@ -509,6 +554,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if abs(operation['fee']) < 1e-10:  # FIXME  Need to refactor this module for decimal usage
                 operation.pop('fee_account')
                 operation.pop('fee')
+                operation.pop('fee_symbol_id', None)   # A zero fee has no asset to be paid in either
             LedgerTransaction.create_new(LedgerTransaction.Transfer, operation)
 
     def _import_trades(self, trades):
@@ -572,6 +618,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] == JSF.PAYMENT_FEE:
                 operation['type'] = AssetPayment.Fee
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+            elif operation['type'] == JSF.PAYMENT_GAS_FEE:
+                operation['type'] = AssetPayment.GasFee
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+            elif operation['type'] == JSF.PAYMENT_STAKING_REWARD:
+                operation['type'] = AssetPayment.StakingReward
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")

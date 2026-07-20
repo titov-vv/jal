@@ -36,12 +36,13 @@ SECONDS_IN_DAY = 86400
 BLOCKCHAIN_LOCATIONS = AssetLocation.BLOCKCHAINS
 
 # The API identifies a token as '{chain}:{contract_address}' - this maps a location to the chain name that the API
-# uses and to the type of contract address identifier that a listing carries on that chain (see SymbolId).
-_LLAMA_CHAINS = {
-    AssetLocation.ETH_BLOCKCHAIN: ('ethereum', SymbolId.ETH_ADDRESS),
-    AssetLocation.ARB_BLOCKCHAIN: ('arbitrum', SymbolId.ARB_ADDRESS),
-    AssetLocation.SOL_BLOCKCHAIN: ('solana', SymbolId.SOL_ADDRESS),
-    AssetLocation.TRX_BLOCKCHAIN: ('tron', SymbolId.TRX_ADDRESS)
+# uses. The identifier that carries the contract address on each chain comes from AssetLocation.address_id_of(),
+# which is the single definition shared with the statement importer and the chain fetchers.
+_LLAMA_CHAIN_NAMES = {
+    AssetLocation.ETH_BLOCKCHAIN: 'ethereum',
+    AssetLocation.ARB_BLOCKCHAIN: 'arbitrum',
+    AssetLocation.SOL_BLOCKCHAIN: 'solana',
+    AssetLocation.TRX_BLOCKCHAIN: 'tron'
 }
 
 # Native coin of each chain, used for a listing that has no contract address. Mind that a listing on Arbitrum with
@@ -69,7 +70,8 @@ _LLAMA_MIN_CONFIDENCE = Decimal('0.7')
 
 # Returns the DeFiLlama coin key for a given listing, or '' if the listing doesn't belong to a supported blockchain
 def llama_coin_key(symbol: JalSymbol) -> str:
-    chain, id_type = _LLAMA_CHAINS.get(symbol.location(), ('', 0))
+    chain = _LLAMA_CHAIN_NAMES.get(symbol.location(), '')
+    id_type = AssetLocation.address_id_of(symbol.location())
     address = symbol.identifier(id_type) if chain else ''
     if address:
         return f"{chain}:{address}"

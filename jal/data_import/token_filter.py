@@ -50,6 +50,12 @@ class TokenFilter:
             logging.warning(f"Invalid dust threshold setting '{value}', using default of {Setup.TOKEN_DUST_THRESHOLD}")
             return Decimal(Setup.TOKEN_DUST_THRESHOLD)
 
+    # Amount below which an unsolicited incoming transfer is treated as dust. Exposed because the native coin of a
+    # chain doesn't go through classify() - it has no contract address and can never be blacklisted as a token -
+    # yet address-poisoning dust arrives in the native coin just as it does in tokens.
+    def dust_threshold(self) -> Decimal:
+        return self._dust_threshold
+
     # Returns TokenVerdict.Import or TokenVerdict.Blacklist for the given token without modifying anything
     def classify(self, candidate: TokenCandidate) -> int:
         # An existing blacklist record is the final word - if the user un-blacklisted the token the record is gone

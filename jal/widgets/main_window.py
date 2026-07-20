@@ -28,6 +28,7 @@ from jal.net.downloader import QuoteDownloader
 from jal.net.token_lists import TokenListProvider
 from jal.db.ledger import Ledger
 from jal.data_import.statements import Statements
+from jal.net.chain_fetchers.fetchers import ChainFetchers
 from jal.reports.reports import Reports
 from jal.data_import.shop_receipt import ImportReceiptDialog
 
@@ -63,6 +64,7 @@ class MainWindow(QMainWindow):
         self.downloader = QuoteDownloader()
         self.token_lists = TokenListProvider()
         self.statements = Statements(self)
+        self.chain_fetchers = ChainFetchers(self)
         self.reports = Reports(self, self.ui.mdiArea)
         self.backup = JalBackup(self)
         self.estimator = None
@@ -79,6 +81,9 @@ class MainWindow(QMainWindow):
         self.statementGroup = QActionGroup(self.ui.menuStatement)
         self.createStatementsImportMenu()
 
+        self.blockchainGroup = QActionGroup(self.ui.menuBlockchain)
+        self.createBlockchainImportMenu()
+
         self.reportsGroup = QActionGroup(self.ui.menuReports)
         self.createReportsMenu()
 
@@ -94,6 +99,7 @@ class MainWindow(QMainWindow):
         self.actionAbout.triggered.connect(self.showAboutWindow)
         self.langGroup.triggered.connect(self.onLanguageChanged)
         self.statementGroup.triggered.connect(self.statements.load)
+        self.blockchainGroup.triggered.connect(self.chain_fetchers.load)
         self.reportsGroup.triggered.connect(self.reports.show)
         self.ui.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
         self.ui.actionLoadTokenLists.triggered.connect(self.loadTokenLists)
@@ -126,6 +132,7 @@ class MainWindow(QMainWindow):
         self.ledger.show_progress.connect(self.onToggleProgressDisplay)
         self.ledger.update_progress.connect(self.onUpdatePorgressDisplay)
         self.statements.load_completed.connect(self.onStatementImport)
+        self.chain_fetchers.load_completed.connect(self.onStatementImport)
 
     @Slot()
     def showEvent(self, event):
@@ -216,6 +223,14 @@ class MainWindow(QMainWindow):
             action.setData(i)
             self.ui.menuStatement.addAction(action)
             self.statementGroup.addAction(action)
+
+    # Create import menu for all known blockchain fetchers based on self.chain_fetchers.items values
+    def createBlockchainImportMenu(self):
+        for i, fetcher in enumerate(self.chain_fetchers.items):
+            action = QAction(fetcher['name'].replace('&', '&&'), self)  # & -> && to prevent shortcut creation
+            action.setData(i)
+            self.ui.menuBlockchain.addAction(action)
+            self.blockchainGroup.addAction(action)
 
     # Create menu entry for all known reports based on self.reports.sources values
     def createReportsMenu(self):

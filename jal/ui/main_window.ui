@@ -119,9 +119,15 @@
       <string>&amp;Statement</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuBlockchain">
+     <property name="title">
+      <string>&amp;Blockchain</string>
+     </property>
+    </widget>
     <addaction name="action_LoadQuotes"/>
     <addaction name="actionLoadTokenLists"/>
     <addaction name="menuStatement"/>
+    <addaction name="menuBlockchain"/>
     <addaction name="actionImportShopReceipt"/>
    </widget>
    <widget class="QMenu" name="menuReports">

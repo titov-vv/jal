@@ -379,6 +379,21 @@ class AssetLocation(PredefinedList, QObject):
     # account and the crypto quote downloader are both restricted to it, so a new chain is added in one place.
     BLOCKCHAINS = [ETH_BLOCKCHAIN, ARB_BLOCKCHAIN, BTC_BLOCKCHAIN, SOL_BLOCKCHAIN, TRX_BLOCKCHAIN]
 
+    # Identifier that holds a token's contract (or mint) address on each chain. The address is the only trustworthy
+    # key for a token - tickers and names are chosen by whoever deployed the contract - so it identifies a token
+    # everywhere: quote downloads, statement import and the chain fetchers. Bitcoin has no tokens and is absent.
+    _ADDRESS_IDS = {
+        ETH_BLOCKCHAIN: SymbolId.ETH_ADDRESS,
+        ARB_BLOCKCHAIN: SymbolId.ARB_ADDRESS,
+        SOL_BLOCKCHAIN: SymbolId.SOL_ADDRESS,
+        TRX_BLOCKCHAIN: SymbolId.TRX_ADDRESS
+    }
+
+    # Returns the SymbolId that stores a contract address on the given chain, or None if the chain has no tokens
+    @classmethod
+    def address_id_of(cls, location_id: int):
+        return cls._ADDRESS_IDS.get(location_id)
+
     def __init__(self):
         super().__init__()
         self._names = {

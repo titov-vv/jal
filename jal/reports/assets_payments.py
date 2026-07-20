@@ -19,8 +19,11 @@ class AssetsPaymentsModel(QAbstractTableModel):
         super().__init__(parent_view)
         self._columns = [self.tr("Date"), self.tr("Symbol"), self.tr("Asset"), self.tr("Type"),
                          self.tr("Amount"), self.tr("Tax"), self.tr("Note")]
+        # Indexed by AssetPayment subtype, so every subtype needs an entry here or the report raises IndexError
+        # on the first payment of that kind - which is what happened to 'Asset fee/tax' (6) before it was listed.
         self._types = [self.tr("N/A"), self.tr("Dividend"), self.tr("Bond Interest"), self.tr("Stock Dividend"),
-                       self.tr("Stock Vesting"), self.tr("Bond Amortization")]
+                       self.tr("Stock Vesting"), self.tr("Bond Amortization"), self.tr("Asset fee/tax"),
+                       self.tr("Gas fee"), self.tr("Staking reward")]
         self._view = parent_view
         self._data = []
         self._account_id = 0

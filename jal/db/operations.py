@@ -411,6 +411,8 @@ class AssetPayment(LedgerTransaction):
     StockVesting = 4
     BondAmortization = 5
     Fee = 6
+    GasFee = 7             # Gas burned by a transaction that moved nothing - an approval, a failed call, ...
+    StakingReward = 8      # Coins received for staking; lending interest is recorded the same way
     _db_table = "asset_payments"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -433,7 +435,9 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.StockDividend: JalIcon.STOCK_DIVIDEND,
             AssetPayment.StockVesting: JalIcon.STOCK_VESTING,
             AssetPayment.BondAmortization: JalIcon.BOND_AMORTIZATION,
-            AssetPayment.Fee: JalIcon.FEE
+            AssetPayment.Fee: JalIcon.FEE,
+            AssetPayment.GasFee: JalIcon.FEE,
+            AssetPayment.StakingReward: JalIcon.INTEREST
         }
         self.names = {
             AssetPayment.NA: self.tr("UNDEFINED"),
@@ -442,7 +446,9 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.StockDividend: self.tr("Stock Dividend"),
             AssetPayment.StockVesting: self.tr("Stock Vesting"),
             AssetPayment.BondAmortization: self.tr("Bond Amortization"),
-            AssetPayment.Fee: self.tr("Asset fee/tax")
+            AssetPayment.Fee: self.tr("Asset fee/tax"),
+            AssetPayment.GasFee: self.tr("Gas fee"),
+            AssetPayment.StakingReward: self.tr("Staking reward")
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.AssetPayment
@@ -512,6 +518,21 @@ class AssetPayment(LedgerTransaction):
 
     # Return price of asset for stock dividend and vesting
     def price(self) -> Decimal:
+        if self._subtype == AssetPayment.StakingReward:
+            # A reward arrives at a block timestamp, which no daily quote series will ever match exactly, so the
+            # last known price is used instead of demanding a quote of that very second. A reward that can't be
+            # priced at all opens a lot at zero and would show the whole proceeds as gain when sold, so it is
+            # refused rather than silently mis-stating the basis.
+            quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
+            if not quote_timestamp:
+                # Refused rather than opened at a zero basis, which would silently report the whole proceeds as
+                # gain when the coins are sold. This is recoverable and needs no re-import: the reward itself is
+                # already stored with the right amount, it is only the valuation that is missing, so downloading
+                # the quotes and rebuilding the ledger completes it. That also resolves the ordering problem of a
+                # first-ever import, where the asset is created by that very import and can have no quotes yet.
+                raise ValueError(self.tr("No quote to value a staking reward - download quotes for this asset "
+                                         "and rebuild the ledger.") + f" Operation: {self.dump()}")
+            return price
         if self._subtype != AssetPayment.StockDividend and self._subtype != AssetPayment.StockVesting:
             return Decimal('0')
         quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
@@ -536,6 +557,13 @@ class AssetPayment(LedgerTransaction):
             timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
             if timestamp != self._timestamp:
                 logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
+            amount = self._amount * price
+        elif self._subtype == AssetPayment.StakingReward or self._subtype == AssetPayment.GasFee:
+            # A crypto quote is daily, so it never falls on the exact block timestamp the way an exchange quote
+            # does for a stock dividend - the last known price is the best available and is not an error.
+            timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
+            if not timestamp:
+                logging.error(self.tr("No price data to value an asset-denominated payment: ") + f"{self.dump()}")
             amount = self._amount * price
         else:
             amount = self._amount
@@ -576,13 +604,18 @@ class AssetPayment(LedgerTransaction):
                 return [-self._tax]
             else:
                 return [Decimal('NaN')]
+        amount = -self._amount if self._subtype == AssetPayment.GasFee else self._amount
         if self._tax:
-            return [self._amount, -self._tax]
+            return [amount, -self._tax]
         else:
-            return [self._amount, None]
+            return [amount, None]
 
     def value_currency(self) -> str:
-        if (self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting) and not self._opart:
+        # The amount of these payments is a quantity of the asset, not a sum of money: shares received as a
+        # dividend, coins earned by staking, coins burned as gas
+        asset_denominated = (AssetPayment.StockDividend, AssetPayment.StockVesting,
+                             AssetPayment.StakingReward, AssetPayment.GasFee)
+        if self._subtype in asset_denominated and not self._opart:
             if self._tax:
                 return f" {self._symbol.symbol()}\n {self._account_currency}"
             else:
@@ -593,7 +626,8 @@ class AssetPayment(LedgerTransaction):
     def value_total(self) -> list:
         balance = []
         amount = self._money_total(self._account.id())
-        if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
+        if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting,
+                             AssetPayment.StakingReward, AssetPayment.GasFee):
             qty = self._asset_total(self._account.id(), self._asset.id())
             if qty is None:
                 return [Decimal('NaN')]
@@ -615,8 +649,12 @@ class AssetPayment(LedgerTransaction):
     def processLedger(self, ledger):
         if not self._peer_id:
             raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
-        if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
+        if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting \
+                or self._subtype == AssetPayment.StakingReward:
             self.processStockDividendOrVesting(ledger)
+            return
+        if self._subtype == AssetPayment.GasFee:
+            self.processGasFee(ledger)
             return
         if self._subtype == AssetPayment.BondAmortization:
             self.processBondAmortization(ledger)
@@ -657,6 +695,27 @@ class AssetPayment(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Money, -self._tax)
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
                                      part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
+
+    # Gas burned by a transaction that moved nothing - a token approval, a contract call, or a transaction that
+    # ran out of energy and failed while still costing its fee. The coins leave the wallet exactly as they do for a
+    # transfer fee, so the treatment is the same one chosen there: consumed from the open lots in FIFO order and
+    # expensed to Costs at their own cost basis, realizing no profit or loss and recording no deal.
+    # See Transfer.processAssetFee() for the tax caveat that applies here word for word.
+    def processGasFee(self, ledger):
+        asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
+        if asset_amount < self._amount:
+            raise LedgerError(self.tr("Asset amount is not enough to pay the gas fee. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Asset amount: {asset_amount}, "
+                              + f"Required: {self._amount}, Operation: {self.dump()}")
+        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._amount, record_deals=False)
+        if processed_qty < self._amount:
+            raise LedgerError(self.tr("Processed asset amount is less than the gas fee. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
+                              + f"Required: {self._amount}, Operation: {self.dump()}")
+        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
+                                 asset_id=self._asset.id(), value=-processed_value)
+        ledger.appendTransaction(self, BookAccount.Costs, processed_value, part=self.PART_VALUE,
+                                 category=PredefinedCategory.Fees, peer=self._peer_id, tag=self._asset.tag().id())
 
     def processBondAmortization(self, ledger):
         operation_value = (self._amount - self._tax)

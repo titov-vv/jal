@@ -110,6 +110,8 @@ class Ui_JAL_MainWindow(object):
         self.menuImport.setObjectName(u"menuImport")
         self.menuStatement = QMenu(self.menuImport)
         self.menuStatement.setObjectName(u"menuStatement")
+        self.menuBlockchain = QMenu(self.menuImport)
+        self.menuBlockchain.setObjectName(u"menuBlockchain")
         self.menuReports = QMenu(self.MainMenu)
         self.menuReports.setObjectName(u"menuReports")
         self.menu_Tools = QMenu(self.MainMenu)
@@ -152,6 +154,7 @@ class Ui_JAL_MainWindow(object):
         self.menuImport.addAction(self.action_LoadQuotes)
         self.menuImport.addAction(self.actionLoadTokenLists)
         self.menuImport.addAction(self.menuStatement.menuAction())
+        self.menuImport.addAction(self.menuBlockchain.menuAction())
         self.menuImport.addAction(self.actionImportShopReceipt)
         self.menu_Tools.addAction(self.actionMergeRuTaxFiles)
 
@@ -190,6 +193,7 @@ class Ui_JAL_MainWindow(object):
         self.menuLanguage.setTitle(QCoreApplication.translate("JAL_MainWindow", u"L&anguage", None))
         self.menuImport.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Import", None))
         self.menuStatement.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Statement", None))
+        self.menuBlockchain.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Blockchain", None))
         self.menuReports.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Reports", None))
         self.menu_Tools.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Tools", None))
     # retranslateUi
