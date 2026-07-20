@@ -1,11 +1,14 @@
 import os
+import pytest
 from shutil import copyfile
 import sqlite3
 from decimal import Decimal
 from datetime import datetime, timezone
 
+from PySide6.QtCore import QLocale
+
 from tests.fixtures import project_root
-from constants import Setup
+from constants import Setup, JalGlobals
 from jal.db.db import JalDB, JalDBError
 from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
@@ -16,7 +19,21 @@ from tests.helpers import pop2minor_digits, d2t, d2dt, dt2t
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_number_formatting():
+# localize_decimal() formats according to the system locale, and the expectations below - a comma decimal point and
+# a non-breaking space between thousands - are the Russian conventions. Without pinning the locale this test asserts
+# the machine it happens to run on: it passes for a developer with a Russian locale and fails under C/English ones,
+# where the separators are '.' and ','. The locale is set explicitly so the test states what it actually verifies.
+@pytest.fixture
+def russian_locale():
+    saved = QLocale()
+    QLocale.setDefault(QLocale(QLocale.Russian, QLocale.Russia))
+    JalGlobals.init_values()      # the separators are cached on the class at first use
+    yield
+    QLocale.setDefault(saved)
+    JalGlobals.init_values()
+
+
+def test_number_formatting(russian_locale):
     assert localize_decimal(Decimal('123.123')) == '123,123'
     assert localize_decimal(Decimal('123.123'), percent=True) == '12\xa0312,3'
     assert localize_decimal(Decimal('1234567890.123456789'), precision=5) == '1\xa0234\xa0567\xa0890,12346'
