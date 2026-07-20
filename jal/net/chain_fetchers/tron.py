@@ -155,7 +155,7 @@ class TronFetcher(ChainFetcher):
         fee = gas.get(tx_hash, Decimal('0')) if not incoming else Decimal('0')
         fee_asset_id = self._native_asset_id() if fee > Decimal('0') else None
         self._add_transfer(self._timestamp_of(record), asset_id, amount, incoming, tx_hash,
-                           note=self._counterparty_note(record, incoming), fee=fee, fee_asset_id=fee_asset_id)
+                           note=self._counterparty_note(record), fee=fee, fee_asset_id=fee_asset_id)
 
     def _process_native_transaction(self, record: dict, address: str) -> None:
         contract = self._contract_of(record)
@@ -203,7 +203,7 @@ class TronFetcher(ChainFetcher):
         fee = Decimal(str(record.get('ret', [{}])[0].get('fee', 0))) / _SUN if not incoming else Decimal('0')
         asset_id = self._native_asset_id()
         self._add_transfer(self._timestamp_of(record), asset_id, amount, incoming, tx_hash,
-                           note=self._native_counterparty_note(value, incoming),
+                           note=self._native_counterparty_note(value),
                            fee=fee, fee_asset_id=asset_id if fee > Decimal('0') else None)
 
     # A call that transferred nothing and only burned gas: a token approval, a contract call, or a transaction
@@ -266,14 +266,17 @@ class TronFetcher(ChainFetcher):
     def _native_asset_id(self) -> int:
         return self._token_asset_id('TRX', "Tron", address='')
 
+    def _timestamp_of(self, record: dict) -> int:
+        # The API reports milliseconds of true UTC time; JAL stores seconds in its own local-wall-clock convention.
+        return self._local_timestamp(int(record.get('block_timestamp', 0)) // 1000)
+
+    # Both counterparties are shown, sender first, so the note holds the whole movement regardless of its direction.
     @staticmethod
-    def _timestamp_of(record: dict) -> int:
-        return int(record.get('block_timestamp', 0)) // 1000    # The API reports milliseconds, JAL stores seconds
+    def _counterparty_note(record: dict) -> str:
+        return f"{record.get('from', '')} → {record.get('to', '')}"
 
-    def _counterparty_note(self, record: dict, incoming: bool) -> str:
-        counterparty = record.get('from', '') if incoming else record.get('to', '')
-        return (self.tr("From ") if incoming else self.tr("To ")) + counterparty
-
-    def _native_counterparty_note(self, value: dict, incoming: bool) -> str:
-        raw = value.get('owner_address', '') if incoming else value.get('to_address', '')
-        return (self.tr("From ") if incoming else self.tr("To ")) + tron_address_from_hex(raw)
+    @staticmethod
+    def _native_counterparty_note(value: dict) -> str:
+        sender = tron_address_from_hex(value.get('owner_address', ''))
+        receiver = tron_address_from_hex(value.get('to_address', ''))
+        return f"{sender} → {receiver}"

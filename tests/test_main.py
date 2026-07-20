@@ -9,6 +9,7 @@ from PySide6.QtCore import QLocale
 
 from tests.fixtures import project_root
 from constants import Setup, JalGlobals
+from jal.constants import JalGlobals as JalGlobalsPackage   # a distinct class - see the russian_locale fixture
 from jal.db.db import JalDB, JalDBError
 from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
@@ -23,14 +24,22 @@ from tests.helpers import pop2minor_digits, d2t, d2dt, dt2t
 # a non-breaking space between thousands - are the Russian conventions. Without pinning the locale this test asserts
 # the machine it happens to run on: it passes for a developer with a Russian locale and fails under C/English ones,
 # where the separators are '.' and ','. The locale is set explicitly so the test states what it actually verifies.
+#
+# The separators are cached on the class at first use, and conftest.py puts the 'jal' directory on sys.path on top
+# of the package itself - so constants.py is imported twice, as 'constants' and as 'jal.constants', giving two
+# unrelated JalGlobals classes with two independent caches. The tests here reach the first one, while
+# localize_decimal() in jal/db/helpers.py reads the second. Re-initialising only one of them leaves the other stuck
+# with whatever locale was active when it was first touched, which then leaks into every later test in the process.
 @pytest.fixture
 def russian_locale():
     saved = QLocale()
     QLocale.setDefault(QLocale(QLocale.Russian, QLocale.Russia))
-    JalGlobals.init_values()      # the separators are cached on the class at first use
+    for globals_class in (JalGlobals, JalGlobalsPackage):
+        globals_class.init_values()
     yield
     QLocale.setDefault(saved)
-    JalGlobals.init_values()
+    for globals_class in (JalGlobals, JalGlobalsPackage):
+        globals_class.init_values()
 
 
 def test_number_formatting(russian_locale):

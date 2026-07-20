@@ -64,6 +64,8 @@ class ChainFetchers(QObject):
         account = wallets[0] if len(wallets) == 1 else self._select_wallet(wallets)
         if account is None:
             return
+        if not self._ensure_token_lists(fetcher_class.location_id):
+            return
         fetcher = fetcher_class()
         try:
             fetcher.fetch(account)
@@ -75,6 +77,30 @@ class ChainFetchers(QObject):
         self._report_skipped(fetcher)
         logging.info(self.tr("Transactions were fetched from blockchain for account: ") + account.name())
         self.load_completed.emit(fetcher.period()[1], totals)
+
+    # Token allow-/block-lists back the spam filter that decides which fetched tokens are real. Against an empty
+    # cache the filter has nothing to judge by: a token seen for the first time is unpriceable and looks exactly
+    # like a dust airdrop, so a legitimate coin (a wallet's first USDT) is quarantined AND auto-blacklisted -
+    # and the auto-blacklist then blocks it on every later fetch even once the lists are loaded. Rather than let
+    # that happen silently on the first fetch, the user is told and the lists for this chain are downloaded first.
+    # Returns False - aborting the fetch - if the cache is still empty afterwards, since fetching then would walk
+    # straight into that trap.
+    def _ensure_token_lists(self, location_id: int) -> bool:
+        lists = self.parent.token_lists
+        if not lists.is_empty(location_id):
+            return True
+        QMessageBox().information(None, self.tr("Token lists"),
+                                  self.tr("Token allow/block lists are not loaded yet. They are needed to tell real "
+                                          "tokens from unsolicited spam airdrops during import, and will be "
+                                          "downloaded now."), QMessageBox.Ok)
+        lists.refresh(location_id=location_id, force=True)
+        if lists.is_empty(location_id):   # cancelled by the user, or every download failed
+            QMessageBox().warning(None, self.tr("Token lists"),
+                                  self.tr("Token lists could not be loaded (see log for details). Fetching now could "
+                                          "hide real tokens as spam, so the import was stopped. Try again later, or "
+                                          "load the lists manually from the Import menu."), QMessageBox.Ok)
+            return False
+        return True
 
     # Asks which wallet to fetch when several accounts share one chain
     def _select_wallet(self, wallets):

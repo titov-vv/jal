@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from PySide6.QtCore import QObject
@@ -99,6 +100,19 @@ class ChainFetcher(Statement):
         while request.isRunning():
             QApplication.processEvents()
 
+    # Converts a true-UTC epoch (in seconds - every blockchain reports absolute UTC time) into the timestamp
+    # convention JAL stores everywhere else: the local wall-clock reading of that instant, kept as a UTC epoch of
+    # those digits. JAL displays every timestamp in UTC (see TimestampDelegate), and every other source stores the
+    # source's local wall clock this same way - manual entry through now_ts(), and every broker importer, which
+    # takes a local time string and stamps it as UTC. A raw UTC epoch would place chain operations an offset away
+    # from all of them and from what a block explorer shows in the user's local time. The offset in force at the
+    # event's own instant is used, so it stays correct across DST boundaries.
+    @staticmethod
+    def _local_timestamp(utc_seconds: int) -> int:
+        if utc_seconds <= 0:
+            return 0
+        return int(datetime.fromtimestamp(utc_seconds).replace(tzinfo=timezone.utc).timestamp())
+
     # Returns the JSF asset id of a token, creating the asset record if this statement doesn't have it yet.
     # 'address' is empty for the native coin of the chain, which has no contract behind it.
     def _token_asset_id(self, symbol: str, name: str, address: str = '') -> int:
@@ -130,8 +144,16 @@ class ChainFetcher(Statement):
         accounts = [0, 1, 1] if incoming else [1, 0, 1]
         # The tx hash goes into 'number' because that is the column a Transfer has. Operations designed later for
         # crypto carry a field named 'tx_hash' instead (CRYPTO_PATH decision #31); a Transfer predates that.
+        #
+        # 'deposit' is left at 0, not set to the transferred amount. For an asset transfer 'withdrawal' carries the
+        # quantity for both legs; 'deposit' is the cost basis in the destination account's currency and is read only
+        # when the two accounts differ in currency (see Transfer.processAssetTransfer). A fetcher cannot know that
+        # basis - the destination account is filled in by the user during import - so it leaves it 0 for the user to
+        # complete, matching the pre-crypto behaviour. Setting it to the quantity put a TRX/token count where a
+        # currency amount belongs and showed a nonsensical "cost basis" in the widget. See LONG_TERM_IMPROVEMENTS
+        # for the open question of computing it automatically where a quote exists.
         transfer = {"id": self._next_id(JSF.TRANSFERS), "account": accounts, "symbol": [symbol_id, symbol_id],
-                    "timestamp": timestamp, "withdrawal": amount, "deposit": amount,
+                    "timestamp": timestamp, "withdrawal": amount, "deposit": Decimal('0'),
                     "fee": fee, "number": tx_hash, "description": note}
         if fee > Decimal('0') and fee_asset_id is not None:
             transfer["fee_symbol"] = self._single_symbol_of(fee_asset_id)

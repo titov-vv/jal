@@ -514,7 +514,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 text = ''
                 pair_account = 1
                 if accounts[0] == 0:  # Deposit
-                    text = self.tr("Deposit of ") + f"{operation['deposit']:.2f} " + \
+                    # For an asset transfer the quantity is carried by 'withdrawal' on both legs; 'deposit' holds the
+                    # cost basis in the destination currency (0 when unknown, e.g. from a chain fetcher). So the
+                    # amount arriving is the withdrawn quantity - only a money transfer, which may convert currency,
+                    # shows the distinct 'deposit' amount.
+                    arriving = operation['deposit'] if asset_types[1] == PredefinedAsset.Money else operation['withdrawal']
+                    text = self.tr("Deposit of ") + f"{arriving:.2f} " + \
                            f"{JalAsset(asset_ids[1]).symbol()} @{ts2d(operation['timestamp'])}\n" + \
                            self.tr("Select account to withdraw from:")
                     pair_account = accounts[1]

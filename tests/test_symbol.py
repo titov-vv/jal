@@ -7,6 +7,7 @@ from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.db.ledger import Ledger
+from jal.db.asset_models import SymbolsListModel
 from tests.helpers import d2t
 
 
@@ -95,3 +96,24 @@ def test_get_active_symbols_returns_jalsymbol(prepare_db):
     assert symbol.symbol() == 'AAPL'
     assert symbol.identifier(SymbolId.ISIN) == 'US0378331005'
     assert entries[0]['currency'] == 2
+
+
+# SymbolsListModel.setFilter() has to produce valid SQL when nothing is filtered. An unfiltered list is the normal
+# case: SymbolListDialog.set_parameters() forwards whatever the selector widget supplied, and only one call site
+# in the whole application (the table-view delegate in delegates.py) supplies a currency - so every symbol selector
+# opened from an operation widget lands here. Emitting the WHERE keyword with an empty condition produced
+# 'WHERE  ORDER BY s.symbol', a syntax error that made _exec() return None and crashed locateItem().
+def test_unfiltered_symbol_list_builds_valid_sql(prepare_db):
+    create_assets([('AAPL', 'Apple Inc.', 'US0378331005', 2, PredefinedAsset.Stock, 0)])
+    model = SymbolsListModel()
+
+    model.setFilter()
+    assert 'WHERE  ' not in model._current_query
+    assert model.rowCount() > 0                      # the query executed instead of failing to prepare
+    located = model.locateItem(model.record(0).value('id'))
+    assert located.isValid()
+
+    # A filter that does select something must still work
+    model.setFilter(asset_type=PredefinedAsset.Stock)
+    assert 'WHERE a.type_id=' in model._current_query
+    assert model.rowCount() > 0

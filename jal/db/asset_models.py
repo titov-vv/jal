@@ -84,7 +84,11 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
             filter_clauses.append("(s.symbol LIKE :text OR a.full_name LIKE :text)")
             self._filter_params.append((":text", f"%{text}%"))
         self._filter_clause = ' AND '.join(filter_clauses)
-        self._current_query = f"{self._base_query} WHERE {self._filter_clause} {self._sort_clause}"
+        # The WHERE keyword may only appear when there is something to put after it - an unfiltered list is the
+        # normal case (SymbolListDialog.set_parameters() passes no filter at all unless the caller supplied one),
+        # and 'WHERE  ORDER BY ...' is a syntax error that makes _exec() return None instead of a query.
+        where_clause = f" WHERE {self._filter_clause}" if self._filter_clause else ''
+        self._current_query = f"{self._base_query}{where_clause} {self._sort_clause}"
         self.setQuery(self._exec(self._current_query, self._filter_params, forward_only=False))
 
     def getId(self, index):

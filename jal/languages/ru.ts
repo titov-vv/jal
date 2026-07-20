@@ -395,22 +395,22 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetDataModel</name>
     <message>
-        <location filename="../db/asset_models.py" line="211"/>
+        <location filename="../db/asset_models.py" line="215"/>
         <source>Attribute</source>
         <translation>Атрибут</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="212"/>
+        <location filename="../db/asset_models.py" line="216"/>
         <source>Value</source>
         <translation>Значение</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="223"/>
+        <location filename="../db/asset_models.py" line="227"/>
         <source>Row not added</source>
         <translation>Строка не добавлена</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="224"/>
+        <location filename="../db/asset_models.py" line="228"/>
         <source>Please fill in the previously added attribute before adding a new one</source>
         <translation>Пожалуйста, перед заполнением нового, заполните предыдущий добавленный атрибут</translation>
     </message>
@@ -800,17 +800,17 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetRecordModel</name>
     <message>
-        <location filename="../db/asset_models.py" line="147"/>
+        <location filename="../db/asset_models.py" line="151"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="148"/>
+        <location filename="../db/asset_models.py" line="152"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="149"/>
+        <location filename="../db/asset_models.py" line="153"/>
         <source>Country</source>
         <translation>Страна</translation>
     </message>
@@ -818,32 +818,32 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetSymbolsModel</name>
     <message>
-        <location filename="../db/asset_models.py" line="162"/>
+        <location filename="../db/asset_models.py" line="166"/>
         <source>Symbol</source>
         <translation>Символ</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="163"/>
+        <location filename="../db/asset_models.py" line="167"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="164"/>
+        <location filename="../db/asset_models.py" line="168"/>
         <source>Location</source>
         <translation>Место</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="165"/>
+        <location filename="../db/asset_models.py" line="169"/>
         <source>Act.</source>
         <translation>Акт.</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="177"/>
+        <location filename="../db/asset_models.py" line="181"/>
         <source>Row not added</source>
         <translation>Строка не добавлена</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="178"/>
+        <location filename="../db/asset_models.py" line="182"/>
         <source>Please fill in the previously added symbol before adding a new one</source>
         <translation>Перед добавлением нового, пожалуйста, заполните данные предыдущего символа</translation>
     </message>
@@ -1185,12 +1185,12 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>ChainFetcher</name>
     <message>
-        <location filename="../net/chain_fetchers/fetcher.py" line="68"/>
+        <location filename="../net/chain_fetchers/fetcher.py" line="69"/>
         <source>Account doesn&apos;t belong to this blockchain: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetcher.py" line="70"/>
+        <location filename="../net/chain_fetchers/fetcher.py" line="71"/>
         <source>Wallet account has no address: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1218,32 +1218,48 @@ Do you want to delete the category anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="72"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="74"/>
         <source>Blockchain fetch failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="76"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="78"/>
         <source>Transactions were fetched from blockchain for account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="81"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="92"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="98"/>
+        <source>Token lists</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/fetchers.py" line="93"/>
+        <source>Token allow/block lists are not loaded yet. They are needed to tell real tokens from unsolicited spam airdrops during import, and will be downloaded now.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/fetchers.py" line="99"/>
+        <source>Token lists could not be loaded (see log for details). Fetching now could hide real tokens as spam, so the import was stopped. Try again later, or load the lists manually from the Import menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/fetchers.py" line="107"/>
         <source>Select wallet account to fetch:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="94"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="120"/>
         <source>Some transactions were not imported:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="95"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="121"/>
         <source>Not everything was imported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="96"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="122"/>
         <source>These transactions were recognized but not imported:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1570,12 +1586,12 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DB</name>
     <message>
-        <location filename="../db/db.py" line="342"/>
+        <location filename="../db/db.py" line="351"/>
         <source>Database format is outdated</source>
         <translation>Формат базы данных устарел</translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="343"/>
+        <location filename="../db/db.py" line="352"/>
         <source>Do you agree to upgrade your data to newer format?</source>
         <translation>Вы согласны сконвертировать данные в новый формат?</translation>
     </message>
@@ -2533,7 +2549,7 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/db.py" line="390"/>
+        <location filename="../db/db.py" line="399"/>
         <source>Operation already present in db and was skipped: </source>
         <translation>Операция уже есть в базе данных и была пропущена: </translation>
     </message>
@@ -2564,12 +2580,12 @@ do you want to save it?</source>
 <context>
     <name>JalSqlError</name>
     <message>
-        <location filename="../db/db.py" line="49"/>
+        <location filename="../db/db.py" line="50"/>
         <source>Data are referenced in another place and can&apos;t be modified</source>
         <translation>Эти данные не могут быть модифицированы, т.к. на них есть ссылка в другом месте</translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="64"/>
+        <location filename="../db/db.py" line="65"/>
         <source>Database error</source>
         <translation>Ошибка в данных</translation>
     </message>
@@ -6118,12 +6134,12 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>SymbolIdentifiersModel</name>
     <message>
-        <location filename="../db/asset_models.py" line="196"/>
+        <location filename="../db/asset_models.py" line="200"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../db/asset_models.py" line="197"/>
+        <location filename="../db/asset_models.py" line="201"/>
         <source>Value</source>
         <translation>Значение</translation>
     </message>
@@ -6839,7 +6855,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TokenListProvider</name>
     <message>
-        <location filename="../net/token_lists.py" line="231"/>
+        <location filename="../net/token_lists.py" line="242"/>
         <source>Interrupted by user</source>
         <translation type="unfinished">Прервано пользователем</translation>
     </message>
@@ -7028,92 +7044,119 @@ Do you want to delete the peer anyway?</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="235"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="272"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="352"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="46"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="325"/>
+        <source>Cost basis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="335"/>
+        <source>Asset</source>
+        <translation type="unfinished">Актив</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="380"/>
+        <source>No fee</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="385"/>
+        <source>Fee</source>
+        <translation type="unfinished">Комиссия</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="390"/>
+        <source>Gas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="452"/>
         <source>From</source>
         <translation>С</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="255"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="67"/>
         <source>Asset transfer</source>
         <translation>Перевод ЦБ</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="69"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="166"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="279"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="427"/>
         <source>Copy value</source>
         <translation>Скопировать значение</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="72"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="169"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="282"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="430"/>
         <source>↓</source>
         <translation>↓</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="212"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="118"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="283"/>
-        <source>(asset cost basis in new currency)</source>
-        <translation>(стоимость позиции в новой валюте)</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="79"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="176"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="366"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="414"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="262"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="75"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="32"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="39"/>
-        <location filename="../ui/widgets/transfer_operation.ui" line="242"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="62"/>
+        <source>Money transfer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="108"/>
+        <source>Type</source>
+        <translation type="unfinished">Тип</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="157"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="258"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="265"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="342"/>
         <source>CUR</source>
         <translation>ВАЛ</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="104"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="207"/>
         <source>#</source>
         <translation>№</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="59"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="217"/>
         <source>Note</source>
         <translation>Примечание</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="202"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="48"/>
         <source>To</source>
         <translation>На</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="195"/>
-        <source>Include &amp;fee</source>
-        <translation>Включая &amp;комиссию</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="225"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="404"/>
         <source>Cancel changes</source>
         <translation>Отменить изменения</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="156"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="98"/>
         <source>Commit changes</source>
         <translation>Сохранить изменения</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="97"/>
+        <location filename="../ui/widgets/transfer_operation.ui" line="442"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
@@ -7121,39 +7164,51 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="34"/>
+        <location filename="../widgets/transfer_widget.py" line="44"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="103"/>
-        <location filename="../widgets/transfer_widget.py" line="106"/>
-        <location filename="../widgets/transfer_widget.py" line="122"/>
+        <location filename="../widgets/transfer_widget.py" line="148"/>
+        <location filename="../widgets/transfer_widget.py" line="171"/>
+        <location filename="../widgets/transfer_widget.py" line="176"/>
+        <location filename="../widgets/transfer_widget.py" line="187"/>
+        <location filename="../widgets/transfer_widget.py" line="190"/>
         <source>Incomplete data</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="103"/>
+        <location filename="../widgets/transfer_widget.py" line="149"/>
+        <source>An asset isn&apos;t chosen for the asset transfer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/transfer_widget.py" line="172"/>
+        <source>A fee is chosen for the transfer, but the fee amount is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/transfer_widget.py" line="177"/>
+        <source>An asset isn&apos;t chosen to pay the gas in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/transfer_widget.py" line="187"/>
         <source>An account isn&apos;t chosen for fee collection from</source>
         <translation>Не выбран счёт для удержания комиссии</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="106"/>
+        <location filename="../widgets/transfer_widget.py" line="190"/>
         <source>Can&apos;t collect fee from an account without organization assigned</source>
         <translation>Невозможно удержать комиссию со счёта без привязанной организации</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="123"/>
-        <source>An asset is chosen for the fee, but the fee amount is empty</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/transfer_widget.py" line="126"/>
+        <location filename="../widgets/transfer_widget.py" line="180"/>
         <source>Wrong data</source>
         <translation type="unfinished">Неверные данные</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="127"/>
+        <location filename="../widgets/transfer_widget.py" line="181"/>
         <source>A fee may be paid in a crypto asset only</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7258,18 +7313,6 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../net/chain_fetchers/tron.py" line="244"/>
         <source>Staking reward</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../net/chain_fetchers/tron.py" line="275"/>
-        <location filename="../net/chain_fetchers/tron.py" line="279"/>
-        <source>From </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../net/chain_fetchers/tron.py" line="275"/>
-        <location filename="../net/chain_fetchers/tron.py" line="279"/>
-        <source>To </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
