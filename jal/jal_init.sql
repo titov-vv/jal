@@ -379,6 +379,33 @@ CREATE TABLE swaps (
     note          TEXT                                         -- Free text comment
 );
 
+-- Table: bridges (a cross-chain move of ONE asset between two accounts - same asset, different per-chain listing)
+-- A bridge is seen on-chain as two independent transactions (a send on the source chain and a receive on the
+-- destination chain) that JAL may import in separate runs and in EITHER order. So a row may hold only ONE leg while
+-- it waits for its counterpart - a "pending half-bridge". The two legs are therefore individually nullable:
+--   * out_* NULL, in_* set  -> pending half, only the receive is known yet (basis provisional until matched)
+--   * out_* set, in_* NULL  -> pending half, only the send is known yet (value parked in the Transfers book)
+--   * both set              -> a complete, matched bridge
+-- Matching fills the missing leg on the resident row; it works identically whichever leg arrived first.
+DROP TABLE IF EXISTS bridges;
+CREATE TABLE bridges (
+    oid            INTEGER    PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
+    otype          INTEGER    NOT NULL DEFAULT (8),            -- Operation type (8 = bridge)
+    out_timestamp  INTEGER,                                    -- When sent (NULL until the send leg is known)
+    out_account_id INTEGER    REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    out_symbol_id  INTEGER    REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    out_qty        TEXT,
+    out_tx_hash    TEXT       NOT NULL DEFAULT (''),           -- Hash of the sending transaction (source chain)
+    in_timestamp   INTEGER,                                    -- When received (NULL until the receive leg is known)
+    in_account_id  INTEGER    REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    in_symbol_id   INTEGER    REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Same asset as out_symbol_id (enforced by application)
+    in_qty         TEXT,                                       -- May be less than out_qty (in-kind bridge fee)
+    in_tx_hash     TEXT       NOT NULL DEFAULT (''),           -- Hash of the receiving transaction (destination chain)
+    fee_symbol_id  INTEGER    REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Fee (gas) asset, paid from the source account
+    fee_qty        TEXT,
+    note           TEXT                                        -- Free text comment
+);
+
 -- Table for closed deals storage
 DROP TABLE IF EXISTS trades_closed;
 CREATE TABLE trades_closed (
@@ -464,6 +491,12 @@ FROM
     SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
     UNION ALL
     SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, -1 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges WHERE NOT out_account_id IS NULL
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, 0 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges WHERE NOT fee_qty IS NULL
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, 1 AS opart, in_timestamp AS timestamp, in_account_id AS account_id FROM bridges WHERE NOT in_account_id IS NULL
 ) AS m
 ORDER BY m.timestamp, m.seq, m.opart, m.oid;  -- First sort by sequence and part to enforce right operation processing order
 
@@ -595,6 +628,26 @@ CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_sym
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;
+-- A bridge leg may be NULL while a half is pending; `>= NULL` is NULL (never true), so the OR keeps whichever
+-- leg is present valid. Matching (filling the second leg) fires the update trigger and rebuilds from the earlier leg.
+DROP TRIGGER IF EXISTS bridges_after_delete;
+CREATE TRIGGER bridges_after_delete AFTER DELETE ON bridges FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp;
+END;
+DROP TRIGGER IF EXISTS bridges_after_insert;
+CREATE TRIGGER bridges_after_insert AFTER INSERT ON bridges FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
+END;
+DROP TRIGGER IF EXISTS bridges_after_update;
+CREATE TRIGGER bridges_after_update AFTER UPDATE OF out_timestamp, in_timestamp, out_account_id, in_account_id, out_symbol_id, in_symbol_id, out_qty, in_qty, fee_symbol_id, fee_qty ON bridges FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp OR timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp OR timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_action_after_delete;

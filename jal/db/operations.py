@@ -30,6 +30,7 @@ class LedgerTransaction(JalDB):
     CorporateAction = 5
     TermDeposit = 6
     Swap = 7
+    Bridge = 8
     _db_table = ''   # Table where operation is stored in DB
     _db_fields = {}
 
@@ -82,6 +83,8 @@ class LedgerTransaction(JalDB):
             return TermDeposit(oid, opart)
         elif operation_type == LedgerTransaction.Swap:
             return Swap(oid, opart=opart)
+        elif operation_type == LedgerTransaction.Bridge:
+            return Bridge(oid, opart=opart)
         else:
             raise ValueError(f"An attempt to select unknown operation type: {operation_type}")
 
@@ -99,6 +102,8 @@ class LedgerTransaction(JalDB):
             return CorporateAction(operation_data)
         elif operation_type == LedgerTransaction.Swap:
             return Swap(operation_data)
+        elif operation_type == LedgerTransaction.Bridge:
+            return Bridge(operation_data, Bridge.Outgoing)
         else:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
 
@@ -132,6 +137,9 @@ class LedgerTransaction(JalDB):
         elif operation_type == LedgerTransaction.Swap:
             table = Swap._db_table
             fields = Swap._db_fields
+        elif operation_type == LedgerTransaction.Bridge:
+            table = Bridge._db_table
+            fields = Bridge._db_fields
         else:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
         self.validate_operation_data(table, fields, operation_data)
@@ -1692,3 +1700,261 @@ class TermDeposit(LedgerTransaction):
                                      category=PredefinedCategory.Interest, peer=self._peer_id, part=self._aid)
         else:
             assert False, "Not implemented deposit action"
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A cross-chain move of ONE asset between two accounts (its per-chain listing differs, its cost basis is carried).
+# A bridge is seen on-chain as two independent transactions - a send on the source chain and a receive on the
+# destination chain - that JAL may import in separate runs and in EITHER order. So a Bridge row may hold only one leg
+# as a "pending half-bridge" until its counterpart is matched in (Option A); the two legs are individually nullable.
+#   * both legs present -> a complete bridge: the send parks the disposed value in the Transfers book, the receive
+#     drains it and re-opens the lots on the destination (cost basis carried, FX-adjusted when the accounts differ in
+#     currency). An in-kind fee (in_qty < out_qty) is disposed to Costs at basis.
+#   * send only (in_* NULL)   -> value is parked in the Transfers book and stays in transit until matched.
+#   * receive only (out_* NULL) -> the received amount opens a provisional zero-basis lot (as a fetched transfer whose
+#     basis is filled later); matching the send in replaces it with the real carried basis on rebuild.
+# Gas and in-kind fees are disposed at cost basis (like the Swap gas fee) - realizing market P&L on them (#18) is a
+# crypto-tax refinement deferred until crypto tax treatment is designed. Same-account bridges are forbidden.
+class Bridge(LedgerTransaction):
+    Fee = 0
+    Outgoing = -1
+    Incoming = 1
+    _db_table = "bridges"
+    _db_fields = {
+        "out_timestamp": {"mandatory": False, "validation": True, "default": None},
+        "out_account_id": {"mandatory": False, "validation": True, "default": None},
+        "out_symbol_id": {"mandatory": False, "validation": True, "default": None},
+        "out_qty": {"mandatory": False, "validation": True, "default": None},
+        "out_tx_hash": {"mandatory": False, "validation": True, "default": ''},
+        "in_timestamp": {"mandatory": False, "validation": True, "default": None},
+        "in_account_id": {"mandatory": False, "validation": True, "default": None},
+        "in_symbol_id": {"mandatory": False, "validation": True, "default": None},
+        "in_qty": {"mandatory": False, "validation": True, "default": None},
+        "in_tx_hash": {"mandatory": False, "validation": True, "default": ''},
+        "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
+        "fee_qty": {"mandatory": False, "validation": True, "default": None},
+        "note": {"mandatory": False, "validation": False}
+    }
+    PART_FEE = 2
+
+    def __init__(self, operation_data=None, opart=Outgoing):
+        assert opart in [Bridge.Outgoing, Bridge.Incoming, Bridge.Fee], "Unknown bridge part"
+        icons = {Bridge.Outgoing: JalIcon.TRANSFER_ASSET_OUT,
+                 Bridge.Incoming: JalIcon.TRANSFER_ASSET_IN,
+                 Bridge.Fee: JalIcon.FEE}
+        self.names = {Bridge.Outgoing: self.tr("Outgoing bridge"),
+                      Bridge.Incoming: self.tr("Incoming bridge"),
+                      Bridge.Fee: self.tr("Bridge fee")}
+        super().__init__(operation_data)
+        self._otype = LedgerTransaction.Bridge
+        self._opart = opart
+        self._data = self._read("SELECT out_timestamp, out_account_id, out_symbol_id, out_qty, out_tx_hash, "
+                                "in_timestamp, in_account_id, in_symbol_id, in_qty, in_tx_hash, "
+                                "fee_symbol_id, fee_qty, note FROM bridges WHERE oid=:oid",
+                                [(":oid", self._oid)], named=True)
+        if self._data is None:
+            raise IndexError(LedgerTransaction.NoOpException)
+        present = lambda v: v is not None and v != ''   # _read() returns '' (not None) for a SQL NULL - an absent leg
+        self._has_out = present(self._data['out_account_id'])
+        self._has_in = present(self._data['in_account_id'])
+        self._out_timestamp = int(self._data['out_timestamp']) if present(self._data['out_timestamp']) else None
+        self._in_timestamp = int(self._data['in_timestamp']) if present(self._data['in_timestamp']) else None
+        self._out_account = jal.db.account.JalAccount(self._data['out_account_id']) if self._has_out else None
+        self._in_account = jal.db.account.JalAccount(self._data['in_account_id']) if self._has_in else None
+        self._out_symbol = JalSymbol(self._data['out_symbol_id']) if self._has_out else None
+        self._in_symbol = JalSymbol(self._data['in_symbol_id']) if self._has_in else None
+        self._out_qty = Decimal(self._data['out_qty']) if present(self._data['out_qty']) else None
+        self._in_qty = Decimal(self._data['in_qty']) if present(self._data['in_qty']) else None
+        self._fee_symbol = JalSymbol(self._data['fee_symbol_id']) if present(self._data['fee_symbol_id']) else None
+        self._fee_qty = Decimal(self._data['fee_qty']) if present(self._data['fee_qty']) else Decimal('0')
+        # The bridged asset (out and in are the same asset when complete); take it from whichever leg is present
+        self._symbol = self._out_symbol if self._has_out else self._in_symbol
+        self._asset = self._symbol.asset()
+        self._account = self._out_account if self._has_out else self._in_account
+        self._out_tx_hash = self._data['out_tx_hash']
+        self._in_tx_hash = self._data['in_tx_hash']
+        # Each leg is a transaction of its own chain, so the part decides which hash and timestamp represents it
+        self._number = self._in_tx_hash if opart == Bridge.Incoming else self._out_tx_hash
+        self._note = self._data['note']
+        self._timestamp = self._in_timestamp if opart == Bridge.Incoming else self._out_timestamp
+        self._icon = JalIcon[icons[opart]]
+        self._oname = self.names[opart]
+        if opart == Bridge.Incoming:
+            self._reconciled = self._has_in and self._in_account.reconciled_at() >= self._in_timestamp
+        else:
+            self._reconciled = self._has_out and self._out_account.reconciled_at() >= self._out_timestamp
+
+    # A bridge is pending while it holds only one of its two legs (awaiting its counterpart to be matched in)
+    def is_pending(self) -> bool:
+        return not (self._has_out and self._has_in)
+
+    # Finish time of the bridge (required for FIFO compatibility); a pending half knows only one side
+    def settlement(self) -> int:
+        return self._in_timestamp if self._in_timestamp is not None else self._out_timestamp
+
+    def account_name(self):
+        out = self._out_account.name() if self._has_out else self.tr("(pending)")
+        inp = self._in_account.name() if self._has_in else self.tr("(pending)")
+        if self._opart == Bridge.Incoming:
+            return f"{inp} <- {out}"
+        else:   # Outgoing part and fee are booked on the source account
+            return f"{out} -> {inp}"
+
+    def account_id(self):
+        if self._opart == Bridge.Incoming:
+            return self._in_account.id()
+        else:
+            return self._out_account.id()
+
+    def qty(self) -> Decimal:
+        return self._out_qty if self._out_qty is not None else self._in_qty
+
+    # Price is undefined for a bridge as it keeps cost basis (this makes FIFO processing create zero profit/loss deals)
+    def price(self):
+        return None
+
+    def note(self) -> str:
+        return self._note
+
+    def description(self, part_only=False) -> str:
+        if self._opart == Bridge.Fee:
+            note = f" ({self._note})" if self._note else ''
+            return self.tr("Bridge fee") + note
+        out_s = self._out_symbol.symbol() if self._has_out else "?"
+        in_s = self._in_symbol.symbol() if self._has_in else "?"
+        if self.is_pending():
+            text = self.tr("Bridge (awaiting matching):") + f" {out_s} -> {in_s}"
+        else:
+            text = f"{out_s} -> {in_s}"
+            if self._in_qty != self._out_qty:
+                text += " [" + self.tr("In-kind fee:") + f" {self._out_qty - self._in_qty} {in_s}]"
+        if self._note:
+            text += " " + self._note
+        return text
+
+    def value_change(self, part_only=False) -> list:
+        if self._opart == Bridge.Outgoing:
+            return [-self._out_qty]
+        elif self._opart == Bridge.Incoming:
+            return [self._in_qty]
+        elif self._opart == Bridge.Fee:
+            return [-self._fee_qty]
+        else:
+            assert False, "Unknown bridge part"
+
+    def value_currency(self) -> str:
+        if self._opart == Bridge.Incoming:
+            return self._in_symbol.symbol()
+        elif self._opart == Bridge.Fee:
+            return self._fee_symbol.symbol()
+        else:
+            return self._out_symbol.symbol()
+
+    def value_total(self) -> list:
+        if self._opart == Bridge.Outgoing:
+            amount = self._asset_total(self._out_account.id(), self._asset.id())
+        elif self._opart == Bridge.Incoming:
+            amount = self._asset_total(self._in_account.id(), self._asset.id())
+        elif self._opart == Bridge.Fee:
+            amount = self._asset_total(self._out_account.id(), self._fee_symbol.asset().id())
+        else:
+            assert False, "Unknown bridge part"
+        return [amount]
+
+    def processLedger(self, ledger):
+        if self._has_out and self._has_in:   # Coherence checks that only apply to a complete, matched bridge
+            if self._asset.id() == 0 or self._asset.id() != self._in_symbol.asset().id():
+                raise LedgerError(self.tr("Bridge must move the same asset between accounts. Operation: ") + self.dump())
+            if self._out_account.id() == self._in_account.id():
+                # Moving lots back into the same account would shadow the remainder of a partially bridged position
+                raise LedgerError(self.tr("Bridge between the same account isn't supported. Operation: ") + self.dump())
+            if self._in_qty > self._out_qty:
+                raise LedgerError(self.tr("Bridge can't receive more asset than was sent. Operation: ") + self.dump())
+            if self._out_timestamp > self._in_timestamp:
+                raise LedgerError(self.tr("Bridge receive can't precede its send. Operation: ") + self.dump())
+        if self._opart == Bridge.Outgoing:
+            self.processOutgoing(ledger)
+        elif self._opart == Bridge.Fee:
+            if self._fee_symbol is None or self._fee_qty <= Decimal('0'):
+                raise LedgerError(self.tr("Bridge fee asset isn't set. Operation: ") + self.dump())
+            self.processFee(ledger)
+        elif self._opart == Bridge.Incoming:
+            self.processIncoming(ledger)
+        else:
+            assert False, "Unknown bridge part"
+
+    # Withdraw the sent asset at its cost basis and park the value in the Transfers book (works for a send-only
+    # pending half too - the value simply stays in transit until the receive leg is matched in and drains it)
+    def processOutgoing(self, ledger):
+        available = ledger.getAmount(BookAccount.Assets, self._out_account.id(), self._asset.id())
+        if available < self._out_qty:
+            raise LedgerError(self.tr("Asset amount is not enough for bridge processing. Date: ")
+                              + f"{ts2dt(self._out_timestamp)}, Asset amount: {available}, "
+                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._out_qty)
+        if processed_qty < self._out_qty:
+            raise LedgerError(self.tr("Processed asset amount is less than bridge amount. Date: ")
+                              + f"{ts2dt(self._out_timestamp)}, Processed amount: {processed_qty}, "
+                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
+        ledger.appendTransaction(self, BookAccount.Transfers, self._out_qty, asset_id=self._asset.id(), value=processed_value)
+
+    # Gas on the source chain, disposed from the source account at cost basis to Costs/Fees (no P&L, like Swap gas)
+    def processFee(self, ledger):
+        fee_asset = self._fee_symbol.asset()
+        available = ledger.getAmount(BookAccount.Assets, self._out_account.id(), fee_asset.id())
+        if available < self._fee_qty:
+            raise LedgerError(self.tr("Asset amount is not enough to pay the bridge fee. Date: ")
+                              + f"{ts2dt(self._out_timestamp)}, Asset amount: {available}, "
+                              + f"Required: {self._fee_qty}, Operation: {self.dump()}")
+        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._fee_qty,
+                                                               asset=fee_asset, account=self._out_account, record_deals=False)
+        if processed_qty < self._fee_qty:
+            raise LedgerError(self.tr("Processed asset amount is less than the bridge fee. Date: ")
+                              + f"{ts2dt(self._out_timestamp)}, Processed amount: {processed_qty}, "
+                              + f"Required: {self._fee_qty}, Operation: {self.dump()}")
+        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=fee_asset.id(), value=-processed_value)
+        ledger.appendTransaction(self, BookAccount.Costs, processed_value, part=self.PART_FEE,
+                                 category=PredefinedCategory.Fees, peer=self._out_account.organization())
+
+    def processIncoming(self, ledger):
+        if not self._has_out:
+            # Receive-only pending half: the send leg (and thus the cost basis) is unknown, so open the received
+            # amount as a provisional zero-basis lot. Matching the send in replaces this with the carried basis.
+            self._in_account.open_trade(JalOpenTrade(self, Decimal('0'), self._in_qty), self._asset)
+            ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._asset.id(), value=Decimal('0'))
+            return
+        # Complete bridge: take the deals closed by the outgoing leg (created strictly before the fee leg's, and
+        # summing to out_qty), then drain the value the outgoing leg parked in the Transfers book
+        transfer_trades = []
+        bridged_qty = Decimal('0')
+        for trade in self._deals_closed_by_operation():
+            if bridged_qty >= self._out_qty:
+                break
+            transfer_trades.append(trade)
+            bridged_qty += trade.qty()
+        value = self._read("SELECT value FROM ledger WHERE book_account=:book_transfers AND otype=:otype AND oid=:id",
+                           [(":book_transfers", BookAccount.Transfers), (":otype", self._otype), (":id", self._oid)],
+                           check_unique=True)
+        if not value:
+            raise LedgerError(self.tr("Asset withdrawal not found for bridge.") + f" Operation:  {self.dump()}")
+        value = Decimal(value)
+        if self._out_account.currency() == self._in_account.currency():
+            rate = Decimal('1')
+        else:   # Cost basis is converted into the destination account currency with the FX rate at the deposit time
+            rate = JalAsset(self._out_account.currency()).quote(self._in_timestamp, self._in_account.currency())[1]
+            if rate == Decimal('0'):
+                raise LedgerError(self.tr("There is no FX rate to convert bridge cost basis. Date: ")
+                                  + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
+        transfer_value = rate * value
+        for trade in transfer_trades:   # Move open trades from source to destination (adjust cost basis by FX rate)
+            self._in_account.open_trade(trade, self._asset, modified_by=self, adjustment=(rate, Decimal('1')))
+        ledger.appendTransaction(self, BookAccount.Transfers, -self._out_qty, asset_id=self._asset.id(), value=-transfer_value)
+        ledger.appendTransaction(self, BookAccount.Assets, self._out_qty, asset_id=self._asset.id(), value=transfer_value)
+        if self._in_qty < self._out_qty:   # In-kind bridge fee: dispose the difference from the destination at basis
+            fee_qty = self._out_qty - self._in_qty
+            processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), fee_qty,
+                                                                   account=self._in_account, record_deals=False)
+            ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
+            ledger.appendTransaction(self, BookAccount.Costs, processed_value, part=self.PART_FEE,
+                                     category=PredefinedCategory.Fees, peer=self._in_account.organization())

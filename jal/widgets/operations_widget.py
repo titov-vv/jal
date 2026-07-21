@@ -16,6 +16,7 @@ from jal.db.balances_model import BalancesModel
 from jal.db.operations_model import OperationsModel
 from jal.db.common_models import TagTreeModel
 from jal.db.operations import LedgerTransaction
+from jal.widgets.bridge_match_dialog import BridgeMatchDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -127,6 +128,8 @@ class OperationsWidget(MdiWidget):
         actionCopy.triggered.connect(self.ui.OperationsTabs.copy_operation)
         actionDelete = QAction(JalIcon[JalIcon.REMOVE], self.tr("Delete"), self)
         actionDelete.triggered.connect(self.delete_operation)
+        actionMatchBridge = QAction(JalIcon[JalIcon.TRANSFER_ASSET_IN], self.tr("Match bridge…"), self)
+        actionMatchBridge.triggered.connect(self.match_bridge)
         contextMenu.addAction(actionReconcile)
         contextMenu.addSeparator()
         contextMenu.addAction(actionTag)
@@ -134,13 +137,35 @@ class OperationsWidget(MdiWidget):
         contextMenu.addAction(actionCopy)
         contextMenu.addAction(actionDelete)
         self.current_index = self.ui.OperationsTableView.indexAt(pos)
-        if len(self.ui.OperationsTableView.selectionModel().selectedRows()) != 1:
-            actionReconcile.setEnabled(False)
-            actionCopy.setEnabled(False)
-        else:
-            actionReconcile.setEnabled(True)
-            actionCopy.setEnabled(True)
+        single = len(self.ui.OperationsTableView.selectionModel().selectedRows()) == 1
+        actionReconcile.setEnabled(single)
+        actionCopy.setEnabled(single)
+        # "Match bridge…" is offered only on a pending half-bridge (a bridge still waiting for its other leg)
+        if single and self._is_pending_bridge(self.current_index):
+            contextMenu.addSeparator()
+            contextMenu.addAction(actionMatchBridge)
         contextMenu.popup(self.ui.OperationsTableView.viewport().mapToGlobal(pos))
+
+    # (otype, oid) of the operation at a proxy-model index, or (NA, 0) if the index is invalid
+    def _operation_at(self, index):
+        if not index.isValid():
+            return LedgerTransaction.NA, 0
+        source_row = self.operations_filtered_model.mapToSource(index).row()
+        return self.operations_model.get_operation(source_row)
+
+    def _is_pending_bridge(self, index) -> bool:
+        otype, oid = self._operation_at(index)
+        if otype != LedgerTransaction.Bridge:
+            return False
+        return LedgerTransaction.get_operation(otype, oid).is_pending()
+
+    @Slot()
+    def match_bridge(self):
+        otype, oid = self._operation_at(self.current_index)
+        if otype != LedgerTransaction.Bridge:
+            return
+        if BridgeMatchDialog(oid, self).exec() == QDialog.Accepted:
+            self.dbUpdated.emit()   # connected to the ledger rebuild + operations refresh
 
     @Slot()
     def balances_context_menu(self, pos):

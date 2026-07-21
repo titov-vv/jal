@@ -65,6 +65,10 @@ def _swaps(data) -> list:
     return data.get(JSF.SWAPS, [])
 
 
+def _bridges(data) -> list:
+    return data.get(JSF.BRIDGES, [])
+
+
 def _eth_symbol_ids(data) -> list:
     return [s['id'] for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS] if s['symbol'] == 'ETH']
 
@@ -312,6 +316,43 @@ def test_lending_transaction_halts_as_not_supported(eth_wallet, monkeypatch):
     assert _transfers(data) == [] and _swaps(data) == []              # a lending deposit is deferred to P4, so nothing
     assert any('lending' in reason for reason in fetcher.skipped())
     assert fetcher._new_cursor == ''                                 # the very first block halted, so no cursor advance
+
+
+def test_bridge_send_is_emitted_as_a_pending_send_half(eth_wallet, monkeypatch):
+    lifi = "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae"     # registered AGGREGATOR; a single leg -> a bridge
+    e5 = "0xe5" + "0" * 62
+    pages = {
+        "txlist": [_tx(e5, 100, WALLET, lifi, value=2 * 10 ** 18, gas_used='120000')],   # send 2 ETH into the bridge
+        "tokentx": [],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _swaps(data) == [] and _transfers(data) == []     # not a swap, not a plain transfer
+    halves = _bridges(data)
+    assert len(halves) == 1
+    half = halves[0]
+    assert half['sending'] is True and half['qty'] == Decimal('2')     # the send leg only
+    assert half['symbol'] in _eth_symbol_ids(data)
+    assert half['fee_qty'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18   # gas rides the send
+
+
+def test_bridge_receive_via_own_tx_is_emitted_as_a_pending_receive_half(eth_wallet, monkeypatch):
+    lifi = "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae"
+    f6 = "0xf6" + "0" * 62
+    pages = {
+        "txlist": [_tx(f6, 100, WALLET, lifi, value=0, gas_used='90000', method='0xb61d27f6')],   # claim on dest chain
+        "tokentx": [_token_tx(f6, 100, lifi, WALLET, 900 * 10 ** 6)],                             # receive 900 USDC
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    halves = _bridges(data)
+    assert len(halves) == 1
+    half = halves[0]
+    assert half['sending'] is False and half['qty'] == Decimal('900')   # the receive leg only, no fee on it
+    assert 'fee_qty' not in half
+    assert any(p['type'] == JSF.PAYMENT_GAS_FEE for p in data[JSF.ASSET_PAYMENTS])   # its own claim gas is charged
 
 
 def test_reward_claim_is_booked_as_a_staking_reward(eth_wallet, monkeypatch):

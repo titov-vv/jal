@@ -183,7 +183,47 @@ BEGIN
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
--- The display/processing sequence view has to learn about the new operation (single part, opart 0)
+-- Table: bridges - a cross-chain move of ONE asset between two accounts, imported as two independent on-chain legs
+-- (a send and a receive) that may arrive in EITHER order and in separate runs. The two legs are individually nullable
+-- so a row may hold just one leg as a "pending half-bridge" until its counterpart is matched in (see jal_init.sql).
+DROP TABLE IF EXISTS bridges;
+CREATE TABLE bridges (
+    oid            INTEGER    PRIMARY KEY UNIQUE NOT NULL,
+    otype          INTEGER    NOT NULL DEFAULT (8),
+    out_timestamp  INTEGER,
+    out_account_id INTEGER    REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    out_symbol_id  INTEGER    REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    out_qty        TEXT,
+    out_tx_hash    TEXT       NOT NULL DEFAULT (''),
+    in_timestamp   INTEGER,
+    in_account_id  INTEGER    REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    in_symbol_id   INTEGER    REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    in_qty         TEXT,
+    in_tx_hash     TEXT       NOT NULL DEFAULT (''),
+    fee_symbol_id  INTEGER    REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    fee_qty        TEXT,
+    note           TEXT
+);
+DROP TRIGGER IF EXISTS bridges_after_delete;
+CREATE TRIGGER bridges_after_delete AFTER DELETE ON bridges FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp;
+END;
+DROP TRIGGER IF EXISTS bridges_after_insert;
+CREATE TRIGGER bridges_after_insert AFTER INSERT ON bridges FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
+END;
+DROP TRIGGER IF EXISTS bridges_after_update;
+CREATE TRIGGER bridges_after_update AFTER UPDATE OF out_timestamp, in_timestamp, out_account_id, in_account_id, out_symbol_id, in_symbol_id, out_qty, in_qty, fee_symbol_id, fee_qty ON bridges FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp OR timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp OR timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
+END;
+
+-- The display/processing sequence view has to learn about the new operations (swap single-part; bridge legs guarded)
 DROP VIEW IF EXISTS operation_sequence;
 CREATE VIEW operation_sequence AS SELECT m.otype, m.oid, opart, m.timestamp, m.account_id
 FROM
@@ -205,6 +245,12 @@ FROM
     SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
     UNION ALL
     SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, -1 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges WHERE NOT out_account_id IS NULL
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, 0 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges WHERE NOT fee_qty IS NULL
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, 1 AS opart, in_timestamp AS timestamp, in_account_id AS account_id FROM bridges WHERE NOT in_account_id IS NULL
 ) AS m
 ORDER BY m.timestamp, m.seq, m.opart, m.oid;  -- First sort by sequence and part to enforce right operation processing order
 --------------------------------------------------------------------------------

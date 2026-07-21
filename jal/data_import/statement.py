@@ -37,6 +37,7 @@ class JSF:
     TRADES = "trades"
     TRANSFERS = "transfers"
     SWAPS = "swaps"
+    BRIDGES = "bridges"     # each record is ONE leg of a cross-chain move (a pending half-bridge, matched afterwards)
     CORP_ACTIONS = "corporate_actions"
     ASSET_PAYMENTS = "asset_payments"
     INCOME_SPENDING = "income_spending"
@@ -162,6 +163,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             JSF.TRANSFERS: self._import_transfers,
             JSF.TRADES: self._import_trades,
             JSF.SWAPS: self._import_swaps,
+            JSF.BRIDGES: self._import_bridges,
             JSF.ASSET_PAYMENTS: self._import_asset_payments,
             JSF.CORP_ACTIONS: self._import_corporate_actions
         }
@@ -415,7 +417,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     # Removes every operation that references any of the given symbol ids from all operation sections.
     def _drop_operations_referencing(self, symbol_ids: set) -> None:
-        for section in (JSF.TRANSFERS, JSF.SWAPS, JSF.ASSET_PAYMENTS, JSF.TRADES, JSF.CORP_ACTIONS):
+        for section in (JSF.TRANSFERS, JSF.SWAPS, JSF.BRIDGES, JSF.ASSET_PAYMENTS, JSF.TRADES, JSF.CORP_ACTIONS):
             if section not in self._data:
                 continue
             self._data[section] = [operation for operation in self._data[section]
@@ -431,6 +433,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 symbol_ids.add(operation['fee_symbol'])
         elif section == JSF.SWAPS:
             symbol_ids.update([operation['out_symbol'], operation['in_symbol']])
+            if operation.get('fee_symbol') is not None:
+                symbol_ids.add(operation['fee_symbol'])
+        elif section == JSF.BRIDGES:      # a half carries a single 'symbol' (its present leg) plus an optional fee
+            symbol_ids.add(operation['symbol'])
             if operation.get('fee_symbol') is not None:
                 symbol_ids.add(operation['fee_symbol'])
         elif section in (JSF.ASSET_PAYMENTS, JSF.TRADES):
@@ -700,6 +706,39 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if 'description' in operation:
                 operation['note'] = operation.pop('description')
             LedgerTransaction.create_new(LedgerTransaction.Swap, operation)
+
+    # Imports ONE leg of a cross-chain bridge as a pending half-bridge: the fetched wallet fills the send leg (when it
+    # is the source) or the receive leg (when it is the destination); the opposite leg stays NULL until the counterpart,
+    # fetched from the other chain, is matched to it. The two legs of a completed bridge move the same asset (a token's
+    # per-chain listings are one JAL asset), so both use the imported symbol's asset.
+    def _import_bridges(self, bridges):
+        for bridge in bridges:
+            source = deepcopy(bridge)
+            account_id = self.mapped_id(JSF.ACCOUNTS, source.pop('account'))
+            if not account_id:
+                raise Statement_ImportError(self.tr("Unmatched account for bridge: ") + f"{bridge}")
+            symbol_id = self.mapped_id(JSF.SYMBOLS, source.pop('symbol'))
+            if not symbol_id:
+                raise Statement_ImportError(self.tr("Unmatched symbol for bridge: ") + f"{bridge}")
+            operation = {}
+            if source['sending']:
+                operation['out_timestamp'] = source['timestamp']
+                operation['out_account_id'] = account_id
+                operation['out_symbol_id'] = symbol_id
+                operation['out_qty'] = source['qty']
+                operation['out_tx_hash'] = source.get('tx_hash', '')
+                if source.get('fee_symbol') is not None:
+                    operation['fee_symbol_id'] = self.mapped_id(JSF.SYMBOLS, source['fee_symbol'])
+                    operation['fee_qty'] = source['fee_qty']
+            else:
+                operation['in_timestamp'] = source['timestamp']
+                operation['in_account_id'] = account_id
+                operation['in_symbol_id'] = symbol_id
+                operation['in_qty'] = source['qty']
+                operation['in_tx_hash'] = source.get('tx_hash', '')
+            if source.get('description'):
+                operation['note'] = source['description']
+            LedgerTransaction.create_new(LedgerTransaction.Bridge, operation)
 
     def _import_asset_payments(self, payments):
         for payment in payments:
@@ -1016,8 +1055,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     # Deletes operation if it's 'tag_name' key matches 'value'
     def _delete_with_id(self, tag_name, value):
-        operation_sections = [JSF.TRADES, JSF.TRANSFERS, JSF.SWAPS, JSF.CORP_ACTIONS, JSF.ASSET_PAYMENTS,
-                              JSF.INCOME_SPENDING]
+        operation_sections = [JSF.TRADES, JSF.TRANSFERS, JSF.SWAPS, JSF.BRIDGES, JSF.CORP_ACTIONS,
+                              JSF.ASSET_PAYMENTS, JSF.INCOME_SPENDING]
         for section in operation_sections:
             if section in self._data:
                 self._data[section] = [x for x in self._data[section] if not self._key_match(x, tag_name, value)]

@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QApplication
 
 from jal.constants import AssetLocation, AccountData, PredefinedAccountType
 from jal.data_import.statement import Statement, JSF, Statement_ImportError
+from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 
@@ -85,6 +86,15 @@ class ChainFetcher(Statement):
         self.validate_format()
         self.match_db_ids()
         totals = self.import_into_db()
+        # A fetch can produce one leg of a cross-chain bridge; once imported, try to complete it against a half fetched
+        # earlier from the other chain. Only confident, unambiguous pairs are joined - the rest are reported as pending
+        # for the user to match by hand. The number still waiting is surfaced next to the skipped-transaction summary.
+        if JSF.BRIDGES in self._data:
+            matcher = BridgeMatcher()
+            matcher.auto_match()
+            pending = len(matcher._pending_halves())
+            if pending:
+                self._skipped[self.tr("bridge half-transactions awaiting matching")] = pending
         if self._new_cursor:
             self._store_cursor(self._new_cursor)
         return totals
@@ -181,3 +191,18 @@ class ChainFetcher(Statement):
             swap["fee_symbol"] = self._single_symbol_of(fee_asset_id)
             swap["fee_qty"] = fee
         self._data.setdefault(JSF.SWAPS, []).append(swap)
+
+    # Adds ONE leg of a cross-chain bridge - the fetched wallet is only ever on one chain, so it sees the send (this
+    # wallet is the source) OR the receive (this wallet is the destination), never both. Imported as a pending
+    # half-bridge; its counterpart, fetched from the other chain, is matched to it afterwards (BridgeMatcher). Same
+    # asset only; asset-changing cross-chain exchanges are a disposal and belong to Swap, not here. Gas rides the send
+    # leg (the source pays it), like a swap fee; a receive leg carries no fee.
+    def _add_bridge_half(self, timestamp: int, asset_id: int, qty: Decimal, sending: bool,
+                         tx_hash: str, note: str = '', fee: Decimal = Decimal('0'), fee_asset_id: int = None) -> None:
+        half = {"id": self._next_id(JSF.BRIDGES), "sending": sending, "account": 1,
+                "symbol": self._single_symbol_of(asset_id), "qty": qty,
+                "timestamp": timestamp, "tx_hash": tx_hash, "description": note}
+        if sending and fee > Decimal('0') and fee_asset_id is not None:
+            half["fee_symbol"] = self._single_symbol_of(fee_asset_id)
+            half["fee_qty"] = fee
+        self._data.setdefault(JSF.BRIDGES, []).append(half)

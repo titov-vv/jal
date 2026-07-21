@@ -208,7 +208,7 @@ class EVMFetcher(ChainFetcher):
         if category == ProtocolCategory.LENDING:
             raise _HaltImport(self.tr("lending/wrap operation, not supported yet"))
         if category == ProtocolCategory.BRIDGE:
-            raise _HaltImport(self.tr("cross-chain bridge, not supported yet"))
+            return self._emit_bridge_half(timestamp, outs, ins, tx['hash'], gas)
         if category == ProtocolCategory.REWARD:
             if not outs and len(ins) == 1:
                 asset_id, data = next(iter(ins.items()))
@@ -224,7 +224,7 @@ class EVMFetcher(ChainFetcher):
         if category == ProtocolCategory.AGGREGATOR:
             if swap_shape:                                 # both legs on this chain -> a same-chain swap
                 return self._emit_swap(timestamp, outs, ins, tx['hash'], gas)
-            raise _HaltImport(self.tr("cross-chain bridge, not supported yet"))   # a single leg -> a bridge
+            return self._emit_bridge_half(timestamp, outs, ins, tx['hash'], gas)   # a single leg -> a bridge half
 
         # From here the contract (if any) is unregistered. A transaction the wallet signed that both spends and
         # receives an asset is a swap/lending/bridge through an unknown contract - it must never be guessed at
@@ -331,6 +331,28 @@ class EVMFetcher(ChainFetcher):
         in_asset, in_data = next(iter(ins.items()))
         self._add_swap(timestamp, out_asset, abs(out_data['amount']), in_asset, in_data['amount'], tx_hash,
                        fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
+
+    # Emits one leg of a cross-chain bridge (Option A): the fetched wallet is on a single chain, so a bridge
+    # transaction it signed either sends an asset into the bridge (one out, none in -> a send half, gas rides it) or
+    # receives it from the bridge on the destination chain (one in, none out -> a receive half, its own claim gas is a
+    # separate GasFee). The other leg is fetched from the other chain and matched afterwards. A bridge that both spends
+    # and receives on the same chain isn't a shape we recognize, so it halts to be revisited. Relayer-delivered
+    # receives (not the wallet's own tx) never reach here - they arrive as plain transfers and the user adopts one as
+    # a receive leg by hand (the manual-match path).
+    def _emit_bridge_half(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal) -> None:
+        if len(outs) == 1 and not ins:
+            asset_id, data = next(iter(outs.items()))
+            self._add_bridge_half(timestamp, asset_id, abs(data['amount']), True, tx_hash,
+                                  fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
+            return
+        if len(ins) == 1 and not outs:
+            asset_id, data = next(iter(ins.items()))
+            self._add_bridge_half(timestamp, asset_id, data['amount'], False, tx_hash)
+            if gas > Decimal('0'):
+                self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx_hash,
+                                  note=self.tr("Bridge claim gas"))
+            return
+        raise _HaltImport(self.tr("unrecognized bridge shape"))
 
     # Emits a claimed reward as a StakingReward (it opens a lot at market value, so the reward has a cost basis), plus
     # the claim's gas as a separate GasFee.

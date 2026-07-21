@@ -8,6 +8,7 @@ from jal.widgets.trade_widget import TradeWidget
 from jal.widgets.transfer_widget import TransferWidget
 from jal.widgets.term_deposit_widget import TermDepositWidget
 from jal.widgets.swap_widget import SwapWidget
+from jal.widgets.bridge_widget import BridgeWidget
 from jal.db.operations import LedgerTransaction
 
 
@@ -23,7 +24,8 @@ class JalOperationsTabs(QStackedWidget):
                         LedgerTransaction.Transfer: TransferWidget(self),
                         LedgerTransaction.CorporateAction: CorporateActionWidget(self),
                         LedgerTransaction.TermDeposit: TermDepositWidget(self),
-                        LedgerTransaction.Swap: SwapWidget(self)}
+                        LedgerTransaction.Swap: SwapWidget(self),
+                        LedgerTransaction.Bridge: BridgeWidget(self)}
         for key, widget in self.widgets.items():
             if key != LedgerTransaction.NA:
                 widget.dbUpdated.connect(self.dbUpdated)
