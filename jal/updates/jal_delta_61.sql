@@ -208,6 +208,12 @@ FROM
 ) AS m
 ORDER BY m.timestamp, m.seq, m.opart, m.oid;  -- First sort by sequence and part to enforce right operation processing order
 --------------------------------------------------------------------------------
+-- Add the listing location to the symbol-uniqueness key. A token that lives on several blockchains (e.g. USDT on
+-- Ethereum and on Tron) is one asset with a per-chain listing keyed by its own contract address; the old key
+-- (asset_id, symbol, currency_id) refused a second chain's listing because ticker and currency are the same.
+DROP INDEX IF EXISTS uniq_symbols;
+CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id, location_id);
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=61 WHERE name='SchemaVersion';
 COMMIT;

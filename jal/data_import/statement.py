@@ -15,10 +15,11 @@ from jal.db.settings import JalSettings
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
-from jal.db.token_blacklist import normalize_address
+from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
+from jal.widgets.token_select import SelectTokenActionDialog
 from jal.net.moex import MOEX
 
 
@@ -99,6 +100,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     RU_PRICE_TOLERANCE = 1e-4   # TODO Probably need to switch imports to Decimal and remove it
 
     currency_substitutions = {}
+    # Outcomes of the cross-chain token prompt (see _resolve_cross_chain_token): merge into an existing asset,
+    # create a brand-new asset, or discard (blacklist) the token.
+    TOKEN_MERGE, TOKEN_CREATE_NEW, TOKEN_DISCARD = 1, 2, 3
     ID_KEYS = ['isin', 'reg_number', 'cusip']   # security identifiers that symbol records may carry
     _identifier_types = {'isin': SymbolId.ISIN, 'reg_number': SymbolId.REG_CODE, 'cusip': SymbolId.CUSIP}
     _asset_types = {
@@ -147,6 +151,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         self._reset_id_map()
         self._previous_accounts = {}
         self._last_selected_account = None
+        # The interactive cross-chain token prompt can't run under pytest; tests set the desired outcome here as a
+        # (action, target_asset_id) tuple. The default never merges or discards silently - it creates a new asset.
+        self._token_action_for_tests = (Statement.TOKEN_CREATE_NEW, 0)
         self._section_loaders = {
             JSF.PERIOD: self._check_period,
             JSF.ASSETS: self._import_assets,
@@ -290,7 +297,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # Matches non-money assets against the db: by isin first, then by reg_number/cusip, then by
     # symbol ticker (with identifier mismatch guards)
     def _match_assets(self):
-        for asset in self._data[JSF.ASSETS]:
+        # A copy of the list is iterated because a 'discard' outcome of the cross-chain token prompt removes the
+        # asset record (and the operations referencing it) from self._data while the loop is still running.
+        for asset in list(self._data[JSF.ASSETS]):
             if asset['type'] == JSF.ASSET_MONEY or self.mapped_id(JSF.ASSETS, asset['id']):
                 continue
             # A token is matched by contract address and by nothing else. The ticker fallback further down must
@@ -303,6 +312,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     if asset_id:
                         self.set_mapped_id(JSF.ASSETS, asset['id'], asset_id)
                         break
+                if not self.mapped_id(JSF.ASSETS, asset['id']):
+                    self._resolve_cross_chain_token(asset, addressed)
                 continue
             isin = self._asset_identifier(asset, 'isin')
             reg_number = self._asset_identifier(asset, 'reg_number')
@@ -339,6 +350,95 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                         continue  # verify that we don't have CUSIP mismatch
                     self.set_mapped_id(JSF.ASSETS, asset['id'], db_id)
                     break
+
+    # An addressed token (chain fetcher output) reached this point without a contract-address match. If a known
+    # crypto asset already uses its ticker, the two may be the same token on different chains (e.g. USDT on Ethereum
+    # and on Tron) or two unrelated coins reusing a ticker - only the user can tell, so they are asked once per new
+    # token. Every outcome records an address identifier (merge/create -> _import_assets writes this chain's address)
+    # or a blacklist row (discard), so the same token resolves automatically on later imports - no curated registry.
+    def _resolve_cross_chain_token(self, asset: dict, addressed: list) -> None:
+        candidates = self._crypto_ticker_candidates(addressed)
+        if not candidates:
+            return   # nothing shares the ticker - _import_assets simply stages a new asset carrying the address
+        action, target = self.select_token_action(asset, addressed, candidates)
+        if action == self.TOKEN_MERGE and target:
+            self.set_mapped_id(JSF.ASSETS, asset['id'], target)
+        elif action == self.TOKEN_DISCARD:
+            self._discard_token(asset, addressed)
+        # TOKEN_CREATE_NEW (and a merge without a target): leave unmapped so a new asset is created on import
+
+    # Returns the ids of existing crypto assets whose active listing shares a ticker with any of the token's symbols.
+    def _crypto_ticker_candidates(self, addressed: list) -> list:
+        candidates = []
+        for symbol in addressed:
+            for asset_id in JalAsset.get_crypto_assets_by_symbol(symbol['symbol']):
+                if asset_id not in candidates:
+                    candidates.append(asset_id)
+        return candidates
+
+    # Asks the user whether an unmatched addressed token should merge into an existing crypto asset, become a new
+    # asset, or be discarded. Returns (action, target_asset_id); target is only meaningful for a merge.
+    def select_token_action(self, asset: dict, addressed: list, candidates: list) -> tuple:
+        if "pytest" in sys.modules:
+            return self._token_action_for_tests
+        token = addressed[0]
+        options = [(asset_id, self._candidate_label(asset_id)) for asset_id in candidates]
+        dialog = SelectTokenActionDialog(asset.get('name', ''), token['symbol'],
+                                         AssetLocation().get_name(token['location']), token['address'], options)
+        if dialog.exec() != QDialog.Accepted:
+            return self.TOKEN_CREATE_NEW, 0   # closing the dialog never silently merges or discards
+        mapping = {SelectTokenActionDialog.Merge: self.TOKEN_MERGE,
+                   SelectTokenActionDialog.CreateNew: self.TOKEN_CREATE_NEW,
+                   SelectTokenActionDialog.Discard: self.TOKEN_DISCARD}
+        return mapping[dialog.action], dialog.target_asset_id
+
+    # Human-readable description of a merge candidate: its name and the chains it is already listed on.
+    def _candidate_label(self, asset_id: int) -> str:
+        asset = JalAsset(asset_id)
+        chains = []
+        for symbol_id in asset.active_symbol_ids():
+            chain = AssetLocation().get_name(JalSymbol(symbol_id).location())
+            if chain and chain not in chains:
+                chains.append(chain)
+        name = asset.name() or asset.symbol()
+        return f"{name} [{', '.join(chains)}]" if chains else name
+
+    # Discards a token the user doesn't want: its address is blacklisted (so future fetches skip it silently) and the
+    # asset together with every operation referencing it is removed from this statement - an operation involving a
+    # discarded token (a swap leg, a transfer) can't be imported without it.
+    def _discard_token(self, asset: dict, addressed: list) -> None:
+        for symbol in addressed:
+            JalTokenBlacklist.add(symbol['location'], symbol['address'], name_hint=symbol.get('symbol', ''), auto=False)
+        discarded = {symbol['id'] for symbol in asset[JSF.SYMBOLS]}
+        self._drop_operations_referencing(discarded)
+        self._data[JSF.ASSETS] = [a for a in self._data[JSF.ASSETS] if a['id'] != asset['id']]
+
+    # Removes every operation that references any of the given symbol ids from all operation sections.
+    def _drop_operations_referencing(self, symbol_ids: set) -> None:
+        for section in (JSF.TRANSFERS, JSF.SWAPS, JSF.ASSET_PAYMENTS, JSF.TRADES, JSF.CORP_ACTIONS):
+            if section not in self._data:
+                continue
+            self._data[section] = [operation for operation in self._data[section]
+                                   if not (self._operation_symbol_ids(section, operation) & symbol_ids)]
+
+    # Returns the set of symbol ids referenced by an operation of the given section.
+    @staticmethod
+    def _operation_symbol_ids(section: str, operation: dict) -> set:
+        symbol_ids = set()
+        if section == JSF.TRANSFERS:
+            symbol_ids.update(operation.get('symbol', []))
+            if operation.get('fee_symbol') is not None:
+                symbol_ids.add(operation['fee_symbol'])
+        elif section == JSF.SWAPS:
+            symbol_ids.update([operation['out_symbol'], operation['in_symbol']])
+            if operation.get('fee_symbol') is not None:
+                symbol_ids.add(operation['fee_symbol'])
+        elif section in (JSF.ASSET_PAYMENTS, JSF.TRADES):
+            symbol_ids.add(operation['symbol'])
+        elif section == JSF.CORP_ACTIONS:
+            symbol_ids.add(operation['symbol'])
+            symbol_ids.update(item['symbol'] for item in operation.get('outcome', []))
+        return symbol_ids
 
     # Matches accounts by number+currency (or via user dialog when producer requested it)
     def _match_accounts(self):

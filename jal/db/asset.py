@@ -132,12 +132,22 @@ class JalAsset(JalDB):
     # Adds a new symbol to the asset (or returns the existing one's id if it already exists).
     # Returns the id of the resulting asset_symbol row.
     def add_symbol(self, symbol: str, currency_id, location_id: int) -> int:
-        existing = self._read("SELECT id, symbol, location_id FROM asset_symbol "
-                              "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id IS :currency",
-                              [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)
-        if existing is None:  # Deactivate old symbols and create a new one
-            _ = self._exec("UPDATE asset_symbol SET active=0 WHERE asset_id=:asset_id AND currency_id IS :currency",
-                           [(":asset_id", self._id), (":currency", currency_id)])
+        # A traditional security is a single listing no matter which venue a statement happens to name (the exchange
+        # is informational), so it is matched by (asset, symbol, currency) with the location ignored and the
+        # first-seen location kept. A blockchain token is a genuinely separate listing per chain - keyed by its own
+        # contract address - so for a chain location the match and the deactivation are scoped by location too, and a
+        # new chain adds a second active symbol rather than replacing the existing one.
+        on_chain = location_id in AssetLocation.BLOCKCHAINS
+        scope = [(":asset_id", self._id), (":currency", currency_id)]
+        location_clause = " AND location_id=:location_id" if on_chain else ""
+        if on_chain:
+            scope.append((":location_id", location_id))
+        existing = self._read("SELECT id FROM asset_symbol "
+                              "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id IS :currency" + location_clause,
+                              scope + [(":symbol", symbol)], named=True)
+        if existing is None:  # Deactivate the superseded symbol(s) and create a new one
+            _ = self._exec("UPDATE asset_symbol SET active=0 "
+                           "WHERE asset_id=:asset_id AND currency_id IS :currency" + location_clause, scope)
             query = self._exec(
                 "INSERT INTO asset_symbol (asset_id, symbol, currency_id, location_id) "
                 "VALUES (:asset_id, :symbol, :currency, :location_id)",
@@ -430,6 +440,20 @@ class JalAsset(JalDB):
             return 0
         else:
             return aid
+
+    # Returns the ids of crypto assets that carry an active listing with the given ticker (case-insensitive). Used to
+    # spot a possible cross-chain duplicate when a fetched token has no contract-address match but reuses a ticker
+    # that a known crypto asset already uses - matching by ticker alone is never safe (tickers are attacker-chosen),
+    # so the caller only offers these as candidates for a user-confirmed merge.
+    @classmethod
+    def get_crypto_assets_by_symbol(cls, symbol: str) -> list:
+        asset_ids = []
+        query = cls._exec("SELECT DISTINCT s.asset_id FROM asset_symbol s LEFT JOIN assets a ON a.id=s.asset_id "
+                          "WHERE s.symbol=:symbol COLLATE NOCASE AND a.type_id=:crypto AND s.active=1",
+                          [(":symbol", symbol), (":crypto", PredefinedAsset.Crypto)])
+        while query is not None and query.next():
+            asset_ids.append(cls._read_record(query, cast=[int]))
+        return asset_ids
 
     # Method returns a list of JalAsset objects that describe all assets defined in ledger
     @classmethod

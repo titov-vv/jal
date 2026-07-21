@@ -76,9 +76,11 @@ CREATE TABLE asset_symbol (
     active      INTEGER NOT NULL DEFAULT (1),
     icon        BLOB
 );
--- Index to prevent duplicates
+-- Index to prevent duplicates. The location is part of the key so that one asset may carry the same ticker on
+-- more than one venue at once - a token that exists on several blockchains (e.g. USDT on Ethereum and on Tron)
+-- is a single asset with a per-chain listing, each keyed by its own contract address.
 DROP INDEX IF EXISTS uniq_symbols;
-CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id);
+CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id, location_id);
 
 -- Table to keep extra asset data
 DROP TABLE IF EXISTS asset_data;
