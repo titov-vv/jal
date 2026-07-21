@@ -61,15 +61,54 @@ def _transfers(data) -> list:
     return data[JSF.TRANSFERS]
 
 
+def _swaps(data) -> list:
+    return data.get(JSF.SWAPS, [])
+
+
 def _eth_symbol_ids(data) -> list:
     return [s['id'] for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS] if s['symbol'] == 'ETH']
+
+
+def _usdc_symbol_ids(data) -> list:
+    return [s['id'] for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS] if s['symbol'] == 'USDC']
+
+
+# Minimal Etherscan-shaped records, so a test can drive the classifier with a hand-built transaction history.
+def _tx(tx_hash, block, frm, to, value=0, gas_used='21000', gas_price='1000000000', is_error='0', method='0x'):
+    return {'hash': tx_hash, 'blockNumber': str(block), 'transactionIndex': '0', 'timeStamp': '1758800000',
+            'from': frm, 'to': to, 'value': str(value), 'gasUsed': gas_used, 'gasPrice': gas_price,
+            'isError': is_error, 'methodId': method}
+
+
+def _token_tx(tx_hash, block, frm, to, value, contract=USDC_CONTRACT, symbol='USDC', name='USD Coin', decimals='6'):
+    return {'hash': tx_hash, 'blockNumber': str(block), 'transactionIndex': '0', 'timeStamp': '1758800000',
+            'from': frm, 'to': to, 'value': str(value), 'contractAddress': contract, 'tokenSymbol': symbol,
+            'tokenName': name, 'tokenDecimal': decimals}
+
+
+def _internal_tx(tx_hash, block, frm, to, value):
+    return {'hash': tx_hash, 'blockNumber': str(block), 'transactionIndex': '0', 'timeStamp': '1758800000',
+            'from': frm, 'to': to, 'value': str(value), 'isError': '0'}
+
+
+# Runs a fresh EthereumFetcher against a hand-built {action: [records]} history and returns the assembled JSF.
+def _drive(eth_wallet, monkeypatch, pages):
+    from jal.net.chain_fetchers.ethereum import EthereumFetcher as _EF
+
+    def fake_pages(self, action, start_block):
+        return [r for r in pages.get(action, []) if int(r['blockNumber']) >= start_block]
+    monkeypatch.setattr(_EF, "_get_pages", fake_pages)
+    fetcher = _EF()
+    data = fetcher.fetch(eth_wallet)
+    return fetcher, data
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_fetch_builds_transfers(fetcher, eth_wallet):
     data = fetcher.fetch(eth_wallet)
-    # 5 native transfers (2 top-level, 1 swap-out, 2 internal-in) and 4 USDC transfers survive the spam filter
-    assert len(_transfers(data)) == 9
+    # Plain transfers only: 2 native (a send + a receive), 2 USDC (a send + a receive) and 1 internal native deposit.
+    # The two swap transactions are no longer split into transfers - they become Swap operations (see the swap test).
+    assert len(_transfers(data)) == 5
     for transfer in _transfers(data):
         assert transfer['withdrawal'] > Decimal('0')               # a real quantity moved
         # 'deposit' is the cost basis in the destination currency, which the fetcher cannot know - left 0 for the
@@ -93,21 +132,12 @@ def test_gas_is_attached_to_outgoing_transfers_only(fetcher, eth_wallet):
     data = fetcher.fetch(eth_wallet)
     eth_symbols = _eth_symbol_ids(data)
     outgoing_with_fee = [t for t in _transfers(data) if t['account'][0] == 1 and t['fee'] > Decimal('0')]
-    assert len(outgoing_with_fee) == 4          # 2 native sends + 2 token sends each paid gas
+    assert len(outgoing_with_fee) == 2          # a native send and a USDC send each paid gas (the swaps are separate)
     for transfer in outgoing_with_fee:
         assert transfer['fee_symbol'] in eth_symbols    # gas is always burned in ETH, whatever asset moved
         assert transfer['account'][2] == 1              # and always by the wallet being fetched
     # Incoming transfers never carry gas - the sender paid it
     assert all(t['fee'] == Decimal('0') for t in _transfers(data) if t['account'][0] == 0)
-
-
-def test_gas_is_not_double_counted_on_a_swap(fetcher, eth_wallet):
-    data = fetcher.fetch(eth_wallet)
-    # The token->ETH swap (hash 0x222...) has an outgoing token leg and an incoming native leg; its gas must land on
-    # exactly one of them, so the sum of fees on that transaction equals the single gas charge of 0.00013 ETH.
-    legs = [t for t in _transfers(data) if t['number'].startswith('0x222')]
-    assert len(legs) == 2
-    assert sum((t['fee'] for t in legs), Decimal('0')) == Decimal('130000') * Decimal('1000000000') / Decimal('10') ** 18
 
 
 def test_gas_only_calls_become_gas_fees(fetcher, eth_wallet):
@@ -221,6 +251,83 @@ def test_spoofed_outgoing_token_is_quarantined(fetcher, eth_wallet):
                for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS])
     assert JalTokenBlacklist.is_blacklisted(AssetLocation.ETH_BLOCKCHAIN,
                                             "0x8888888888888888888888888888888888888888")
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Per-transaction classification (the P1 rewrite): a whole transaction becomes one operation.
+def test_swaps_are_emitted_for_registered_routers(fetcher, eth_wallet):
+    data = fetcher.fetch(eth_wallet)
+    swaps = _swaps(data)
+    assert len(swaps) == 2
+    by_hash = {s['tx_hash'][:5]: s for s in swaps}
+    eth_symbols, usdc_symbols = _eth_symbol_ids(data), _usdc_symbol_ids(data)
+
+    # 0x111: ETH -> USDC through CoW (a swap router). One asset out, one in, gas paid in ETH as the fee.
+    eth_to_usdc = by_hash['0x111']
+    assert eth_to_usdc['out_symbol'] in eth_symbols and eth_to_usdc['out_qty'] == Decimal('0.3')
+    assert eth_to_usdc['in_symbol'] in usdc_symbols and eth_to_usdc['in_qty'] == Decimal('900')
+    assert eth_to_usdc['fee_symbol'] in eth_symbols
+    assert eth_to_usdc['fee_qty'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18
+
+    # 0x222: USDC -> ETH through LI.FI (an aggregator). Both legs are on this chain, so it is a swap, not a bridge,
+    # and its single gas charge lands once as the fee - never double-counted across the two legs.
+    usdc_to_eth = by_hash['0x222']
+    assert usdc_to_eth['out_symbol'] in usdc_symbols and usdc_to_eth['out_qty'] == Decimal('800')
+    assert usdc_to_eth['in_symbol'] in eth_symbols and usdc_to_eth['in_qty'] == Decimal('0.2')
+    assert usdc_to_eth['fee_qty'] == Decimal('130000') * Decimal('1000000000') / Decimal('10') ** 18
+
+
+def test_import_halts_and_checkpoints_at_an_unregistered_exchange(eth_wallet, monkeypatch):
+    unknown = "0x7777777777777777777777777777777777777777"
+    other = "0x2222222222222222222222222222222222222222"
+    a1, b2 = "0xa1" + "0" * 62, "0xb2" + "0" * 62
+    pages = {
+        "txlist": [_tx(a1, 100, other, WALLET, value=10 ** 18),                       # block 100: incoming ETH (safe)
+                   _tx(b2, 101, WALLET, unknown, value=10 ** 18, method='0xabcdef01')],  # block 101: ETH out ...
+        "tokentx": [_token_tx(b2, 101, unknown, WALLET, 900 * 10 ** 6)],                 # ... USDC in => A->B, unknown
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    # The safe earlier block is imported; the unregistered one-in-one-out transaction is not guessed at, and its whole
+    # block is rolled back - no partial swap, no stray transfer.
+    assert len(_transfers(data)) == 1 and _transfers(data)[0]['number'] == a1
+    assert _swaps(data) == []
+    assert not any(s.get('address') == unknown for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS])
+    assert any('stopped' in reason for reason in fetcher.skipped())
+    # The cursor is parked before the halting block, so a later fetch re-tries it once the registry catches up.
+    assert fetcher._new_cursor == '100'
+
+
+def test_lending_transaction_halts_as_not_supported(eth_wallet, monkeypatch):
+    aave = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"     # registered as ProtocolCategory.LENDING
+    c3 = "0xc3" + "0" * 62
+    pages = {
+        "txlist": [_tx(c3, 100, WALLET, aave, value=10 ** 18)],           # supply 1 ETH ...
+        "tokentx": [_token_tx(c3, 100, aave, WALLET, 1000 * 10 ** 6)],    # ... receive a receipt token
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _transfers(data) == [] and _swaps(data) == []              # a lending deposit is deferred to P4, so nothing
+    assert any('lending' in reason for reason in fetcher.skipped())
+    assert fetcher._new_cursor == ''                                 # the very first block halted, so no cursor advance
+
+
+def test_reward_claim_is_booked_as_a_staking_reward(eth_wallet, monkeypatch):
+    merkl = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"     # registered as ProtocolCategory.REWARD
+    d4 = "0xd4" + "0" * 62
+    pages = {
+        "txlist": [_tx(d4, 100, WALLET, merkl, value=0, method='0xb61d27f6')],   # claim ...
+        "tokentx": [_token_tx(d4, 100, merkl, WALLET, 50 * 10 ** 6)],            # ... 50 USDC reward
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    assert len(rewards) == 1 and rewards[0]['amount'] == Decimal('50')
+    assert any(p['type'] == JSF.PAYMENT_GAS_FEE for p in data[JSF.ASSET_PAYMENTS])   # the claim's gas is charged too
+    assert _transfers(data) == [] and _swaps(data) == []
 
 
 # ----------------------------------------------------------------------------------------------------------------------

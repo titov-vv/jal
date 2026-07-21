@@ -1862,72 +1862,113 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>EVMFetcher</name>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="58"/>
+        <location filename="../net/chain_fetchers/evm.py" line="68"/>
         <source>Etherscan API key isn&apos;t set - fill it in Settings/Preferences/Blockchain</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="82"/>
+        <location filename="../net/chain_fetchers/evm.py" line="92"/>
         <source>Unexpected answer from Etherscan: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="89"/>
+        <location filename="../net/chain_fetchers/evm.py" line="99"/>
         <source>Etherscan request failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="94"/>
+        <location filename="../net/chain_fetchers/evm.py" line="104"/>
         <source>Too many pages returned by Etherscan, the history may be incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="110"/>
+        <location filename="../net/chain_fetchers/evm.py" line="120"/>
         <source>Not a valid EVM address: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="168"/>
-        <source>native transfer with an unreadable amount</source>
+        <location filename="../net/chain_fetchers/evm.py" line="145"/>
+        <source>import stopped at an unsupported transaction (</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="189"/>
-        <source>token with a malformed contract address</source>
+        <location filename="../net/chain_fetchers/evm.py" line="146"/>
+        <source>); it will be retried next time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="198"/>
-        <source>token transfer with an unreadable amount</source>
+        <location filename="../net/chain_fetchers/evm.py" line="209"/>
+        <source>lending/wrap operation, not supported yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="203"/>
-        <source>zero-amount token transfer</source>
+        <location filename="../net/chain_fetchers/evm.py" line="211"/>
+        <location filename="../net/chain_fetchers/evm.py" line="227"/>
+        <source>cross-chain bridge, not supported yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="217"/>
+        <source>unrecognized reward-claim shape</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../net/chain_fetchers/evm.py" line="223"/>
+        <source>unrecognized swap shape</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="235"/>
+        <source>asset exchange through an unregistered contract </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="238"/>
+        <source>unrecognized multi-asset transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="240"/>
+        <source>incoming asset through an unregistered contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="340"/>
+        <source>Reward claim</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="303"/>
+        <source>token with a malformed contract address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="311"/>
+        <source>token transfer with an unreadable amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="314"/>
+        <source>zero-amount token transfer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="323"/>
         <source>token quarantined as dust/spam</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="242"/>
-        <source>internal transfer with an unreadable amount</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../net/chain_fetchers/evm.py" line="266"/>
+        <location filename="../net/chain_fetchers/evm.py" line="377"/>
         <source>Gas: failed transaction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="268"/>
+        <location filename="../net/chain_fetchers/evm.py" line="379"/>
         <source>Gas: token approval</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="269"/>
+        <location filename="../net/chain_fetchers/evm.py" line="380"/>
         <source>Gas: contract call</source>
         <translation type="unfinished"></translation>
     </message>

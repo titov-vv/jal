@@ -1,6 +1,7 @@
 import json
 import logging
 from decimal import Decimal
+from collections import defaultdict
 
 from jal.constants import AssetLocation, PredefinedAccountType
 from jal.data_import.statement import Statement_ImportError, JSF
@@ -10,6 +11,7 @@ from jal.db.settings import JalSettings
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, is_evm_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
+from jal.net.chain_fetchers.protocols import protocol_category, ProtocolCategory
 from jal.net.web_request import WebRequest
 
 # This module has no JAL_FETCHER_CLASS on purpose: it is the shared base of the EVM chains, not a selectable chain
@@ -27,15 +29,26 @@ _NO_TRANSACTIONS = "No transactions found"   # status=0 message that means "empt
 _METHOD_APPROVE = '0x095ea7b3'    # approve(address,uint256) selector, the one gas-only call worth naming apart
 
 
+# Raised by the classifier for a transaction whose shape it does not (yet) support - an unregistered exchange, a
+# lending/bridge operation, an unfamiliar multi-asset shape. It stops the import at that transaction rather than
+# guessing: see _fetch for the halt-and-checkpoint that imports every earlier block and re-tries this one next time.
+class _HaltImport(Exception):
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.reason = reason
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Fetches the transaction history of an EVM wallet from Etherscan and turns it into JSF.
 #
 # Three account endpoints are read and they do not overlap: 'txlist' returns the top-level transactions the wallet
 # sent or received (native coin movements and the gas of everything it initiated), 'tokentx' returns ERC-20 token
 # movements, and 'txlistinternal' returns the native coin that contracts moved on the wallet's behalf (a swap output,
-# a withdrawal). They are tied together by transaction hash: the wallet pays the gas of a transaction only when it is
-# the top-level sender, so gas is charged once per hash and attached to a single leg of that transaction - see
-# _process_leftover_gas for the calls that moved nothing and only burned gas.
+# a withdrawal). They are tied together by transaction hash, and the fetcher classifies each transaction as a WHOLE:
+# all of a hash's legs are gathered, netted per asset, and turned into a single operation (a transfer, a swap, a gas
+# fee, a reward), rather than each leg becoming its own transfer. A one-asset-out one-asset-in transaction is a swap
+# only when it goes through a known swap router (see the protocol registry); an unknown or deferred shape halts the
+# import at that transaction (_fetch) instead of being booked as something misleading.
 class EVMFetcher(ChainFetcher):
     chain_id = 0                  # Etherscan V2 'chainid' of this chain
     native_symbol = ''            # Ticker of the native coin, e.g. 'ETH'
@@ -46,9 +59,6 @@ class EVMFetcher(ChainFetcher):
         super().__init__()
         self._filter = TokenFilter()
         self._new_cursor = ''
-        self._gas = {}            # {tx_hash: Decimal} gas the wallet owes, emptied as it is attached to a leg
-        self._gas_tx = {}         # {tx_hash: record} of the wallet's own transactions, kept for the gas note
-        self._own_tx = set()      # hashes of the transactions the wallet itself sent, see _process_token
 
     # ------------------------------------------------------------------------------------------------------------------
     def _api_key(self) -> str:
@@ -112,108 +122,198 @@ class EVMFetcher(ChainFetcher):
         native = self._get_pages("txlist", start_block)
         tokens = self._get_pages("tokentx", start_block)
         internal = self._get_pages("txlistinternal", start_block)
-        self._index_gas(native)
-        latest = start_block - 1
+        transactions = self._group_by_transaction(native, tokens, internal)
 
-        # Native transfers are processed first so an outgoing coin movement claims the transaction's gas before a
-        # token leg of the same transaction can; whatever is left over on a wallet-initiated call becomes a GasFee.
-        for record in native:
-            latest = max(latest, self._block_of(record))
-            self._process_native(record)
-        for record in tokens:
-            latest = max(latest, self._block_of(record))
-            self._process_token(record)
-        for record in internal:
-            latest = max(latest, self._block_of(record))
-            self._process_internal(record)
-        self._process_leftover_gas()
-        return str(latest) if latest > start_block - 1 else ''
-
-    # Gas the wallet owes for each transaction it initiated, keyed by hash. Gas is gasUsed*gasPrice in wei and is
-    # borne by the top-level sender only; a transaction the wallet merely received (an incoming transfer, an
-    # airdrop) has the wallet neither as 'from' nor even present in txlist, so it never appears here.
-    def _index_gas(self, native: list) -> None:
-        self._gas = {}
-        self._gas_tx = {}
-        self._own_tx = set()
-        address = self._address()
-        for record in native:
-            if self._norm(record.get('from', '')) != address:
-                continue
-            tx_hash = record.get('hash', '')
-            self._own_tx.add(tx_hash)
+        # Transactions are imported in block order. When the classifier meets a shape it can't support it raises
+        # _HaltImport: the current block is rolled back whole and the import stops there, keeping every earlier block
+        # (which is complete and safe) and parking the cursor just before the halting block. The next fetch resumes
+        # from that block and re-tries it - so once the protocol registry or a new operation type catches up, the
+        # transaction imports on its own without any manual replay. A block is committed atomically: its operations
+        # become safe only once the whole block has classified without a halt.
+        last_safe_block = start_block - 1
+        checkpoint = self._checkpoint()
+        current_block = None
+        for tx in transactions:
+            if current_block is not None and tx['block'] != current_block:
+                last_safe_block = current_block
+                checkpoint = self._checkpoint()
+            current_block = tx['block']
             try:
-                fee = Decimal(record.get('gasUsed', '0')) * Decimal(record.get('gasPrice', '0')) / _WEI
-            except ArithmeticError:
-                fee = Decimal('0')
-            if fee > Decimal('0'):
-                self._gas[tx_hash] = fee
-                self._gas_tx[tx_hash] = record
+                self._classify_transaction(tx)
+            except _HaltImport as halt:
+                self._restore(checkpoint)   # drop this block's partial operations - it is retried next fetch
+                self._skip(self.tr("import stopped at an unsupported transaction (") + halt.reason
+                           + self.tr("); it will be retried next time"), tx['hash'])
+                return str(last_safe_block) if last_safe_block >= start_block else ''
+        latest = current_block if current_block is not None else start_block - 1
+        return str(latest) if latest >= start_block else ''
 
-    # Attaches this transaction's gas to the leg being created, but only once: the second leg of the same
-    # transaction (a swap's token output next to its coin input) reads back zero, so gas is never counted twice.
-    def _take_gas(self, tx_hash: str) -> Decimal:
-        return self._gas.pop(tx_hash, Decimal('0'))
+    # Groups the three endpoints' records by transaction hash and returns them ordered by (block, position-in-block),
+    # so classification sees whole transactions in the exact order they were mined.
+    def _group_by_transaction(self, native: list, tokens: list, internal: list) -> list:
+        transactions = {}
+
+        def bucket(record: dict, leg: str) -> None:
+            tx_hash = record.get('hash', '')
+            tx = transactions.get(tx_hash)
+            if tx is None:
+                tx = {'hash': tx_hash, 'block': self._block_of(record), 'order': self._index_of(record),
+                      'timestamp': self._timestamp_of(record), 'native': [], 'tokens': [], 'internal': []}
+                transactions[tx_hash] = tx
+            tx[leg].append(record)
+
+        for record in native:
+            bucket(record, 'native')
+        for record in tokens:
+            bucket(record, 'tokens')
+        for record in internal:
+            bucket(record, 'internal')
+        return sorted(transactions.values(), key=lambda t: (t['block'], t['order'], t['hash']))
+
+    # Snapshot of how many operations (and assets) each JSF section holds, used to roll a partially-built block back.
+    def _checkpoint(self) -> dict:
+        return {section: len(self._data.get(section, [])) for section in
+                (JSF.ASSETS, JSF.TRANSFERS, JSF.ASSET_PAYMENTS, JSF.SWAPS)}
+
+    # Discards everything appended since the checkpoint - the operations of the halting block and any asset records it
+    # created (a still-unused asset is harmless, but dropping it keeps the statement identical to a clean re-fetch).
+    def _restore(self, checkpoint: dict) -> None:
+        for section, length in checkpoint.items():
+            if section in self._data:
+                del self._data[section][length:]
 
     # ------------------------------------------------------------------------------------------------------------------
-    def _process_native(self, record: dict) -> None:
-        tx_hash = record.get('hash', '')
-        # A reverted transaction moved nothing but still cost gas; the value in the record never actually changed
-        # hands, so no transfer is made and the gas is left for _process_leftover_gas to turn into a GasFee.
-        if record.get('isError', '0') == '1':
-            return
-        try:
-            amount = Decimal(record.get('value', '0')) / _WEI
-        except ArithmeticError:
-            self._skip(self.tr("native transfer with an unreadable amount"), tx_hash)
-            return
-        if amount <= Decimal('0'):   # a contract call that carried no coin - its token/internal legs cover it
-            return
-        incoming = self._norm(record.get('to', '')) == self._address()
-        # Native coin transfers are NOT dust-filtered, unlike tokens. The token dust filter compares a fiat VALUE
-        # to the threshold; the native coin can only be priced from stored quotes that a fresh wallet doesn't have
-        # yet, and a raw amount-vs-threshold check (as on the Tron fetcher) is a unit mismatch that would drop a
-        # legitimate sub-1-ETH transfer as "dust". Native poisoning is also far less harmful than token spam: it
-        # creates no attacker-named asset, only a small, visibly-labelled ETH transfer the user can ignore. See
-        # LONG_TERM_IMPROVEMENTS for a value-based native dust check once native pricing is available at fetch time.
-        asset_id = self._native_asset_id()
-        fee = self._take_gas(tx_hash) if not incoming else Decimal('0')
-        self._add_transfer(self._timestamp_of(record), asset_id, amount, incoming, tx_hash,
-                           note=self._counterparty_note(record),
-                           fee=fee, fee_asset_id=asset_id if fee > Decimal('0') else None)
+    # Classifies a whole transaction into one operation. The wallet's asset movements are netted per asset first, then
+    # the shape (what left, what arrived) plus the contract the wallet interacted with decide the operation.
+    def _classify_transaction(self, tx: dict) -> None:
+        own_record = self._own_record(tx)
+        own = own_record is not None
+        gas = self._gas_of(own_record) if own else Decimal('0')
+        is_error = own and own_record.get('isError', '0') == '1'
+        timestamp = tx['timestamp']
 
-    def _process_token(self, record: dict) -> None:
+        deltas = self._wallet_deltas(tx)
+        outs = {asset_id: data for asset_id, data in deltas.items() if data['amount'] < 0}
+        ins = {asset_id: data for asset_id, data in deltas.items() if data['amount'] > 0}
+        category = protocol_category(self.location_id, self._norm(own_record.get('to', ''))) if own else None
+
+        # Nothing moved: an approval, a reverted transaction, or a contract call whose only effect was spam we
+        # filtered out. If it was the wallet's own transaction its gas is still charged as a GasFee.
+        if not outs and not ins:
+            if own and gas > Decimal('0'):
+                self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx['hash'],
+                                  note=self._gas_note(own_record, is_error))
+            return
+
+        if category == ProtocolCategory.LENDING:
+            raise _HaltImport(self.tr("lending/wrap operation, not supported yet"))
+        if category == ProtocolCategory.BRIDGE:
+            raise _HaltImport(self.tr("cross-chain bridge, not supported yet"))
+        if category == ProtocolCategory.REWARD:
+            if not outs and len(ins) == 1:
+                asset_id, data = next(iter(ins.items()))
+                self._emit_reward(timestamp, asset_id, data['amount'], tx['hash'], gas, is_error, own_record)
+                return
+            raise _HaltImport(self.tr("unrecognized reward-claim shape"))
+
+        swap_shape = len(outs) == 1 and len(ins) == 1
+        if category == ProtocolCategory.SWAP:
+            if swap_shape:
+                return self._emit_swap(timestamp, outs, ins, tx['hash'], gas)
+            raise _HaltImport(self.tr("unrecognized swap shape"))
+        if category == ProtocolCategory.AGGREGATOR:
+            if swap_shape:                                 # both legs on this chain -> a same-chain swap
+                return self._emit_swap(timestamp, outs, ins, tx['hash'], gas)
+            raise _HaltImport(self.tr("cross-chain bridge, not supported yet"))   # a single leg -> a bridge
+
+        # From here the contract (if any) is unregistered. A transaction the wallet signed that both spends and
+        # receives an asset is a swap/lending/bridge through an unknown contract - it must never be guessed at
+        # (reconciliation (a)); likewise an unfamiliar multi-asset shape or an own-initiated pure acquisition (a
+        # claim whose cost basis we can't establish) halts, to be revisited once the registry knows the contract.
+        if own and swap_shape:
+            # Naming the contract lets the user add it to the protocol registry with the right category and re-fetch.
+            raise _HaltImport(self.tr("asset exchange through an unregistered contract ")
+                              + self._norm(own_record.get('to', '')))
+        if own and outs and ins:
+            raise _HaltImport(self.tr("unrecognized multi-asset transaction"))
+        if own and ins and not outs:
+            raise _HaltImport(self.tr("incoming asset through an unregistered contract"))
+
+        # What is left is a plain transfer: assets sent out (a payment, a deposit to an exchange) or received from the
+        # outside world (an ordinary receive, an airdrop that passed the spam filter). The gas of the wallet's own
+        # send rides its outgoing leg, the way a broker's transfer fee does.
+        remaining_gas = gas
+        for asset_id, data in sorted(deltas.items()):
+            incoming = data['amount'] > Decimal('0')
+            fee = Decimal('0')
+            if not incoming and remaining_gas > Decimal('0'):
+                fee, remaining_gas = remaining_gas, Decimal('0')
+            self._add_transfer(timestamp, asset_id, abs(data['amount']), incoming, tx['hash'], note=data['note'],
+                               fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None)
+        if own and remaining_gas > Decimal('0'):   # an own transaction that only received (no leg took the gas)
+            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), remaining_gas, tx['hash'],
+                              note=self._gas_note(own_record, is_error))
+
+    # The wallet's net movement per asset in this transaction: incoming amounts positive, outgoing negative, summed
+    # across the native, internal and (spam-filtered) token legs. Gas is NOT part of it - it is charged separately.
+    # Net-zero assets (a token routed in and back out) are dropped, so only what actually changed hands remains.
+    def _wallet_deltas(self, tx: dict) -> dict:
+        deltas = defaultdict(lambda: {'amount': Decimal('0'), 'note': ''})
+        for record in tx['native'] + tx['internal']:      # native coin, moved directly or by a contract
+            signed = self._native_signed_amount(record)
+            if signed != Decimal('0'):
+                entry = deltas[self._native_asset_id()]
+                entry['amount'] += signed
+                entry['note'] = entry['note'] or self._counterparty_note(record)
+        for record in tx['tokens']:
+            leg = self._token_leg(record, tx)
+            if leg is not None:
+                asset_id, signed, note = leg
+                entry = deltas[asset_id]
+                entry['amount'] += signed
+                entry['note'] = entry['note'] or note
+        return {asset_id: data for asset_id, data in deltas.items() if data['amount'] != Decimal('0')}
+
+    # Signed native amount of a single txlist/internal record for the wallet (+ received, - sent, 0 if unrelated or
+    # reverted). The native coin is never dust-filtered - see the long note that used to live in _process_native:
+    # its value can only come from stored quotes a fresh wallet lacks, and a raw amount check would drop a real
+    # sub-1-ETH transfer, while native poisoning creates no attacker-named asset.
+    def _native_signed_amount(self, record: dict) -> Decimal:
+        if record.get('isError', '0') == '1':
+            return Decimal('0')
+        amount = self._wei(record.get('value', '0'))
+        if amount <= Decimal('0'):
+            return Decimal('0')
+        address = self._address()
+        if self._norm(record.get('to', '')) == address:
+            return amount
+        if self._norm(record.get('from', '')) == address:
+            return -amount
+        return Decimal('0')
+
+    # One token leg as (asset_id, signed_amount, note), or None when the leg carries nothing importable (a malformed
+    # contract, a zero-value event, or a token the spam filter quarantined). The spam policy is unchanged from the
+    # per-leg version: provenance decides trust - only a transaction the wallet itself signed is user-driven, so any
+    # other event, whichever direction it claims, must face the dust filter (a spoofed 'outgoing' fake-USDT otherwise
+    # sails in, because the shared filter never treats an outgoing transfer as dust).
+    def _token_leg(self, record: dict, tx: dict):
         address = self._norm(record.get('contractAddress', ''))
         tx_hash = record.get('hash', '')
         if not is_evm_address(address):
             self._skip(self.tr("token with a malformed contract address"), tx_hash)
-            return
-        symbol = record.get('tokenSymbol', '')
-        name = record.get('tokenName', '')
+            return None
+        symbol, name = record.get('tokenSymbol', ''), record.get('tokenName', '')
         incoming = self._norm(record.get('to', '')) == self._address()
         try:
             decimals = int(record.get('tokenDecimal', '0'))
             amount = Decimal(record.get('value', '0')) / (Decimal('10') ** decimals)
         except (ValueError, ArithmeticError):
             self._skip(self.tr("token transfer with an unreadable amount"), tx_hash)
-            return
+            return None
         if amount <= Decimal('0'):
-            # A zero-value ERC-20 Transfer event carries no operation. Scam contracts emit them in bulk to poison a
-            # wallet's history, and some legitimate contracts emit them too; either way there is nothing to import.
             self._skip(self.tr("zero-amount token transfer"), tx_hash)
-            return
-        # The spam policy runs before anything is created: a rejected token becomes no asset, no symbol and no
-        # operation, so attacker-chosen names never reach the database (CRYPTO_PATH section 2.4). Both hints below
-        # matter for a real token: without them an incoming transfer of an asset JAL can't price is dust by
-        # definition, which would quarantine the very first USDT a wallet ever receives.
-        #
-        # Provenance is the decisive signal on an EVM chain: Etherscan lists every Transfer *event* that names the
-        # wallet, and a scam contract can emit events that spoof the wallet as sender OR receiver without it ever
-        # acting. Only a transaction the wallet itself sent (its hash is in _own_tx) is genuinely user-driven, so
-        # such a movement is trusted (from_swap); any other event is unsolicited and must face the dust filter,
-        # whichever direction it claims - otherwise a spoofed "outgoing" fake-USDT transfer would sail straight in,
-        # because the shared filter never treats an outgoing transfer as dust.
-        initiated = tx_hash in self._own_tx
+            return None
+        initiated = self._own_record(tx) is not None
         counterparty = record.get('from', '') if incoming else record.get('to', '')
         candidate = TokenCandidate(location_id=self.location_id, address=address, symbol=symbol, name=name,
                                    incoming=incoming or not initiated, from_swap=initiated, amount=amount,
@@ -221,48 +321,59 @@ class EVMFetcher(ChainFetcher):
                                    value=self._value_of(address, amount, self._timestamp_of(record)))
         if not self._filter.accept(candidate):
             self._skip(self.tr("token quarantined as dust/spam"), tx_hash)
-            return
+            return None
         asset_id = self._token_asset_id(symbol, name, address=address)
-        # Gas is charged in the native coin, never in the token that moved, and only when the wallet sent the token
-        fee = self._take_gas(tx_hash) if not incoming else Decimal('0')
-        fee_asset_id = self._native_asset_id() if fee > Decimal('0') else None
-        self._add_transfer(self._timestamp_of(record), asset_id, amount, incoming, tx_hash,
-                           note=self._counterparty_note(record), fee=fee, fee_asset_id=fee_asset_id)
+        return asset_id, (amount if incoming else -amount), self._counterparty_note(record)
 
-    # Native coin that a contract moved for the wallet: the output side of a swap, a withdrawal from a staking or
-    # DeFi contract, a refund. Its gas belongs to the parent transaction and was accounted from txlist, so an
-    # internal transfer never carries a fee of its own.
-    def _process_internal(self, record: dict) -> None:
-        tx_hash = record.get('hash', '')
-        if record.get('isError', '0') == '1':
-            return
+    # Emits a swap: one asset out, one asset in, gas paid in the native coin as the fee.
+    def _emit_swap(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal) -> None:
+        out_asset, out_data = next(iter(outs.items()))
+        in_asset, in_data = next(iter(ins.items()))
+        self._add_swap(timestamp, out_asset, abs(out_data['amount']), in_asset, in_data['amount'], tx_hash,
+                       fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
+
+    # Emits a claimed reward as a StakingReward (it opens a lot at market value, so the reward has a cost basis), plus
+    # the claim's gas as a separate GasFee.
+    def _emit_reward(self, timestamp: int, asset_id: int, amount: Decimal, tx_hash: str, gas: Decimal,
+                     is_error: bool, own_record: dict) -> None:
+        self._add_payment(JSF.PAYMENT_STAKING_REWARD, timestamp, asset_id, amount, tx_hash,
+                          note=self.tr("Reward claim"))
+        if gas > Decimal('0'):
+            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx_hash,
+                              note=self._gas_note(own_record, is_error))
+
+    # The wallet's own top-level record of the transaction (from == wallet), or None when the wallet only received or
+    # was merely named by an event it never signed. Its presence is what "the wallet initiated this" means, and it
+    # carries the gas, the interacted-with contract ('to') and the method selector.
+    def _own_record(self, tx: dict):
+        for record in tx['native']:
+            if self._norm(record.get('from', '')) == self._address():
+                return record
+        return None
+
+    # Gas the wallet paid for a transaction it initiated: gasUsed * gasPrice, in the native coin.
+    def _gas_of(self, record: dict) -> Decimal:
         try:
-            amount = Decimal(record.get('value', '0')) / _WEI
-        except ArithmeticError:
-            self._skip(self.tr("internal transfer with an unreadable amount"), tx_hash)
-            return
-        if amount <= Decimal('0'):
-            return
-        incoming = self._norm(record.get('to', '')) == self._address()   # native coin isn't dust-filtered, see above
-        asset_id = self._native_asset_id()
-        fee = self._take_gas(tx_hash) if not incoming else Decimal('0')
-        self._add_transfer(self._timestamp_of(record), asset_id, amount, incoming, tx_hash,
-                           note=self._counterparty_note(record),
-                           fee=fee, fee_asset_id=asset_id if fee > Decimal('0') else None)
+            return Decimal(record.get('gasUsed', '0')) * Decimal(record.get('gasPrice', '0')) / _WEI
+        except (ArithmeticError, TypeError):
+            return Decimal('0')
 
-    # Every wallet-initiated transaction whose gas no transfer claimed: a token approval, a contract call that moved
-    # nothing, or a transaction that reverted - the gas is charged in all three cases and would otherwise vanish.
-    def _process_leftover_gas(self) -> None:
-        for tx_hash, fee in self._gas.items():
-            record = self._gas_tx.get(tx_hash, {})
-            self._add_payment(JSF.PAYMENT_GAS_FEE, self._timestamp_of(record), self._native_asset_id(), fee,
-                              tx_hash, note=self._gas_note(record))
-        self._gas = {}
+    def _wei(self, value) -> Decimal:
+        try:
+            return Decimal(value) / _WEI
+        except (ArithmeticError, TypeError):
+            return Decimal('0')
+
+    def _index_of(self, record: dict) -> int:
+        try:
+            return int(record.get('transactionIndex', 0))
+        except (TypeError, ValueError):
+            return 0
 
     # Describes what the gas was spent on: Etherscan reports a reverted transaction through 'isError', and the
     # method selector tells an approval from any other call (CRYPTO_PATH decision #32).
-    def _gas_note(self, record: dict) -> str:
-        if record.get('isError', '0') == '1':
+    def _gas_note(self, record: dict, is_error: bool) -> str:
+        if is_error:
             return self.tr("Gas: failed transaction")
         if record.get('methodId', '') == _METHOD_APPROVE:
             return self.tr("Gas: token approval")

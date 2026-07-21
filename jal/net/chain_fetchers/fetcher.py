@@ -167,3 +167,17 @@ class ChainFetcher(Statement):
             {"id": self._next_id(JSF.ASSET_PAYMENTS), "type": payment_type, "account": 1,
              "symbol": self._single_symbol_of(asset_id), "timestamp": timestamp,
              "amount": amount, "tax": Decimal('0'), "number": tx_hash, "description": note})
+
+    # Adds a swap: one asset is disposed (out) and another acquired (in) in a single on-chain transaction. The gas is
+    # burned in the chain's native coin (fee_asset_id) - passed separately from the swapped assets, since it may equal
+    # neither of them. The Swap operation realizes P&L on the out asset and opens the in asset at market value.
+    def _add_swap(self, timestamp: int, out_asset_id: int, out_qty: Decimal, in_asset_id: int, in_qty: Decimal,
+                  tx_hash: str, note: str = '', fee: Decimal = Decimal('0'), fee_asset_id: int = None) -> None:
+        swap = {"id": self._next_id(JSF.SWAPS), "account": 1,
+                "out_symbol": self._single_symbol_of(out_asset_id), "out_qty": out_qty,
+                "in_symbol": self._single_symbol_of(in_asset_id), "in_qty": in_qty,
+                "timestamp": timestamp, "tx_hash": tx_hash, "description": note}
+        if fee > Decimal('0') and fee_asset_id is not None:
+            swap["fee_symbol"] = self._single_symbol_of(fee_asset_id)
+            swap["fee_qty"] = fee
+        self._data.setdefault(JSF.SWAPS, []).append(swap)
