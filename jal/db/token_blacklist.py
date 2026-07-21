@@ -96,6 +96,19 @@ def is_tron_address(address: str) -> bool:
     return sha256(sha256(payload).digest()).digest()[:4] == checksum
 
 
+# True if the given string is a valid EVM (Ethereum/Arbitrum/...) address: '0x' followed by exactly 40 hex digits.
+# EVM has no checksum an unchecksummed address must pass, so this is a shape check only - it rejects a truncated or
+# mistyped address, which would otherwise fetch an empty history and look like a wallet with no transactions.
+def is_evm_address(address: str) -> bool:
+    if not address or len(address) != 42 or not address.startswith('0x'):
+        return False
+    try:
+        int(address, 16)
+    except ValueError:
+        return False
+    return True
+
+
 # True if the address may belong to the given blockchain. Only the chains that JAL is able to check are checked -
 # an address of any other chain is accepted as it is, so that a missing validator never blocks the user. Validators
 # are added here as the fetcher of each chain is implemented.
@@ -106,6 +119,8 @@ def is_valid_address(location_id: int, address: str) -> bool:
         return False
     if location_id == AssetLocation.TRX_BLOCKCHAIN:
         return is_tron_address(address)
+    if location_id in (AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN):
+        return is_evm_address(address)
     return True
 
 

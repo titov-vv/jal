@@ -375,6 +375,14 @@ Do you want to delete the account anyway?</source>
     </message>
 </context>
 <context>
+    <name>ArbitrumFetcher</name>
+    <message>
+        <location filename="../net/chain_fetchers/arbitrum.py" line="18"/>
+        <source>Arbitrum</source>
+        <translation type="unfinished">Arbitrum</translation>
+    </message>
+</context>
+<context>
     <name>AssetData</name>
     <message>
         <location filename="../constants.py" line="285"/>
@@ -1353,57 +1361,57 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="1236"/>
+        <location filename="../db/operations.py" line="1240"/>
         <source>UNDEFINED</source>
         <translation>НЕОПРЕДЕЛЕНО</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1237"/>
+        <location filename="../db/operations.py" line="1241"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1238"/>
+        <location filename="../db/operations.py" line="1242"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1239"/>
+        <location filename="../db/operations.py" line="1243"/>
         <source>Spin-off</source>
         <translation>Выделение компании (спин-офф)</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1240"/>
+        <location filename="../db/operations.py" line="1244"/>
         <source>Merger</source>
         <translation>Реорганизация компании</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1241"/>
+        <location filename="../db/operations.py" line="1245"/>
         <source>Delisting</source>
         <translation>Делистинг</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1346"/>
+        <location filename="../db/operations.py" line="1350"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation>ЦБ не является результатом корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1365"/>
+        <location filename="../db/operations.py" line="1369"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation>Не задан тип корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1370"/>
+        <location filename="../db/operations.py" line="1374"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количество ценных бумаг недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1374"/>
+        <location filename="../db/operations.py" line="1378"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation>Неподдерживаемый случай: Корпоративное событие покрывает не всю открытую позицию. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1380"/>
+        <location filename="../db/operations.py" line="1384"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation>Результаты корпоративного события не распределяют 100% стоимости изначального актива. </translation>
     </message>
@@ -1848,6 +1856,87 @@ one for ParentCo and second for Subsidiary</source>
         <location filename="../widgets/income_spending_widget.py" line="228"/>
         <source>Total</source>
         <translation>Итого</translation>
+    </message>
+</context>
+<context>
+    <name>EVMFetcher</name>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="57"/>
+        <source>Etherscan API key isn&apos;t set - fill it in Settings/Preferences/Blockchain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="81"/>
+        <source>Unexpected answer from Etherscan: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="88"/>
+        <source>Etherscan request failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="93"/>
+        <source>Too many pages returned by Etherscan, the history may be incomplete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="109"/>
+        <source>Not a valid EVM address: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="167"/>
+        <source>native transfer with an unreadable amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="188"/>
+        <source>token with a malformed contract address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="197"/>
+        <source>token transfer with an unreadable amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="202"/>
+        <source>zero-amount token transfer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="222"/>
+        <source>token quarantined as dust/spam</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="241"/>
+        <source>internal transfer with an unreadable amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="265"/>
+        <source>Gas: failed transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="267"/>
+        <source>Gas: token approval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/evm.py" line="268"/>
+        <source>Gas: contract call</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>EthereumFetcher</name>
+    <message>
+        <location filename="../net/chain_fetchers/ethereum.py" line="17"/>
+        <source>Ethereum</source>
+        <translation type="unfinished">Ethereum</translation>
     </message>
 </context>
 <context>
@@ -3714,6 +3803,7 @@ Do you want to delete the peer anyway?</source>
     <message>
         <location filename="../db/settings_registry.py" line="102"/>
         <location filename="../db/settings_registry.py" line="110"/>
+        <location filename="../db/settings_registry.py" line="118"/>
         <source>Blockchain</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3729,11 +3819,21 @@ Do you want to delete the peer anyway?</source>
     </message>
     <message>
         <location filename="../db/settings_registry.py" line="111"/>
-        <source>Dust airdrop threshold</source>
+        <source>Etherscan API key</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../db/settings_registry.py" line="112"/>
+        <source>Required to fetch Ethereum and Arbitrum (ETH/ERC-20) transactions. Etherscan&apos;s V2 API uses one key for every supported chain; a free key allows 5 requests per second and 100000 requests per day.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/settings_registry.py" line="119"/>
+        <source>Dust airdrop threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/settings_registry.py" line="120"/>
         <source>An incoming token transfer that is worth less than this value in account currency, and comes from an address you never dealt with, is treated as an unsolicited airdrop and is not imported.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4838,23 +4938,23 @@ Do you want to delete the peer anyway?</source>
         <translation>Не найден символ для трансфера: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="568"/>
+        <location filename="../data_import/statement.py" line="573"/>
         <source>Unmatched symbol for trade: </source>
         <translation>Не найден символ для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="588"/>
+        <location filename="../data_import/statement.py" line="593"/>
         <source>Unmatched symbol for payment: </source>
         <translation>Не найден символ для платежа: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="639"/>
-        <location filename="../data_import/statement.py" line="645"/>
+        <location filename="../data_import/statement.py" line="644"/>
+        <location filename="../data_import/statement.py" line="650"/>
         <source>Unmatched symbol for corporate action: </source>
         <translation>Не найден символ для корпоративного события: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="854"/>
+        <location filename="../data_import/statement.py" line="859"/>
         <source>Can&apos;t resolve an exact symbol for: </source>
         <translation>Невозможно определить символ для: </translation>
     </message>
@@ -4884,110 +4984,110 @@ Do you want to delete the peer anyway?</source>
         <translation>Невозможно конвертировать тип актива в трансфере: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="517"/>
+        <location filename="../data_import/statement.py" line="522"/>
         <source>Deposit of </source>
         <translation>Депозит </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="519"/>
+        <location filename="../data_import/statement.py" line="524"/>
         <source>Select account to withdraw from:</source>
         <translation>Выберите счёт для списания:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="522"/>
+        <location filename="../data_import/statement.py" line="527"/>
         <source>Withdrawal of </source>
         <translation>Списание </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="524"/>
+        <location filename="../data_import/statement.py" line="529"/>
         <source>Select account to deposit to:</source>
         <translation>Выберите счёт для зачисления:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="531"/>
+        <location filename="../data_import/statement.py" line="536"/>
         <source>Account not selected</source>
         <translation>Счёт не выбран</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="545"/>
+        <location filename="../data_import/statement.py" line="550"/>
         <source>Unmatched fee symbol for transfer: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="565"/>
+        <location filename="../data_import/statement.py" line="570"/>
         <source>Unmatched account for trade: </source>
         <translation>Невозможно сопоставить счёт для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="584"/>
+        <location filename="../data_import/statement.py" line="589"/>
         <source>Unmatched account for payment: </source>
         <translation>Невозможно сопоставить счёт для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="629"/>
+        <location filename="../data_import/statement.py" line="634"/>
         <source>Unsupported payment type: </source>
         <translation>Неподдерживаемый тип выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="636"/>
+        <location filename="../data_import/statement.py" line="641"/>
         <source>Unmatched account for corporate action: </source>
         <translation>Невозможно сопоставить счёт для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="651"/>
+        <location filename="../data_import/statement.py" line="656"/>
         <source>Unsupported corporate action: </source>
         <translation>Неподдерживаемое корпоративное действие: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="676"/>
+        <location filename="../data_import/statement.py" line="681"/>
         <source>Multiple accounts found: </source>
         <translation>Несколько счетов найдено: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="699"/>
+        <location filename="../data_import/statement.py" line="704"/>
         <source>Asset id not found</source>
         <translation>ЦБ id не найден</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="708"/>
-        <location filename="../data_import/statement.py" line="716"/>
+        <location filename="../data_import/statement.py" line="713"/>
+        <location filename="../data_import/statement.py" line="721"/>
         <source>Symbol id not found: </source>
         <translation>ID символа не найден: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="725"/>
-        <location filename="../data_import/statement.py" line="737"/>
-        <location filename="../data_import/statement.py" line="787"/>
+        <location filename="../data_import/statement.py" line="730"/>
+        <location filename="../data_import/statement.py" line="742"/>
+        <location filename="../data_import/statement.py" line="792"/>
         <source>Multiple match for </source>
         <translation>Неоднозначное совпадение для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="749"/>
+        <location filename="../data_import/statement.py" line="754"/>
         <source>Multiple currency match for </source>
         <translation>Неоднозначное совпадение валюты для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="762"/>
+        <location filename="../data_import/statement.py" line="767"/>
         <source>Can&apos;t find exact symbol for asset: </source>
         <translation>Не найден символ для ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="815"/>
+        <location filename="../data_import/statement.py" line="820"/>
         <source>Can&apos;t find asset on moex.com: </source>
         <translation>Не удалось найти ЦБ на moex.com: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="819"/>
+        <location filename="../data_import/statement.py" line="824"/>
         <source>Unsupported asset type from moex.com: </source>
         <translation>Неподдерживаемый тип ЦБ с moex.com: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="824"/>
+        <location filename="../data_import/statement.py" line="829"/>
         <source>Unknown online search source: </source>
         <translation>Неизвестный источник для онлайн поиска: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="827"/>
+        <location filename="../data_import/statement.py" line="832"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation>Невозможно найти ЦБ в отчёте: </translation>
     </message>
@@ -6625,7 +6725,7 @@ Do you want to delete the peer anyway?</source>
 <context>
     <name>TermDeposit</name>
     <message>
-        <location filename="../db/operations.py" line="1498"/>
+        <location filename="../db/operations.py" line="1502"/>
         <source>Can&apos;t process deposit as bank isn&apos;t set for account: </source>
         <translation>Невозможно обработать депозит, т.к. не задан банк для счёта: </translation>
     </message>

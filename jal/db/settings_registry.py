@@ -106,6 +106,14 @@ def _register_builtin_settings() -> None:
                                   "per second and 100000 requests per day; without a key TronGrid rejects almost "
                                   "every request.")))
     SettingsRegistry.register(SettingDescriptor(
+        key="ApiKey_Etherscan",
+        page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
+        label=QT_TRANSLATE_NOOP("Preferences", "Etherscan API key"),
+        tooltip=QT_TRANSLATE_NOOP("Preferences",
+                                  "Required to fetch Ethereum and Arbitrum (ETH/ERC-20) transactions. Etherscan's V2 "
+                                  "API uses one key for every supported chain; a free key allows 5 requests per "
+                                  "second and 100000 requests per day.")))
+    SettingsRegistry.register(SettingDescriptor(
         key="TokenDustThreshold",
         page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
         label=QT_TRANSLATE_NOOP("Preferences", "Dust airdrop threshold"), default='1',
