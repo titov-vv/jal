@@ -9,16 +9,22 @@ from jal.db.asset import JalAsset
 # ----------------------------------------------------------------------------------------------------------------------
 # Class that represents open trade and provides some methods equal to JalClosedTrades to make compatible calls
 class JalOpenTrade(JalDB):
-    def __init__(self, operation, price, qty, adjustments=(Decimal('1'), Decimal('1'))) -> None:
+    def __init__(self, operation, price, qty, adjustments=(Decimal('1'), Decimal('1')), slice_id=None) -> None:
         super().__init__()
         self._op = operation
         self._price = price
         self._qty = qty
         self._adj_price = adjustments[0]   # Historical adjustments of price and quantity that happened
         self._adj_qty = adjustments[1]     # during holding of this position
+        self._slice_id = slice_id          # Stable identity of the held slice; None until the slice is stored
 
     def open_operation(self):
         return self._op
+
+    # Identity of the held slice this trade represents (see trades_opened.slice_id). None means "not yet stored":
+    # a freshly opened or carried-over slice that JalAccount.open_trade() will let the DB assign a new id to.
+    def slice_id(self):
+        return self._slice_id
 
     def open_price(self, adjusted=False) -> Decimal:
         if adjusted:
@@ -117,6 +123,11 @@ class JalClosedTrade(JalDB):
 
     def open_operation(self):
         return self._open_op
+
+    # A closed trade is only ever re-opened as a brand new slice on a destination account (Transfer/CorporateAction
+    # carry-over), so it never preserves a slice identity - open_trade() lets the DB assign a fresh one.
+    def slice_id(self):
+        return None
 
     def close_operation(self):
         return self._close_op

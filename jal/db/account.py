@@ -382,17 +382,21 @@ class JalAccount(JalDB):
     def open_trade(self, trade, asset, modified_by=None, adjustment=(Decimal('1'), Decimal('1'))):
         operation = trade.open_operation()
         modified_by = operation if modified_by is None else modified_by
+        # slice_id carries the slice's stable identity: a trade taken from open_trades_list() (a state change of an
+        # existing slice after partial consumption) keeps it; a freshly opened or carried-over slice has None here and
+        # the trades_opened_set_slice trigger assigns the new row's own id as its slice identity.
         _ = self._exec(
             "INSERT INTO trades_opened(timestamp, otype, oid, m_otype, m_oid, account_id, asset_id, "
-            "price, remaining_qty, c_price, c_qty) "
+            "price, remaining_qty, c_price, c_qty, slice_id) "
             "VALUES(:timestamp, :otype, :oid, :m_otype, :m_oid, :account_id, :asset_id, :price, "
-            ":remaining_qty, :c_price, :c_qty)",
+            ":remaining_qty, :c_price, :c_qty, :slice_id)",
             [(":timestamp", modified_by.timestamp()), (":otype", operation.type()), (":oid", operation.id()),
              (":m_otype", modified_by.type()), (":m_oid", modified_by.id()), (":account_id", self._id),
              (":asset_id", asset.id()), (":price", format_decimal(trade.open_price())),
              (":remaining_qty", format_decimal(trade.open_qty())),
              (":c_price", format_decimal(trade.p_adjustment() * adjustment[0])),
-             (":c_qty", format_decimal(trade.q_adjustment() * adjustment[1]))])
+             (":c_qty", format_decimal(trade.q_adjustment() * adjustment[1])),
+             (":slice_id", trade.slice_id())])
 
     # Returns a list of JalOpenTrades that represents all trades that were opened for given asset at given timestamp
     # LedgerTransaction might be Trade, AssetPayment, CorporateAction or Transfer
@@ -401,19 +405,26 @@ class JalAccount(JalDB):
         if timestamp is None:
             timestamp = Setup.MAX_TIMESTAMP
         trades = []
+        # Positions are grouped by slice_id (the slice's stable identity), keeping only the latest state of each
+        # slice. Grouping by (otype, oid) instead would merge two independent slices carried over from the same
+        # original operation into one bucket and drop all but the newest, silently losing quantity and understating
+        # realized P&L. (otype, oid) is still selected, but only to rebuild the opening operation and its cost basis.
         query = self._exec("WITH open_trades_numbered AS "
-                           "(SELECT timestamp, otype, oid, price, remaining_qty, c_price, c_qty, "
-                           "ROW_NUMBER() OVER (PARTITION BY otype, oid ORDER BY timestamp DESC, id DESC) AS row_no "
+                           "(SELECT timestamp, otype, oid, price, remaining_qty, c_price, c_qty, slice_id, "
+                           "ROW_NUMBER() OVER (PARTITION BY slice_id ORDER BY timestamp DESC, id DESC) AS row_no "
                            "FROM trades_opened WHERE account_id=:account AND asset_id=:asset AND timestamp<=:timestamp) "
-                           "SELECT otype, oid, price, remaining_qty, c_price, c_qty "
+                           "SELECT otype, oid, price, remaining_qty, c_price, c_qty, slice_id "
                            "FROM open_trades_numbered WHERE row_no=1 AND remaining_qty!=:zero ",
                            [(":account", self._id), (":asset", asset.id()),
                             (":timestamp", timestamp), (":zero", format_decimal(Decimal('0')))])
         while query.next():
-            otype, oid, price, qty, p, q = self._read_record(query, cast=[int, int, Decimal, Decimal, Decimal, Decimal])
+            otype, oid, price, qty, p, q, slice_id = self._read_record(query, cast=[int, int, Decimal, Decimal, Decimal, Decimal, int])
             operation = jal.db.operations.LedgerTransaction().get_operation(otype, oid, jal.db.operations.Transfer.Incoming)
-            trades.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q)))
-        trades = sorted(trades, key=lambda op: op.open_operation().timestamp())  # For correct FIFO we need to take operations in order of original operation, not last modification
+            trades.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q), slice_id=slice_id))
+        # For correct FIFO we take slices in order of their original operation, not last modification. slice_id breaks
+        # ties deterministically: slices are assigned ids in replay (chronological) order, so among slices sharing an
+        # original operation (a lot split by several carry-overs) the earliest-arrived one is consumed first.
+        trades = sorted(trades, key=lambda op: (op.open_operation().timestamp(), op.slice_id()))
         return trades
 
     # Returns amount that was paid for an asset that was hold on the account during time between start_ts and end_ts

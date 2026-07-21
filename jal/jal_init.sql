@@ -234,11 +234,24 @@ CREATE TABLE trades_opened (
     price         TEXT    NOT NULL,    -- Accounting price of current position (may be different from original operation)
     remaining_qty TEXT    NOT NULL,    -- Quantity of asset that still remains held (may be different from original operation quantity)
     c_price       TEXT    NOT NULL DEFAULT ('1'),  -- Coefficient that was used to adjust price of initial operation (price = c_price * original_price)
-    c_qty         TEXT    NOT NULL DEFAULT ('1')   -- Coefficient that was used to adjust qty of initial operation (qty = c_qty * original_qty)
+    c_qty         TEXT    NOT NULL DEFAULT ('1'),   -- Coefficient that was used to adjust qty of initial operation (qty = c_qty * original_qty)
+    slice_id      INTEGER             -- Stable identity of the held slice/lot: assigned when a slice is opened or carried
+                                      -- over and preserved through every later state change; open_trades_list() groups by it.
+                                      -- A NULL on insert means "new slice" and is auto-filled with the row's own id by a trigger.
 );
 
 DROP INDEX IF EXISTS open_trades_by_time;
 CREATE INDEX open_trades_by_time ON trades_opened (timestamp, id);
+
+-- A row inserted without an explicit slice_id starts a new slice and gets its own row id as the slice identity.
+-- Rows that carry an existing slice_id (a slice's state re-written after partial consumption) keep it, so
+-- open_trades_list() can tell one slice's successive states apart from two independent slices of the same operation.
+DROP TRIGGER IF EXISTS trades_opened_set_slice;
+CREATE TRIGGER trades_opened_set_slice AFTER INSERT ON trades_opened
+    WHEN NEW.slice_id IS NULL
+BEGIN
+    UPDATE trades_opened SET slice_id = NEW.id WHERE id = NEW.id;
+END;
 
 -- Table: quotes
 DROP TABLE IF EXISTS quotes;

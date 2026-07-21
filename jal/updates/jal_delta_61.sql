@@ -214,6 +214,21 @@ ORDER BY m.timestamp, m.seq, m.opart, m.oid;  -- First sort by sequence and part
 DROP INDEX IF EXISTS uniq_symbols;
 CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id, location_id);
 --------------------------------------------------------------------------------
+-- Give every open trade a stable per-slice identity so open_trades_list() can tell one lot's successive states
+-- apart from two independent slices of the same operation. Without it, carrying the same original lot twice into
+-- one (account, asset) bucket (e.g. two partial transfers of one buy) makes the second row shadow the first under
+-- the shared (otype, oid) key and silently drops a slice's quantity from the FIFO list, understating realized P&L.
+-- The column is filled by the trigger below on rebuild; existing rows stay NULL and are discarded by the rebuild.
+ALTER TABLE trades_opened ADD COLUMN slice_id INTEGER;
+DROP TRIGGER IF EXISTS trades_opened_set_slice;
+CREATE TRIGGER trades_opened_set_slice AFTER INSERT ON trades_opened
+    WHEN NEW.slice_id IS NULL
+BEGIN
+    UPDATE trades_opened SET slice_id = NEW.id WHERE id = NEW.id;
+END;
+-- The whole ledger cache (including trades_opened) must be rebuilt so slice ids are assigned to every open trade.
+INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=61 WHERE name='SchemaVersion';
 COMMIT;
