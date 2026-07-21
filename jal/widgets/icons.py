@@ -41,6 +41,7 @@ class JalIcon(UserDict):
     REMOVE = auto()
     SELL = auto()
     SPINOFF = auto()
+    SWAP = auto()
     SPLIT = auto()
     STOCK_DIVIDEND = auto()
     STOCK_VESTING = auto()
@@ -85,6 +86,7 @@ class JalIcon(UserDict):
         REMOVE: "remove.ico",
         SELL: "sell.ico",
         SPINOFF: "spinoff.ico",
+        SWAP: "renaming.ico",                   # TODO dedicated icon for swaps (reuses the symbol-change glyph)
         SPLIT: "split.ico",
         STOCK_DIVIDEND: "dividend_stock.ico",
         STOCK_VESTING: "vesting.ico",

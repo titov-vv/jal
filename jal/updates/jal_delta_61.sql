@@ -146,6 +146,68 @@ END;
 INSERT INTO settings(name, value) VALUES('DlgGeometry_Token blacklist', '');
 INSERT INTO settings(name, value) VALUES('DlgViewState_Token blacklist', '');
 --------------------------------------------------------------------------------
+-- New operation: swaps (an on-chain exchange of one asset for another; realizes profit/loss on the disposed asset
+-- and opens the acquired asset as a new lot at market value - NOT a cost-basis-preserving SymbolChange/Merger).
+CREATE TABLE swaps (
+    oid           INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
+    otype         INTEGER     NOT NULL DEFAULT (7),            -- Operation type (7 = swap)
+    timestamp     INTEGER     NOT NULL,
+    account_id    INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    tx_hash       TEXT        NOT NULL DEFAULT (''),           -- Hash of the blockchain transaction
+    out_symbol_id INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Disposed asset
+    out_qty       TEXT        NOT NULL,
+    in_symbol_id  INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Acquired asset
+    in_qty        TEXT        NOT NULL,
+    fee_symbol_id INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- Fee (gas) asset, if any
+    fee_qty       TEXT,
+    note          TEXT                                         -- Free text comment
+);
+
+-- Ledger and trades cleanup after modification (mirrors the trades_* triggers)
+DROP TRIGGER IF EXISTS swaps_after_delete;
+CREATE TRIGGER swaps_after_delete AFTER DELETE ON swaps FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+END;
+DROP TRIGGER IF EXISTS swaps_after_insert;
+CREATE TRIGGER swaps_after_insert AFTER INSERT ON swaps FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+END;
+DROP TRIGGER IF EXISTS swaps_after_update;
+CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_symbol_id, in_qty, fee_symbol_id, fee_qty ON swaps FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;
+
+-- The display/processing sequence view has to learn about the new operation (single part, opart 0)
+DROP VIEW IF EXISTS operation_sequence;
+CREATE VIEW operation_sequence AS SELECT m.otype, m.oid, opart, m.timestamp, m.account_id
+FROM
+(
+    SELECT otype, 1 AS seq, oid, 0 AS opart, timestamp, account_id FROM actions
+    UNION ALL
+    SELECT otype, 2 AS seq, oid, 0 AS opart, timestamp, account_id FROM asset_payments
+    UNION ALL
+    SELECT otype, 3 AS seq, oid, 0 AS opart, timestamp, account_id FROM asset_actions
+    UNION ALL
+    SELECT otype, 4 AS seq, oid, 0 AS opart, timestamp, account_id FROM trades
+    UNION ALL
+    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers
+    UNION ALL
+    SELECT otype, 5 AS seq, oid, 0 AS opart, withdrawal_timestamp AS timestamp, fee_account AS account_id FROM transfers WHERE NOT fee IS NULL
+    UNION ALL
+    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers
+    UNION ALL
+    SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
+    UNION ALL
+    SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps
+) AS m
+ORDER BY m.timestamp, m.seq, m.opart, m.oid;  -- First sort by sequence and part to enforce right operation processing order
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=61 WHERE name='SchemaVersion';
 COMMIT;

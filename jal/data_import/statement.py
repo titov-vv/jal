@@ -35,6 +35,7 @@ class JSF:
     DB_IDS = "db_ids"       # optional: statement id -> jal db id matches per domain, consumed into the id map on load
     TRADES = "trades"
     TRANSFERS = "transfers"
+    SWAPS = "swaps"
     CORP_ACTIONS = "corporate_actions"
     ASSET_PAYMENTS = "asset_payments"
     INCOME_SPENDING = "income_spending"
@@ -153,6 +154,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             JSF.INCOME_SPENDING: self._import_imcomes_and_spendings,
             JSF.TRANSFERS: self._import_transfers,
             JSF.TRADES: self._import_trades,
+            JSF.SWAPS: self._import_swaps,
             JSF.ASSET_PAYMENTS: self._import_asset_payments,
             JSF.CORP_ACTIONS: self._import_corporate_actions
         }
@@ -581,6 +583,24 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 continue
             LedgerTransaction.create_new(LedgerTransaction.Trade, operation)
 
+    def _import_swaps(self, swaps):
+        for swap in swaps:
+            operation = deepcopy(swap)
+            operation['account_id'] = self.mapped_id(JSF.ACCOUNTS, operation.pop('account'))
+            if not operation['account_id']:
+                raise Statement_ImportError(self.tr("Unmatched account for swap: ") + f"{swap}")
+            operation['out_symbol_id'] = self.mapped_id(JSF.SYMBOLS, operation.pop('out_symbol'))
+            operation['in_symbol_id'] = self.mapped_id(JSF.SYMBOLS, operation.pop('in_symbol'))
+            if not operation['out_symbol_id'] or not operation['in_symbol_id']:
+                raise Statement_ImportError(self.tr("Unmatched symbol for swap: ") + f"{swap}")
+            if operation.get('fee_symbol') is not None:
+                operation['fee_symbol_id'] = self.mapped_id(JSF.SYMBOLS, operation.pop('fee_symbol'))
+            else:
+                operation.pop('fee_symbol', None)
+            if 'description' in operation:
+                operation['note'] = operation.pop('description')
+            LedgerTransaction.create_new(LedgerTransaction.Swap, operation)
+
     def _import_asset_payments(self, payments):
         for payment in payments:
             operation = deepcopy(payment)
@@ -896,7 +916,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     # Deletes operation if it's 'tag_name' key matches 'value'
     def _delete_with_id(self, tag_name, value):
-        operation_sections = [JSF.TRADES, JSF.TRANSFERS, JSF.CORP_ACTIONS, JSF.ASSET_PAYMENTS, JSF.INCOME_SPENDING]
+        operation_sections = [JSF.TRADES, JSF.TRANSFERS, JSF.SWAPS, JSF.CORP_ACTIONS, JSF.ASSET_PAYMENTS,
+                              JSF.INCOME_SPENDING]
         for section in operation_sections:
             if section in self._data:
                 self._data[section] = [x for x in self._data[section] if not self._key_match(x, tag_name, value)]

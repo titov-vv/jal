@@ -29,6 +29,7 @@ class LedgerTransaction(JalDB):
     Transfer = 4
     CorporateAction = 5
     TermDeposit = 6
+    Swap = 7
     _db_table = ''   # Table where operation is stored in DB
     _db_fields = {}
 
@@ -79,6 +80,8 @@ class LedgerTransaction(JalDB):
             return CorporateAction(oid)
         elif operation_type == LedgerTransaction.TermDeposit:
             return TermDeposit(oid, opart)
+        elif operation_type == LedgerTransaction.Swap:
+            return Swap(oid, opart=opart)
         else:
             raise ValueError(f"An attempt to select unknown operation type: {operation_type}")
 
@@ -94,6 +97,8 @@ class LedgerTransaction(JalDB):
             return Transfer(operation_data, Transfer.Outgoing)
         elif operation_type == LedgerTransaction.CorporateAction:
             return CorporateAction(operation_data)
+        elif operation_type == LedgerTransaction.Swap:
+            return Swap(operation_data)
         else:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
 
@@ -124,6 +129,9 @@ class LedgerTransaction(JalDB):
         elif operation_type == LedgerTransaction.TermDeposit:
             table = TermDeposit._db_table
             fields = TermDeposit._db_fields
+        elif operation_type == LedgerTransaction.Swap:
+            table = Swap._db_table
+            fields = Swap._db_fields
         else:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
         self.validate_operation_data(table, fields, operation_data)
@@ -887,6 +895,168 @@ class Trade(LedgerTransaction):
         if self._fee:
             ledger.appendTransaction(self, BookAccount.Costs, self._fee,
                                      part=self.PART_FEE, category=PredefinedCategory.Fees, peer=self._broker, tag=self._asset.tag().id())
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# On-chain exchange of one asset for another (a DeFi swap). Unlike a SymbolChange/Merger - which preserve cost basis -
+# a swap is a genuine disposal: the out asset is FIFO-closed at its market value, the profit/loss is realized, and the
+# in asset is opened as a brand new lot at that same market value. The swap-closed deals go to the Deals report but are
+# kept out of tax reports until crypto tax treatment is designed (see JalAccount.closed_trades_list(close_otypes=...)).
+class Swap(LedgerTransaction):
+    _db_table = "swaps"
+    _db_fields = {
+        "timestamp": {"mandatory": True, "validation": True},
+        "tx_hash": {"mandatory": False, "validation": True, "default": ''},
+        "account_id": {"mandatory": True, "validation": True},
+        "out_symbol_id": {"mandatory": True, "validation": True},
+        "out_qty": {"mandatory": True, "validation": True},
+        "in_symbol_id": {"mandatory": True, "validation": True},
+        "in_qty": {"mandatory": True, "validation": True},
+        "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
+        "fee_qty": {"mandatory": False, "validation": True, "default": None},
+        "note": {"mandatory": False, "validation": False}
+    }
+    PART_PROFIT = 1
+    PART_FEE = 2
+
+    def __init__(self, operation_data=None, opart=None):
+        super().__init__(operation_data)
+        self._otype = LedgerTransaction.Swap
+        self._opart = opart
+        self._data = self._read("SELECT s.timestamp, s.tx_hash, s.account_id, s.out_symbol_id, s.out_qty, "
+                                "s.in_symbol_id, s.in_qty, s.fee_symbol_id, s.fee_qty, s.note FROM swaps AS s "
+                                "WHERE s.oid=:oid", [(":oid", self._oid)], named=True)
+        if self._data is None:
+            raise IndexError(LedgerTransaction.NoOpException)
+        self._icon = JalIcon[JalIcon.SWAP]
+        self._oname = self.tr("Swap")
+        self._timestamp = int(self._data['timestamp'])
+        self._account = jal.db.account.JalAccount(self._data['account_id'])
+        self._account_name = self._account.name()
+        self._account_currency = JalAsset(self._account.currency()).symbol()
+        self._reconciled = self._account.reconciled_at() >= self._timestamp
+        self._out_symbol = JalSymbol(self._data['out_symbol_id'])
+        self._out_asset = self._out_symbol.asset()
+        self._out_qty = Decimal(self._data['out_qty'])
+        self._in_symbol = JalSymbol(self._data['in_symbol_id'])
+        self._in_asset = self._in_symbol.asset()
+        self._in_qty = Decimal(self._data['in_qty'])
+        self._fee_symbol = JalSymbol(self._data['fee_symbol_id'])
+        self._fee_asset = self._fee_symbol.asset()
+        self._fee_qty = Decimal(self._data['fee_qty']) if self._data['fee_qty'] else Decimal('0')
+        self._symbol = self._out_symbol
+        self._asset = self._out_asset   # Operation's main asset is the disposed one (FIFO closing works with it)
+        self._number = self._data['tx_hash']
+        self._note = self._data['note']
+        self._peer_id = self._account.organization()
+        self._view_rows = 3 if self._fee_asset.id() else 2
+        self._value = None   # Cached disposal value of the swap in the account currency
+
+    # Swap happens immediately, settlement is required for compatibility with FIFO processing
+    def settlement(self) -> int:
+        return self._timestamp
+
+    def qty(self) -> Decimal:
+        return self._out_qty
+
+    # Market value of the swap in the account currency: value of the disposed asset with a fallback to the value
+    # of the acquired asset if the disposed one has no quotes at all.
+    def value(self) -> Decimal:
+        if self._value is None:
+            _, price = self._out_asset.quote(self._timestamp, self._account.currency())
+            if price != Decimal('0'):
+                self._value = price * self._out_qty
+            else:
+                _, price = self._in_asset.quote(self._timestamp, self._account.currency())
+                if price == Decimal('0'):
+                    raise LedgerError(self.tr("There are no quotes to value the swap. Date: ")
+                                      + f"{ts2dt(self._timestamp)}, Operation: {self.dump()}")
+                self._value = price * self._in_qty
+        return self._value
+
+    # Unit price of the disposed asset - it is the closing price of the FIFO deals created by the swap
+    def price(self) -> Decimal:
+        return self.value() / self._out_qty
+
+    def note(self) -> str:
+        return self._note
+
+    def description(self, part_only=False) -> str:
+        text = f"{self._out_qty} {self._out_symbol.symbol()} -> {self._in_qty} {self._in_symbol.symbol()}"
+        if self._fee_asset.id():
+            text += " " + self.tr("Fee:") + f" {self._fee_qty} {self._fee_symbol.symbol()}"
+        if self._note:
+            text += "\n" + self._note
+        return text
+
+    def value_change(self, part_only=False) -> list:
+        result = [-self._out_qty, self._in_qty]
+        if self._fee_asset.id():
+            result.append(-self._fee_qty)
+        return result
+
+    def value_currency(self) -> str:
+        text = f" {self._out_symbol.symbol()}\n {self._in_symbol.symbol()}"
+        if self._fee_asset.id():
+            text += f"\n {self._fee_symbol.symbol()}"
+        return text
+
+    def value_total(self) -> list:
+        balance = [self._asset_total(self._account.id(), self._out_asset.id()),
+                   self._asset_total(self._account.id(), self._in_asset.id())]
+        if self._fee_asset.id():
+            balance.append(self._asset_total(self._account.id(), self._fee_asset.id()))
+        return balance
+
+    def processLedger(self, ledger):
+        if not self._peer_id:
+            raise LedgerError(self.tr("Can't process swap as organization isn't set for account: ") + self._account_name)
+        if self._out_asset.id() == 0 or self._in_asset.id() == 0:
+            raise LedgerError(self.tr("Swap assets aren't set. Operation: ") + self.dump())
+        if self._out_asset.id() == self._in_asset.id():
+            raise LedgerError(self.tr("Can't process swap of an asset into itself. Operation: ") + self.dump())
+        if self._out_qty <= Decimal('0') or self._in_qty <= Decimal('0'):
+            raise LedgerError(self.tr("Swap quantities must be positive. Operation: ") + self.dump())
+        available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._out_asset.id())
+        if available < self._out_qty:
+            raise LedgerError(self.tr("Asset amount is not enough for swap processing. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
+                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        value = self.value()
+        processed_qty, basis = self._close_deals_fifo(Decimal('-1.0'), self._out_qty)
+        if processed_qty < self._out_qty:
+            raise LedgerError(self.tr("Processed asset amount is less than swap amount. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
+                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        # Withdraw the disposed asset at its cost basis and realize the profit/loss of the disposal
+        rounding_error = ledger.appendTransaction(self, BookAccount.Assets, -self._out_qty,
+                                                  asset_id=self._out_asset.id(), value=-basis)
+        ledger.appendTransaction(self, BookAccount.Incomes, -(value - basis + rounding_error), part=self.PART_PROFIT,
+                                 category=PredefinedCategory.Profit, peer=self._peer_id, tag=self._out_asset.tag().id())
+        # Deposit the acquired asset as a new open position at the swap-implied cost
+        self._account.open_trade(JalOpenTrade(self, value / self._in_qty, self._in_qty), self._in_asset)
+        ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=value)
+        if self._fee_asset.id():
+            self._process_swap_fee(ledger)
+
+    # The gas paid for the swap is disposed at its cost basis to Costs/Fees - the same treatment the standalone
+    # GasFee operation gives it, so no profit/loss is realized on the tiny amount of native coin spent on gas.
+    def _process_swap_fee(self, ledger):
+        available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._fee_asset.id())
+        if available < self._fee_qty:
+            raise LedgerError(self.tr("Asset amount is not enough to pay the swap fee. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
+                              + f"Required: {self._fee_qty}, Operation: {self.dump()}")
+        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._fee_qty,
+                                                               asset=self._fee_asset, record_deals=False)
+        if processed_qty < self._fee_qty:
+            raise LedgerError(self.tr("Processed asset amount is less than the swap fee. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
+                              + f"Required: {self._fee_qty}, Operation: {self.dump()}")
+        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
+                                 asset_id=self._fee_asset.id(), value=-processed_value)
+        ledger.appendTransaction(self, BookAccount.Costs, processed_value, part=self.PART_FEE,
+                                 category=PredefinedCategory.Fees, peer=self._peer_id, tag=self._fee_asset.tag().id())
 
 
 # ----------------------------------------------------------------------------------------------------------------------

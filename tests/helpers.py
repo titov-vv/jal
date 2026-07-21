@@ -168,6 +168,21 @@ def create_trades(account_id, trades):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Create swaps for given account_id: swaps is a list of tuples
+# (timestamp, out_asset_id, out_qty, in_asset_id, in_qty, [fee_asset_id, fee_qty])
+def create_swaps(account_id, swaps):
+    currency_id = JalAccount(account_id).currency()
+    for swap in swaps:
+        data = {'timestamp': swap[0], 'account_id': account_id, 'tx_hash': '',
+                'out_symbol_id': symbol_id_for(swap[1], currency_id), 'out_qty': Decimal(str(swap[2])),
+                'in_symbol_id': symbol_id_for(swap[3], currency_id), 'in_qty': Decimal(str(swap[4]))}
+        if len(swap) > 6:
+            data['fee_symbol_id'] = symbol_id_for(swap[5], currency_id)
+            data['fee_qty'] = Decimal(str(swap[6]))
+        LedgerTransaction.create_new(LedgerTransaction.Swap, data)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Create corporate actions for given account_id in database: actions is a list of tuples
 # (timestamp, type, asset_old, qty_old, note, [(asset_new1, qty_new1, share1), (asset_new2, qty_new2, share2), ...])
 def create_corporate_actions(account_id, actions):

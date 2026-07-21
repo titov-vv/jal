@@ -2,9 +2,10 @@ import json
 import logging
 from decimal import Decimal
 
-from jal.constants import AssetLocation
+from jal.constants import AssetLocation, PredefinedAccountType
 from jal.data_import.statement import Statement_ImportError, JSF
 from jal.data_import.token_filter import TokenFilter, TokenCandidate
+from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, is_evm_address
@@ -305,7 +306,24 @@ class EVMFetcher(ChainFetcher):
             seconds = 0
         return self._local_timestamp(seconds)
 
-    # Both counterparties are shown, sender first, so the note holds the whole movement regardless of its direction.
-    @staticmethod
-    def _counterparty_note(record: dict) -> str:
-        return f"{record.get('from', '')} → {record.get('to', '')}"
+    # The counterparty addresses are put in the note only when the other side is NOT an account JAL already knows:
+    # a transfer between two of the user's own wallets needs no address note, while an outside address is worth
+    # recording so the user can identify (or later name) the counterparty. Sender is shown first.
+    def _counterparty_note(self, record: dict) -> str:
+        sender, receiver = record.get('from', ''), record.get('to', '')
+        counterparty = sender if self._norm(receiver) == self._address() else receiver
+        if self._is_known_account(counterparty):
+            return ''
+        return f"{sender} → {receiver}"
+
+    # True if the address belongs to any wallet account JAL holds (on any chain - an EVM address is shared across
+    # EVM chains, and addresses of different chains never collide, so a cross-chain check is safe).
+    def _is_known_account(self, address: str) -> bool:
+        address = self._norm(address)
+        if not address:
+            return False
+        for account in JalAccount.get_all_accounts(active_only=True):
+            if account.account_type() == PredefinedAccountType.Wallet and \
+                    normalize_address(account.chain(), account.address()) == address:
+                return True
+        return False

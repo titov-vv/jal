@@ -233,9 +233,23 @@ def test_is_evm_address_accepts_valid_and_rejects_malformed():
     assert not is_evm_address("0xZZZ6991c6218b36c1d19d4a2e9eb0ce3606eb48")  # non-hex
 
 
-def test_counterparty_note_shows_both_parties_sender_first():
-    from jal.net.chain_fetchers.evm import EVMFetcher
-    assert EVMFetcher._counterparty_note({'from': '0xAAA', 'to': '0xBBB'}) == '0xAAA → 0xBBB'
+def test_counterparty_note_only_for_unknown_addresses(fetcher, eth_wallet):
+    fetcher._account = eth_wallet
+    external = "0x2222222222222222222222222222222222222222"
+    # An outside counterparty is recorded, sender first, so the user can identify it
+    assert fetcher._counterparty_note({'from': WALLET, 'to': external}) == f"{WALLET} → {external}"
+    assert fetcher._counterparty_note({'from': external, 'to': WALLET}) == f"{external} → {WALLET}"
+
+
+def test_counterparty_note_empty_between_known_wallets(fetcher, eth_wallet):
+    # A second wallet the user owns: a transfer between two known accounts needs no address note
+    other = "0x5555555555555555555555555555555555555555"
+    JalAccountCreator(currency_id=2, number='', name='ETH wallet 2', investing=1, organization=1,
+                      account_type=PredefinedAccountType.Wallet, address=other,
+                      chain=AssetLocation.ETH_BLOCKCHAIN).commit()
+    fetcher._account = eth_wallet
+    assert fetcher._counterparty_note({'from': WALLET, 'to': other}) == ''
+    assert fetcher._counterparty_note({'from': other, 'to': WALLET}) == ''
 
 
 # ----------------------------------------------------------------------------------------------------------------------

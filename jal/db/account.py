@@ -357,14 +357,19 @@ class JalAccount(JalDB):
         return value
 
     # Returns a list of JalClosedTrade objects recorded for the account which represents normally closed trades
-    def closed_trades_list(self, asset=None) -> list:
+    # 'close_otypes' selects which kinds of closing operation to include; it defaults to Trade only, so tax reports
+    # (which don't pass it) stay unchanged. The Deals report passes (Trade, Swap) to also show swap-realized deals.
+    def closed_trades_list(self, asset=None, close_otypes=None) -> list:
+        if close_otypes is None:
+            close_otypes = (jal.db.operations.LedgerTransaction.Trade,)
+        otypes = ','.join(str(int(x)) for x in close_otypes)
         trades = []
         if asset is None:
-            query = self._exec("SELECT id FROM trades_closed WHERE close_otype=:trade AND account_id=:account",
-                               [(":trade", jal.db.operations.LedgerTransaction.Trade), (":account", self._id)])
+            query = self._exec(f"SELECT id FROM trades_closed WHERE close_otype IN ({otypes}) AND account_id=:account",
+                               [(":account", self._id)])
         else:
-            query = self._exec("SELECT id FROM trades_closed WHERE close_otype=:trade AND account_id=:account AND asset_id=:asset",
-                               [(":trade", jal.db.operations.LedgerTransaction.Trade), (":account", self._id), (":asset", asset.id())])
+            query = self._exec(f"SELECT id FROM trades_closed WHERE close_otype IN ({otypes}) AND account_id=:account AND asset_id=:asset",
+                               [(":account", self._id), (":asset", asset.id())])
         while query.next():
             trades.append(jal.db.closed_trade.JalClosedTrade(self._read_record(query, cast=[int])))
         return trades

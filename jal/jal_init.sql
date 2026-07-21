@@ -346,6 +346,24 @@ CREATE TABLE trades (
     note       TEXT     NOT NULL DEFAULT ('')         -- Free text comment
 );
 
+-- Table for swap operations (on-chain exchange of one asset for another; realizes profit/loss on the disposed
+-- asset and opens the acquired asset as a new lot at market value - NOT a cost-basis-preserving SymbolChange)
+DROP TABLE IF EXISTS swaps;
+CREATE TABLE swaps (
+    oid           INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
+    otype         INTEGER     NOT NULL DEFAULT (7),            -- Operation type (7 = swap)
+    timestamp     INTEGER     NOT NULL,
+    account_id    INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    tx_hash       TEXT        NOT NULL DEFAULT (''),           -- Hash of the blockchain transaction
+    out_symbol_id INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Disposed asset
+    out_qty       TEXT        NOT NULL,
+    in_symbol_id  INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Acquired asset
+    in_qty        TEXT        NOT NULL,
+    fee_symbol_id INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- Fee (gas) asset, if any
+    fee_qty       TEXT,
+    note          TEXT                                         -- Free text comment
+);
+
 -- Table for closed deals storage
 DROP TABLE IF EXISTS trades_closed;
 CREATE TABLE trades_closed (
@@ -429,6 +447,8 @@ FROM
     SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers
     UNION ALL
     SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
+    UNION ALL
+    SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps
 ) AS m
 ORDER BY m.timestamp, m.seq, m.opart, m.oid;  -- First sort by sequence and part to enforce right operation processing order
 
@@ -538,6 +558,25 @@ END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS trades_after_update;
 CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, symbol_id, qty, price, fee ON trades FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;
+-- Ledger and trades cleanup after modification
+DROP TRIGGER IF EXISTS swaps_after_delete;
+CREATE TRIGGER swaps_after_delete AFTER DELETE ON swaps FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+END;
+DROP TRIGGER IF EXISTS swaps_after_insert;
+CREATE TRIGGER swaps_after_insert AFTER INSERT ON swaps FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+END;
+DROP TRIGGER IF EXISTS swaps_after_update;
+CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_symbol_id, in_qty, fee_symbol_id, fee_qty ON swaps FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
