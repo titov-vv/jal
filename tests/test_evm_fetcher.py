@@ -382,6 +382,66 @@ def test_unrecognized_lending_shape_halts(eth_wallet, monkeypatch):
     assert fetcher._new_cursor == ''                                 # the very first block halted, so no cursor advance
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# A custody contract holds the asset and gives no receipt token back, so putting money in is a transfer out - the
+# position is not disposed of, it just moves to an account the user names during the import.
+def test_custody_deposit_is_emitted_as_a_transfer(eth_wallet, monkeypatch):
+    pool = "0xddc796a66e8b83d0bccd97df33a6ccfba8fd60ea"    # registered as ProtocolCategory.CUSTODY
+    c7 = "0xc7" + "0" * 62
+    pages = {
+        "txlist": [_tx(c7, 100, WALLET, pool, value=0, method='0xb61d27f6', gas_used='120000')],
+        "tokentx": [_token_tx(c7, 100, WALLET, pool, 1000 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    transfers = _transfers(data)
+    assert len(transfers) == 1
+    assert transfers[0]['account'] == [1, 0, 1]                    # money leaves the wallet, the peer is asked for
+    assert transfers[0]['withdrawal'] == Decimal('1000')
+    assert transfers[0]['fee'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18
+    assert _conversions(data) == [] and _swaps(data) == [] and _bridges(data) == []
+    assert data.get(JSF.ASSET_PAYMENTS, []) == []                  # nothing was earned, so nothing is booked as income
+    assert fetcher.skipped() == {}
+
+
+# ... and taking it back is a transfer in. This is the whole point of the category: the same asset returning from a
+# custody contract is the wallet's own money, so it must not become a reward - and it must not halt the import either.
+def test_custody_return_is_a_transfer_not_a_reward(eth_wallet, monkeypatch):
+    pool = "0xddc796a66e8b83d0bccd97df33a6ccfba8fd60ea"
+    c8 = "0xc8" + "0" * 62
+    pages = {
+        "txlist": [_tx(c8, 100, WALLET, pool, value=0, method='0xb61d27f6')],
+        "tokentx": [_token_tx(c8, 100, pool, WALLET, 1000 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    transfers = _transfers(data)
+    assert len(transfers) == 1
+    assert transfers[0]['account'] == [0, 1, 1] and transfers[0]['withdrawal'] == Decimal('1000')
+    # The wallet signed the withdrawal, so its gas is charged - but nothing here is income
+    assert [p['type'] for p in data.get(JSF.ASSET_PAYMENTS, [])] == [JSF.PAYMENT_GAS_FEE]
+    assert fetcher.skipped() == {} and fetcher._new_cursor == '100'
+
+
+# A custody contract that hands something back in exchange isn't holding the asset any more - that shape is a
+# conversion or a swap and must be classified as one, so it halts instead of being flattened into two transfers.
+def test_custody_exchange_shape_halts(eth_wallet, monkeypatch):
+    pool = "0xddc796a66e8b83d0bccd97df33a6ccfba8fd60ea"
+    c9 = "0xc9" + "0" * 62
+    pages = {
+        "txlist": [_tx(c9, 100, WALLET, pool, value=10 ** 18)],
+        "tokentx": [_token_tx(c9, 100, pool, WALLET, 1000 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _transfers(data) == [] and _conversions(data) == [] and _swaps(data) == []
+    assert any('custody' in reason for reason in fetcher.skipped())
+    assert fetcher._new_cursor == ''
+
+
 def test_bridge_send_is_emitted_as_a_pending_send_half(eth_wallet, monkeypatch):
     lifi = "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae"     # registered AGGREGATOR; a single leg -> a bridge
     e5 = "0xe5" + "0" * 62

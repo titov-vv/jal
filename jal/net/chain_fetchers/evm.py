@@ -221,6 +221,16 @@ class EVMFetcher(ChainFetcher):
             if ins and not outs:
                 return self._emit_rewards(timestamp, ins, tx['hash'], gas, is_error, own_record)
             raise _HaltImport(self.tr("unrecognized reward-claim shape"))
+        if category == ProtocolCategory.CUSTODY:
+            # The contract keeps the asset on the wallet's behalf and hands back no receipt token, so nothing about
+            # the position changes hands: what leaves is still owned, what comes back was owned all along. Both
+            # directions are therefore plain transfers - never income (which is what REWARD would make of a return of
+            # the wallet's own money) and never a disposal. The counterparty is an address JAL doesn't know, so the
+            # import asks which account it stands for, and the balance lives on in that account. Anything the position
+            # earned inside the container is invisible here and stays unrecognized until it is actually claimed.
+            if outs and ins:   # something was given back in exchange - that is not custody, don't guess at it
+                raise _HaltImport(self.tr("unrecognized custody shape"))
+            return self._emit_transfers(timestamp, deltas, tx['hash'], gas, own_record, is_error)
 
         swap_shape = len(outs) == 1 and len(ins) == 1
         if category == ProtocolCategory.SWAP:
