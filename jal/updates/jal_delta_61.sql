@@ -287,6 +287,233 @@ END;
 -- The whole ledger cache (including trades_opened) must be rebuilt so slice ids are assigned to every open trade.
 INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);
 --------------------------------------------------------------------------------
+-- TERM DEPOSITS BECOME ACCOUNTS ("a box is an account", CRYPTO_PATH decisions #49-#51).
+--
+-- The 'TermDeposit' operation is retired: a deposit is a container that holds a balance over time, has an owner and
+-- takes money in and out in any order - i.e. an account with extra steps. Every term deposit becomes an 'accounts'
+-- row of the new hidden type 7 (PredefinedAccountType.Deposit), and its actions become ordinary operations:
+--   Opening / TopUp                -> a Transfer from the funding account into the box
+--   PartialWithdrawal / Closing    -> a Transfer from the box back to the funding account
+--   InterestAccrued                -> an IncomeSpending on the box (category Interest, peer = the bank), merged with
+--                                     a same-timestamp TaxWithheld as a second, negative line (category Taxes)
+--   TaxWithheld without an interest twin -> a single-line spending of its own
+--   Renewal                        -> none can exist: the operation asserts in the ledger, so no database that was
+--                                     ever built can hold one. Not migrated.
+-- 'BookAccount.Savings' is retired with the operation - the money now sits in the ordinary Money book of the box.
+--
+-- Amount arithmetic below is done on integers scaled by 10^6: SQLite has no decimal type and summing money as REAL
+-- would drift. Money amounts carry at most 6 decimals and stay far below 2^53/10^6, so the scaling is exact.
+
+DROP TABLE IF EXISTS _deposit_migration;
+CREATE TABLE _deposit_migration AS
+WITH base AS (
+    SELECT td.oid AS deposit_id, td.account_id AS funding_id, a.currency_id AS currency_id,
+           a.organization_id AS peer_id,
+           COALESCE(NULLIF(TRIM(td.note), ''), 'Term deposit') AS base_name
+    FROM term_deposits AS td LEFT JOIN accounts AS a ON a.id = td.account_id
+)
+SELECT b.deposit_id, b.funding_id, b.currency_id, b.peer_id,
+       -- Box ids are assigned here rather than by the INSERT below, because every action of the deposit has to
+       -- reference the account it belongs to and SQLite offers no way to read back a set of generated ids.
+       (SELECT COALESCE(MAX(id), 0) FROM accounts) + ROW_NUMBER() OVER (ORDER BY b.deposit_id) AS box_id,
+       -- The deposit's note becomes the account name, which must be unique: a note shared by two deposits (or by an
+       -- account that already exists) gets the deposit id appended to keep both distinguishable.
+       CASE WHEN (SELECT COUNT(*) FROM base AS b2 WHERE b2.base_name = b.base_name) > 1
+                 OR b.base_name IN (SELECT name FROM accounts)
+            THEN b.base_name || ' #' || b.deposit_id
+            ELSE b.base_name END AS name,
+       (SELECT MAX(da.timestamp) FROM deposit_actions AS da
+        WHERE da.deposit_id = b.deposit_id AND da.action_type = 100) AS closing_ts   -- DepositActions.Closing
+FROM base AS b;
+
+-- Balance the closing action moves back to the funding account. The old ledger did NOT use the amount stored on the
+-- Closing action (which is unreliable - in the author's data 10 of 306 disagree with the deposit's actual balance);
+-- it moved whatever had accumulated in the Savings book, so that is what is reproduced here.
+DROP TABLE IF EXISTS _deposit_closing;
+CREATE TABLE _deposit_closing AS
+SELECT m.deposit_id, m.closing_ts,
+       (SELECT COALESCE(SUM(CASE WHEN da.action_type IN (1, 2, 50)    -- Opening, TopUp, InterestAccrued
+                                 THEN CAST(ROUND(CAST(da.amount AS REAL) * 1000000) AS INTEGER)
+                                 WHEN da.action_type IN (51, 99)      -- TaxWithheld, PartialWithdrawal
+                                 THEN -CAST(ROUND(CAST(da.amount AS REAL) * 1000000) AS INTEGER)
+                                 ELSE 0 END), 0)
+        FROM deposit_actions AS da
+        WHERE da.deposit_id = m.deposit_id AND da.timestamp <= m.closing_ts) AS scaled
+FROM _deposit_migration AS m WHERE m.closing_ts IS NOT NULL;
+
+-- One account per deposit. A box whose closing already happened is deactivated, so only deposits that are still
+-- running can ever show up in a default view; it is not investing (it holds money only) and inherits currency and
+-- bank from the account it was funded from. The closing date is compared with today rather than merely being
+-- present, because the old format demanded exactly one closing action even for a running deposit - so such a
+-- deposit was recorded with a closing far in the future, and it has to stay open just as it was before.
+INSERT INTO accounts (id, name, currency_id, active, investing, reconciled_on, organization_id, account_type)
+    SELECT m.box_id, m.name, m.currency_id,
+           CASE WHEN m.closing_ts IS NULL OR m.closing_ts > CAST(strftime('%s', 'now') AS INTEGER)
+                THEN 1 ELSE 0 END, 0, 0, m.peer_id, 7
+    FROM _deposit_migration AS m;
+
+-- The date the deposit ended is the only term attribute the old format kept (implicitly, as the closing action);
+-- the interest rate was never recorded, so migrated boxes simply have none.
+INSERT INTO account_data (account_id, datatype, value)
+    SELECT m.box_id, 8, CAST(m.closing_ts AS TEXT)      -- AccountData.DepositEnd
+    FROM _deposit_migration AS m WHERE m.closing_ts IS NOT NULL;
+
+-- Money put into the box: Opening and TopUp
+INSERT INTO transfers (otype, withdrawal_timestamp, withdrawal_account, withdrawal,
+                       deposit_timestamp, deposit_account, deposit, number, note)
+    SELECT 4, da.timestamp, m.funding_id, da.amount, da.timestamp, m.box_id, da.amount, '', NULL
+    FROM deposit_actions AS da JOIN _deposit_migration AS m ON m.deposit_id = da.deposit_id
+    WHERE da.action_type IN (1, 2);
+
+-- Money taken out of the box: PartialWithdrawal by its own amount, Closing by the accumulated balance
+INSERT INTO transfers (otype, withdrawal_timestamp, withdrawal_account, withdrawal,
+                       deposit_timestamp, deposit_account, deposit, number, note)
+    SELECT 4, da.timestamp, m.box_id, da.amount, da.timestamp, m.funding_id, da.amount, '', NULL
+    FROM deposit_actions AS da JOIN _deposit_migration AS m ON m.deposit_id = da.deposit_id
+    WHERE da.action_type = 99;
+-- The closing balance is what leaves the box (RTRIM strips the padding printf() adds; the decimal point stops it,
+-- so '100.000000' becomes '100' and not '1'). A deposit that somehow ends up overdrawn - more taken out of it than
+-- ever went in, which no sane data has but the old format never forbade - is closed by putting the shortfall back
+-- IN, so that the transfer amount is always positive whichever way the money has to go.
+INSERT INTO transfers (otype, withdrawal_timestamp, withdrawal_account, withdrawal,
+                       deposit_timestamp, deposit_account, deposit, number, note)
+    SELECT 4, c.closing_ts, m.box_id, RTRIM(RTRIM(printf('%.6f', c.scaled / 1000000.0), '0'), '.'),
+              c.closing_ts, m.funding_id, RTRIM(RTRIM(printf('%.6f', c.scaled / 1000000.0), '0'), '.'), '', NULL
+    FROM _deposit_closing AS c JOIN _deposit_migration AS m ON m.deposit_id = c.deposit_id
+    WHERE c.scaled > 0;
+INSERT INTO transfers (otype, withdrawal_timestamp, withdrawal_account, withdrawal,
+                       deposit_timestamp, deposit_account, deposit, number, note)
+    SELECT 4, c.closing_ts, m.funding_id, RTRIM(RTRIM(printf('%.6f', -c.scaled / 1000000.0), '0'), '.'),
+              c.closing_ts, m.box_id, RTRIM(RTRIM(printf('%.6f', -c.scaled / 1000000.0), '0'), '.'), '', NULL
+    FROM _deposit_closing AS c JOIN _deposit_migration AS m ON m.deposit_id = c.deposit_id
+    WHERE c.scaled < 0;
+
+-- Interest (and the tax withheld from it) becomes an income/spending operation on the box. One operation per
+-- (deposit, timestamp) that saw either of them: 'deposit_actions' is unique on (deposit, timestamp, action_type),
+-- so an interest payment and its tax can only ever pair up one to one.
+DROP TABLE IF EXISTS _deposit_income;
+CREATE TABLE _deposit_income AS
+SELECT m.box_id, m.peer_id, da.timestamp,
+       (SELECT COALESCE(MAX(oid), 0) FROM actions) + ROW_NUMBER() OVER (ORDER BY m.box_id, da.timestamp) AS action_id,
+       (SELECT i.amount FROM deposit_actions AS i
+        WHERE i.deposit_id = da.deposit_id AND i.timestamp = da.timestamp AND i.action_type = 50) AS interest,
+       (SELECT t.amount FROM deposit_actions AS t
+        WHERE t.deposit_id = da.deposit_id AND t.timestamp = da.timestamp AND t.action_type = 51) AS tax
+FROM (SELECT DISTINCT deposit_id, timestamp FROM deposit_actions WHERE action_type IN (50, 51)) AS da
+JOIN _deposit_migration AS m ON m.deposit_id = da.deposit_id;
+
+INSERT INTO actions (oid, otype, timestamp, account_id, peer_id, alt_currency_id)
+    SELECT action_id, 1, timestamp, box_id, peer_id, NULL FROM _deposit_income;
+-- Interest is a positive line (category Interest) and the tax a negative one (category Taxes) of the same
+-- operation: IncomeSpending books every detail line by its own sign, so one two-line operation is correct.
+INSERT INTO action_details (pid, category_id, tag_id, amount, amount_alt, note)
+    SELECT action_id, 8, NULL, interest, '0', NULL FROM _deposit_income WHERE interest IS NOT NULL;
+-- The tax was stored as a positive amount to be subtracted, so it is negated here. The sign is flipped on the
+-- string rather than through arithmetic (SQLite has no decimal type), and an already-negative value - which would be
+-- a data anomaly - is handled rather than turned into '--5'.
+INSERT INTO action_details (pid, category_id, tag_id, amount, amount_alt, note)
+    SELECT action_id, 6, NULL,
+           CASE WHEN SUBSTR(TRIM(tax), 1, 1) = '-' THEN SUBSTR(TRIM(tax), 2) ELSE '-' || TRIM(tax) END,
+           '0', NULL
+    FROM _deposit_income WHERE tax IS NOT NULL;
+
+DROP TABLE _deposit_income;
+DROP TABLE _deposit_closing;
+DROP TABLE _deposit_migration;
+
+-- The operation and everything that served it are gone
+DROP TRIGGER IF EXISTS deposit_action_after_delete;
+DROP TRIGGER IF EXISTS deposit_action_after_insert;
+DROP TRIGGER IF EXISTS deposit_action_after_update;
+DROP TABLE IF EXISTS deposit_actions;
+DROP TABLE IF EXISTS term_deposits;
+
+--------------------------------------------------------------------------------
+-- New operation: conversions - a same-account exchange of one asset into another that PRESERVES COST BASIS and
+-- recognizes no income (CRYPTO_PATH decisions #52-#54). It covers wrapping (ETH -> WETH), supplying to and
+-- withdrawing from a lending protocol (USDG -> aEthUSDG) and liquid staking - all cases where the wallet keeps the
+-- same economic position, only in the shape of a receipt token. Unlike a Swap nothing is disposed of at market
+-- value: the quantity may change (a rebasing receipt token folds accrued yield into it) while the basis does not,
+-- so the yield rides along as an unrealized gain and realizes only when the underlying is finally sold.
+-- It takes the operation type freed by retiring TermDeposit above.
+CREATE TABLE conversions (
+    oid           INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
+    otype         INTEGER     NOT NULL DEFAULT (6),            -- Operation type (6 = conversion)
+    timestamp     INTEGER     NOT NULL,
+    account_id    INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    tx_hash       TEXT        NOT NULL DEFAULT (''),           -- Hash of the blockchain transaction
+    out_symbol_id INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Converted asset
+    out_qty       TEXT        NOT NULL,
+    in_symbol_id  INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Asset received instead
+    in_qty        TEXT        NOT NULL,
+    fee_symbol_id INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- Fee (gas) asset, if any
+    fee_qty       TEXT,
+    note          TEXT
+);
+-- Ledger and trades cleanup after modification (mirrors the swaps_* triggers)
+DROP TRIGGER IF EXISTS conversions_after_delete;
+CREATE TRIGGER conversions_after_delete AFTER DELETE ON conversions FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+END;
+DROP TRIGGER IF EXISTS conversions_after_insert;
+CREATE TRIGGER conversions_after_insert AFTER INSERT ON conversions FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+END;
+DROP TRIGGER IF EXISTS conversions_after_update;
+CREATE TRIGGER conversions_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_symbol_id, in_qty, fee_symbol_id, fee_qty ON conversions FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;
+--------------------------------------------------------------------------------
+-- 'operation_sequence' loses the term-deposit branch and gains the conversion one. Operation type 6 changes meaning
+-- here, which is exactly why the ledger cache has to be dropped: a leftover otype=6 row would be read as a
+-- Conversion. RebuildDB (set above) makes the application offer to re-build it on the next start.
+DROP VIEW IF EXISTS operation_sequence;
+CREATE VIEW operation_sequence AS SELECT m.otype, m.oid, opart, m.timestamp, m.account_id
+FROM
+(
+    SELECT otype, 1 AS seq, oid, 0 AS opart, timestamp, account_id FROM actions
+    UNION ALL
+    SELECT otype, 2 AS seq, oid, 0 AS opart, timestamp, account_id FROM asset_payments
+    UNION ALL
+    SELECT otype, 3 AS seq, oid, 0 AS opart, timestamp, account_id FROM asset_actions
+    UNION ALL
+    SELECT otype, 4 AS seq, oid, 0 AS opart, timestamp, account_id FROM trades
+    UNION ALL
+    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers
+    UNION ALL
+    SELECT otype, 5 AS seq, oid, 0 AS opart, withdrawal_timestamp AS timestamp, fee_account AS account_id FROM transfers WHERE NOT fee IS NULL
+    UNION ALL
+    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers
+    UNION ALL
+    SELECT otype, 6 AS seq, oid, 0 AS opart, timestamp, account_id FROM conversions
+    UNION ALL
+    SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps WHERE in_account_id IS NULL OR in_account_id=account_id
+    UNION ALL
+    SELECT otype, 7 AS seq, oid, -1 AS opart, timestamp, account_id FROM swaps WHERE NOT in_account_id IS NULL AND in_account_id<>account_id
+    UNION ALL
+    SELECT otype, 7 AS seq, oid, 1 AS opart, COALESCE(in_timestamp, timestamp) AS timestamp, in_account_id AS account_id FROM swaps WHERE NOT in_account_id IS NULL AND in_account_id<>account_id
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, -1 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, 0 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges WHERE NOT fee_qty IS NULL
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, 1 AS opart, in_timestamp AS timestamp, in_account_id AS account_id FROM bridges WHERE NOT in_account_id IS NULL
+) AS m
+ORDER BY m.timestamp, m.seq, m.opart, m.oid;  -- First sort by sequence and part to enforce right operation processing order
+
+-- Every cached ledger row is discarded, not only the deposit ones: operation type 6 changes meaning with this
+-- update, so a row that survived would be read as a Conversion. The cache is rebuilt from the operations themselves.
+DELETE FROM ledger;
+DELETE FROM ledger_totals;
+DELETE FROM trades_closed;
+DELETE FROM trades_opened;
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=61 WHERE name='SchemaVersion';
 COMMIT;

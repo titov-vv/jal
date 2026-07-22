@@ -458,25 +458,27 @@ CREATE TABLE transfers (
 );
 
 
-DROP TABLE IF EXISTS term_deposits;
-CREATE TABLE term_deposits (
-    oid        INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    otype      INTEGER NOT NULL DEFAULT (6),
-    account_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    note       TEXT
+-- Table: conversions - a same-account exchange of one asset into another that PRESERVES COST BASIS and recognizes
+-- no income: wrapping (ETH -> WETH), supplying to and withdrawing from a lending protocol (USDG -> aEthUSDG) and
+-- liquid staking. The wallet keeps the same economic position, only in the shape of a receipt token, so - unlike a
+-- Swap - nothing is disposed of at market value. The quantity may well change (a rebasing receipt token folds the
+-- yield accrued since the last interaction into it) while the basis does not, so that yield rides along as an
+-- unrealized gain and realizes only when the underlying is finally sold.
+DROP TABLE IF EXISTS conversions;
+CREATE TABLE conversions (
+    oid           INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
+    otype         INTEGER     NOT NULL DEFAULT (6),            -- Operation type (6 = conversion)
+    timestamp     INTEGER     NOT NULL,
+    account_id    INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    tx_hash       TEXT        NOT NULL DEFAULT (''),           -- Hash of the blockchain transaction
+    out_symbol_id INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Converted asset
+    out_qty       TEXT        NOT NULL,
+    in_symbol_id  INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Asset received instead
+    in_qty        TEXT        NOT NULL,
+    fee_symbol_id INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- Fee (gas) asset, if any
+    fee_qty       TEXT,
+    note          TEXT                                         -- Free text comment
 );
-
-
-DROP TABLE IF EXISTS deposit_actions;
-CREATE TABLE deposit_actions (
-    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    deposit_id  INTEGER REFERENCES term_deposits (oid) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    timestamp   INTEGER NOT NULL,
-    action_type INTEGER NOT NULL,
-    amount      TEXT    NOT NULL
-);
-DROP INDEX IF EXISTS deposit_actions_idx;
-CREATE UNIQUE INDEX deposit_actions_idx ON deposit_actions (deposit_id, timestamp, action_type);
 
 
 -- View that contains a list of all operations with their important parts
@@ -499,7 +501,7 @@ FROM
     UNION ALL
     SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers
     UNION ALL
-    SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
+    SELECT otype, 6 AS seq, oid, 0 AS opart, timestamp, account_id FROM conversions
     UNION ALL
     SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps WHERE in_account_id IS NULL OR in_account_id=account_id
     UNION ALL
@@ -726,23 +728,26 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
--- Ledger cleanup after modification
-DROP TRIGGER IF EXISTS deposit_action_after_delete;
-CREATE TRIGGER deposit_action_after_delete AFTER DELETE ON deposit_actions FOR EACH ROW
+-- Ledger and trades cleanup after modification
+DROP TRIGGER IF EXISTS conversions_after_delete;
+CREATE TRIGGER conversions_after_delete AFTER DELETE ON conversions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
--- Ledger cleanup after modification
-DROP TRIGGER IF EXISTS deposit_action_after_insert;
-CREATE TRIGGER deposit_action_after_insert AFTER INSERT ON deposit_actions FOR EACH ROW
+-- Ledger and trades cleanup after modification
+DROP TRIGGER IF EXISTS conversions_after_insert;
+CREATE TRIGGER conversions_after_insert AFTER INSERT ON conversions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
--- Ledger cleanup after modification
-DROP TRIGGER IF EXISTS deposit_action_after_update;
-CREATE TRIGGER deposit_action_after_update AFTER UPDATE OF timestamp, action_type, amount ON deposit_actions FOR EACH ROW
+-- Ledger and trades cleanup after modification
+DROP TRIGGER IF EXISTS conversions_after_update;
+CREATE TRIGGER conversions_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_symbol_id, in_qty, fee_symbol_id, fee_qty ON conversions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 -- Trigger ledger update and peers cleanup after peer(agent) deletion
 DROP TRIGGER IF EXISTS agents_after_delete;

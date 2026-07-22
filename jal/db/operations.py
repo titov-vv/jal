@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
-from jal.constants import BookAccount, PredefinedCategory, PredefinedAsset, DepositActions
+from jal.constants import BookAccount, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
@@ -28,7 +28,7 @@ class LedgerTransaction(JalDB):
     Trade = 3
     Transfer = 4
     CorporateAction = 5
-    TermDeposit = 6
+    Conversion = 6
     Swap = 7
     Bridge = 8
     _db_table = ''   # Table where operation is stored in DB
@@ -84,8 +84,8 @@ class LedgerTransaction(JalDB):
             return Transfer(oid, opart)
         elif operation_type == LedgerTransaction.CorporateAction:
             return CorporateAction(oid)
-        elif operation_type == LedgerTransaction.TermDeposit:
-            return TermDeposit(oid, opart)
+        elif operation_type == LedgerTransaction.Conversion:
+            return Conversion(oid, opart=opart)
         elif operation_type == LedgerTransaction.Swap:
             return Swap(oid, opart=opart)
         elif operation_type == LedgerTransaction.Bridge:
@@ -105,6 +105,8 @@ class LedgerTransaction(JalDB):
             return Transfer(operation_data, Transfer.Outgoing)
         elif operation_type == LedgerTransaction.CorporateAction:
             return CorporateAction(operation_data)
+        elif operation_type == LedgerTransaction.Conversion:
+            return Conversion(operation_data)
         elif operation_type == LedgerTransaction.Swap:
             return Swap(operation_data)
         elif operation_type == LedgerTransaction.Bridge:
@@ -136,9 +138,9 @@ class LedgerTransaction(JalDB):
         elif operation_type == LedgerTransaction.CorporateAction:
             table = CorporateAction._db_table
             fields = CorporateAction._db_fields
-        elif operation_type == LedgerTransaction.TermDeposit:
-            table = TermDeposit._db_table
-            fields = TermDeposit._db_fields
+        elif operation_type == LedgerTransaction.Conversion:
+            table = Conversion._db_table
+            fields = Conversion._db_fields
         elif operation_type == LedgerTransaction.Swap:
             table = Swap._db_table
             fields = Swap._db_fields
@@ -1687,121 +1689,162 @@ class CorporateAction(LedgerTransaction):
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)
 
 # ----------------------------------------------------------------------------------------------------------------------
-class TermDeposit(LedgerTransaction):
-    _db_table = "term_deposits"
+# A same-account exchange of one asset into another that PRESERVES THE COST BASIS and recognizes no income.
+# It covers wrapping (ETH -> WETH), supplying to and withdrawing from a lending protocol (USDG -> aEthUSDG) and
+# liquid staking: the wallet keeps the same economic position, only in the shape of a receipt token, so - unlike a
+# Swap - nothing is disposed of at market value and no profit or loss is realized.
+#
+# The quantity is free to change while the basis is not. A rebasing receipt token folds the yield accrued since the
+# last interaction into the amount it mints or burns (Aave: supply 30.854731 USDG -> receive 37.110840 aEthUSDG),
+# while a share-based one shows no such difference at all and carries the same yield in its redemption rate (Fluid's
+# ERC-4626 fTokens). Booking that difference as income would therefore report income for one protocol and nothing for
+# the other though they are economically identical, so a conversion recognizes nothing: the yield rides along as an
+# unrealized gain in the position and realizes only when the underlying is finally disposed of. Rewards that arrive
+# as a separate inflow with no counterpart (Merkl claims, staking payouts) are a different thing and stay
+# StakingReward payments. See CRYPTO_PATH decisions #52-#54.
+class Conversion(LedgerTransaction):
+    _db_table = "conversions"
     _db_fields = {
-        "account_id": {"mandatory": True, "validation": False},
-        "note": {"mandatory": False, "validation": False},
-        "actions": {
-            "mandatory": True, "validation": False, "children": True,
-            "child_table": "deposit_actions", "child_pid": "deposit_id",
-            "child_fields": {
-                "deposit_id": {"mandatory": True, "validation": False},
-                "timestamp": {"mandatory": True, "validation": False},
-                "action_type": {"mandatory": True, "validation": False},
-                "amount": {"mandatory": True, "validation": False}
-            }
-        }
+        "timestamp": {"mandatory": True, "validation": True},
+        "account_id": {"mandatory": True, "validation": True},
+        "tx_hash": {"mandatory": False, "validation": True, "default": ''},
+        "out_symbol_id": {"mandatory": True, "validation": True},
+        "out_qty": {"mandatory": True, "validation": True},
+        "in_symbol_id": {"mandatory": True, "validation": True},
+        "in_qty": {"mandatory": True, "validation": True},
+        "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
+        "fee_qty": {"mandatory": False, "validation": True, "default": None},
+        "note": {"mandatory": False, "validation": False}
     }
+    PART_FEE = 1
 
-    def __init__(self, oid=None, opart=0):
-        icons = {
-            DepositActions.Opening: JalIcon.DEPOSIT_OPEN,
-            DepositActions.TopUp: JalIcon.DEPOSIT_OPEN,
-            DepositActions.Renewal: JalIcon.DEPOSIT_OPEN,
-            DepositActions.PartialWithdrawal: JalIcon.DEPOSIT_CLOSE,
-            DepositActions.Closing: JalIcon.DEPOSIT_CLOSE,
-            DepositActions.InterestAccrued: JalIcon.INTEREST,
-            DepositActions.TaxWithheld: JalIcon.TAX
-        }
-        super().__init__(oid)
-        self._otype = LedgerTransaction.TermDeposit
-        self._aid = opart   # action id
-        self._data = self._read("SELECT da.timestamp, td.account_id, da.action_type, da.amount, td.note "
-                                "FROM term_deposits td LEFT JOIN deposit_actions da ON td.oid=da.deposit_id "
-                                "WHERE td.oid=:oid AND da.id=:aid",
-                                [(":oid", self._oid), (":aid", self._aid)], named=True)
+    def __init__(self, operation_data=None, opart=0):
+        super().__init__(operation_data)
+        self._otype = LedgerTransaction.Conversion
+        self._data = self._read("SELECT c.timestamp, c.account_id, c.tx_hash, c.out_symbol_id, c.out_qty, "
+                                "c.in_symbol_id, c.in_qty, c.fee_symbol_id, c.fee_qty, c.note FROM conversions AS c "
+                                "WHERE c.oid=:oid", [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
-        self._timestamp = self._data['timestamp']
+        self._timestamp = int(self._data['timestamp'])
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
-        self._note = self._data['note']
-        self._action = self._data['action_type']
         self._account_currency = JalAsset(self._account.currency()).symbol()
-        self._amount = Decimal(self._data['amount'])
-        self._icon = JalIcon[icons[self._action]]
-        self._oname = f'{DepositActions().get_name(self._action)}'
+        self._out_symbol = JalSymbol(self._data['out_symbol_id'])
+        self._out_asset = self._out_symbol.asset()
+        self._out_qty = Decimal(self._data['out_qty'])
+        self._in_symbol = JalSymbol(self._data['in_symbol_id'])
+        self._in_asset = self._in_symbol.asset()
+        self._in_qty = Decimal(self._data['in_qty'])
+        self._fee_symbol = JalSymbol(self._data['fee_symbol_id'])
+        self._fee_asset = self._fee_symbol.asset()
+        self._fee_qty = Decimal(self._data['fee_qty']) if self._data['fee_qty'] else Decimal('0')
+        # The converted asset is the operation's own one - it is the position FIFO consumes
+        self._symbol = self._out_symbol
+        self._asset = self._out_asset
+        self._number = self._data['tx_hash']
+        self._note = self._data['note']
+        self._icon = JalIcon[JalIcon.CONVERSION]
+        self._oname = self.tr("Conversion")
         self._peer_id = self._account.organization()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
+        self._view_rows = 3 if self._fee_asset.id() else 2
 
-    def _get_deposit_amount(self) -> Decimal:
-        amount = Decimal('0')
-        query = self._exec("SELECT amount FROM ledger WHERE otype=:otype AND oid=:oid AND "
-                           "book_account=:book AND account_id=:account_id AND timestamp<=:timestamp",
-                           [(":otype", self._otype), (":oid", self._oid), (":timestamp", self._timestamp),
-                            (":account_id", self._account.id()), (":book", BookAccount.Savings)])
-        while query.next():
-            amount += self._read_record(query, cast=[Decimal])
-        return amount
+    # A conversion happens immediately
+    def settlement(self) -> int:
+        return self._timestamp
+
+    def qty(self) -> Decimal:
+        return self._out_qty
+
+    # Price is undefined for a conversion as it keeps the cost basis (FIFO then creates zero profit/loss deals)
+    def price(self):
+        return None
+
+    def note(self) -> str:
+        return self._note
 
     def description(self, part_only=False) -> str:
-        return f'{DepositActions().get_name(self._action)}: "{self._note}"'
+        text = f"{self._out_qty} {self._out_symbol.symbol()} -> {self._in_qty} {self._in_symbol.symbol()}"
+        if self._fee_asset.id():
+            text += " " + self.tr("Fee:") + f" {self._fee_qty} {self._fee_symbol.symbol()}"
+        if self._note:
+            text += "\n" + self._note
+        return text
 
     def value_change(self, part_only=False) -> list:
-        if self._action == DepositActions.Opening or self._action == DepositActions.TaxWithheld:
-            return [-self._amount]
-        elif self._action == DepositActions.Closing or self._action == DepositActions.InterestAccrued:
-            return [self._amount]
-        else:
-            return []
+        result = [-self._out_qty, self._in_qty]
+        if self._fee_asset.id():
+            result.append(-self._fee_qty)
+        return result
 
     def value_currency(self) -> str:
-        return f" {self._account_currency}"
+        text = f" {self._out_symbol.symbol()}\n {self._in_symbol.symbol()}"
+        if self._fee_asset.id():
+            text += f"\n {self._fee_symbol.symbol()}"
+        return text
 
     def value_total(self) -> list:
-        money = self._read("SELECT amount_acc FROM ledger WHERE otype=:otype AND oid=:oid AND "
-                           "account_id = :account_id AND book_account=:book AND timestamp=:timestamp",
-                           [(":otype", self._otype), (":oid", self._oid),
-                            (":account_id", self._account.id()), (":book", BookAccount.Money), (":timestamp", self._timestamp)])
-        debt = self._read("SELECT amount_acc FROM ledger WHERE otype=:otype AND oid=:oid AND "
-                          "account_id = :account_id AND book_account=:book AND timestamp=:timestamp",
-                          [(":otype", self._otype), (":oid", self._oid),
-                           (":account_id", self._account.id()), (":book", BookAccount.Liabilities), (":timestamp", self._timestamp)])
-        if money is None and debt is None:
-            return []
-        money = Decimal('0') if money is None else Decimal(money)
-        debt = Decimal('0') if debt is None else Decimal(debt)
-        return [money + debt]
-
-    def amount(self) -> Decimal:
-        return self._amount
+        balance = [self._asset_total(self._account.id(), self._out_asset.id()),
+                   self._asset_total(self._account.id(), self._in_asset.id())]
+        if self._fee_asset.id():
+            balance.append(self._asset_total(self._account.id(), self._fee_asset.id()))
+        return balance
 
     def processLedger(self, ledger):
+        if self._out_asset.id() == 0 or self._in_asset.id() == 0:
+            raise LedgerError(self.tr("Conversion assets aren't set. Operation: ") + self.dump())
+        if self._out_asset.id() == self._in_asset.id():
+            raise LedgerError(self.tr("Can't process conversion of an asset into itself. Operation: ") + self.dump())
+        if self._out_qty <= Decimal('0') or self._in_qty <= Decimal('0'):
+            raise LedgerError(self.tr("Conversion quantities must be positive. Operation: ") + self.dump())
+        available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._out_asset.id())
+        if available < self._out_qty:
+            raise LedgerError(self.tr("Asset amount is not enough for conversion processing. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
+                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        # The lots of the converted asset are closed at their own cost basis (self.price() is None, so the deals
+        # carry no profit or loss) and then re-opened on the acquired asset - each one keeping the operation that
+        # opened it, and therefore its acquisition date. The whole position is re-scaled by the quantity the
+        # conversion produced: per-unit price is multiplied by out_qty/in_qty and quantity by in_qty/out_qty, which
+        # leaves every lot's value untouched. This is exactly how a corporate action and a bridge carry a basis over.
+        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._out_qty, asset=self._out_asset)
+        if processed_qty < self._out_qty:
+            raise LedgerError(self.tr("Processed asset amount is less than conversion amount. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
+                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
+                                 asset_id=self._out_asset.id(), value=-processed_value)
+        adjustment = (self._out_qty / self._in_qty, self._in_qty / self._out_qty)
+        for trade in self._deals_closed_by_operation():
+            self._account.open_trade(trade, self._in_asset, modified_by=self, adjustment=adjustment)
+        ledger.appendTransaction(self, BookAccount.Assets, self._in_qty,
+                                 asset_id=self._in_asset.id(), value=processed_value)
+        if self._fee_asset.id():
+            self._process_conversion_fee(ledger)
+
+    # Gas paid for the conversion is disposed at its cost basis to Costs/Fees - the same treatment Swap and Bridge
+    # give it, so no profit or loss is realized on the native coin spent. See Transfer.processAssetFee() for the
+    # jurisdiction caveat that applies here word for word.
+    def _process_conversion_fee(self, ledger):
         if not self._peer_id:
-            raise LedgerError(self.tr("Can't process deposit as bank isn't set for account: ") + self._account_name)
-        if self._action in [DepositActions.Opening, DepositActions.TopUp, DepositActions.Closing, DepositActions.PartialWithdrawal]:
-            amount = self._get_deposit_amount() if self._action == DepositActions.Closing else self._amount
-            if self._action in [DepositActions.Opening, DepositActions.TopUp]:
-                amount = -amount
-            if amount < Decimal('0'):
-                credit_taken = ledger.takeCredit(self, self._account.id(), -amount)
-                ledger.appendTransaction(self, BookAccount.Money, -(-amount - credit_taken))
-            else:
-                credit_returned = ledger.returnCredit(self, self._account.id(), amount)
-                if credit_returned < amount:
-                    ledger.appendTransaction(self, BookAccount.Money, amount - credit_returned)
-            ledger.appendTransaction(self, BookAccount.Savings, -amount)
-        elif self._action == DepositActions.TaxWithheld:
-            ledger.appendTransaction(self, BookAccount.Savings, -self._amount)
-            ledger.appendTransaction(self, BookAccount.Costs, self._amount,
-                                     category=PredefinedCategory.Taxes, peer=self._peer_id, part=self._aid)
-        elif self._action == DepositActions.InterestAccrued:
-            ledger.appendTransaction(self, BookAccount.Savings, self._amount)
-            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount,
-                                     category=PredefinedCategory.Interest, peer=self._peer_id, part=self._aid)
-        else:
-            assert False, "Not implemented deposit action"
+            raise LedgerError(self.tr("Can't process the conversion fee as organization isn't set for account: ")
+                              + self._account_name)
+        available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._fee_asset.id())
+        if available < self._fee_qty:
+            raise LedgerError(self.tr("Asset amount is not enough to pay the conversion fee. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
+                              + f"Required: {self._fee_qty}, Operation: {self.dump()}")
+        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._fee_qty, asset=self._fee_asset,
+                                                               account=self._account, record_deals=False)
+        if processed_qty < self._fee_qty:
+            raise LedgerError(self.tr("Processed asset amount is less than the conversion fee. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
+                              + f"Required: {self._fee_qty}, Operation: {self.dump()}")
+        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
+                                 asset_id=self._fee_asset.id(), value=-processed_value)
+        ledger.appendTransaction(self, BookAccount.Costs, processed_value, part=self.PART_FEE,
+                                 category=PredefinedCategory.Fees, peer=self._peer_id, tag=self._fee_asset.tag().id())
 
 
 # ----------------------------------------------------------------------------------------------------------------------

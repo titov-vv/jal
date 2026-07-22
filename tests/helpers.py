@@ -183,6 +183,21 @@ def create_swaps(account_id, swaps):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Create conversions for given account_id: conversions is a list of tuples
+# (timestamp, out_asset_id, out_qty, in_asset_id, in_qty, [fee_asset_id, fee_qty])
+def create_conversions(account_id, conversions):
+    currency_id = JalAccount(account_id).currency()
+    for conversion in conversions:
+        data = {'timestamp': conversion[0], 'account_id': account_id, 'tx_hash': '',
+                'out_symbol_id': symbol_id_for(conversion[1], currency_id), 'out_qty': Decimal(str(conversion[2])),
+                'in_symbol_id': symbol_id_for(conversion[3], currency_id), 'in_qty': Decimal(str(conversion[4]))}
+        if len(conversion) > 6:
+            data['fee_symbol_id'] = symbol_id_for(conversion[5], currency_id)
+            data['fee_qty'] = Decimal(str(conversion[6]))
+        LedgerTransaction.create_new(LedgerTransaction.Conversion, data)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Create cross-chain swaps (the acquired asset arrives on another account, later): swaps is a list of dicts
 # {'ts', 'acc', 'out_asset', 'out_qty', 'in_ts', 'in_acc', 'in_asset', 'in_qty', ['fee_asset', 'fee_qty'], ['note']}
 # Returns the list of created operation ids.

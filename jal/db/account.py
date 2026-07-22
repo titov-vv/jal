@@ -21,6 +21,7 @@ class JalAccount(JalDB):
         PredefinedAccountType.Card: "tag_card.ico",
         PredefinedAccountType.Broker: "tag_investing.ico",
         PredefinedAccountType.Wallet: "tag_wallet.ico",
+        PredefinedAccountType.Deposit: "tag_deposit.ico",
     }
 
     def __init__(self, account_id: int = 0) -> None:
@@ -49,6 +50,14 @@ class JalAccount(JalDB):
             self._chain = int(attributes[AccountData.Chain])
         except (KeyError, TypeError, ValueError):
             self._chain = AssetLocation.UNDEFINED
+        try:
+            self._deposit_end = int(attributes[AccountData.DepositEnd])
+        except (KeyError, TypeError, ValueError):
+            self._deposit_end = 0
+        try:
+            self._deposit_rate = Decimal(attributes[AccountData.DepositRate])
+        except (KeyError, TypeError, ArithmeticError):
+            self._deposit_rate = Decimal('0')
 
     def invalidate_cache(self):
         self.db_cache.clear_cache()
@@ -96,13 +105,20 @@ class JalAccount(JalDB):
     # investing_only - return only investing accounts (false by default)
     # active_only - return only active accounts (true by default)
     # currency_id - return only accounts with given currency (or all if 0)
+    # include_hidden - also return accounts of the types the user never sees (PredefinedAccountType._HIDDEN, i.e.
+    #                  deposit boxes). It is False by default so that a caller which doesn't know about them - and
+    #                  every caller written before they existed - keeps behaving exactly as it did.
     @classmethod
-    def get_all_accounts(cls, investing_only: bool = False, active_only: bool = True, currency_id: int = 0) -> list:
+    def get_all_accounts(cls, investing_only: bool = False, active_only: bool = True, currency_id: int = 0,
+                         include_hidden: bool = False) -> list:
         accounts = []
         all_activity = 0 if active_only else 1
         all_types = 0 if investing_only else 1
         sql_txt = "SELECT id FROM accounts WHERE investing >= (1-:all_types) AND active >= (1-:all)"
         sql_parameters = [(":all_types", all_types), (":all", all_activity)]
+        if not include_hidden:
+            hidden = ','.join(str(int(x)) for x in PredefinedAccountType.hidden_types())
+            sql_txt += f" AND account_type NOT IN ({hidden})"
         if currency_id:
             sql_txt += " AND currency_id=:currency_id"
             sql_parameters += [(":currency_id", currency_id)]
@@ -198,6 +214,24 @@ class JalAccount(JalDB):
     # Returns the blockchain of a wallet account as one of AssetLocation.BLOCKCHAINS (UNDEFINED if not set)
     def chain(self) -> int:
         return self._chain
+
+    # Maturity date of a deposit box (0 if it isn't known)
+    def deposit_end(self) -> int:
+        return self._deposit_end
+
+    # Nominal interest rate of a deposit box, per cent per annum (0 if it isn't known)
+    def deposit_rate(self) -> Decimal:
+        return self._deposit_rate
+
+    # Opens or closes the account for further use. A deposit box that was emptied is deactivated, which is what
+    # keeps the pile of past deposits out of every default view (they all select active accounts only).
+    def set_active(self, active: bool) -> None:
+        if not self._id:
+            return
+        _ = self._exec("UPDATE accounts SET active=:active WHERE id=:id",
+                       [(":active", 1 if active else 0), (":id", self._id)])
+        self._data = self.db_cache.update_data(self._load_account_data, (self._id,))  # Refresh cached row from DB
+        self._active = 1 if active else 0
 
     # Returns the icon filename (a JalIcon key) for a given account type
     @classmethod

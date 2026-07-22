@@ -69,6 +69,10 @@ def _bridges(data) -> list:
     return data.get(JSF.BRIDGES, [])
 
 
+def _conversions(data) -> list:
+    return data.get(JSF.CONVERSIONS, [])
+
+
 def _eth_symbol_ids(data) -> list:
     return [s['id'] for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS] if s['symbol'] == 'ETH']
 
@@ -303,17 +307,77 @@ def test_import_halts_and_checkpoints_at_an_unregistered_exchange(eth_wallet, mo
     assert fetcher._new_cursor == '100'
 
 
-def test_lending_transaction_halts_as_not_supported(eth_wallet, monkeypatch):
+# Supplying to a lending protocol keeps the position and only changes its shape, so it is a Conversion - not a swap
+# (which would realize a profit that was never made) and not a pair of transfers.
+def test_lending_supply_is_emitted_as_a_conversion(eth_wallet, monkeypatch):
     aave = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"     # registered as ProtocolCategory.LENDING
     c3 = "0xc3" + "0" * 62
     pages = {
-        "txlist": [_tx(c3, 100, WALLET, aave, value=10 ** 18)],           # supply 1 ETH ...
-        "tokentx": [_token_tx(c3, 100, aave, WALLET, 1000 * 10 ** 6)],    # ... receive a receipt token
+        "txlist": [_tx(c3, 100, WALLET, aave, value=10 ** 18, gas_used='120000')],   # supply 1 ETH ...
+        "tokentx": [_token_tx(c3, 100, aave, WALLET, 1000 * 10 ** 6)],               # ... receive a receipt token
         "txlistinternal": [],
     }
     fetcher, data = _drive(eth_wallet, monkeypatch, pages)
 
-    assert _transfers(data) == [] and _swaps(data) == []              # a lending deposit is deferred to P4, so nothing
+    assert _transfers(data) == [] and _swaps(data) == [] and _bridges(data) == []
+    conversions = _conversions(data)
+    assert len(conversions) == 1
+    conversion = conversions[0]
+    assert conversion['out_symbol'] in _eth_symbol_ids(data) and conversion['out_qty'] == Decimal('1')
+    assert conversion['in_symbol'] in _usdc_symbol_ids(data) and conversion['in_qty'] == Decimal('1000')
+    assert conversion['fee_qty'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18   # gas is the fee
+    assert fetcher.skipped() == {}
+
+
+# Withdrawing is the same move backwards, and the quantity coming back is free to exceed what was supplied - a
+# rebasing receipt token folds the yield accrued since the last interaction into it.
+def test_lending_withdrawal_is_emitted_as_a_conversion(eth_wallet, monkeypatch):
+    aave = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+    c4 = "0xc4" + "0" * 62
+    pages = {
+        "txlist": [_tx(c4, 100, WALLET, aave, value=0, method='0xb61d27f6')],
+        "tokentx": [_token_tx(c4, 100, WALLET, aave, 1000 * 10 ** 6)],     # give back the receipt token ...
+        "txlistinternal": [_internal_tx(c4, 100, aave, WALLET, 1050 * 10 ** 15)],   # ... receive 1.05 ETH
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    conversions = _conversions(data)
+    assert len(conversions) == 1
+    assert conversions[0]['out_symbol'] in _usdc_symbol_ids(data) and conversions[0]['out_qty'] == Decimal('1000')
+    assert conversions[0]['in_symbol'] in _eth_symbol_ids(data) and conversions[0]['in_qty'] == Decimal('1.05')
+    assert _transfers(data) == [] and _swaps(data) == []
+
+
+# A lending protocol may also just pay out, with nothing going the other way - that is a reward, not a conversion.
+def test_lending_payout_without_a_counter_leg_is_a_reward(eth_wallet, monkeypatch):
+    aave = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+    c5 = "0xc5" + "0" * 62
+    pages = {
+        "txlist": [_tx(c5, 100, WALLET, aave, value=0, method='0xb61d27f6')],
+        "tokentx": [_token_tx(c5, 100, aave, WALLET, 7 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    assert len(rewards) == 1 and rewards[0]['amount'] == Decimal('7')
+    assert _conversions(data) == []
+
+
+# A shape that is neither of the two still halts rather than being guessed at.
+def test_unrecognized_lending_shape_halts(eth_wallet, monkeypatch):
+    aave = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+    c6 = "0xc6" + "0" * 62
+    other = "0x8888888888888888888888888888888888888888"
+    pages = {
+        "txlist": [_tx(c6, 100, WALLET, aave, value=10 ** 18)],            # one asset out ...
+        "tokentx": [_token_tx(c6, 100, aave, WALLET, 5 * 10 ** 6),         # ... two different ones in
+                    _token_tx(c6, 100, aave, WALLET, 3 * 10 ** 6, contract=other, symbol='OTHER', name='Other')],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _conversions(data) == [] and _transfers(data) == [] and _swaps(data) == []
     assert any('lending' in reason for reason in fetcher.skipped())
     assert fetcher._new_cursor == ''                                 # the very first block halted, so no cursor advance
 
@@ -371,6 +435,26 @@ def test_reward_claim_is_booked_as_a_staking_reward(eth_wallet, monkeypatch):
     assert len(rewards) == 1 and rewards[0]['amount'] == Decimal('50')
     assert any(p['type'] == JSF.PAYMENT_GAS_FEE for p in data[JSF.ASSET_PAYMENTS])   # the claim's gas is charged too
     assert _transfers(data) == [] and _swaps(data) == []
+
+
+# One claim can pay out in several assets at once - a real Merkl claim delivered stkGHO and aEthUSDG together - so
+# each received asset becomes a reward of its own instead of the whole claim halting the import.
+def test_reward_claim_of_several_assets_pays_each_one(eth_wallet, monkeypatch):
+    merkl = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"
+    other = "0x8888888888888888888888888888888888888888"
+    d5 = "0xd5" + "0" * 62
+    pages = {
+        "txlist": [_tx(d5, 100, WALLET, merkl, value=0, method='0xb61d27f6')],
+        "tokentx": [_token_tx(d5, 100, merkl, WALLET, 46 * 10 ** 6),
+                    _token_tx(d5, 100, merkl, WALLET, 23 * 10 ** 6, contract=other, symbol='OTHER', name='Other')],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    assert sorted(p['amount'] for p in rewards) == [Decimal('23'), Decimal('46')]
+    assert len({p['symbol'] for p in rewards}) == 2                     # one payment per received asset
+    assert fetcher.skipped() == {}
 
 
 # ----------------------------------------------------------------------------------------------------------------------

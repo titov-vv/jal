@@ -19,8 +19,9 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 - Trading operations: Buy/Sell securities (stocks, ETFs, options, and more).
 - Dividends for stocks and bond interest payments (including bond amortization).
 - Corporate actions for stocks.
-- Term deposits.
+- Basis-preserving asset conversions (crypto wrapping, lending deposits/withdrawals, liquid staking).
 ### Reports
+- Term deposits: what is open, what each of them earned, and the actions that manage them.
 - Daily history of account balance.
 - Portfolio asset allocation for a given date.
 - Monthly income/expenditure by category.

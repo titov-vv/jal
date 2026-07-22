@@ -15,7 +15,7 @@ from jal.db.token_blacklist import normalize_address
 class ProtocolCategory:
     SWAP = 'swap'             # same-chain DEX / swap router: one asset out, one in -> Swap operation
     AGGREGATOR = 'aggregator'  # does BOTH same-chain swaps and cross-chain bridges - the leg shape decides which
-    LENDING = 'lending'       # deposit/withdraw into a lending or wrapping protocol - deferred to P4
+    LENDING = 'lending'       # deposit/withdraw into a lending, wrapping or staking protocol -> Conversion operation
     BRIDGE = 'bridge'         # cross-chain bridge - deferred to P5
     REWARD = 'reward'         # protocol that pays out a claimable reward - booked as a StakingReward
 
@@ -29,7 +29,18 @@ _REGISTRY = {
         '0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae': ProtocolCategory.AGGREGATOR,  # LI.FI Diamond (Jumper) - VERIFY
         '0xa6e941eab67569ca4522f70d343714ff51d571c4': ProtocolCategory.AGGREGATOR,  # Magpie / Fly.trade Router V3.1 - VERIFY
         '0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2': ProtocolCategory.LENDING,     # Aave v3 Pool - VERIFY
+        # The entries below were read off the wallet's own history and each one's category is what its transactions
+        # actually do (see the shapes quoted next to them), not what its name suggests. For Fluid and stkGHO the
+        # contract the wallet calls IS the receipt token's own contract - the registry is keyed by address, so that
+        # is fine.
+        '0xd01607c3c5ecaba394d8be377a08590149325722': ProtocolCategory.LENDING,     # Aave WrappedTokenGateway: 0.1546 ETH -> 0.15468900016691433 aEthWETH
+        '0xce6ced23118edeb23054e06118a702797b13fc2f': ProtocolCategory.LENDING,     # Aave Umbrella: 7.570364 aEthUSDT -> 6.582313 stkwaEthUSDT.v1
+        '0x1a88df1cfe15af22b3c4c783d4e6f7f9e0c1885d': ProtocolCategory.LENDING,     # stkGHO / Aave Safety Module: GHO <-> stkGHO, exactly 1:1
+        '0x6a29a46e21c730dca1d8b23d637c101cec605c5b': ProtocolCategory.LENDING,     # Fluid fGHO vault: 51426.334 GHO -> 47034.887 fGHO
+        '0x5c20b550819128074fd538edf79791733ccedd18': ProtocolCategory.LENDING,     # Fluid fUSDT vault: 34101.87 USDT -> 29052.162587 fUSDT
+        '0x90551c1795392094fe6d29b758eccd233cfaa260': ProtocolCategory.LENDING,     # Fluid fWETH vault: 0.3 ETH -> 0.280388106858573068 fWETH
         '0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae': ProtocolCategory.REWARD,      # Merkl Distributor - VERIFY
+        '0x4655ce3d625a63d30ba704087e52b4c31e38188b': ProtocolCategory.REWARD,      # Pays out aEthUSDT with no counter-leg
     },
     AssetLocation.ARB_BLOCKCHAIN: {
         '0xa51afafe0263b40edaef0df8781ea9aa03e381a3': ProtocolCategory.SWAP,        # Uniswap Universal Router (V4) - VERIFY

@@ -24,6 +24,7 @@ class JalIcon(UserDict):
     CANCEL = auto()
     CHART = auto()
     CLEAN = auto()
+    CONVERSION = auto()
     COPY = auto()
     DELISTING = auto()
     DEPOSIT_ACCOUNT = auto()
@@ -69,6 +70,7 @@ class JalIcon(UserDict):
         CANCEL: "cancel.ico",
         CHART: "chart.ico",
         CLEAN: "clean.ico",
+        CONVERSION: "renaming.ico",             # TODO dedicated icon for conversions (reuses the symbol-change glyph)
         COPY: "copy.ico",
         DELISTING: "delisting.ico",
         DEPOSIT_ACCOUNT: "deposit_account.ico",

@@ -38,6 +38,7 @@ class JSF:
     TRANSFERS = "transfers"
     SWAPS = "swaps"
     BRIDGES = "bridges"     # each record is the SENDING leg of a cross-chain move (a pending half-bridge)
+    CONVERSIONS = "conversions"   # basis-preserving same-account exchange (wrap, lending supply/withdraw, staking)
     CORP_ACTIONS = "corporate_actions"
     ASSET_PAYMENTS = "asset_payments"
     INCOME_SPENDING = "income_spending"
@@ -164,6 +165,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             JSF.TRADES: self._import_trades,
             JSF.SWAPS: self._import_swaps,
             JSF.BRIDGES: self._import_bridges,
+            JSF.CONVERSIONS: self._import_conversions,
             JSF.ASSET_PAYMENTS: self._import_asset_payments,
             JSF.CORP_ACTIONS: self._import_corporate_actions
         }
@@ -417,7 +419,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     # Removes every operation that references any of the given symbol ids from all operation sections.
     def _drop_operations_referencing(self, symbol_ids: set) -> None:
-        for section in (JSF.TRANSFERS, JSF.SWAPS, JSF.BRIDGES, JSF.ASSET_PAYMENTS, JSF.TRADES, JSF.CORP_ACTIONS):
+        for section in (JSF.TRANSFERS, JSF.SWAPS, JSF.BRIDGES, JSF.CONVERSIONS, JSF.ASSET_PAYMENTS,
+                        JSF.TRADES, JSF.CORP_ACTIONS):
             if section not in self._data:
                 continue
             self._data[section] = [operation for operation in self._data[section]
@@ -431,7 +434,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             symbol_ids.update(operation.get('symbol', []))
             if operation.get('fee_symbol') is not None:
                 symbol_ids.add(operation['fee_symbol'])
-        elif section == JSF.SWAPS:
+        elif section in (JSF.SWAPS, JSF.CONVERSIONS):
             symbol_ids.update([operation['out_symbol'], operation['in_symbol']])
             if operation.get('fee_symbol') is not None:
                 symbol_ids.add(operation['fee_symbol'])
@@ -729,6 +732,27 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if source.get('description'):
                 operation['note'] = source['description']
             LedgerTransaction.create_new(LedgerTransaction.Bridge, operation)
+
+    # Imports a basis-preserving exchange of one asset into another on the same account (a wrap, a lending
+    # supply/withdrawal, liquid staking). Its record has the same shape as a same-chain swap - the difference is
+    # entirely in how the ledger treats it, so it is a section of its own rather than a flag on a swap.
+    def _import_conversions(self, conversions):
+        for conversion in conversions:
+            operation = deepcopy(conversion)
+            operation['account_id'] = self.mapped_id(JSF.ACCOUNTS, operation.pop('account'))
+            if not operation['account_id']:
+                raise Statement_ImportError(self.tr("Unmatched account for conversion: ") + f"{conversion}")
+            operation['out_symbol_id'] = self.mapped_id(JSF.SYMBOLS, operation.pop('out_symbol'))
+            operation['in_symbol_id'] = self.mapped_id(JSF.SYMBOLS, operation.pop('in_symbol'))
+            if not operation['out_symbol_id'] or not operation['in_symbol_id']:
+                raise Statement_ImportError(self.tr("Unmatched symbol for conversion: ") + f"{conversion}")
+            if operation.get('fee_symbol') is not None:
+                operation['fee_symbol_id'] = self.mapped_id(JSF.SYMBOLS, operation.pop('fee_symbol'))
+            else:
+                operation.pop('fee_symbol', None)
+            if 'description' in operation:
+                operation['note'] = operation.pop('description')
+            LedgerTransaction.create_new(LedgerTransaction.Conversion, operation)
 
     def _import_asset_payments(self, payments):
         for payment in payments:
@@ -1045,7 +1069,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     # Deletes operation if it's 'tag_name' key matches 'value'
     def _delete_with_id(self, tag_name, value):
-        operation_sections = [JSF.TRADES, JSF.TRANSFERS, JSF.SWAPS, JSF.BRIDGES, JSF.CORP_ACTIONS,
+        operation_sections = [JSF.TRADES, JSF.TRANSFERS, JSF.SWAPS, JSF.BRIDGES, JSF.CONVERSIONS, JSF.CORP_ACTIONS,
                               JSF.ASSET_PAYMENTS, JSF.INCOME_SPENDING]
         for section in operation_sections:
             if section in self._data:

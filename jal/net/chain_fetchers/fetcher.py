@@ -189,6 +189,21 @@ class ChainFetcher(Statement):
             swap["fee_qty"] = fee
         self._data.setdefault(JSF.SWAPS, []).append(swap)
 
+    # Adds a conversion: one asset is exchanged for another on the same account while the cost basis is carried over
+    # (wrapping, supplying to or withdrawing from a lending protocol, liquid staking). The record looks like a
+    # same-chain swap because the movement does - what differs is that no disposal happens and no profit or loss is
+    # realized, so the quantities may differ freely (a rebasing receipt token folds accrued yield into them).
+    def _add_conversion(self, timestamp: int, out_asset_id: int, out_qty: Decimal, in_asset_id: int, in_qty: Decimal,
+                        tx_hash: str, note: str = '', fee: Decimal = Decimal('0'), fee_asset_id: int = None) -> None:
+        conversion = {"id": self._next_id(JSF.CONVERSIONS), "account": 1,
+                      "out_symbol": self._single_symbol_of(out_asset_id), "out_qty": out_qty,
+                      "in_symbol": self._single_symbol_of(in_asset_id), "in_qty": in_qty,
+                      "timestamp": timestamp, "tx_hash": tx_hash, "description": note}
+        if fee > Decimal('0') and fee_asset_id is not None:
+            conversion["fee_symbol"] = self._single_symbol_of(fee_asset_id)
+            conversion["fee_qty"] = fee
+        self._data.setdefault(JSF.CONVERSIONS, []).append(conversion)
+
     # Adds the SENDING leg of a cross-chain move as a pending half-bridge, to be paired afterwards with its arrival -
     # which BridgeMatcher then resolves into a bridge or into an asset-changing cross-chain swap. Only this leg is
     # ever added by a fetcher: it is the one that can be recognized (the wallet's own transaction into a known

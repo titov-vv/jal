@@ -1,98 +1,114 @@
-import logging
 from decimal import Decimal
-from jal.constants import BookAccount, DepositActions
+from jal.constants import BookAccount, PredefinedAccountType, PredefinedCategory, AccountData
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction
 
 
-class JalDeposit(JalDB):
-    def __init__(self, id: int = 0):
+# A term deposit is an account of the hidden PredefinedAccountType.Deposit type - a "box" the bank keeps the money in
+# for a term (CRYPTO_PATH decision #49). Money is put in and taken out with ordinary transfers and the interest is an
+# ordinary income operation, so there is no deposit-specific operation and nothing here touches the ledger: this class
+# only reads a box's figures back and creates/closes boxes for the Deposits window.
+#
+# The word "account" never surfaces in that window - a deposit box is not created by hand, is filtered out of every
+# account picker (see AccountListModel) and is deactivated as soon as it is emptied, so the list of past deposits
+# never clutters the application the way an account per deposit did before.
+class JalDepositBox(JalDB):
+    def __init__(self, account_id: int = 0):
         super().__init__()
-        self._id = id
-        self._data = self._read("SELECT account_id, note FROM term_deposits WHERE oid=:oid",
-                                [(":oid", self._id)], named=True)
-        self._account_id = 0 if self._data is None else self._data['account_id']
-        self._account = JalAccount(self._account_id)
-        self._currency = JalAsset(self._account.currency())
-        self._note = '' if self._data is None else self._data['note']
-        actions_query = self._exec("SELECT timestamp, action_type, amount FROM deposit_actions "
-                                   "WHERE deposit_id=:deposit_id", [(":deposit_id", self._id)])
-        self._actions = []
-        while actions_query.next():
-            self._actions.append(self._read_record(actions_query, named=True, cast=[int, int, Decimal]))
+        self._account = JalAccount(account_id)
+        self._id = self._account.id()
 
     @classmethod
-    # Returns a list of deposits that are opened before and not closed at given timestamp
-    def get_term_deposits(cls, timestamp: int) -> list:
+    # Creates a new deposit box and returns it. 'name' has to be unique among all accounts (the box is one).
+    def create(cls, name: str, currency_id: int, organization_id: int,
+               end_date: int = 0, rate: Decimal = Decimal('0')) -> "JalDepositBox":
+        query = cls._exec("INSERT INTO accounts (name, currency_id, active, investing, reconciled_on, "
+                          "organization_id, account_type) VALUES(:name, :currency, 1, 0, 0, :organization, :type)",
+                          [(":name", name), (":currency", currency_id), (":organization", organization_id),
+                           (":type", PredefinedAccountType.Deposit)], commit=True)
+        box = cls(query.lastInsertId())
+        JalAccount.db_cache.update_data(JalAccount._load_account_data, (box.id(),))
+        box.set_terms(end_date, rate)
+        return box
+
+    @classmethod
+    # Returns the boxes that were open at 'timestamp': created before it and not yet emptied at that moment.
+    # A box that still holds money is returned even if it is deactivated, so a closing that hasn't been recorded
+    # yet can't make the money disappear from the report.
+    def get_deposits(cls, timestamp: int) -> list:
         deposits = []
-        query = cls._exec(
-            "SELECT o.deposit_id FROM deposit_actions o "
-            "LEFT JOIN deposit_actions c ON o.action_type=:opening AND c.action_type=:closing and o.deposit_id=c.deposit_id "
-            "WHERE o.timestamp<=:timestamp AND c.timestamp>=:timestamp",
-            [(":timestamp", timestamp), (":opening", DepositActions.Opening), (":closing", DepositActions.Closing)])
+        query = cls._exec("SELECT id FROM accounts WHERE account_type=:type", [(":type", PredefinedAccountType.Deposit)])
         while query.next():
-            deposits.append(JalDeposit(super(JalDeposit, JalDeposit)._read_record(query, cast=[int])))
+            box = cls(cls._read_record(query, cast=[int]))
+            if box.opened_at() and box.opened_at() <= timestamp and box.balance(timestamp) != Decimal('0'):
+                deposits.append(box)
         return deposits
 
-    # returns name of the deposit as it was given in notes
+    def id(self) -> int:
+        return self._id
+
+    def account(self) -> JalAccount:
+        return self._account
+
     def name(self) -> str:
-        return self._note
+        return self._account.name()
 
-    # Returns currency of the deposit
     def currency(self) -> JalAsset:
-        return self._currency
+        return JalAsset(self._account.currency())
 
-    # Return accumulated money for the deposit at given timestamp
-    def balance(self, timestamp: int) -> Decimal:
-        balance = Decimal('0')
-        query = self._exec("SELECT amount FROM ledger "
-                           "WHERE book_account=:book AND otype=:type AND oid=:id AND timestamp<=:timestamp",
-                           [(":book", BookAccount.Savings), (":type", LedgerTransaction.TermDeposit),
-                            (":id", self._id), (":timestamp", timestamp)])
-        while query.next():
-            balance += self._read_record(query, cast=[Decimal])
-        return balance
+    def organization(self) -> int:
+        return self._account.organization()
 
-    # Return a timestamp of deposit opening
-    def start_date(self) -> int:
-        opening = [x for x in self._actions if x['action_type']==DepositActions.Opening]
-        assert len(opening) == 1
-        return opening[0]['timestamp']
+    def is_active(self) -> bool:
+        return self._account.is_active()
 
-    # Return a timestamp of deposit closure
+    # Planned maturity date of the deposit (0 if it isn't known)
     def end_date(self) -> int:
-        opening = [x for x in self._actions if x['action_type'] == DepositActions.Closing]
-        assert len(opening) == 1
-        return opening[0]['timestamp']
+        return self._account.deposit_end()
 
-    def open_amount(self) -> Decimal:
-        opening = [x for x in self._actions if x['action_type'] == DepositActions.Opening]
-        assert len(opening) == 1
-        return opening[0]['amount']
+    # Nominal interest rate, per cent per annum (0 if it isn't known)
+    def rate(self) -> Decimal:
+        return self._account.deposit_rate()
 
-    def accrued_interest(self, timestamp) -> Decimal:
-        amount = Decimal('0')
-        interests = [x for x in self._actions if x['timestamp'] <= timestamp]
-        for interest in interests:
-            if interest['action_type'] == DepositActions.InterestAccrued:
-                amount += interest['amount']
-            elif interest['action_type'] == DepositActions.TaxWithheld:
-                amount += interest['amount']
-            else:
-                continue
-        return amount
+    def set_terms(self, end_date: int, rate: Decimal) -> None:
+        self._account.set_data(AccountData.DepositEnd, end_date if end_date else None)
+        self._account.set_data(AccountData.DepositRate, rate if rate else None)
 
-    def close_amount(self) -> Decimal:
-        amount = self.open_amount()
-        for action in self._actions:
-            if action['action_type'] in [DepositActions.TopUp, DepositActions.InterestAccrued]:
-                amount += action['amount']
-            elif action['action_type'] in [DepositActions.PartialWithdrawal, DepositActions.TaxWithheld]:
-                amount -= action['amount']
-            elif action['action_type'] in [DepositActions.Opening, DepositActions.Closing, DepositActions.Renewal]:
-                continue
-            else:
-                logging.warning(self.tr("Unexpected deposit action: ") + action['action_type'])
-        return amount
+    # Timestamp of the first operation that put money into the box, i.e. when the deposit started (0 if empty)
+    def opened_at(self) -> int:
+        timestamp = self._read("SELECT MIN(deposit_timestamp) FROM transfers WHERE deposit_account=:id",
+                               [(":id", self._id)])
+        return int(timestamp) if timestamp else 0
+
+    # Money accumulated in the box at the given timestamp
+    def balance(self, timestamp: int) -> Decimal:
+        return self._account.get_asset_amount(timestamp, self._account.currency())
+
+    # Interest credited to the box up to the given timestamp, net of the tax withheld from it
+    def accrued_interest(self, timestamp: int) -> Decimal:
+        interest = self._account.get_category_turnover(PredefinedCategory.Interest, 0, timestamp)
+        taxes = self._account.get_category_turnover(PredefinedCategory.Taxes, 0, timestamp)
+        # 'ledger' books an income as a negative amount in the Incomes book and a cost as a positive one in Costs,
+        # so both turnovers have to be negated to read as "how much the deposit earned" and "how much was withheld".
+        return -interest - taxes
+
+    # Everything that happened to the box up to 'timestamp', oldest first, as a list of
+    # {"timestamp", "amount", "balance", "operation"} where 'amount' is signed the way the box sees it.
+    def details(self, timestamp: int) -> list:
+        records = []
+        query = self._exec("SELECT timestamp, amount, otype, oid FROM ledger "
+                           "WHERE account_id=:id AND book_account=:money AND timestamp<=:timestamp ORDER BY id",
+                           [(":id", self._id), (":money", BookAccount.Money), (":timestamp", timestamp)])
+        balance = Decimal('0')
+        while query.next():
+            record = self._read_record(query, named=True, cast=[int, Decimal, int, int])
+            balance += record['amount']
+            record['balance'] = balance
+            records.append(record)
+        return records
+
+    # Closes an emptied box: it stops being active, so it disappears from every default view and from the list of
+    # deposits, while everything it recorded stays in place.
+    def close(self) -> None:
+        self._account.set_active(False)

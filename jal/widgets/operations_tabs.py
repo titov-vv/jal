@@ -6,7 +6,7 @@ from jal.widgets.asset_payment_widget import AssetPaymentWidget
 from jal.widgets.income_spending_widget import IncomeSpendingWidget
 from jal.widgets.trade_widget import TradeWidget
 from jal.widgets.transfer_widget import TransferWidget
-from jal.widgets.term_deposit_widget import TermDepositWidget
+from jal.widgets.conversion_widget import ConversionWidget
 from jal.widgets.swap_widget import SwapWidget
 from jal.widgets.bridge_widget import BridgeWidget
 from jal.db.operations import LedgerTransaction
@@ -23,7 +23,7 @@ class JalOperationsTabs(QStackedWidget):
                         LedgerTransaction.Trade: TradeWidget(self),
                         LedgerTransaction.Transfer: TransferWidget(self),
                         LedgerTransaction.CorporateAction: CorporateActionWidget(self),
-                        LedgerTransaction.TermDeposit: TermDepositWidget(self),
+                        LedgerTransaction.Conversion: ConversionWidget(self),
                         LedgerTransaction.Swap: SwapWidget(self),
                         LedgerTransaction.Bridge: BridgeWidget(self)}
         for key, widget in self.widgets.items():

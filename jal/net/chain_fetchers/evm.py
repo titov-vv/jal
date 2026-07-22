@@ -173,7 +173,7 @@ class EVMFetcher(ChainFetcher):
     # Snapshot of how many operations (and assets) each JSF section holds, used to roll a partially-built block back.
     def _checkpoint(self) -> dict:
         return {section: len(self._data.get(section, [])) for section in
-                (JSF.ASSETS, JSF.TRANSFERS, JSF.ASSET_PAYMENTS, JSF.SWAPS, JSF.BRIDGES)}
+                (JSF.ASSETS, JSF.TRANSFERS, JSF.ASSET_PAYMENTS, JSF.SWAPS, JSF.BRIDGES, JSF.CONVERSIONS)}
 
     # Discards everything appended since the checkpoint - the operations of the halting block and any asset records it
     # created (a still-unused asset is harmless, but dropping it keeps the statement identical to a clean re-fetch).
@@ -206,14 +206,20 @@ class EVMFetcher(ChainFetcher):
             return
 
         if category == ProtocolCategory.LENDING:
-            raise _HaltImport(self.tr("lending/wrap operation, not supported yet"))
+            # One asset in, one out - supplying to (or withdrawing from) a lending protocol, wrapping a coin, or
+            # staking it: the position is kept, only its shape changes, so it is a basis-preserving Conversion.
+            if len(outs) == 1 and len(ins) == 1:
+                return self._emit_conversion(timestamp, outs, ins, tx['hash'], gas)
+            # A protocol may also just pay out - a reward accrued on the supplied position, delivered with nothing
+            # going the other way. That is a real inflow with no counterpart, which is what a StakingReward is.
+            if ins and not outs:
+                return self._emit_rewards(timestamp, ins, tx['hash'], gas, is_error, own_record)
+            raise _HaltImport(self.tr("unrecognized lending/wrap shape"))
         if category == ProtocolCategory.BRIDGE:
             return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error)
         if category == ProtocolCategory.REWARD:
-            if not outs and len(ins) == 1:
-                asset_id, data = next(iter(ins.items()))
-                self._emit_reward(timestamp, asset_id, data['amount'], tx['hash'], gas, is_error, own_record)
-                return
+            if ins and not outs:
+                return self._emit_rewards(timestamp, ins, tx['hash'], gas, is_error, own_record)
             raise _HaltImport(self.tr("unrecognized reward-claim shape"))
 
         swap_shape = len(outs) == 1 and len(ins) == 1
@@ -359,12 +365,23 @@ class EVMFetcher(ChainFetcher):
             return
         raise _HaltImport(self.tr("unrecognized cross-chain transaction shape"))
 
-    # Emits a claimed reward as a StakingReward (it opens a lot at market value, so the reward has a cost basis), plus
-    # the claim's gas as a separate GasFee.
-    def _emit_reward(self, timestamp: int, asset_id: int, amount: Decimal, tx_hash: str, gas: Decimal,
-                     is_error: bool, own_record: dict) -> None:
-        self._add_payment(JSF.PAYMENT_STAKING_REWARD, timestamp, asset_id, amount, tx_hash,
-                          note=self.tr("Reward claim"))
+    # Emits a conversion: the position is kept but changes shape (supply/withdraw a lending position, wrap/unwrap,
+    # liquid staking). No profit or loss is realized and the quantity is free to differ - a rebasing receipt token
+    # folds the yield accrued since the last interaction into the amount it mints or burns. Gas is the fee.
+    def _emit_conversion(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal) -> None:
+        out_asset, out_data = next(iter(outs.items()))
+        in_asset, in_data = next(iter(ins.items()))
+        self._add_conversion(timestamp, out_asset, abs(out_data['amount']), in_asset, in_data['amount'], tx_hash,
+                             fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
+
+    # Emits claimed rewards as StakingReward payments (each opens a lot at market value, so a reward has a cost
+    # basis), plus the claim's gas as a separate GasFee. One claim can pay out in SEVERAL assets at once - a single
+    # Merkl claim delivered stkGHO and aEthUSDG together - so each received asset gets a payment of its own.
+    def _emit_rewards(self, timestamp: int, ins: dict, tx_hash: str, gas: Decimal,
+                      is_error: bool, own_record: dict) -> None:
+        for asset_id, data in sorted(ins.items()):
+            self._add_payment(JSF.PAYMENT_STAKING_REWARD, timestamp, asset_id, data['amount'], tx_hash,
+                              note=self.tr("Reward claim"))
         if gas > Decimal('0'):
             self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx_hash,
                               note=self._gas_note(own_record, is_error))

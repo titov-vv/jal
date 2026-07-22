@@ -94,7 +94,10 @@ class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Assets = 4
     Liabilities = 5
     Transfers = 6
-    Savings = 7
+    # 7 was 'Savings' - the book that held term deposit money while a deposit was an operation. A deposit is an
+    # account of its own now (PredefinedAccountType.Deposit), so its money sits in the ordinary Money book and the
+    # "not spendable cash" distinction comes from the account type instead. The number is left unused on purpose:
+    # re-using it would silently re-interpret any 'ledger' row that a stale cache still holds.
 
 
 class PredefinedList:
@@ -182,6 +185,12 @@ class PredefinedAccountType(PredefinedList, QObject):
     Card = 4
     Broker = 5
     Wallet = 6     # Crypto wallet
+    Deposit = 7    # A term deposit "box": money handed over to a bank for a term, kept as an account of its own
+
+    # Types the user never picks and never creates by hand - the application writes such accounts itself (a deposit
+    # box is created by the Deposits window). They are filtered out of every account picker by one baseline filter
+    # in AccountListModel, which every selector in the application goes through, and of the account type combo box.
+    _HIDDEN = [Deposit]
 
     def __init__(self):
         super().__init__()
@@ -190,8 +199,28 @@ class PredefinedAccountType(PredefinedList, QObject):
             self.Bank: self.tr("Bank account"),
             self.Card: self.tr("Card"),
             self.Broker: self.tr("Broker account"),
-            self.Wallet: self.tr("Wallet")
+            self.Wallet: self.tr("Wallet"),
+            self.Deposit: self.tr("Term deposit")
         }
+
+    @classmethod
+    def is_hidden(cls, type_id) -> bool:
+        return type_id in cls._HIDDEN
+
+    # Account types that are never offered to the user, as a list of ids
+    @classmethod
+    def hidden_types(cls) -> list:
+        return list(cls._HIDDEN)
+
+    # Hidden types are not offered for selection - only the application creates accounts of them
+    def load2combo(self, combobox, with_empty=False):
+        combobox.clear()
+        if with_empty:
+            combobox.addItem('', userData=None)
+        for item in self._names:
+            if self.is_hidden(item):
+                continue
+            combobox.addItem(self._names[item], userData=item)
 
 
 class PredefinedAsset(PredefinedList, QObject):
@@ -217,28 +246,6 @@ class PredefinedAsset(PredefinedList, QObject):
             self.Forex: self.tr("Forex"),
             self.Fund: self.tr("Funds"),
             self.Crypto: self.tr("Crypto-currency")
-        }
-
-
-class DepositActions(PredefinedList, QObject):
-    Opening = 1                 # These constants define order of deposit operations processing
-    TopUp = 2
-    Renewal = 10
-    InterestAccrued = 50
-    TaxWithheld = 51
-    PartialWithdrawal = 99
-    Closing = 100
-
-    def __init__(self):
-        super().__init__()
-        self._names = {
-            self.Opening: self.tr("Open term deposit"),
-            self.Closing: self.tr("Close term deposit"),
-            self.TopUp: self.tr("Top-up term deposit"),
-            self.PartialWithdrawal: self.tr("Partial withdrawal from term deposit"),
-            self.Renewal: self.tr("Term deposit renewal"),
-            self.InterestAccrued: self.tr("Interest accrued"),
-            self.TaxWithheld: self.tr("Tax withheld")
         }
 
 
@@ -307,6 +314,8 @@ class AccountData(PredefinedList, QObject):
     Address = 5        # On-chain address of a wallet account, in the canonical form of its blockchain
     Chain = 6          # Blockchain of a wallet account, stored as one of AssetLocation.BLOCKCHAINS
     SyncCursor = 7     # Position of the last completed blockchain fetch, its format is defined by the fetcher
+    DepositEnd = 8     # Maturity date of a term deposit box (timestamp)
+    DepositRate = 9    # Nominal interest rate of a term deposit box, per cent per annum
 
     # Attributes that the application maintains itself and that must never be typed in by hand: they are kept
     # out of the attribute selector and their rows are not editable in the account details grid. A wrong sync
@@ -322,7 +331,9 @@ class AccountData(PredefinedList, QObject):
             self.Precision: self.tr("Precision"),
             self.Address: self.tr("Address"),
             self.Chain: self.tr("Blockchain"),
-            self.SyncCursor: self.tr("Sync cursor")
+            self.SyncCursor: self.tr("Sync cursor"),
+            self.DepositEnd: self.tr("Deposit end date"),
+            self.DepositRate: self.tr("Interest rate, %")
         }
         self._types = {
             self.Number: "str",
@@ -331,7 +342,9 @@ class AccountData(PredefinedList, QObject):
             self.Precision: "int",
             self.Address: "str",
             self.Chain: "chain",
-            self.SyncCursor: "str"
+            self.SyncCursor: "str",
+            self.DepositEnd: "date",
+            self.DepositRate: "float"
         }
 
     def get_type(self, type_id, default='') -> str:

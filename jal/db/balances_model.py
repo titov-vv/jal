@@ -10,7 +10,6 @@ from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
-from jal.db.deposit import JalDeposit
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 from jal.widgets.icons import JalIcon
 
@@ -203,7 +202,9 @@ class BalancesModel(ReportTreeModel):
         self.beginResetModel()
         self.setGrouping("account_tag")
         balances = []
-        accounts = JalAccount.get_all_accounts(active_only=self._active_only)
+        # Deposit boxes are asked for explicitly: they are accounts of a hidden type, so they are excluded by
+        # default, but the money in an open deposit is part of the balance sheet and gets its own type group here.
+        accounts = JalAccount.get_all_accounts(active_only=self._active_only, include_hidden=True)
         for account in accounts:
             value = account.balance(self._date)
             rate = JalAsset(account.currency()).quote(self._date, self._currency)[1]
@@ -222,22 +223,6 @@ class BalancesModel(ReportTreeModel):
                     "active": account.is_active(),
                     "font": 'normal' if account.is_active() else 'italic'
                 })
-        for deposit in JalDeposit.get_term_deposits(self._date):
-            rate = deposit.currency().quote(self._date, self._currency)[1]
-            balances.append({
-                "account_tag": self.tr("Term deposits"),
-                "icon_id": JalIcon.DEPOSIT_ACCOUNT,
-                "account": 0,
-                "account_name": deposit.name(),
-                "currency": deposit.currency(),
-                "currency_name": deposit.currency().symbol(),
-                "value": deposit.balance(self._date),
-                "value_common": deposit.balance(self._date) * rate,
-                "credit_limit": Decimal('0'),
-                "unreconciled": 0,
-                "active": 1,
-                "font": 'normal'
-            })
         # Sort data items and add them into the tree in right order
         balances = sorted(balances, key=lambda x: (x['account_tag'], x['account_name']))
         self._root = AccountTreeItem()

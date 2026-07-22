@@ -11,12 +11,19 @@ from jal.db.country import JalCountry
 from jal.db.common_models_abstract import AbstractReferenceListModel, SqlTreeModel
 from jal.db.peer import JalPeer
 from jal.db.token_blacklist import JalTokenBlacklist
+from jal.widgets.helpers import ts2d
 from jal.widgets.icons import JalIcon
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Every account picker in the application is built on this model, so hiding an account type here hides it everywhere
+# at once. 'include_hidden' is the single opt-in, used by the Deposits window - the only place that manages accounts
+# of a hidden type (see PredefinedAccountType._HIDDEN).
 class AccountListModel(AbstractReferenceListModel):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, include_hidden: bool = False):
+        hidden = ','.join(str(int(x)) for x in PredefinedAccountType.hidden_types())
+        # Assigned before the base constructor runs, because that one selects the table straight away
+        self._baseline_filter = '' if include_hidden else f"accounts.account_type NOT IN ({hidden})"
         columns = [
             CmColumn("id", '', hide=True),
             CmColumn("name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, sort=True),
@@ -30,6 +37,14 @@ class AccountListModel(AbstractReferenceListModel):
         super().__init__("accounts", columns, parent)
         self.set_default_values({'active': 1, 'reconciled_on': 0, 'account_type': PredefinedAccountType.Cash})
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
+        self.setFilter('')   # applies the baseline filter above (setFilter() re-selects the model)
+
+    # The baseline filter is AND-ed into whatever the caller asks for, so no caller can accidentally show an account
+    # of a hidden type by setting a filter of its own.
+    def setFilter(self, filter_text):
+        if self._baseline_filter:
+            filter_text = f"({filter_text}) AND {self._baseline_filter}" if filter_text else self._baseline_filter
+        super().setFilter(filter_text)
 
     # Accounts are edited via the modal AccountDialog, not in-line - the grid is display/selection only. Marking the
     # cells non-editable makes every delegate (including BoolDelegate's click-to-toggle) honor that automatically.
@@ -121,6 +136,8 @@ class AccountDataModel(AbstractReferenceListModel):
                 return JalCountry(int(value)).name()
             elif datatype_of == "chain":
                 return AssetLocation().get_name(int(value))
+            elif datatype_of == "date":
+                return ts2d(int(value))
         except (ValueError, InvalidOperation, TypeError):
             return ''
         return value
