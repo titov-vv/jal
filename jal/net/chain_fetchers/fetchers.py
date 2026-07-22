@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Signal, Qt
 from PySide6.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QLabel, QListWidget, QListWidgetItem, \
     QCheckBox, QDialogButtonBox
 
-from jal.constants import Setup
+from jal.constants import Setup, AssetLocation
 from jal.db.settings import JalSettings
 from jal.data_import.statement import Statement_ImportError
 
@@ -174,6 +174,12 @@ class ChainFetchers(QObject):
     # Returns False - aborting the fetch - if the cache is still empty afterwards, since fetching then would walk
     # straight into that trap.
     def _ensure_token_lists(self, location_id: int) -> bool:
+        # A venue that publishes the value of every transfer needs no downloaded list to tell a real token from
+        # spam - the fetcher judges by that value and resolves a token's identity from the venue's own registry
+        # (Hyperliquid: 'spotMeta'). There is no curated allow-list to download for such a chain, so the gate that
+        # protects the first fetch of a list-backed chain would only ever abort it. See CRYPTO_PATH decision #67.
+        if location_id == AssetLocation.HL_BLOCKCHAIN:
+            return True
         lists = self.parent.token_lists
         if not lists.is_empty(location_id):
             return True

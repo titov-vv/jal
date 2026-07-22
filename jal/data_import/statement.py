@@ -561,6 +561,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 if address_id is not None:
                     db_asset.update_identifier(symbol_id, address_id,
                                                normalize_address(location, symbol['address']))
+            # A Hyperliquid token may additionally be deployed on HyperEVM and then carries a contract address
+            # there as well. That address is not the token's identity - it is optional and belongs to another
+            # chain - but it is the key the quote source indexes most Hyperliquid tokens by, so it is kept
+            # alongside the identity. See llama_coin_keys() for why both forms are needed.
+            if symbol.get('evm_address'):
+                db_asset.update_identifier(symbol_id, SymbolId.HL_EVM_ADDRESS,
+                                           normalize_address(location, symbol['evm_address']))
 
     def _import_accounts(self, accounts):
         for account in accounts:

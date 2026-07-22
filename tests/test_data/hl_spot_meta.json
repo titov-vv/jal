@@ -1,0 +1,152 @@
+{
+ "universe": [
+  {
+   "tokens": [
+    1,
+    0
+   ],
+   "name": "PURR/USDC",
+   "index": 0,
+   "isCanonical": true
+  },
+  {
+   "tokens": [
+    150,
+    0
+   ],
+   "name": "@107",
+   "index": 107,
+   "isCanonical": false
+  },
+  {
+   "tokens": [
+    197,
+    0
+   ],
+   "name": "@142",
+   "index": 142,
+   "isCanonical": false
+  },
+  {
+   "tokens": [
+    221,
+    0
+   ],
+   "name": "@151",
+   "index": 151,
+   "isCanonical": false
+  },
+  {
+   "tokens": [
+    254,
+    0
+   ],
+   "name": "@156",
+   "index": 156,
+   "isCanonical": false
+  },
+  {
+   "tokens": [
+    734,
+    0
+   ],
+   "name": "@591",
+   "index": 591,
+   "isCanonical": false
+  }
+ ],
+ "tokens": [
+  {
+   "name": "USDC",
+   "szDecimals": 8,
+   "weiDecimals": 8,
+   "index": 0,
+   "tokenId": "0x6d1e7cde53ba9467b783cb7c530ce054",
+   "isCanonical": true,
+   "evmContract": {
+    "address": "0x6b9e773128f453f5c2c60935ee2de2cbc5390a24",
+    "evm_extra_wei_decimals": -2
+   },
+   "fullName": null,
+   "deployerTradingFeeShare": "0.0"
+  },
+  {
+   "name": "PURR",
+   "szDecimals": 0,
+   "weiDecimals": 5,
+   "index": 1,
+   "tokenId": "0xc1fb593aeffbeb02f85e0308e9956a90",
+   "isCanonical": true,
+   "evmContract": {
+    "address": "0x9b498c3c8a0b8cd8ba1d9851d40d186f1872b44e",
+    "evm_extra_wei_decimals": 13
+   },
+   "fullName": null,
+   "deployerTradingFeeShare": "0.0"
+  },
+  {
+   "name": "HYPE",
+   "szDecimals": 2,
+   "weiDecimals": 8,
+   "index": 150,
+   "tokenId": "0x0d01dc56dcaaca66ad901c959b4011ec",
+   "isCanonical": false,
+   "evmContract": null,
+   "fullName": "Hyperliquid",
+   "deployerTradingFeeShare": "0.0"
+  },
+  {
+   "name": "UBTC",
+   "szDecimals": 5,
+   "weiDecimals": 10,
+   "index": 197,
+   "tokenId": "0x8f254b963e8468305d409b33aa137c67",
+   "isCanonical": false,
+   "evmContract": {
+    "address": "0x9fdbda0a5e284c32744d2f17ee5c74b284993463",
+    "evm_extra_wei_decimals": -2
+   },
+   "fullName": "Unit Bitcoin",
+   "deployerTradingFeeShare": "1.0"
+  },
+  {
+   "name": "UETH",
+   "szDecimals": 4,
+   "weiDecimals": 9,
+   "index": 221,
+   "tokenId": "0xe1edd30daaf5caac3fe63569e24748da",
+   "isCanonical": false,
+   "evmContract": {
+    "address": "0xbe6727b535545c67d5caa73dea54865b92cf7907",
+    "evm_extra_wei_decimals": 9
+   },
+   "fullName": "Unit Ethereum",
+   "deployerTradingFeeShare": "1.0"
+  },
+  {
+   "name": "USOL",
+   "szDecimals": 3,
+   "weiDecimals": 8,
+   "index": 254,
+   "tokenId": "0x49b67c39f5566535de22b29b0e51e685",
+   "isCanonical": false,
+   "evmContract": {
+    "address": "0x068f321fa8fb9f0d135f290ef6a3e2813e1c8a29",
+    "evm_extra_wei_decimals": 1
+   },
+   "fullName": "Unit Solana",
+   "deployerTradingFeeShare": "1.0"
+  },
+  {
+   "name": "MAX",
+   "szDecimals": 1,
+   "weiDecimals": 6,
+   "index": 734,
+   "tokenId": "0x6781b92b6ea5d8ed37d275eb201f64af",
+   "isCanonical": false,
+   "evmContract": null,
+   "fullName": "$MAX",
+   "deployerTradingFeeShare": "1.0"
+  }
+ ]
+}

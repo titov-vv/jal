@@ -9,7 +9,10 @@ from jal.universal_cache import UniversalCache
 # Chains where an address is a hex string and its case carries no meaning (EIP-55 checksum casing is
 # only a checksum). Solana mint addresses and Tron base58check addresses (the 'T...' form) ARE
 # case-sensitive and must be kept verbatim, Bitcoin has no tokens.
-_CASE_INSENSITIVE_CHAINS = [AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN]
+# Hyperliquid belongs here for both of the things it stores as an address: a wallet is an EVM-shaped address, and a
+# token is identified by its HyperCore token id - a hex string as well, with no case meaning either.
+_CASE_INSENSITIVE_CHAINS = [AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN,
+                            AssetLocation.HL_BLOCKCHAIN]
 
 
 # Brings a contract/mint address to the form that is stored in the database. SQLite compares TEXT
@@ -132,7 +135,9 @@ def is_valid_address(location_id: int, address: str) -> bool:
         return False
     if location_id == AssetLocation.TRX_BLOCKCHAIN:
         return is_tron_address(address)
-    if location_id in (AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN):
+    # A Hyperliquid account is addressed by the very same 20-byte key as an EVM account - HyperCore is its own L1,
+    # but it reuses Ethereum's address format and the user signs with the same wallet.
+    if location_id in (AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN, AssetLocation.HL_BLOCKCHAIN):
         return is_evm_address(address)
     if location_id == AssetLocation.SOL_BLOCKCHAIN:
         return is_solana_address(address)

@@ -262,6 +262,11 @@ class SymbolId(PredefinedList, QObject):
     ARB_ADDRESS = 8  # Arbitrum contract address
     SOL_ADDRESS = 9  # Solana SPL mint address
     TRX_ADDRESS = 10  # Tron TRC-20 contract address
+    HL_ADDRESS = 11  # Hyperliquid (HyperCore) token id - the canonical identity of a spot token
+    # A Hyperliquid token may additionally be deployed on HyperEVM, and then it has a contract address there too.
+    # It is a second identifier rather than the identity: it is optional (HYPE has none) and it belongs to another
+    # chain. It is kept because DeFiLlama indexes most Hyperliquid tokens by it - see llama_coin_key().
+    HL_EVM_ADDRESS = 12
 
     def __init__(self):
         super().__init__()
@@ -276,7 +281,9 @@ class SymbolId(PredefinedList, QObject):
             self.ETH_ADDRESS: self.tr("ETH address"),
             self.ARB_ADDRESS: self.tr("ARB address"),
             self.SOL_ADDRESS: self.tr("SOL address"),
-            self.TRX_ADDRESS: self.tr("TRX address")
+            self.TRX_ADDRESS: self.tr("TRX address"),
+            self.HL_ADDRESS: self.tr("HL token id"),
+            self.HL_EVM_ADDRESS: self.tr("HyperEVM address")
         }
 
 
@@ -390,11 +397,12 @@ class AssetLocation(PredefinedList, QObject):
     BTC_BLOCKCHAIN = 303
     SOL_BLOCKCHAIN = 304
     TRX_BLOCKCHAIN = 305
+    HL_BLOCKCHAIN = 306
     SMA_VICTORIA = 999
 
     # Locations that are blockchains. It is the single definition of that set: the 'Chain' attribute of a wallet
     # account and the crypto quote downloader are both restricted to it, so a new chain is added in one place.
-    BLOCKCHAINS = [ETH_BLOCKCHAIN, ARB_BLOCKCHAIN, BTC_BLOCKCHAIN, SOL_BLOCKCHAIN, TRX_BLOCKCHAIN]
+    BLOCKCHAINS = [ETH_BLOCKCHAIN, ARB_BLOCKCHAIN, BTC_BLOCKCHAIN, SOL_BLOCKCHAIN, TRX_BLOCKCHAIN, HL_BLOCKCHAIN]
 
     # Identifier that holds a token's contract (or mint) address on each chain. The address is the only trustworthy
     # key for a token - tickers and names are chosen by whoever deployed the contract - so it identifies a token
@@ -403,7 +411,8 @@ class AssetLocation(PredefinedList, QObject):
         ETH_BLOCKCHAIN: SymbolId.ETH_ADDRESS,
         ARB_BLOCKCHAIN: SymbolId.ARB_ADDRESS,
         SOL_BLOCKCHAIN: SymbolId.SOL_ADDRESS,
-        TRX_BLOCKCHAIN: SymbolId.TRX_ADDRESS
+        TRX_BLOCKCHAIN: SymbolId.TRX_ADDRESS,
+        HL_BLOCKCHAIN: SymbolId.HL_ADDRESS
     }
 
     # Returns the SymbolId that stores a contract address on the given chain, or None if the chain has no tokens
@@ -431,6 +440,7 @@ class AssetLocation(PredefinedList, QObject):
             self.BTC_BLOCKCHAIN: self.tr("Bitcoin"),
             self.SOL_BLOCKCHAIN: self.tr("Solana"),
             self.TRX_BLOCKCHAIN: self.tr("Tron"),
+            self.HL_BLOCKCHAIN: self.tr("Hyperliquid"),
             self.SMA_VICTORIA: self.tr("Victoria Seguros")
         }
 

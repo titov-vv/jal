@@ -1,0 +1,188 @@
+[
+ {
+  "time": 1770510355188,
+  "hash": "0xb32877b100000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "deposit",
+   "usdc": "854.17"
+  }
+ },
+ {
+  "time": 1770512526544,
+  "hash": "0xbb49d44e00000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "send",
+   "user": "0xfa11ba11fa11ba11fa11ba11fa11ba11fa11ba11",
+   "destination": "0xec03d6e01e7b968a36ec6edea317f601638b8a6b",
+   "sourceDex": "spot",
+   "destinationDex": "spot",
+   "token": "USOL",
+   "amount": "2.92183081",
+   "usdcValue": "255.122579",
+   "fee": "1.0",
+   "nativeTokenFee": "0.0",
+   "nonce": 1770512410086,
+   "feeToken": "USDC"
+  }
+ },
+ {
+  "time": 1770512675599,
+  "hash": "0x95ce401f00000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "send",
+   "user": "0xfa11ba11fa11ba11fa11ba11fa11ba11fa11ba11",
+   "destination": "0xabeda74d4125f95fa9737f339f9ffa63d8ff68c9",
+   "sourceDex": "spot",
+   "destinationDex": "spot",
+   "token": "UBTC",
+   "amount": "0.004338264",
+   "usdcValue": "300.325001",
+   "fee": "1.0",
+   "nativeTokenFee": "0.0",
+   "nonce": 1770512570646,
+   "feeToken": "USDC"
+  }
+ },
+ {
+  "time": 1770512753979,
+  "hash": "0x1674aaa300000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "send",
+   "user": "0xfa11ba11fa11ba11fa11ba11fa11ba11fa11ba11",
+   "destination": "0x5a967a62aa1342a7f3e5edfe899bd3d40f1ce40f",
+   "sourceDex": "spot",
+   "destinationDex": "spot",
+   "token": "UETH",
+   "amount": "0.138799341",
+   "usdcValue": "289.396625",
+   "fee": "1.0",
+   "nativeTokenFee": "0.0",
+   "nonce": 1770512704291,
+   "feeToken": "USDC"
+  }
+ },
+ {
+  "time": 1770513045840,
+  "hash": "0x22a19dc200000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "withdraw",
+   "usdc": "6.247435",
+   "nonce": 1770512775999000,
+   "fee": "1.0"
+  }
+ },
+ {
+  "time": 1770515858380,
+  "hash": "0x44eca60d00000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "send",
+   "user": "0x4461dabb357c051794efde86c7d834a4a6c30619",
+   "destination": "0xfa11ba11fa11ba11fa11ba11fa11ba11fa11ba11",
+   "sourceDex": "",
+   "destinationDex": "",
+   "token": "USDC",
+   "amount": "9.975433",
+   "usdcValue": "9.975433",
+   "fee": "0.0",
+   "nativeTokenFee": "0.0",
+   "nonce": 1770515857958,
+   "feeToken": ""
+  }
+ },
+ {
+  "time": 1770516102890,
+  "hash": "0x9eb048e800000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "deposit",
+   "usdc": "94.987169"
+  }
+ },
+ {
+  "time": 1770737646232,
+  "hash": "0xca7c0d8a00000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "cStakingTransfer",
+   "token": "HYPE",
+   "amount": "3.29769",
+   "isDeposit": true
+  }
+ },
+ {
+  "time": 1771424965252,
+  "hash": "0xcdf9af7500000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "deposit",
+   "usdc": "104.983449"
+  }
+ },
+ {
+  "time": 1771455009310,
+  "hash": "0x8e6dbcb500000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "cStakingTransfer",
+   "token": "HYPE",
+   "amount": "3.49755",
+   "isDeposit": true
+  }
+ },
+ {
+  "time": 1780463868324,
+  "hash": "0xa9a29e0000000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "deposit",
+   "usdc": "968.793119"
+  }
+ },
+ {
+  "time": 1780813163097,
+  "hash": "0x5eefc96a00000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "send",
+   "user": "0x287b260b5f2b7792818c5c31821351e782b3d61a",
+   "destination": "0xfa11ba11fa11ba11fa11ba11fa11ba11fa11ba11",
+   "sourceDex": "spot",
+   "destinationDex": "",
+   "token": "USDC",
+   "amount": "967.92",
+   "usdcValue": "967.92",
+   "fee": "0.0",
+   "nativeTokenFee": "0.0",
+   "nonce": 1655500,
+   "feeToken": ""
+  }
+ },
+ {
+  "time": 1781381493771,
+  "hash": "0x91ef2c1200000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "spotTransfer",
+   "token": "MAX",
+   "amount": "101627.302",
+   "usdcValue": "0.0",
+   "user": "0xf855c20b03553f161a845ad871af2299990584dd",
+   "destination": "0xfa11ba11fa11ba11fa11ba11fa11ba11fa11ba11",
+   "fee": "0.0",
+   "nativeTokenFee": "0.0",
+   "nonce": 1781381493443,
+   "feeToken": ""
+  }
+ },
+ {
+  "time": 1782686674415,
+  "hash": "0x08d4dc1f00000000000000000000000000000000000000000000000000000000",
+  "delta": {
+   "type": "send",
+   "user": "0x287b260b5f2b7792818c5c31821351e782b3d61a",
+   "destination": "0xfa11ba11fa11ba11fa11ba11fa11ba11fa11ba11",
+   "sourceDex": "spot",
+   "destinationDex": "",
+   "token": "USDC",
+   "amount": "226.39",
+   "usdcValue": "226.39",
+   "fee": "0.0",
+   "nativeTokenFee": "0.0",
+   "nonce": 1992596,
+   "feeToken": ""
+  }
+ }
+]

@@ -7,7 +7,7 @@ from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets, symbol
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.constants import AssetLocation, PredefinedAsset, SymbolId
-from jal.net.downloader import QuoteDownloader, llama_coin_key, parse_llama_chart
+from jal.net.downloader import QuoteDownloader, llama_coin_key, llama_coin_keys, parse_llama_chart
 from jal.net.moex import MOEX
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 
@@ -321,6 +321,23 @@ def test_llama_coin_key(prepare_db):
     # A listing that isn't on a blockchain has no key at all
     _, stock = create_crypto('Not a coin', 'NPC', 2, AssetLocation.NYSE_EXCHANGE)
     assert llama_coin_key(JalSymbol(stock)) == ''
+
+
+def test_llama_coin_keys_of_hyperliquid(prepare_db):
+    # The source indexes Hyperliquid inconsistently: most tokens answer to their HyperEVM contract address while a
+    # few - among them USDC, and HYPE which has no EVM deployment at all - answer only to the HyperCore token id.
+    # A Hyperliquid listing therefore offers both keys, the EVM one first as it resolves for the majority.
+    creator = JalAssetCreator(PredefinedAsset.Crypto, 'Unit Bitcoin')
+    ubtc = creator.add_symbol('UBTC', 2, location_id=AssetLocation.HL_BLOCKCHAIN)
+    creator.add_identifier(ubtc, SymbolId.HL_ADDRESS, '0x8f254b963e8468305d409b33aa137c67')
+    creator.add_identifier(ubtc, SymbolId.HL_EVM_ADDRESS, '0x9fdbda0a5e284c32744d2f17ee5c74b284993463')
+    creator.commit()
+    assert llama_coin_keys(JalSymbol(ubtc)) == ['hyperliquid:0x9fdbda0a5e284c32744d2f17ee5c74b284993463',
+                                                'hyperliquid:0x8f254b963e8468305d409b33aa137c67']
+    # A token that is not deployed on HyperEVM is left with its token id alone
+    _, hype = create_crypto('Hyperliquid', 'HYPE', 2, AssetLocation.HL_BLOCKCHAIN,
+                            '0x0d01dc56dcaaca66ad901c959b4011ec', SymbolId.HL_ADDRESS)
+    assert llama_coin_keys(JalSymbol(hype)) == ['hyperliquid:0x0d01dc56dcaaca66ad901c959b4011ec']
 
 
 def test_llama_chart_parsing(data_path):

@@ -42,7 +42,8 @@ _LLAMA_CHAIN_NAMES = {
     AssetLocation.ETH_BLOCKCHAIN: 'ethereum',
     AssetLocation.ARB_BLOCKCHAIN: 'arbitrum',
     AssetLocation.SOL_BLOCKCHAIN: 'solana',
-    AssetLocation.TRX_BLOCKCHAIN: 'tron'
+    AssetLocation.TRX_BLOCKCHAIN: 'tron',
+    AssetLocation.HL_BLOCKCHAIN: 'hyperliquid'
 }
 
 # Native coin of each chain, used for a listing that has no contract address. Mind that a listing on Arbitrum with
@@ -68,14 +69,36 @@ _LLAMA_SEARCH_WIDTH = '4h'
 _LLAMA_MIN_CONFIDENCE = Decimal('0.7')
 
 
-# Returns the DeFiLlama coin key for a given listing, or '' if the listing doesn't belong to a supported blockchain
-def llama_coin_key(symbol: JalSymbol) -> str:
+# Every DeFiLlama coin key worth trying for a given listing, in the order they should be tried; empty if the
+# listing doesn't belong to a supported blockchain.
+#
+# A listing normally has exactly one key. Hyperliquid is the exception: the API indexes it inconsistently - most of
+# its tokens answer to their HyperEVM contract address (UBTC, USOL, USDT0, ...) while a few - among them USDC, and
+# HYPE which has no EVM deployment at all - answer only to the HyperCore token id. Neither form covers the chain on
+# its own, so a Hyperliquid symbol carries both identifiers and both keys are offered. The EVM address goes first
+# as it is the form that resolves for the majority of tokens.
+def llama_coin_keys(symbol: JalSymbol) -> list:
     chain = _LLAMA_CHAIN_NAMES.get(symbol.location(), '')
-    id_type = AssetLocation.address_id_of(symbol.location())
-    address = symbol.identifier(id_type) if chain else ''
-    if address:
-        return f"{chain}:{address}"
-    return _LLAMA_NATIVE_COINS.get(symbol.location(), '')
+    keys = []
+    if chain:
+        if symbol.location() == AssetLocation.HL_BLOCKCHAIN:
+            evm_address = symbol.identifier(SymbolId.HL_EVM_ADDRESS)
+            if evm_address:
+                keys.append(f"{chain}:{evm_address}")
+        address = symbol.identifier(AssetLocation.address_id_of(symbol.location()))
+        if address:
+            keys.append(f"{chain}:{address}")
+    if not keys:
+        native = _LLAMA_NATIVE_COINS.get(symbol.location(), '')
+        if native:
+            keys.append(native)
+    return keys
+
+
+# The primary DeFiLlama coin key of a listing, or '' if it has none
+def llama_coin_key(symbol: JalSymbol) -> str:
+    keys = llama_coin_keys(symbol)
+    return keys[0] if keys else ''
 
 
 # Converts a '/chart' API answer into a dataframe of daily quotes (Date index, Close values), dropping low
@@ -725,10 +748,23 @@ class QuoteDownloader(QObject):
     # ignored here - the caller stores the result as a USD series (see download_asset_prices) and conversion into
     # any other currency is a matter of quote look-up, not of download.
     def Llama_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
-        coin = llama_coin_key(symbol)
-        if not coin:
+        coins = llama_coin_keys(symbol)
+        if not coins:
             logging.warning(self.tr("Can't identify crypto asset to download quotes: ") + f"{symbol.symbol()}")
             return None
+        # A listing may offer more than one key (see llama_coin_keys) and only one of them is usually indexed by the
+        # source. They are tried in turn and the first one that answers with any data wins; an empty answer is not an
+        # error here, it simply means the source doesn't know that form of the identifier.
+        for coin in coins:
+            data = self._llama_chart(coin, start_timestamp, end_timestamp)
+            if data is not None:
+                return data
+        logging.warning(self.tr("No quotes were received from DeFiLlama for ")
+                        + f"{symbol.symbol()} ({', '.join(coins)})")
+        return None
+
+    # Daily quotes of one DeFiLlama coin key, or None when the source has none for it
+    def _llama_chart(self, coin: str, start_timestamp, end_timestamp):
         chunks = []
         start = day_begin(start_timestamp)
         while start <= end_timestamp:
@@ -743,7 +779,6 @@ class QuoteDownloader(QObject):
             chunks.append(chunk)
             start += span * SECONDS_IN_DAY
         if not chunks:
-            logging.warning(self.tr("No quotes were received from DeFiLlama for ") + f"{symbol.symbol()} ({coin})")
             return None
         data = pd.concat(chunks)
         return data[~data.index.duplicated(keep='first')].sort_index()

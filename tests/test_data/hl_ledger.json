@@ -1,0 +1,23 @@
+[
+ {"time": 1000000, "hash": "0x1110000000000000000000000000000000000000000000000000000000000001",
+  "delta": {"type": "deposit", "usdc": "5000.0"}},
+ {"time": 5000000, "hash": "0x1110000000000000000000000000000000000000000000000000000000000005",
+  "delta": {"type": "cStakingTransfer", "token": "HYPE", "amount": "15.0", "isDeposit": true}},
+ {"time": 6000000, "hash": "0x1110000000000000000000000000000000000000000000000000000000000006",
+  "delta": {"type": "cStakingTransfer", "token": "HYPE", "amount": "15.5", "isDeposit": false}},
+ {"time": 7000000, "hash": "0x1110000000000000000000000000000000000000000000000000000000000007",
+  "delta": {"type": "spotTransfer", "token": "USDC", "amount": "100.0", "usdcValue": "100.0",
+            "user": "0xfa11ba11fa11ba11fa11ba11fa11ba11fa11ba11",
+            "destination": "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef", "fee": "0.0", "nativeTokenFee": "0.0"}},
+ {"time": 8000000, "hash": "0x1110000000000000000000000000000000000000000000000000000000000008",
+  "delta": {"type": "send", "sourceDex": "", "destinationDex": "test", "token": "USDC", "amount": "50.0"}},
+ {"time": 8500000, "hash": "0x1110000000000000000000000000000000000000000000000000000000000085",
+  "delta": {"type": "spotTransfer", "token": "PURR", "amount": "99999.0", "usdcValue": "0.0",
+            "user": "0xba1dfaceba1dfaceba1dfaceba1dfaceba1dface",
+            "destination": "0xfa11ba11fa11ba11fa11ba11fa11ba11fa11ba11", "fee": "0.0",
+            "nativeTokenFee": "0.0", "feeToken": ""}},
+ {"time": 9000000, "hash": "0x1110000000000000000000000000000000000000000000000000000000000009",
+  "delta": {"type": "withdraw", "usdc": "1000.0", "nonce": 1700000000000, "fee": "1.0"}},
+ {"time": 10000000, "hash": "0x111000000000000000000000000000000000000000000000000000000000000a",
+  "delta": {"type": "vaultDeposit", "vault": "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef", "usdc": "10.0"}}
+]
