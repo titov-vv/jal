@@ -109,6 +109,19 @@ def is_evm_address(address: str) -> bool:
     return True
 
 
+# True if the given string is a valid Solana address: the base58 encoding of a 32-byte public key. Solana has no
+# checksum either, so this is a shape check - but a stricter one than EVM's, as a mistyped character usually changes
+# the decoded length. The base58 alphabet has no visually ambiguous characters, hence no case folding: an address is
+# stored exactly as it is written (see _CASE_INSENSITIVE_CHAINS above).
+def is_solana_address(address: str) -> bool:
+    if not address or not (32 <= len(address) <= 44):
+        return False
+    try:
+        return len(_base58_decode(address)) == 32
+    except ValueError:
+        return False
+
+
 # True if the address may belong to the given blockchain. Only the chains that JAL is able to check are checked -
 # an address of any other chain is accepted as it is, so that a missing validator never blocks the user. Validators
 # are added here as the fetcher of each chain is implemented.
@@ -121,6 +134,8 @@ def is_valid_address(location_id: int, address: str) -> bool:
         return is_tron_address(address)
     if location_id in (AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN):
         return is_evm_address(address)
+    if location_id == AssetLocation.SOL_BLOCKCHAIN:
+        return is_solana_address(address)
     return True
 
 

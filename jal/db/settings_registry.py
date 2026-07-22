@@ -114,6 +114,14 @@ def _register_builtin_settings() -> None:
                                   "API uses one key for every supported chain; a free key allows 5 requests per "
                                   "second and 100000 requests per day.")))
     SettingsRegistry.register(SettingDescriptor(
+        key="ApiKey_Helius",
+        page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
+        label=QT_TRANSLATE_NOOP("Preferences", "Helius API key"),
+        tooltip=QT_TRANSLATE_NOOP("Preferences",
+                                  "Required to fetch Solana (SOL/SPL) transactions. Helius returns transactions "
+                                  "already parsed, which a plain Solana node does not; its free plan allows "
+                                  "1000000 credits per month.")))
+    SettingsRegistry.register(SettingDescriptor(
         key="TokenDustThreshold",
         page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
         label=QT_TRANSLATE_NOOP("Preferences", "Dust airdrop threshold"), default='1',

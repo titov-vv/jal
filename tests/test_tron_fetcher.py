@@ -8,7 +8,7 @@ from constants import PredefinedAccountType, AssetLocation, AccountData, Predefi
     TokenList, TokenListKind
 from jal.data_import.statement import JSF
 from jal.db.account import JalAccountCreator, JalAccount
-from jal.db.asset import JalAsset
+from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.settings import JalSettings
 from jal.net.chain_fetchers.tron import TronFetcher
@@ -19,6 +19,18 @@ from jal.db.token_blacklist import JalTokenBlacklist
 # tests/local_test_data.json.example on why an on-chain address must not be committed)
 WALLET = "TMuA6YqfCeX8EhbfYEg5y7S4DqzSJireY9"
 USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+_QUOTE_TS = 1600000000       # Well before the recorded history, so every transfer in it resolves to this quote
+
+
+# Gives the database a TRX asset with a price, which is what the native dust rule weighs a transfer against.
+# A wallet's very first fetch has neither (the coin's asset is created by the import itself), so the tests that
+# exercise the value rule ask for this fixture explicitly and the ones that don't show the unpriced behaviour.
+@pytest.fixture
+def priced_trx(tron_wallet):
+    asset = JalAssetCreator(type_id=PredefinedAsset.Crypto, name="Tron")
+    asset.add_symbol('TRX', 2, AssetLocation.TRX_BLOCKCHAIN)     # listed in USD, as an imported coin would be
+    JalAsset(asset.id()).set_quotes([{'timestamp': _QUOTE_TS, 'quote': Decimal('0.30')}], 2)   # 0.30 USD
+    yield asset
 
 
 @pytest.fixture
@@ -123,7 +135,7 @@ def test_gas_only_calls_become_gas_fees(fetcher, tron_wallet):
     assert "failed" in gas[0]['description'].lower()
 
 
-def test_native_dust_is_filtered(fetcher, tron_wallet):
+def test_native_dust_is_filtered(fetcher, tron_wallet, priced_trx):
     data = fetcher.fetch(tron_wallet)
     trx_transfers = [t for t in _transfers(data)
                      if any(s['symbol'] == 'TRX' for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS]
@@ -131,6 +143,29 @@ def test_native_dust_is_filtered(fetcher, tron_wallet):
     # The recorded history has incoming transfers of 1-7 sun (0.000001 TRX) - address-poisoning dust
     assert all(t['withdrawal'] >= Decimal('0.001') for t in trx_transfers if t['account'][0] == 0)
     assert any("dust" in reason for reason in fetcher.skipped())
+
+
+# The dust rule weighs the VALUE of an incoming transfer, not its raw coin count: the threshold is a fiat figure,
+# so comparing a TRX/ETH/SOL amount against it means a different thing on every chain. With TRX priced at $0.30 the
+# 1-sun transfers are worth 3e-7 USD and are dust, while a whole 1 TRX would be worth 0.30 - also below the default
+# threshold of 1, and therefore equally dust. Both are checked here, as the second is the case the raw-amount
+# comparison used to get wrong in the other direction on an expensive coin.
+def test_native_dust_is_judged_by_value_not_amount(fetcher, tron_wallet, priced_trx):
+    fetcher.fetch(tron_wallet)
+    assert fetcher._is_native_dust(Decimal('0.000001'), _QUOTE_TS, known_counterparty=False)
+    assert fetcher._is_native_dust(Decimal('3'), _QUOTE_TS, known_counterparty=False)       # 0.90 USD
+    assert not fetcher._is_native_dust(Decimal('10'), _QUOTE_TS, known_counterparty=False)  # 3.00 USD
+    # A transfer between two wallets of the same person is never an unsolicited airdrop, however small
+    assert not fetcher._is_native_dust(Decimal('0.000001'), _QUOTE_TS, known_counterparty=True)
+
+
+# A coin the database can't price is imported rather than dropped: an unquotable amount is not evidence of spam,
+# and silently losing a real transfer is worse than importing a dust one. This is the state of a brand-new wallet,
+# whose native coin has no asset yet - so its first fetch imports the dust it received.
+def test_unpriceable_native_coin_is_imported(fetcher, tron_wallet):
+    fetcher.fetch(tron_wallet)
+    assert JalAsset.find({'symbol': 'TRX', 'type': PredefinedAsset.Crypto}).id() == 0
+    assert not fetcher._is_native_dust(Decimal('0.000001'), _QUOTE_TS, known_counterparty=False)
 
 
 def test_cursor_is_used_and_advanced(fetcher, tron_wallet):

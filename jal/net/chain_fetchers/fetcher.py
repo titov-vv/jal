@@ -5,11 +5,13 @@ from decimal import Decimal
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QApplication
 
-from jal.constants import AssetLocation, AccountData, PredefinedAccountType
+from jal.constants import AssetLocation, AccountData, PredefinedAccountType, PredefinedAsset
 from jal.data_import.statement import Statement, JSF, Statement_ImportError
+from jal.data_import.token_filter import TokenFilter
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.token_blacklist import normalize_address
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -26,10 +28,13 @@ class ChainFetcher(Statement):
     name = ''                       # Human readable name shown in the menu
     location_id = AssetLocation.UNDEFINED
     icon_name = ''
+    native_symbol = ''              # Ticker of the chain's native coin, e.g. 'ETH'
+    native_name = ''                # Human name of the native coin, e.g. 'Ethereum'
 
     def __init__(self):
         super().__init__()
         self._account = JalAccount(0)
+        self._filter = TokenFilter()
         self._skipped = {}           # {reason: count} of transactions that were recognized but not imported
 
     # Wallet accounts of this fetcher's chain. The account carries the address to scan and the cursor of the
@@ -94,7 +99,14 @@ class ChainFetcher(Statement):
             self._skipped[self.tr("cross-chain transactions awaiting matching")] = pending
         if self._new_cursor:
             self._store_cursor(self._new_cursor)
+        self._commit_state()
         return totals
+
+    # Stores whatever else a fetcher must remember between runs, on the same terms as the sync cursor: only after the
+    # data has reached the database. A fetcher that carries state across fetches (Solana remembers how much sits in
+    # each stake account) must never let it get ahead of the operations that justify it.
+    def _commit_state(self) -> None:
+        pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # Helpers shared by the chain implementations
@@ -119,6 +131,45 @@ class ChainFetcher(Statement):
         if utc_seconds <= 0:
             return 0
         return int(datetime.fromtimestamp(utc_seconds).replace(tzinfo=timezone.utc).timestamp())
+
+    # The chain's native coin, which has no contract address behind it
+    def _native_asset_id(self) -> int:
+        return self._token_asset_id(self.native_symbol, self.native_name, address='')
+
+    # Value of a native-coin amount in the account currency, or None when the coin can't be priced at that moment.
+    # The native coin carries no contract address, so it is found by ticker - which is safe here, and only here:
+    # a ticker is attacker-controlled for a token, but the native coin of a chain is guaranteed by the chain itself.
+    def _native_value_of(self, amount: Decimal, timestamp: int):
+        asset = JalAsset.find({'symbol': self.native_symbol, 'type': PredefinedAsset.Crypto})
+        if not asset.id():
+            return None
+        rate = asset.quote(timestamp, self._account.currency())[1]
+        return amount * rate if rate else None
+
+    # True if an incoming native-coin transfer is address-poisoning dust: a trivial amount sent from an address that
+    # mimics one the user really deals with, so that a later copy-paste out of the history pays the attacker instead.
+    #
+    # The test is on the transfer's VALUE in the account currency, never on the raw coin amount: the dust threshold is
+    # a fiat figure ("an airdrop worth less than this"), and comparing a coin count against it means something
+    # different on every chain - with the default threshold of 1 it happens to be harmless for TRX yet would quarantine
+    # any incoming transfer below 1 ETH or 1 SOL. A coin that can't be priced is imported rather than dropped: an
+    # unquotable amount is not evidence of spam, and silently losing a real transfer is far worse than importing dust.
+    def _is_native_dust(self, amount: Decimal, timestamp: int, known_counterparty: bool = False) -> bool:
+        if known_counterparty:
+            return False
+        value = self._native_value_of(amount, timestamp)
+        if value is None:
+            return False
+        return value < self._filter.dust_threshold()
+
+    # True if the address is one of the user's own wallets. A transfer between two wallets of the same person is
+    # never an unsolicited airdrop, whatever it is worth. Addresses are compared in their stored (normalized) form,
+    # so a chain whose addresses are case-insensitive matches regardless of how the API happened to spell them.
+    def _is_own_address(self, address: str) -> bool:
+        address = normalize_address(self.location_id, address)
+        if not address:
+            return False
+        return any(normalize_address(self.location_id, x.address()) == address for x in self.wallets())
 
     # Returns the JSF asset id of a token, creating the asset record if this statement doesn't have it yet.
     # 'address' is empty for the native coin of the chain, which has no contract behind it.

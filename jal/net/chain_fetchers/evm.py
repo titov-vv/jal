@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from jal.constants import AssetLocation, PredefinedAccountType
 from jal.data_import.statement import Statement_ImportError, JSF
-from jal.data_import.token_filter import TokenFilter, TokenCandidate
+from jal.data_import.token_filter import TokenCandidate
 from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 from jal.db.symbol import JalSymbol
@@ -51,13 +51,10 @@ class _HaltImport(Exception):
 # import at that transaction (_fetch) instead of being booked as something misleading.
 class EVMFetcher(ChainFetcher):
     chain_id = 0                  # Etherscan V2 'chainid' of this chain
-    native_symbol = ''            # Ticker of the native coin, e.g. 'ETH'
-    native_name = ''              # Human name of the native coin, e.g. 'Ethereum'
     icon_name = ''
 
     def __init__(self):
         super().__init__()
-        self._filter = TokenFilter()
         self._new_cursor = ''
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -434,14 +431,6 @@ class EVMFetcher(ChainFetcher):
         return self.tr("Gas: contract call")
 
     # ------------------------------------------------------------------------------------------------------------------
-    # True if the address is one of the user's own wallets. A transfer between two wallets of the same person is
-    # never an unsolicited airdrop, whatever the token is worth.
-    def _is_own_address(self, address: str) -> bool:
-        address = self._norm(address)
-        if not address:
-            return False
-        return any(self._norm(x.address()) == address for x in self.wallets())
-
     # Value of the transfer in the account currency, or None when the token can't be priced. A token JAL already
     # holds is priced from its stored quotes; a token seen for the first time has none, and None is what tells the
     # filter it can't judge the transfer by value (it then relies on the allow-list and the counterparty instead).
@@ -452,10 +441,6 @@ class EVMFetcher(ChainFetcher):
             return None
         rate = symbol.asset().quote(timestamp, self._account.currency())[1]
         return amount * rate if rate else None
-
-    # The native coin - which has no contract address behind it
-    def _native_asset_id(self) -> int:
-        return self._token_asset_id(self.native_symbol, self.native_name, address='')
 
     def _block_of(self, record: dict) -> int:
         try:

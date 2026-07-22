@@ -204,6 +204,20 @@ class TokenListProvider(QObject, JalDB):
     def is_blocklisted(self, location_id: int, address: str) -> bool:
         return self._member(TokenListKind.Block, location_id, address)
 
+    # Ticker and name of a token as the cached lists describe it, or ('', '') when no list carries the address.
+    # Some chain APIs report a balance change with nothing but the mint address behind it (Helius does), so the very
+    # lists that decide whether a token may be imported also supply what it is called. Only entries that actually
+    # carry a ticker are considered - a block-list records the address alone, and its empty ticker must not win over
+    # an allow-list entry that has one.
+    def token_metadata(self, location_id: int, address: str) -> tuple:
+        address = normalize_address(location_id, address)
+        if not address:
+            return '', ''
+        entry = self._read("SELECT symbol, name FROM token_list_cache "
+                           "WHERE location_id=:location_id AND address=:address AND symbol<>'' LIMIT 1",
+                           [(":location_id", location_id), (":address", address)], named=True)
+        return (entry['symbol'], entry['name']) if entry else ('', '')
+
     def _member(self, kind: int, location_id: int, address: str) -> bool:
         address = normalize_address(location_id, address)
         if not address:

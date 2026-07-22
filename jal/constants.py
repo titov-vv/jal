@@ -316,11 +316,13 @@ class AccountData(PredefinedList, QObject):
     SyncCursor = 7     # Position of the last completed blockchain fetch, its format is defined by the fetcher
     DepositEnd = 8     # Maturity date of a term deposit box (timestamp)
     DepositRate = 9    # Nominal interest rate of a term deposit box, per cent per annum
+    StakeAccounts = 10  # Native staking state of a wallet: {stake account address: amount staked}, as JSON
 
     # Attributes that the application maintains itself and that must never be typed in by hand: they are kept
     # out of the attribute selector and their rows are not editable in the account details grid. A wrong sync
-    # cursor doesn't look like an error - it silently skips the transactions that are not fetched because of it.
-    _INTERNAL = [SyncCursor]
+    # cursor doesn't look like an error - it silently skips the transactions that are not fetched because of it,
+    # and a wrong staking state silently mis-splits a withdrawal between returned principal and earned yield.
+    _INTERNAL = [SyncCursor, StakeAccounts]
 
     def __init__(self):
         super().__init__()
@@ -333,7 +335,8 @@ class AccountData(PredefinedList, QObject):
             self.Chain: self.tr("Blockchain"),
             self.SyncCursor: self.tr("Sync cursor"),
             self.DepositEnd: self.tr("Deposit end date"),
-            self.DepositRate: self.tr("Interest rate, %")
+            self.DepositRate: self.tr("Interest rate, %"),
+            self.StakeAccounts: self.tr("Staking state")
         }
         self._types = {
             self.Number: "str",
@@ -344,7 +347,8 @@ class AccountData(PredefinedList, QObject):
             self.Chain: "chain",
             self.SyncCursor: "str",
             self.DepositEnd: "date",
-            self.DepositRate: "float"
+            self.DepositRate: "float",
+            self.StakeAccounts: "str"
         }
 
     def get_type(self, type_id, default='') -> str:

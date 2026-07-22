@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from jal.constants import AssetLocation
 from jal.data_import.statement import Statement_ImportError, JSF
-from jal.data_import.token_filter import TokenFilter, TokenCandidate
+from jal.data_import.token_filter import TokenCandidate
 from jal.db.settings import JalSettings
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import tron_address_from_hex, is_tron_address
@@ -36,12 +36,13 @@ _METHOD_APPROVE = '095ea7b3'          # approve(address,uint256)
 # amounts, the native one supplies the gas that was burned.
 class TronFetcher(ChainFetcher):
     location_id = AssetLocation.TRX_BLOCKCHAIN
+    native_symbol = 'TRX'
+    native_name = "Tron"
     icon_name = ''
 
     def __init__(self):
         super().__init__()
         self.name = self.tr("Tron")
-        self._filter = TokenFilter()
         self._new_cursor = ''
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -196,8 +197,9 @@ class TronFetcher(ChainFetcher):
         incoming = owner != address
         # Address-poisoning dust: a few sun sent from an address that mimics one the user really deals with, so
         # that a later copy-paste from the history sends funds to the attacker. The same threshold that guards
-        # tokens guards the native coin, since the attack and the remedy are identical.
-        if incoming and amount < self._filter.dust_threshold():
+        # tokens guards the native coin, since the attack and the remedy are identical - applied to the transfer's
+        # value, not to its raw TRX amount (see ChainFetcher._is_native_dust).
+        if incoming and self._is_native_dust(amount, self._timestamp_of(record), self._is_own_address(owner)):
             self._skip(self.tr("native dust transfer below the threshold"), tx_hash)
             return
         fee = Decimal(str(record.get('ret', [{}])[0].get('fee', 0))) / _SUN if not incoming else Decimal('0')
@@ -244,13 +246,6 @@ class TronFetcher(ChainFetcher):
                           tx_hash, note=self.tr("Staking reward"))
 
     # ------------------------------------------------------------------------------------------------------------------
-    # True if the address is one of the user's own wallets. A transfer between two wallets of the same person is
-    # never an unsolicited airdrop, whatever the token is worth.
-    def _is_own_address(self, address: str) -> bool:
-        if not address:
-            return False
-        return any(x.address() == address for x in self.wallets())
-
     # Value of the transfer in the account currency, or None when the token can't be priced. A token JAL already
     # holds is priced from its stored quotes; a token seen for the first time has none, and None is what tells the
     # filter it can't judge the transfer by value (it then relies on the allow-list and the counterparty instead).
@@ -261,10 +256,6 @@ class TronFetcher(ChainFetcher):
             return None
         rate = symbol.asset().quote(timestamp, self._account.currency())[1]
         return amount * rate if rate else None
-
-    # TRX itself - the native coin, which has no contract address behind it
-    def _native_asset_id(self) -> int:
-        return self._token_asset_id('TRX', "Tron", address='')
 
     def _timestamp_of(self, record: dict) -> int:
         # The API reports milliseconds of true UTC time; JAL stores seconds in its own local-wall-clock convention.
