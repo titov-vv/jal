@@ -56,7 +56,7 @@ _REGISTRY = {
         '0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae': ProtocolCategory.AGGREGATOR,  # LI.FI Diamond (Jumper) - VERIFY
         '0xfb1b08ba6ba284934d817ea3c9d18f592cc59a50': ProtocolCategory.AGGREGATOR,  # Magpie / Fly.trade Router V3 - VERIFY
         '0x794a61358d6845594f94dc1db02a252b5b4814ad': ProtocolCategory.LENDING,     # Aave v3 Pool - VERIFY
-        '0x2df1c51e09aecf9cacb7bc98cb1742757f163df7': ProtocolCategory.BRIDGE,      # Hyperliquid Bridge2 - VERIFY
+        '0x2df1c51e09aecf9cacb7bc98cb1742757f163df7': ProtocolCategory.BRIDGE,      # Hyperliquid Bridge2 (verified: the wallet's 4 HL deposits + 1 withdrawal go through it on Arbitrum)
         '0x89c6340b1a1f4b25d36cd8b063d49045caf3f818': ProtocolCategory.AGGREGATOR,  # LI.FI Permit2Proxy (same address as on Ethereum)
         # Fluid deploys a separate vault per market per chain, so these are NOT the Ethereum addresses
         '0x037dff1c12805707d7c29f163e0f09fc9102657a': ProtocolCategory.LENDING,     # Fluid fGHO vault (fToken 'Fluid Gho Token'): GHO <-> fGHO
