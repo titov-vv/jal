@@ -173,7 +173,7 @@ class EVMFetcher(ChainFetcher):
     # Snapshot of how many operations (and assets) each JSF section holds, used to roll a partially-built block back.
     def _checkpoint(self) -> dict:
         return {section: len(self._data.get(section, [])) for section in
-                (JSF.ASSETS, JSF.TRANSFERS, JSF.ASSET_PAYMENTS, JSF.SWAPS)}
+                (JSF.ASSETS, JSF.TRANSFERS, JSF.ASSET_PAYMENTS, JSF.SWAPS, JSF.BRIDGES)}
 
     # Discards everything appended since the checkpoint - the operations of the halting block and any asset records it
     # created (a still-unused asset is harmless, but dropping it keeps the statement identical to a clean re-fetch).
@@ -208,7 +208,7 @@ class EVMFetcher(ChainFetcher):
         if category == ProtocolCategory.LENDING:
             raise _HaltImport(self.tr("lending/wrap operation, not supported yet"))
         if category == ProtocolCategory.BRIDGE:
-            return self._emit_bridge_half(timestamp, outs, ins, tx['hash'], gas)
+            return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error)
         if category == ProtocolCategory.REWARD:
             if not outs and len(ins) == 1:
                 asset_id, data = next(iter(ins.items()))
@@ -224,7 +224,8 @@ class EVMFetcher(ChainFetcher):
         if category == ProtocolCategory.AGGREGATOR:
             if swap_shape:                                 # both legs on this chain -> a same-chain swap
                 return self._emit_swap(timestamp, outs, ins, tx['hash'], gas)
-            return self._emit_bridge_half(timestamp, outs, ins, tx['hash'], gas)   # a single leg -> a bridge half
+            # a single leg -> one side of a cross-chain move, whose counterpart lives on another chain
+            return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error)
 
         # From here the contract (if any) is unregistered. A transaction the wallet signed that both spends and
         # receives an asset is a swap/lending/bridge through an unknown contract - it must never be guessed at
@@ -240,18 +241,23 @@ class EVMFetcher(ChainFetcher):
             raise _HaltImport(self.tr("incoming asset through an unregistered contract"))
 
         # What is left is a plain transfer: assets sent out (a payment, a deposit to an exchange) or received from the
-        # outside world (an ordinary receive, an airdrop that passed the spam filter). The gas of the wallet's own
-        # send rides its outgoing leg, the way a broker's transfer fee does.
+        # outside world (an ordinary receive, an airdrop that passed the spam filter).
+        self._emit_transfers(timestamp, deltas, tx['hash'], gas, own_record, is_error)
+
+    # Emits the wallet's movements as plain transfers, one per asset. The gas of the wallet's own send rides its
+    # outgoing leg, the way a broker's transfer fee does; a transaction that only received pays it as a GasFee.
+    def _emit_transfers(self, timestamp: int, deltas: dict, tx_hash: str, gas: Decimal,
+                        own_record, is_error: bool) -> None:
         remaining_gas = gas
         for asset_id, data in sorted(deltas.items()):
             incoming = data['amount'] > Decimal('0')
             fee = Decimal('0')
             if not incoming and remaining_gas > Decimal('0'):
                 fee, remaining_gas = remaining_gas, Decimal('0')
-            self._add_transfer(timestamp, asset_id, abs(data['amount']), incoming, tx['hash'], note=data['note'],
+            self._add_transfer(timestamp, asset_id, abs(data['amount']), incoming, tx_hash, note=data['note'],
                                fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None)
-        if own and remaining_gas > Decimal('0'):   # an own transaction that only received (no leg took the gas)
-            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), remaining_gas, tx['hash'],
+        if own_record is not None and remaining_gas > Decimal('0'):
+            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), remaining_gas, tx_hash,
                               note=self._gas_note(own_record, is_error))
 
     # The wallet's net movement per asset in this transaction: incoming amounts positive, outgoing negative, summed
@@ -332,27 +338,26 @@ class EVMFetcher(ChainFetcher):
         self._add_swap(timestamp, out_asset, abs(out_data['amount']), in_asset, in_data['amount'], tx_hash,
                        fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
 
-    # Emits one leg of a cross-chain bridge (Option A): the fetched wallet is on a single chain, so a bridge
-    # transaction it signed either sends an asset into the bridge (one out, none in -> a send half, gas rides it) or
-    # receives it from the bridge on the destination chain (one in, none out -> a receive half, its own claim gas is a
-    # separate GasFee). The other leg is fetched from the other chain and matched afterwards. A bridge that both spends
-    # and receives on the same chain isn't a shape we recognize, so it halts to be revisited. Relayer-delivered
-    # receives (not the wallet's own tx) never reach here - they arrive as plain transfers and the user adopts one as
-    # a receive leg by hand (the manual-match path).
-    def _emit_bridge_half(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal) -> None:
+    # Emits one leg of a cross-chain move - the fetched wallet is on a single chain, so it sees only one of them and
+    # the two legs are paired later (BridgeMatcher). What the move IS can't be decided here: sending an asset into a
+    # bridge/aggregator looks identical whether the same asset comes back on the other chain (a bridge) or another one
+    # does (a cross-chain swap), so only the sending leg is recorded as a pending half-bridge and the pairing decides.
+    #   * one out, none in -> the sending leg: a pending half-bridge, the gas of the send rides it;
+    #   * one in, none out -> the arriving leg: NOTHING here tells what was sent for it (a relayer usually delivers it
+    #     as an ordinary receive anyway), so it is imported as a plain incoming transfer, exactly like the relayed
+    #     ones, and the user pairs it with its pending sending half by hand.
+    # A cross-chain move that both spends and receives on the same chain isn't a shape we recognize, so it halts.
+    def _emit_cross_chain_leg(self, timestamp: int, deltas: dict, outs: dict, ins: dict, tx_hash: str, gas: Decimal,
+                              own_record, is_error: bool) -> None:
         if len(outs) == 1 and not ins:
             asset_id, data = next(iter(outs.items()))
-            self._add_bridge_half(timestamp, asset_id, abs(data['amount']), True, tx_hash,
+            self._add_bridge_half(timestamp, asset_id, abs(data['amount']), tx_hash,
                                   fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
             return
         if len(ins) == 1 and not outs:
-            asset_id, data = next(iter(ins.items()))
-            self._add_bridge_half(timestamp, asset_id, data['amount'], False, tx_hash)
-            if gas > Decimal('0'):
-                self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx_hash,
-                                  note=self.tr("Bridge claim gas"))
+            self._emit_transfers(timestamp, deltas, tx_hash, gas, own_record, is_error)
             return
-        raise _HaltImport(self.tr("unrecognized bridge shape"))
+        raise _HaltImport(self.tr("unrecognized cross-chain transaction shape"))
 
     # Emits a claimed reward as a StakingReward (it opens a lot at market value, so the reward has a cost basis), plus
     # the claim's gas as a separate GasFee.

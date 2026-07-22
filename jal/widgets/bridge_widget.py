@@ -52,6 +52,9 @@ class BridgeWidget(AbstractOperationDetails):
         self.ui.out_timestamp.setFixedWidth(self.ui.out_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.in_timestamp.setFixedWidth(self.ui.in_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.fee_symbol_widget.setValidation(False)
+        # The arriving leg is empty while the bridge is a pending half, so neither of its selectors may demand a value
+        self.ui.to_account_widget.setValidation(False)
+        self.ui.in_symbol_widget.setValidation(False)
 
         self.ui.copy_date_btn.clicked.connect(self.onCopyDate)
         self.ui.copy_amount_btn.clicked.connect(self.onCopyAmount)
@@ -72,9 +75,9 @@ class BridgeWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.out_qty, self.model.fieldIndex("out_qty"))
         self.mapper.addMapping(self.ui.out_symbol_widget, self.model.fieldIndex("out_symbol_id"))
         self.mapper.addMapping(self.ui.in_timestamp, self.model.fieldIndex("in_timestamp"))
-        self.mapper.addMapping(self.ui.to_account_widget, self.model.fieldIndex("in_account_id"))
+        self.mapper.addMapping(self.ui.to_account_widget, self.model.fieldIndex("in_account_id"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.in_qty, self.model.fieldIndex("in_qty"))
-        self.mapper.addMapping(self.ui.in_symbol_widget, self.model.fieldIndex("in_symbol_id"))
+        self.mapper.addMapping(self.ui.in_symbol_widget, self.model.fieldIndex("in_symbol_id"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.fee_symbol_widget, self.model.fieldIndex("fee_symbol_id"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.fee_qty, self.model.fieldIndex("fee_qty"))
         self.mapper.addMapping(self.ui.out_tx_hash, self.model.fieldIndex("out_tx_hash"))
@@ -83,22 +86,46 @@ class BridgeWidget(AbstractOperationDetails):
 
         self.model.select()
 
+    # A field of the arriving leg is empty while the asset is still in transit (SQL NULL reads back as '')
+    @staticmethod
+    def _empty(value) -> bool:
+        return value in (0, '0', '', None)
+
     def _validated(self):
         fields = db_row2dict(self.model, 0)
-        if fields['out_account_id'] in (0, '0') or fields['in_account_id'] in (0, '0'):
-            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Both accounts should be set for the bridge"), QMessageBox.Ok)
+        if self._empty(fields['out_account_id']):
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("A sending account should be set for the bridge"), QMessageBox.Ok)
+            return False
+        if self._empty(fields['out_symbol_id']):
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("A sent symbol should be set for the bridge"), QMessageBox.Ok)
+            return False
+        try:
+            if Decimal(fields['out_qty']) <= Decimal('0'):
+                raise InvalidOperation
+        except (InvalidOperation, TypeError):
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Bridge quantities should be positive"), QMessageBox.Ok)
+            return False
+        # An empty arriving leg is a valid state: the bridge stays a pending half until the asset arrives on the other
+        # chain and the user adopts the transfer it came as (see jal/db/bridge_matcher.py). Its fields are stored NULL.
+        if self._empty(fields['in_account_id']) and self._empty(fields['in_symbol_id']) and self._empty(fields['in_qty']):
+            for field in ("in_timestamp", "in_account_id", "in_symbol_id", "in_qty"):
+                self.model.setData(self.model.index(0, self.model.fieldIndex(field)), None)
+            self.model.setData(self.model.index(0, self.model.fieldIndex("in_tx_hash")), '')
+            return self._validated_fee(fields)
+        if self._empty(fields['in_account_id']) or self._empty(fields['in_symbol_id']):
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Both the account and the symbol should be set for a received asset (leave the whole leg empty if it hasn't arrived yet)"), QMessageBox.Ok)
             return False
         if fields['out_account_id'] == fields['in_account_id']:
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Bridge should move the asset between two different accounts"), QMessageBox.Ok)
             return False
-        if fields['out_symbol_id'] in (0, '0') or fields['in_symbol_id'] in (0, '0'):
-            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Both sent and received symbols should be set for the bridge"), QMessageBox.Ok)
-            return False
         if JalSymbol(int(fields['out_symbol_id'])).asset().id() != JalSymbol(int(fields['in_symbol_id'])).asset().id():
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Bridge should move the same asset between accounts (use swap operation to exchange assets)"), QMessageBox.Ok)
             return False
+        if int(fields['in_timestamp']) < int(fields['out_timestamp']):
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Bridge can't receive the asset before it was sent"), QMessageBox.Ok)
+            return False
         try:
-            if Decimal(fields['out_qty']) <= Decimal('0') or Decimal(fields['in_qty']) <= Decimal('0'):
+            if Decimal(fields['in_qty']) <= Decimal('0'):
                 raise InvalidOperation
             if Decimal(fields['in_qty']) > Decimal(fields['out_qty']):
                 QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Bridge can't receive more asset than was sent"), QMessageBox.Ok)
@@ -106,6 +133,9 @@ class BridgeWidget(AbstractOperationDetails):
         except (InvalidOperation, TypeError):
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Bridge quantities should be positive"), QMessageBox.Ok)
             return False
+        return self._validated_fee(fields)
+
+    def _validated_fee(self, fields) -> bool:
         # Set related fields NULL if we don't have fee. This is required for correct bridge processing
         if not fields['fee_qty'] or Decimal(fields['fee_qty']) == Decimal('0'):
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee_symbol_id")), None)
@@ -125,10 +155,10 @@ class BridgeWidget(AbstractOperationDetails):
         new_record.setValue("out_account_id", account_id)
         new_record.setValue("out_symbol_id", 0)
         new_record.setValue("out_qty", '0')
-        new_record.setValue("in_timestamp", now_ts())
-        new_record.setValue("in_account_id", 0)
-        new_record.setValue("in_symbol_id", 0)
-        new_record.setValue("in_qty", '0')
+        new_record.setNull("in_timestamp")      # the arriving leg stays empty until the asset is received
+        new_record.setNull("in_account_id")
+        new_record.setNull("in_symbol_id")
+        new_record.setNull("in_qty")
         new_record.setNull("fee_symbol_id")
         new_record.setValue("fee_qty", '0')
         new_record.setValue("out_tx_hash", None)
@@ -140,7 +170,8 @@ class BridgeWidget(AbstractOperationDetails):
         new_record = self.model.record(row)
         new_record.setNull("oid")
         new_record.setValue("out_timestamp", now_ts())
-        new_record.setValue("in_timestamp", now_ts())
+        if not new_record.isNull("in_timestamp"):
+            new_record.setValue("in_timestamp", now_ts())
         return new_record
 
     @Slot()

@@ -36,41 +36,32 @@ def _open_basis(account_id) -> Decimal:
     return sum((lot.open_qty(adjusted=True) * lot.open_price(adjusted=True) for lot in lots), Decimal('0'))
 
 
-# A send half fetched from the source chain and a receive half fetched from the destination chain import as two
-# pending half-bridges and are then completed by the same auto-match the fetcher runs after an import.
-def test_fetched_bridge_halves_import_and_auto_match(accounts):
+# The sending leg fetched from the source chain imports as a pending half-bridge: the asset leaves the source and its
+# value waits in transit until the arrival (fetched from the other chain as a plain transfer) is adopted into it.
+def test_fetched_send_leg_imports_as_pending_half(accounts):
     create_trades(ACC1, [(d2t(210102), d2t(210102), ETH, 3.0, 1000.0, 0.0)])
     statement = Statement()
-    db_symbol = symbol_id_for(ETH, 2)
     statement.set_mapped_id(JSF.ACCOUNTS, 1, ACC1)     # JSF account 1 (source chain) -> Chain1
-    statement.set_mapped_id(JSF.ACCOUNTS, 2, ACC2)     # JSF account 2 (destination chain) -> Chain2
-    statement.set_mapped_id(JSF.SYMBOLS, 100, db_symbol)
-
-    halves = [   # what two separate fetches (one per chain) would each contribute for one bridge
-        {"id": 1, "sending": True,  "account": 1, "symbol": 100, "qty": Decimal('2'),
-         "timestamp": d2t(210103), "tx_hash": "0xsend", "description": ""},
-        {"id": 2, "sending": False, "account": 2, "symbol": 100, "qty": Decimal('2'),
-         "timestamp": d2t(210104), "tx_hash": "0xrecv", "description": ""},
-    ]
-    statement._import_bridges(halves)
-    assert len(BridgeMatcher()._pending_halves()) == 2   # both landed as pending halves
-
-    assert BridgeMatcher().auto_match() == 1             # the fetcher runs this after import
-    Ledger().rebuild(from_timestamp=0)
-    assert _open_qty(ACC1) == Decimal('1')
-    assert _open_qty(ACC2) == Decimal('2') and _open_basis(ACC2) == Decimal('2000')
-
-
-# A send half fetched with no counterpart yet stays a pending half (source balance drops, nothing auto-matched).
-def test_lone_fetched_send_half_stays_pending(accounts):
-    create_trades(ACC1, [(d2t(210102), d2t(210102), ETH, 3.0, 1000.0, 0.0)])
-    statement = Statement()
-    statement.set_mapped_id(JSF.ACCOUNTS, 1, ACC1)
     statement.set_mapped_id(JSF.SYMBOLS, 100, symbol_id_for(ETH, 2))
-    statement._import_bridges([{"id": 1, "sending": True, "account": 1, "symbol": 100, "qty": Decimal('2'),
+    statement._import_bridges([{"id": 1, "account": 1, "symbol": 100, "qty": Decimal('2'),
                                 "timestamp": d2t(210103), "tx_hash": "0xsend", "description": ""}])
 
-    assert BridgeMatcher().auto_match() == 0
     assert len(BridgeMatcher()._pending_halves()) == 1
     Ledger().rebuild(from_timestamp=0)
     assert _open_qty(ACC1) == Decimal('1')               # the 2 ETH left the source, value parked in transit
+    assert _open_qty(ACC2) == Decimal('0')               # nothing is delivered until the arrival is matched
+
+
+# The gas of the sending transaction rides that leg and is expensed on the source account.
+def test_fetched_send_leg_carries_its_gas(accounts):
+    create_trades(ACC1, [(d2t(210102), d2t(210102), ETH, 3.0, 1000.0, 0.0)])
+    statement = Statement()
+    db_symbol = symbol_id_for(ETH, 2)
+    statement.set_mapped_id(JSF.ACCOUNTS, 1, ACC1)
+    statement.set_mapped_id(JSF.SYMBOLS, 100, db_symbol)
+    statement._import_bridges([{"id": 1, "account": 1, "symbol": 100, "qty": Decimal('2'),
+                                "timestamp": d2t(210103), "tx_hash": "0xsend", "description": "",
+                                "fee_symbol": 100, "fee_qty": Decimal('0.01')}])
+
+    Ledger().rebuild(from_timestamp=0)
+    assert _open_qty(ACC1) == Decimal('0.99')            # 3 - 2 sent - 0.01 burned as gas

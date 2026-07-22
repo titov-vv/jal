@@ -148,16 +148,21 @@ INSERT INTO settings(name, value) VALUES('DlgViewState_Token blacklist', '');
 --------------------------------------------------------------------------------
 -- New operation: swaps (an on-chain exchange of one asset for another; realizes profit/loss on the disposed asset
 -- and opens the acquired asset as a new lot at market value - NOT a cost-basis-preserving SymbolChange/Merger).
+-- 'in_account_id'/'in_timestamp'/'in_tx_hash' describe a CROSS-CHAIN swap, where the acquired asset arrives on
+-- another account (chain) and in another transaction; they stay NULL for an ordinary same-chain swap.
 CREATE TABLE swaps (
     oid           INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
     otype         INTEGER     NOT NULL DEFAULT (7),            -- Operation type (7 = swap)
-    timestamp     INTEGER     NOT NULL,
-    account_id    INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    timestamp     INTEGER     NOT NULL,                        -- When the disposed asset left (the swap itself, same-chain)
+    account_id    INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Source account
     tx_hash       TEXT        NOT NULL DEFAULT (''),           -- Hash of the blockchain transaction
     out_symbol_id INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Disposed asset
     out_qty       TEXT        NOT NULL,
+    in_timestamp  INTEGER,                                     -- When the acquired asset arrived (NULL = same as 'timestamp')
+    in_account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,   -- Destination account (NULL = same as 'account_id')
     in_symbol_id  INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Acquired asset
     in_qty        TEXT        NOT NULL,
+    in_tx_hash    TEXT        NOT NULL DEFAULT (''),           -- Hash of the receiving transaction (destination chain)
     fee_symbol_id INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- Fee (gas) asset, if any
     fee_qty       TEXT,
     note          TEXT                                         -- Free text comment
@@ -177,23 +182,24 @@ BEGIN
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
 DROP TRIGGER IF EXISTS swaps_after_update;
-CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_symbol_id, in_qty, fee_symbol_id, fee_qty ON swaps FOR EACH ROW
+CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_timestamp, in_account_id, in_symbol_id, in_qty, fee_symbol_id, fee_qty ON swaps FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
 -- Table: bridges - a cross-chain move of ONE asset between two accounts, imported as two independent on-chain legs
--- (a send and a receive) that may arrive in EITHER order and in separate runs. The two legs are individually nullable
--- so a row may hold just one leg as a "pending half-bridge" until its counterpart is matched in (see jal_init.sql).
+-- (a send and a receive) that arrive in separate runs. Only the sending leg is recognizable as part of a bridge, so
+-- it is always present while the receiving one is nullable: a row with in_* NULL is a "pending half-bridge" waiting
+-- for its arrival to be adopted from a plain transfer (see jal_init.sql and jal/db/bridge_matcher.py).
 DROP TABLE IF EXISTS bridges;
 CREATE TABLE bridges (
     oid            INTEGER    PRIMARY KEY UNIQUE NOT NULL,
     otype          INTEGER    NOT NULL DEFAULT (8),
-    out_timestamp  INTEGER,
-    out_account_id INTEGER    REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    out_symbol_id  INTEGER    REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    out_qty        TEXT,
+    out_timestamp  INTEGER    NOT NULL,
+    out_account_id INTEGER    NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    out_symbol_id  INTEGER    NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    out_qty        TEXT       NOT NULL,
     out_tx_hash    TEXT       NOT NULL DEFAULT (''),
     in_timestamp   INTEGER,
     in_account_id  INTEGER    REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -223,7 +229,9 @@ BEGIN
     DELETE FROM trades_opened WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp OR timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
 END;
 
--- The display/processing sequence view has to learn about the new operations (swap single-part; bridge legs guarded)
+-- The display/processing sequence view has to learn about the new operations: a same-chain swap stays a single part,
+-- a cross-chain one splits into a send (-1) and a receive (+1) part processed on their own accounts and dates;
+-- bridge legs are guarded as either of them may still be missing.
 DROP VIEW IF EXISTS operation_sequence;
 CREATE VIEW operation_sequence AS SELECT m.otype, m.oid, opart, m.timestamp, m.account_id
 FROM
@@ -244,9 +252,13 @@ FROM
     UNION ALL
     SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
     UNION ALL
-    SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps
+    SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps WHERE in_account_id IS NULL OR in_account_id=account_id
     UNION ALL
-    SELECT otype, 8 AS seq, oid, -1 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges WHERE NOT out_account_id IS NULL
+    SELECT otype, 7 AS seq, oid, -1 AS opart, timestamp, account_id FROM swaps WHERE NOT in_account_id IS NULL AND in_account_id<>account_id
+    UNION ALL
+    SELECT otype, 7 AS seq, oid, 1 AS opart, COALESCE(in_timestamp, timestamp) AS timestamp, in_account_id AS account_id FROM swaps WHERE NOT in_account_id IS NULL AND in_account_id<>account_id
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, -1 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges
     UNION ALL
     SELECT otype, 8 AS seq, oid, 0 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges WHERE NOT fee_qty IS NULL
     UNION ALL

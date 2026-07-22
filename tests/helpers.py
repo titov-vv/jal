@@ -183,6 +183,28 @@ def create_swaps(account_id, swaps):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Create cross-chain swaps (the acquired asset arrives on another account, later): swaps is a list of dicts
+# {'ts', 'acc', 'out_asset', 'out_qty', 'in_ts', 'in_acc', 'in_asset', 'in_qty', ['fee_asset', 'fee_qty'], ['note']}
+# Returns the list of created operation ids.
+def create_cross_chain_swaps(swaps) -> list:
+    oids = []
+    for s in swaps:
+        out_currency = JalAccount(s['acc']).currency()
+        data = {'timestamp': s['ts'], 'account_id': s['acc'], 'tx_hash': s.get('hash', ''),
+                'out_symbol_id': symbol_id_for(s['out_asset'], out_currency), 'out_qty': Decimal(str(s['out_qty'])),
+                'in_timestamp': s['in_ts'], 'in_account_id': s['in_acc'],
+                'in_symbol_id': symbol_id_for(s['in_asset'], JalAccount(s['in_acc']).currency()),
+                'in_qty': Decimal(str(s['in_qty'])), 'in_tx_hash': s.get('in_hash', '')}
+        if 'fee_asset' in s:
+            data['fee_symbol_id'] = symbol_id_for(s['fee_asset'], out_currency)
+            data['fee_qty'] = Decimal(str(s['fee_qty']))
+        if 'note' in s:
+            data['note'] = s['note']
+        oids.append(LedgerTransaction.create_new(LedgerTransaction.Swap, data).oid())
+    return oids
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Create corporate actions for given account_id in database: actions is a list of tuples
 # (timestamp, type, asset_old, qty_old, note, [(asset_new1, qty_new1, share1), (asset_new2, qty_new2, share2), ...])
 def create_corporate_actions(account_id, actions):
@@ -210,21 +232,18 @@ def create_transfers(transfers) -> list:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Create bridges (cross-chain moves of one asset). Each bridge is a dict; omit a leg's keys to make a pending half:
-#   send leg:    'out_ts', 'out_acc', 'out_qty' (+ optional 'out_hash')
-#   receive leg: 'in_ts',  'in_acc',  'in_qty'  (+ optional 'in_hash')
+# Create bridges (cross-chain moves of one asset). Each bridge is a dict holding its sending leg, which is always
+# known, and optionally its arriving leg - omit the latter to make a pending half:
+#   sending leg:  'out_ts', 'out_acc', 'out_qty' (+ optional 'out_hash')
+#   arriving leg: 'in_ts',  'in_acc',  'in_qty'  (+ optional 'in_hash')
 #   'asset' (asset_id, shared by both legs); optional 'fee_asset'/'fee_qty' (on the send account); optional 'note'
 # Returns the oid of each created bridge, so a test can later fill the missing leg to simulate a match.
 def create_bridges(bridges) -> list:
     oids = []
     for b in bridges:
-        data = {}
-        if 'out_acc' in b:
-            data['out_timestamp'] = b['out_ts']
-            data['out_account_id'] = b['out_acc']
-            data['out_symbol_id'] = symbol_id_for(b['asset'], JalAccount(b['out_acc']).currency())
-            data['out_qty'] = Decimal(str(b['out_qty']))
-            data['out_tx_hash'] = b.get('out_hash', '')
+        data = {'out_timestamp': b['out_ts'], 'out_account_id': b['out_acc'],
+                'out_symbol_id': symbol_id_for(b['asset'], JalAccount(b['out_acc']).currency()),
+                'out_qty': Decimal(str(b['out_qty'])), 'out_tx_hash': b.get('out_hash', '')}
         if 'in_acc' in b:
             data['in_timestamp'] = b['in_ts']
             data['in_account_id'] = b['in_acc']

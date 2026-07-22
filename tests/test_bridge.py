@@ -60,7 +60,8 @@ def test_complete_bridge_carries_basis_with_no_pnl(accounts):
     assert _closed_trade_count(ACC1) == 0 and _closed_trade_count(ACC2) == 0   # a bridge is not a taxable disposal
 
 
-# A send-only pending half removes the asset from the source (value parked in transit) and delivers nothing yet.
+# A pending half - the sending leg alone, which is all an import can produce - removes the asset from the
+# source (its value is parked in transit) and delivers nothing until its arrival is matched in.
 def test_send_only_half_parks_value_in_transit(accounts):
     create_trades(ACC1, [(d2t(210102), d2t(210102), ETH, 3.0, 1000.0, 0.0)])
     create_bridges([{'asset': ETH, 'out_ts': d2t(210103), 'out_acc': ACC1, 'out_qty': 2}])   # in_* omitted
@@ -70,25 +71,10 @@ def test_send_only_half_parks_value_in_transit(accounts):
     assert _amount(ACC2) == Decimal('0') and _open_qty(ACC2) == Decimal('0')   # nothing arrived anywhere
 
 
-# A receive-only pending half delivers the asset at a provisional zero basis (filled when the send is matched in).
-def test_receive_only_half_opens_provisional_zero_basis_lot(accounts):
-    create_bridges([{'asset': ETH, 'in_ts': d2t(210104), 'in_acc': ACC2, 'in_qty': 2}])       # out_* omitted
-    Ledger().rebuild(from_timestamp=0)
-
-    assert _amount(ACC2) == Decimal('2') and _open_qty(ACC2) == Decimal('2')
-    assert _open_basis(ACC2) == Decimal('0')                # provisional basis until matched
-
-
 def _fill_in_leg(oid, in_ts, in_acc, in_qty):
     JalDB._exec("UPDATE bridges SET in_timestamp=:ts, in_account_id=:acc, in_symbol_id=:sym, in_qty=:qty WHERE oid=:oid",
                 [(":ts", in_ts), (":acc", in_acc), (":sym", symbol_id_for(ETH, JalAccount(in_acc).currency())),
                  (":qty", str(in_qty)), (":oid", oid)], commit=True)
-
-
-def _fill_out_leg(oid, out_ts, out_acc, out_qty):
-    JalDB._exec("UPDATE bridges SET out_timestamp=:ts, out_account_id=:acc, out_symbol_id=:sym, out_qty=:qty WHERE oid=:oid",
-                [(":ts", out_ts), (":acc", out_acc), (":sym", symbol_id_for(ETH, JalAccount(out_acc).currency())),
-                 (":qty", str(out_qty)), (":oid", oid)], commit=True)
 
 
 # Matching a send-only half by filling its receive leg turns it into a complete bridge that carries the real basis.
@@ -102,19 +88,6 @@ def test_matching_send_then_receive_carries_basis(accounts):
     Ledger().rebuild(from_timestamp=0)
     assert _open_qty(ACC1) == Decimal('1')
     assert _open_qty(ACC2) == Decimal('2') and _open_basis(ACC2) == Decimal('2000')   # real carried basis
-
-
-# The symmetric case: the receive lands first (provisional lot), then matching fills the send leg and fixes the basis.
-def test_matching_receive_then_send_replaces_provisional_basis(accounts):
-    create_trades(ACC1, [(d2t(210102), d2t(210102), ETH, 3.0, 1000.0, 0.0)])
-    oid = create_bridges([{'asset': ETH, 'in_ts': d2t(210104), 'in_acc': ACC2, 'in_qty': 2}])[0]
-    Ledger().rebuild(from_timestamp=0)
-    assert _open_qty(ACC2) == Decimal('2') and _open_basis(ACC2) == Decimal('0')       # provisional basis
-
-    _fill_out_leg(oid, d2t(210103), ACC1, 2)                # match: the earlier send leg arrives
-    Ledger().rebuild(from_timestamp=0)
-    assert _open_qty(ACC1) == Decimal('1')
-    assert _open_qty(ACC2) == Decimal('2') and _open_basis(ACC2) == Decimal('2000')    # provisional basis replaced
 
 
 # An in-kind bridge fee (received less than sent) is disposed from the destination at basis - the arriving lot keeps

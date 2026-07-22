@@ -37,7 +37,7 @@ class JSF:
     TRADES = "trades"
     TRANSFERS = "transfers"
     SWAPS = "swaps"
-    BRIDGES = "bridges"     # each record is ONE leg of a cross-chain move (a pending half-bridge, matched afterwards)
+    BRIDGES = "bridges"     # each record is the SENDING leg of a cross-chain move (a pending half-bridge)
     CORP_ACTIONS = "corporate_actions"
     ASSET_PAYMENTS = "asset_payments"
     INCOME_SPENDING = "income_spending"
@@ -435,7 +435,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             symbol_ids.update([operation['out_symbol'], operation['in_symbol']])
             if operation.get('fee_symbol') is not None:
                 symbol_ids.add(operation['fee_symbol'])
-        elif section == JSF.BRIDGES:      # a half carries a single 'symbol' (its present leg) plus an optional fee
+        elif section == JSF.BRIDGES:      # a half carries a single 'symbol' (what it sent) plus an optional fee
             symbol_ids.add(operation['symbol'])
             if operation.get('fee_symbol') is not None:
                 symbol_ids.add(operation['fee_symbol'])
@@ -707,10 +707,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 operation['note'] = operation.pop('description')
             LedgerTransaction.create_new(LedgerTransaction.Swap, operation)
 
-    # Imports ONE leg of a cross-chain bridge as a pending half-bridge: the fetched wallet fills the send leg (when it
-    # is the source) or the receive leg (when it is the destination); the opposite leg stays NULL until the counterpart,
-    # fetched from the other chain, is matched to it. The two legs of a completed bridge move the same asset (a token's
-    # per-chain listings are one JAL asset), so both use the imported symbol's asset.
+    # Imports the SENDING leg of a cross-chain move as a pending half-bridge: its receiving leg stays NULL until the
+    # user adopts the arriving transfer into it (BridgeMatcher), which also decides whether the pair is a bridge or an
+    # asset-changing cross-chain swap. Only this leg is ever produced by a fetcher - an arriving asset can't be
+    # recognized as belonging to a cross-chain move, so it is imported as a plain transfer.
     def _import_bridges(self, bridges):
         for bridge in bridges:
             source = deepcopy(bridge)
@@ -720,22 +720,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             symbol_id = self.mapped_id(JSF.SYMBOLS, source.pop('symbol'))
             if not symbol_id:
                 raise Statement_ImportError(self.tr("Unmatched symbol for bridge: ") + f"{bridge}")
-            operation = {}
-            if source['sending']:
-                operation['out_timestamp'] = source['timestamp']
-                operation['out_account_id'] = account_id
-                operation['out_symbol_id'] = symbol_id
-                operation['out_qty'] = source['qty']
-                operation['out_tx_hash'] = source.get('tx_hash', '')
-                if source.get('fee_symbol') is not None:
-                    operation['fee_symbol_id'] = self.mapped_id(JSF.SYMBOLS, source['fee_symbol'])
-                    operation['fee_qty'] = source['fee_qty']
-            else:
-                operation['in_timestamp'] = source['timestamp']
-                operation['in_account_id'] = account_id
-                operation['in_symbol_id'] = symbol_id
-                operation['in_qty'] = source['qty']
-                operation['in_tx_hash'] = source.get('tx_hash', '')
+            operation = {'out_timestamp': source['timestamp'], 'out_account_id': account_id,
+                         'out_symbol_id': symbol_id, 'out_qty': source['qty'],
+                         'out_tx_hash': source.get('tx_hash', '')}
+            if source.get('fee_symbol') is not None:
+                operation['fee_symbol_id'] = self.mapped_id(JSF.SYMBOLS, source['fee_symbol'])
+                operation['fee_qty'] = source['fee_qty']
             if source.get('description'):
                 operation['note'] = source['description']
             LedgerTransaction.create_new(LedgerTransaction.Bridge, operation)

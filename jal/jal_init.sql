@@ -363,17 +363,27 @@ CREATE TABLE trades (
 
 -- Table for swap operations (on-chain exchange of one asset for another; realizes profit/loss on the disposed
 -- asset and opens the acquired asset as a new lot at market value - NOT a cost-basis-preserving SymbolChange)
+-- A CROSS-CHAIN swap (an asset-changing exchange through a bridge/aggregator) acquires its asset on another
+-- account (chain) and in another transaction, so the acquiring leg has its own account, timestamp and hash:
+--   * in_account_id/in_timestamp/in_tx_hash NULL -> an ordinary same-chain swap, everything happens at once
+--   * in_account_id set                          -> the acquired asset opens on that account at 'in_timestamp'
+-- Unlike a bridge, a swap is never stored as a single pending leg: until the acquired asset is known the sending
+-- leg waits as a pending half-bridge, and matching it to an arriving asset of a DIFFERENT kind creates this
+-- operation (see jal/db/bridge_matcher.py).
 DROP TABLE IF EXISTS swaps;
 CREATE TABLE swaps (
     oid           INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
     otype         INTEGER     NOT NULL DEFAULT (7),            -- Operation type (7 = swap)
-    timestamp     INTEGER     NOT NULL,
-    account_id    INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    timestamp     INTEGER     NOT NULL,                        -- When the disposed asset left (the swap itself, same-chain)
+    account_id    INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Source account
     tx_hash       TEXT        NOT NULL DEFAULT (''),           -- Hash of the blockchain transaction
     out_symbol_id INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Disposed asset
     out_qty       TEXT        NOT NULL,
+    in_timestamp  INTEGER,                                     -- When the acquired asset arrived (NULL = same as 'timestamp')
+    in_account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,   -- Destination account (NULL = same as 'account_id')
     in_symbol_id  INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Acquired asset
     in_qty        TEXT        NOT NULL,
+    in_tx_hash    TEXT        NOT NULL DEFAULT (''),           -- Hash of the receiving transaction (destination chain)
     fee_symbol_id INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- Fee (gas) asset, if any
     fee_qty       TEXT,
     note          TEXT                                         -- Free text comment
@@ -381,20 +391,21 @@ CREATE TABLE swaps (
 
 -- Table: bridges (a cross-chain move of ONE asset between two accounts - same asset, different per-chain listing)
 -- A bridge is seen on-chain as two independent transactions (a send on the source chain and a receive on the
--- destination chain) that JAL may import in separate runs and in EITHER order. So a row may hold only ONE leg while
--- it waits for its counterpart - a "pending half-bridge". The two legs are therefore individually nullable:
---   * out_* NULL, in_* set  -> pending half, only the receive is known yet (basis provisional until matched)
---   * out_* set, in_* NULL  -> pending half, only the send is known yet (value parked in the Transfers book)
---   * both set              -> a complete, matched bridge
--- Matching fills the missing leg on the resident row; it works identically whichever leg arrived first.
+-- destination chain) which JAL imports in separate runs. Only the SENDING one is recognizable as part of a bridge
+-- (it is the wallet's own transaction into a known bridge/aggregator); an arriving asset is indistinguishable from
+-- any other receipt, so it is imported as a plain transfer and adopted into the bridge later by the user. A bridge
+-- row therefore always holds its sending leg, and only the receiving one is nullable:
+--   * in_* NULL -> a "pending half-bridge": the send is known, its counterpart is still awaited (the value sits in
+--                  the Transfers book meanwhile) and jal/db/bridge_matcher.py completes it from a transfer
+--   * in_* set  -> a complete bridge
 DROP TABLE IF EXISTS bridges;
 CREATE TABLE bridges (
     oid            INTEGER    PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
     otype          INTEGER    NOT NULL DEFAULT (8),            -- Operation type (8 = bridge)
-    out_timestamp  INTEGER,                                    -- When sent (NULL until the send leg is known)
-    out_account_id INTEGER    REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    out_symbol_id  INTEGER    REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    out_qty        TEXT,
+    out_timestamp  INTEGER    NOT NULL,                        -- When sent
+    out_account_id INTEGER    NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    out_symbol_id  INTEGER    NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    out_qty        TEXT       NOT NULL,
     out_tx_hash    TEXT       NOT NULL DEFAULT (''),           -- Hash of the sending transaction (source chain)
     in_timestamp   INTEGER,                                    -- When received (NULL until the receive leg is known)
     in_account_id  INTEGER    REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -490,9 +501,13 @@ FROM
     UNION ALL
     SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
     UNION ALL
-    SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps
+    SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps WHERE in_account_id IS NULL OR in_account_id=account_id
     UNION ALL
-    SELECT otype, 8 AS seq, oid, -1 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges WHERE NOT out_account_id IS NULL
+    SELECT otype, 7 AS seq, oid, -1 AS opart, timestamp, account_id FROM swaps WHERE NOT in_account_id IS NULL AND in_account_id<>account_id
+    UNION ALL
+    SELECT otype, 7 AS seq, oid, 1 AS opart, COALESCE(in_timestamp, timestamp) AS timestamp, in_account_id AS account_id FROM swaps WHERE NOT in_account_id IS NULL AND in_account_id<>account_id
+    UNION ALL
+    SELECT otype, 8 AS seq, oid, -1 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges
     UNION ALL
     SELECT otype, 8 AS seq, oid, 0 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges WHERE NOT fee_qty IS NULL
     UNION ALL
@@ -623,14 +638,17 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
+-- A cross-chain swap receives later than it sends, so wiping the ledger from 'timestamp' (the sending leg) forward
+-- always covers the receiving leg as well - there is no need to look at 'in_timestamp' here.
 DROP TRIGGER IF EXISTS swaps_after_update;
-CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_symbol_id, in_qty, fee_symbol_id, fee_qty ON swaps FOR EACH ROW
+CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_timestamp, in_account_id, in_symbol_id, in_qty, fee_symbol_id, fee_qty ON swaps FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
--- A bridge leg may be NULL while a half is pending; `>= NULL` is NULL (never true), so the OR keeps whichever
--- leg is present valid. Matching (filling the second leg) fires the update trigger and rebuilds from the earlier leg.
+-- The receiving leg of a pending half-bridge is NULL; `>= NULL` is NULL (never true), so the OR simply ignores it
+-- and the sending leg (always present, always the earlier one) governs the wipe. Matching fills the receiving leg,
+-- fires the update trigger and rebuilds from the send.
 DROP TRIGGER IF EXISTS bridges_after_delete;
 CREATE TRIGGER bridges_after_delete AFTER DELETE ON bridges FOR EACH ROW
 BEGIN

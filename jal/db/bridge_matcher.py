@@ -1,6 +1,7 @@
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.db.db import JalDB
+from jal.db.operations import LedgerTransaction
 
 
 class BridgeMatchError(Exception):
@@ -8,20 +9,23 @@ class BridgeMatchError(Exception):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Pairs the two half-bridges of one cross-chain move (a send on the source chain and a receive on the destination
-# chain) that were imported separately and possibly in either order (see the Bridge operation). Works entirely on the
-# 'bridges' table: a pending half is a row with exactly one leg present. Matching fills the send-half's receive leg
-# from the receive-half and drops the receive-half, leaving one complete bridge; the caller then rebuilds the ledger.
+# Completes a cross-chain move from its two legs, which reach JAL as two unrelated operations.
+# Only the SENDING leg is recognizable at import time - it is the wallet's own transaction into a known
+# bridge/aggregator - and it waits as a "pending half-bridge" (a 'bridges' row with its in_* leg still NULL). The
+# ARRIVING leg is not recognizable: whoever delivers it, it looks exactly like any other incoming transfer, and
+# nothing in it says what was sent for it, so it is imported as a plain transfer. Matching therefore always pairs one
+# pending half with one existing transfer, and the user decides the pair - see match_with_transfer().
 #
-# Only same-asset moves are matched here: "same asset across chains" is one JAL asset_id (cross-chain token unification
-# already merges a token's per-chain listings into one asset). Asset-changing cross-chain exchanges (a real disposal)
-# belong with the Swap operation and are intentionally left pending - they are never auto-resolved into a bridge.
+# What the pair moves decides which operation it becomes, and this is the only place that can tell:
+#   * the SAME asset (one JAL asset_id - cross-chain token unification already merges a token's per-chain listings)
+#     -> a Bridge: the arriving leg is filled in on the pending row, the cost basis is carried and nothing realized;
+#   * a DIFFERENT asset -> a cross-chain Swap: a genuine disposal of what was sent, realized at market value, with
+#     the proceeds opening the arrived asset on the destination account. The pending half is consumed by it.
+# Nothing is ever paired automatically: an arriving transfer of the right asset and size may just as well be an
+# unrelated receipt, and a wrong pairing mis-books money - so the choice is always the user's.
 class BridgeMatcher(JalDB):
-    # Heuristics for a *confident* automatic match. A manual match (BridgeMatcher.match) is not bound by them - the
-    # user may pair any two halves that form a valid bridge (same asset, different accounts, received <= sent, receive
-    # not before send).
-    TIME_WINDOW = 3 * 24 * 60 * 60      # a receive is auto-matched only to a send at most 3 days older
-    QTY_TOLERANCE = Decimal('0.05')     # ... and only if it received at least 95% of what was sent (bridge fee margin)
+    BRIDGE = 'bridge'   # what a matched pair becomes: the same asset moved across chains
+    SWAP = 'swap'       # ... or an asset-changing exchange, i.e. a cross-chain swap
 
     def __init__(self):
         super().__init__()
@@ -29,23 +33,18 @@ class BridgeMatcher(JalDB):
     def tr(self, text):
         return QApplication.translate("BridgeMatcher", text)
 
-    # All pending half-bridges (exactly one leg present), each as a dict describing its present leg
+    # All pending half-bridges - a sending leg whose arrival is still awaited - each as a dict describing that leg
     def _pending_halves(self) -> list:
         halves = []
         query = self._exec(
-            "SELECT b.oid, "
-            "CASE WHEN b.out_account_id IS NOT NULL THEN 1 ELSE 0 END AS is_out, "
-            "COALESCE(b.out_account_id, b.in_account_id) AS account_id, "
-            "s.asset_id AS asset_id, "
-            "COALESCE(b.out_qty, b.in_qty) AS qty, "
-            "COALESCE(b.out_timestamp, b.in_timestamp) AS timestamp "
-            "FROM bridges b JOIN asset_symbol s ON s.id=COALESCE(b.out_symbol_id, b.in_symbol_id) "
-            "WHERE (b.out_account_id IS NULL)<>(b.in_account_id IS NULL)")   # exactly one leg present
+            "SELECT b.oid, b.out_account_id AS account_id, s.asset_id AS asset_id, b.out_qty AS qty, "
+            "b.out_timestamp AS timestamp "
+            "FROM bridges b JOIN asset_symbol s ON s.id=b.out_symbol_id WHERE b.in_account_id IS NULL")
         while query.next():
-            oid, is_out, account_id, asset_id, qty, timestamp = self._read_record(
-                query, cast=[int, int, int, int, Decimal, int])
-            halves.append({'oid': oid, 'is_out': bool(is_out), 'account_id': account_id,
-                           'asset_id': asset_id, 'qty': qty, 'timestamp': timestamp})
+            oid, account_id, asset_id, qty, timestamp = self._read_record(
+                query, cast=[int, int, int, Decimal, int])
+            halves.append({'oid': oid, 'account_id': account_id, 'asset_id': asset_id,
+                           'qty': qty, 'timestamp': timestamp})
         return halves
 
     @staticmethod
@@ -55,144 +54,111 @@ class BridgeMatcher(JalDB):
                 return h
         return None
 
-    # A pair is a valid bridge if it moves one asset between two different accounts and receives no more than was sent
+    # The operation a pair would become (BRIDGE or SWAP), or None if the two legs can't form one at all. Both are
+    # moves between two different accounts (chains) whose arrival doesn't precede its departure; then the asset
+    # decides: the same one crossed chains (a bridge, which can't deliver more than was sent), a different one was
+    # acquired in exchange (a cross-chain swap, where the two quantities are unrelated).
     @staticmethod
-    def _valid_pair(out_h, in_h) -> bool:
-        return (out_h['account_id'] != in_h['account_id']
-                and out_h['asset_id'] == in_h['asset_id']      # same asset only (asset-changing bridges are deferred)
-                and out_h['timestamp'] <= in_h['timestamp']    # a receive can't precede its send
-                and in_h['qty'] <= out_h['qty'])               # can't receive more than was sent
+    def _pair_kind(out_h, in_h):
+        if out_h['account_id'] == in_h['account_id']:
+            return None
+        if out_h['timestamp'] > in_h['timestamp']:     # an arrival can't precede its departure
+            return None
+        if out_h['qty'] <= Decimal('0') or in_h['qty'] <= Decimal('0'):
+            return None
+        if out_h['asset_id'] != in_h['asset_id']:
+            return BridgeMatcher.SWAP
+        return BridgeMatcher.BRIDGE if in_h['qty'] <= out_h['qty'] else None   # can't receive more than was sent
 
-    # A pair is transparent (safe to auto-match) if it is valid AND arrives within the time window having lost no more
-    # than the fee tolerance to the bridge
-    def _transparent(self, out_h, in_h) -> bool:
-        return (self._valid_pair(out_h, in_h)
-                and in_h['timestamp'] <= out_h['timestamp'] + self.TIME_WINDOW
-                and in_h['qty'] >= out_h['qty'] * (Decimal('1') - self.QTY_TOLERANCE))
+    # The operation the pending half 'oid' would form with the transfer 'transfer_oid' (BRIDGE or SWAP), or None if
+    # they can't be matched at all. Used by the UI to name what accepting a candidate is going to create.
+    def pair_kind(self, oid, transfer_oid):
+        half = self._find(self._pending_halves(), oid)
+        if half is None:
+            return None
+        arrival = self._transfer_side(transfer_oid)
+        if arrival is None:
+            return None
+        return self._pair_kind(half, arrival)
 
-    # oids of pending halves that could be matched to the pending half 'oid' (hard validity only; the UI ranks by
-    # amount/time proximity). Empty if 'oid' isn't a pending half.
-    def candidates(self, oid) -> list:
-        halves = self._pending_halves()
-        target = self._find(halves, oid)
-        if target is None:
-            return []
-        result = []
-        for h in halves:
-            if h['oid'] == oid or h['is_out'] == target['is_out']:
-                continue
-            out_h, in_h = (target, h) if target['is_out'] else (h, target)
-            if self._valid_pair(out_h, in_h):
-                result.append(h['oid'])
-        return result
-
-    # oids of existing asset Transfers that could complete the pending half 'oid' via match_with_transfer (the manual
-    # escape hatch for a bridge leg the fetcher imported as a plain transfer). Same asset, right direction, and forming
-    # a valid bridge; the UI ranks them by amount/time proximity.
+    # oids of existing asset Transfers that could complete the pending half 'oid'. Transfers of ANY asset are offered:
+    # the same one completes a bridge, a different one makes the pair a cross-chain swap (pair_kind() tells which).
+    # Closest in time first, as that is the likeliest counterpart.
     def transfer_candidates(self, oid) -> list:
         half = self._find(self._pending_halves(), oid)
         if half is None:
             return []
         result = []
         query = self._exec(
-            "SELECT t.oid, t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, "
-            "t.deposit_account, s.asset_id FROM transfers t JOIN asset_symbol s ON s.id=t.symbol_id "
-            "WHERE s.asset_id=:asset", [(":asset", half['asset_id'])])
+            "SELECT t.oid, t.withdrawal, t.deposit_timestamp, t.deposit_account, s.asset_id "
+            "FROM transfers t JOIN asset_symbol s ON s.id=t.symbol_id "
+            "ORDER BY ABS(t.deposit_timestamp - :ts)", [(":ts", half['timestamp'])])
         while query.next():
-            toid, w_ts, w_acc, w_qty, d_ts, d_acc, asset_id = self._read_record(
-                query, cast=[int, int, int, Decimal, int, int, int])
-            if half['is_out']:   # the transfer's deposit (arrival) side would become the receive leg
-                other = {'account_id': d_acc, 'asset_id': asset_id, 'qty': w_qty, 'timestamp': d_ts}
-                ok = self._valid_pair(half, other)
-            else:                # the transfer's withdrawal (departure) side would become the send leg
-                other = {'account_id': w_acc, 'asset_id': asset_id, 'qty': w_qty, 'timestamp': w_ts}
-                ok = self._valid_pair(other, half)
-            if ok:
+            toid, qty, d_ts, d_acc, asset_id = self._read_record(query, cast=[int, Decimal, int, int, int])
+            arrival = {'account_id': d_acc, 'asset_id': asset_id, 'qty': qty, 'timestamp': d_ts}
+            if self._pair_kind(half, arrival) is not None:
                 result.append(toid)
         return result
 
-    # Automatically matches every pending half that has EXACTLY ONE transparent counterpart which, in turn, has only
-    # this half as its transparent counterpart (mutually unambiguous). Ambiguous or unmatched halves are left pending
-    # for manual matching - a wrong automatic pairing would mis-book money, so ambiguity always defers to the user.
-    # Returns the number of bridges completed; the caller must rebuild the ledger afterwards.
-    def auto_match(self) -> int:
-        halves = self._pending_halves()
-        outs = [h for h in halves if h['is_out']]
-        ins = [h for h in halves if not h['is_out']]
-        used = set()
-        matched = 0
-        for o in outs:
-            if o['oid'] in used:
-                continue
-            o_cands = [i for i in ins if i['oid'] not in used and self._transparent(o, i)]
-            if len(o_cands) != 1:
-                continue
-            i = o_cands[0]
-            i_cands = [oo for oo in outs if oo['oid'] not in used and self._transparent(oo, i)]
-            if len(i_cands) != 1:   # the receive must be unambiguous too
-                continue
-            self.match(o['oid'], i['oid'])
-            used.add(o['oid'])
-            used.add(i['oid'])
-            matched += 1
-        return matched
-
-    # Fuses two complementary pending halves into one complete bridge: fills the send-half's receive leg from the
-    # receive-half and deletes the receive-half. Works whichever of 'oid_a'/'oid_b' is the send or the receive.
-    # Raises BridgeMatchError if they don't form a valid bridge. Returns the oid of the surviving complete bridge;
-    # the caller must rebuild the ledger afterwards.
-    def match(self, oid_a, oid_b) -> int:
-        halves = self._pending_halves()
-        a = self._find(halves, oid_a)
-        b = self._find(halves, oid_b)
-        if a is None or b is None:
-            raise BridgeMatchError(self.tr("Both operations must be pending half-bridges to be matched"))
-        if a['is_out'] == b['is_out']:
-            raise BridgeMatchError(self.tr("A bridge is matched from one send half and one receive half"))
-        out_h, in_h = (a, b) if a['is_out'] else (b, a)
-        if not self._valid_pair(out_h, in_h):
-            raise BridgeMatchError(self.tr("These half-bridges don't match by asset, account, amount or dates"))
-        leg = self._read("SELECT in_timestamp, in_account_id, in_symbol_id, in_qty, in_tx_hash "
-                         "FROM bridges WHERE oid=:oid", [(":oid", in_h['oid'])], named=True)
-        self._exec("UPDATE bridges SET in_timestamp=:ts, in_account_id=:acc, in_symbol_id=:sym, in_qty=:qty, "
-                   "in_tx_hash=:hash WHERE oid=:oid",
-                   [(":ts", leg['in_timestamp']), (":acc", leg['in_account_id']), (":sym", leg['in_symbol_id']),
-                    (":qty", leg['in_qty']), (":hash", leg['in_tx_hash']), (":oid", out_h['oid'])], commit=True)
-        self._exec("DELETE FROM bridges WHERE oid=:oid", [(":oid", in_h['oid'])], commit=True)
-        return out_h['oid']
-
-    # Completes a pending half-bridge from an existing asset Transfer instead of another half. This is the manual path
-    # for a bridge whose receive leg the fetcher couldn't recognize as a bridge (a relayer delivered it, so it was
-    # imported as a plain incoming transfer): the user points the pending send-half at that transfer. It is symmetric -
-    # a pending receive-half can adopt an outgoing transfer as its send leg. The relevant side of the transfer fills
-    # the half's missing leg and the whole transfer is removed (both its legs collapse into the completed bridge).
+    # Completes a pending half-bridge from an existing asset Transfer - the arriving leg, which the fetcher can only
+    # import as a plain transfer. The transfer's deposit (arrival) side either fills the half's missing leg, when both
+    # carry the same asset, or - when the asset changed on the way - becomes the receiving leg of a new cross-chain
+    # Swap that replaces the half. Either way the whole transfer is consumed (both its legs collapse into the
+    # completed operation).
     # Raises BridgeMatchError if the half isn't pending, the operation isn't an asset transfer, or they don't form a
-    # valid bridge. Returns the oid of the completed bridge; the caller must rebuild the ledger afterwards.
+    # valid pair. Returns the oid of the resulting operation; the caller must rebuild the ledger afterwards.
     def match_with_transfer(self, half_oid, transfer_oid) -> int:
         half = self._find(self._pending_halves(), half_oid)
         if half is None:
-            raise BridgeMatchError(self.tr("The bridge to complete must be a pending half-bridge"))
-        t = self._read("SELECT withdrawal_timestamp, withdrawal_account, withdrawal, deposit_timestamp, "
-                       "deposit_account, symbol_id, number FROM transfers WHERE oid=:oid",
-                       [(":oid", transfer_oid)], named=True)
-        if not t or not t['symbol_id']:   # a money transfer has no symbol - only an asset transfer can be a bridge leg
-            raise BridgeMatchError(self.tr("A bridge leg can only be adopted from an asset transfer"))
-        asset_id = self._read("SELECT asset_id FROM asset_symbol WHERE id=:sym", [(":sym", t['symbol_id'])])
-        # For an asset transfer the moved quantity is carried by 'withdrawal' on both legs; 'deposit' holds the cost
-        # basis, which a bridge re-derives itself. The half decides which side of the transfer becomes its missing leg.
-        side = {'asset_id': int(asset_id), 'qty': Decimal(t['withdrawal']), 'symbol_id': t['symbol_id'],
-                'tx_hash': t['number']}
-        if half['is_out']:   # pending send-half needs a receive leg -> take the transfer's deposit (arrival) side
-            side['account_id'], side['timestamp'] = t['deposit_account'], t['deposit_timestamp']
-            out_h, in_h, leg_prefix = half, side, 'in'
-        else:                # pending receive-half needs a send leg -> take the transfer's withdrawal (departure) side
-            side['account_id'], side['timestamp'] = t['withdrawal_account'], t['withdrawal_timestamp']
-            out_h, in_h, leg_prefix = side, half, 'out'
-        if not self._valid_pair(out_h, in_h):
-            raise BridgeMatchError(self.tr("This transfer doesn't match the bridge by asset, account, amount or dates"))
-        self._exec(f"UPDATE bridges SET {leg_prefix}_timestamp=:ts, {leg_prefix}_account_id=:acc, "
-                   f"{leg_prefix}_symbol_id=:sym, {leg_prefix}_qty=:qty, {leg_prefix}_tx_hash=:hash WHERE oid=:oid",
-                   [(":ts", side['timestamp']), (":acc", side['account_id']), (":sym", side['symbol_id']),
-                    (":qty", t['withdrawal']), (":hash", side['tx_hash']), (":oid", half_oid)], commit=True)
+            raise BridgeMatchError(self.tr("The operation to complete must be a pending half-bridge"))
+        # A money transfer has no symbol - only an asset transfer can be a leg of a bridge or of a swap
+        arrival = self._transfer_side(transfer_oid)
+        if arrival is None:
+            raise BridgeMatchError(self.tr("A leg can only be adopted from an asset transfer"))
+        kind = self._pair_kind(half, arrival)
+        if kind is None:
+            raise BridgeMatchError(self.tr("This transfer doesn't match by asset, account, amount or dates"))
+        leg = {'in_timestamp': arrival['timestamp'], 'in_account_id': arrival['account_id'],
+               'in_symbol_id': arrival['symbol_id'], 'in_qty': arrival['qty'], 'in_tx_hash': arrival['tx_hash']}
+        if kind == self.SWAP:
+            oid = self._create_swap(half_oid, leg)
+            self._exec("DELETE FROM bridges WHERE oid=:oid", [(":oid", half_oid)], commit=True)
+            self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", transfer_oid)], commit=True)
+            return oid
+        self._exec("UPDATE bridges SET in_timestamp=:ts, in_account_id=:acc, in_symbol_id=:sym, in_qty=:qty, "
+                   "in_tx_hash=:hash WHERE oid=:oid",
+                   [(":ts", leg['in_timestamp']), (":acc", leg['in_account_id']), (":sym", leg['in_symbol_id']),
+                    (":qty", leg['in_qty']), (":hash", leg['in_tx_hash']), (":oid", half_oid)], commit=True)
         self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", transfer_oid)], commit=True)
         return half_oid
+
+    # Builds a cross-chain Swap out of a pending SEND half (which holds the disposed asset and the gas paid for it)
+    # and the arriving leg described by 'in_leg' (in_timestamp/in_account_id/in_symbol_id/in_qty/in_tx_hash).
+    def _create_swap(self, out_oid, in_leg: dict) -> int:
+        out = self._read("SELECT out_timestamp, out_account_id, out_symbol_id, out_qty, out_tx_hash, "
+                         "fee_symbol_id, fee_qty, note FROM bridges WHERE oid=:oid", [(":oid", out_oid)], named=True)
+        present = lambda v: v is not None and v != ''   # _read() returns '' (not None) for a SQL NULL
+        data = {'timestamp': int(out['out_timestamp']), 'account_id': int(out['out_account_id']),
+                'tx_hash': out['out_tx_hash'], 'out_symbol_id': int(out['out_symbol_id']),
+                'out_qty': Decimal(out['out_qty']), 'in_timestamp': int(in_leg['in_timestamp']),
+                'in_account_id': int(in_leg['in_account_id']), 'in_symbol_id': int(in_leg['in_symbol_id']),
+                'in_qty': Decimal(in_leg['in_qty']), 'in_tx_hash': in_leg['in_tx_hash']}
+        if present(out['fee_symbol_id']) and present(out['fee_qty']):   # the gas of the sending transaction
+            data['fee_symbol_id'] = int(out['fee_symbol_id'])
+            data['fee_qty'] = Decimal(out['fee_qty'])
+        if present(out['note']):
+            data['note'] = out['note']
+        return LedgerTransaction.create_new(LedgerTransaction.Swap, data).oid()
+
+    # The arriving (deposit) side of an existing asset transfer, described the way a pending half is, so that the two
+    # can be compared. Returns None if the operation isn't an asset transfer - a money transfer can't be a leg here.
+    def _transfer_side(self, transfer_oid):
+        t = self._read("SELECT deposit_timestamp, deposit_account, withdrawal, symbol_id, number "
+                       "FROM transfers WHERE oid=:oid", [(":oid", transfer_oid)], named=True)
+        if not t or not t['symbol_id']:
+            return None
+        asset_id = self._read("SELECT asset_id FROM asset_symbol WHERE id=:sym", [(":sym", t['symbol_id'])])
+        # For an asset transfer the moved quantity is carried by 'withdrawal' on both legs; 'deposit' holds the cost
+        # basis, which a bridge re-derives itself and a swap replaces with the proceeds of the disposal.
+        return {'account_id': t['deposit_account'], 'timestamp': t['deposit_timestamp'], 'asset_id': int(asset_id),
+                'qty': Decimal(t['withdrawal']), 'symbol_id': t['symbol_id'], 'tx_hash': t['number']}

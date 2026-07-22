@@ -128,7 +128,7 @@ class OperationsWidget(MdiWidget):
         actionCopy.triggered.connect(self.ui.OperationsTabs.copy_operation)
         actionDelete = QAction(JalIcon[JalIcon.REMOVE], self.tr("Delete"), self)
         actionDelete.triggered.connect(self.delete_operation)
-        actionMatchBridge = QAction(JalIcon[JalIcon.TRANSFER_ASSET_IN], self.tr("Match bridge…"), self)
+        actionMatchBridge = QAction(JalIcon[JalIcon.TRANSFER_ASSET_IN], self.tr("Match cross-chain legs…"), self)
         actionMatchBridge.triggered.connect(self.match_bridge)
         contextMenu.addAction(actionReconcile)
         contextMenu.addSeparator()
@@ -140,7 +140,8 @@ class OperationsWidget(MdiWidget):
         single = len(self.ui.OperationsTableView.selectionModel().selectedRows()) == 1
         actionReconcile.setEnabled(single)
         actionCopy.setEnabled(single)
-        # "Match bridge…" is offered only on a pending half-bridge (a bridge still waiting for its other leg)
+        # Matching is offered only on a pending half-bridge - a cross-chain leg still waiting for its
+        # counterpart, which pairing turns into a complete bridge or into a cross-chain swap
         if single and self._is_pending_bridge(self.current_index):
             contextMenu.addSeparator()
             contextMenu.addAction(actionMatchBridge)

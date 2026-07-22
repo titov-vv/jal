@@ -118,7 +118,7 @@ class TimestampDelegate(GridLinesDelegate):
 
     def setEditorData(self, editor, index):
         timestamp = index.model().data(index, Qt.EditRole)
-        if timestamp == '':
+        if timestamp is None or timestamp == '':   # None is an SQL NULL - an optional date that isn't known yet
             QStyledItemDelegate.setEditorData(self, editor, index)
         else:
             editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, QTimeZone(0)))

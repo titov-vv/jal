@@ -61,6 +61,11 @@ class LedgerTransaction(JalDB):
 
     def dump(self):
         for key in self._data:
+            # An operation may hold optional fields that are absent (a pending bridge leg, the receiving leg of a
+            # same-chain swap): SQL NULL reads back as '' and has nothing to convert. Skipping it matters because
+            # dump() is what builds the text of every LedgerError - it must never raise itself.
+            if self._data[key] is None or self._data[key] == '':
+                continue
             if 'timestamp' in key:
                 self._data[key] = ts2dt(self._data[key])
             if 'account' in key:
@@ -910,7 +915,20 @@ class Trade(LedgerTransaction):
 # a swap is a genuine disposal: the out asset is FIFO-closed at its market value, the profit/loss is realized, and the
 # in asset is opened as a brand new lot at that same market value. The swap-closed deals go to the Deals report but are
 # kept out of tax reports until crypto tax treatment is designed (see JalAccount.closed_trades_list(close_otypes=...)).
+#
+# A CROSS-CHAIN swap (an asset-changing exchange through a bridge/aggregator: A on chain X becomes B on chain Y) is the
+# same disposal spread over two accounts and two moments in time, so it processes as two parts:
+#   * Swap.Outgoing - disposes the out asset on the source account at its market value, realizes the profit/loss and
+#     parks the proceeds in the Transfers book (they are in transit while the exchange is in flight); gas rides here.
+#   * Swap.Incoming - drains those proceeds on the destination account (converted with the FX rate of the arrival date
+#     if the two accounts differ in currency, as for a bridge) and opens the acquired asset as a new lot at that value.
+# So nothing is gained or lost between sending and receiving: the whole result of the exchange is realized at the
+# moment of disposal, exactly as in the same-chain case. A same-chain swap keeps a single part (Swap.Whole) and is
+# processed by the simpler code path below - no value travels through the Transfers book.
 class Swap(LedgerTransaction):
+    Whole = 0       # A same-chain swap: disposal and acquisition happen at once, on one account
+    Outgoing = -1   # Cross-chain: the disposal leg (source account, source chain)
+    Incoming = 1    # Cross-chain: the acquisition leg (destination account, destination chain)
     _db_table = "swaps"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -918,8 +936,11 @@ class Swap(LedgerTransaction):
         "account_id": {"mandatory": True, "validation": True},
         "out_symbol_id": {"mandatory": True, "validation": True},
         "out_qty": {"mandatory": True, "validation": True},
+        "in_timestamp": {"mandatory": False, "validation": True, "default": None},
+        "in_account_id": {"mandatory": False, "validation": True, "default": None},
         "in_symbol_id": {"mandatory": True, "validation": True},
         "in_qty": {"mandatory": True, "validation": True},
+        "in_tx_hash": {"mandatory": False, "validation": True, "default": ''},
         "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
         "fee_qty": {"mandatory": False, "validation": True, "default": None},
         "note": {"mandatory": False, "validation": False}
@@ -930,52 +951,88 @@ class Swap(LedgerTransaction):
     def __init__(self, operation_data=None, opart=None):
         super().__init__(operation_data)
         self._otype = LedgerTransaction.Swap
-        self._opart = opart
         self._data = self._read("SELECT s.timestamp, s.tx_hash, s.account_id, s.out_symbol_id, s.out_qty, "
-                                "s.in_symbol_id, s.in_qty, s.fee_symbol_id, s.fee_qty, s.note FROM swaps AS s "
+                                "s.in_timestamp, s.in_account_id, s.in_symbol_id, s.in_qty, s.in_tx_hash, "
+                                "s.fee_symbol_id, s.fee_qty, s.note FROM swaps AS s "
                                 "WHERE s.oid=:oid", [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
-        self._icon = JalIcon[JalIcon.SWAP]
-        self._oname = self.tr("Swap")
-        self._timestamp = int(self._data['timestamp'])
+        present = lambda v: v is not None and v != ''   # _read() returns '' (not None) for a SQL NULL
         self._account = jal.db.account.JalAccount(self._data['account_id'])
-        self._account_name = self._account.name()
-        self._account_currency = JalAsset(self._account.currency()).symbol()
-        self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._out_symbol = JalSymbol(self._data['out_symbol_id'])
         self._out_asset = self._out_symbol.asset()
         self._out_qty = Decimal(self._data['out_qty'])
         self._in_symbol = JalSymbol(self._data['in_symbol_id'])
         self._in_asset = self._in_symbol.asset()
         self._in_qty = Decimal(self._data['in_qty'])
+        # The acquiring leg defaults to the disposing one - that is what makes an ordinary same-chain swap
+        self._in_account = jal.db.account.JalAccount(self._data['in_account_id']) \
+            if present(self._data['in_account_id']) else self._account
+        self._in_timestamp = int(self._data['in_timestamp']) if present(self._data['in_timestamp']) \
+            else int(self._data['timestamp'])
+        self._cross_chain = self._in_account.id() != self._account.id()
+        if not self._cross_chain:
+            self._opart = Swap.Whole
+        else:   # A leg must be named for a cross-chain swap; default to the one that starts it
+            self._opart = Swap.Outgoing if opart is None or opart == Swap.Whole else opart
+        assert self._opart in [Swap.Whole, Swap.Outgoing, Swap.Incoming], "Unknown swap part"
         self._fee_symbol = JalSymbol(self._data['fee_symbol_id'])
         self._fee_asset = self._fee_symbol.asset()
         self._fee_qty = Decimal(self._data['fee_qty']) if self._data['fee_qty'] else Decimal('0')
-        self._symbol = self._out_symbol
-        self._asset = self._out_asset   # Operation's main asset is the disposed one (FIFO closing works with it)
-        self._number = self._data['tx_hash']
+        self._symbol = self._in_symbol if self._opart == Swap.Incoming else self._out_symbol
+        # Operation's main asset is the one its part deals in (FIFO closing of the disposal works with the out asset)
+        self._asset = self._symbol.asset()
+        icons = {Swap.Whole: JalIcon.SWAP, Swap.Outgoing: JalIcon.TRANSFER_ASSET_OUT, Swap.Incoming: JalIcon.TRANSFER_ASSET_IN}
+        names = {Swap.Whole: self.tr("Swap"), Swap.Outgoing: self.tr("Outgoing swap"), Swap.Incoming: self.tr("Incoming swap")}
+        self._icon = JalIcon[icons[self._opart]]
+        self._oname = names[self._opart]
+        # Each leg of a cross-chain swap is a transaction of its own chain, so the part decides time, account and hash
+        self._timestamp = self._in_timestamp if self._opart == Swap.Incoming else int(self._data['timestamp'])
+        self._number = self._data['in_tx_hash'] if self._opart == Swap.Incoming else self._data['tx_hash']
+        self._account_name = self.account_name()
+        self._account_currency = JalAsset(self._leg_account().currency()).symbol()
+        self._reconciled = self._leg_account().reconciled_at() >= self._timestamp
         self._note = self._data['note']
-        self._peer_id = self._account.organization()
-        self._view_rows = 3 if self._fee_asset.id() else 2
-        self._value = None   # Cached disposal value of the swap in the account currency
+        self._peer_id = self._leg_account().organization()
+        if self._opart == Swap.Whole:
+            self._view_rows = 3 if self._fee_asset.id() else 2
+        elif self._opart == Swap.Outgoing:
+            self._view_rows = 2 if self._fee_asset.id() else 1
+        else:
+            self._view_rows = 1
+        self._value = None   # Cached disposal value of the swap in the source account currency
 
-    # Swap happens immediately, settlement is required for compatibility with FIFO processing
+    # The account the current part is booked on (the destination account only for the acquiring leg)
+    def _leg_account(self):
+        return self._in_account if self._opart == Swap.Incoming else self._account
+
+    # A same-chain swap happens immediately; a cross-chain one is finished when the acquired asset arrives
     def settlement(self) -> int:
-        return self._timestamp
+        return self._in_timestamp
 
     def qty(self) -> Decimal:
-        return self._out_qty
+        return self._in_qty if self._opart == Swap.Incoming else self._out_qty
 
-    # Market value of the swap in the account currency: value of the disposed asset with a fallback to the value
-    # of the acquired asset if the disposed one has no quotes at all.
+    def account_name(self):
+        if not self._cross_chain:
+            return self._account.name()
+        if self._opart == Swap.Incoming:
+            return f"{self._in_account.name()} <- {self._account.name()}"
+        return f"{self._account.name()} -> {self._in_account.name()}"
+
+    def account_id(self):
+        return self._leg_account().id()
+
+    # Market value of the swap in the SOURCE account currency: value of the disposed asset with a fallback to the
+    # value of the acquired asset if the disposed one has no quotes at all (quoted when it arrives, which is the
+    # same moment for a same-chain swap).
     def value(self) -> Decimal:
         if self._value is None:
-            _, price = self._out_asset.quote(self._timestamp, self._account.currency())
+            _, price = self._out_asset.quote(int(self._data['timestamp']), self._account.currency())
             if price != Decimal('0'):
                 self._value = price * self._out_qty
             else:
-                _, price = self._in_asset.quote(self._timestamp, self._account.currency())
+                _, price = self._in_asset.quote(self._in_timestamp, self._account.currency())
                 if price == Decimal('0'):
                     raise LedgerError(self.tr("There are no quotes to value the swap. Date: ")
                                       + f"{ts2dt(self._timestamp)}, Operation: {self.dump()}")
@@ -991,47 +1048,66 @@ class Swap(LedgerTransaction):
 
     def description(self, part_only=False) -> str:
         text = f"{self._out_qty} {self._out_symbol.symbol()} -> {self._in_qty} {self._in_symbol.symbol()}"
-        if self._fee_asset.id():
+        if self._fee_asset.id() and self._opart != Swap.Incoming:   # Gas is paid on the source chain only
             text += " " + self.tr("Fee:") + f" {self._fee_qty} {self._fee_symbol.symbol()}"
         if self._note:
             text += "\n" + self._note
         return text
 
     def value_change(self, part_only=False) -> list:
-        result = [-self._out_qty, self._in_qty]
+        if self._opart == Swap.Incoming:
+            return [self._in_qty]
+        result = [-self._out_qty] if self._cross_chain else [-self._out_qty, self._in_qty]
         if self._fee_asset.id():
             result.append(-self._fee_qty)
         return result
 
     def value_currency(self) -> str:
-        text = f" {self._out_symbol.symbol()}\n {self._in_symbol.symbol()}"
+        if self._opart == Swap.Incoming:
+            return f" {self._in_symbol.symbol()}"
+        text = f" {self._out_symbol.symbol()}" if self._cross_chain \
+            else f" {self._out_symbol.symbol()}\n {self._in_symbol.symbol()}"
         if self._fee_asset.id():
             text += f"\n {self._fee_symbol.symbol()}"
         return text
 
     def value_total(self) -> list:
-        balance = [self._asset_total(self._account.id(), self._out_asset.id()),
-                   self._asset_total(self._account.id(), self._in_asset.id())]
+        if self._opart == Swap.Incoming:
+            return [self._asset_total(self._in_account.id(), self._in_asset.id())]
+        balance = [self._asset_total(self._account.id(), self._out_asset.id())]
+        if not self._cross_chain:
+            balance.append(self._asset_total(self._account.id(), self._in_asset.id()))
         if self._fee_asset.id():
             balance.append(self._asset_total(self._account.id(), self._fee_asset.id()))
         return balance
 
     def processLedger(self, ledger):
-        if not self._peer_id:
-            raise LedgerError(self.tr("Can't process swap as organization isn't set for account: ") + self._account_name)
+        # Only the disposing leg books a profit/loss and fees, so only it needs a peer to book them against
+        if self._opart != Swap.Incoming and not self._peer_id:
+            raise LedgerError(self.tr("Can't process swap as organization isn't set for account: ") + self.account_name())
         if self._out_asset.id() == 0 or self._in_asset.id() == 0:
             raise LedgerError(self.tr("Swap assets aren't set. Operation: ") + self.dump())
         if self._out_asset.id() == self._in_asset.id():
             raise LedgerError(self.tr("Can't process swap of an asset into itself. Operation: ") + self.dump())
         if self._out_qty <= Decimal('0') or self._in_qty <= Decimal('0'):
             raise LedgerError(self.tr("Swap quantities must be positive. Operation: ") + self.dump())
+        if self._in_timestamp < int(self._data['timestamp']):
+            raise LedgerError(self.tr("Swap can't receive an asset before it was exchanged. Operation: ") + self.dump())
+        if self._opart == Swap.Incoming:
+            self.processIncoming(ledger)
+            return
+        self.processOutgoing(ledger)
+
+    # Disposes the out asset at its market value and realizes the profit/loss of the disposal. A same-chain swap opens
+    # the acquired asset right here; a cross-chain one parks the proceeds in the Transfers book for its receiving leg.
+    def processOutgoing(self, ledger):
         available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._out_asset.id())
         if available < self._out_qty:
             raise LedgerError(self.tr("Asset amount is not enough for swap processing. Date: ")
                               + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         value = self.value()
-        processed_qty, basis = self._close_deals_fifo(Decimal('-1.0'), self._out_qty)
+        processed_qty, basis = self._close_deals_fifo(Decimal('-1.0'), self._out_qty, asset=self._out_asset)
         if processed_qty < self._out_qty:
             raise LedgerError(self.tr("Processed asset amount is less than swap amount. Date: ")
                               + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
@@ -1041,22 +1117,48 @@ class Swap(LedgerTransaction):
                                                   asset_id=self._out_asset.id(), value=-basis)
         ledger.appendTransaction(self, BookAccount.Incomes, -(value - basis + rounding_error), part=self.PART_PROFIT,
                                  category=PredefinedCategory.Profit, peer=self._peer_id, tag=self._out_asset.tag().id())
-        # Deposit the acquired asset as a new open position at the swap-implied cost
-        self._account.open_trade(JalOpenTrade(self, value / self._in_qty, self._in_qty), self._in_asset)
-        ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=value)
+        if self._cross_chain:
+            # The proceeds travel to the destination chain as money in transit, drained by the receiving leg
+            ledger.appendTransaction(self, BookAccount.Transfers, value)
+        else:
+            # Deposit the acquired asset as a new open position at the swap-implied cost
+            self._account.open_trade(JalOpenTrade(self, value / self._in_qty, self._in_qty), self._in_asset)
+            ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=value)
         if self._fee_asset.id():
             self._process_swap_fee(ledger)
 
+    # Opens the acquired asset on the destination account, valued at the proceeds the disposing leg parked in transit
+    # (converted into the destination account currency if the two accounts are kept in different currencies).
+    def processIncoming(self, ledger):
+        value = self._read("SELECT amount FROM ledger WHERE book_account=:book_transfers AND otype=:otype AND oid=:id",
+                           [(":book_transfers", BookAccount.Transfers), (":otype", self._otype), (":id", self._oid)],
+                           check_unique=True)
+        if not value:
+            raise LedgerError(self.tr("Asset disposal not found for swap.") + f" Operation:  {self.dump()}")
+        value = Decimal(value)
+        if self._account.currency() == self._in_account.currency():
+            rate = Decimal('1')
+        else:   # Proceeds are converted into the destination account currency with the FX rate at the arrival time
+            rate = JalAsset(self._account.currency()).quote(self._in_timestamp, self._in_account.currency())[1]
+            if rate == Decimal('0'):
+                raise LedgerError(self.tr("There is no FX rate to convert swap proceeds. Date: ")
+                                  + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
+        in_value = rate * value
+        ledger.appendTransaction(self, BookAccount.Transfers, -in_value)
+        self._in_account.open_trade(JalOpenTrade(self, in_value / self._in_qty, self._in_qty), self._in_asset)
+        ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=in_value)
+
     # The gas paid for the swap is disposed at its cost basis to Costs/Fees - the same treatment the standalone
     # GasFee operation gives it, so no profit/loss is realized on the tiny amount of native coin spent on gas.
+    # It is always burned on the source chain, so it rides the disposing leg of a cross-chain swap.
     def _process_swap_fee(self, ledger):
         available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._fee_asset.id())
         if available < self._fee_qty:
             raise LedgerError(self.tr("Asset amount is not enough to pay the swap fee. Date: ")
                               + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
                               + f"Required: {self._fee_qty}, Operation: {self.dump()}")
-        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._fee_qty,
-                                                               asset=self._fee_asset, record_deals=False)
+        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._fee_qty, asset=self._fee_asset,
+                                                               account=self._account, record_deals=False)
         if processed_qty < self._fee_qty:
             raise LedgerError(self.tr("Processed asset amount is less than the swap fee. Date: ")
                               + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
@@ -1705,14 +1807,15 @@ class TermDeposit(LedgerTransaction):
 # ----------------------------------------------------------------------------------------------------------------------
 # A cross-chain move of ONE asset between two accounts (its per-chain listing differs, its cost basis is carried).
 # A bridge is seen on-chain as two independent transactions - a send on the source chain and a receive on the
-# destination chain - that JAL may import in separate runs and in EITHER order. So a Bridge row may hold only one leg
-# as a "pending half-bridge" until its counterpart is matched in (Option A); the two legs are individually nullable.
+# destination chain - which JAL imports in separate runs. Only the send is recognizable as part of a bridge (it is the
+# wallet's own transaction into a known bridge/aggregator); the arrival looks like any other receipt and is imported
+# as a plain transfer, which the user later adopts into this operation (jal/db/bridge_matcher.py). A Bridge therefore
+# always knows its sending leg, and only the receiving one may be missing:
 #   * both legs present -> a complete bridge: the send parks the disposed value in the Transfers book, the receive
 #     drains it and re-opens the lots on the destination (cost basis carried, FX-adjusted when the accounts differ in
 #     currency). An in-kind fee (in_qty < out_qty) is disposed to Costs at basis.
-#   * send only (in_* NULL)   -> value is parked in the Transfers book and stays in transit until matched.
-#   * receive only (out_* NULL) -> the received amount opens a provisional zero-basis lot (as a fetched transfer whose
-#     basis is filled later); matching the send in replaces it with the real carried basis on rebuild.
+#   * send only (in_* NULL) -> a "pending half-bridge": the value is parked in the Transfers book and stays in transit
+#     until the arrival is matched in.
 # Gas and in-kind fees are disposed at cost basis (like the Swap gas fee) - realizing market P&L on them (#18) is a
 # crypto-tax refinement deferred until crypto tax treatment is designed. Same-account bridges are forbidden.
 class Bridge(LedgerTransaction):
@@ -1721,10 +1824,10 @@ class Bridge(LedgerTransaction):
     Incoming = 1
     _db_table = "bridges"
     _db_fields = {
-        "out_timestamp": {"mandatory": False, "validation": True, "default": None},
-        "out_account_id": {"mandatory": False, "validation": True, "default": None},
-        "out_symbol_id": {"mandatory": False, "validation": True, "default": None},
-        "out_qty": {"mandatory": False, "validation": True, "default": None},
+        "out_timestamp": {"mandatory": True, "validation": True},
+        "out_account_id": {"mandatory": True, "validation": True},
+        "out_symbol_id": {"mandatory": True, "validation": True},
+        "out_qty": {"mandatory": True, "validation": True},
         "out_tx_hash": {"mandatory": False, "validation": True, "default": ''},
         "in_timestamp": {"mandatory": False, "validation": True, "default": None},
         "in_account_id": {"mandatory": False, "validation": True, "default": None},
@@ -1755,22 +1858,21 @@ class Bridge(LedgerTransaction):
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
         present = lambda v: v is not None and v != ''   # _read() returns '' (not None) for a SQL NULL - an absent leg
-        self._has_out = present(self._data['out_account_id'])
-        self._has_in = present(self._data['in_account_id'])
-        self._out_timestamp = int(self._data['out_timestamp']) if present(self._data['out_timestamp']) else None
+        self._has_in = present(self._data['in_account_id'])   # the sending leg is always there; only the arrival waits
+        self._out_timestamp = int(self._data['out_timestamp'])
         self._in_timestamp = int(self._data['in_timestamp']) if present(self._data['in_timestamp']) else None
-        self._out_account = jal.db.account.JalAccount(self._data['out_account_id']) if self._has_out else None
+        self._out_account = jal.db.account.JalAccount(self._data['out_account_id'])
         self._in_account = jal.db.account.JalAccount(self._data['in_account_id']) if self._has_in else None
-        self._out_symbol = JalSymbol(self._data['out_symbol_id']) if self._has_out else None
+        self._out_symbol = JalSymbol(self._data['out_symbol_id'])
         self._in_symbol = JalSymbol(self._data['in_symbol_id']) if self._has_in else None
-        self._out_qty = Decimal(self._data['out_qty']) if present(self._data['out_qty']) else None
+        self._out_qty = Decimal(self._data['out_qty'])
         self._in_qty = Decimal(self._data['in_qty']) if present(self._data['in_qty']) else None
         self._fee_symbol = JalSymbol(self._data['fee_symbol_id']) if present(self._data['fee_symbol_id']) else None
         self._fee_qty = Decimal(self._data['fee_qty']) if present(self._data['fee_qty']) else Decimal('0')
-        # The bridged asset (out and in are the same asset when complete); take it from whichever leg is present
-        self._symbol = self._out_symbol if self._has_out else self._in_symbol
+        # The bridged asset - both legs carry the same one, so the sending leg (always present) names it
+        self._symbol = self._out_symbol
         self._asset = self._symbol.asset()
-        self._account = self._out_account if self._has_out else self._in_account
+        self._account = self._out_account
         self._out_tx_hash = self._data['out_tx_hash']
         self._in_tx_hash = self._data['in_tx_hash']
         # Each leg is a transaction of its own chain, so the part decides which hash and timestamp represents it
@@ -1782,18 +1884,18 @@ class Bridge(LedgerTransaction):
         if opart == Bridge.Incoming:
             self._reconciled = self._has_in and self._in_account.reconciled_at() >= self._in_timestamp
         else:
-            self._reconciled = self._has_out and self._out_account.reconciled_at() >= self._out_timestamp
+            self._reconciled = self._out_account.reconciled_at() >= self._out_timestamp
 
-    # A bridge is pending while it holds only one of its two legs (awaiting its counterpart to be matched in)
+    # A bridge is pending while its arriving leg is unknown (the sent value is still in transit)
     def is_pending(self) -> bool:
-        return not (self._has_out and self._has_in)
+        return not self._has_in
 
-    # Finish time of the bridge (required for FIFO compatibility); a pending half knows only one side
+    # Finish time of the bridge (required for FIFO compatibility); a pending half only knows when it was sent
     def settlement(self) -> int:
-        return self._in_timestamp if self._in_timestamp is not None else self._out_timestamp
+        return self._in_timestamp if self._has_in else self._out_timestamp
 
     def account_name(self):
-        out = self._out_account.name() if self._has_out else self.tr("(pending)")
+        out = self._out_account.name()
         inp = self._in_account.name() if self._has_in else self.tr("(pending)")
         if self._opart == Bridge.Incoming:
             return f"{inp} <- {out}"
@@ -1807,7 +1909,7 @@ class Bridge(LedgerTransaction):
             return self._out_account.id()
 
     def qty(self) -> Decimal:
-        return self._out_qty if self._out_qty is not None else self._in_qty
+        return self._out_qty
 
     # Price is undefined for a bridge as it keeps cost basis (this makes FIFO processing create zero profit/loss deals)
     def price(self):
@@ -1820,7 +1922,7 @@ class Bridge(LedgerTransaction):
         if self._opart == Bridge.Fee:
             note = f" ({self._note})" if self._note else ''
             return self.tr("Bridge fee") + note
-        out_s = self._out_symbol.symbol() if self._has_out else "?"
+        out_s = self._out_symbol.symbol()
         in_s = self._in_symbol.symbol() if self._has_in else "?"
         if self.is_pending():
             text = self.tr("Bridge (awaiting matching):") + f" {out_s} -> {in_s}"
@@ -1862,7 +1964,7 @@ class Bridge(LedgerTransaction):
         return [amount]
 
     def processLedger(self, ledger):
-        if self._has_out and self._has_in:   # Coherence checks that only apply to a complete, matched bridge
+        if self._has_in:   # Coherence checks that only apply to a complete, matched bridge
             if self._asset.id() == 0 or self._asset.id() != self._in_symbol.asset().id():
                 raise LedgerError(self.tr("Bridge must move the same asset between accounts. Operation: ") + self.dump())
             if self._out_account.id() == self._in_account.id():
@@ -1883,8 +1985,8 @@ class Bridge(LedgerTransaction):
         else:
             assert False, "Unknown bridge part"
 
-    # Withdraw the sent asset at its cost basis and park the value in the Transfers book (works for a send-only
-    # pending half too - the value simply stays in transit until the receive leg is matched in and drains it)
+    # Withdraw the sent asset at its cost basis and park the value in the Transfers book (a pending half stops here -
+    # the value simply stays in transit until the arriving leg is matched in and drains it)
     def processOutgoing(self, ledger):
         available = ledger.getAmount(BookAccount.Assets, self._out_account.id(), self._asset.id())
         if available < self._out_qty:
@@ -1917,15 +2019,10 @@ class Bridge(LedgerTransaction):
         ledger.appendTransaction(self, BookAccount.Costs, processed_value, part=self.PART_FEE,
                                  category=PredefinedCategory.Fees, peer=self._out_account.organization())
 
+    # The arriving leg only ever runs for a complete bridge (a pending half has no such part in 'operation_sequence'):
+    # take the deals closed by the outgoing leg (created strictly before the fee leg's, and summing to out_qty), then
+    # drain the value the outgoing leg parked in the Transfers book.
     def processIncoming(self, ledger):
-        if not self._has_out:
-            # Receive-only pending half: the send leg (and thus the cost basis) is unknown, so open the received
-            # amount as a provisional zero-basis lot. Matching the send in replaces this with the carried basis.
-            self._in_account.open_trade(JalOpenTrade(self, Decimal('0'), self._in_qty), self._asset)
-            ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._asset.id(), value=Decimal('0'))
-            return
-        # Complete bridge: take the deals closed by the outgoing leg (created strictly before the fee leg's, and
-        # summing to out_qty), then drain the value the outgoing leg parked in the Transfers book
         transfer_trades = []
         bridged_qty = Decimal('0')
         for trade in self._deals_closed_by_operation():

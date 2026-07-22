@@ -86,15 +86,12 @@ class ChainFetcher(Statement):
         self.validate_format()
         self.match_db_ids()
         totals = self.import_into_db()
-        # A fetch can produce one leg of a cross-chain bridge; once imported, try to complete it against a half fetched
-        # earlier from the other chain. Only confident, unambiguous pairs are joined - the rest are reported as pending
-        # for the user to match by hand. The number still waiting is surfaced next to the skipped-transaction summary.
-        if JSF.BRIDGES in self._data:
-            matcher = BridgeMatcher()
-            matcher.auto_match()
-            pending = len(matcher._pending_halves())
-            if pending:
-                self._skipped[self.tr("bridge half-transactions awaiting matching")] = pending
+        # A fetch can produce the sending leg of a cross-chain move; its arrival is fetched from the other chain as an
+        # ordinary incoming transfer, which only the user can recognize as belonging to it (BridgeMatcher). Nothing is
+        # paired automatically, so the count still waiting is surfaced next to the skipped-transaction summary.
+        pending = len(BridgeMatcher()._pending_halves())
+        if pending:
+            self._skipped[self.tr("cross-chain transactions awaiting matching")] = pending
         if self._new_cursor:
             self._store_cursor(self._new_cursor)
         return totals
@@ -192,17 +189,17 @@ class ChainFetcher(Statement):
             swap["fee_qty"] = fee
         self._data.setdefault(JSF.SWAPS, []).append(swap)
 
-    # Adds ONE leg of a cross-chain bridge - the fetched wallet is only ever on one chain, so it sees the send (this
-    # wallet is the source) OR the receive (this wallet is the destination), never both. Imported as a pending
-    # half-bridge; its counterpart, fetched from the other chain, is matched to it afterwards (BridgeMatcher). Same
-    # asset only; asset-changing cross-chain exchanges are a disposal and belong to Swap, not here. Gas rides the send
-    # leg (the source pays it), like a swap fee; a receive leg carries no fee.
-    def _add_bridge_half(self, timestamp: int, asset_id: int, qty: Decimal, sending: bool,
+    # Adds the SENDING leg of a cross-chain move as a pending half-bridge, to be paired afterwards with its arrival -
+    # which BridgeMatcher then resolves into a bridge or into an asset-changing cross-chain swap. Only this leg is
+    # ever added by a fetcher: it is the one that can be recognized (the wallet's own transaction into a known
+    # bridge/aggregator), while an arriving asset is indistinguishable from any other receipt and is imported as a
+    # plain transfer instead. Gas rides this leg (the source pays it), like a swap fee.
+    def _add_bridge_half(self, timestamp: int, asset_id: int, qty: Decimal,
                          tx_hash: str, note: str = '', fee: Decimal = Decimal('0'), fee_asset_id: int = None) -> None:
-        half = {"id": self._next_id(JSF.BRIDGES), "sending": sending, "account": 1,
+        half = {"id": self._next_id(JSF.BRIDGES), "account": 1,
                 "symbol": self._single_symbol_of(asset_id), "qty": qty,
                 "timestamp": timestamp, "tx_hash": tx_hash, "description": note}
-        if sending and fee > Decimal('0') and fee_asset_id is not None:
+        if fee > Decimal('0') and fee_asset_id is not None:
             half["fee_symbol"] = self._single_symbol_of(fee_asset_id)
             half["fee_qty"] = fee
         self._data.setdefault(JSF.BRIDGES, []).append(half)

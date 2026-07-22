@@ -332,12 +332,15 @@ def test_bridge_send_is_emitted_as_a_pending_send_half(eth_wallet, monkeypatch):
     halves = _bridges(data)
     assert len(halves) == 1
     half = halves[0]
-    assert half['sending'] is True and half['qty'] == Decimal('2')     # the send leg only
+    assert half['qty'] == Decimal('2')                                 # the sending leg only
     assert half['symbol'] in _eth_symbol_ids(data)
     assert half['fee_qty'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18   # gas rides the send
 
 
-def test_bridge_receive_via_own_tx_is_emitted_as_a_pending_receive_half(eth_wallet, monkeypatch):
+# The ARRIVING leg of a cross-chain move is never recognized as such: nothing in it says what was sent from the other
+# chain (or even whether the asset changed on the way), so it is imported as a plain incoming transfer - the same way a
+# relayer-delivered arrival is - and the user pairs it with its pending sending half by hand.
+def test_bridge_receive_via_own_tx_is_emitted_as_a_plain_transfer(eth_wallet, monkeypatch):
     lifi = "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae"
     f6 = "0xf6" + "0" * 62
     pages = {
@@ -347,11 +350,10 @@ def test_bridge_receive_via_own_tx_is_emitted_as_a_pending_receive_half(eth_wall
     }
     fetcher, data = _drive(eth_wallet, monkeypatch, pages)
 
-    halves = _bridges(data)
-    assert len(halves) == 1
-    half = halves[0]
-    assert half['sending'] is False and half['qty'] == Decimal('900')   # the receive leg only, no fee on it
-    assert 'fee_qty' not in half
+    assert _bridges(data) == []                                        # no pending half is created by an arrival
+    transfers = _transfers(data)
+    assert len(transfers) == 1 and transfers[0]['withdrawal'] == Decimal('900')
+    assert transfers[0]['account'][0] == 0                              # incoming: the source account is unknown
     assert any(p['type'] == JSF.PAYMENT_GAS_FEE for p in data[JSF.ASSET_PAYMENTS])   # its own claim gas is charged
 
 

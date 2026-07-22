@@ -19,6 +19,7 @@ class SwapWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
+                          'in_timestamp': self.timestamp_delegate,
                           'out_qty': self.decimal_long_delegate,
                           'in_qty': self.decimal_long_delegate,
                           'fee_qty': self.decimal_long_delegate}
@@ -33,6 +34,9 @@ class SwapWidget(AbstractOperationDetails):
         self._account_model = AccountListModel(self)
         self._account_dialog = AccountListDialog(self)
         self.ui.account_widget.setup_selector(self._account_model, self._account_dialog)
+        self._in_account_model = AccountListModel(self)
+        self._in_account_dialog = AccountListDialog(self)
+        self.ui.in_account_widget.setup_selector(self._in_account_model, self._in_account_dialog)
         self._out_symbols_model = SymbolsListModel(self)
         self._out_symbols_dialog = SymbolListDialog(self)
         self.ui.out_symbol_widget.setup_selector(self._out_symbols_model, self._out_symbols_dialog)
@@ -44,14 +48,18 @@ class SwapWidget(AbstractOperationDetails):
         self.ui.fee_symbol_widget.setup_selector(self._fee_symbols_model, self._fee_symbols_dialog)
 
         self.ui.timestamp.setFixedWidth(self.ui.timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
+        self.ui.in_timestamp.setFixedWidth(self.ui.in_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.fee_symbol_widget.setValidation(False)
+        self.ui.in_account_widget.setValidation(False)
 
         self.ui.fee_check.clicked.connect(self.fee_toggled)
+        self.ui.cross_chain_check.clicked.connect(self.cross_chain_toggled)
 
         super()._init_db("swaps")
         self.mapper.setItemDelegate(SwapWidgetDelegate(self.mapper))
 
         self.ui.account_widget.changed.connect(self.mapper.submit)
+        self.ui.in_account_widget.changed.connect(self.mapper.submit)
         self.ui.out_symbol_widget.changed.connect(self.mapper.submit)
         self.ui.in_symbol_widget.changed.connect(self.mapper.submit)
         self.ui.fee_symbol_widget.changed.connect(self.mapper.submit)
@@ -64,6 +72,9 @@ class SwapWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.out_qty, self.model.fieldIndex("out_qty"))
         self.mapper.addMapping(self.ui.in_symbol_widget, self.model.fieldIndex("in_symbol_id"))
         self.mapper.addMapping(self.ui.in_qty, self.model.fieldIndex("in_qty"))
+        self.mapper.addMapping(self.ui.in_timestamp, self.model.fieldIndex("in_timestamp"))
+        self.mapper.addMapping(self.ui.in_account_widget, self.model.fieldIndex("in_account_id"), QByteArray("selected_id_str"))
+        self.mapper.addMapping(self.ui.in_tx_hash, self.model.fieldIndex("in_tx_hash"))
         self.mapper.addMapping(self.ui.fee_symbol_widget, self.model.fieldIndex("fee_symbol_id"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.fee_qty, self.model.fieldIndex("fee_qty"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
@@ -87,6 +98,22 @@ class SwapWidget(AbstractOperationDetails):
         except (InvalidOperation, TypeError):
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Swap quantities should be positive"), QMessageBox.Ok)
             return False
+        # A cross-chain swap receives on another account, later; without it the receiving leg is the swap itself and
+        # its fields are stored NULL (which is what makes the operation an ordinary same-chain swap)
+        if self.ui.cross_chain_check.isChecked():
+            if fields['in_account_id'] in (0, '0', '', None):
+                QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("An account isn't chosen for the received asset"), QMessageBox.Ok)
+                return False
+            if str(fields['in_account_id']) == str(fields['account_id']):
+                QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("A cross-chain swap should receive the asset on another account"), QMessageBox.Ok)
+                return False
+            if int(fields['in_timestamp']) < int(fields['timestamp']):
+                QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("The asset can't be received before it was exchanged"), QMessageBox.Ok)
+                return False
+        else:
+            self.model.setData(self.model.index(0, self.model.fieldIndex("in_timestamp")), None)
+            self.model.setData(self.model.index(0, self.model.fieldIndex("in_account_id")), None)
+            self.model.setData(self.model.index(0, self.model.fieldIndex("in_tx_hash")), '')
         # Set related fields NULL if we don't have fee. This is required for correct swap processing
         if not fields['fee_qty'] or Decimal(fields['fee_qty']) == Decimal('0'):
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee_symbol_id")), None)
@@ -109,6 +136,9 @@ class SwapWidget(AbstractOperationDetails):
         new_record.setValue("out_qty", '0')
         new_record.setValue("in_symbol_id", 0)
         new_record.setValue("in_qty", '0')
+        new_record.setNull("in_timestamp")      # a new swap is same-chain until told otherwise
+        new_record.setNull("in_account_id")
+        new_record.setValue("in_tx_hash", None)
         new_record.setNull("fee_symbol_id")
         new_record.setValue("fee_qty", '0')
         new_record.setValue("note", None)
@@ -118,6 +148,8 @@ class SwapWidget(AbstractOperationDetails):
         new_record = self.model.record(row)
         new_record.setNull("oid")
         new_record.setValue("timestamp", now_ts())
+        if not new_record.isNull("in_timestamp"):
+            new_record.setValue("in_timestamp", now_ts())
         return new_record
 
     @Slot()
@@ -128,10 +160,19 @@ class SwapWidget(AbstractOperationDetails):
         else:
             self.ui.fee_check.setCheckState(Qt.CheckState.Unchecked)
             self.set_fee_data_visible(False)
+        cross_chain = bool(self.ui.in_account_widget.selected_id)
+        self.ui.cross_chain_check.setCheckState(Qt.CheckState.Checked if cross_chain else Qt.CheckState.Unchecked)
+        self.set_cross_chain_data_visible(cross_chain)
 
     def set_fee_data_visible(self, visible: bool):
         self.ui.fee_symbol_widget.setVisible(visible)
         self.ui.fee_qty.setVisible(visible)
+
+    def set_cross_chain_data_visible(self, visible: bool):
+        self.ui.in_account_widget.setVisible(visible)
+        self.ui.in_timestamp.setVisible(visible)
+        self.ui.in_tx_hash.setVisible(visible)
+        self.ui.in_tx_hash_label.setVisible(visible)
 
     @Slot()
     def fee_toggled(self, _state):
@@ -140,4 +181,15 @@ class SwapWidget(AbstractOperationDetails):
         if not with_fee:
             self.ui.fee_symbol_widget.selected_id = 0
             self.ui.fee_qty.setText('')
+        self.mapper.submit()
+
+    @Slot()
+    def cross_chain_toggled(self, _state):
+        cross_chain = self.ui.cross_chain_check.isChecked()
+        self.set_cross_chain_data_visible(cross_chain)
+        if cross_chain:
+            self.ui.in_timestamp.setDateTime(self.ui.timestamp.dateTime())   # the asset usually arrives soon after
+        else:
+            self.ui.in_account_widget.selected_id = 0
+            self.ui.in_tx_hash.setText('')
         self.mapper.submit()

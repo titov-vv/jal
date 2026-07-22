@@ -123,37 +123,66 @@ class Ui_SwapOperation(object):
 
         self.layout.addWidget(self.in_symbol_widget, 3, 2, 1, 2)
 
+        self.cross_chain_check = QCheckBox(SwapOperation)
+        self.cross_chain_check.setObjectName(u"cross_chain_check")
+        self.cross_chain_check.setLayoutDirection(Qt.RightToLeft)
+
+        self.layout.addWidget(self.cross_chain_check, 4, 0, 1, 1)
+
+        self.in_timestamp = QDateTimeEdit(SwapOperation)
+        self.in_timestamp.setObjectName(u"in_timestamp")
+        self.in_timestamp.setCalendarPopup(True)
+        self.in_timestamp.setTimeSpec(Qt.UTC)
+
+        self.layout.addWidget(self.in_timestamp, 4, 1, 1, 1)
+
+        self.in_account_widget = ReferenceSelectorWidget(SwapOperation)
+        self.in_account_widget.setObjectName(u"in_account_widget")
+
+        self.layout.addWidget(self.in_account_widget, 4, 2, 1, 2)
+
+        self.in_tx_hash_label = QLabel(SwapOperation)
+        self.in_tx_hash_label.setObjectName(u"in_tx_hash_label")
+        self.in_tx_hash_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.layout.addWidget(self.in_tx_hash_label, 4, 4, 1, 1)
+
+        self.in_tx_hash = QLineEdit(SwapOperation)
+        self.in_tx_hash.setObjectName(u"in_tx_hash")
+
+        self.layout.addWidget(self.in_tx_hash, 4, 5, 1, 1)
+
         self.fee_check = QCheckBox(SwapOperation)
         self.fee_check.setObjectName(u"fee_check")
         self.fee_check.setLayoutDirection(Qt.RightToLeft)
 
-        self.layout.addWidget(self.fee_check, 4, 0, 1, 1)
+        self.layout.addWidget(self.fee_check, 5, 0, 1, 1)
 
         self.fee_qty = QLineEdit(SwapOperation)
         self.fee_qty.setObjectName(u"fee_qty")
         self.fee_qty.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.layout.addWidget(self.fee_qty, 4, 1, 1, 1)
+        self.layout.addWidget(self.fee_qty, 5, 1, 1, 1)
 
         self.fee_symbol_widget = ReferenceSelectorWidget(SwapOperation)
         self.fee_symbol_widget.setObjectName(u"fee_symbol_widget")
 
-        self.layout.addWidget(self.fee_symbol_widget, 4, 2, 1, 2)
+        self.layout.addWidget(self.fee_symbol_widget, 5, 2, 1, 2)
 
         self.note_label = QLabel(SwapOperation)
         self.note_label.setObjectName(u"note_label")
         self.note_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.layout.addWidget(self.note_label, 5, 0, 1, 1)
+        self.layout.addWidget(self.note_label, 6, 0, 1, 1)
 
         self.note = QLineEdit(SwapOperation)
         self.note.setObjectName(u"note")
 
-        self.layout.addWidget(self.note, 5, 1, 1, 5)
+        self.layout.addWidget(self.note, 6, 1, 1, 5)
 
         self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.layout.addItem(self.vertical_spacer, 6, 0, 1, 1)
+        self.layout.addItem(self.vertical_spacer, 7, 0, 1, 1)
 
 
         self.retranslateUi(SwapOperation)
@@ -178,6 +207,12 @@ class Ui_SwapOperation(object):
         self.tx_hash_label.setText(QCoreApplication.translate("SwapOperation", u"Tx hash", None))
         self.sold_label.setText(QCoreApplication.translate("SwapOperation", u"Sold", None))
         self.received_label.setText(QCoreApplication.translate("SwapOperation", u"Received", None))
+#if QT_CONFIG(tooltip)
+        self.cross_chain_check.setToolTip(QCoreApplication.translate("SwapOperation", u"The exchanged asset is received on another account (chain), in a separate transaction", None))
+#endif // QT_CONFIG(tooltip)
+        self.cross_chain_check.setText(QCoreApplication.translate("SwapOperation", u"On another &chain", None))
+        self.in_timestamp.setDisplayFormat(QCoreApplication.translate("SwapOperation", u"dd/MM/yyyy hh:mm:ss", None))
+        self.in_tx_hash_label.setText(QCoreApplication.translate("SwapOperation", u"Tx hash", None))
         self.fee_check.setText(QCoreApplication.translate("SwapOperation", u"Include &fee", None))
         self.note_label.setText(QCoreApplication.translate("SwapOperation", u"Note", None))
     # retranslateUi
