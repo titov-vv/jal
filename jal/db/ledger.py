@@ -3,7 +3,7 @@ import logging
 import traceback
 from datetime import datetime
 from decimal import Decimal
-from PySide6.QtCore import Signal, Slot, QObject, QDate
+from PySide6.QtCore import Signal, Slot, QObject, QDate, QEvent, QTimer
 from PySide6.QtWidgets import QDialog, QMessageBox, QApplication
 from jal.constants import BookAccount
 from jal.db.helpers import format_decimal
@@ -28,6 +28,9 @@ class RebuildDialog(QDialog):
         frontier_text = ts2d(frontier)
         self.ui.FrontierDateLabel.setText(frontier_text)
         self.ui.CustomDateEdit.setDate(QDate.currentDate())
+        self.ui.AllRadioButton.installEventFilter(self)
+        self.ui.LastRadioButton.installEventFilter(self)
+        self.ui.DateRadionButton.installEventFilter(self)
 
         # center dialog with respect to parent window
         x = parent.x() + parent.width()/2 - self.width()/2
@@ -41,6 +44,13 @@ class RebuildDialog(QDialog):
             return self.ui.CustomDateEdit.dateTime().toSecsSinceEpoch()
         else:  # self.AllRadioButton.isChecked()
             return 0
+
+    def eventFilter(self, watched, event):
+        if watched in [self.ui.AllRadioButton, self.ui.LastRadioButton, self.ui.DateRadionButton]:
+            if event.type() == QEvent.MouseButtonDblClick:
+                watched.setChecked(True)
+                QTimer.singleShot(0, self.accept)
+        return super().eventFilter(watched, event)
 
 
 # ===================================================================================================================
