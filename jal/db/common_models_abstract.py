@@ -409,7 +409,6 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
 
     def addChildElement(self, index):
         assert self.insertRows(0, 1, index)
-        self._view.expand(index)
 
     # Returns True if deletion was executed successfully, otherwise - False
     def removeElement(self, index) -> bool:
@@ -426,14 +425,7 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
         _ = self._exec("ROLLBACK")
         self.layoutChanged.emit()
 
-    # expand all parent elements for tree element with given index
-    def expand_parent(self, index):
-        parent = index.parent()
-        if parent.isValid():
-            self.expand_parent(parent)
-        self._view.expand(index)
-
-    # find item by ID and make it selected in associated self._view
+    # find item by ID and return its index (caller is responsible for view operations, e.g. expanding parents)
     def locateItem(self, item_id):
         order_by = f"ORDER BY {self._sort_by}" if self._sort_by is not None else ''
         row = self._read(f"SELECT row_number FROM ("
@@ -441,10 +433,8 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
                          f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
                          f"WHERE id=:id", [(":id", item_id)])
         if row is None:
-            return
-        item_idx = self.createIndex(row-1, 0, id=item_id)
-        self.expand_parent(item_idx)
-        self._view.setCurrentIndex(item_idx)
+            return QModelIndex()
+        return self.createIndex(row-1, 0, id=item_id)
 
     def setFilter(self, text):
         self._filter_text = text

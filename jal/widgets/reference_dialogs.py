@@ -152,12 +152,21 @@ class ReferenceDataDialog(QDialog):
         self.setFilter()             # TODO Check filters, if it work correctly
         if self.selection_enabled:
             item_index = self.model.locateItem(selected)
+            if self.tree_view and item_index.isValid():
+                self.expand_parent_items(item_index)
             self._view.setCurrentIndex(item_index)
         res = super().exec()
         if res:
             self.selection_done.emit(self.selected_id)
         self.resetFilter()
         return res
+
+    # expand all parent tree items so that item at given index becomes visible in self._view
+    def expand_parent_items(self, index):
+        parent = index.parent()
+        if parent.isValid():
+            self.expand_parent_items(parent)
+        self._view.expand(index)
 
     def setViewBoldHeader(self):
         font = self._view_header.font()
@@ -250,6 +259,7 @@ class ReferenceDataDialog(QDialog):
             idx = self.ui.TreeView.selectionModel().selection().indexes()
             current_index = idx[0] if idx else self.model.index(0, 0)
             self.model.addChildElement(current_index)
+            self.ui.TreeView.expand(current_index)
             self.ui.CommitBtn.setEnabled(True)
             self.ui.RevertBtn.setEnabled(True)
 
