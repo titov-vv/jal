@@ -2,10 +2,13 @@ import json
 import logging
 from decimal import Decimal
 
+from PySide6.QtCore import QT_TRANSLATE_NOOP
+
 from jal.constants import AssetLocation
 from jal.data_import.statement import Statement_ImportError, JSF
 from jal.data_import.token_filter import TokenCandidate
 from jal.db.settings import JalSettings
+from jal.db.settings_registry import SettingsRegistry, SettingDescriptor
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import tron_address_from_hex, is_tron_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
@@ -39,6 +42,7 @@ class TronFetcher(ChainFetcher):
     native_symbol = 'TRX'
     native_name = "Tron"
     icon_name = ''
+    native_dust_threshold = '0.001'
 
     def __init__(self):
         super().__init__()
@@ -197,11 +201,13 @@ class TronFetcher(ChainFetcher):
         owner = tron_address_from_hex(value.get('owner_address', ''))
         incoming = owner != address
         # Address-poisoning dust: a few sun sent from an address that mimics one the user really deals with, so
-        # that a later copy-paste from the history sends funds to the attacker. The same threshold that guards
-        # tokens guards the native coin, since the attack and the remedy are identical - applied to the transfer's
-        # value, not to its raw TRX amount (see ChainFetcher._is_native_dust).
-        if incoming and self._is_native_dust(amount, self._timestamp_of(record), self._is_own_address(owner)):
-            self._skip(self.tr("native dust transfer below the threshold"), tx_hash)
+        # that a later copy-paste from the history sends funds to the attacker. It is still real TRX that changed
+        # the wallet's balance - unlike a spam token it carries no contract and can't be a honeypot - so it is
+        # imported as a DustAttack payment rather than dropped, just not as an ordinary Transfer implying a real
+        # counterparty (see ChainFetcher._is_native_dust).
+        if incoming and self._is_native_dust(amount, self._is_own_address(owner)):
+            self._add_payment(JSF.PAYMENT_DUST_ATTACK, self._timestamp_of(record), self._native_asset_id(), amount,
+                              tx_hash, note=self._native_counterparty_note(value))
             return
         fee = Decimal(str(record.get('ret', [{}])[0].get('fee', 0))) / _SUN if not incoming else Decimal('0')
         asset_id = self._native_asset_id()
@@ -274,3 +280,12 @@ class TronFetcher(ChainFetcher):
         sender = tron_address_from_hex(value.get('owner_address', ''))
         receiver = tron_address_from_hex(value.get('to_address', ''))
         return f"{sender} → {receiver}"
+
+
+SettingsRegistry.register(SettingDescriptor(
+    key="DustThreshold_TRX",
+    page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
+    label=QT_TRANSLATE_NOOP("Preferences", "TRX dust threshold"), default=TronFetcher.native_dust_threshold,
+    tooltip=QT_TRANSLATE_NOOP("Preferences",
+                              "An incoming TRX transfer below this amount, from an address you never dealt with, "
+                              "is recorded as a dust attack instead of an ordinary transfer.")))

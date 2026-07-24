@@ -4,7 +4,8 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_trades, create_quotes, symbol_id_for
-from constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation, BookAccount
+from constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation, AccountData, \
+    BookAccount
 from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
@@ -65,6 +66,33 @@ def test_staking_reward_needs_a_quote(wallet):
     _payment(AssetPayment.StakingReward, d2t(210202), '100')
     with pytest.raises(ValueError):
         Ledger().rebuild(from_timestamp=0)
+
+
+def test_dust_attack_opens_lot_at_zero_without_a_quote(wallet):
+    # Unlike a staking reward, a dust attack must never block the ledger rebuild for want of a quote - a fresh
+    # wallet's first fetch is exactly the case with no price history yet, which is the whole point of judging dust
+    # by its raw coin amount instead (see ChainFetcher._is_native_dust). It opens at a zero basis instead: the
+    # coins were unsolicited and cost nothing, so their whole proceeds are correctly a gain when sold.
+    #
+    # The account's precision must cover TRX's 6 decimals here - the 'wallet' fixture leaves it at the default of
+    # 2, which is a general ledger-rounding property of any account (every posting is rounded to it, not just
+    # dust) and not something particular to this operation.
+    JalAccount(WALLET).set_data(AccountData.Precision, 6)
+    _payment(AssetPayment.DustAttack, d2t(210202), '0.000001')
+    Ledger().rebuild(from_timestamp=0)
+
+    assert _amount() == Decimal('0.000001')       # the dust still increases the position...
+    assert _open_lots() == Decimal('0.000001')     # ... as an open lot, opened at a zero basis
+    assert AssetPayment(1).price() == Decimal('0')
+
+
+def test_dust_attack_uses_quote_when_one_exists(wallet):
+    create_quotes(TRX, 2, [(d2t(210201), '0.30')])
+    _payment(AssetPayment.DustAttack, d2t(210202), '100')
+    Ledger().rebuild(from_timestamp=0)
+
+    assert _amount() == Decimal('100')
+    assert AssetPayment(1).price() == Decimal('0.30')     # priced normally when a quote is actually available
 
 
 def test_staking_reward_basis_is_used_on_sale(wallet):

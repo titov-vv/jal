@@ -3,10 +3,13 @@ import logging
 from decimal import Decimal
 from collections import defaultdict
 
+from PySide6.QtCore import QT_TRANSLATE_NOOP
+
 from jal.constants import AssetLocation, AccountData
 from jal.data_import.statement import Statement_ImportError, JSF
 from jal.data_import.token_filter import TokenCandidate
 from jal.db.settings import JalSettings
+from jal.db.settings_registry import SettingsRegistry, SettingDescriptor
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import is_solana_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
@@ -63,6 +66,7 @@ class SolanaFetcher(ChainFetcher):
     native_symbol = 'SOL'
     native_name = "Solana"
     icon_name = ''
+    native_dust_threshold = '0.00001'
 
     def __init__(self):
         super().__init__()
@@ -309,9 +313,12 @@ class SolanaFetcher(ChainFetcher):
             counterparty = self._native_counterparty(tx, incoming)
             # Address-poisoning dust: a lamport or two sent from an address that imitates one the wallet really uses,
             # so that a later copy-paste out of the history pays the attacker. This wallet receives it in batches
-            # blasted at a dozen addresses at once, which is why the native coin is filtered here.
-            if incoming and self._is_native_dust(native, timestamp, self._is_own_address(counterparty)):
-                self._skip(self.tr("native dust transfer below the threshold"), tx.get('signature', ''))
+            # blasted at a dozen addresses at once. It is still real SOL that changed the wallet's balance, so it is
+            # imported as a DustAttack payment rather than dropped, just not as an ordinary transfer implying a real
+            # counterparty.
+            if incoming and self._is_native_dust(native, self._is_own_address(counterparty)):
+                self._add_payment(JSF.PAYMENT_DUST_ATTACK, timestamp, self._native_asset_id(), native,
+                                  tx.get('signature', ''), note=self._counterparty_note(counterparty, incoming))
             else:
                 entry = deltas[self._native_asset_id()]
                 entry['amount'] += native
@@ -451,3 +458,12 @@ class SolanaFetcher(ChainFetcher):
             return ''
         address = self._account.address()
         return f"{counterparty} → {address}" if incoming else f"{address} → {counterparty}"
+
+
+SettingsRegistry.register(SettingDescriptor(
+    key="DustThreshold_SOL",
+    page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
+    label=QT_TRANSLATE_NOOP("Preferences", "SOL dust threshold"), default=SolanaFetcher.native_dust_threshold,
+    tooltip=QT_TRANSLATE_NOOP("Preferences",
+                              "An incoming SOL transfer below this amount, from an address you never dealt with, "
+                              "is recorded as a dust attack instead of an ordinary transfer.")))

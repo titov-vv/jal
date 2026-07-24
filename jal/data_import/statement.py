@@ -73,6 +73,7 @@ class JSF:
     PAYMENT_FEE = 'fee'
     PAYMENT_GAS_FEE = 'gas_fee'                 # gas burned by a transaction that moved nothing
     PAYMENT_STAKING_REWARD = 'staking_reward'   # coins received for staking (or as lending interest)
+    PAYMENT_DUST_ATTACK = 'dust_attack'         # unsolicited native-coin dust below the per-chain threshold
 
     def __init__(self):
         pass
@@ -840,6 +841,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] == JSF.PAYMENT_STAKING_REWARD:
                 operation['type'] = AssetPayment.StakingReward
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+            elif operation['type'] == JSF.PAYMENT_DUST_ATTACK:
+                operation['type'] = AssetPayment.DustAttack
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")

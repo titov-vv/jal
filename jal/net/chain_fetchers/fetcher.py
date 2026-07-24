@@ -1,16 +1,17 @@
 import logging
 from datetime import datetime, timezone
-from decimal import Decimal
+from decimal import Decimal, DecimalException
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QApplication
 
-from jal.constants import AssetLocation, AccountData, PredefinedAccountType, PredefinedAsset
+from jal.constants import AssetLocation, AccountData, PredefinedAccountType
 from jal.data_import.statement import Statement, JSF, Statement_ImportError
 from jal.data_import.token_filter import TokenFilter
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.settings import JalSettings
 from jal.db.token_blacklist import normalize_address
 
 
@@ -30,6 +31,11 @@ class ChainFetcher(Statement):
     icon_name = ''
     native_symbol = ''              # Ticker of the chain's native coin, e.g. 'ETH'
     native_name = ''                # Human name of the native coin, e.g. 'Ethereum'
+    # Raw coin amount below which an incoming native-coin transfer is treated as dust, overridden per chain by the
+    # user-editable 'DustThreshold_<SYMBOL>' setting - see _native_dust_threshold(). '0' disables the check for a
+    # chain that doesn't set its own (nothing is ever below zero), which is the safe default: importing an
+    # unclassified transfer as an ordinary one is never wrong, only imprecise.
+    native_dust_threshold = '0'
     # Every transfer a fetcher builds carries the hash of the transaction it came from, which identifies the
     # movement no matter which of its two ends was fetched - see Statement._transfers_are_unique_per_transaction.
     _transfers_are_unique_per_transaction = True
@@ -141,31 +147,28 @@ class ChainFetcher(Statement):
     def _native_asset_id(self) -> int:
         return self._token_asset_id(self.native_symbol, self.native_name, address='')
 
-    # Value of a native-coin amount in the account currency, or None when the coin can't be priced at that moment.
-    # The native coin carries no contract address, so it is found by ticker - which is safe here, and only here:
-    # a ticker is attacker-controlled for a token, but the native coin of a chain is guaranteed by the chain itself.
-    def _native_value_of(self, amount: Decimal, timestamp: int):
-        asset = JalAsset.find({'symbol': self.native_symbol, 'type': PredefinedAsset.Crypto})
-        if not asset.id():
-            return None
-        rate = asset.quote(timestamp, self._account.currency())[1]
-        return amount * rate if rate else None
+    # The per-chain dust threshold in effect: the user-editable 'DustThreshold_<SYMBOL>' setting if it holds a valid
+    # number, the chain's built-in default otherwise. Never raises on a hand-edited or missing setting, the same way
+    # TokenFilter._configured_threshold() falls back to its own default rather than stopping the application.
+    def _native_dust_threshold(self) -> Decimal:
+        try:
+            return Decimal(JalSettings().getStr(f"DustThreshold_{self.native_symbol}", self.native_dust_threshold))
+        except DecimalException:
+            return Decimal(self.native_dust_threshold)
 
     # True if an incoming native-coin transfer is address-poisoning dust: a trivial amount sent from an address that
     # mimics one the user really deals with, so that a later copy-paste out of the history pays the attacker instead.
     #
-    # The test is on the transfer's VALUE in the account currency, never on the raw coin amount: the dust threshold is
-    # a fiat figure ("an airdrop worth less than this"), and comparing a coin count against it means something
-    # different on every chain - with the default threshold of 1 it happens to be harmless for TRX yet would quarantine
-    # any incoming transfer below 1 ETH or 1 SOL. A coin that can't be priced is imported rather than dropped: an
-    # unquotable amount is not evidence of spam, and silently losing a real transfer is far worse than importing dust.
-    def _is_native_dust(self, amount: Decimal, timestamp: int, known_counterparty: bool = False) -> bool:
+    # Judged on the RAW COIN AMOUNT against a threshold picked per chain, not on the transfer's fiat value: a value
+    # comparison depends on a locally cached price history that a freshly added wallet never has, which used to make
+    # the check inert exactly when it mattered most (see the discussion that replaced it - CRYPTO_PATH). A dust
+    # verdict no longer drops the transfer either: real native coin can never be a scam contract the way a token can,
+    # so it is always imported as an AssetPayment(DustAttack) instead of an ordinary Transfer - see the fetchers that
+    # call this.
+    def _is_native_dust(self, amount: Decimal, known_counterparty: bool = False) -> bool:
         if known_counterparty:
             return False
-        value = self._native_value_of(amount, timestamp)
-        if value is None:
-            return False
-        return value < self._filter.dust_threshold()
+        return amount < self._native_dust_threshold()
 
     # True if the address is one of the user's own wallets. A transfer between two wallets of the same person is
     # never an unsolicited airdrop, whatever it is worth. Addresses are compared in their stored (normalized) form,

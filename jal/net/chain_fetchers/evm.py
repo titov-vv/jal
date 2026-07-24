@@ -3,11 +3,14 @@ import logging
 from decimal import Decimal
 from collections import defaultdict
 
+from PySide6.QtCore import QT_TRANSLATE_NOOP
+
 from jal.constants import AssetLocation, PredefinedAccountType
 from jal.data_import.statement import Statement_ImportError, JSF
 from jal.data_import.token_filter import TokenCandidate
 from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
+from jal.db.settings_registry import SettingsRegistry, SettingDescriptor
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, is_evm_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
@@ -52,6 +55,9 @@ class _HaltImport(Exception):
 class EVMFetcher(ChainFetcher):
     chain_id = 0                  # Etherscan V2 'chainid' of this chain
     icon_name = ''
+    # Dust threshold is shared by every EVM chain this fetcher backs (Ethereum, Arbitrum, ...)
+    # They all move the same native coin, so one threshold covers them all.
+    native_dust_threshold = '0.0000001'
 
     def __init__(self):
         super().__init__()
@@ -190,6 +196,10 @@ class EVMFetcher(ChainFetcher):
         timestamp = tx['timestamp']
 
         deltas = self._wallet_deltas(tx)
+        # Address-poisoning dust is pulled out before anything below looks at 'deltas': it is never part of a
+        # swap/lending/bridge shape, and left in it would skew that classification (a real single-asset receive
+        # would suddenly look like two assets moving). See _extract_native_dust.
+        self._extract_native_dust(deltas, timestamp, tx['hash'])
         outs = {asset_id: data for asset_id, data in deltas.items() if data['amount'] < 0}
         ins = {asset_id: data for asset_id, data in deltas.items() if data['amount'] > 0}
         category = protocol_category(self.location_id, self._norm(own_record.get('to', ''))) if own else None
@@ -296,6 +306,21 @@ class EVMFetcher(ChainFetcher):
                 self._merge_counterparty(entry, counterparty)
         return {asset_id: data for asset_id, data in deltas.items() if data['amount'] != Decimal('0')}
 
+    # Pulls the native coin's entry out of 'deltas' and records it as a DustAttack payment instead, when it is
+    # incoming, below the chain's threshold, and not from a wallet of the user's own - address-poisoning dust, the
+    # same shape tron.py and solana.py record. It is still real coin that changed the wallet's balance - unlike a
+    # token it carries no contract and can't be a honeypot - so it is imported, just not counted towards the
+    # swap/lending/bridge shape the rest of the transaction is classified by (see the call site).
+    def _extract_native_dust(self, deltas: dict, timestamp: int, tx_hash: str) -> None:
+        native_id = self._native_asset_id()
+        entry = deltas.get(native_id)
+        if entry is None or entry['amount'] <= Decimal('0'):
+            return
+        if self._is_native_dust(entry['amount'], self._is_own_address(entry['counterparty'] or '')):
+            self._add_payment(JSF.PAYMENT_DUST_ATTACK, timestamp, native_id, entry['amount'], tx_hash,
+                              note=entry['note'])
+            del deltas[native_id]
+
     # Records the address an asset's movement was with, and clears it as soon as a second one takes part: the delta
     # is a NET amount, so an account may only be put on it when every leg that formed it was with that same address.
     # A cleared counterparty leaves the far side of the transfer unresolved, exactly as an outside address does.
@@ -307,9 +332,8 @@ class EVMFetcher(ChainFetcher):
             entry['counterparty'] = ''
 
     # Signed native amount of a single txlist/internal record for the wallet (+ received, - sent, 0 if unrelated or
-    # reverted). The native coin is never dust-filtered - see the long note that used to live in _process_native:
-    # its value can only come from stored quotes a fresh wallet lacks, and a raw amount check would drop a real
-    # sub-1-ETH transfer, while native poisoning creates no attacker-named asset.
+    # reverted). Dust is not judged per record - several tiny legs of one transaction could net into a real amount,
+    # or vice versa - the net total _wallet_deltas() builds from these is what _extract_native_dust() judges.
     def _native_signed_amount(self, record: dict) -> Decimal:
         if record.get('isError', '0') == '1':
             return Decimal('0')
@@ -496,3 +520,13 @@ class EVMFetcher(ChainFetcher):
                     normalize_address(account.chain(), account.address()) == address:
                 return True
         return False
+
+
+SettingsRegistry.register(SettingDescriptor(
+    key="DustThreshold_ETH",
+    page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
+    label=QT_TRANSLATE_NOOP("Preferences", "ETH dust threshold"), default=EVMFetcher.native_dust_threshold,
+    tooltip=QT_TRANSLATE_NOOP("Preferences",
+                              "An incoming ETH transfer below this amount, from an address you never dealt with, "
+                              "is recorded as a dust attack instead of an ordinary transfer. Applies to every EVM "
+                              "chain (Ethereum, Arbitrum, ...), since they share the same native coin.")))

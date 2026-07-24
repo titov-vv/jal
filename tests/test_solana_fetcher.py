@@ -20,7 +20,6 @@ from jal.net.token_lists import TokenListProvider
 # and token mints in the fixture are the real, public ones: they are the same for every user of the chain.
 WALLET = "JALW6VdPLoxJYjMAhBo5BK897aYkEYUpE9aSPaETA7KF"
 JUP_MINT = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
-_QUOTE_TS = 1700000000       # Before the recorded history, so every transfer in it resolves to this quote
 
 
 @pytest.fixture
@@ -35,16 +34,6 @@ def sol_wallet(prepare_db):
                                 chain=AssetLocation.SOL_BLOCKCHAIN).commit()
     assert account.id() == 1
     yield account
-
-
-# Gives the database a priced SOL asset. The native dust rule weighs a transfer's value, so without a quote nothing
-# is filtered - which is exactly a brand-new wallet's first fetch, covered separately below.
-@pytest.fixture
-def priced_sol(sol_wallet):
-    asset = JalAssetCreator(type_id=PredefinedAsset.Crypto, name="Solana")
-    asset.add_symbol('SOL', 2, AssetLocation.SOL_BLOCKCHAIN)
-    JalAsset(asset.id()).set_quotes([{'timestamp': _QUOTE_TS, 'quote': Decimal('150')}], 2)   # 150 USD
-    yield asset
 
 
 # Replaces the network with the recorded Helius answer. Returns the fetcher plus the list of 'until' cursors that
@@ -232,23 +221,44 @@ def test_staking_state_is_stored_only_after_import(fetcher, sol_wallet):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_native_dust_is_filtered(fetcher, sol_wallet, priced_sol):
+def test_native_dust_is_recorded_as_dust_attack(fetcher, sol_wallet):
     data = fetcher.fetch(sol_wallet)
     sol_symbols = _symbols_of(data, 'SOL')
     incoming = [t for t in _transfers(data) if t['account'][0] == 0 and t['symbol'][0] in sol_symbols]
-    # The recorded history receives 1 lamport (1e-9 SOL) blasted at fifteen addresses at once - poisoning dust
+    # The recorded history has real incoming SOL alongside 1 lamport (1e-9 SOL) blasted at several addresses at
+    # once - poisoning dust, well under the 0.001 SOL default threshold. The dust never becomes an ordinary
+    # transfer...
     assert incoming, "the fixture has real incoming SOL too, not only dust"
-    assert all(t['withdrawal'] > Decimal('0.000001') for t in incoming)
-    assert any("dust" in reason for reason in fetcher.skipped())
+    assert all(t['withdrawal'] >= Decimal('0.001') for t in incoming)
+    # ...it is recorded as a DustAttack payment instead, so the balance it moved is still reconciled.
+    dust = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_DUST_ATTACK]
+    assert dust, "the fixture has 1-lamport dust blasted at several addresses"
+    assert all(p['amount'] == Decimal('1E-9') for p in dust)
 
 
-def test_unpriceable_native_coin_is_imported(fetcher, sol_wallet):
-    data = fetcher.fetch(sol_wallet)
-    # A brand-new wallet has no SOL asset yet, so nothing can be priced and nothing is judged to be dust: an
-    # unquotable amount is not evidence of spam, and silently dropping a real transfer is the worse mistake.
-    assert not any("dust" in reason for reason in fetcher.skipped())
-    sol_symbols = _symbols_of(data, 'SOL')
-    assert any(t['withdrawal'] == Decimal('1E-9') for t in _transfers(data) if t['symbol'][0] in sol_symbols)
+# The rule is judged on the RAW COIN AMOUNT against the chain's own threshold (0.001 SOL by default), never on a
+# fiat value - unlike the old value-based rule, this needs no price data and so is never accidentally inert.
+def test_is_native_dust_judged_by_raw_amount(fetcher):
+    assert fetcher._is_native_dust(Decimal('1E-9'), known_counterparty=False)
+    assert fetcher._is_native_dust(Decimal('0.000999'), known_counterparty=False)
+    assert not fetcher._is_native_dust(Decimal('0.001'), known_counterparty=False)
+    assert not fetcher._is_native_dust(Decimal('1'), known_counterparty=False)
+    # A transfer between two wallets of the same person is never an unsolicited airdrop, however small
+    assert not fetcher._is_native_dust(Decimal('1E-9'), known_counterparty=True)
+
+
+# A dust payment must reach the ledger even though the wallet's very first fetch has no SOL asset or quote of its
+# own yet - the zero-basis fallback in AssetPayment.price() is what makes that safe (see the discussion that
+# replaced the old value-based dust rule: requiring a quote is exactly what used to make dust detection inert).
+def test_dust_attack_reaches_the_database_without_a_price(fetcher, sol_wallet):
+    from jal.db.operations import AssetPayment
+    fetcher.fetch(sol_wallet)
+    fetcher.import_fetched()
+    assert JalAsset.find({'symbol': 'SOL', 'type': PredefinedAsset.Crypto}).id() != 0   # created by the import itself
+    dust = AssetPayment.get_list(sol_wallet.id(), subtype=AssetPayment.DustAttack)
+    assert dust
+    assert all(p.amount() == Decimal('1E-9') for p in dust)   # the raw SOL quantity is still recorded correctly
+    assert all(p.price() == Decimal('0') for p in dust)       # ...but opened at a zero basis, having no quote to price it
 
 
 # ----------------------------------------------------------------------------------------------------------------------

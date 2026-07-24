@@ -23,7 +23,7 @@ class AssetsPaymentsModel(QAbstractTableModel):
         # on the first payment of that kind - which is what happened to 'Asset fee/tax' (6) before it was listed.
         self._types = [self.tr("N/A"), self.tr("Dividend"), self.tr("Bond Interest"), self.tr("Stock Dividend"),
                        self.tr("Stock Vesting"), self.tr("Bond Amortization"), self.tr("Asset fee/tax"),
-                       self.tr("Gas fee"), self.tr("Staking reward")]
+                       self.tr("Gas fee"), self.tr("Staking reward"), self.tr("Dust attack")]
         self._view = parent_view
         self._data = []
         self._account_id = 0

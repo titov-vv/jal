@@ -436,6 +436,7 @@ class AssetPayment(LedgerTransaction):
     Fee = 6
     GasFee = 7             # Gas burned by a transaction that moved nothing - an approval, a failed call, ...
     StakingReward = 8      # Coins received for staking; lending interest is recorded the same way
+    DustAttack = 9         # Unsolicited native-coin dust from address-poisoning, below the per-chain threshold
     _db_table = "asset_payments"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -460,7 +461,8 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.BondAmortization: JalIcon.BOND_AMORTIZATION,
             AssetPayment.Fee: JalIcon.FEE,
             AssetPayment.GasFee: JalIcon.FEE,
-            AssetPayment.StakingReward: JalIcon.INTEREST
+            AssetPayment.StakingReward: JalIcon.INTEREST,
+            AssetPayment.DustAttack: JalIcon.TRANSFER_IN     # TODO dedicated icon for a dust attack
         }
         self.names = {
             AssetPayment.NA: self.tr("UNDEFINED"),
@@ -471,7 +473,8 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.BondAmortization: self.tr("Bond Amortization"),
             AssetPayment.Fee: self.tr("Asset fee/tax"),
             AssetPayment.GasFee: self.tr("Gas fee"),
-            AssetPayment.StakingReward: self.tr("Staking reward")
+            AssetPayment.StakingReward: self.tr("Staking reward"),
+            AssetPayment.DustAttack: self.tr("Dust attack")
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.AssetPayment
@@ -556,6 +559,14 @@ class AssetPayment(LedgerTransaction):
                 raise ValueError(self.tr("No quote to value a staking reward - download quotes for this asset "
                                          "and rebuild the ledger.") + f" Operation: {self.dump()}")
             return price
+        if self._subtype == AssetPayment.DustAttack:
+            # Unlike a staking reward, a zero basis here is not a mis-statement to guard against - it is the
+            # correct one: the coins were unsolicited and cost nothing, so their whole proceeds are rightly a gain
+            # when sold. Refusing the import for want of a quote would be wrong besides being pointless - a fresh
+            # wallet's first fetch is exactly the case with no local price history yet (see the native dust
+            # threshold in ChainFetcher._is_native_dust), and nobody has reason to go download one for dust.
+            quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
+            return price if quote_timestamp else Decimal('0')
         if self._subtype != AssetPayment.StockDividend and self._subtype != AssetPayment.StockVesting:
             return Decimal('0')
         quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
@@ -581,7 +592,7 @@ class AssetPayment(LedgerTransaction):
             if timestamp != self._timestamp:
                 logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
             amount = self._amount * price
-        elif self._subtype == AssetPayment.StakingReward or self._subtype == AssetPayment.GasFee:
+        elif self._subtype in (AssetPayment.StakingReward, AssetPayment.GasFee, AssetPayment.DustAttack):
             # A crypto quote is daily, so it never falls on the exact block timestamp the way an exchange quote
             # does for a stock dividend - the last known price is the best available and is not an error.
             timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
@@ -637,7 +648,7 @@ class AssetPayment(LedgerTransaction):
         # The amount of these payments is a quantity of the asset, not a sum of money: shares received as a
         # dividend, coins earned by staking, coins burned as gas
         asset_denominated = (AssetPayment.StockDividend, AssetPayment.StockVesting,
-                             AssetPayment.StakingReward, AssetPayment.GasFee)
+                             AssetPayment.StakingReward, AssetPayment.GasFee, AssetPayment.DustAttack)
         if self._subtype in asset_denominated and not self._opart:
             if self._tax:
                 return f" {self._symbol.symbol()}\n {self._account_currency}"
@@ -650,7 +661,7 @@ class AssetPayment(LedgerTransaction):
         balance = []
         amount = self._money_total(self._account.id())
         if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting,
-                             AssetPayment.StakingReward, AssetPayment.GasFee):
+                             AssetPayment.StakingReward, AssetPayment.GasFee, AssetPayment.DustAttack):
             qty = self._asset_total(self._account.id(), self._asset.id())
             if qty is None:
                 return [Decimal('NaN')]
@@ -673,7 +684,7 @@ class AssetPayment(LedgerTransaction):
         if not self._peer_id:
             raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
         if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting \
-                or self._subtype == AssetPayment.StakingReward:
+                or self._subtype == AssetPayment.StakingReward or self._subtype == AssetPayment.DustAttack:
             self.processStockDividendOrVesting(ledger)
             return
         if self._subtype == AssetPayment.GasFee:

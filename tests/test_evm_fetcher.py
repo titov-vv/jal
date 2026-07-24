@@ -170,12 +170,49 @@ def test_failed_transaction_makes_no_transfer(fetcher, eth_wallet):
 
 def test_incoming_internal_native_is_imported(fetcher, eth_wallet):
     data = fetcher.fetch(eth_wallet)
-    # A 0.002791 ETH deposit from a contract (an internal transfer). It is well below the fiat dust threshold of 1,
-    # so a naive amount-vs-threshold check would wrongly drop it; the native coin is deliberately not dust-filtered.
+    # A 0.002791 ETH deposit from a contract (an internal transfer) - well above the 0.0001 ETH dust threshold, so
+    # it is a plain transfer, not a DustAttack payment (see test_native_dust_is_recorded_as_dust_attack for that).
     deposit = [t for t in _transfers(data) if t['number'].startswith('0x444')]
     assert len(deposit) == 1
     assert deposit[0]['withdrawal'] == Decimal('0.002791')
     assert deposit[0]['account'][0] == 0        # incoming
+
+
+def test_native_dust_is_recorded_as_dust_attack(eth_wallet, monkeypatch):
+    DUST_SENDER = "0x2222222222222222222222222222222222222222"
+    # 1e12 wei = 0.000001 ETH, well under the 0.0001 ETH default threshold - address-poisoning dust, sent from an
+    # address the wallet never dealt with, and not a transaction the wallet itself signed (own=False, no gas).
+    pages = {"txlist": [_tx('0xdust', 100, DUST_SENDER, WALLET, value=1_000_000_000_000)],
+            "tokentx": [], "txlistinternal": []}
+    _, data = _drive(eth_wallet, monkeypatch, pages)
+    assert _transfers(data) == []                     # never an ordinary Transfer implying a real counterparty...
+    dust = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_DUST_ATTACK]
+    assert len(dust) == 1                              # ...it is recorded as a DustAttack payment instead
+    assert dust[0]['amount'] == Decimal('0.000001')
+
+
+def test_native_dust_does_not_disrupt_a_real_transfer_in_the_same_block(eth_wallet, monkeypatch):
+    DUST_SENDER = "0x2222222222222222222222222222222222222222"
+    REAL_SENDER = "0x3333333333333333333333333333333333333333"
+    pages = {"txlist": [_tx('0xdust', 100, DUST_SENDER, WALLET, value=1_000_000_000_000),
+                        _tx('0xreal', 100, REAL_SENDER, WALLET, value=1_000_000_000_000_000_000)],  # 1 ETH
+            "tokentx": [], "txlistinternal": []}
+    _, data = _drive(eth_wallet, monkeypatch, pages)
+    assert len(_transfers(data)) == 1
+    assert _transfers(data)[0]['withdrawal'] == Decimal('1')
+    dust = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_DUST_ATTACK]
+    assert len(dust) == 1
+
+
+# The rule is judged on the RAW COIN AMOUNT against the chain's own threshold (0.0001 ETH by default), never on a
+# fiat value - it needs no price data and so is never accidentally inert (see the discussion behind the redesign).
+def test_is_native_dust_judged_by_raw_amount(fetcher):
+    assert fetcher._is_native_dust(Decimal('0.00001'), known_counterparty=False)
+    assert fetcher._is_native_dust(Decimal('0.0000999'), known_counterparty=False)
+    assert not fetcher._is_native_dust(Decimal('0.0001'), known_counterparty=False)
+    assert not fetcher._is_native_dust(Decimal('1'), known_counterparty=False)
+    # A transfer between two wallets of the same person is never an unsolicited airdrop, however small
+    assert not fetcher._is_native_dust(Decimal('0.00001'), known_counterparty=True)
 
 
 def test_spam_token_is_quarantined(fetcher, eth_wallet):
