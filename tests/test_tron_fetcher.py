@@ -437,6 +437,7 @@ def test_own_counterparty_is_resolved_into_the_transfer(fetcher, tron_wallet):
     for transfer in internal:
         assert transfer['account'][0] == 1                 # sent by the fetched wallet
         assert transfer['account'].count(0) == 0           # ... and neither side is left for the user to pick
+        assert transfer.get('description', '') == ''       # both ends are already known, the address note is noise
     # A transfer with an outside address is unaffected - its far side is still unknown
     assert any(t['account'].count(0) == 1 for t in _transfers(data))
 
@@ -449,6 +450,7 @@ def test_own_counterparty_is_resolved_for_incoming_transfers(fetcher, tron_walle
     for transfer in internal:
         assert transfer['account'][1] == 1                 # received by the fetched wallet
         assert transfer['account'].count(0) == 0
+        assert transfer.get('description', '') == ''       # both ends are already known, the address note is noise
 
 
 def test_resolved_counterparty_asks_nothing_and_reaches_the_db(fetcher, tron_wallet, monkeypatch):

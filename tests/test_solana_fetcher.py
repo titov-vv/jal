@@ -82,6 +82,25 @@ def test_is_solana_address_accepts_valid_and_rejects_malformed():
     assert not is_solana_address(WALLET.replace('J', '0', 1))                    # '0' is not in the base58 alphabet
 
 
+def test_counterparty_note_only_for_unknown_addresses(fetcher, sol_wallet):
+    fetcher._account = sol_wallet
+    external = "2bSYn32SzmtywQQYSWbENCFWi7cCZjeTDJHMf8gsStm1"
+    # An outside counterparty is recorded, sender first, so the user can identify it
+    assert fetcher._counterparty_note(external, True) == f"{external} → {WALLET}"
+    assert fetcher._counterparty_note(external, False) == f"{WALLET} → {external}"
+
+
+def test_counterparty_note_empty_between_known_wallets(fetcher, sol_wallet):
+    # A second wallet the user owns: a transfer between two known accounts needs no address note
+    other = "2bSYn32SzmtywQQYSWbENCFWi7cCZjeTDJHMf8gsStm1"
+    JalAccountCreator(currency_id=2, number='', name='SOL wallet 2', investing=1, organization=1,
+                      account_type=PredefinedAccountType.Wallet, address=other,
+                      chain=AssetLocation.SOL_BLOCKCHAIN).commit()
+    fetcher._account = sol_wallet
+    assert fetcher._counterparty_note(other, True) == ''
+    assert fetcher._counterparty_note(other, False) == ''
+
+
 def test_fetch_builds_transfers(fetcher, sol_wallet):
     data = fetcher.fetch(sol_wallet)
     assert len(_transfers(data)) > 0

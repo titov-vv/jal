@@ -150,9 +150,10 @@ class TronFetcher(ChainFetcher):
         # Both hints below matter for a real token: without them an incoming transfer of an asset JAL can't price
         # is dust by definition, which would quarantine the very first USDT a wallet ever receives.
         counterparty = record.get('from', '') if incoming else record.get('to', '')
+        known_counterparty = self._is_own_address(counterparty)
         candidate = TokenCandidate(location_id=self.location_id, address=address, symbol=info.get('symbol', ''),
                                    name=info.get('name', ''), incoming=incoming, amount=amount,
-                                   known_counterparty=self._is_own_address(counterparty),
+                                   known_counterparty=known_counterparty,
                                    value=self._value_of(address, amount, self._timestamp_of(record)))
         if not self._filter.accept(candidate):
             self._skip(self.tr("token quarantined as dust/spam"), tx_hash)
@@ -161,8 +162,9 @@ class TronFetcher(ChainFetcher):
         # Gas is charged in TRX, never in the token that moved, and only the sender pays it
         fee = gas.get(tx_hash, Decimal('0')) if not incoming else Decimal('0')
         fee_asset_id = self._native_asset_id() if fee > Decimal('0') else None
+        note = '' if known_counterparty else self._counterparty_note(record)
         self._add_transfer(self._timestamp_of(record), asset_id, amount, incoming, tx_hash,
-                           note=self._counterparty_note(record), fee=fee, fee_asset_id=fee_asset_id,
+                           note=note, fee=fee, fee_asset_id=fee_asset_id,
                            counterparty=counterparty)
 
     def _process_native_transaction(self, record: dict, address: str) -> None:
@@ -214,8 +216,9 @@ class TronFetcher(ChainFetcher):
         fee = Decimal(str(record.get('ret', [{}])[0].get('fee', 0))) / _SUN if not incoming else Decimal('0')
         asset_id = self._native_asset_id()
         counterparty = owner if incoming else tron_address_from_hex(value.get('to_address', ''))
+        note = '' if self._is_own_address(counterparty) else self._native_counterparty_note(value)
         self._add_transfer(self._timestamp_of(record), asset_id, amount, incoming, tx_hash,
-                           note=self._native_counterparty_note(value),
+                           note=note,
                            fee=fee, fee_asset_id=asset_id if fee > Decimal('0') else None,
                            counterparty=counterparty)
 
@@ -273,6 +276,8 @@ class TronFetcher(ChainFetcher):
         return self._local_timestamp(int(record.get('block_timestamp', 0)) // 1000)
 
     # Both counterparties are shown, sender first, so the note holds the whole movement regardless of its direction.
+    # Left empty by the caller when the other side is a wallet of the user's own - it says nothing the operation
+    # doesn't already show.
     @staticmethod
     def _counterparty_note(record: dict) -> str:
         return f"{record.get('from', '')} → {record.get('to', '')}"

@@ -602,6 +602,7 @@ def test_own_counterparty_is_resolved_into_the_transfer(eth_wallet, monkeypatch)
     assert transfer['account'][0] == 1                                        # sent by the fetched wallet
     assert fetcher.mapped_id(JSF.ACCOUNTS, transfer['account'][1]) == other.id()   # ... to the wallet it went to
     assert transfer['account'].count(0) == 0
+    assert transfer.get('description', '') == ''       # both ends are already known, the address note is noise
 
 
 def test_counterparty_on_another_chain_is_not_resolved(eth_wallet, monkeypatch):
