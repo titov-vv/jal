@@ -101,6 +101,7 @@ class EVMFetcher(ChainFetcher):
                     break
                 raise Statement_ImportError(self.tr("Etherscan request failed: ") + f"{result or answer}")
             records += result
+            self._report_page()
             if len(result) < _PAGE_SIZE:
                 break
         else:

@@ -71,6 +71,7 @@ class HyperliquidFetcher(ChainFetcher):
     # helpers of the base class (which would create a second, address-less HYPE asset) out of reach.
     native_symbol = ''
     native_name = ''
+    display_symbol = 'HYPE'
     icon_name = ''
 
     def __init__(self):
@@ -110,6 +111,7 @@ class HyperliquidFetcher(ChainFetcher):
             fresh = [x for x in answer if self._record_key(x) not in seen]
             seen.update(self._record_key(x) for x in fresh)
             records += fresh
+            self._report_page()
             if len(answer) < _PAGE_LIMIT or not fresh:
                 break
             start = max(int(x['time']) for x in answer)

@@ -1,6 +1,7 @@
 import logging
 import importlib
 import os
+from functools import partial
 
 from PySide6.QtCore import QObject, Signal, Qt
 from PySide6.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QLabel, QListWidget, QListWidgetItem, \
@@ -93,6 +94,12 @@ class WalletSelectDialog(QDialog):
 class ChainFetchers(QObject):
     load_completed = Signal(int, dict)
     load_failed = Signal()
+    show_progress = Signal(bool)     # Signal is emitted when the fetch wants to start or stop display of progress
+    update_progress = Signal(float)  # Signal is emitted to report the share of wallets fetched so far, in percent
+    # Signal is emitted to report the status text shown next to the progress bar - see _on_page_fetched(). A wallet's
+    # history has no known total ahead of time, so this is text ("<ticker>: fetching page N...") rather than a
+    # second percentage.
+    update_progress_text = Signal(str)
 
     def __init__(self, parent):
         super().__init__()
@@ -147,24 +154,36 @@ class ChainFetchers(QObject):
         skipped = {}
         failed = []
         imported_any = False
-        for account in accounts:
-            fetcher = fetcher_class()
-            try:
-                fetcher.fetch(account)
-                totals = fetcher.import_fetched()
-            except Statement_ImportError as error:
-                logging.error(self.tr("Blockchain fetch failed: ") + f"{account.name()}: {error}")
-                failed.append((account.name(), str(error)))
-                continue
-            imported_any = True
-            for reason, count in fetcher.skipped().items():
-                skipped[reason] = skipped.get(reason, 0) + count
-            logging.info(self.tr("Transactions were fetched from blockchain for account: ") + account.name())
-            self.load_completed.emit(fetcher.period()[1], totals)
+        label = fetcher_class.display_symbol or descriptor['name']
+        self.show_progress.emit(True)
+        try:
+            for i, account in enumerate(accounts):
+                fetcher = fetcher_class()
+                fetcher.page_fetched.connect(partial(self._on_page_fetched, label))
+                try:
+                    fetcher.fetch(account)
+                    totals = fetcher.import_fetched()
+                except Statement_ImportError as error:
+                    logging.error(self.tr("Blockchain fetch failed: ") + f"{account.name()}: {error}")
+                    failed.append((account.name(), str(error)))
+                    continue
+                finally:
+                    self.update_progress.emit(100.0 * (i + 1) / len(accounts))
+                imported_any = True
+                for reason, count in fetcher.skipped().items():
+                    skipped[reason] = skipped.get(reason, 0) + count
+                logging.info(self.tr("Transactions were fetched from blockchain for account: ") + account.name())
+                self.load_completed.emit(fetcher.period()[1], totals)
+        finally:
+            self.show_progress.emit(False)
         self._report_skipped(skipped)
         self._report_failures(failed)
         if not imported_any:
             self.load_failed.emit()
+
+    # Relays one wallet's page_fetched into the status text shown next to the progress bar.
+    def _on_page_fetched(self, label: str, page: int) -> None:
+        self.update_progress_text.emit(f"{label}: " + self.tr("fetching page") + f" {page}...")
 
     # Token allow-/block-lists back the spam filter that decides which fetched tokens are real. Against an empty
     # cache the filter has nothing to judge by: a token seen for the first time is unpriceable and looks exactly

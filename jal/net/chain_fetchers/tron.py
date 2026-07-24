@@ -41,6 +41,7 @@ class TronFetcher(ChainFetcher):
     location_id = AssetLocation.TRX_BLOCKCHAIN
     native_symbol = 'TRX'
     native_name = "Tron"
+    display_symbol = 'TRX'
     icon_name = ''
     native_dust_threshold = '0.001'
 
@@ -76,6 +77,7 @@ class TronFetcher(ChainFetcher):
             if not answer.get('success', False):
                 raise Statement_ImportError(self.tr("TronGrid request failed: ") + f"{answer.get('error', answer)}")
             records += answer.get('data', [])
+            self._report_page()
             fingerprint = answer.get('meta', {}).get('fingerprint', '')
             if not fingerprint:
                 break

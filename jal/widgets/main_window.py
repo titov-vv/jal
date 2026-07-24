@@ -133,6 +133,9 @@ class MainWindow(QMainWindow):
         self.ledger.update_progress.connect(self.onUpdatePorgressDisplay)
         self.statements.load_completed.connect(self.onStatementImport)
         self.chain_fetchers.load_completed.connect(self.onStatementImport)
+        self.chain_fetchers.show_progress.connect(self.onToggleProgressDisplay)
+        self.chain_fetchers.update_progress.connect(self.onUpdatePorgressDisplay)
+        self.chain_fetchers.update_progress_text.connect(self.onUpdateProgressText)
 
     @Slot()
     def showEvent(self, event):
@@ -343,7 +346,11 @@ class MainWindow(QMainWindow):
     @Slot(bool)
     def onToggleProgressDisplay(self, visible):
         self.ProgressBar.setValue(0)
+        self.ProgressBar.setFormat('%p%')   # clears any per-page label left by a blockchain fetch
         self.showProgressBar(visible)
 
     def onUpdatePorgressDisplay(self, progress_percent: float):
         self.ProgressBar.setValue(int(progress_percent))
+
+    def onUpdateProgressText(self, text: str):
+        self.ProgressBar.setFormat(text)

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal, DecimalException
 
-from PySide6.QtCore import QObject
+from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QApplication
 
 from jal.constants import AssetLocation, AccountData, PredefinedAccountType
@@ -31,6 +31,10 @@ class ChainFetcher(Statement):
     icon_name = ''
     native_symbol = ''              # Ticker of the chain's native coin, e.g. 'ETH'
     native_name = ''                # Human name of the native coin, e.g. 'Ethereum'
+    # Short ticker shown in the "fetching page N..." progress label instead of the full chain name (ChainFetchers.
+    # load()). Usually the same as native_symbol, but not always: two chains can share a native coin (Arbitrum is
+    # also gas-priced in ETH) or a chain may have none to name at all (Hyperliquid), so each fetcher sets its own.
+    display_symbol = ''
     # Raw coin amount below which an incoming native-coin transfer is treated as dust, overridden per chain by the
     # user-editable 'DustThreshold_<SYMBOL>' setting - see _native_dust_threshold(). '0' disables the check for a
     # chain that doesn't set its own (nothing is ever below zero), which is the safe default: importing an
@@ -40,12 +44,19 @@ class ChainFetcher(Statement):
     # movement no matter which of its two ends was fetched - see Statement._transfers_are_unique_per_transaction.
     _transfers_are_unique_per_transaction = True
 
+    # Emitted once per HTTP page read from the chain's API, carrying the running page count of the current fetch()
+    # call. A wallet's history has no known total ahead of time (see _get_pages()-style helpers of each chain), so
+    # this is the only progress a fetch can report while it is running - ChainFetchers.load() turns it into the
+    # "<ticker>: fetching page N..." status text.
+    page_fetched = Signal(int)
+
     def __init__(self):
         super().__init__()
         self._account = JalAccount(0)
         self._filter = TokenFilter()
         self._skipped = {}           # {reason: count} of transactions that were recognized but not imported
         self._counterparty_accounts = {}   # db account id -> statement account id of counterparty wallets
+        self._page_count = 0         # pages read from the API so far during the current fetch(), see _report_page()
 
     # Wallet accounts of this fetcher's chain. The account carries the address to scan and the cursor of the
     # previous fetch, so a fetcher never asks the user where to look.
@@ -88,6 +99,7 @@ class ChainFetcher(Statement):
         self._account = account
         self._skipped = {}
         self._counterparty_accounts = {}
+        self._page_count = 0
         self._data = {JSF.ACCOUNTS: [], JSF.ASSETS: [], JSF.TRANSFERS: [], JSF.ASSET_PAYMENTS: []}
         # The account is known up front - it is the one being fetched - so it is mapped straight onto its db id
         # instead of being matched by number the way a broker statement is.
@@ -129,6 +141,12 @@ class ChainFetcher(Statement):
     def _wait_for(request) -> None:
         while request.isRunning():
             QApplication.processEvents()
+
+    # Counts one more page read from the API and reports it via page_fetched - called by each chain's paging helper
+    # right after a page comes back, whichever of possibly several endpoints it came from (see the callers).
+    def _report_page(self) -> None:
+        self._page_count += 1
+        self.page_fetched.emit(self._page_count)
 
     # Converts a true-UTC epoch (in seconds - every blockchain reports absolute UTC time) into the timestamp
     # convention JAL stores everywhere else: the local wall-clock reading of that instant, kept as a UTC epoch of

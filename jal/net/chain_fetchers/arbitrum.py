@@ -12,6 +12,9 @@ class ArbitrumFetcher(EVMFetcher):
     chain_id = 42161
     native_symbol = 'ETH'
     native_name = "Ethereum"
+    # Gas is paid in ETH (native_symbol above), but the progress label uses the chain's own ticker so it isn't
+    # shown as indistinguishable from an Ethereum-mainnet fetch.
+    display_symbol = 'ARB'
 
     def __init__(self):
         super().__init__()

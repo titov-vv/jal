@@ -65,6 +65,7 @@ class SolanaFetcher(ChainFetcher):
     location_id = AssetLocation.SOL_BLOCKCHAIN
     native_symbol = 'SOL'
     native_name = "Solana"
+    display_symbol = 'SOL'
     icon_name = ''
     native_dust_threshold = '0.00001'
 
@@ -110,6 +111,7 @@ class SolanaFetcher(ChainFetcher):
             if not answer:
                 break
             records += answer
+            self._report_page()
             before = answer[-1].get('signature', '')
             if len(answer) < _PAGE_SIZE or not before:
                 break

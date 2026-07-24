@@ -11,6 +11,7 @@ class EthereumFetcher(EVMFetcher):
     chain_id = 1
     native_symbol = 'ETH'
     native_name = "Ethereum"
+    display_symbol = 'ETH'
 
     def __init__(self):
         super().__init__()
