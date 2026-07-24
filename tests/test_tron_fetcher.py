@@ -580,3 +580,37 @@ def test_several_legs_of_one_transaction_are_all_imported(tron_wallet, monkeypat
                 _trc20(WALLET, COUNTERPARTY_OUT, value='2000000')], [_trigger()])
     _import_history(tron_wallet, monkeypatch, *history)
     assert len(JalAccount(tron_wallet.id()).dump_transfers()) == 2
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The native coin has no contract address, so an import resolves it by ticker alone. The two wallets of a transfer
+# are fetched one after the other, and the first fetch adds a listing of the coin - so the second one has to keep
+# resolving the ticker onto the very same asset. Failing that it created a second asset for the coin, the transfer
+# it imported named a different symbol than the one already stored, and the two ends of one on-chain transfer
+# stopped looking like the same movement - which stored it twice.
+_SENDER_HEX = '41ebd8dd5317713d254707c13840396f9aa8e3070e'      # hex form, as raw transaction data reports it
+_RECEIVER_HEX = '4182dd6b9966724ae2fdc79b416c7588da67ff1b35'   # the address of the 'tron_wallet' fixture
+
+
+def _native(owner_hex, to_hex, amount, fee=1100000, tx_hash=_TX_HASH):
+    return {'txID': tx_hash, 'block_timestamp': _TX_TIME, 'ret': [{'fee': fee, 'contractRet': 'SUCCESS'}],
+            'raw_data': {'contract': [{'type': 'TransferContract',
+                                       'parameter': {'value': {'owner_address': owner_hex, 'to_address': to_hex,
+                                                               'amount': amount}}}]}}
+
+
+def test_native_transfer_between_own_wallets_is_imported_once(tron_wallet, monkeypatch):
+    from jal.db.token_blacklist import tron_address_from_hex
+    # TRX is already known as a wrapped token on Ethereum - one asset, one ticker, a listing on another chain.
+    # The fetch below adds its Tron listing, and from then on the ticker names two rows of that same asset.
+    wrapped = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tron')
+    wrapped.add_symbol('TRX', 3, AssetLocation.ETH_BLOCKCHAIN)
+    sender = _second_wallet(tron_address_from_hex(_SENDER_HEX), name='Tron wallet 2')
+    receiver = tron_wallet                                    # the fixture's wallet is the receiving end
+    assert receiver.address() == tron_address_from_hex(_RECEIVER_HEX)
+    history = ([], [_native(_SENDER_HEX, _RECEIVER_HEX, 100000000)])   # 100 TRX between the two wallets
+    _import_history(sender, monkeypatch, *history)
+    _import_history(receiver, monkeypatch, *history)                   # the same movement, seen from its other end
+    assert len(JalAsset.get_crypto_assets_by_symbol('TRX')) == 1        # one coin, not a second asset for it
+    assert len(JalAccount(sender.id()).dump_transfers()) == 1
+    assert len(JalAccount(receiver.id()).dump_transfers()) == 1

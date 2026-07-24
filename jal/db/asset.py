@@ -430,8 +430,17 @@ class JalAsset(JalDB):
                     symbols = list(filter(lambda x: x['type_id'] == data['type'] and expiry_match(x), symbols))
                 else:
                     symbols = list(filter(lambda x: x['type_id'] == data['type'], symbols))
-            if len(symbols) == 1:
-                aid = symbols[0]['asset_id']
+            # The ticker has to point at one unambiguous ASSET - not at one row. An asset routinely carries the same
+            # ticker in several listings: a security quoted on two venues, or a coin listed both on the chain it is
+            # native to and on another chain that holds a wrapped form of it (TRX on Tron and on Ethereum). Those
+            # rows all name the same asset, so they are no ambiguity at all; counting them made the second listing
+            # look like a conflict and left the asset unmatched - and an import answers an unmatched asset by
+            # creating one, so the ledger ended up with two assets for a coin it already had, positions split
+            # between them and the two ends of one on-chain transfer no longer recognizable as the same movement.
+            # Rows of genuinely different assets are still a conflict and still leave the ticker unresolved.
+            asset_ids = {x['asset_id'] for x in symbols}
+            if len(asset_ids) == 1:
+                aid = asset_ids.pop()
             if aid is not None:
                 return aid
         if data['name']:

@@ -4,7 +4,7 @@ from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_assets, symbol_id_for, create_trades, create_actions
 from constants import PredefinedAsset, SymbolId, AssetLocation
 from jal.db.account import JalAccountCreator
-from jal.db.asset import JalAsset
+from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.ledger import Ledger
 from jal.db.asset_models import SymbolsListModel
@@ -117,3 +117,26 @@ def test_unfiltered_symbol_list_builds_valid_sql(prepare_db):
     model.setFilter(asset_type=PredefinedAsset.Stock)
     assert 'WHERE a.type_id=' in model._current_query
     assert model.rowCount() > 0
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A lookup by ticker has to resolve one unambiguous ASSET - which is not the same thing as one asset_symbol row.
+def test_asset_with_two_listings_is_found_by_its_ticker(prepare_db):
+    # One asset routinely carries the same ticker in more than one listing: a security quoted on a second venue, or
+    # a coin listed both on the chain it is native to and on another chain holding a wrapped form of it. Counting
+    # rows made the second listing look like a conflict and left the ticker unresolved - and an import answers an
+    # unresolved asset by creating one, ending up with a duplicate of an asset the ledger already had.
+    asset = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tron')
+    asset.add_symbol('TRX', 2, AssetLocation.TRX_BLOCKCHAIN)
+    JalAsset(asset.id()).add_symbol('TRX', 3, AssetLocation.ETH_BLOCKCHAIN)   # the same coin, wrapped on Ethereum
+    assert JalAsset.find({'symbol': 'TRX', 'type': PredefinedAsset.Crypto}).id() == asset.id()
+
+
+def test_ticker_shared_by_two_assets_stays_unresolved(prepare_db):
+    # Two different assets reusing one ticker is a genuine ambiguity - a blockchain lets anyone deploy a token
+    # calling itself anything - and nothing may pick one of them on the strength of the ticker alone.
+    genuine = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Genuine coin')
+    genuine.add_symbol('DUP', 2, AssetLocation.TRX_BLOCKCHAIN)
+    impostor = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Impostor')
+    impostor.add_symbol('DUP', 2, AssetLocation.ETH_BLOCKCHAIN)
+    assert JalAsset.find({'symbol': 'DUP', 'type': PredefinedAsset.Crypto}).id() == 0
