@@ -16,7 +16,7 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
-from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
+from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Transfer
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
 from jal.widgets.token_select import SelectTokenActionDialog
@@ -102,6 +102,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     RU_PRICE_TOLERANCE = 1e-4   # TODO Probably need to switch imports to Decimal and remove it
 
     currency_substitutions = {}
+    # True when a transfer of this statement is uniquely identified by the transaction it happened in, i.e. its
+    # 'number' is a transaction hash. Only then may a transfer that is already in the database be recognized as the
+    # same movement and skipped instead of stored again (see _transfer_already_imported).
+    # It is off for a broker statement: 'number' there is a free-form reference the broker chose, and two genuinely
+    # separate transfers of the same size on the same day may well carry the same one - dropping the second would
+    # lose a real operation. A blockchain fetcher turns it on, a tx hash being the identity of the transaction.
+    _transfers_are_unique_per_transaction = False
     # Outcomes of the cross-chain token prompt (see _resolve_cross_chain_token): merge into an existing asset,
     # create a brand-new asset, or discard (blacklist) the token.
     TOKEN_MERGE, TOKEN_CREATE_NEW, TOKEN_DISCARD = 1, 2, 3
@@ -610,6 +617,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, operation)
 
     def _import_transfers(self, transfers):
+        # Only a transfer that was in the database before this import started may be recognized as a movement that is
+        # already recorded. Two legs of one and the same transaction - a contract paying the same address twice - are
+        # two separate movements that happen to look alike, and the second must not be swallowed by the first.
+        stored_before = Transfer.last_oid() if self._transfers_are_unique_per_transaction else 0
         for transfer in transfers:
             operation = deepcopy(transfer)
             accounts = []
@@ -678,7 +689,27 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 operation.pop('fee_account')
                 operation.pop('fee')
                 operation.pop('fee_symbol_id', None)   # A zero fee has no asset to be paid in either
+            if stored_before and self._transfer_already_imported(operation, stored_before):
+                continue
             LedgerTransaction.create_new(LedgerTransaction.Transfer, operation)
+
+    # True if the movement this operation describes is already in the database - in which case it must not be stored
+    # a second time. The fee it brings is attached to the stored transfer if that one was recorded without any.
+    #
+    # A transfer is the only operation with two sides, so it is the only one a statement can meet twice: a movement
+    # between two accounts JAL knows appears once in the statement of each of them. On a blockchain that is the
+    # everyday case - a transfer between two of the user's own wallets is fetched from the wallet that sent it AND
+    # from the wallet that received it, and both fetches describe the same on-chain transaction. Re-fetching a
+    # history that was imported before (after a cursor reset) reaches this the same way.
+    @staticmethod
+    def _transfer_already_imported(operation: dict, stored_before: int) -> bool:
+        oid = Transfer.find_by_movement(operation, stored_before)
+        if not oid:
+            return False
+        stored = LedgerTransaction.get_operation(LedgerTransaction.Transfer, oid, Transfer.Outgoing)
+        if 'fee' in operation:
+            stored.update_fee(operation['fee'], operation.get('fee_account', 0), operation.get('fee_symbol_id'))
+        return True
 
     def _import_trades(self, trades):
         for trade in trades:

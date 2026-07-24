@@ -1311,6 +1311,57 @@ class Transfer(LedgerTransaction):
                     return self._note + " " + self.tr("Error. Zero rate")
         return self._note
 
+    # oid of the transfer that already records the same movement of assets, or 0 if there is none.
+    #
+    # Identity here is the movement itself, not the record: the transaction it happened in ('number' - a tx hash for
+    # a blockchain fetch), the quantity of the asset it moved and the two accounts it moved between. That is exactly
+    # what both sides of an on-chain transfer between two wallets of the user's own agree on, while the rest of the
+    # record does not - only the sender's side carries the gas - so find_operation(), which compares every validated
+    # field, cannot recognize the two as one and the same movement.
+    #
+    # The search is deliberately narrow. It requires a non-empty 'number', so it can never collapse two transfers
+    # that merely look alike, and it keys on the transaction that produced them; and it requires a symbol, so a
+    # money transfer (which carries no asset and whose 'number' is a free-form reference) is never matched.
+    # 'not_after_oid' bounds it to transfers stored earlier, which is what makes it a search for what an EARLIER
+    # import wrote rather than for what the running one just did.
+    @classmethod
+    def find_by_movement(cls, data: dict, not_after_oid: int) -> int:
+        if not data.get('number') or not data.get('symbol_id'):
+            return 0
+        oid = cls._read("SELECT oid FROM transfers WHERE number=:number AND symbol_id=:symbol_id "
+                        "AND withdrawal_account=:withdrawal_account AND deposit_account=:deposit_account "
+                        "AND withdrawal=:withdrawal AND withdrawal_timestamp=:withdrawal_timestamp "
+                        "AND oid<=:not_after_oid",
+                        [(":number", data['number']), (":symbol_id", data['symbol_id']),
+                         (":withdrawal_account", data['withdrawal_account']),
+                         (":deposit_account", data['deposit_account']),
+                         (":withdrawal", data['withdrawal']),
+                         (":withdrawal_timestamp", data['withdrawal_timestamp']),
+                         (":not_after_oid", not_after_oid)])
+        return int(oid) if oid else 0
+
+    # The highest transfer id in the database, i.e. the last transfer stored (0 when there is none)
+    @classmethod
+    def last_oid(cls) -> int:
+        oid = cls._read("SELECT MAX(oid) FROM transfers")
+        return int(oid) if oid else 0
+
+    # Attaches a fee to a transfer that was stored without one, and reports whether it did.
+    #
+    # The two sides of an on-chain transfer are not equally complete: gas is paid by the sender alone, so whichever
+    # side reaches the database first may know nothing about it. Dropping the second sight of the movement would
+    # then lose the gas - which consumes a real quantity of the native coin and must reach the ledger - so the fee
+    # it brings is filled in instead. An existing fee is never overwritten: a transfer has one, whoever paid it.
+    def update_fee(self, fee: Decimal, fee_account_id: int, fee_symbol_id) -> bool:
+        if self._fee or not fee:
+            return False
+        _ = self._exec("UPDATE transfers SET fee=:fee, fee_account=:fee_account, fee_symbol_id=:fee_symbol_id "
+                       "WHERE oid=:oid",
+                       [(":oid", self._oid), (":fee", fee), (":fee_account", fee_account_id),
+                        (":fee_symbol_id", fee_symbol_id)], commit=True)
+        self._fee = fee
+        return True
+
     # Price is undefined for transfer but method is required in FIFO processing of asset transfer
     def price(self):
         return None

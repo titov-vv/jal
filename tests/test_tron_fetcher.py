@@ -11,7 +11,7 @@ from jal.db.account import JalAccountCreator, JalAccount
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.settings import JalSettings
-from jal.net.chain_fetchers.tron import TronFetcher
+from jal.net.chain_fetchers.tron import TronFetcher, _METHOD_TRANSFER
 from jal.net.token_lists import TokenListProvider
 from jal.db.token_blacklist import JalTokenBlacklist
 
@@ -496,3 +496,87 @@ def test_ambiguous_counterparty_is_left_for_the_user(fetcher, tron_wallet):
     _second_wallet(COUNTERPARTY_OUT, name='Tron wallet 3')
     data = fetcher.fetch(tron_wallet)
     assert all(t['account'].count(0) == 1 for t in _transfers(data))
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# One on-chain transfer between two wallets of the user's own is seen by the fetch of the wallet that sent it AND by
+# the fetch of the wallet that received it. Both describe the same movement, so it must reach the database once.
+_TX_HASH = 'a' * 64
+_TX_TIME = 1758900000000        # ms, as TronGrid reports it
+_FEE_ACCOUNT, _FEE = 8, 9       # column positions of the 'transfers' table rows that dump_transfers() returns
+
+
+def _trc20(sender, receiver, value='1000000', tx_hash=_TX_HASH):
+    return {'transaction_id': tx_hash, 'block_timestamp': _TX_TIME, 'from': sender, 'to': receiver, 'value': value,
+            'token_info': {'address': USDT_CONTRACT, 'symbol': 'USDT', 'name': 'Tether USD', 'decimals': 6}}
+
+
+# The contract call that carried the token transfer. It moves nothing by itself (the amounts come from the token
+# endpoint) but it is where the gas the sender burned is reported.
+def _trigger(fee=1100000, tx_hash=_TX_HASH):
+    return {'txID': tx_hash, 'block_timestamp': _TX_TIME, 'ret': [{'fee': fee, 'contractRet': 'SUCCESS'}],
+            'raw_data': {'contract': [{'type': 'TriggerSmartContract',
+                                       'parameter': {'value': {'data': _METHOD_TRANSFER + '0' * 128}}}]}}
+
+
+# Runs a fresh TronFetcher for 'wallet' against a hand-built history and imports what it fetched.
+def _import_history(wallet, monkeypatch, tokens, native):
+    def fake_pages(self, endpoint, params):
+        records = tokens if endpoint.endswith('trc20') else native
+        return [x for x in records if int(x.get('block_timestamp', 0)) >= params.get('min_timestamp', 0)]
+
+    monkeypatch.setattr(TronFetcher, "_get_pages", fake_pages)
+    instance = TronFetcher()
+    instance.fetch(wallet)
+    instance.import_fetched()
+    return instance
+
+
+def test_transfer_seen_from_both_wallets_is_imported_once(tron_wallet, monkeypatch):
+    other = _second_wallet(COUNTERPARTY_OUT)
+    history = ([_trc20(WALLET, COUNTERPARTY_OUT)], [_trigger()])
+    _import_history(tron_wallet, monkeypatch, *history)
+    assert len(JalAccount(tron_wallet.id()).dump_transfers()) == 1
+    # The same transaction, now fetched from the wallet that received it - the very same movement, not a second one
+    _import_history(other, monkeypatch, *history)
+    assert len(JalAccount(other.id()).dump_transfers()) == 1
+    assert len(JalAccount(tron_wallet.id()).dump_transfers()) == 1
+
+
+def test_gas_of_the_sender_reaches_a_transfer_imported_from_the_receiver_first(tron_wallet, monkeypatch):
+    # The receiving side knows nothing about the gas - only the sender pays it. Whichever side is imported first,
+    # the fee must end up on the stored transfer: it burns a real quantity of TRX that the ledger has to account for.
+    other = _second_wallet(COUNTERPARTY_OUT)
+    history = ([_trc20(WALLET, COUNTERPARTY_OUT)], [_trigger()])
+    _import_history(other, monkeypatch, *history)          # the receiver first, so the transfer is stored without gas
+    stored = JalAccount(other.id()).dump_transfers()
+    assert len(stored) == 1
+    assert not stored[0][_FEE]                              # nothing was charged yet
+
+    _import_history(tron_wallet, monkeypatch, *history)     # ... and now the side that paid the gas
+    stored = JalAccount(other.id()).dump_transfers()
+    assert len(stored) == 1                                 # still one movement
+    assert Decimal(stored[0][_FEE]) == Decimal('1.1')       # with the gas the sender burned
+    assert stored[0][_FEE_ACCOUNT] == tron_wallet.id()      # charged to the wallet that sent it
+
+
+def test_refetching_a_history_creates_no_duplicates(tron_wallet, monkeypatch):
+    # The sync cursor normally stops a wallet's history from being fetched twice. When it is reset - or when the
+    # very same transaction arrives from the other wallet's fetch - what is already recorded must not be stored again.
+    _second_wallet(COUNTERPARTY_OUT)
+    history = ([_trc20(WALLET, COUNTERPARTY_OUT)], [_trigger()])
+    _import_history(tron_wallet, monkeypatch, *history)
+    first = len(JalAccount(tron_wallet.id()).dump_transfers())
+    JalAccount(tron_wallet.id()).set_data(AccountData.SyncCursor, '')
+    _import_history(JalAccount(tron_wallet.id()), monkeypatch, *history)
+    assert len(JalAccount(tron_wallet.id()).dump_transfers()) == first
+
+
+def test_several_legs_of_one_transaction_are_all_imported(tron_wallet, monkeypatch):
+    # One transaction may pay the same address more than once. Those legs share the tx hash, the accounts and the
+    # timestamp - everything the duplicate check compares except the quantity - and each is a movement of its own.
+    _second_wallet(COUNTERPARTY_OUT)
+    history = ([_trc20(WALLET, COUNTERPARTY_OUT, value='1000000'),
+                _trc20(WALLET, COUNTERPARTY_OUT, value='2000000')], [_trigger()])
+    _import_history(tron_wallet, monkeypatch, *history)
+    assert len(JalAccount(tron_wallet.id()).dump_transfers()) == 2

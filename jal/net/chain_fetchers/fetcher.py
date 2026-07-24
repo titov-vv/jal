@@ -30,6 +30,9 @@ class ChainFetcher(Statement):
     icon_name = ''
     native_symbol = ''              # Ticker of the chain's native coin, e.g. 'ETH'
     native_name = ''                # Human name of the native coin, e.g. 'Ethereum'
+    # Every transfer a fetcher builds carries the hash of the transaction it came from, which identifies the
+    # movement no matter which of its two ends was fetched - see Statement._transfers_are_unique_per_transaction.
+    _transfers_are_unique_per_transaction = True
 
     def __init__(self):
         super().__init__()
