@@ -648,15 +648,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     # amount arriving is the withdrawn quantity - only a money transfer, which may convert currency,
                     # shows the distinct 'deposit' amount.
                     arriving = operation['deposit'] if asset_types[1] == PredefinedAsset.Money else operation['withdrawal']
-                    text = self.tr("Deposit of ") + f"{arriving:.2f} " + \
-                           f"{JalAsset(asset_ids[1]).symbol()} @{ts2d(operation['timestamp'])}\n" + \
-                           self.tr("Select account to withdraw from:")
                     pair_account = accounts[1]
+                    text = self.tr("Deposit of ") + f"{arriving:.2f} {JalAsset(asset_ids[1]).symbol()} " + \
+                           self.tr("to") + f" {JalAccount(pair_account).name()} @{ts2d(operation['timestamp'])}\n" + \
+                           self.tr("Select account to withdraw from:")
                 if accounts[1] == 0:  # Withdrawal
-                    text = self.tr("Withdrawal of ") + f"{operation['withdrawal']:.2f} " + \
-                           f"{JalAsset(asset_ids[0]).symbol()} @{ts2d(operation['timestamp'])}\n" + \
-                           self.tr("Select account to deposit to:")
                     pair_account = accounts[0]
+                    text = self.tr("Withdrawal of ") + f"{operation['withdrawal']:.2f} {JalAsset(asset_ids[0]).symbol()} " + \
+                           self.tr("from") + f" {JalAccount(pair_account).name()} @{ts2d(operation['timestamp'])}\n" + \
+                           self.tr("Select account to deposit to:")
                 try:
                     chosen_account = self._previous_accounts[JalAccount(pair_account).currency()]
                 except KeyError:
