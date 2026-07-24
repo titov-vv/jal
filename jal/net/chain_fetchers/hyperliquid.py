@@ -363,8 +363,9 @@ class HyperliquidFetcher(ChainFetcher):
                               note=self.tr("Withdrawal over the Hyperliquid bridge"),
                               fee=fee, fee_asset_id=token_asset if fee > Decimal('0') else None)
 
-    # A token sent to, or received from, another HyperCore address. The counterparty is an address, so it is left
-    # unknown and the import asks the user which account it maps to - exactly as an on-chain transfer does.
+    # A token sent to, or received from, another HyperCore address. The counterparty is an address: another wallet of
+    # the user's own is filled in as the far account, anything else is left unknown and the import asks the user which
+    # account it maps to - exactly as an on-chain transfer does.
     def _process_address_transfer(self, delta: dict, timestamp: int, tx_hash: str) -> None:
         address = self._account.address().lower()
         source = str(delta.get('user', '')).lower()
@@ -397,7 +398,8 @@ class HyperliquidFetcher(ChainFetcher):
         counterparty = source if incoming else destination
         self._add_transfer(timestamp, self._token_asset(token), amount, incoming, tx_hash,
                            note=self._counterparty_note(counterparty, incoming),
-                           fee=fee, fee_asset_id=self._token_asset(fee_token) if fee > Decimal('0') else None)
+                           fee=fee, fee_asset_id=self._token_asset(fee_token) if fee > Decimal('0') else None,
+                           counterparty=counterparty)
 
     # The fee of a transfer, with the token it is charged in. A transfer record carries the fee under 'fee' (in the
     # token named by 'feeToken', USDC in the real history) or under 'nativeTokenFee' (paid in the chain's own coin,

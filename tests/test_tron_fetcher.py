@@ -420,3 +420,79 @@ def test_incoming_transfer_prompt_shows_real_amount(fetcher, tron_wallet, monkey
         assert "Deposit of 0.00" not in text          # the cost-basis 0 must not be shown as the amount
     # at least one prompt shows a real, non-zero quantity
     assert any(not t.startswith("Deposit of 0.00") and t.startswith("Deposit of") for t in deposit_prompts)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A counterparty that is another wallet of the user's own is filled in as the far account of the transfer, instead of
+# being left unknown for the user to pick. Both ends of such a transfer are known before the import starts.
+# These addresses appear in the recorded history as the far side of a USDT movement.
+COUNTERPARTY_OUT = "TUkXLMefWss528dGbu47ivdQ8kRfqxdueT"    # the wallet sends USDT to it
+COUNTERPARTY_IN = "TLRwwokbyYiuB42e5BtmsB9KmebspmuAXn"     # ... and receives USDT from it
+
+
+def _second_wallet(address, name='Tron wallet 2', chain=AssetLocation.TRX_BLOCKCHAIN, currency_id=2):
+    return JalAccountCreator(currency_id=currency_id, number='', name=name, investing=1, organization=1,
+                             account_type=PredefinedAccountType.Wallet, address=address, chain=chain).commit()
+
+
+def test_own_counterparty_is_resolved_into_the_transfer(fetcher, tron_wallet):
+    other = _second_wallet(COUNTERPARTY_OUT)
+    data = fetcher.fetch(tron_wallet)
+    internal = [t for t in _transfers(data) if fetcher.mapped_id(JSF.ACCOUNTS, t['account'][1]) == other.id()]
+    assert internal, "the transfer to the second wallet should name it as the destination"
+    for transfer in internal:
+        assert transfer['account'][0] == 1                 # sent by the fetched wallet
+        assert transfer['account'].count(0) == 0           # ... and neither side is left for the user to pick
+    # A transfer with an outside address is unaffected - its far side is still unknown
+    assert any(t['account'].count(0) == 1 for t in _transfers(data))
+
+
+def test_own_counterparty_is_resolved_for_incoming_transfers(fetcher, tron_wallet):
+    other = _second_wallet(COUNTERPARTY_IN)
+    data = fetcher.fetch(tron_wallet)
+    internal = [t for t in _transfers(data) if fetcher.mapped_id(JSF.ACCOUNTS, t['account'][0]) == other.id()]
+    assert internal, "the transfer from the second wallet should name it as the source"
+    for transfer in internal:
+        assert transfer['account'][1] == 1                 # received by the fetched wallet
+        assert transfer['account'].count(0) == 0
+
+
+def test_resolved_counterparty_asks_nothing_and_reaches_the_db(fetcher, tron_wallet, monkeypatch):
+    other = _second_wallet(COUNTERPARTY_OUT)
+    data = fetcher.fetch(tron_wallet)
+    unresolved = [t for t in _transfers(data) if t['account'].count(0) == 1]
+    internal = [t for t in _transfers(data) if t['account'].count(0) == 0]
+    assert internal, "the fixture must contain a transfer between the two own wallets"
+
+    # select_account() is asked once per transfer whose far side is an outside address, and never for one whose
+    # both ends are wallets of the user's own - which is what the resolution above is for.
+    asked = []
+    original = type(fetcher).select_account
+
+    def counting(self, text, account_id, recent_account_id=0):
+        asked.append(text)
+        return original(self, text, account_id, recent_account_id)
+
+    monkeypatch.setattr(type(fetcher), "select_account", counting, raising=False)
+    fetcher.import_fetched()
+    assert len(asked) == len(unresolved)
+    # The transfer is booked on the second wallet as well, without anyone having selected it
+    assert len(JalAccount(other.id()).dump_transfers()) == len(internal)
+
+
+def test_counterparty_in_another_currency_is_left_for_the_user(fetcher, tron_wallet):
+    # An asset transfer between two currencies takes its destination cost basis from 'deposit', which the fetcher
+    # leaves at 0 - and a 0 there wipes the basis of every transferred lot. Such a counterparty is not filled in
+    # silently: it stays the user's decision until the basis can be computed.
+    _second_wallet(COUNTERPARTY_OUT, currency_id=1)      # RUB, while the fetched wallet is kept in USD
+    data = fetcher.fetch(tron_wallet)
+    assert all(t['account'].count(0) == 1 for t in _transfers(data))
+
+
+def test_ambiguous_counterparty_is_left_for_the_user(fetcher, tron_wallet):
+    # Two accounts of one chain sharing an address: nothing here can tell which of them the transfer belongs to,
+    # so it stays unresolved and the import asks, rather than guessing.
+    _second_wallet(COUNTERPARTY_OUT, name='Tron wallet 2')
+    _second_wallet(COUNTERPARTY_OUT, name='Tron wallet 3')
+    data = fetcher.fetch(tron_wallet)
+    assert all(t['account'].count(0) == 1 for t in _transfers(data))

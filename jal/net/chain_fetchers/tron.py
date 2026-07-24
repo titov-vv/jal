@@ -156,7 +156,8 @@ class TronFetcher(ChainFetcher):
         fee = gas.get(tx_hash, Decimal('0')) if not incoming else Decimal('0')
         fee_asset_id = self._native_asset_id() if fee > Decimal('0') else None
         self._add_transfer(self._timestamp_of(record), asset_id, amount, incoming, tx_hash,
-                           note=self._counterparty_note(record), fee=fee, fee_asset_id=fee_asset_id)
+                           note=self._counterparty_note(record), fee=fee, fee_asset_id=fee_asset_id,
+                           counterparty=counterparty)
 
     def _process_native_transaction(self, record: dict, address: str) -> None:
         contract = self._contract_of(record)
@@ -204,9 +205,11 @@ class TronFetcher(ChainFetcher):
             return
         fee = Decimal(str(record.get('ret', [{}])[0].get('fee', 0))) / _SUN if not incoming else Decimal('0')
         asset_id = self._native_asset_id()
+        counterparty = owner if incoming else tron_address_from_hex(value.get('to_address', ''))
         self._add_transfer(self._timestamp_of(record), asset_id, amount, incoming, tx_hash,
                            note=self._native_counterparty_note(value),
-                           fee=fee, fee_asset_id=asset_id if fee > Decimal('0') else None)
+                           fee=fee, fee_asset_id=asset_id if fee > Decimal('0') else None,
+                           counterparty=counterparty)
 
     # A call that transferred nothing and only burned gas: a token approval, a contract call, or a transaction
     # that ran out of energy and failed - the fee is charged either way. A call that cost nothing (the account's

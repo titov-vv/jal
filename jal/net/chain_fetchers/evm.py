@@ -268,7 +268,8 @@ class EVMFetcher(ChainFetcher):
             if not incoming and remaining_gas > Decimal('0'):
                 fee, remaining_gas = remaining_gas, Decimal('0')
             self._add_transfer(timestamp, asset_id, abs(data['amount']), incoming, tx_hash, note=data['note'],
-                               fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None)
+                               fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None,
+                               counterparty=data['counterparty'] or '')
         if own_record is not None and remaining_gas > Decimal('0'):
             self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), remaining_gas, tx_hash,
                               note=self._gas_note(own_record, is_error))
@@ -277,21 +278,33 @@ class EVMFetcher(ChainFetcher):
     # across the native, internal and (spam-filtered) token legs. Gas is NOT part of it - it is charged separately.
     # Net-zero assets (a token routed in and back out) are dropped, so only what actually changed hands remains.
     def _wallet_deltas(self, tx: dict) -> dict:
-        deltas = defaultdict(lambda: {'amount': Decimal('0'), 'note': ''})
+        deltas = defaultdict(lambda: {'amount': Decimal('0'), 'note': '', 'counterparty': None})
         for record in tx['native'] + tx['internal']:      # native coin, moved directly or by a contract
             signed = self._native_signed_amount(record)
             if signed != Decimal('0'):
                 entry = deltas[self._native_asset_id()]
                 entry['amount'] += signed
                 entry['note'] = entry['note'] or self._counterparty_note(record)
+                self._merge_counterparty(entry, self._counterparty_of(record))
         for record in tx['tokens']:
             leg = self._token_leg(record, tx)
             if leg is not None:
-                asset_id, signed, note = leg
+                asset_id, signed, note, counterparty = leg
                 entry = deltas[asset_id]
                 entry['amount'] += signed
                 entry['note'] = entry['note'] or note
+                self._merge_counterparty(entry, counterparty)
         return {asset_id: data for asset_id, data in deltas.items() if data['amount'] != Decimal('0')}
+
+    # Records the address an asset's movement was with, and clears it as soon as a second one takes part: the delta
+    # is a NET amount, so an account may only be put on it when every leg that formed it was with that same address.
+    # A cleared counterparty leaves the far side of the transfer unresolved, exactly as an outside address does.
+    def _merge_counterparty(self, entry: dict, counterparty: str) -> None:
+        counterparty = self._norm(counterparty)
+        if entry['counterparty'] is None:
+            entry['counterparty'] = counterparty
+        elif entry['counterparty'] != counterparty:
+            entry['counterparty'] = ''
 
     # Signed native amount of a single txlist/internal record for the wallet (+ received, - sent, 0 if unrelated or
     # reverted). The native coin is never dust-filtered - see the long note that used to live in _process_native:
@@ -310,9 +323,9 @@ class EVMFetcher(ChainFetcher):
             return -amount
         return Decimal('0')
 
-    # One token leg as (asset_id, signed_amount, note), or None when the leg carries nothing importable (a malformed
-    # contract, a zero-value event, or a token the spam filter quarantined). The spam policy is unchanged from the
-    # per-leg version: provenance decides trust - only a transaction the wallet itself signed is user-driven, so any
+    # One token leg as (asset_id, signed_amount, note, counterparty), or None when the leg carries nothing importable
+    # (a malformed contract, a zero-value event, or a token the spam filter quarantined). The spam policy is unchanged
+    # from the per-leg version: provenance decides trust - only a transaction the wallet itself signed is user-driven, so any
     # other event, whichever direction it claims, must face the dust filter (a spoofed 'outgoing' fake-USDT otherwise
     # sails in, because the shared filter never treats an outgoing transfer as dust).
     def _token_leg(self, record: dict, tx: dict):
@@ -342,7 +355,7 @@ class EVMFetcher(ChainFetcher):
             self._skip(self.tr("token quarantined as dust/spam"), tx_hash)
             return None
         asset_id = self._token_asset_id(symbol, name, address=address)
-        return asset_id, (amount if incoming else -amount), self._counterparty_note(record)
+        return asset_id, (amount if incoming else -amount), self._counterparty_note(record), counterparty
 
     # Emits a swap: one asset out, one asset in, gas paid in the native coin as the fee.
     def _emit_swap(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal) -> None:
@@ -461,13 +474,19 @@ class EVMFetcher(ChainFetcher):
     # recording so the user can identify (or later name) the counterparty. Sender is shown first.
     def _counterparty_note(self, record: dict) -> str:
         sender, receiver = record.get('from', ''), record.get('to', '')
-        counterparty = sender if self._norm(receiver) == self._address() else receiver
-        if self._is_known_account(counterparty):
+        if self._is_known_account(self._counterparty_of(record)):
             return ''
         return f"{sender} → {receiver}"
 
+    # The far side of a record: whichever of its two addresses is not the wallet being fetched
+    def _counterparty_of(self, record: dict) -> str:
+        sender, receiver = record.get('from', ''), record.get('to', '')
+        return sender if self._norm(receiver) == self._address() else receiver
+
     # True if the address belongs to any wallet account JAL holds (on any chain - an EVM address is shared across
-    # EVM chains, and addresses of different chains never collide, so a cross-chain check is safe).
+    # EVM chains, and addresses of different chains never collide, so a cross-chain check is safe). That breadth
+    # suits a note, which only says whether the address is one of the user's; picking the ACCOUNT a transfer is
+    # booked on is a different question, and ChainFetcher._own_wallet answers it for this chain alone.
     def _is_known_account(self, address: str) -> bool:
         address = self._norm(address)
         if not address:

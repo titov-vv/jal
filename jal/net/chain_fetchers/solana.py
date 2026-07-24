@@ -204,7 +204,8 @@ class SolanaFetcher(ChainFetcher):
             if not incoming and remaining_gas > Decimal('0'):
                 fee, remaining_gas = remaining_gas, Decimal('0')
             self._add_transfer(timestamp, asset_id, abs(data['amount']), incoming, signature, note=data['note'],
-                               fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None)
+                               fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None,
+                               counterparty=data['counterparty'] or '')
         if own and remaining_gas > Decimal('0'):
             self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), remaining_gas, signature,
                               note=self.tr("Gas: contract call"))
@@ -300,7 +301,7 @@ class SolanaFetcher(ChainFetcher):
     # The wallet's net movement per asset in this transaction: incoming positive, outgoing negative. Gas is NOT part
     # of it - it is charged separately - and net-zero assets (a token routed in and straight back out) are dropped.
     def _wallet_deltas(self, tx: dict) -> dict:
-        deltas = defaultdict(lambda: {'amount': Decimal('0'), 'note': ''})
+        deltas = defaultdict(lambda: {'amount': Decimal('0'), 'note': '', 'counterparty': None})
         timestamp = self._timestamp_of(tx)
         native = self._native_delta(tx)
         if native != Decimal('0'):
@@ -315,13 +316,25 @@ class SolanaFetcher(ChainFetcher):
                 entry = deltas[self._native_asset_id()]
                 entry['amount'] += native
                 entry['note'] = self._counterparty_note(counterparty, incoming)
+                self._merge_counterparty(entry, counterparty)
         for mint, amount, counterparty in self._token_changes(tx):
             asset_id = self._token_leg(tx, mint, amount, counterparty, timestamp)
             if asset_id is not None:
                 entry = deltas[asset_id]
                 entry['amount'] += amount
                 entry['note'] = entry['note'] or self._counterparty_note(counterparty, amount > Decimal('0'))
+                self._merge_counterparty(entry, counterparty)
         return {asset_id: data for asset_id, data in deltas.items() if data['amount'] != Decimal('0')}
+
+    # Records the address an asset's movement was with, and clears it as soon as a second one takes part: the delta
+    # is a NET amount, so an account may only be put on it when every leg that formed it was with that same address.
+    # A cleared counterparty leaves the far side of the transfer unresolved, exactly as an outside address does.
+    @staticmethod
+    def _merge_counterparty(entry: dict, counterparty: str) -> None:
+        if entry['counterparty'] is None:
+            entry['counterparty'] = counterparty
+        elif entry['counterparty'] != counterparty:
+            entry['counterparty'] = ''
 
     # The wallet's native balance change, with the fee added back when the wallet paid it. Helius reports the change
     # net of the fee, but a fee is not a movement of assets - it is charged separately, on the operation - and the

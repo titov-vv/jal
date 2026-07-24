@@ -36,6 +36,7 @@ class ChainFetcher(Statement):
         self._account = JalAccount(0)
         self._filter = TokenFilter()
         self._skipped = {}           # {reason: count} of transactions that were recognized but not imported
+        self._counterparty_accounts = {}   # db account id -> statement account id of counterparty wallets
 
     # Wallet accounts of this fetcher's chain. The account carries the address to scan and the cursor of the
     # previous fetch, so a fetcher never asks the user where to look.
@@ -77,6 +78,7 @@ class ChainFetcher(Statement):
             raise Statement_ImportError(self.tr("Wallet account has no address: ") + f"{account.name()}")
         self._account = account
         self._skipped = {}
+        self._counterparty_accounts = {}
         self._data = {JSF.ACCOUNTS: [], JSF.ASSETS: [], JSF.TRANSFERS: [], JSF.ASSET_PAYMENTS: []}
         # The account is known up front - it is the one being fetched - so it is mapped straight onto its db id
         # instead of being matched by number the way a broker statement is.
@@ -171,6 +173,52 @@ class ChainFetcher(Statement):
             return False
         return any(normalize_address(self.location_id, x.address()) == address for x in self.wallets())
 
+    # The wallet account that holds the given address, or None when JAL has no single account for it.
+    #
+    # Only wallets of THIS chain are considered - which is what wallets() returns. That restriction is essential
+    # rather than an optimization: one EVM address is commonly registered as several accounts, one per chain, and
+    # the assets a transfer moves stay on the chain it happened on. Resolving an Ethereum transfer to the Arbitrum
+    # account of the same address would book the coins on the wrong chain.
+    # An address that matches several accounts of one chain is left unresolved: nothing here can tell which of them
+    # the transfer belongs to, and the import asks the user rather than guessing.
+    def _own_wallet(self, address: str):
+        address = normalize_address(self.location_id, address)
+        if not address:
+            return None
+        matched = [x for x in self.wallets() if normalize_address(self.location_id, x.address()) == address]
+        return matched[0] if len(matched) == 1 else None
+
+    # Statement account id of the wallet the given address belongs to, or 0 when it isn't one JAL knows - which is
+    # what makes the import ask the user which account the address stands for.
+    #
+    # A counterparty that is a wallet of the user's own is put into the statement as an account of its own, already
+    # mapped onto its db id, so the transfer names both of its sides. Without this every on-chain transfer between
+    # two of the user's wallets asked which account the other end was, although both ends were known all along; and
+    # the answer, being the user's pick rather than a property of the transaction, differed between the two fetches
+    # that see the same transfer - which is what made them impossible to recognize as one and the same operation.
+    #
+    # The fetched wallet itself is never returned: a transfer of an account to itself is not a movement of assets,
+    # and it must not be turned into one behind the user's back.
+    def _counterparty_account(self, address: str) -> int:
+        wallet = self._own_wallet(address)
+        if wallet is None or wallet.id() == self._account.id():
+            return 0
+        # A counterparty whose account is kept in another currency is left to the user. An asset transfer between
+        # two currencies takes its destination cost basis from 'deposit', which a fetcher cannot know and leaves at
+        # 0 - and a 0 there rescales every transferred lot to a zero basis (Transfer.processAssetTransfer). That is
+        # a pre-existing hazard of a fetched transfer, reachable today by picking such an account in the dialog; it
+        # is not made silent here until the basis can actually be computed (see LONG_TERM_IMPROVEMENTS).
+        if wallet.currency() != self._account.currency():
+            return 0
+        if wallet.id() in self._counterparty_accounts:
+            return self._counterparty_accounts[wallet.id()]
+        statement_id = self._next_id(JSF.ACCOUNTS)
+        self._data[JSF.ACCOUNTS].append({"id": statement_id, "name": wallet.name(),
+                                         "currency": self.currency_id(JalAsset(wallet.currency()).symbol())})
+        self.set_mapped_id(JSF.ACCOUNTS, statement_id, wallet.id())
+        self._counterparty_accounts[wallet.id()] = statement_id
+        return statement_id
+
     # Returns the JSF asset id of a token, creating the asset record if this statement doesn't have it yet.
     # 'address' is empty for the native coin of the chain, which has no contract behind it.
     def _token_asset_id(self, symbol: str, name: str, address: str = '') -> int:
@@ -190,16 +238,21 @@ class ChainFetcher(Statement):
             {"id": asset_id, "type": JSF.ASSET_CRYPTO, "name": name, JSF.SYMBOLS: [record]})
         return asset_id
 
-    # Adds an asset transfer between the fetched wallet and the outside world. An address that JAL doesn't know
-    # is left as account 0, which makes _import_transfers() ask the user which account the assets came from or
-    # went to - the same flow a broker statement uses for an unmatched transfer.
+    # Adds an asset transfer between the fetched wallet and the outside world. 'counterparty' is the address at the
+    # other end: when it belongs to another wallet of the user's own that account is filled in, otherwise the far
+    # side is left as account 0, which makes _import_transfers() ask the user which account the assets came from or
+    # went to - the same flow a broker statement uses for an unmatched transfer. A caller that can't tell which
+    # address the movement was with (a netted transaction touching several of them) passes none, and the transfer
+    # is handled as it always was.
     def _add_transfer(self, timestamp: int, asset_id: int, amount: Decimal, incoming: bool,
-                      tx_hash: str, note: str = '', fee: Decimal = Decimal('0'), fee_asset_id: int = None) -> None:
+                      tx_hash: str, note: str = '', fee: Decimal = Decimal('0'), fee_asset_id: int = None,
+                      counterparty: str = '') -> None:
         symbol_id = self._single_symbol_of(asset_id)
         # 'account' is [withdrawal, deposit, fee] and 0 means "not known to JAL": the counterparty of an on-chain
-        # transfer is an address, so the import asks the user which account it maps to. The gas is always paid by
-        # the wallet being fetched, whichever direction the assets move.
-        accounts = [0, 1, 1] if incoming else [1, 0, 1]
+        # transfer is an address, and one that isn't a wallet of the user's own has no account for the import to
+        # use. The gas is always paid by the wallet being fetched, whichever direction the assets move.
+        far_side = self._counterparty_account(counterparty)
+        accounts = [far_side, 1, 1] if incoming else [1, far_side, 1]
         # The tx hash goes into 'number' because that is the column a Transfer has. Operations designed later for
         # crypto carry a field named 'tx_hash' instead (CRYPTO_PATH decision #31); a Transfer predates that.
         #

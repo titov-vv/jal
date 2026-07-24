@@ -547,6 +547,49 @@ def test_counterparty_note_empty_between_known_wallets(fetcher, eth_wallet):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# A counterparty that is another wallet of the user's own is filled in as the far account of the transfer instead of
+# being left unknown for the user to pick.
+OTHER_WALLET = "0x5555555555555555555555555555555555555555"
+
+
+def _own_wallet(address, name='ETH wallet 2', chain=AssetLocation.ETH_BLOCKCHAIN):
+    return JalAccountCreator(currency_id=2, number='', name=name, investing=1, organization=1,
+                             account_type=PredefinedAccountType.Wallet, address=address, chain=chain).commit()
+
+
+def test_own_counterparty_is_resolved_into_the_transfer(eth_wallet, monkeypatch):
+    other = _own_wallet(OTHER_WALLET)
+    pages = {"txlist": [_tx('0x01', 100, WALLET, OTHER_WALLET, value=10 ** 18)]}
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+    transfer = _transfers(data)[0]
+    assert transfer['account'][0] == 1                                        # sent by the fetched wallet
+    assert fetcher.mapped_id(JSF.ACCOUNTS, transfer['account'][1]) == other.id()   # ... to the wallet it went to
+    assert transfer['account'].count(0) == 0
+
+
+def test_counterparty_on_another_chain_is_not_resolved(eth_wallet, monkeypatch):
+    # One EVM address is commonly registered once per chain. A transfer on Ethereum must never be booked onto the
+    # Arbitrum account of the same address - the assets stay on the chain the transfer happened on.
+    _own_wallet(OTHER_WALLET, name='ARB wallet', chain=AssetLocation.ARB_BLOCKCHAIN)
+    pages = {"txlist": [_tx('0x01', 100, WALLET, OTHER_WALLET, value=10 ** 18)]}
+    _fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+    assert _transfers(data)[0]['account'].count(0) == 1
+
+
+def test_counterparty_of_a_netted_movement_is_left_unresolved(eth_wallet, monkeypatch):
+    # The wallet's delta for an asset is a NET amount. When several addresses formed it, no single one of them
+    # describes the transfer that is emitted, so none is put on it and the import asks as it always did.
+    _own_wallet(OTHER_WALLET)
+    external = "0x2222222222222222222222222222222222222222"
+    pages = {"txlist": [_tx('0x01', 100, WALLET, OTHER_WALLET, value=3 * 10 ** 18)],
+             "txlistinternal": [_internal_tx('0x01', 100, external, WALLET, 10 ** 18)]}
+    _fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+    assert len(_transfers(data)) == 1                    # one netted ETH movement of 2 ETH
+    assert _transfers(data)[0]['withdrawal'] == Decimal('2')
+    assert _transfers(data)[0]['account'].count(0) == 1
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # The wallet-picker dialog that replaced the single-account selection: a checkbox per wallet plus an "all" checkbox
 # that selects or clears the whole list, so any subset of a chain's wallets can be fetched in one run.
 class _FakeWallet:
