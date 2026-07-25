@@ -53,10 +53,11 @@ class JalSymbol(JalDB):
                           [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
         while query.next():
             try:
-                # symbol_id may legitimately be NULL (no active asset_symbol row for this currency) -
-                # default to 0 (empty symbol) rather than treating it like a malformed asset_id/currency_id
+                # symbol_id may legitimately be NULL (no active asset_symbol row for this currency) - the QSQLITE
+                # driver reports such a NULL from this LEFT JOIN as '' rather than None, so both are treated as
+                # "no symbol" (default to 0) rather than as a malformed asset_id/currency_id
                 _asset_id, currency_id, symbol_id = cls._read_record(
-                    query, cast=[int, int, lambda x: int(x) if x is not None else 0])
+                    query, cast=[int, int, lambda x: int(x) if x not in (None, '') else 0])
             except TypeError:  # Skip if None is returned (i.e. there are no assets)
                 continue
             symbols.append({"symbol": cls(symbol_id), "currency": currency_id})
