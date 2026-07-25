@@ -27,6 +27,7 @@ _REGISTRY = {
     AssetLocation.ETH_BLOCKCHAIN: {
         '0x66a9893cc07d91d95644aedd05d03f95e1dba8af': ProtocolCategory.SWAP,        # Uniswap Universal Router (V4) - VERIFY
         '0x9008d19f58aabd9ed0d60971565aa8510560ab41': ProtocolCategory.SWAP,        # CoW Protocol GPv2Settlement - VERIFY
+        '0x0000000000001ff3684f28c67538d4d072c22734': ProtocolCategory.SWAP,        # 0x Protocol AllowanceHolder - VERIFY
         '0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae': ProtocolCategory.AGGREGATOR,  # LI.FI Diamond (Jumper) - VERIFY
         '0xa6e941eab67569ca4522f70d343714ff51d571c4': ProtocolCategory.AGGREGATOR,  # Magpie / Fly.trade Router V3.1 - VERIFY
         '0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2': ProtocolCategory.LENDING,     # Aave v3 Pool - VERIFY

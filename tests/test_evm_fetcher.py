@@ -322,6 +322,24 @@ def test_swaps_are_emitted_for_registered_routers(fetcher, eth_wallet):
     assert usdc_to_eth['fee_qty'] == Decimal('130000') * Decimal('1000000000') / Decimal('10') ** 18
 
 
+def test_swap_through_0x_allowance_holder_is_recognized(eth_wallet, monkeypatch):
+    allowance_holder = "0x0000000000001ff3684f28c67538d4d072c22734"   # 0x Protocol AllowanceHolder
+    a1 = "0xa1" + "0" * 62
+    pages = {
+        "txlist": [_tx(a1, 100, WALLET, allowance_holder, value=3 * 10 ** 17)],  # 0.3 ETH out
+        "tokentx": [_token_tx(a1, 100, allowance_holder, WALLET, 900 * 10 ** 6)],  # 900 USDC in
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert not fetcher.skipped()
+    swaps = _swaps(data)
+    assert len(swaps) == 1
+    eth_symbols, usdc_symbols = _eth_symbol_ids(data), _usdc_symbol_ids(data)
+    assert swaps[0]['out_symbol'] in eth_symbols and swaps[0]['out_qty'] == Decimal('0.3')
+    assert swaps[0]['in_symbol'] in usdc_symbols and swaps[0]['in_qty'] == Decimal('900')
+
+
 def test_import_halts_and_checkpoints_at_an_unregistered_exchange(eth_wallet, monkeypatch):
     unknown = "0x7777777777777777777777777777777777777777"
     other = "0x2222222222222222222222222222222222222222"
