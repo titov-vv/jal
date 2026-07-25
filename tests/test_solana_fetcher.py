@@ -12,6 +12,7 @@ from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.settings import JalSettings
 from jal.db.token_blacklist import is_solana_address
+from jal.net.chain_fetchers.fetcher import TransferMark
 from jal.net.chain_fetchers.solana import SolanaFetcher, _STAKE_PROGRAM
 from jal.net.token_lists import TokenListProvider
 
@@ -181,6 +182,9 @@ def test_staking_deposit_is_an_outgoing_transfer(fetcher, sol_wallet):
         assert len(transfer) == 1
         assert transfer[0]['account'][0] == 1                  # outgoing, from the wallet
         assert transfer[0]['fee'] > Decimal('0')               # the wallet signed it, so it paid the gas
+        # The transfer is all a movement into the container can be recorded as, so it says so: the tag makes these
+        # findable in the ledger and the stake account it went to is kept behind it
+        assert transfer[0]['description'].startswith(TransferMark.CUSTODY)
         assert 'Staked to' in transfer[0]['description']
     # The amounts are the gross movements, with the transaction fee excluded rather than folded in
     amounts = sorted(t['withdrawal'] for t in _transfers(data)

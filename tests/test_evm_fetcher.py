@@ -12,6 +12,8 @@ from jal.db.symbol import JalSymbol
 from jal.db.settings import JalSettings
 from jal.db.token_blacklist import JalTokenBlacklist, is_evm_address
 from jal.net.chain_fetchers.ethereum import EthereumFetcher
+from jal.net.chain_fetchers.fetcher import TransferMark
+from jal.net.chain_fetchers.protocols import _REGISTRY, ProtocolCategory, protocol_category, protocol_name
 from jal.net.token_lists import TokenListProvider
 
 # A sample wallet used only by the recorded fixtures - never the address of a real user (see the note in
@@ -362,6 +364,27 @@ def test_import_halts_and_checkpoints_at_an_unregistered_exchange(eth_wallet, mo
     assert fetcher._new_cursor == '100'
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# The registry is hand-edited curated knowledge, and a malformed entry would go unnoticed until an import met that very
+# contract - so its shape is checked here: every address maps to a known category AND to a name, because the name is
+# what an operation that has to be reconciled by hand quotes in its description.
+def test_protocol_registry_entries_are_a_known_category_and_a_name():
+    categories = {value for name, value in vars(ProtocolCategory).items() if not name.startswith('_')}
+    for location_id, protocols in _REGISTRY.items():
+        for address, entry in protocols.items():
+            assert isinstance(entry, tuple) and len(entry) == 2, f"{address} is not a (category, name) pair"
+            category, name = entry
+            assert category in categories, f"{address} has an unknown category {category}"
+            assert name and isinstance(name, str), f"{address} has no protocol name"
+            # The lookups take the address in whatever case the chain reported it
+            assert protocol_category(location_id, address.upper()) == category
+            assert protocol_name(location_id, address.upper()) == name
+    # An address the registry doesn't hold has neither a category nor a name, and asking is not an error
+    assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, SPAM_CONTRACT) is None
+    assert protocol_name(AssetLocation.ETH_BLOCKCHAIN, SPAM_CONTRACT) == ''
+    assert protocol_name(AssetLocation.ETH_BLOCKCHAIN, '') == ''
+
+
 # Supplying to a lending protocol keeps the position and only changes its shape, so it is a Conversion - not a swap
 # (which would realize a profit that was never made) and not a pair of transfers.
 def test_lending_supply_is_emitted_as_a_conversion(eth_wallet, monkeypatch):
@@ -458,6 +481,11 @@ def test_custody_deposit_is_emitted_as_a_transfer(eth_wallet, monkeypatch):
     assert _conversions(data) == [] and _swaps(data) == [] and _bridges(data) == []
     assert data.get(JSF.ASSET_PAYMENTS, []) == []                  # nothing was earned, so nothing is booked as income
     assert fetcher.skipped() == {}
+    # A transfer is all a custody movement can be recorded as, so the description says so: the untranslated tag makes
+    # these findable in the ledger, the protocol name says which position the leg belongs to, and the counterparty
+    # note is kept behind them.
+    assert transfers[0]['description'].startswith(f"{TransferMark.CUSTODY} stake.link PriorityPool: ")
+    assert f"{WALLET} → {pool}" in transfers[0]['description']
 
 
 # ... and taking it back is a transfer in. This is the whole point of the category: the same asset returning from a
@@ -478,6 +506,7 @@ def test_custody_return_is_a_transfer_not_a_reward(eth_wallet, monkeypatch):
     # The wallet signed the withdrawal, so its gas is charged - but nothing here is income
     assert [p['type'] for p in data.get(JSF.ASSET_PAYMENTS, [])] == [JSF.PAYMENT_GAS_FEE]
     assert fetcher.skipped() == {} and fetcher._new_cursor == '100'
+    assert transfers[0]['description'].startswith(f"{TransferMark.CUSTODY} stake.link PriorityPool: ")
 
 
 # A custody contract that hands something back in exchange isn't holding the asset any more - that shape is a
@@ -514,6 +543,9 @@ def test_bridge_send_is_emitted_as_a_pending_send_half(eth_wallet, monkeypatch):
     assert half['qty'] == Decimal('2')                                 # the sending leg only
     assert half['symbol'] in _eth_symbol_ids(data)
     assert half['fee_qty'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18   # gas rides the send
+    # A pending half is an operation of its own kind and needs no mark, but it names the protocol it went through -
+    # that is what lets the user recognize its counterpart among the candidates the matcher offers
+    assert 'LI.FI Diamond (Jumper)' in half['description']
 
 
 # The ARRIVING leg of a cross-chain move is never recognized as such: nothing in it says what was sent from the other
@@ -534,6 +566,8 @@ def test_bridge_receive_via_own_tx_is_emitted_as_a_plain_transfer(eth_wallet, mo
     assert len(transfers) == 1 and transfers[0]['withdrawal'] == Decimal('900')
     assert transfers[0]['account'][0] == 0                              # incoming: the source account is unknown
     assert any(p['type'] == JSF.PAYMENT_GAS_FEE for p in data[JSF.ASSET_PAYMENTS])   # its own claim gas is charged
+    # ... and the transfer says that this is what it is, so the pending half it belongs to can be found by hand
+    assert transfers[0]['description'].startswith(f"{TransferMark.BRIDGE} LI.FI Diamond (Jumper): ")
 
 
 def test_reward_claim_is_booked_as_a_staking_reward(eth_wallet, monkeypatch):

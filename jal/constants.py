@@ -29,6 +29,9 @@ class Setup:
     TAX_TREATY_PARAM = "tax_treaty"
     UPDATE_PREFIX = 'jal_delta_'
     DEFAULT_ACCOUNT_PRECISION = 2
+    # Most decimals shown for an amount whose precision isn't fixed by the account - a crypto quantity needs more
+    # than the two digits of a money sum, but far fewer than the 18 a token may carry (see localize_amount()).
+    MAX_AMOUNT_PRECISION = 8
     NULL_VALUE = '-.--'
     MAX_TIMESTAMP = 9999999999
     TOKEN_LIST_REFRESH_INTERVAL = 7 * 24 * 60 * 60   # How often allow/block token lists are re-downloaded, seconds

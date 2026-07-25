@@ -9,6 +9,7 @@ from jal.data_import.statement import JSF
 from jal.db.account import JalAccountCreator, JalAccount
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import is_valid_address, JalTokenBlacklist
+from jal.net.chain_fetchers.fetcher import TransferMark
 from jal.net.chain_fetchers.hyperliquid import HyperliquidFetcher, _HaltImport
 from jal.net.downloader import llama_coin_keys
 
@@ -155,6 +156,8 @@ def test_bridge_deposit_is_a_plain_incoming_transfer(fetcher, hl_account):
     assert deposit['account'] == [0, 1, 1]            # the sending side is unknown, so the import asks for it
     assert deposit['withdrawal'] == Decimal('5000')
     assert deposit['deposit'] == Decimal('0')         # the cost basis is completed by the user during import
+    # It is the arriving leg of a cross-chain move whose sending half was fetched from Arbitrum, and it says so
+    assert deposit['description'].startswith(f"{TransferMark.BRIDGE} Hyperliquid bridge: ")
 
 
 def test_bridge_withdrawal_becomes_a_pending_half(fetcher, hl_account):
@@ -183,6 +186,9 @@ def test_staking_is_a_box_account_and_the_excess_is_income(fetcher, hl_account):
     assert staked['withdrawal'] == Decimal('15')
     unstaked = [x for x in _transfers(data) if x['number'].endswith('006')][0]
     assert unstaked['account'] == [0, 1, 1]
+    # Both legs are marked as the container movements they are, so the ledger shows they belong together
+    assert staked['description'].startswith(TransferMark.CUSTODY)
+    assert unstaked['description'].startswith(TransferMark.CUSTODY)
     # Only the principal comes back as a transfer; the excess earned inside the container is income, which lands
     # the box account at exactly zero
     assert unstaked['withdrawal'] == Decimal('15')

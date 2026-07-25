@@ -240,7 +240,8 @@ class SolanaFetcher(ChainFetcher):
             stake_account = self._counterpart_account(tx, native)
             self._stakes[stake_account] = self._stakes.get(stake_account, Decimal('0')) + amount
             self._add_transfer(timestamp, self._native_asset_id(), amount, False, signature,
-                               note=self.tr("Staked to ") + stake_account,
+                               note=self._joined_note(self._custody_mark(self.tr("Solana staking")),
+                                                      self.tr("Staked to ") + stake_account),
                                fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
             return
         if kind == _STAKE_WITHDRAW and native > Decimal('0'):
@@ -263,7 +264,8 @@ class SolanaFetcher(ChainFetcher):
                 else:
                     self._stakes.pop(stake_account, None)
             self._add_transfer(timestamp, self._native_asset_id(), principal, True, signature,
-                               note=self.tr("Withdrawn from ") + stake_account,
+                               note=self._joined_note(self._custody_mark(self.tr("Solana staking")),
+                                                      self.tr("Withdrawn from ") + stake_account),
                                fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
             if reward > Decimal('0'):
                 self._add_payment(JSF.PAYMENT_STAKING_REWARD, timestamp, self._native_asset_id(), reward, signature,

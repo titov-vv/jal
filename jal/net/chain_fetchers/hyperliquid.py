@@ -348,7 +348,7 @@ class HyperliquidFetcher(ChainFetcher):
             self._skip(self.tr("deposit of a token quarantined as dust/spam"), tx_hash)
             return
         self._add_transfer(timestamp, self._token_asset(token), amount, True, tx_hash,
-                           note=self.tr("Deposit over the Hyperliquid bridge"))
+                           note=self._bridge_arrival_mark(self.tr("Hyperliquid bridge")))
 
     # USDC leaving over the Arbitrum bridge. This is the sending leg of a cross-chain move that the fetcher CAN
     # recognize (the destination is known to be the bridge), so it is added as a pending bridge half and paired
@@ -454,7 +454,8 @@ class HyperliquidFetcher(ChainFetcher):
         if delta.get('isDeposit'):
             self._staked[name] = self._staked.get(name, Decimal('0')) + amount
             self._add_transfer(timestamp, asset_id, amount, False, tx_hash,
-                               note=self.tr("Staked ") + name)
+                               note=self._joined_note(self._custody_mark(self.tr("Hyperliquid staking")),
+                                                      self.tr("Staked ") + name))
             return
         staked = self._staked.get(name)
         if staked is None:
@@ -470,7 +471,8 @@ class HyperliquidFetcher(ChainFetcher):
             else:
                 self._staked.pop(name, None)
         self._add_transfer(timestamp, asset_id, principal, True, tx_hash,
-                           note=self.tr("Unstaked ") + name)
+                           note=self._joined_note(self._custody_mark(self.tr("Hyperliquid staking")),
+                                                  self.tr("Unstaked ") + name))
         if reward > Decimal('0'):
             self._add_payment(JSF.PAYMENT_STAKING_REWARD, timestamp, asset_id, reward, tx_hash,
                               note=self.tr("Staking reward"))

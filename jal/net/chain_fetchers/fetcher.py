@@ -16,6 +16,20 @@ from jal.db.token_blacklist import normalize_address
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Tags that mark a transfer which stands in for an operation the fetcher could record only in part, so that the ledger
+# itself says what is still to be done with it. Several classifications end in "the user finishes this by hand"
+# (CRYPTO_PATH #47/#48/#56/#61) and a plain transfer is exactly what they all look like, so without a mark nothing but
+# a bare counterparty address distinguished them from an ordinary payment.
+#
+# The tag is deliberately NOT translated, while the sentence that follows it is: it has to stay the same string in
+# every UI language so that the operations list can be filtered on it (and a future automatic matcher can collect its
+# candidates by it), whereas the explanation is there to be read by the user.
+class TransferMark:
+    CUSTODY = '[custody]'    # the asset is held for the wallet elsewhere - merge the legs or convert them
+    BRIDGE = '[bridge]'      # one leg of a cross-chain move - merge it with the half on the other chain
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Base class of a blockchain transaction fetcher.
 #
 # A fetcher is a Statement that is filled from an HTTP API instead of a file: it builds the very same JSF structure
@@ -261,6 +275,32 @@ class ChainFetcher(Statement):
         self._data[JSF.ASSETS].append(
             {"id": asset_id, "type": JSF.ASSET_CRYPTO, "name": name, JSF.SYMBOLS: [record]})
         return asset_id
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Description prefix of a transfer into or out of a container that keeps the asset on the wallet's behalf (a
+    # custody protocol, a native staking account): what moved is still owned, so a transfer is what it is, but the
+    # position only becomes complete once the user merges the two legs or converts them into what really happened.
+    def _custody_mark(self, protocol: str) -> str:
+        return self._mark(TransferMark.CUSTODY, protocol,
+                          self.tr("held for the wallet - to be merged with its counter-leg or converted"))
+
+    # Description prefix of the ARRIVING leg of a cross-chain move. A fetcher sees one chain only, so this leg is
+    # imported as a plain transfer and paired afterwards with the pending sending half fetched from the other chain.
+    def _bridge_arrival_mark(self, protocol: str) -> str:
+        return self._mark(TransferMark.BRIDGE, protocol,
+                          self.tr("arriving leg - to be merged with its pending sending half"))
+
+    # A mark is "<tag> <protocol>: <what has to be done>"; the protocol is left out when it isn't known (an arrival
+    # delivered by a relayer names no contract of its own).
+    @staticmethod
+    def _mark(tag: str, protocol: str, hint: str) -> str:
+        return f"{tag} {protocol}: {hint}" if protocol else f"{tag} {hint}"
+
+    # Joins the parts of a description, dropping those that are empty - a counterparty note is empty whenever both
+    # ends of the transfer are accounts JAL already knows.
+    @staticmethod
+    def _joined_note(*parts: str) -> str:
+        return '. '.join(part for part in parts if part)
 
     # Adds an asset transfer between the fetched wallet and the outside world. 'counterparty' is the address at the
     # other end: when it belongs to another wallet of the user's own that account is filled in, otherwise the far

@@ -14,7 +14,7 @@ from jal.db.settings_registry import SettingsRegistry, SettingDescriptor
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, is_evm_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
-from jal.net.chain_fetchers.protocols import protocol_category, ProtocolCategory
+from jal.net.chain_fetchers.protocols import protocol_category, protocol_name, ProtocolCategory
 from jal.net.web_request import WebRequest
 
 # This module has no JAL_FETCHER_CLASS on purpose: it is the shared base of the EVM chains, not a selectable chain
@@ -203,7 +203,9 @@ class EVMFetcher(ChainFetcher):
         self._extract_native_dust(deltas, timestamp, tx['hash'])
         outs = {asset_id: data for asset_id, data in deltas.items() if data['amount'] < 0}
         ins = {asset_id: data for asset_id, data in deltas.items() if data['amount'] > 0}
-        category = protocol_category(self.location_id, self._norm(own_record.get('to', ''))) if own else None
+        contract = self._norm(own_record.get('to', '')) if own else ''
+        category = protocol_category(self.location_id, contract)
+        protocol = protocol_name(self.location_id, contract)
 
         # Nothing moved: an approval, a reverted transaction, or a contract call whose only effect was spam we
         # filtered out. If it was the wallet's own transaction its gas is still charged as a GasFee.
@@ -224,7 +226,8 @@ class EVMFetcher(ChainFetcher):
                 return self._emit_rewards(timestamp, ins, tx['hash'], gas, is_error, own_record)
             raise _HaltImport(self.tr("unrecognized lending/wrap shape"))
         if category == ProtocolCategory.BRIDGE:
-            return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error)
+            return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error,
+                                              protocol)
         if category == ProtocolCategory.REWARD:
             if ins and not outs:
                 return self._emit_rewards(timestamp, ins, tx['hash'], gas, is_error, own_record)
@@ -238,7 +241,8 @@ class EVMFetcher(ChainFetcher):
             # earned inside the container is invisible here and stays unrecognized until it is actually claimed.
             if outs and ins:   # something was given back in exchange - that is not custody, don't guess at it
                 raise _HaltImport(self.tr("unrecognized custody shape"))
-            return self._emit_transfers(timestamp, deltas, tx['hash'], gas, own_record, is_error)
+            return self._emit_transfers(timestamp, deltas, tx['hash'], gas, own_record, is_error,
+                                        mark=self._custody_mark(protocol))
 
         swap_shape = len(outs) == 1 and len(ins) == 1
         if category == ProtocolCategory.SWAP:
@@ -249,7 +253,8 @@ class EVMFetcher(ChainFetcher):
             if swap_shape:                                 # both legs on this chain -> a same-chain swap
                 return self._emit_swap(timestamp, outs, ins, tx['hash'], gas)
             # a single leg -> one side of a cross-chain move, whose counterpart lives on another chain
-            return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error)
+            return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error,
+                                              protocol)
 
         # From here the contract (if any) is unregistered. A transaction the wallet signed that both spends and
         # receives an asset is a swap/lending/bridge through an unknown contract - it must never be guessed at
@@ -257,8 +262,7 @@ class EVMFetcher(ChainFetcher):
         # claim whose cost basis we can't establish) halts, to be revisited once the registry knows the contract.
         if own and swap_shape:
             # Naming the contract lets the user add it to the protocol registry with the right category and re-fetch.
-            raise _HaltImport(self.tr("asset exchange through an unregistered contract ")
-                              + self._norm(own_record.get('to', '')))
+            raise _HaltImport(self.tr("asset exchange through an unregistered contract ") + contract)
         if own and outs and ins:
             raise _HaltImport(self.tr("unrecognized multi-asset transaction"))
         if own and ins and not outs:
@@ -270,15 +274,20 @@ class EVMFetcher(ChainFetcher):
 
     # Emits the wallet's movements as plain transfers, one per asset. The gas of the wallet's own send rides its
     # outgoing leg, the way a broker's transfer fee does; a transaction that only received pays it as a GasFee.
+    #
+    # 'mark' is set when a transfer is all this classification can record of something bigger (a custody movement, an
+    # arriving bridge leg): it goes in front of the counterparty note, so both the ledger and the account-selection
+    # dialog of the import say what the operation still needs - see TransferMark.
     def _emit_transfers(self, timestamp: int, deltas: dict, tx_hash: str, gas: Decimal,
-                        own_record, is_error: bool) -> None:
+                        own_record, is_error: bool, mark: str = '') -> None:
         remaining_gas = gas
         for asset_id, data in sorted(deltas.items()):
             incoming = data['amount'] > Decimal('0')
             fee = Decimal('0')
             if not incoming and remaining_gas > Decimal('0'):
                 fee, remaining_gas = remaining_gas, Decimal('0')
-            self._add_transfer(timestamp, asset_id, abs(data['amount']), incoming, tx_hash, note=data['note'],
+            self._add_transfer(timestamp, asset_id, abs(data['amount']), incoming, tx_hash,
+                               note=self._joined_note(mark, data['note']),
                                fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None,
                                counterparty=data['counterparty'] or '')
         if own_record is not None and remaining_gas > Decimal('0'):
@@ -399,14 +408,20 @@ class EVMFetcher(ChainFetcher):
     #     ones, and the user pairs it with its pending sending half by hand.
     # A cross-chain move that both spends and receives on the same chain isn't a shape we recognize, so it halts.
     def _emit_cross_chain_leg(self, timestamp: int, deltas: dict, outs: dict, ins: dict, tx_hash: str, gas: Decimal,
-                              own_record, is_error: bool) -> None:
+                              own_record, is_error: bool, protocol: str = '') -> None:
         if len(outs) == 1 and not ins:
             asset_id, data = next(iter(outs.items()))
+            # The half is already an operation of its own kind, so it needs no mark - but naming the protocol it went
+            # through helps the user recognize its counterpart when the matcher offers the candidates.
             self._add_bridge_half(timestamp, asset_id, abs(data['amount']), tx_hash,
+                                  note=(self.tr("Sent through ") + protocol) if protocol else '',
                                   fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
             return
         if len(ins) == 1 and not outs:
-            self._emit_transfers(timestamp, deltas, tx_hash, gas, own_record, is_error)
+            # Marked as the arriving leg it is: the pending half it belongs to was fetched from another chain (or is
+            # not fetched yet), and nothing in this transaction can point at it - only the user can.
+            self._emit_transfers(timestamp, deltas, tx_hash, gas, own_record, is_error,
+                                 mark=self._bridge_arrival_mark(protocol))
             return
         raise _HaltImport(self.tr("unrecognized cross-chain transaction shape"))
 

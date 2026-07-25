@@ -30,6 +30,7 @@ class Ui_SelectAccountDlg(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.DescriptionLbl = QLabel(SelectAccountDlg)
         self.DescriptionLbl.setObjectName(u"DescriptionLbl")
+        self.DescriptionLbl.setWordWrap(True)
 
         self.verticalLayout.addWidget(self.DescriptionLbl)
 

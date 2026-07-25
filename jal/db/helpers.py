@@ -67,6 +67,25 @@ def localize_decimal(value: Decimal, precision: int = None, percent: bool = Fals
     return formatted_number
 
 
+# Make a locale-specific string from an amount whose kind is not known in advance - a money sum and a quantity of a
+# crypto asset may reach the same place (an account balance, a question about a transfer), and one fixed number of
+# decimals cannot serve both: two digits turn 0.0004 BTC into '0.00', while the 18 decimals a token can carry are
+# noise in every other case.
+#
+# So the amount is shown with the digits it actually has: never fewer than 'minimum' (a money sum keeps its familiar
+# two) and never more than 'maximum'. Rounding to 'maximum' may still hide a genuinely tiny amount, and showing a
+# non-zero amount as zero would be a lie - such a value is spelled out in full instead, however long it turns out.
+def localize_amount(value: Decimal, minimum: int = Setup.DEFAULT_ACCOUNT_PRECISION,
+                    maximum: int = Setup.MAX_AMOUNT_PRECISION) -> str:
+    if value is None or type(value) != Decimal or value.is_nan():
+        return localize_decimal(value)
+    decimals = -remove_exponent(value).as_tuple().exponent   # trailing zeros don't count as digits worth showing
+    decimals = min(max(decimals, minimum), maximum)
+    if value != Decimal('0') and round(value, decimals) == Decimal('0'):
+        return localize_decimal(value)          # too small to be shown rounded, and it is not nothing
+    return localize_decimal(value, precision=decimals)
+
+
 # Make number not locale-specific - i.e. replace decimal separator with '.' and remove any thousand separators
 # Divide value by 100 if 'percent' is True
 def delocalize_decimal(value: str, percent: bool = False) -> Decimal:

@@ -13,7 +13,7 @@ from jal.constants import JalGlobals as JalGlobalsPackage   # a distinct class -
 from jal.db.db import JalDB, JalDBError
 from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
-from jal.db.helpers import localize_decimal
+from jal.db.helpers import localize_decimal, localize_amount
 from jal.widgets.helpers import is_english
 from jal.db.backup_restore import JalBackup
 from tests.helpers import pop2minor_digits, d2t, d2dt, dt2t
@@ -55,6 +55,25 @@ def test_number_formatting(russian_locale):
     assert localize_decimal(Decimal('-1.23E-8')) == '-0,0000000123'
     assert localize_decimal(Decimal('9.76E-8'), sign=True) == '+0,0000000976'
     assert localize_decimal(Decimal('-321.0')) == '-321'
+
+
+# An amount whose kind isn't fixed by the account it belongs to keeps the digits it really has: at least the two of
+# a money sum, at most Setup.MAX_AMOUNT_PRECISION - and in full when rounding to that maximum would show a non-zero
+# amount as zero.
+def test_amount_formatting(russian_locale):
+    assert localize_amount(Decimal('1000')) == '1\xa0000,00'          # a round sum still looks like money
+    assert localize_amount(Decimal('1234.5')) == '1\xa0234,50'
+    assert localize_amount(Decimal('0.00043')) == '0,00043'           # ... and a small quantity is not '0,00'
+    assert localize_amount(Decimal('0.15468900016691433')) == '0,15468900'    # capped, not spelled out to 18 digits
+    assert localize_amount(Decimal('-2.5')) == '-2,50'
+    assert localize_amount(Decimal('0')) == '0,00'
+    # Below the cap: showing it as zero would state something false, so the whole number is spelled out
+    assert localize_amount(Decimal('1E-18')) == '0,000000000000000001'
+    assert localize_amount(Decimal('0.000000004')) == '0,000000004'
+    # The bounds are arguments, so a caller that knows the precision it wants can say so
+    assert localize_amount(Decimal('1.23456'), minimum=0, maximum=2) == '1,23'
+    assert localize_amount(Decimal('7'), minimum=0, maximum=2) == '7'
+    assert localize_amount(None) == '' and localize_amount(Decimal('NaN')) == Setup.NULL_VALUE
 
 
 def test_helpers():

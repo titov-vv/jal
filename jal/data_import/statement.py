@@ -17,6 +17,7 @@ from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Transfer
+from jal.db.helpers import localize_amount
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
 from jal.widgets.token_select import SelectTokenActionDialog
@@ -641,8 +642,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset_types[0] != asset_types[1]:
                 raise Statement_ImportError(self.tr("Impossible to convert asset type in transfer: ") + f"{transfer}")
             if accounts[0] == 0 or accounts[1] == 0:
-                text = ''
+                movement = prompt = ''
                 pair_account = 1
+                # The symbol shown is the one of the LISTING the statement named (JalSymbol), not the asset's: an
+                # asset may be listed under several symbols at once - the same token on several chains - and
+                # JalAsset.symbol() called without a currency concatenates them all, so the question was asked about
+                # a comma-separated list of symbols instead of the single one this transfer moves.
                 if accounts[0] == 0:  # Deposit
                     # For an asset transfer the quantity is carried by 'withdrawal' on both legs; 'deposit' holds the
                     # cost basis in the destination currency (0 when unknown, e.g. from a chain fetcher). So the
@@ -650,14 +655,19 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     # shows the distinct 'deposit' amount.
                     arriving = operation['deposit'] if asset_types[1] == PredefinedAsset.Money else operation['withdrawal']
                     pair_account = accounts[1]
-                    text = self.tr("Deposit of ") + f"{arriving:.2f} {JalAsset(asset_ids[1]).symbol()} " + \
-                           self.tr("to") + f" {JalAccount(pair_account).name()} @{ts2d(operation['timestamp'])}\n" + \
-                           self.tr("Select account to withdraw from:")
+                    movement = self.tr("Deposit of ") + f"{localize_amount(arriving)} {JalSymbol(symbols[1]).symbol()} " + \
+                               self.tr("to") + f" {JalAccount(pair_account).name()} @{ts2d(operation['timestamp'])}"
+                    prompt = self.tr("Select account to withdraw from:")
                 if accounts[1] == 0:  # Withdrawal
                     pair_account = accounts[0]
-                    text = self.tr("Withdrawal of ") + f"{operation['withdrawal']:.2f} {JalAsset(asset_ids[0]).symbol()} " + \
-                           self.tr("from") + f" {JalAccount(pair_account).name()} @{ts2d(operation['timestamp'])}\n" + \
-                           self.tr("Select account to deposit to:")
+                    movement = self.tr("Withdrawal of ") + \
+                               f"{localize_amount(operation['withdrawal'])} {JalSymbol(symbols[0]).symbol()} " + \
+                               self.tr("from") + f" {JalAccount(pair_account).name()} @{ts2d(operation['timestamp'])}"
+                    prompt = self.tr("Select account to deposit to:")
+                # The description is part of the question, not decoration: a transfer imported from a blockchain may
+                # be all that could be recorded of a larger operation, and the mark it carries ([custody], [bridge] -
+                # see TransferMark) says what it stands for, which is what the account to pick depends on.
+                text = '\n'.join(x for x in (movement, operation.get('description', ''), prompt) if x)
                 try:
                     chosen_account = self._previous_accounts[JalAccount(pair_account).currency()]
                 except KeyError:
