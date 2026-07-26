@@ -17,6 +17,7 @@ from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Transfer
+from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.helpers import localize_amount
 from jal.widgets.helpers import ts2d
 from jal.widgets.account_select import SelectAccountDialog
@@ -641,6 +642,14 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             asset_types = [JalAsset(x).type() for x in asset_ids]
             if asset_types[0] != asset_types[1]:
                 raise Statement_ImportError(self.tr("Impossible to convert asset type in transfer: ") + f"{transfer}")
+            # Checked before the account is asked for: an arrival that is already booked as the leg of a cross-chain
+            # operation is not a transfer to be stored at all, so there is nothing to ask the user about. The guard is
+            # the same as the one that allows a movement to be recognized at all - 'number' has to be a transaction
+            # hash - but not 'stored_before', which is 0 both for a statement that has no hashes AND for a database
+            # that holds no transfer yet, and the second of those is exactly when a first arrival is met.
+            if self._transfers_are_unique_per_transaction and self._arrival_already_adopted(operation, accounts,
+                                                                                            symbols):
+                continue
             if accounts[0] == 0 or accounts[1] == 0:
                 movement = prompt = ''
                 pair_account = 1
@@ -703,6 +712,25 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if stored_before and self._transfer_already_imported(operation, stored_before):
                 continue
             LedgerTransaction.create_new(LedgerTransaction.Transfer, operation)
+
+    # True if this incoming movement is already booked as the ARRIVING LEG of a cross-chain operation - a bridge or a
+    # cross-chain swap that was completed from what the routing aggregator reported, possibly long before the chain it
+    # landed on was ever fetched (jal/net/lifi_reconciler.py). Storing it again would credit the assets twice.
+    #
+    # The leg is recognized by the transaction hash of the arrival together with the asset it moved: one transaction
+    # may deliver several assets at once (a token plus a gas top-up), and only the one that was adopted is already in
+    # the ledger - the others are movements of their own and must be stored. What the chain now says is checked
+    # against what was booked, and any disagreement is logged for the user (BridgeMatcher.reconcile_arrival): the
+    # chain is the authority, the aggregator's report was only a description of it.
+    @staticmethod
+    def _arrival_already_adopted(operation: dict, accounts: list, symbols: list) -> bool:
+        if not operation.get('number') or accounts[1] == 0:
+            return False    # an arrival names the transaction it came in and the account it landed on
+        recognized, complaint = BridgeMatcher().reconcile_arrival(
+            operation['number'], symbols[1], accounts[1], operation['withdrawal'], operation['timestamp'])
+        if recognized and complaint:
+            logging.warning(complaint)
+        return recognized
 
     # True if the movement this operation describes is already in the database - in which case it must not be stored
     # a second time. The fee it brings is attached to the stored transfer if that one was recorded without any.

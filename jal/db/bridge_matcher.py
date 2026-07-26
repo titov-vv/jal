@@ -1,6 +1,7 @@
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.db.db import JalDB
+from jal.db.helpers import remove_exponent
 from jal.db.operations import LedgerTransaction
 
 
@@ -81,6 +82,14 @@ class BridgeMatcher(JalDB):
             return None
         return self._pair_kind(half, arrival)
 
+    # The same question for an arriving leg that is described rather than stored (see match_with_leg): what the pending
+    # half 'oid' would become if that leg completed it, or None if it cannot.
+    def leg_kind(self, oid, arrival: dict):
+        half = self._find(self._pending_halves(), oid)
+        if half is None:
+            return None
+        return self._pair_kind(half, arrival)
+
     # oids of existing asset Transfers that could complete the pending half 'oid'. Transfers of ANY asset are offered:
     # the same one completes a bridge, a different one makes the pair a cross-chain swap (pair_kind() tells which).
     # Closest in time first, as that is the likeliest counterpart.
@@ -115,21 +124,40 @@ class BridgeMatcher(JalDB):
         arrival = self._transfer_side(transfer_oid)
         if arrival is None:
             raise BridgeMatchError(self.tr("A leg can only be adopted from an asset transfer"))
+        oid = self._adopt(half, half_oid, arrival)
+        self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", transfer_oid)], commit=True)
+        return oid
+
+    # Completes a pending half-bridge from an arriving leg that is DESCRIBED rather than already stored as a transfer:
+    # 'arrival' holds account_id / asset_id / symbol_id / qty / timestamp / tx_hash, the same shape _transfer_side()
+    # returns. It is the path for an arrival JAL has not fetched (and may never be able to fetch: the destination chain
+    # can be one JAL has no fetcher for), whose facts come from the aggregator that routed the move - see
+    # jal/net/lifi_reconciler.py. Nothing distinguishes the operation it produces from one matched by hand; what
+    # differs is only where the arriving leg's numbers came from, and the leg carries the destination transaction hash,
+    # which is what lets a later fetch of that chain recognize the arrival as already booked (see reconcile_arrival()).
+    # Raises BridgeMatchError on the same terms as match_with_transfer(); returns the oid of the resulting operation.
+    def match_with_leg(self, half_oid, arrival: dict) -> int:
+        half = self._find(self._pending_halves(), half_oid)
+        if half is None:
+            raise BridgeMatchError(self.tr("The operation to complete must be a pending half-bridge"))
+        return self._adopt(half, half_oid, arrival)
+
+    # Applies an arriving leg to a pending half, whatever the leg was described by. What the pair moves decides the
+    # operation: the same asset completes the bridge in place, a different one turns the half into a cross-chain swap.
+    def _adopt(self, half: dict, half_oid, arrival: dict) -> int:
         kind = self._pair_kind(half, arrival)
         if kind is None:
-            raise BridgeMatchError(self.tr("This transfer doesn't match by asset, account, amount or dates"))
+            raise BridgeMatchError(self.tr("The arriving leg doesn't match by asset, account, amount or dates"))
         leg = {'in_timestamp': arrival['timestamp'], 'in_account_id': arrival['account_id'],
                'in_symbol_id': arrival['symbol_id'], 'in_qty': arrival['qty'], 'in_tx_hash': arrival['tx_hash']}
         if kind == self.SWAP:
             oid = self._create_swap(half_oid, leg)
             self._exec("DELETE FROM bridges WHERE oid=:oid", [(":oid", half_oid)], commit=True)
-            self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", transfer_oid)], commit=True)
             return oid
         self._exec("UPDATE bridges SET in_timestamp=:ts, in_account_id=:acc, in_symbol_id=:sym, in_qty=:qty, "
                    "in_tx_hash=:hash WHERE oid=:oid",
                    [(":ts", leg['in_timestamp']), (":acc", leg['in_account_id']), (":sym", leg['in_symbol_id']),
                     (":qty", leg['in_qty']), (":hash", leg['in_tx_hash']), (":oid", half_oid)], commit=True)
-        self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", transfer_oid)], commit=True)
         return half_oid
 
     # Builds a cross-chain Swap out of a pending SEND half (which holds the disposed asset and the gas paid for it)
@@ -150,6 +178,85 @@ class BridgeMatcher(JalDB):
             data['note'] = out['note']
         return LedgerTransaction.create_new(LedgerTransaction.Swap, data).oid()
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # An arriving leg that is already booked can be met a second time, as a transaction of the chain it landed on.
+    #
+    # match_with_leg() books an arrival from what the routing aggregator reported, which may happen long before - or
+    # instead of - the destination chain ever being fetched. When that chain IS fetched afterwards, the very same
+    # arrival comes back as an ordinary incoming transfer, and storing it would credit the assets twice. The two are
+    # recognized as one movement by the transaction hash of the arriving leg together with the asset it moved: one
+    # transaction may deliver several assets at once (a token plus a gas top-up), and only the one that was booked
+    # must be swallowed - the others are movements of their own and have to be stored.
+
+    # The bridge or swap whose ARRIVING leg is the given transaction and asset, as {'table', 'oid', 'account_id',
+    # 'qty', 'timestamp'}, or None when no operation holds it.
+    def _adopted_leg(self, tx_hash: str, symbol_id):
+        if not tx_hash or not symbol_id:
+            return None
+        for table in ('bridges', 'swaps'):
+            row = self._read(f"SELECT oid, in_account_id, in_qty, in_timestamp FROM {table} "
+                             "WHERE in_tx_hash=:hash AND in_symbol_id=:sym AND in_account_id IS NOT NULL",
+                             [(":hash", tx_hash), (":sym", symbol_id)], named=True)
+            if row:
+                return {'table': table, 'oid': int(row['oid']), 'account_id': int(row['in_account_id']),
+                        'qty': Decimal(row['in_qty']), 'timestamp': int(row['in_timestamp'])}
+        return None
+
+    # Recognizes a freshly fetched arrival as the leg of a cross-chain operation that is already booked, and checks
+    # what was booked against what the chain now says. The chain is the authority - the aggregator's report was only
+    # ever a description of it - so a quantity or a time that differs is corrected here, while a difference that
+    # cannot be corrected without changing which account holds the assets is reported and left alone for the user.
+    #
+    # Returns (recognized, complaint): 'recognized' means the movement is already in the ledger and the transfer must
+    # not be stored again; 'complaint' is '' when the two agree, and otherwise says what differed and what was done.
+    def reconcile_arrival(self, tx_hash: str, symbol_id, account_id: int, qty: Decimal, timestamp: int) -> tuple:
+        booked = self._adopted_leg(tx_hash, symbol_id)
+        if booked is None:
+            return False, ''
+        where = self.tr("Arriving leg of ") + f"{booked['table']}#{booked['oid']}"
+        if booked['account_id'] != int(account_id):
+            # Which account holds the arrived assets decides where they are booked; changing it here would move a
+            # position between accounts behind the user's back, so only the disagreement is reported.
+            return True, where + self.tr(" is booked on ") + self._account_name(booked['account_id']) \
+                + self.tr(" while the chain delivered it to ") + self._account_name(int(account_id)) \
+                + self.tr(" - correct it by hand")
+        amended = []
+        if booked['qty'] != qty:
+            if not self._amend_leg(booked, 'in_qty', qty):
+                return True, where + self.tr(" says ") + f"{remove_exponent(booked['qty'])}" \
+                    + self.tr(" while the chain reports ") + f"{remove_exponent(qty)}" \
+                    + self.tr(", and the difference can't be applied - correct it by hand")
+            amended.append(self.tr("quantity ") + f"{remove_exponent(booked['qty'])} -> {remove_exponent(qty)}")
+        if booked['timestamp'] != int(timestamp) and self._amend_leg(booked, 'in_timestamp', int(timestamp)):
+            amended.append(self.tr("time ") + f"{booked['timestamp']} -> {int(timestamp)}")
+        if not amended:
+            return True, ''
+        return True, where + self.tr(" was corrected from the chain: ") + ", ".join(amended)
+
+    def _account_name(self, account_id: int) -> str:
+        return self._read("SELECT name FROM accounts WHERE id=:id", [(":id", account_id)]) or f"#{account_id}"
+
+    # Writes one field of an already booked arriving leg, unless doing so would leave the operation invalid: an
+    # arrival may not precede its departure, may not be empty, and a bridge may not deliver more than it was sent.
+    # Returns whether the value was applied.
+    def _amend_leg(self, booked: dict, field: str, value) -> bool:
+        table, oid = booked['table'], booked['oid']
+        if field == 'in_qty':
+            if value <= Decimal('0'):
+                return False
+            if table == 'bridges' and value > Decimal(self._read("SELECT out_qty FROM bridges WHERE oid=:oid",
+                                                                 [(":oid", oid)])):
+                return False
+        if field == 'in_timestamp':
+            sent = self._read(f"SELECT {'out_timestamp' if table == 'bridges' else 'timestamp'} FROM {table} "
+                              "WHERE oid=:oid", [(":oid", oid)])
+            if int(value) < int(sent):
+                return False
+        self._exec(f"UPDATE {table} SET {field}=:value WHERE oid=:oid",
+                   [(":value", value), (":oid", oid)], commit=True)
+        return True
+
+    # ------------------------------------------------------------------------------------------------------------------
     # The arriving (deposit) side of an existing asset transfer, described the way a pending half is, so that the two
     # can be compared. Returns None if the operation isn't an asset transfer - a money transfer can't be a leg here.
     def _transfer_side(self, transfer_oid):

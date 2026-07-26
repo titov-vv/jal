@@ -67,7 +67,7 @@ def test_dialog_offers_and_creates_a_cross_chain_swap(accounts):
 
     dialog = BridgeMatchDialog(send_oid)
     assert len(dialog._options) == 1
-    assert dialog._options[0][1].endswith(dialog.tr("cross-chain swap"))
+    assert dialog._options[0][2].endswith(dialog.tr("cross-chain swap"))
     dialog._list.setCurrentRow(0)
     dialog.accept()
 

@@ -10,6 +10,11 @@ from PySide6.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QLabel, QListWi
 from jal.constants import Setup, AssetLocation
 from jal.db.settings import JalSettings
 from jal.data_import.statement import Statement_ImportError
+from jal.net.lifi_reconciler import LiFiReconciler, log_findings
+
+# Highest swap oid that was already checked against the route it came from - see ChainFetchers._audit_swaps(). It is
+# a position, not a result, so it is kept in the settings the way a fetcher's sync cursor is kept on its account.
+_AUDITED_SWAP_SETTING = "LiFiAuditedSwap"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -178,12 +183,51 @@ class ChainFetchers(QObject):
             self.show_progress.emit(False)
         self._report_skipped(skipped)
         self._report_failures(failed)
+        if imported_any:
+            self._audit_swaps()
         if not imported_any:
             self.load_failed.emit()
+
+    # Checks the swaps the database holds against the routes they really were.
+    #
+    # A same-chain swap is what a cross-chain move looks like from the sending chain alone whenever the route also pays
+    # the wallet something on that chain: that payout is the only incoming asset the transaction has, so the classifier
+    # books the whole sent amount as disposed for it and realizes a loss that never happened. Nothing on-chain
+    # distinguishes that from a genuine exchange - only the aggregator that routed it can say - so the check is made
+    # here, right after an import, which is when such a swap comes into being.
+    #
+    # Each swap is looked up once: the highest oid checked is remembered, and later runs start above it. The first run
+    # therefore examines the whole history (which is what finds the misbookings already stored) and every run after it
+    # only the swaps that were just imported.
+    def _audit_swaps(self) -> None:
+        settings = JalSettings()
+        checked_upto = settings.getInt(_AUDITED_SWAP_SETTING, 0)
+        self.show_progress.emit(True)
+        try:
+            last_oid, findings = LiFiReconciler().audit_swaps(checked_upto, progress=self._on_swap_checked)
+        except Exception as error:   # a check that fails must never take a successful import down with it
+            logging.warning(self.tr("Cross-chain check of swaps could not be completed: ") + f"{error}")
+            return
+        finally:
+            self.show_progress.emit(False)
+        settings.setValue(_AUDITED_SWAP_SETTING, last_oid)
+        if not findings:
+            return
+        log_findings(findings)
+        QMessageBox().warning(None, self.tr("Check these swaps"),
+                              self.tr("LI.FI describes these operations differently than they are booked. Each one "
+                                      "has to be corrected by hand - what the ledger says about them is wrong:")
+                              + "\n\n" + "\n\n".join(findings), QMessageBox.Ok)
 
     # Relays one wallet's page_fetched into the status text shown next to the progress bar.
     def _on_page_fetched(self, label: str, page: int) -> None:
         self.update_progress_text.emit(f"{label}: " + self.tr("fetching page") + f" {page}...")
+
+    # ... and the swap audit into the same place. Unlike a fetch this one knows its total up front, so it reports a
+    # real share of the work as well.
+    def _on_swap_checked(self, checked: int, total: int) -> None:
+        self.update_progress_text.emit(self.tr("checking swaps") + f" {checked + 1}/{total}...")
+        self.update_progress.emit(100.0 * checked / total if total else 100.0)
 
     # Token allow-/block-lists back the spam filter that decides which fetched tokens are real. Against an empty
     # cache the filter has nothing to judge by: a token seen for the first time is unpriceable and looks exactly

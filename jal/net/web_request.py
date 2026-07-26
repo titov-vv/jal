@@ -15,7 +15,11 @@ class WebRequest(QThread):
     POST = auto()       # Execute HTTP POST method with application/x-www-form-urlencoded
     POST_JSON = auto()  # Execute HTTP POST with JSON
 
-    def __init__(self, operation, url, params=None, headers=None, binary=False):
+    # 'expected_errors' lists the HTTP status codes that are an ANSWER rather than a failure for this request, and are
+    # therefore logged as debug instead of as an error. An API asked "do you know this transaction?" replies 404 for
+    # every transaction it does not, and a caller that asks about many of them would otherwise fill the log the user
+    # reads with red lines that say nothing went wrong. The result is '' either way - an expected error is still no data.
+    def __init__(self, operation, url, params=None, headers=None, binary=False, expected_errors=()):
         super().__init__()
         self._mutex = QMutex()
         self._data = ''
@@ -24,6 +28,7 @@ class WebRequest(QThread):
         self._params = params
         self._headers = headers
         self._binary = binary
+        self._expected_errors = expected_errors
         if not self.isRunning():
             self.start()
 
@@ -34,8 +39,10 @@ class WebRequest(QThread):
         params = self._params
         headers = self._headers
         binary = self._binary
+        expected_errors = self._expected_errors
         self._mutex.unlock()
-        result = self._request(operation, url, params=params, headers=headers, binary=binary)
+        result = self._request(operation, url, params=params, headers=headers, binary=binary,
+                               expected_errors=expected_errors)
         self._mutex.lock()
         self._data = result
         self._mutex.unlock()
@@ -46,7 +53,7 @@ class WebRequest(QThread):
         self._mutex.unlock()
         return data
 
-    def _request(self, operation, url, params=None, headers=None, binary=False):
+    def _request(self, operation, url, params=None, headers=None, binary=False, expected_errors=()):
         session = requests.Session()
         session.headers['User-Agent'] = f"JAL/{__version__} ({platform.system()} {platform.release()})"
         if headers is not None:
@@ -71,6 +78,9 @@ class WebRequest(QThread):
                 return response.content
             else:
                 return response.text
+        elif response.status_code in expected_errors:
+            logging.debug(f"Expected [{response.status_code}] URL {url}\n{response.text}")
+            return ''
         else:
             logging.error(self.tr("Failed") + f" [{response.status_code}] URL {url}\n{response.text}")
             return ''
