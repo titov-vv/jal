@@ -81,9 +81,13 @@ class ReportTreeModel(QAbstractItemModel):
         self._columns = []
         self._view_configured = False
 
+    # An absent index is an INVALID QModelIndex, never None: index() is asked for children that may not exist (the
+    # xlsx exporter probes for a second tree level that way, and an empty report has no first one), and a None fed
+    # back into hasIndex()/index() raises instead of simply being invalid.
     def index(self, row, column, parent=None):
+        parent = QModelIndex() if parent is None else parent
         if not self.hasIndex(row, column, parent):
-            return None
+            return QModelIndex()
         parent = parent.internalPointer() if parent.isValid() else self._root
         child = parent.getChild(row)
         if child:
