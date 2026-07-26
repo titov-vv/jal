@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
-from jal.constants import BookAccount, PredefinedCategory, PredefinedAsset
+from jal.constants import Setup, BookAccount, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
@@ -1389,6 +1389,49 @@ class Transfer(LedgerTransaction):
     def last_oid(cls) -> int:
         oid = cls._read("SELECT MAX(oid) FROM transfers")
         return int(oid) if oid else 0
+
+    # Every transfer leg that is still unsettled as of 'timestamp'.
+    #
+    # This is read straight from 'transfers' and involves no ledger at all: an unsettled leg IS a row with a NULL
+    # account, so the answer is exact, complete and always fresh - it cannot disagree with the operations themselves
+    # and cannot go stale between ledger rebuilds. ('bridges' answers "which halves are pending" the same way.)
+    #
+    # Each record describes the leg from the side that IS known, and 'opart' says which side that is:
+    #   Outgoing - sent from 'account_id', destination unknown: value that left an account and reached none, so it
+    #              belongs to no account and is invisible in any per-account balance
+    #   Incoming - arrived at 'account_id', source unknown: already counted there, but holding a cost basis of zero
+    #              until the sending leg is found (see processPendingArrival)
+    # 'qty' is what the leg moves: for an asset transfer both legs carry the quantity in 'withdrawal', while a money
+    # transfer may convert currency and so states each side separately.
+    @classmethod
+    def pending_legs(cls, timestamp: int = None) -> list:
+        timestamp = Setup.MAX_TIMESTAMP if timestamp is None else timestamp
+        legs = []
+        query = cls._exec(
+            "SELECT oid, withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, "
+            "withdrawal, deposit, symbol_id, number, note FROM transfers "
+            "WHERE (withdrawal_account IS NULL OR deposit_account IS NULL) "
+            "AND (CASE WHEN deposit_account IS NULL THEN withdrawal_timestamp ELSE deposit_timestamp END)<=:timestamp "
+            "ORDER BY CASE WHEN deposit_account IS NULL THEN withdrawal_timestamp ELSE deposit_timestamp END, oid",
+            [(":timestamp", timestamp)])
+        while query.next():
+            leg = cls._read_record(query, named=True)
+            outgoing = not leg['deposit_account']
+            symbol = JalSymbol(leg['symbol_id']) if leg['symbol_id'] else None
+            account = jal.db.account.JalAccount(leg['withdrawal_account'] if outgoing else leg['deposit_account'])
+            legs.append({
+                'oid': int(leg['oid']),
+                'opart': Transfer.Outgoing if outgoing else Transfer.Incoming,
+                'timestamp': int(leg['withdrawal_timestamp'] if outgoing else leg['deposit_timestamp']),
+                'account': account,
+                'symbol': symbol,
+                # A money transfer moves the account currency itself, which is the asset its value is measured in
+                'asset': symbol.asset() if symbol else JalAsset(account.currency()),
+                'qty': Decimal(leg['withdrawal'] if (symbol or outgoing) else leg['deposit']),
+                'number': leg['number'],
+                'note': leg['note']
+            })
+        return legs
 
     # Attaches a fee to a transfer that was stored without one, and reports whether it did.
     #
