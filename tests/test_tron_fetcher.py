@@ -137,15 +137,23 @@ def test_native_dust_is_recorded_as_dust_attack(fetcher, tron_wallet):
     assert all(Decimal('0') < p['amount'] < Decimal('0.00001') for p in dust)
 
 
-# The rule is judged on the RAW COIN AMOUNT against the chain's own threshold (1 TRX by default), never on a fiat
-# value - unlike the old value-based rule, this needs no price data and so is never accidentally inert.
+# The rule is judged on the RAW COIN AMOUNT against the chain's own threshold, never on a fiat value - unlike the
+# old value-based rule, this needs no price data and so is never accidentally inert.
+#
+# The bounds are derived from the threshold in force instead of being written out as numbers. A literal here
+# restates TronFetcher.native_dust_threshold, and goes on asserting the old figure once that default is retuned or
+# the user edits the 'DustThreshold_TRX' setting - which is exactly how this test came to disagree with the code it
+# covers. What is worth pinning down is the rule: below the bound is dust, the bound itself is not, and a known
+# counterparty is never dust at any amount.
 def test_is_native_dust_judged_by_raw_amount(fetcher):
-    assert fetcher._is_native_dust(Decimal('0.000001'), known_counterparty=False)
-    assert fetcher._is_native_dust(Decimal('0.999999'), known_counterparty=False)
-    assert not fetcher._is_native_dust(Decimal('1'), known_counterparty=False)
-    assert not fetcher._is_native_dust(Decimal('10'), known_counterparty=False)
+    threshold = fetcher._native_dust_threshold()
+    assert threshold > Decimal('0'), "this chain must ship a dust threshold, or nothing below can mean anything"
+    assert fetcher._is_native_dust(threshold / 10, known_counterparty=False)
+    assert fetcher._is_native_dust(threshold - threshold / 1000, known_counterparty=False)
+    assert not fetcher._is_native_dust(threshold, known_counterparty=False)   # the bound itself is not dust
+    assert not fetcher._is_native_dust(threshold * 10, known_counterparty=False)
     # A transfer between two wallets of the same person is never an unsolicited airdrop, however small
-    assert not fetcher._is_native_dust(Decimal('0.000001'), known_counterparty=True)
+    assert not fetcher._is_native_dust(threshold / 10, known_counterparty=True)
 
 
 # A dust payment must reach the ledger even though the wallet's very first fetch has no TRX asset or quote of its

@@ -182,21 +182,23 @@ def test_incoming_internal_native_is_imported(fetcher, eth_wallet):
 
 def test_native_dust_is_recorded_as_dust_attack(eth_wallet, monkeypatch):
     DUST_SENDER = "0x2222222222222222222222222222222222222222"
-    # 1e12 wei = 0.000001 ETH, well under the 0.0001 ETH default threshold - address-poisoning dust, sent from an
-    # address the wallet never dealt with, and not a transaction the wallet itself signed (own=False, no gas).
-    pages = {"txlist": [_tx('0xdust', 100, DUST_SENDER, WALLET, value=1_000_000_000_000)],
+    # 10_000 wei = 1E-14 ETH, far under the 0.0000001 ETH (100 gwei) default threshold - address-poisoning dust,
+    # sent from an address the wallet never dealt with, and not a transaction the wallet itself signed (own=False,
+    # no gas). The amount is stated in wei on purpose: the threshold is set on the base-unit scale, not on what the
+    # send is worth in fiat, so a fixture that means "negligible" has to be negligible in wei.
+    pages = {"txlist": [_tx('0xdust', 100, DUST_SENDER, WALLET, value=10_000)],
             "tokentx": [], "txlistinternal": []}
     _, data = _drive(eth_wallet, monkeypatch, pages)
     assert _transfers(data) == []                     # never an ordinary Transfer implying a real counterparty...
     dust = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_DUST_ATTACK]
     assert len(dust) == 1                              # ...it is recorded as a DustAttack payment instead
-    assert dust[0]['amount'] == Decimal('0.000001')
+    assert dust[0]['amount'] == Decimal('1E-14')
 
 
 def test_native_dust_does_not_disrupt_a_real_transfer_in_the_same_block(eth_wallet, monkeypatch):
     DUST_SENDER = "0x2222222222222222222222222222222222222222"
     REAL_SENDER = "0x3333333333333333333333333333333333333333"
-    pages = {"txlist": [_tx('0xdust', 100, DUST_SENDER, WALLET, value=1_000_000_000_000),
+    pages = {"txlist": [_tx('0xdust', 100, DUST_SENDER, WALLET, value=10_000),                      # 1E-14 ETH
                         _tx('0xreal', 100, REAL_SENDER, WALLET, value=1_000_000_000_000_000_000)],  # 1 ETH
             "tokentx": [], "txlistinternal": []}
     _, data = _drive(eth_wallet, monkeypatch, pages)
@@ -206,15 +208,23 @@ def test_native_dust_does_not_disrupt_a_real_transfer_in_the_same_block(eth_wall
     assert len(dust) == 1
 
 
-# The rule is judged on the RAW COIN AMOUNT against the chain's own threshold (0.0001 ETH by default), never on a
-# fiat value - it needs no price data and so is never accidentally inert (see the discussion behind the redesign).
+# The rule is judged on the RAW COIN AMOUNT against the chain's own threshold, never on a fiat value - it needs no
+# price data and so is never accidentally inert (see the discussion behind the redesign).
+#
+# The bounds are derived from the threshold in force instead of being written out as numbers. A literal here
+# restates EVMFetcher.native_dust_threshold, and goes on asserting the old figure once that default is retuned or
+# the user edits the 'DustThreshold_ETH' setting - which is exactly how this test came to disagree with the code it
+# covers. What is worth pinning down is the rule: below the bound is dust, the bound itself is not, and a known
+# counterparty is never dust at any amount.
 def test_is_native_dust_judged_by_raw_amount(fetcher):
-    assert fetcher._is_native_dust(Decimal('0.00001'), known_counterparty=False)
-    assert fetcher._is_native_dust(Decimal('0.0000999'), known_counterparty=False)
-    assert not fetcher._is_native_dust(Decimal('0.0001'), known_counterparty=False)
-    assert not fetcher._is_native_dust(Decimal('1'), known_counterparty=False)
+    threshold = fetcher._native_dust_threshold()
+    assert threshold > Decimal('0'), "this chain must ship a dust threshold, or nothing below can mean anything"
+    assert fetcher._is_native_dust(threshold / 10, known_counterparty=False)
+    assert fetcher._is_native_dust(threshold - threshold / 1000, known_counterparty=False)
+    assert not fetcher._is_native_dust(threshold, known_counterparty=False)   # the bound itself is not dust
+    assert not fetcher._is_native_dust(threshold * 10, known_counterparty=False)
     # A transfer between two wallets of the same person is never an unsolicited airdrop, however small
-    assert not fetcher._is_native_dust(Decimal('0.00001'), known_counterparty=True)
+    assert not fetcher._is_native_dust(threshold / 10, known_counterparty=True)
 
 
 def test_spam_token_is_quarantined(fetcher, eth_wallet):
