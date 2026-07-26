@@ -93,6 +93,8 @@ class BridgeMatcher(JalDB):
     # oids of existing asset Transfers that could complete the pending half 'oid'. Transfers of ANY asset are offered:
     # the same one completes a bridge, a different one makes the pair a cross-chain swap (pair_kind() tells which).
     # Closest in time first, as that is the likeliest counterpart.
+    # A transfer whose own arriving side is still unknown ('deposit_account' NULL) has no arrival to donate, so it is
+    # not a candidate - it is itself waiting to be settled.
     def transfer_candidates(self, oid) -> list:
         half = self._find(self._pending_halves(), oid)
         if half is None:
@@ -101,6 +103,7 @@ class BridgeMatcher(JalDB):
         query = self._exec(
             "SELECT t.oid, t.withdrawal, t.deposit_timestamp, t.deposit_account, s.asset_id "
             "FROM transfers t JOIN asset_symbol s ON s.id=t.symbol_id "
+            "WHERE NOT t.deposit_account IS NULL "
             "ORDER BY ABS(t.deposit_timestamp - :ts)", [(":ts", half['timestamp'])])
         while query.next():
             toid, qty, d_ts, d_acc, asset_id = self._read_record(query, cast=[int, Decimal, int, int, int])
@@ -258,11 +261,12 @@ class BridgeMatcher(JalDB):
 
     # ------------------------------------------------------------------------------------------------------------------
     # The arriving (deposit) side of an existing asset transfer, described the way a pending half is, so that the two
-    # can be compared. Returns None if the operation isn't an asset transfer - a money transfer can't be a leg here.
+    # can be compared. Returns None if the operation isn't an asset transfer - a money transfer can't be a leg here -
+    # or if its own arriving side is still unknown, in which case there is no arrival to adopt.
     def _transfer_side(self, transfer_oid):
         t = self._read("SELECT deposit_timestamp, deposit_account, withdrawal, symbol_id, number "
                        "FROM transfers WHERE oid=:oid", [(":oid", transfer_oid)], named=True)
-        if not t or not t['symbol_id']:
+        if not t or not t['symbol_id'] or not t['deposit_account']:
             return None
         asset_id = self._read("SELECT asset_id FROM asset_symbol WHERE id=:sym", [(":sym", t['symbol_id'])])
         # For an asset transfer the moved quantity is carried by 'withdrawal' on both legs; 'deposit' holds the cost

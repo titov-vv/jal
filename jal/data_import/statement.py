@@ -18,9 +18,6 @@ from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Transfer
 from jal.db.bridge_matcher import BridgeMatcher
-from jal.db.helpers import localize_amount
-from jal.widgets.helpers import ts2d
-from jal.widgets.account_select import SelectAccountDialog
 from jal.widgets.token_select import SelectTokenActionDialog
 from jal.net.moex import MOEX
 
@@ -161,8 +158,6 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         # shows exactly what the producer built.
         self._id_map = {}
         self._reset_id_map()
-        self._previous_accounts = {}
-        self._last_selected_account = None
         # The interactive cross-chain token prompt can't run under pytest; tests set the desired outcome here as a
         # (action, target_asset_id) tuple. The default never merges or discards silently - it creates a new asset.
         self._token_action_for_tests = (Statement.TOKEN_CREATE_NEW, 0)
@@ -459,17 +454,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             symbol_ids.update(item['symbol'] for item in operation.get('outcome', []))
         return symbol_ids
 
-    # Matches accounts by number+currency (or via user dialog when producer requested it)
+    # Matches accounts by number+currency. An account that matches nothing is created by _import_accounts() - a
+    # statement always names the account it is about, so there has never been anything to ask the user here.
     def _match_accounts(self):
         for account in self._data[JSF.ACCOUNTS]:
             if self.mapped_id(JSF.ACCOUNTS, account['id']):
                 continue
-            if 'selection_text' in account:
-                account_id = self.select_account(account['selection_text'], 0, self._last_selected_account)
-            else:
-                account_data = account.copy()
-                account_data['currency'] = self.mapped_id(JSF.ASSETS, account['currency'])
-                account_id = JalAccount.find(account_data).id()
+            account_data = account.copy()
+            account_data['currency'] = self.mapped_id(JSF.ASSETS, account['currency'])
+            account_id = JalAccount.find(account_data).id()
             if account_id:
                 self.set_mapped_id(JSF.ACCOUNTS, account['id'], account_id)
 
@@ -642,52 +635,21 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             asset_types = [JalAsset(x).type() for x in asset_ids]
             if asset_types[0] != asset_types[1]:
                 raise Statement_ImportError(self.tr("Impossible to convert asset type in transfer: ") + f"{transfer}")
-            # Checked before the account is asked for: an arrival that is already booked as the leg of a cross-chain
-            # operation is not a transfer to be stored at all, so there is nothing to ask the user about. The guard is
-            # the same as the one that allows a movement to be recognized at all - 'number' has to be a transaction
-            # hash - but not 'stored_before', which is 0 both for a statement that has no hashes AND for a database
-            # that holds no transfer yet, and the second of those is exactly when a first arrival is met.
+            # An arrival that is already booked as the leg of a cross-chain operation is not a transfer to be stored
+            # at all. The guard is the same as the one that allows a movement to be recognized at all - 'number' has
+            # to be a transaction hash - but not 'stored_before', which is 0 both for a statement that has no hashes
+            # AND for a database that holds no transfer yet, and the second of those is exactly when a first arrival
+            # is met.
             if self._transfers_are_unique_per_transaction and self._arrival_already_adopted(operation, accounts,
                                                                                             symbols):
                 continue
-            if accounts[0] == 0 or accounts[1] == 0:
-                movement = prompt = ''
-                pair_account = 1
-                # The symbol shown is the one of the LISTING the statement named (JalSymbol), not the asset's: an
-                # asset may be listed under several symbols at once - the same token on several chains - and
-                # JalAsset.symbol() called without a currency concatenates them all, so the question was asked about
-                # a comma-separated list of symbols instead of the single one this transfer moves.
-                if accounts[0] == 0:  # Deposit
-                    # For an asset transfer the quantity is carried by 'withdrawal' on both legs; 'deposit' holds the
-                    # cost basis in the destination currency (0 when unknown, e.g. from a chain fetcher). So the
-                    # amount arriving is the withdrawn quantity - only a money transfer, which may convert currency,
-                    # shows the distinct 'deposit' amount.
-                    arriving = operation['deposit'] if asset_types[1] == PredefinedAsset.Money else operation['withdrawal']
-                    pair_account = accounts[1]
-                    movement = self.tr("Deposit of ") + f"{localize_amount(arriving)} {JalSymbol(symbols[1]).symbol()} " + \
-                               self.tr("to") + f" {JalAccount(pair_account).name()} @{ts2d(operation['timestamp'])}"
-                    prompt = self.tr("Select account to withdraw from:")
-                if accounts[1] == 0:  # Withdrawal
-                    pair_account = accounts[0]
-                    movement = self.tr("Withdrawal of ") + \
-                               f"{localize_amount(operation['withdrawal'])} {JalSymbol(symbols[0]).symbol()} " + \
-                               self.tr("from") + f" {JalAccount(pair_account).name()} @{ts2d(operation['timestamp'])}"
-                    prompt = self.tr("Select account to deposit to:")
-                # The description is part of the question, not decoration: a transfer imported from a blockchain may
-                # be all that could be recorded of a larger operation, and the mark it carries ([custody], [bridge] -
-                # see TransferMark) says what it stands for, which is what the account to pick depends on.
-                text = '\n'.join(x for x in (movement, operation.get('description', ''), prompt) if x)
-                try:
-                    chosen_account = self._previous_accounts[JalAccount(pair_account).currency()]
-                except KeyError:
-                    chosen_account = self.select_account(text, pair_account, self._last_selected_account)
-                if chosen_account == 0:
-                    raise Statement_ImportError(self.tr("Account not selected"))
-                self._last_selected_account = chosen_account
-                if accounts[0] == 0:
-                    accounts[0] = chosen_account
-                if accounts[1] == 0:
-                    accounts[1] = chosen_account
+            # An end that the statement doesn't name is stored as NULL, not asked about. The import is the moment of
+            # LEAST information - the counterpart may live on a chain that isn't fetched until next month - and an
+            # answer given here is indistinguishable from a right one afterwards, because it produces a
+            # complete-looking transfer. A NULL leg instead stays visibly unsettled until its counterpart is met.
+            accounts = [account_id if account_id else None for account_id in accounts[:2]] + accounts[2:]
+            if accounts[0] is None and accounts[1] is None:
+                raise Statement_ImportError(self.tr("Both ends of a transfer are unknown: ") + f"{transfer}")
             if asset_types[0] != PredefinedAsset.Money:
                 operation['symbol_id'] = symbols[0]
             operation.pop('symbol')
@@ -908,17 +870,6 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             except KeyError:
                 raise Statement_ImportError(self.tr("Unsupported corporate action: ") + f"{action}")
             LedgerTransaction.create_new(LedgerTransaction.CorporateAction, operation)
-
-    def select_account(self, text, account_id, recent_account_id=0):
-        if "pytest" in sys.modules:
-            return 1    # Always return 1st account if we are in testing mode
-        dialog = SelectAccountDialog(text, account_id, recent_account=recent_account_id)
-        if dialog.exec() != QDialog.Accepted:
-            return 0
-        else:
-            if dialog.store_account:
-                self._previous_accounts[JalAccount(dialog.account_id).currency()] = dialog.account_id
-            return dialog.account_id
 
     def _find_account_id(self, number, currency):
         try:

@@ -10,6 +10,7 @@ from jal.data_import.statement import JSF
 from jal.db.account import JalAccountCreator, JalAccount
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
+from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.net.chain_fetchers.tron import TronFetcher, _METHOD_TRANSFER
 from jal.net.token_lists import TokenListProvider
@@ -396,32 +397,19 @@ def test_ensure_token_lists_aborts_when_download_fails(prepare_db, monkeypatch):
     assert [e[0] for e in _RecordingBox.events] == ['info', 'warn']   # informed, then warned that it aborted
 
 
-# The import dialog that asks which account an unmatched counterparty maps to must show the amount that actually
-# moved. For an incoming asset transfer the quantity lives in 'withdrawal' ('deposit' is the cost basis, left 0 by
-# the fetcher), so a naive read of 'deposit' showed "Deposit of 0.00". Outgoing transfers read 'withdrawal' and
-# were never affected. select_account() is intercepted to capture the prompt text (and to abort before a real
-# selection is needed).
-def test_incoming_transfer_prompt_shows_real_amount(fetcher, tron_wallet, monkeypatch):
-    from jal.data_import.statement import Statement_ImportError
-    fetcher.fetch(tron_wallet)
-    prompts = []
+# A movement whose far side is an outside address is imported with that side left unknown - the whole quantity still
+# reaches the ledger, on the one account that is known, and the import runs through instead of stopping to ask which
+# account the outside address stands for.
+def test_transfer_with_an_outside_address_is_imported_as_a_pending_leg(fetcher, tron_wallet):
+    data = fetcher.fetch(tron_wallet)
+    unresolved = [t for t in _transfers(data) if t['account'].count(0) == 1]
+    assert unresolved, "the fixture must contain a transfer with an outside address"
 
-    def capture(self, text, account_id, recent_account_id=0):
-        prompts.append(text)
-        raise Statement_ImportError("stop after capturing the prompt")
+    fetcher.import_fetched()
 
-    monkeypatch.setattr(type(fetcher), "select_account", capture, raising=False)
-    try:
-        fetcher.import_fetched()
-    except Statement_ImportError:
-        pass
-
-    deposit_prompts = [t for t in prompts if t.startswith("Deposit of")]
-    assert deposit_prompts, "an incoming transfer from an unknown address should have prompted"
-    for text in deposit_prompts:
-        assert "Deposit of 0.00" not in text          # the cost-basis 0 must not be shown as the amount
-    # at least one prompt shows a real, non-zero quantity
-    assert any(not t.startswith("Deposit of 0.00") and t.startswith("Deposit of") for t in deposit_prompts)
+    pending = JalDB._read("SELECT COUNT(*) FROM transfers "
+                          "WHERE withdrawal_account IS NULL OR deposit_account IS NULL")
+    assert int(pending) == len(unresolved)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -461,27 +449,19 @@ def test_own_counterparty_is_resolved_for_incoming_transfers(fetcher, tron_walle
         assert transfer.get('description', '') == ''       # both ends are already known, the address note is noise
 
 
-def test_resolved_counterparty_asks_nothing_and_reaches_the_db(fetcher, tron_wallet, monkeypatch):
+def test_resolved_counterparty_reaches_the_db_complete(fetcher, tron_wallet):
     other = _second_wallet(COUNTERPARTY_OUT)
     data = fetcher.fetch(tron_wallet)
-    unresolved = [t for t in _transfers(data) if t['account'].count(0) == 1]
     internal = [t for t in _transfers(data) if t['account'].count(0) == 0]
     assert internal, "the fixture must contain a transfer between the two own wallets"
 
-    # select_account() is asked once per transfer whose far side is an outside address, and never for one whose
-    # both ends are wallets of the user's own - which is what the resolution above is for.
-    asked = []
-    original = type(fetcher).select_account
-
-    def counting(self, text, account_id, recent_account_id=0):
-        asked.append(text)
-        return original(self, text, account_id, recent_account_id)
-
-    monkeypatch.setattr(type(fetcher), "select_account", counting, raising=False)
     fetcher.import_fetched()
-    assert len(asked) == len(unresolved)
-    # The transfer is booked on the second wallet as well, without anyone having selected it
+
+    # The transfer is booked on the second wallet as well, and with both of its ends named it is not pending
     assert len(JalAccount(other.id()).dump_transfers()) == len(internal)
+    pending = JalDB._read("SELECT COUNT(*) FROM transfers WHERE (withdrawal_account=:id OR deposit_account=:id) "
+                          "AND (withdrawal_account IS NULL OR deposit_account IS NULL)", [(":id", other.id())])
+    assert int(pending) == 0
 
 
 def test_counterparty_in_another_currency_is_left_for_the_user(fetcher, tron_wallet):

@@ -217,6 +217,8 @@ class HoldingsModel(ReportTreeModel):
             operation = trade.open_operation()
             if operation.type() == LedgerTransaction.Transfer:
                 transfer_out = LedgerTransaction().get_operation(operation.type(), operation.id(), Transfer.Outgoing)
+                if transfer_out.is_pending():
+                    continue    # An arrival with no known source has no earlier position to take the history from
                 since_new, amount_new = self.get_asset_history_payments(transfer_out.account(), asset, transfer_out.timestamp()-1)  # get position just before the transfer
             elif operation.type() == LedgerTransaction.CorporateAction and operation.subtype() == CorporateAction.Split:
                 since_new, amount_new = self.get_asset_history_payments(operation.account(), asset, operation.timestamp()-1)  # get position just before the split

@@ -134,9 +134,27 @@ class TransferWidget(AbstractOperationDetails):
 
     def _validated(self):
         fields = db_row2dict(self.model, 0)
+        if not self._validated_accounts(fields):
+            return False
         if not self._validated_transfer_type(fields):
             return False
         if not self._validated_fee(fields):
+            return False
+        return True
+
+    # A transfer may be left with one of its ends unknown - "money on the way" that is settled when the counterpart is
+    # met (see the Transfer class). An empty selector reads back as 0, which the database must not be given: 0 is a
+    # value, and only NULL says "not known yet" to the operation and to 'operation_sequence'. Both ends empty is not
+    # a transfer at all, though - nothing would be moving.
+    def _validated_accounts(self, fields) -> bool:
+        empty = 0
+        for field in ("withdrawal_account", "deposit_account"):
+            if fields[field] in (None, '', '0', 0):
+                self.model.setData(self.model.index(0, self.model.fieldIndex(field)), None)
+                empty += 1
+        if empty == 2:
+            QMessageBox().warning(self, self.tr("Incomplete data"),
+                                  self.tr("At least one account of the transfer must be chosen"), QMessageBox.Ok)
             return False
         return True
 
@@ -201,7 +219,7 @@ class TransferWidget(AbstractOperationDetails):
         new_record.setValue("withdrawal_account", account_id)
         new_record.setValue("withdrawal", '0')
         new_record.setValue("deposit_timestamp", now_ts())
-        new_record.setValue("deposit_account", 0)
+        new_record.setNull("deposit_account")   # Unknown until chosen - a new transfer starts as an outgoing leg
         new_record.setValue("deposit", '0')
         new_record.setNull("fee_account")
         new_record.setValue("fee", '0')

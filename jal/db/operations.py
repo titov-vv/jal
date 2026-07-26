@@ -1183,6 +1183,15 @@ class Swap(LedgerTransaction):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# A movement of money or of an asset between two accounts. Either end may be UNKNOWN when the transfer is recorded -
+# a statement or a chain fetcher sees the side it was taken from, and the account on the other side may live on a
+# chain that isn't fetched yet or reach the user through an exchange whose statement comes later. Such a leg is left
+# NULL ("money on the way") instead of being guessed at import time and is settled when its counterpart is met; until
+# then the value sits in the Transfers book, which turns an unanswered question into a visible balance rather than a
+# silent wrong one. See the description of the table in jal_init.sql.
+#
+# Only the legs that exist are processed: 'operation_sequence' leaves out the part whose account is NULL, so a pending
+# transfer contributes exactly one part to the ledger.
 class Transfer(LedgerTransaction):
     Fee = 0
     Outgoing = -1
@@ -1190,10 +1199,10 @@ class Transfer(LedgerTransaction):
     _db_table = "transfers"
     _db_fields = {
         "withdrawal_timestamp": {"mandatory": True, "validation": True},
-        "withdrawal_account": {"mandatory": True, "validation": True},
+        "withdrawal_account": {"mandatory": False, "validation": True, "default": None},
         "withdrawal": {"mandatory": True, "validation": True,},
         "deposit_timestamp": {"mandatory": True, "validation": True},
-        "deposit_account": {"mandatory": True, "validation": True},
+        "deposit_account": {"mandatory": False, "validation": True, "default": None},
         "deposit": {"mandatory": True, "validation": True},
         "fee_account": {"mandatory": False, "validation": True, "default": None},
         "fee": {"mandatory": False, "validation": True, "default": None},
@@ -1231,15 +1240,18 @@ class Transfer(LedgerTransaction):
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
-        self._withdrawal_account = jal.db.account.JalAccount(self._data['withdrawal_account'])
-        self._withdrawal_account_name = self._withdrawal_account.name()
+        present = lambda v: v is not None and v != ''   # _read() returns '' (not None) for a SQL NULL - an absent leg
+        self._has_out = present(self._data['withdrawal_account'])
+        self._has_in = present(self._data['deposit_account'])
+        self._withdrawal_account = jal.db.account.JalAccount(self._data['withdrawal_account']) if self._has_out else None
+        self._withdrawal_account_name = self._withdrawal_account.name() if self._has_out else self.tr("(pending)")
         self._withdrawal_timestamp = int(self._data['withdrawal_timestamp'])
         self._withdrawal = Decimal(self._data['withdrawal'])
-        self._withdrawal_currency = JalAsset(self._withdrawal_account.currency()).symbol()
-        self._deposit_account = jal.db.account.JalAccount(self._data['deposit_account'])
-        self._deposit_account_name = self._deposit_account.name()
+        self._withdrawal_currency = JalAsset(self._withdrawal_account.currency()).symbol() if self._has_out else ''
+        self._deposit_account = jal.db.account.JalAccount(self._data['deposit_account']) if self._has_in else None
+        self._deposit_account_name = self._deposit_account.name() if self._has_in else self.tr("(pending)")
         self._deposit = Decimal(self._data['deposit'])
-        self._deposit_currency = JalAsset(self._deposit_account.currency()).symbol()
+        self._deposit_currency = JalAsset(self._deposit_account.currency()).symbol() if self._has_in else ''
         self._deposit_timestamp = int(self._data['deposit_timestamp'])
         self._fee_account = jal.db.account.JalAccount(self._data['fee_account'])
         self._fee_currency = JalAsset(self._fee_account.currency()).symbol()
@@ -1250,7 +1262,10 @@ class Transfer(LedgerTransaction):
         self._fee_symbol = JalSymbol(self._data['fee_symbol_id'])
         self._fee_asset = self._fee_symbol.asset()
         self._number = self._data['number']
-        self._account = self._withdrawal_account
+        # The source account is where the deals of BOTH legs are recorded - the arriving leg reads them back with
+        # _deals_closed_by_operation() to move the lots on. A transfer that has no source has none to move, so its
+        # only account stands here (and the lookup then correctly finds nothing).
+        self._account = self._withdrawal_account if self._has_out else self._deposit_account
         self._note = self._data['note']
         # Icon and name describe the transfer itself, so they are resolved from the transferred asset before the
         # fee part re-points self._asset/_account below
@@ -1263,11 +1278,16 @@ class Transfer(LedgerTransaction):
             self._account = self._fee_account
             self._asset = self._fee_asset
         if self._opart == Transfer.Outgoing:
-            self._reconciled = self._withdrawal_account.reconciled_at() >= self._withdrawal_timestamp
+            self._reconciled = self._has_out and self._withdrawal_account.reconciled_at() >= self._withdrawal_timestamp
         if self._opart == Transfer.Incoming:
-            self._reconciled = self._deposit_account.reconciled_at() >= self._deposit_timestamp
+            self._reconciled = self._has_in and self._deposit_account.reconciled_at() >= self._deposit_timestamp
         if self._opart == Transfer.Fee:
             self._reconciled = self._fee_account.reconciled_at() >= self._withdrawal_timestamp
+
+    # A transfer is pending while one of its two ends is still unknown (the value is in transit, or it arrived from
+    # a source that hasn't been imported yet)
+    def is_pending(self) -> bool:
+        return not (self._has_out and self._has_in)
 
     def timestamp(self):
         if self._opart == Transfer.Incoming:
@@ -1289,13 +1309,15 @@ class Transfer(LedgerTransaction):
         else:
             assert False, "Unknown transfer type"
 
+    # 0 when the part has no account of its own - such a part is never processed, but the operation may still be
+    # asked about it (a pending leg is a legitimate object to display or to update a fee on)
     def account_id(self):
         if self._opart == Transfer.Fee:
             return self._fee_account.id()
         elif self._opart == Transfer.Outgoing:
-            return self._withdrawal_account.id()
+            return self._withdrawal_account.id() if self._has_out else 0
         elif self._opart == Transfer.Incoming:
-            return self._deposit_account.id()
+            return self._deposit_account.id() if self._has_in else 0
         else:
             assert False, "Unknown transfer type"
 
@@ -1303,6 +1325,8 @@ class Transfer(LedgerTransaction):
         if self._opart == Transfer.Fee:
             note = f" ({self._note})" if self._note else ''
             return self.tr("Transfer fee") + note
+        if self.is_pending():   # There is no second currency to restate a cost basis in, and no rate to show
+            return self._note
         if self._asset.id():
             if self._opart == Transfer.Incoming and self._withdrawal_currency != self._deposit_currency:
                 return self._note + " [" + self.tr("Cost basis:") + f" @{self._deposit:.2f} {self._deposit_currency}]"
@@ -1335,20 +1359,29 @@ class Transfer(LedgerTransaction):
     # money transfer (which carries no asset and whose 'number' is a free-form reference) is never matched.
     # 'not_after_oid' bounds it to transfers stored earlier, which is what makes it a search for what an EARLIER
     # import wrote rather than for what the running one just did.
+    #
+    # An unknown account is part of the key, not a wildcard: a movement seen from its sending wallet alone and the
+    # same movement seen from its receiving wallet alone are two DIFFERENT records of one transaction, and the second
+    # brings the account the first did not know. Matching them here would drop it and lose that account for good -
+    # pairing the two legs into one settled transfer is settlement's job, not deduplication's. So a NULL matches a
+    # NULL and nothing else, which is what re-fetching an already imported history produces.
     @classmethod
     def find_by_movement(cls, data: dict, not_after_oid: int) -> int:
         if not data.get('number') or not data.get('symbol_id'):
             return 0
-        oid = cls._read("SELECT oid FROM transfers WHERE number=:number AND symbol_id=:symbol_id "
-                        "AND withdrawal_account=:withdrawal_account AND deposit_account=:deposit_account "
+        params = [(":number", data['number']), (":symbol_id", data['symbol_id']),
+                  (":withdrawal", data['withdrawal']),
+                  (":withdrawal_timestamp", data['withdrawal_timestamp']), (":not_after_oid", not_after_oid)]
+        accounts = ''
+        for field in ("withdrawal_account", "deposit_account"):
+            if data.get(field) is None:
+                accounts += f"AND {field} IS NULL "
+            else:
+                accounts += f"AND {field}=:{field} "
+                params.append((f":{field}", data[field]))
+        oid = cls._read("SELECT oid FROM transfers WHERE number=:number AND symbol_id=:symbol_id " + accounts +
                         "AND withdrawal=:withdrawal AND withdrawal_timestamp=:withdrawal_timestamp "
-                        "AND oid<=:not_after_oid",
-                        [(":number", data['number']), (":symbol_id", data['symbol_id']),
-                         (":withdrawal_account", data['withdrawal_account']),
-                         (":deposit_account", data['deposit_account']),
-                         (":withdrawal", data['withdrawal']),
-                         (":withdrawal_timestamp", data['withdrawal_timestamp']),
-                         (":not_after_oid", not_after_oid)])
+                        "AND oid<=:not_after_oid", params)
         return int(oid) if oid else 0
 
     # The highest transfer id in the database, i.e. the last transfer stored (0 when there is none)
@@ -1407,23 +1440,14 @@ class Transfer(LedgerTransaction):
             assert False, "Unknown transfer type"
 
     def value_total(self) -> list:
-        if self._opart == Transfer.Outgoing:
-            if self._asset.id():
-                amount = self._asset_total(self._withdrawal_account.id(), self._asset.id())
-            else:
-                amount = self._money_total(self._withdrawal_account.id())
-        elif self._opart == Transfer.Incoming:
-            if self._asset.id():
-                amount = self._asset_total(self._deposit_account.id(), self._asset.id())
-            else:
-                amount = self._money_total(self._deposit_account.id())
-        elif self._opart == Transfer.Fee:
-            if self._fee_asset.id():
-                amount = self._asset_total(self._fee_account.id(), self._fee_asset.id())
-            else:
-                amount = self._money_total(self._fee_account.id())
+        assert self._opart in (Transfer.Outgoing, Transfer.Incoming, Transfer.Fee), "Unknown transfer type"
+        # account_id() gives the account of the part being displayed, and 0 for a leg that has none yet - the totals
+        # are then simply not found, which is the same "nothing to show" the helpers return for an unprocessed part
+        asset = self._fee_asset if self._opart == Transfer.Fee else self._asset
+        if asset.id():
+            amount = self._asset_total(self.account_id(), asset.id())
         else:
-            assert False, "Unknown transfer type"
+            amount = self._money_total(self.account_id())
         return [amount]
 
     def processLedger(self, ledger):
@@ -1514,6 +1538,9 @@ class Transfer(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
             ledger.appendTransaction(self, BookAccount.Transfers, transfer_amount, asset_id=self._asset.id(), value=processed_value)
         elif self._opart == Transfer.Incoming:
+            if not self._has_out:
+                self.processPendingArrival(ledger, transfer_amount)
+                return
             transfer_trades = self._deals_closed_by_operation()
             # get initial value of withdrawn asset
             value = self._read("SELECT value FROM ledger "
@@ -1541,6 +1568,21 @@ class Transfer(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=transfer_value)
         else:
             assert False, "Unknown transfer type for asset transfer"
+
+    # An asset that arrived from a source that is still unknown. There is no sending leg, so there is neither a value
+    # parked in the Transfers book to drain nor a closed deal whose lots could be carried over - the position is
+    # opened here instead, at ZERO cost basis. That is the same treatment the zero-value branch of the settled path
+    # above already gives an asset "received with its cost basis left to be filled in later"; without it an unmatched
+    # arrival would abort the whole ledger rebuild on "Asset withdrawal not found".
+    #
+    # Zero is deliberately not a guess: it keeps the whole of a later disposal as profit rather than understating it,
+    # and it is corrected the moment the transfer is settled and its source leg supplies the real basis. The negative
+    # Transfers entry is what makes the arrival visible as in-transit value of its own (see TRANSFER_SETTLEMENT B2:
+    # positive = sent but not arrived, negative = arrived from an unknown source), so a settled pair cancels exactly.
+    def processPendingArrival(self, ledger, transfer_amount):
+        self._deposit_account.open_trade(JalOpenTrade(self, Decimal('0'), transfer_amount), self._asset)
+        ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=Decimal('0'))
+        ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=Decimal('0'))
 
 
 # ----------------------------------------------------------------------------------------------------------------------

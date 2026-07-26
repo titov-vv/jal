@@ -1,12 +1,9 @@
 from PySide6.QtCore import Signal, Slot, Property
-from PySide6.QtWidgets import QDialog, QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox, QMessageBox, QLabel
+from PySide6.QtWidgets import QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox, QLabel
 from jal.db.db import JalModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.common_models import AccountListModel
-from jal.widgets.helpers import center_window
 from jal.widgets.reference_dialogs import AccountListDialog
-from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 
 
 ########################################################################################################################
@@ -74,46 +71,6 @@ class AccountCurrencyLabel(QLabel):
             self.setText(self.EMPTY)
 
     account_id = Property(str, fget=get_id, fset=set_id, user=True)   # Property has string value as workaround for QTBUG-115144
-
-#-----------------------------------------------------------------------------------------------------------------------
-# Dialog for account selection
-# Constructor takes description to show and recent_account for default choice.
-# Selected account won't be equal to current_account
-class SelectAccountDialog(QDialog):
-    def __init__(self, description, current_account, recent_account=None):
-        super().__init__()
-        self.ui = Ui_SelectAccountDlg()
-        self.ui.setupUi(self)
-        self._account_model = AccountListModel(self)
-        self._account_dialog = AccountListDialog(self)
-        self.ui.AccountWidget.setup_selector(self._account_model, self._account_dialog)
-        self.account_id = recent_account
-        self.store_account = False
-        self.current_account = current_account
-
-        self.ui.DescriptionLbl.setText(description)
-        if self.account_id:
-            self.ui.AccountWidget.selected_id = self.account_id
-        center_window(self)
-
-    @Slot()
-    def closeEvent(self, event):
-        self.account_id = self.ui.AccountWidget.selected_id
-        self.store_account = self.ui.ReuseAccount.isChecked()
-        if self.ui.AccountWidget.selected_id == 0:
-            QMessageBox().warning(None, self.tr("No selection"), self.tr("Invalid account selected"), QMessageBox.Ok)
-            event.ignore()
-            return
-
-        if self.ui.AccountWidget.selected_id == self.current_account:
-            QMessageBox().warning(None, self.tr("No selection"), self.tr("Please select different account"),
-                                  QMessageBox.Ok)
-            event.ignore()
-            return
-
-        self.setResult(QDialog.Accepted)
-        event.accept()
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CurrencyComboBox(QComboBox):

@@ -438,23 +438,36 @@ CREATE TABLE trades_closed (
 );
 
 
--- Table: transfers
+-- Table: transfers (a movement of money or of an asset between two accounts)
+-- A transfer may be known by ONE LEG ONLY - "money on the way". A statement or a chain fetcher sees the side it was
+-- taken from, while the account on the other side may be unknown at that moment: it may live on a chain that is not
+-- fetched until next month, or reach the user through an exchange whose statement comes later. Such a transfer is
+-- stored with the unknown side left NULL rather than guessed at import time, and is settled when the counterpart is
+-- met; until then its value sits in the Transfers book, which is what makes an unsettled leg a visible balance
+-- instead of a silent wrong answer:
+--   * deposit_account NULL    -> sent, not arrived yet
+--   * withdrawal_account NULL -> arrived from a source that is still unknown (equally legal - a CEX withdrawal or a
+--                                bridge arrival lands long before the account it came from is imported)
+-- At least one of the two is always set (a CHECK constraint - a transfer with neither end describes no movement at
+-- all). The timestamp and the amount of an unknown side mirror the known one until the transfer is settled - the leg
+-- they describe isn't processed while it is NULL, as 'operation_sequence' below leaves it out.
 DROP TABLE IF EXISTS transfers;
 CREATE TABLE transfers (
     oid                  INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
     otype                INTEGER     NOT NULL DEFAULT (4),            -- Operation type (4 = transfer)
     withdrawal_timestamp INTEGER     NOT NULL,                        -- When initiated
-    withdrawal_account   INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- From where transfer is
+    withdrawal_account   INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- From where transfer is (NULL until the source is known)
     withdrawal           TEXT        NOT NULL,                        -- Amount sent
     deposit_timestamp    INTEGER     NOT NULL,                        -- When received
-    deposit_account      INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- To where transfer is
+    deposit_account      INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- To where transfer is (NULL until the destination is known)
     deposit              TEXT        NOT NULL,                        -- Amount received
     fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- If and where fee was withdrawn
     fee                  TEXT,                                        -- Fee amount
     number               TEXT        NOT NULL DEFAULT (''),           -- Number of operation in bank/broker systems
     symbol_id            INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- If it is an asset transfer
     fee_symbol_id        INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- Asset the fee is paid in (crypto only); NULL = fee account currency
-    note                 TEXT                                         -- Free text comment
+    note                 TEXT,                                        -- Free text comment
+    CHECK (NOT withdrawal_account IS NULL OR NOT deposit_account IS NULL)   -- one end may be unknown, never both
 );
 
 
@@ -495,11 +508,11 @@ FROM
     UNION ALL
     SELECT otype, 4 AS seq, oid, 0 AS opart, timestamp, account_id FROM trades
     UNION ALL
-    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers
+    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers WHERE NOT withdrawal_account IS NULL
     UNION ALL
     SELECT otype, 5 AS seq, oid, 0 AS opart, withdrawal_timestamp AS timestamp, fee_account AS account_id FROM transfers WHERE NOT fee IS NULL
     UNION ALL
-    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers
+    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers WHERE NOT deposit_account IS NULL
     UNION ALL
     SELECT otype, 6 AS seq, oid, 0 AS opart, timestamp, account_id FROM conversions
     UNION ALL

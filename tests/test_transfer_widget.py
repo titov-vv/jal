@@ -3,6 +3,8 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from decimal import Decimal
 
+from PySide6.QtWidgets import QMessageBox
+
 from tests.fixtures import project_root, data_path, prepare_db
 from jal.db.db import JalDB
 from jal.db.helpers import delocalize_decimal
@@ -230,3 +232,37 @@ def test_switching_between_fee_kinds_shows_own_values(prepare_db):
 
     widget.set_id(gas_oid)
     assert delocalize_decimal(widget.ui.gas.text()) == Decimal('0.271828'), "gas editor kept the money fee value"
+
+
+# A transfer may be saved with one of its ends left unknown - "money on the way", settled when the counterpart is
+# met. An empty selector reads back as 0, which must reach the database as NULL: 0 is a value, and only NULL says
+# "not known yet" to the operation and to 'operation_sequence'.
+def test_empty_account_is_stored_as_unknown_not_as_zero(prepare_db):
+    wallet, _other = _make_accounts()
+    widget = TransferWidget()
+    widget.createNew(account_id=wallet.id())
+    widget.ui.from_account_widget.selected_id = wallet.id()
+    widget.ui.withdrawal.setText('100')
+    widget.mapper.submit()
+
+    assert widget._validated()
+    widget._save()
+
+    stored = JalDB()._read("SELECT deposit_account FROM transfers WHERE withdrawal_account=:id",
+                           [(":id", wallet.id())])
+    assert stored is None or stored == ''       # SQL NULL, never 0
+    assert JalDB()._read("SELECT COUNT(*) FROM transfers WHERE deposit_account=0") in (0, '0')
+
+
+# ... but a transfer with neither end chosen moves nothing at all and is refused
+def test_transfer_without_any_account_is_refused(prepare_db, monkeypatch):
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda self, *args, **kwargs: warnings.append(args))
+    wallet, _other = _make_accounts()
+    widget = TransferWidget()
+    widget.createNew(account_id=wallet.id())
+    widget.ui.from_account_widget.selected_id = 0
+    widget.mapper.submit()
+
+    assert not widget._validated()
+    assert len(warnings) == 1

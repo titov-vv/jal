@@ -69,6 +69,11 @@ CREATE UNIQUE INDEX token_list_updates_uniqueness ON token_list_updates (list_id
 -- burned in the native coin of the blockchain (TRX on Tron, ETH on Ethereum), which may or may not be
 -- the asset being transferred. NULL keeps the historical meaning - the fee is in the fee account currency.
 --
+-- The same rebuild drops NOT NULL from the two account columns, which is what lets a transfer be known by one leg
+-- only - see the description of the table in jal_init.sql. SQLite cannot relax NOT NULL with ALTER TABLE at all, so
+-- the rebuild this update already needed is what makes it free; every transfer that exists in a v60 database has
+-- both of its accounts, so nothing is migrated into the new state.
+--
 -- The table is rebuilt rather than extended with ALTER TABLE ADD COLUMN, which can only append: 'fee_symbol_id'
 -- belongs next to 'symbol_id' and 'note' stays last, so that a migrated database is identical to one created
 -- from jal_init.sql. Order of operations matters here:
@@ -85,17 +90,18 @@ CREATE TABLE transfers_new (
     oid                  INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
     otype                INTEGER     NOT NULL DEFAULT (4),            -- Operation type (4 = transfer)
     withdrawal_timestamp INTEGER     NOT NULL,                        -- When initiated
-    withdrawal_account   INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- From where transfer is
+    withdrawal_account   INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- From where transfer is (NULL until the source is known)
     withdrawal           TEXT        NOT NULL,                        -- Amount sent
     deposit_timestamp    INTEGER     NOT NULL,                        -- When received
-    deposit_account      INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- To where transfer is
+    deposit_account      INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- To where transfer is (NULL until the destination is known)
     deposit              TEXT        NOT NULL,                        -- Amount received
     fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- If and where fee was withdrawn
     fee                  TEXT,                                        -- Fee amount
     number               TEXT        NOT NULL DEFAULT (''),           -- Number of operation in bank/broker systems
     symbol_id            INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- If it is an asset transfer
     fee_symbol_id        INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- Asset the fee is paid in (crypto only); NULL = fee account currency
-    note                 TEXT                                         -- Free text comment
+    note                 TEXT,                                        -- Free text comment
+    CHECK (NOT withdrawal_account IS NULL OR NOT deposit_account IS NULL)   -- one end may be unknown, never both
 );
 INSERT INTO transfers_new (oid, otype, withdrawal_timestamp, withdrawal_account, withdrawal,
                            deposit_timestamp, deposit_account, deposit, fee_account, fee, number,
@@ -119,11 +125,11 @@ FROM
     UNION ALL
     SELECT otype, 4 AS seq, oid, 0 AS opart, timestamp, account_id FROM trades
     UNION ALL
-    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers
+    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers WHERE NOT withdrawal_account IS NULL
     UNION ALL
     SELECT otype, 5 AS seq, oid, 0 AS opart, withdrawal_timestamp AS timestamp, fee_account AS account_id FROM transfers WHERE NOT fee IS NULL
     UNION ALL
-    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers
+    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers WHERE NOT deposit_account IS NULL
     UNION ALL
     SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
 ) AS m
@@ -244,11 +250,11 @@ FROM
     UNION ALL
     SELECT otype, 4 AS seq, oid, 0 AS opart, timestamp, account_id FROM trades
     UNION ALL
-    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers
+    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers WHERE NOT withdrawal_account IS NULL
     UNION ALL
     SELECT otype, 5 AS seq, oid, 0 AS opart, withdrawal_timestamp AS timestamp, fee_account AS account_id FROM transfers WHERE NOT fee IS NULL
     UNION ALL
-    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers
+    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers WHERE NOT deposit_account IS NULL
     UNION ALL
     SELECT td.otype, 6 AS seq, td.oid, da.id AS opart, da.timestamp, td.account_id FROM deposit_actions AS da LEFT JOIN term_deposits AS td ON da.deposit_id=td.oid
     UNION ALL
@@ -485,11 +491,11 @@ FROM
     UNION ALL
     SELECT otype, 4 AS seq, oid, 0 AS opart, timestamp, account_id FROM trades
     UNION ALL
-    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers
+    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers WHERE NOT withdrawal_account IS NULL
     UNION ALL
     SELECT otype, 5 AS seq, oid, 0 AS opart, withdrawal_timestamp AS timestamp, fee_account AS account_id FROM transfers WHERE NOT fee IS NULL
     UNION ALL
-    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers
+    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers WHERE NOT deposit_account IS NULL
     UNION ALL
     SELECT otype, 6 AS seq, oid, 0 AS opart, timestamp, account_id FROM conversions
     UNION ALL
