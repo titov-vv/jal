@@ -488,6 +488,8 @@ def test_ambiguous_counterparty_is_left_for_the_user(fetcher, tron_wallet):
 _TX_HASH = 'a' * 64
 _TX_TIME = 1758900000000        # ms, as TronGrid reports it
 _FEE_ACCOUNT, _FEE = 8, 9       # column positions of the 'transfers' table rows that dump_transfers() returns
+_SENDER_HEX = '41ebd8dd5317713d254707c13840396f9aa8e3070e'      # hex form, as raw transaction data reports it
+_WALLET_HEX = '4182dd6b9966724ae2fdc79b416c7588da67ff1b35'      # the address of the 'tron_wallet' fixture
 
 
 def _trc20(sender, receiver, value='1000000', tx_hash=_TX_HASH):
@@ -497,10 +499,11 @@ def _trc20(sender, receiver, value='1000000', tx_hash=_TX_HASH):
 
 # The contract call that carried the token transfer. It moves nothing by itself (the amounts come from the token
 # endpoint) but it is where the gas the sender burned is reported.
-def _trigger(fee=1100000, tx_hash=_TX_HASH):
+def _trigger(fee=1100000, tx_hash=_TX_HASH, selector=_METHOD_TRANSFER, owner_hex=_WALLET_HEX):
     return {'txID': tx_hash, 'block_timestamp': _TX_TIME, 'ret': [{'fee': fee, 'contractRet': 'SUCCESS'}],
             'raw_data': {'contract': [{'type': 'TriggerSmartContract',
-                                       'parameter': {'value': {'data': _METHOD_TRANSFER + '0' * 128}}}]}}
+                                       'parameter': {'value': {'owner_address': owner_hex,
+                                                               'data': selector + '0' * 128}}}]}}
 
 
 # Runs a fresh TronFetcher for 'wallet' against a hand-built history and imports what it fetched.
@@ -566,14 +569,59 @@ def test_several_legs_of_one_transaction_are_all_imported(tron_wallet, monkeypat
     assert len(JalAccount(tron_wallet.id()).dump_transfers()) == 2
 
 
+# Tron reports the fee PER TRANSACTION, not per leg, so every leg of the multi-leg transaction above reads the same
+# number out of the same dictionary. Charged on each of them it would burn TRX that never left the wallet - here,
+# 2.2 for a transaction that cost 1.1. The gas belongs to the transaction and is spent once.
+def test_the_gas_of_one_transaction_is_charged_once(tron_wallet, monkeypatch):
+    _second_wallet(COUNTERPARTY_OUT)
+    history = ([_trc20(WALLET, COUNTERPARTY_OUT, value='1000000'),
+                _trc20(WALLET, COUNTERPARTY_OUT, value='2000000')], [_trigger(fee=1100000)])
+    _import_history(tron_wallet, monkeypatch, *history)
+
+    stored = JalAccount(tron_wallet.id()).dump_transfers()
+    assert len(stored) == 2
+    assert sum(Decimal(t[_FEE]) for t in stored if t[_FEE]) == Decimal('1.1')
+
+
+# The same fee, counted the other way: a multisend or a router call is not a bare transfer(), so the native record
+# isn't recognized as "already imported from the token endpoint" and takes the gas-only path - even though the token
+# endpoint has already reported everything the call moved. What it moved carries the gas on its outgoing leg, so
+# there is nothing left to pay as a GasFee.
+def test_gas_carried_by_a_transfer_is_not_paid_again_as_a_fee(tron_wallet, monkeypatch):
+    _second_wallet(COUNTERPARTY_OUT)
+    history = ([_trc20(WALLET, COUNTERPARTY_OUT)], [_trigger(fee=1100000, selector='deadbeef')])
+
+    instance = _import_history(tron_wallet, monkeypatch, *history)
+
+    assert [p for p in instance._data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_GAS_FEE] == []
+    stored = JalAccount(tron_wallet.id()).dump_transfers()
+    assert len(stored) == 1 and Decimal(stored[0][_FEE]) == Decimal('1.1')
+
+
+# ... and a call that really did move nothing still pays it: that is the whole purpose of the GasFee operation
+def test_a_call_that_moved_nothing_still_pays_its_gas(tron_wallet, monkeypatch):
+    instance = _import_history(tron_wallet, monkeypatch, [], [_trigger(fee=1100000, selector='deadbeef')])
+
+    gas = [p for p in instance._data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_GAS_FEE]
+    assert len(gas) == 1 and gas[0]['amount'] == Decimal('1.1')
+
+
+# Only the transaction's OWNER pays for it, and the native endpoint returns every transaction the wallet took part
+# in - each incoming transfer is one of those. A call somebody else paid for must not become a cost of ours.
+def test_gas_of_a_call_the_wallet_did_not_pay_is_not_charged(tron_wallet, monkeypatch):
+    instance = _import_history(tron_wallet, monkeypatch, [],
+                               [_trigger(fee=1100000, selector='deadbeef', owner_hex=_SENDER_HEX)])
+
+    assert [p for p in instance._data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_GAS_FEE] == []
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # The native coin has no contract address, so an import resolves it by ticker alone. The two wallets of a transfer
 # are fetched one after the other, and the first fetch adds a listing of the coin - so the second one has to keep
 # resolving the ticker onto the very same asset. Failing that it created a second asset for the coin, the transfer
 # it imported named a different symbol than the one already stored, and the two ends of one on-chain transfer
 # stopped looking like the same movement - which stored it twice.
-_SENDER_HEX = '41ebd8dd5317713d254707c13840396f9aa8e3070e'      # hex form, as raw transaction data reports it
-_RECEIVER_HEX = '4182dd6b9966724ae2fdc79b416c7588da67ff1b35'   # the address of the 'tron_wallet' fixture
+_RECEIVER_HEX = _WALLET_HEX                                     # the fixture's wallet is the receiving end here
 
 
 def _native(owner_hex, to_hex, amount, fee=1100000, tx_hash=_TX_HASH):

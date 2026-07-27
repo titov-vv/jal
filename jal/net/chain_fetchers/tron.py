@@ -49,6 +49,7 @@ class TronFetcher(ChainFetcher):
         super().__init__()
         self.name = self.tr("Tron")
         self._new_cursor = ''
+        self._unspent_gas = {}   # tx hash -> the part of its fee that hasn't been charged to anything yet
 
     # ------------------------------------------------------------------------------------------------------------------
     def _api_key(self) -> str:
@@ -103,12 +104,14 @@ class TronFetcher(ChainFetcher):
         params = {'order_by': 'block_timestamp,asc', 'min_timestamp': self._min_timestamp()}
         tokens = self._get_pages(f"/v1/accounts/{address}/transactions/trc20", params)
         native = self._get_pages(f"/v1/accounts/{address}/transactions", params)
-        gas = self._gas_by_hash(native)
+        self._unspent_gas = self._gas_by_hash(native)
         latest = self._min_timestamp() - 1
 
+        # Tokens first, so that the gas of a transaction is charged to the assets it moved and only what is left of
+        # it - a call that moved nothing out - becomes a GasFee payment of its own
         for record in tokens:
             latest = max(latest, int(record.get('block_timestamp', 0)))
-            self._process_token_transfer(record, gas)
+            self._process_token_transfer(record)
         for record in native:
             latest = max(latest, int(record.get('block_timestamp', 0)))
             self._process_native_transaction(record, address)
@@ -125,13 +128,27 @@ class TronFetcher(ChainFetcher):
             gas[record.get('txID', '')] = Decimal(str(fee)) / _SUN
         return gas
 
+    # The gas of a transaction that hasn't been charged yet, which taking it here spends.
+    #
+    # Tron reports the fee PER TRANSACTION, not per leg, and a transaction may hold several legs: two token
+    # transfers of a multisend, or a token transfer plus the contract call that carried it. Every one of them reads
+    # the same number out of the fee dictionary, so a fee that is read without being consumed is charged as many
+    # times as the transaction has legs - burning TRX that never left the wallet. It belongs to the transaction, so
+    # it is spent once, by whichever leg reaches it first. This is what the EVM and Solana fetchers do with
+    # 'remaining_gas' inside _emit_transfers(); on Tron the legs arrive from two different endpoints in two separate
+    # loops, so the state has to outlive them both.
+    def _take_gas(self, tx_hash: str) -> Decimal:
+        fee = self._unspent_gas.get(tx_hash, Decimal('0'))
+        self._unspent_gas[tx_hash] = Decimal('0')
+        return fee
+
     @staticmethod
     def _contract_of(record: dict) -> dict:
         contracts = record.get('raw_data', {}).get('contract', [])
         return contracts[0] if contracts else {}
 
     # ------------------------------------------------------------------------------------------------------------------
-    def _process_token_transfer(self, record: dict, gas: dict) -> None:
+    def _process_token_transfer(self, record: dict) -> None:
         info = record.get('token_info', {})
         address = info.get('address', '')
         tx_hash = record.get('transaction_id', '')
@@ -160,7 +177,7 @@ class TronFetcher(ChainFetcher):
             return
         asset_id = self._token_asset_id(info.get('symbol', ''), info.get('name', ''), address=address)
         # Gas is charged in TRX, never in the token that moved, and only the sender pays it
-        fee = gas.get(tx_hash, Decimal('0')) if not incoming else Decimal('0')
+        fee = self._take_gas(tx_hash) if not incoming else Decimal('0')
         fee_asset_id = self._native_asset_id() if fee > Decimal('0') else None
         note = '' if known_counterparty else self._counterparty_note(record)
         self._add_transfer(self._timestamp_of(record), asset_id, amount, incoming, tx_hash,
@@ -181,7 +198,7 @@ class TronFetcher(ChainFetcher):
             data = contract.get('parameter', {}).get('value', {}).get('data', '')
             if data[:8] in (_METHOD_TRANSFER, _METHOD_TRANSFER_FROM):
                 return
-            self._process_gas_only_call(record, data)
+            self._process_gas_only_call(record, contract, data)
             return
         if tx_type == 'WithdrawBalanceContract':
             self._process_staking_reward(record)
@@ -213,7 +230,7 @@ class TronFetcher(ChainFetcher):
             self._add_payment(JSF.PAYMENT_DUST_ATTACK, self._timestamp_of(record), self._native_asset_id(), amount,
                               tx_hash, note=self._native_counterparty_note(value))
             return
-        fee = Decimal(str(record.get('ret', [{}])[0].get('fee', 0))) / _SUN if not incoming else Decimal('0')
+        fee = self._take_gas(tx_hash) if not incoming else Decimal('0')
         asset_id = self._native_asset_id()
         counterparty = owner if incoming else tron_address_from_hex(value.get('to_address', ''))
         note = '' if self._is_own_address(counterparty) else self._native_counterparty_note(value)
@@ -223,13 +240,24 @@ class TronFetcher(ChainFetcher):
                            counterparty=counterparty)
 
     # A call that transferred nothing and only burned gas: a token approval, a contract call, or a transaction
-    # that ran out of energy and failed - the fee is charged either way. A call that cost nothing (the account's
-    # free bandwidth covered it) leaves no trace worth recording.
-    def _process_gas_only_call(self, record: dict, data: str) -> None:
+    # that ran out of energy and failed - the fee is charged either way.
+    #
+    # Nothing is recorded when there is no gas left to charge, which happens two ways: the account's free bandwidth
+    # covered the call, or the call DID move assets and they already carry the fee on their outgoing leg. The second
+    # is the multisend/router shape - such a call isn't a bare transfer(), so it reaches this path even though the
+    # token endpoint has already reported everything it moved.
+    def _process_gas_only_call(self, record: dict, contract: dict, data: str) -> None:
         tx_hash = record.get('txID', '')
-        fee = Decimal(str(record.get('ret', [{}])[0].get('fee', 0))) / _SUN
+        # Only the transaction's owner pays for it. The native endpoint returns every transaction the wallet took
+        # PART in, not only the ones it sent - each incoming transfer is one - so a call someone else paid for
+        # reaches this path too, and charging its fee here would invent a cost the wallet never had.
+        owner = tron_address_from_hex(contract.get('parameter', {}).get('value', {}).get('owner_address', ''))
+        if owner != self._account.address():
+            self._skip(self.tr("contract call paid for by another address"), tx_hash)
+            return
+        fee = self._take_gas(tx_hash)
         if fee <= Decimal('0'):
-            self._skip(self.tr("contract call that cost no gas"), tx_hash)
+            self._skip(self.tr("contract call with no gas left to charge"), tx_hash)
             return
         self._add_payment(JSF.PAYMENT_GAS_FEE, self._timestamp_of(record), self._native_asset_id(), fee,
                           tx_hash, note=self._gas_note(record, data))
