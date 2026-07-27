@@ -1384,6 +1384,75 @@ class Transfer(LedgerTransaction):
                         "AND oid<=:not_after_oid", params)
         return int(oid) if oid else 0
 
+    # oid of the pending transfer that records the same movement as 'data' from the side 'data' completes, or 0 if
+    # there is none (and 0 as well if there are several, which is not an answer but an ambiguity).
+    #
+    # This is the counterpart of find_by_movement() for the case that deduplication deliberately doesn't cover: a
+    # record that names BOTH ends of a movement one of whose ends is already stored as unknown. The two are the same
+    # movement - same transaction, same asset, same quantity - and the second one brings exactly what the first was
+    # missing, so it must complete that leg instead of being stored as a transfer of its own.
+    #
+    # 'not_after_oid' bounds the search to legs stored by an EARLIER import, and that is what makes this safe rather
+    # than merely tidy: within ONE import "A -> ?" and "A -> B" of the same transaction, asset and amount is what a
+    # multisend paying two addresses looks like when only one of them could be resolved, and folding those together
+    # would delete a real movement. A leg an earlier import left pending cannot be the other half of a multisend the
+    # running import is writing now.
+    @classmethod
+    def find_pending_counterpart(cls, data: dict, not_after_oid: int) -> int:
+        if not data.get('number') or not data.get('symbol_id'):
+            return 0
+        if data.get('withdrawal_account') is None or data.get('deposit_account') is None:
+            return 0   # a record that doesn't know both ends completes nothing - it is a pending leg itself
+        oid = cls._read("SELECT oid FROM transfers WHERE number=:number AND symbol_id=:symbol_id "
+                        "AND withdrawal=:withdrawal AND oid<=:not_after_oid "
+                        "AND ((withdrawal_account IS NULL AND deposit_account=:deposit_account) "
+                        "OR (deposit_account IS NULL AND withdrawal_account=:withdrawal_account))",
+                        [(":number", data['number']), (":symbol_id", data['symbol_id']),
+                         (":withdrawal", data['withdrawal']), (":not_after_oid", not_after_oid),
+                         (":withdrawal_account", data['withdrawal_account']),
+                         (":deposit_account", data['deposit_account'])], check_unique=True)
+        return int(oid) if oid else 0
+
+    # Fills the end this transfer doesn't know in from 'data', a record of the same movement that names both of them,
+    # and reports whether it did. The transfer stops being pending; the record 'data' describes is then stored here and
+    # must not be stored again.
+    #
+    # Only the missing side is taken. Everything the stored leg already states is what the side that WAS known
+    # reported, and this record is the other side of the same movement, which is not a better witness to it - the
+    # single exception is a fee the stored leg has none of, adopted for the same reason update_fee() exists.
+    def settle_with(self, data: dict) -> bool:
+        if not self.is_pending():
+            return False
+        # 'deposit' of an asset transfer is a cost basis rather than an amount, and is left as it is unless the stored
+        # leg has none at all - see TransferSettlement._merge() on what a missing one means
+        deposit = self._deposit if self._deposit else Decimal(data['deposit'])
+        if self._has_out:
+            account, timestamp = int(data['deposit_account']), int(data['deposit_timestamp'])
+            if account == self._withdrawal_account.id():
+                return False   # an account doesn't transfer to itself
+            if self._withdrawal_timestamp > timestamp:
+                logging.warning(self.tr("Arrival precedes departure, transfer is left unsettled: ") + self.dump())
+                return False
+            self._exec("UPDATE transfers SET deposit_account=:account, deposit_timestamp=:timestamp, "
+                       "deposit=:deposit WHERE oid=:oid",
+                       [(":account", account), (":timestamp", timestamp), (":deposit", deposit),
+                        (":oid", self._oid)], commit=True)
+        else:
+            account, timestamp = int(data['withdrawal_account']), int(data['withdrawal_timestamp'])
+            if account == self._deposit_account.id():
+                return False
+            if timestamp > self._deposit_timestamp:
+                logging.warning(self.tr("Arrival precedes departure, transfer is left unsettled: ") + self.dump())
+                return False
+            self._exec("UPDATE transfers SET withdrawal_account=:account, withdrawal_timestamp=:timestamp, "
+                       "deposit=:deposit WHERE oid=:oid",
+                       [(":account", account), (":timestamp", timestamp), (":deposit", deposit),
+                        (":oid", self._oid)], commit=True)
+        if 'fee' in data:
+            self.update_fee(data['fee'], data.get('fee_account', 0), data.get('fee_symbol_id'))
+        logging.info(self.tr("Transfer settled by transaction hash: ") + f"{self._number}")
+        return True
+
     # The highest transfer id in the database, i.e. the last transfer stored (0 when there is none)
     @classmethod
     def last_oid(cls) -> int:

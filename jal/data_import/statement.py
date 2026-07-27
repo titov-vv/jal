@@ -18,6 +18,7 @@ from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Transfer
 from jal.db.bridge_matcher import BridgeMatcher
+from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.token_select import SelectTokenActionDialog
 from jal.net.moex import MOEX
 
@@ -491,6 +492,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             for section in self._section_loaders:
                 if section in self._data:
                     self._section_loaders[section](self._data[section])
+            # A statement that brings the counterpart of a leg stored as pending settles it, and the pairing is a
+            # question about the whole database rather than about this statement - the two legs of one movement may
+            # well have arrived in two different imports. It runs inside the same transaction, so an import either
+            # lands settled or doesn't land at all. Only a statement whose 'number' is a transaction hash may take
+            # part: pairing on a free-form reference number would be a guess.
+            if self._transfers_are_unique_per_transaction:
+                TransferSettlement().settle_all()
         except Exception:
             db.rollback_transaction()
             JalAsset.db_cache.clear_cache()   # Caches may reference rolled back rows
@@ -673,6 +681,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 operation.pop('fee_symbol_id', None)   # A zero fee has no asset to be paid in either
             if stored_before and self._transfer_already_imported(operation, stored_before):
                 continue
+            if stored_before and self._transfer_completes_pending(operation, stored_before):
+                continue
             LedgerTransaction.create_new(LedgerTransaction.Transfer, operation)
 
     # True if this incoming movement is already booked as the ARRIVING LEG of a cross-chain operation - a bridge or a
@@ -711,6 +721,22 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         if 'fee' in operation:
             stored.update_fee(operation['fee'], operation.get('fee_account', 0), operation.get('fee_symbol_id'))
         return True
+
+    # True if this record completes a transfer that an earlier import stored knowing only ONE of its ends - the
+    # movement is then already in the database and the end it was missing has just been filled in, so there is
+    # nothing left to store.
+    #
+    # This is where a record that names both ends settles a pending leg; two records that each name only one end are
+    # paired after the import instead, by TransferSettlement. The two can't be one mechanism: what tells this case
+    # apart from a multisend paying two addresses is that the pending leg was stored EARLIER, which only holds while
+    # the import that writes the completing record is running - see Transfer.find_pending_counterpart().
+    @staticmethod
+    def _transfer_completes_pending(operation: dict, stored_before: int) -> bool:
+        oid = Transfer.find_pending_counterpart(operation, stored_before)
+        if not oid:
+            return False
+        stored = LedgerTransaction.get_operation(LedgerTransaction.Transfer, oid, Transfer.Outgoing)
+        return stored.settle_with(operation)
 
     def _import_trades(self, trades):
         for trade in trades:
