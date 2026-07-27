@@ -8,7 +8,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.db.bridge_matcher import BridgeMatcher, BridgeMatchError
-from jal.net.lifi_reconciler import LiFiReconciler
+from jal.net.arrival_reconciler import ArrivalReconciler
 from jal.widgets.helpers import ts2dt
 
 
@@ -18,8 +18,8 @@ from jal.widgets.helpers import ts2dt
 # accepting each one will create: a Bridge when it carries the same asset, or a cross-chain Swap when the asset changed
 # on the way (BridgeMatcher decides).
 #
-# The aggregator that routed the move is asked as well (jal/net/lifi_reconciler.py), because it recorded both ends and
-# JAL saw only one. What it answers is used in whichever of three ways fits:
+# Whoever routed the move is asked as well (jal/net/arrival_reconciler.py), because they recorded both ends and JAL
+# saw only one. What they answer is used in whichever of three ways fits:
 #   * it names one of the listed transfers as the arrival -> that transfer is marked and offered first, and it is what
 #     the user should accept: adopting the real transfer consumes it, while booking a leg beside it would leave the
 #     same movement in the ledger twice;
@@ -29,19 +29,26 @@ from jal.widgets.helpers import ts2dt
 #     user has to create.
 # Nothing is ever accepted automatically: a wrong counter-leg mis-books money as badly as a missing one, so the choice
 # stays the user's. The caller emits its dbUpdated to rebuild the ledger.
+#
+# The reconciler is passed in rather than built here. Which sources exist, in what order they are asked and how far
+# each may be believed is not the dialog's business (jal/net/route_resolvers.py decides it, for the pending transfer
+# legs just as much as for this), and a caller that has already asked hands over what it holds rather than paying
+# for the same lookup twice - a reconciler caches its answers for as long as it lives.
 class BridgeMatchDialog(QDialog):
     TRANSFER = 'transfer'   # the option adopts an existing transfer, which is consumed by the match
     LEG = 'leg'             # ... or books the arriving leg from what the aggregator reported
 
-    def __init__(self, half_oid, parent=None):
+    def __init__(self, half_oid, parent=None, reconciler=None):
         super().__init__(parent)
         self._half_oid = half_oid
         self._matcher = BridgeMatcher()
+        self._reconciler = reconciler if reconciler is not None else ArrivalReconciler()
         self.setWindowTitle(self.tr("Match cross-chain legs"))
         layout = QVBoxLayout(self)
-        self._proposal = self._ask_lifi()
+        self._proposal = self._ask_resolvers()
         if self._proposal is not None:
-            layout.addWidget(QLabel(self.tr("LI.FI reports this move as: ") + self._proposal.text))
+            layout.addWidget(QLabel(self._proposal.route.source + self.tr(" reports this move as: ")
+                                    + self._proposal.text))
             if self._proposal.problem:
                 layout.addWidget(QLabel(self._proposal.problem))
         layout.addWidget(QLabel(self.tr("Choose the transfer that this operation arrived as:")))
@@ -57,12 +64,13 @@ class BridgeMatchDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
-    # What the aggregator recorded about the sending transaction, or None when it knows nothing about it - which is
-    # the ordinary answer for a move routed anywhere else. The lookup goes to the network, so the wait is shown.
-    def _ask_lifi(self):
+    # What the sources recorded about the sending transaction, or None when none of them knows anything about it -
+    # which is the ordinary answer for a move routed by somebody they don't cover. The lookup goes to the network, so
+    # the wait is shown.
+    def _ask_resolvers(self):
         QGuiApplication.setOverrideCursor(Qt.WaitCursor)
         try:
-            return LiFiReconciler().arrival_of_half(self._half_oid)
+            return self._reconciler.arrival_of_half(self._half_oid)
         finally:
             QGuiApplication.restoreOverrideCursor()
 
@@ -74,7 +82,8 @@ class BridgeMatchDialog(QDialog):
         for oid in self._matcher.transfer_candidates(self._half_oid):
             label = self._transfer_label(oid) + self._result_of(oid)
             if arrival_hash and self._transfer_hash(oid).lower() == arrival_hash.lower():
-                confirmed.append((self.TRANSFER, oid, label + self.tr(" — confirmed by LI.FI")))
+                confirmed.append((self.TRANSFER, oid,
+                                  label + self.tr(" — confirmed by ") + self._proposal.route.source))
             else:
                 options.append((self.TRANSFER, oid, label))
         if confirmed:
@@ -89,11 +98,13 @@ class BridgeMatchDialog(QDialog):
             options.insert(0, (self.LEG, leg, self._leg_label(leg)))
         return options
 
-    # The destination transaction hash the aggregator reported, or '' when it reported nothing usable
+    # The destination transaction hash that was reported, or '' when nothing usable was. It is the one thing every
+    # source states exactly, whatever its confidence tier: a source that may not say how much arrived can still say
+    # which of the listed transfers IS the arrival, and that is the answer worth the most here anyway.
     def _reported_arrival_hash(self) -> str:
-        if self._proposal is None or self._proposal.transfer is None:
+        if self._proposal is None or self._proposal.route is None:
             return ''
-        return self._proposal.transfer.receiving.tx_hash
+        return self._proposal.route.receiving.tx_hash
 
     # Names the operation the pair would become, as the same picker offers both (a swap is a disposal, a bridge is not)
     def _result_of(self, oid) -> str:
@@ -117,7 +128,8 @@ class BridgeMatchDialog(QDialog):
         described = self._describe(leg['account_id'], leg['asset_id'], leg['qty'], leg['timestamp'])
         kind = self.tr("cross-chain swap") if self._matcher.leg_kind(self._half_oid, leg) == BridgeMatcher.SWAP \
             else self.tr("bridge")
-        return described + " → " + kind + self.tr(" — booked from LI.FI, not yet fetched from the chain")
+        return described + " → " + kind + self.tr(" — booked from ") + self._proposal.route.source \
+            + self.tr(", not yet fetched from the chain")
 
     @staticmethod
     def _describe(account_id, asset_id, qty, timestamp) -> str:

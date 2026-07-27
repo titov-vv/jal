@@ -8,9 +8,10 @@ from PySide6.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QLabel, QListWi
     QCheckBox, QDialogButtonBox
 
 from jal.constants import Setup, AssetLocation
+from jal.db.ledger import Ledger
 from jal.db.settings import JalSettings
 from jal.data_import.statement import Statement_ImportError
-from jal.net.lifi_reconciler import LiFiReconciler, log_findings
+from jal.net.arrival_reconciler import ArrivalReconciler, log_findings
 
 # Highest swap oid that was already checked against the route it came from - see ChainFetchers._audit_swaps(). It is
 # a position, not a result, so it is kept in the settings the way a fetcher's sync cursor is kept on its account.
@@ -184,9 +185,31 @@ class ChainFetchers(QObject):
         self._report_skipped(skipped)
         self._report_failures(failed)
         if imported_any:
+            self._settle_transfers()
             self._audit_swaps()
         if not imported_any:
             self.load_failed.emit()
+
+    # Settles the transfer legs whose counterpart is on another chain, which is the one pairing no amount of fetching
+    # can make: the two ends are two transactions and neither names the other, so the legs wait for whoever routed
+    # the move to say they belong together (ArrivalReconciler.settle_pending_transfers).
+    #
+    # It runs after the whole run rather than per wallet because it is the second leg that completes the pair, and
+    # that one commonly arrives with a LATER wallet of the same run. The ledger is rebuilt again for what it settled:
+    # each account emitted its load_completed as it was imported, and those rebuilds happened before this.
+    def _settle_transfers(self) -> None:
+        self.show_progress.emit(True)
+        try:
+            settled, findings = ArrivalReconciler().settle_pending_transfers(progress=self._on_leg_checked)
+        except Exception as error:   # like the audit below: a lookup that fails must not fail the import
+            logging.warning(self.tr("Pending transfers could not be settled: ") + f"{error}")
+            return
+        finally:
+            self.show_progress.emit(False)
+        log_findings(findings)
+        if settled:
+            logging.info(self.tr("Transfers settled from the route they were sent by: ") + f"{settled}")
+            Ledger().rebuild()
 
     # Checks the swaps the database holds against the routes they really were.
     #
@@ -204,7 +227,7 @@ class ChainFetchers(QObject):
         checked_upto = settings.getInt(_AUDITED_SWAP_SETTING, 0)
         self.show_progress.emit(True)
         try:
-            last_oid, findings = LiFiReconciler().audit_swaps(checked_upto, progress=self._on_swap_checked)
+            last_oid, findings = ArrivalReconciler().audit_swaps(checked_upto, progress=self._on_swap_checked)
         except Exception as error:   # a check that fails must never take a successful import down with it
             logging.warning(self.tr("Cross-chain check of swaps could not be completed: ") + f"{error}")
             return
@@ -215,8 +238,9 @@ class ChainFetchers(QObject):
             return
         log_findings(findings)
         QMessageBox().warning(None, self.tr("Check these swaps"),
-                              self.tr("LI.FI describes these operations differently than they are booked. Each one "
-                                      "has to be corrected by hand - what the ledger says about them is wrong:")
+                              self.tr("The aggregator that routed these operations describes them differently than "
+                                      "they are booked. Each one has to be corrected by hand - what the ledger says "
+                                      "about them is wrong:")
                               + "\n\n" + "\n\n".join(findings), QMessageBox.Ok)
 
     # Relays one wallet's page_fetched into the status text shown next to the progress bar.
@@ -227,6 +251,11 @@ class ChainFetchers(QObject):
     # real share of the work as well.
     def _on_swap_checked(self, checked: int, total: int) -> None:
         self.update_progress_text.emit(self.tr("checking swaps") + f" {checked + 1}/{total}...")
+        self.update_progress.emit(100.0 * checked / total if total else 100.0)
+
+    # ... and the same for the pending transfer legs, which are asked about one network request at a time as well
+    def _on_leg_checked(self, checked: int, total: int) -> None:
+        self.update_progress_text.emit(self.tr("settling transfers") + f" {checked + 1}/{total}...")
         self.update_progress.emit(100.0 * checked / total if total else 100.0)
 
     # Token allow-/block-lists back the spam filter that decides which fetched tokens are real. Against an empty

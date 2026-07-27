@@ -11,6 +11,9 @@ from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction, Transfer
 from jal.db.transfer_settlement import TransferSettlement
+from jal.net.arrival_reconciler import ArrivalReconciler
+from jal.net.route import Confidence, Route, RouteLeg, RouteResolver
+from jal.net.route_resolvers import RouteResolvers
 
 # ----------------------------------------------------------------------------------------------------------------------
 # One movement reaches JAL as two records, each knowing the end the other doesn't - the wallet that sent it and the
@@ -403,4 +406,132 @@ def test_a_statement_without_transaction_hashes_settles_nothing(wallets, monkeyp
 
     statement.import_into_db()
 
+    assert len(_stored()) == 2
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The two ends of a CROSS-CHAIN move, which the pass above can never pair
+#
+# Everything so far rests on the two records naming the SAME transaction. A cross-chain move has no such transaction:
+# it is one on each chain, and nothing on either points at the other, so both legs stay pending however many wallets
+# are fetched. Only whoever routed the move can join them - and joining is all that is taken from them, because what
+# moved, when and how much is what JAL already read off the two chains.
+
+SRC_HASH = '0x' + 'b' * 64      # what the wallet sent on one chain ...
+DST_HASH = '0x' + 'c' * 64      # ... and what was delivered on the other, minutes later
+
+
+# A source that answers "these two transactions are one move" and nothing more, which is the least any of them says
+class _Router(RouteResolver):
+    name = "Test router"
+    confidence = Confidence.PROPOSED
+
+    def __init__(self, routes: dict = None, confidence: int = None):
+        super().__init__()
+        self._routes = {SRC_HASH: (DST_HASH, 'chain-2')} if routes is None else routes
+        self.asked = 0
+        if confidence is not None:
+            self.confidence = confidence
+
+    def _request(self, tx_hash: str):
+        self.asked += 1
+        if tx_hash not in self._routes:
+            return None
+        arrival, chain = self._routes[tx_hash]
+        return Route(self.name, self.confidence, RouteLeg(chain='chain-1', tx_hash=tx_hash),
+                     RouteLeg(chain=chain, tx_hash=arrival))
+
+
+def _settle(router=None) -> tuple:
+    return ArrivalReconciler(RouteResolvers([router if router is not None else _Router()])).settle_pending_transfers()
+
+
+# The ordinary case: what left one chain and what arrived on the other become one transfer, and the money stops
+# being in transit - which is the whole purpose of settling it.
+def test_the_two_legs_of_a_routed_move_are_settled_into_one_transfer(funded):
+    _transfer(WALLET_A, None, 400, d2t(210103), number=SRC_HASH)
+    _transfer(None, WALLET_B, 400, d2t(210104), number=DST_HASH)
+
+    settled, findings = _settle()
+
+    assert (settled, findings) == (1, [])
+    rows = _stored()
+    assert len(rows) == 1
+    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
+    assert rows[0]['number'] == SRC_HASH      # the record kept is the sending one, which carries the gas
+    Ledger().rebuild(from_timestamp=0)
+    assert JalAccount(WALLET_B).get_asset_amount(d2t(210201), USDT) == Decimal('400')
+    assert _in_transit(USDT) == Decimal('0')
+
+
+# Naming the counterpart is all this needs, so the weakest kind of source is enough for it - and that is the one
+# thing such a source is for. Nothing it says about quantities or times is read: those come from the two legs.
+def test_a_source_that_only_names_the_transactions_is_enough(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), number=SRC_HASH)
+    _transfer(None, WALLET_B, 400, d2t(210104), number=DST_HASH)
+
+    assert _settle(_Router(confidence=Confidence.PROPOSED))[0] == 1
+
+
+# A route that delivers less than it was sent is a bridge - an operation with a leg of its own for each side - and a
+# transfer cannot express it. The pair is proven, so this is reported rather than passed over in silence.
+def test_a_route_that_lost_something_on_the_way_is_reported_not_settled(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), number=SRC_HASH)
+    _transfer(None, WALLET_B, 399, d2t(210104), number=DST_HASH)
+
+    settled, findings = _settle()
+
+    assert settled == 0 and len(findings) == 1
+    assert 'not a transfer' in findings[0]
+    assert len(_stored()) == 2
+
+
+# An arrival that precedes its departure is refused here exactly as it is when the two name one transaction
+def test_an_arrival_before_its_departure_is_reported_not_settled(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210104), number=SRC_HASH)
+    _transfer(None, WALLET_B, 400, d2t(210103), number=DST_HASH)
+
+    settled, findings = _settle()
+
+    assert settled == 0 and len(findings) == 1
+    assert len(_stored()) == 2
+
+
+# A move nobody has a record of - most of them - leaves both legs exactly as they were
+def test_a_leg_no_source_knows_is_left_alone(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), number=SRC_HASH)
+    _transfer(None, WALLET_B, 400, d2t(210104), number=DST_HASH)
+
+    assert _settle(_Router(routes={}))[0] == 0
+    assert len(_stored()) == 2
+
+
+# The arrival was never imported: there is nothing to pair with, so the leg keeps waiting rather than being completed
+# out of what was reported - and nobody is even asked about it. This sweep runs after every fetch and each leg in it
+# costs a network request per source, so a leg that has no possible counterpart must not be one of them.
+def test_a_leg_with_no_possible_counterpart_is_not_asked_about(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), number=SRC_HASH)
+    router = _Router()
+
+    assert _settle(router)[0] == 0
+    assert router.asked == 0
+    assert len(_stored()) == 1
+
+
+# A move that begins and ends on the same chain is not what this settles: its two records name ONE transaction and
+# the pass on the hash has already had its say about them.
+def test_a_same_chain_route_is_not_settled_here(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), number=SRC_HASH)
+    _transfer(None, WALLET_B, 400, d2t(210104), number=DST_HASH)
+
+    assert _settle(_Router(routes={SRC_HASH: (DST_HASH, 'chain-1')}))[0] == 0
+
+
+# A transfer that already knows both of its ends is not a candidate for anything - it may carry the arriving hash
+# because it IS the whole movement, and adopting it would be a second copy of money already booked.
+def test_a_settled_transfer_is_not_paired_again(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), number=SRC_HASH)
+    _transfer(WALLET_C, WALLET_B, 400, d2t(210104), number=DST_HASH)
+
+    assert _settle()[0] == 0
     assert len(_stored()) == 2

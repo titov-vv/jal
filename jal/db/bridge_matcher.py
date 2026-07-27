@@ -135,7 +135,7 @@ class BridgeMatcher(JalDB):
     # 'arrival' holds account_id / asset_id / symbol_id / qty / timestamp / tx_hash, the same shape _transfer_side()
     # returns. It is the path for an arrival JAL has not fetched (and may never be able to fetch: the destination chain
     # can be one JAL has no fetcher for), whose facts come from the aggregator that routed the move - see
-    # jal/net/lifi_reconciler.py. Nothing distinguishes the operation it produces from one matched by hand; what
+    # jal/net/arrival_reconciler.py. Nothing distinguishes the operation it produces from one matched by hand; what
     # differs is only where the arriving leg's numbers came from, and the leg carries the destination transaction hash,
     # which is what lets a later fetch of that chain recognize the arrival as already booked (see reconcile_arrival()).
     # Raises BridgeMatchError on the same terms as match_with_transfer(); returns the oid of the resulting operation.

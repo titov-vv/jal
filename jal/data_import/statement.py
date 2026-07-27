@@ -693,7 +693,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     # True if this incoming movement is already booked as the ARRIVING LEG of a cross-chain operation - a bridge or a
     # cross-chain swap that was completed from what the routing aggregator reported, possibly long before the chain it
-    # landed on was ever fetched (jal/net/lifi_reconciler.py). Storing it again would credit the assets twice.
+    # landed on was ever fetched (jal/net/arrival_reconciler.py). Storing it again would credit the assets twice.
     #
     # The leg is recognized by the transaction hash of the arrival together with the asset it moved: one transaction
     # may deliver several assets at once (a token plus a gas top-up), and only the one that was adopted is already in

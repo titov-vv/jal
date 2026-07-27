@@ -17,8 +17,11 @@ from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.net import lifi
+from jal.net.arrival_reconciler import ArrivalReconciler
 from jal.net.lifi import LiFiResolver
-from jal.net.lifi_reconciler import LiFiReconciler
+from jal.net.rango import RangoResolver
+from jal.net.route import Confidence, Route, RouteLeg, RouteResolver
+from jal.net.route_resolvers import RouteResolvers
 from jal.widgets.bridge_match_dialog import BridgeMatchDialog
 
 # Never a real address: an on-chain address can't be anonymized afterwards (see tests/local_test_data.json.example).
@@ -86,6 +89,9 @@ def wallets(prepare_db):
 
 # Replaces the network with recorded answers, keyed by the hash they are about. Everything above the HTTP call itself
 # stays real - including the check that the answer is about the transaction that was asked for.
+#
+# The other sources of the registry are silenced rather than left out: what is under test is the reconciler as it is
+# really assembled, and a source that knows nothing is exactly what every other one answers for these transactions.
 @pytest.fixture
 def lifi_answers(monkeypatch):
     answers = {}
@@ -95,6 +101,7 @@ def lifi_answers(monkeypatch):
         return self._validated(answer, tx_hash) if answer is not None else None
 
     monkeypatch.setattr(LiFiResolver, "_request", fake_request)
+    monkeypatch.setattr(RangoResolver, "_request", lambda self, tx_hash: None)
     yield answers
 
 
@@ -165,13 +172,13 @@ def test_reported_arrival_completes_a_bridge(wallets, lifi_answers):
                             'out_hash': SEND_HASH}])[0]
     lifi_answers[SEND_HASH] = _usdc_bridge_answer()
 
-    proposal = LiFiReconciler().arrival_of_half(half)
+    proposal = ArrivalReconciler().arrival_of_half(half)
     assert proposal.is_placeable()
     assert proposal.leg['account_id'] == ARB_WALLET
     assert proposal.leg['qty'] == Decimal('99.5')
     assert proposal.leg['tx_hash'] == ARRIVE_HASH
 
-    assert LiFiReconciler().complete_half(half) == half
+    assert ArrivalReconciler().complete_half(half) == half
     Ledger().rebuild(from_timestamp=0)
 
     assert len(BridgeMatcher()._pending_halves()) == 0
@@ -188,7 +195,7 @@ def test_reported_arrival_of_another_asset_creates_a_cross_chain_swap(wallets, l
                             'out_hash': SEND_HASH}])[0]
     lifi_answers[SEND_HASH] = _gho_to_usdc_answer()
 
-    swap_oid = LiFiReconciler().complete_half(half)
+    swap_oid = ArrivalReconciler().complete_half(half)
     Ledger().rebuild(from_timestamp=0)
 
     assert JalDB._read("SELECT COUNT(*) FROM bridges WHERE oid=:o", [(":o", half)]) == 0
@@ -204,7 +211,7 @@ def test_arrival_to_an_unknown_address_is_reported_not_placed(wallets, lifi_answ
                             'out_hash': SEND_HASH}])[0]
     lifi_answers[SEND_HASH] = _usdc_bridge_answer(to_address=STRANGER)
 
-    proposal = LiFiReconciler().arrival_of_half(half)
+    proposal = ArrivalReconciler().arrival_of_half(half)
     assert not proposal.is_placeable()
     assert STRANGER in proposal.problem
     assert '99.5 USDC' in proposal.text     # what happened is still shown, whether or not it can be booked
@@ -218,7 +225,7 @@ def test_arrival_of_an_unknown_token_is_reported_not_placed(wallets, lifi_answer
     answer['receiving']['token']['address'] = "0xbbbb000000000000000000000000000000000009"
     lifi_answers[SEND_HASH] = answer
 
-    proposal = LiFiReconciler().arrival_of_half(half)
+    proposal = ArrivalReconciler().arrival_of_half(half)
     assert not proposal.is_placeable()
     assert 'USDC' in proposal.problem
 
@@ -228,8 +235,8 @@ def test_unknown_transaction_yields_no_proposal(wallets, lifi_answers):
     half = create_bridges([{'asset': USDC, 'out_ts': dt2t(2101031200), 'out_acc': ETH_WALLET, 'out_qty': 100,
                             'out_hash': SEND_HASH}])[0]
 
-    assert LiFiReconciler().arrival_of_half(half) is None
-    assert LiFiReconciler().complete_half(half) == 0
+    assert ArrivalReconciler().arrival_of_half(half) is None
+    assert ArrivalReconciler().complete_half(half) == 0
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -241,7 +248,7 @@ def test_fetched_arrival_is_recognized_and_not_duplicated(wallets, lifi_answers)
     half = create_bridges([{'asset': USDC, 'out_ts': dt2t(2101031200), 'out_acc': ETH_WALLET, 'out_qty': 100,
                             'out_hash': SEND_HASH}])[0]
     lifi_answers[SEND_HASH] = _usdc_bridge_answer()
-    LiFiReconciler().complete_half(half)
+    ArrivalReconciler().complete_half(half)
 
     recognized, complaint = BridgeMatcher().reconcile_arrival(
         ARRIVE_HASH, _symbol_on(USDC, AssetLocation.ARB_BLOCKCHAIN), ARB_WALLET, Decimal('99.5'), dt2t(2101031203))
@@ -256,7 +263,7 @@ def test_fetched_arrival_corrects_the_booked_quantity(wallets, lifi_answers):
     half = create_bridges([{'asset': USDC, 'out_ts': dt2t(2101031200), 'out_acc': ETH_WALLET, 'out_qty': 100,
                             'out_hash': SEND_HASH}])[0]
     lifi_answers[SEND_HASH] = _usdc_bridge_answer()
-    LiFiReconciler().complete_half(half)
+    ArrivalReconciler().complete_half(half)
 
     recognized, complaint = BridgeMatcher().reconcile_arrival(
         ARRIVE_HASH, _symbol_on(USDC, AssetLocation.ARB_BLOCKCHAIN), ARB_WALLET, Decimal('99.4'), dt2t(2101031203))
@@ -272,7 +279,7 @@ def test_impossible_correction_is_refused_and_reported(wallets, lifi_answers):
     half = create_bridges([{'asset': USDC, 'out_ts': dt2t(2101031200), 'out_acc': ETH_WALLET, 'out_qty': 100,
                             'out_hash': SEND_HASH}])[0]
     lifi_answers[SEND_HASH] = _usdc_bridge_answer()
-    LiFiReconciler().complete_half(half)
+    ArrivalReconciler().complete_half(half)
 
     recognized, complaint = BridgeMatcher().reconcile_arrival(
         ARRIVE_HASH, _symbol_on(USDC, AssetLocation.ARB_BLOCKCHAIN), ARB_WALLET, Decimal('150'), dt2t(2101031203))
@@ -288,7 +295,7 @@ def test_another_asset_in_the_same_transaction_is_not_swallowed(wallets, lifi_an
     half = create_bridges([{'asset': USDC, 'out_ts': dt2t(2101031200), 'out_acc': ETH_WALLET, 'out_qty': 100,
                             'out_hash': SEND_HASH}])[0]
     lifi_answers[SEND_HASH] = _usdc_bridge_answer()
-    LiFiReconciler().complete_half(half)
+    ArrivalReconciler().complete_half(half)
 
     recognized, _ = BridgeMatcher().reconcile_arrival(
         ARRIVE_HASH, _symbol_on(GHO, AssetLocation.ETH_BLOCKCHAIN), ARB_WALLET, Decimal('1'), dt2t(2101031203))
@@ -303,7 +310,7 @@ def test_import_skips_an_arrival_that_is_already_booked(wallets, lifi_answers):
     half = create_bridges([{'asset': USDC, 'out_ts': dt2t(2101031200), 'out_acc': ETH_WALLET, 'out_qty': 100,
                             'out_hash': SEND_HASH}])[0]
     lifi_answers[SEND_HASH] = _usdc_bridge_answer()
-    LiFiReconciler().complete_half(half)
+    ArrivalReconciler().complete_half(half)
     transfers_before = JalDB._read("SELECT COUNT(*) FROM transfers")
 
     statement = Statement()
@@ -334,7 +341,7 @@ def test_audit_finds_a_cross_chain_move_booked_as_a_same_chain_swap(wallets, lif
     JalDB._exec("UPDATE swaps SET tx_hash=:hash", [(":hash", SEND_HASH)], commit=True)
     lifi_answers[SEND_HASH] = _gho_to_usdc_answer()
 
-    last_oid, findings = LiFiReconciler().audit_swaps()
+    last_oid, findings = ArrivalReconciler().audit_swaps()
 
     assert last_oid == 1 and len(findings) == 1
     assert 'cross-chain move' in findings[0] and 'paid back on the source chain' in findings[0]
@@ -348,7 +355,7 @@ def test_audit_is_silent_on_a_matching_same_chain_swap(wallets, lifi_answers):
         _leg(1, SWAP_HASH, GHO_ETH, "GHO", 18, "100000000000000000000", dt2t(2101031200)),
         _leg(1, SWAP_HASH, USDC_ETH, "USDC", 6, "99500000", dt2t(2101031200)))
 
-    _, findings = LiFiReconciler().audit_swaps()
+    _, findings = ArrivalReconciler().audit_swaps()
 
     assert findings == []
 
@@ -362,7 +369,7 @@ def test_audit_reports_a_same_chain_swap_with_other_quantities(wallets, lifi_ans
         _leg(1, SWAP_HASH, GHO_ETH, "GHO", 18, "100000000000000000000", dt2t(2101031200)),
         _leg(1, SWAP_HASH, USDC_ETH, "USDC", 6, "99500000", dt2t(2101031200)))
 
-    _, findings = LiFiReconciler().audit_swaps()
+    _, findings = ArrivalReconciler().audit_swaps()
 
     assert len(findings) == 1 and '99.5 USDC' in findings[0]
 
@@ -373,10 +380,10 @@ def test_audit_resumes_above_what_it_already_checked(wallets, lifi_answers):
     JalDB._exec("UPDATE swaps SET tx_hash=:hash", [(":hash", SEND_HASH)], commit=True)
     lifi_answers[SEND_HASH] = _gho_to_usdc_answer()
 
-    last_oid, findings = LiFiReconciler().audit_swaps()
+    last_oid, findings = ArrivalReconciler().audit_swaps()
     assert findings
 
-    _, findings = LiFiReconciler().audit_swaps(last_oid)
+    _, findings = ArrivalReconciler().audit_swaps(last_oid)
     assert findings == []
 
 
@@ -420,3 +427,68 @@ def test_dialog_prefers_the_transfer_the_report_confirms(wallets, lifi_answers):
 
     assert len(BridgeMatcher()._pending_halves()) == 0
     assert JalDB._read("SELECT COUNT(*) FROM transfers WHERE oid=:o", [(":o", transfer_oid)]) == 0
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The confidence tier, which is what a source of weaker data is allowed to do
+#
+# A source below REPORTED states which transactions belong together and nothing else that may be believed - its
+# amounts are rounded and its times are moments in its own workflow. So it may point at what JAL already holds, and
+# it may never produce a leg to book. Both halves of that are tested here on a stub, because they are properties of
+# the reconciler rather than of any one source (jal/net/rango.py is the source that has them).
+
+# What such a source says about the arrival, worded exactly as LI.FI would say it - and refused all the same
+class _WeakResolver(RouteResolver):
+    name = "Test source"
+    confidence = Confidence.PROPOSED
+
+    def _request(self, tx_hash: str):
+        return Route(self.name, self.confidence,
+                     RouteLeg(chain='1', location_id=AssetLocation.ETH_BLOCKCHAIN, tx_hash=tx_hash),
+                     RouteLeg(chain='42161', location_id=AssetLocation.ARB_BLOCKCHAIN, tx_hash=ARRIVE_HASH,
+                              symbol='USDC', address=USDC_ARB), to_address=WALLET)
+
+
+def _weakly(*resolvers):
+    return ArrivalReconciler(RouteResolvers(list(resolvers) or [_WeakResolver()]))
+
+
+# Everything needed to place the leg is known - the chain, the account, the token - and it is still not offered,
+# because what would be written into the ledger is a quantity and a time this source doesn't have.
+def test_a_source_below_the_reported_tier_never_produces_a_leg(wallets, lifi_answers):
+    half = create_bridges([{'asset': USDC, 'out_ts': dt2t(2101031200), 'out_acc': ETH_WALLET, 'out_qty': 100,
+                            'out_hash': SEND_HASH}])[0]
+
+    proposal = _weakly().arrival_of_half(half)
+    assert not proposal.is_placeable()
+    assert 'Test source' in proposal.problem
+    assert _weakly().complete_half(half) == 0
+
+
+# ... but naming the transaction is exactly what it is for: the arrival is already in the ledger as a fetched
+# transfer, and pointing at it costs nothing that could be wrong.
+def test_a_source_below_the_reported_tier_still_confirms_a_stored_transfer(wallets, lifi_answers):
+    create_trades(ETH_WALLET, [(d2t(210102), d2t(210102), USDC, 300.0, 1.0, 0.0)])
+    half = create_bridges([{'asset': USDC, 'out_ts': dt2t(2101031200), 'out_acc': ETH_WALLET, 'out_qty': 100,
+                            'out_hash': SEND_HASH}])[0]
+    transfer_oid = create_transfers([(dt2t(2101031203), ETH_WALLET, Decimal('99.5'), ARB_WALLET, 0, USDC)])[0]
+    JalDB._exec("UPDATE transfers SET number=:hash WHERE oid=:oid",
+                [(":hash", ARRIVE_HASH), (":oid", transfer_oid)], commit=True)
+
+    dialog = BridgeMatchDialog(half, reconciler=_weakly())
+    assert len(dialog._options) == 1
+    assert dialog._options[0][0] == BridgeMatchDialog.TRANSFER and dialog._options[0][1] == transfer_oid
+    assert 'Test source' in dialog._options[0][2]
+
+
+# A stronger source answers for a transaction a weaker one also has a record of, and the weaker one is never reached -
+# so it can neither contradict what was stated exactly nor cost the round trip it would take to ask it.
+def test_the_best_informed_source_that_has_an_answer_is_the_one_used(wallets, lifi_answers):
+    half = create_bridges([{'asset': USDC, 'out_ts': dt2t(2101031200), 'out_acc': ETH_WALLET, 'out_qty': 100,
+                            'out_hash': SEND_HASH}])[0]
+    lifi_answers[SEND_HASH] = _usdc_bridge_answer()
+
+    proposal = _weakly(_WeakResolver(), LiFiResolver()).arrival_of_half(half)
+    assert proposal.is_placeable()
+    assert proposal.route.source == 'LI.FI'
+    assert proposal.leg['qty'] == Decimal('99.5')

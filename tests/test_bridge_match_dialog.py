@@ -14,10 +14,19 @@ from jal.db.asset import JalAsset
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.bridge_matcher import BridgeMatcher
+from jal.net.arrival_reconciler import ArrivalReconciler
+from jal.net.route_resolvers import RouteResolvers
 from jal.widgets.bridge_match_dialog import BridgeMatchDialog
 
 ETH, USDC = 4, 5
 ACC1, ACC2, ACC3 = 1, 2, 3
+
+
+# The dialog asks whoever routed the move what arrived, and here nobody did: these operations have no transaction
+# hash to ask about, and what is under test is the choice the USER is offered. Handing it a reconciler with no
+# sources behind it is how that is said - and it is the same injection a caller that already asked would use.
+def _dialog(half_oid) -> BridgeMatchDialog:
+    return BridgeMatchDialog(half_oid, reconciler=ArrivalReconciler(RouteResolvers([])))
 
 
 @pytest.fixture
@@ -47,7 +56,7 @@ def test_dialog_adopts_a_transfer(accounts):
     send_oid = create_bridges([{'asset': ETH, 'out_ts': d2t(210103), 'out_acc': ACC1, 'out_qty': 2}])[0]
     create_transfers([(d2t(210104), ACC3, 2, ACC2, 0, ETH)])   # a plain incoming transfer that is the bridge arrival
 
-    dialog = BridgeMatchDialog(send_oid)
+    dialog = _dialog(send_oid)
     assert len(dialog._options) == 1
     dialog._list.setCurrentRow(0)
     dialog.accept()
@@ -65,7 +74,7 @@ def test_dialog_offers_and_creates_a_cross_chain_swap(accounts):
     send_oid = create_bridges([{'asset': ETH, 'out_ts': d2t(210103), 'out_acc': ACC1, 'out_qty': 2}])[0]
     create_transfers([(d2t(210104), ACC3, 2400, ACC2, 0, USDC)])   # 2400 USDC arrived instead of the ETH sent
 
-    dialog = BridgeMatchDialog(send_oid)
+    dialog = _dialog(send_oid)
     assert len(dialog._options) == 1
     assert dialog._options[0][2].endswith(dialog.tr("cross-chain swap"))
     dialog._list.setCurrentRow(0)

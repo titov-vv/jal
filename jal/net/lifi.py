@@ -2,11 +2,11 @@ import json
 import logging
 from decimal import Decimal, DecimalException
 
-from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QApplication
 
 from jal.constants import AssetLocation
 from jal.db.token_blacklist import normalize_address
+from jal.net.route import Confidence, Route, RouteLeg, RouteResolver
 from jal.net.web_request import WebRequest
 
 # LI.FI resolves a cross-chain move that JAL can only see one end of. Both ends are recorded by the aggregator that
@@ -41,71 +41,43 @@ _NATIVE_ADDRESSES = {
 
 _DONE = 'DONE'      # the only status whose amounts are final - a route still in flight may yet deliver something else
 
+_SOURCE = "LI.FI"   # what the user is told an answer came from
 
-# ----------------------------------------------------------------------------------------------------------------------
+
 # One end of a move as LI.FI recorded it. Amounts are kept exactly as the API reports them - an integer of the token's
 # smallest unit plus that token's decimals - and turned into a Decimal quantity here, which is lossless. The timestamp
 # stays the true UTC epoch the chain stamped: converting it into the local-wall-clock convention JAL stores is the
 # caller's business (ChainFetcher.local_timestamp), so that this module has nothing to do with how JAL keeps time.
-class LiFiLeg:
-    def __init__(self, record: dict):
-        token = record.get('token') or {}
-        self.chain_id = record.get('chainId')
-        self.location_id = _CHAINS.get(self.chain_id, AssetLocation.UNDEFINED)
-        self.tx_hash = record.get('txHash') or ''
-        self.timestamp = int(record.get('timestamp') or 0)   # true UTC, as every chain reports it
-        self.symbol = token.get('symbol') or ''
-        self.decimals = int(token.get('decimals') or 0)
-        self.address = self._token_address(token)
-        self.qty = self._quantity(record.get('amount'), self.decimals)
-
-    # The token's contract address in the form JAL stores it, or '' for the chain's own coin - see _NATIVE_ADDRESSES.
-    # Normalization is per chain (EVM lower-cases, Solana does not), which is what makes the address comparable with
-    # the identifiers JAL keeps on its symbols.
-    def _token_address(self, token: dict) -> str:
-        address = (token.get('address') or '').strip()
-        if not address or address.lower() in _NATIVE_ADDRESSES:
-            return ''
-        return normalize_address(self.location_id, address)
-
-    # The amount arrives as an integer count of the token's smallest unit, which the token's own decimals scale into a
-    # quantity. The scaling shifts the exponent of the value instead of dividing it: a division is performed in the
-    # current decimal context and would silently round an amount of more than 28 significant digits, which is exactly
-    # the kind of quiet loss a quantity compared against on-chain data must not suffer.
-    @staticmethod
-    def _quantity(amount, decimals: int):
-        try:
-            sign, digits, exponent = Decimal(str(amount)).as_tuple()
-            return Decimal((sign, digits, exponent - decimals))
-        except (DecimalException, TypeError, ValueError):
-            return None
-
-    # True when the leg says everything needed to book it: which chain, which token, how much and when
-    def is_complete(self) -> bool:
-        return bool(self.tx_hash) and self.qty is not None and self.qty > Decimal('0') and self.timestamp > 0
+def _leg(record: dict) -> RouteLeg:
+    token = record.get('token') or {}
+    chain_id = record.get('chainId')
+    location_id = _CHAINS.get(chain_id, AssetLocation.UNDEFINED)
+    return RouteLeg(chain='' if chain_id is None else f"{chain_id}", location_id=location_id,
+                    tx_hash=record.get('txHash') or '', timestamp=int(record.get('timestamp') or 0),
+                    symbol=token.get('symbol') or '', address=_token_address(token, location_id),
+                    qty=_quantity(record.get('amount'), int(token.get('decimals') or 0)))
 
 
-# ----------------------------------------------------------------------------------------------------------------------
-# A completed LI.FI route: what left one chain and what arrived on another (or on the same one, for a plain swap
-# routed through the aggregator). 'tool' is the liquidity source LI.FI routed through - 'fly', 'across', 'mayan' and
-# the like. It is NOT the contract the wallet called: every route goes through a LI.FI contract, and the tool only
-# names who provided the liquidity inside it. It is carried because it is worth showing to the user, never to decide
-# anything by.
-class LiFiTransfer:
-    def __init__(self, answer: dict):
-        self.sending = LiFiLeg(answer.get('sending') or {})
-        self.receiving = LiFiLeg(answer.get('receiving') or {})
-        self.tool = answer.get('tool') or ''
-        self.status = answer.get('status') or ''
-        self.from_address = answer.get('fromAddress') or ''
-        # Where the arrival was actually delivered. It is not necessarily an address of the wallet that sent it - a
-        # route may be told to deliver anywhere - so it is the only thing that says which account (if any) the
-        # arriving assets belong to.
-        self.to_address = answer.get('toAddress') or ''
+# The token's contract address in the form JAL stores it, or '' for the chain's own coin - see _NATIVE_ADDRESSES.
+# Normalization is per chain (EVM lower-cases, Solana does not), which is what makes the address comparable with the
+# identifiers JAL keeps on its symbols.
+def _token_address(token: dict, location_id: int) -> str:
+    address = (token.get('address') or '').strip()
+    if not address or address.lower() in _NATIVE_ADDRESSES:
+        return ''
+    return normalize_address(location_id, address)
 
-    # True when the two ends are on different chains, which is what makes the move one JAL must book as two legs
-    def is_cross_chain(self) -> bool:
-        return self.sending.chain_id != self.receiving.chain_id
+
+# The amount arrives as an integer count of the token's smallest unit, which the token's own decimals scale into a
+# quantity. The scaling shifts the exponent of the value instead of dividing it: a division is performed in the
+# current decimal context and would silently round an amount of more than 28 significant digits, which is exactly the
+# kind of quiet loss a quantity compared against on-chain data must not suffer.
+def _quantity(amount, decimals: int):
+    try:
+        sign, digits, exponent = Decimal(str(amount)).as_tuple()
+        return Decimal((sign, digits, exponent - decimals))
+    except (DecimalException, TypeError, ValueError):
+        return None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -121,26 +93,18 @@ class LiFiTransfer:
 #
 # Only routes LI.FI itself handled are known to it; a swap through any other router answers 404 and is simply not
 # something this can say anything about.
-class LiFiResolver(QObject):
-    def __init__(self):
-        super().__init__()
-        self._cache = {}     # tx hash (lower case) -> LiFiTransfer or None, so one hash is asked about once per run
+#
+# LI.FI answers from its own contracts' events, so what it states about a route it executed is a record and not a
+# rendering of one: it is the REPORTED tier, and its amounts and times may be booked (see jal/net/route.py).
+class LiFiResolver(RouteResolver):
+    name = _SOURCE
+    confidence = Confidence.REPORTED
 
     def tr(self, text):
         return QApplication.translate("LiFiResolver", text)
 
     # What LI.FI recorded for the transaction that STARTED the route, or None when it has nothing to say about it -
     # the transaction was not routed by LI.FI (a 404), the route did not complete, or the network was unreachable.
-    # None is never an error the caller must handle: not knowing is the normal answer for most transactions.
-    def resolve(self, tx_hash: str):
-        if not tx_hash:
-            return None
-        key = tx_hash.lower()
-        if key in self._cache:
-            return self._cache[key]
-        self._cache[key] = self._request(tx_hash)
-        return self._cache[key]
-
     def _request(self, tx_hash: str):
         # 404 is the answer "this transaction was not handled by LI.FI contracts", which most transactions asked about
         # will get - it is not a failure and must not be logged as one (see WebRequest.expected_errors).
@@ -157,22 +121,24 @@ class LiFiResolver(QObject):
             return None
         return self._validated(data, tx_hash)
 
-    # Turns an answer into a LiFiTransfer, or None if it may not be trusted for this hash.
+    # Turns an answer into a Route, or None if it may not be trusted for this hash.
     #
     # The identity check is not a formality. The endpoint accepts either a transaction hash or LI.FI's own route id in
     # the same parameter, and a value it fails to recognize as a hash is looked up as a route id - which can answer
     # 200 with SOMEBODY ELSE'S transfer. Booking that against a JAL operation would invent a counter-leg out of an
     # unrelated wallet's money, so an answer is only used when it is about the very transaction that was asked for.
     def _validated(self, data: dict, tx_hash: str):
-        transfer = LiFiTransfer(data)
-        if transfer.sending.tx_hash.lower() != tx_hash.lower():
+        route = Route(_SOURCE, self.confidence, _leg(data.get('sending') or {}), _leg(data.get('receiving') or {}),
+                      tool=data.get('tool') or '', status=data.get('status') or '',
+                      from_address=data.get('fromAddress') or '', to_address=data.get('toAddress') or '')
+        if route.sending.tx_hash.lower() != tx_hash.lower():
             logging.warning(self.tr("LI.FI answered about another transaction: ")
-                            + f"{tx_hash} -> {transfer.sending.tx_hash}")
+                            + f"{tx_hash} -> {route.sending.tx_hash}")
             return None
-        if transfer.status != _DONE:
-            logging.info(self.tr("LI.FI route is not completed: ") + f"{tx_hash} ({transfer.status})")
+        if route.status != _DONE:
+            logging.info(self.tr("LI.FI route is not completed: ") + f"{tx_hash} ({route.status})")
             return None
-        if not transfer.sending.is_complete() or not transfer.receiving.is_complete():
+        if not route.sending.is_complete() or not route.receiving.is_complete():
             logging.warning(self.tr("LI.FI answer is incomplete for: ") + tx_hash)
             return None
-        return transfer
+        return route
