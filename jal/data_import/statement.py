@@ -625,6 +625,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         # already recorded. Two legs of one and the same transaction - a contract paying the same address twice - are
         # two separate movements that happen to look alike, and the second must not be swallowed by the first.
         stored_before = Transfer.last_oid() if self._transfers_are_unique_per_transaction else 0
+        # The generic duplicate check of create_operation() needs the very same boundary, and for the very same
+        # reason: unbounded, it asks whether an identical row exists ANYWHERE, so it swallows the second of two
+        # movements that one transaction made look alike - and that is the whole of the sentence above. A statement
+        # that can't identify a movement at all keeps the check unbounded ('None'), because it is its only guard
+        # against a re-import.
+        duplicate_before = stored_before if self._transfers_are_unique_per_transaction else None
         for transfer in transfers:
             operation = deepcopy(transfer)
             accounts = []
@@ -683,7 +689,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 continue
             if stored_before and self._transfer_completes_pending(operation, stored_before):
                 continue
-            LedgerTransaction.create_new(LedgerTransaction.Transfer, operation)
+            LedgerTransaction.create_new(LedgerTransaction.Transfer, operation, duplicate_before=duplicate_before)
 
     # True if this incoming movement is already booked as the ARRIVING LEG of a cross-chain operation - a bridge or a
     # cross-chain swap that was completed from what the routing aggregator reported, possibly long before the chain it

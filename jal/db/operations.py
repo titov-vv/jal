@@ -34,10 +34,10 @@ class LedgerTransaction(JalDB):
     _db_table = ''   # Table where operation is stored in DB
     _db_fields = {}
 
-    def __init__(self, operation_data=None):
+    def __init__(self, operation_data=None, duplicate_before=None):
         super().__init__()
         if type(operation_data) == dict:
-            oid = self.create_operation(self._db_table, self._db_fields, operation_data)
+            oid = self.create_operation(self._db_table, self._db_fields, operation_data, duplicate_before)
         else:
             oid = operation_data
         self._oid = oid
@@ -93,8 +93,14 @@ class LedgerTransaction(JalDB):
         else:
             raise ValueError(f"An attempt to select unknown operation type: {operation_type}")
 
+    # 'duplicate_before' bounds the "is this operation stored already" check to operations stored earlier than it -
+    # see JalDB.locate_operation(). Only a transfer takes it today, because its importer is the only one that computes
+    # the boundary of the running import; another operation type adopts it by threading the same parameter through
+    # its constructor.
     @staticmethod
-    def create_new(operation_type, operation_data):
+    def create_new(operation_type, operation_data, duplicate_before=None):
+        assert duplicate_before is None or operation_type == LedgerTransaction.Transfer, \
+            "Bounded duplicate check is implemented for transfers only"
         if operation_type == LedgerTransaction.IncomeSpending:
             return IncomeSpending(operation_data)
         elif operation_type == LedgerTransaction.AssetPayment:
@@ -102,7 +108,7 @@ class LedgerTransaction(JalDB):
         elif operation_type == LedgerTransaction.Trade:
             return Trade(operation_data)
         elif operation_type == LedgerTransaction.Transfer:
-            return Transfer(operation_data, Transfer.Outgoing)
+            return Transfer(operation_data, Transfer.Outgoing, duplicate_before=duplicate_before)
         elif operation_type == LedgerTransaction.CorporateAction:
             return CorporateAction(operation_data)
         elif operation_type == LedgerTransaction.Conversion:
@@ -1212,7 +1218,7 @@ class Transfer(LedgerTransaction):
         "note": {"mandatory": False, "validation": False}
     }
 
-    def __init__(self, oid=None, opart=0):
+    def __init__(self, oid=None, opart=0, duplicate_before=None):
         assert opart in [Transfer.Outgoing, Transfer.Incoming, Transfer.Fee], "Unknown transfer type"
         icons = {
             (Transfer.Outgoing, True): JalIcon.TRANSFER_OUT,
@@ -1230,7 +1236,7 @@ class Transfer(LedgerTransaction):
             (Transfer.Incoming, False): self.tr("Incoming asset transfer"),
             (Transfer.Fee, False): self.tr("Asset transfer fee"),
         }
-        super().__init__(oid)
+        super().__init__(oid, duplicate_before)
         self._otype = LedgerTransaction.Transfer
         self._opart = opart
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "

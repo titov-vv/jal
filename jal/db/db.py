@@ -392,9 +392,10 @@ class JalDB:
     # 'data' is a dict that contains operation data and dict 'fields' describes it having
     # 'mandatory'=True if this piece must be present, 'validation'=True if it is used to check if operation is
     # present in database already (and 'default' is used for this check if no value provided in 'data')
-    def create_operation(self, table_name, fields, data):
+    # 'duplicate_before' bounds that check - see locate_operation()
+    def create_operation(self, table_name, fields, data, duplicate_before=None):
         self.validate_operation_data(table_name, fields, data)
-        oid = self.locate_operation(table_name, fields, data)
+        oid = self.locate_operation(table_name, fields, data, duplicate_before)
         if oid:
             logging.warning(self.tr("Operation already present in db and was skipped: ") + f"{table_name}, {data}")
             return oid
@@ -404,6 +405,8 @@ class JalDB:
         for child in children:
             for item in data[child]:
                 item[fields[child]['child_pid']] = oid
+                # No bound for the children: they are keyed by the parent id that was just inserted, so an existing
+                # child row of another parent can't be mistaken for one of these
                 self.create_operation(fields[child]['child_table'], fields[child]['child_fields'], item)
         return oid
 
@@ -422,7 +425,17 @@ class JalDB:
 
     # Returns oid if given operation is present in 'table_name' already and 0 if not
     # Check happens based on field values that marked with 'validation'=True in 'fields' dict
-    def locate_operation(self, table_name, fields, data) -> int:
+    #
+    # 'duplicate_before' is the highest oid that may answer the question. Without it the search covers the whole
+    # table, which asks "does an identical row exist anywhere" - and that is the wrong question for an importer: a
+    # row it wrote itself a moment ago is not a duplicate but the SECOND MOVEMENT of a transaction that moved the
+    # asset twice (a multisend paying two addresses, or a contract paying one address twice - see the comment in
+    # Statement._import_transfers). Bounded to the operations that were stored BEFORE the import started, the check
+    # recognizes a re-import and nothing else, which is all it was ever meant to do. The bound is the same one
+    # Transfer.find_by_movement() and Transfer.find_pending_counterpart() take, for the same reason.
+    # Callers that pass nothing keep the unbounded behaviour - a statement that can't identify a movement of its own
+    # has this check as its only guard against re-import.
+    def locate_operation(self, table_name, fields, data, duplicate_before=None) -> int:
         query_text = f"SELECT oid FROM {table_name} WHERE "
         params = []
         validation_fields = [x for x in fields if 'validation' in fields[x] and fields[x]['validation']]
@@ -440,6 +453,9 @@ class JalDB:
                 query_text += f"{field} = :{field} AND "
                 params.append((f":{field}", data[field]))
         query_text = query_text[:-len(" AND ")]   # cut extra tail
+        if duplicate_before is not None:
+            query_text += " AND oid<=:duplicate_before"
+            params.append((":duplicate_before", duplicate_before))
         oid = self._read(query_text, params)
         if oid:
             return int(oid)

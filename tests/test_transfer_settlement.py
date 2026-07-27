@@ -344,6 +344,41 @@ def test_a_repeated_record_is_still_deduplicated_not_settled(wallets, monkeypatc
     assert len(_stored()) == 1
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# The same boundary bounds the GENERIC duplicate check of create_operation(), which had no boundary at all
+
+# Two legs of one transaction that are identical in every stored field - a multisend to two addresses neither of which
+# JAL can resolve, or a contract paying one address twice - are two movements. Unbounded, locate_operation() asks
+# whether an identical row exists ANYWHERE and so swallows the second, and the money that left the wallet is then in
+# no ledger at all. Bounded to what an earlier import stored, it can't see the row this import just wrote.
+def test_two_identical_legs_of_one_transaction_are_both_stored(wallets, monkeypatch):
+    _import(monkeypatch, [_record([1, 2, 1], number='0x' + 'c' * 64)])   # so the import boundary isn't 0
+    _import(monkeypatch, [_record([1, 0, 1]), _record([1, 0, 1])])
+
+    rows = _stored()
+    assert len(rows) == 3
+    assert [r['deposit_account'] for r in rows] == [WALLET_B, '', '']     # both pending legs are there
+
+
+# ... and the check still does what it is for: a statement imported twice duplicates nothing
+def test_a_reimported_statement_still_duplicates_nothing(wallets, monkeypatch):
+    _import(monkeypatch, [_record([1, 0, 1]), _record([1, 0, 1], amount=Decimal('500'))])
+    _import(monkeypatch, [_record([1, 0, 1]), _record([1, 0, 1], amount=Decimal('500'))])
+
+    assert len(_stored()) == 2
+
+
+# A statement whose 'number' identifies nothing keeps the UNBOUNDED check - it has no movement identity of its own to
+# fall back on, so that check is its only guard against a re-import
+def test_a_statement_without_transaction_hashes_keeps_the_unbounded_check(wallets, monkeypatch):
+    statement = _statement(monkeypatch)
+    monkeypatch.setattr(type(statement), "_transfers_are_unique_per_transaction", False)
+    statement._import_transfers([_record([1, 2, 1], number='ref-1') | {"id": 1},
+                                 _record([1, 2, 1], number='ref-1') | {"id": 2}])
+
+    assert len(_stored()) == 1
+
+
 # The pass runs at the end of every import that can vouch for its 'number', so a statement that brings the missing
 # side of a leg settles it without anything else being asked
 def test_the_import_settles_pending_legs_it_completes(wallets, monkeypatch):
