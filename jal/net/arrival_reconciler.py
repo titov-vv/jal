@@ -4,13 +4,12 @@ from decimal import Decimal
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QApplication
 
-from jal.constants import AssetLocation, PredefinedAccountType
+from jal.constants import AssetLocation
 from jal.db.account import JalAccount
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.db import JalDB
 from jal.db.helpers import remove_exponent
 from jal.db.symbol import JalSymbol
-from jal.db.token_blacklist import normalize_address
 from jal.db.transfer_settlement import TransferSettlement
 from jal.net.chain_fetchers.fetcher import local_timestamp
 from jal.net.route import Confidence
@@ -234,19 +233,11 @@ class ArrivalReconciler(QObject):
         return ''
 
     # ------------------------------------------------------------------------------------------------------------------
-    # The wallet account holding 'address' on the given chain, or None when there is no single such account. Both the
-    # chain and the address must match: one address is commonly registered once per chain, and the assets a transfer
-    # moves stay on the chain they arrived on (see ChainFetcher._own_wallet, which resolves the same thing for a
-    # fetcher). An address matching several accounts of one chain is left unresolved - nothing here can tell which.
+    # The wallet account holding 'address' on the given chain, or None when there is no single such account - the
+    # same question a pending leg asks about the address it recorded, and answered in one place for both.
     @staticmethod
     def _wallet_account(location_id: int, address: str):
-        address = normalize_address(location_id, address)
-        if not address:
-            return None
-        matched = [x for x in JalAccount.get_all_accounts(active_only=True)
-                   if x.account_type() == PredefinedAccountType.Wallet and x.chain() == location_id
-                   and normalize_address(location_id, x.address()) == address]
-        return matched[0] if len(matched) == 1 else None
+        return JalAccount.wallet_at(location_id, address)
 
     # The listing (symbol) of the arrived token on its chain: by contract address for a token - the only identity of a
     # token that can be trusted - and by ticker for the chain's own coin, which has no contract behind it and is

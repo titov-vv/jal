@@ -451,6 +451,12 @@ CREATE TABLE trades_closed (
 -- At least one of the two is always set (a CHECK constraint - a transfer with neither end describes no movement at
 -- all). The timestamp and the amount of an unknown side mirror the known one until the transfer is settled - the leg
 -- they describe isn't processed while it is NULL, as 'operation_sequence' below leaves it out.
+-- 'counterparty_address' is what the unknown end actually IS: an on-chain movement always names the address it paid
+-- or was paid by, and that address is a fact of the transaction rather than a guess about it. Held as a column it
+-- settles the leg the moment an account with that address exists, with no transaction hash having to coincide and
+-- without the wallet on the other side ever being fetched. NULL when both ends are known, or when the side that was
+-- imported couldn't tell which address the movement was with. It describes the movement and books nothing, so the
+-- update trigger below deliberately doesn't watch it - what the ledger reads is the account the settlement fills in.
 DROP TABLE IF EXISTS transfers;
 CREATE TABLE transfers (
     oid                  INTEGER     PRIMARY KEY UNIQUE NOT NULL,     -- Unique operation id
@@ -464,6 +470,7 @@ CREATE TABLE transfers (
     fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- If and where fee was withdrawn
     fee                  TEXT,                                        -- Fee amount
     number               TEXT        NOT NULL DEFAULT (''),           -- Number of operation in bank/broker systems
+    counterparty_address TEXT,                                        -- Address of the end that has no account (NULL if both are known)
     symbol_id            INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- If it is an asset transfer
     fee_symbol_id        INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- Asset the fee is paid in (crypto only); NULL = fee account currency
     note                 TEXT,                                        -- Free text comment

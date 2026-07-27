@@ -128,6 +128,21 @@ class JalAccount(JalDB):
             accounts.append(JalAccount(account_id))
         return accounts
 
+    # The wallet account that holds 'address' on the given chain, or None when there is no single such account.
+    # Both the chain and the address must match: one address is commonly registered once per chain, and the assets a
+    # movement carries stay on the chain they moved on. An address matching several accounts of one chain is left
+    # unresolved - nothing here can tell which of them a movement belongs to, and guessing books money into the wrong
+    # account (ChainFetcher._own_wallet refuses it the same way while a statement is being built).
+    @classmethod
+    def wallet_at(cls, location_id: int, address: str):
+        address = normalize_address(location_id, address)
+        if not address or not location_id:
+            return None
+        matched = [x for x in cls.get_all_accounts(active_only=True)
+                   if x.account_type() == PredefinedAccountType.Wallet and x.chain() == location_id
+                   and normalize_address(location_id, x.address()) == address]
+        return matched[0] if len(matched) == 1 else None
+
     @classmethod
     def get_taxable_accounts(cls, tax_date: int) -> list:
         accounts = []

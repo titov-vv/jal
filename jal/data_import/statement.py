@@ -664,6 +664,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             accounts = [account_id if account_id else None for account_id in accounts[:2]] + accounts[2:]
             if accounts[0] is None and accounts[1] is None:
                 raise Statement_ImportError(self.tr("Both ends of a transfer are unknown: ") + f"{transfer}")
+            # An address stands for the end that has no account. A record naming both of its accounts has no such
+            # end, so whatever address it also carries describes an account that is already named.
+            if accounts[0] is not None and accounts[1] is not None:
+                operation.pop('counterparty_address', None)
             if asset_types[0] != PredefinedAsset.Money:
                 operation['symbol_id'] = symbols[0]
             operation.pop('symbol')

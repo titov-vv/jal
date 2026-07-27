@@ -8,6 +8,7 @@ from constants import BookAccount, PredefinedAsset, PredefinedCategory, Predefin
 from jal.data_import.statement import Statement, JSF
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
+from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction, Transfer
 from jal.db.transfer_settlement import TransferSettlement
@@ -47,10 +48,11 @@ def wallets(prepare_db):
 
 
 def _transfer(from_account, to_account, amount, timestamp, asset_id=USDT, deposit=0, number=HASH,
-              deposit_timestamp=None, fee=None, fee_account=None, note=''):
+              deposit_timestamp=None, fee=None, fee_account=None, note='', address=None):
     data = {'withdrawal_timestamp': timestamp, 'withdrawal_account': from_account, 'withdrawal': str(amount),
             'deposit_timestamp': timestamp if deposit_timestamp is None else deposit_timestamp,
             'deposit_account': to_account, 'deposit': str(deposit), 'number': number, 'note': note,
+            'counterparty_address': address,
             'symbol_id': symbol_id_for(asset_id) if asset_id else None}
     if fee is not None:
         data['fee'] = str(fee)
@@ -61,8 +63,8 @@ def _transfer(from_account, to_account, amount, timestamp, asset_id=USDT, deposi
 
 def _stored() -> list:
     query = LedgerTransaction._exec("SELECT oid, withdrawal_timestamp, withdrawal_account, withdrawal, "
-                                    "deposit_timestamp, deposit_account, deposit, fee, fee_account, number, note "
-                                    "FROM transfers ORDER BY oid")
+                                    "deposit_timestamp, deposit_account, deposit, fee, fee_account, number, "
+                                    "counterparty_address, note FROM transfers ORDER BY oid")
     rows = []
     while query.next():
         rows.append(LedgerTransaction._read_record(query, named=True))
@@ -535,3 +537,132 @@ def test_a_settled_transfer_is_not_paired_again(wallets):
 
     assert _settle()[0] == 0
     assert len(_stored()) == 2
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Settlement on the COUNTERPARTY ADDRESS
+#
+# The pass above needs both records of a movement to exist. This one doesn't: a movement fetched from a chain states
+# the address at its other end, and when an account holds that address the transaction itself has said where the
+# money went. So a leg settles even though the wallet on the other side has never been fetched - and it settles
+# without any hash having to coincide.
+#
+# The address is resolved on ONE chain, the chain of the end that is known: an EVM address is commonly registered as
+# a wallet on several chains at once, and assets stay on the chain they moved on.
+
+ARB2_ADDRESS = '0x' + '4' * 40
+
+
+def _arb_wallet(name='ARB wallet 2', address=ARB2_ADDRESS, currency=USD, chain=AssetLocation.ARB_BLOCKCHAIN):
+    return JalAccountCreator(currency_id=currency, number='', name=name, investing=1, organization=1,
+                             account_type=PredefinedAccountType.Wallet, address=address, chain=chain).commit()
+
+
+def test_a_leg_settles_with_the_account_that_holds_the_address_it_names(wallets):
+    other = _arb_wallet()
+    _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)
+
+    assert TransferSettlement().settle_by_address() == 1
+
+    rows = _stored()
+    assert len(rows) == 1
+    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, other.id())
+    assert Decimal(rows[0]['withdrawal']) == Decimal('400')   # what the leg states about the movement is untouched
+    assert rows[0]['counterparty_address'] == ''             # ... and the end it named is an account now, not an address
+
+
+def test_an_arrival_settles_with_the_account_it_names_as_its_source(wallets):
+    other = _arb_wallet()
+    _transfer(None, WALLET_A, 400, d2t(210103), address=ARB2_ADDRESS)
+
+    assert TransferSettlement().settle_by_address() == 1
+
+    rows = _stored()
+    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (other.id(), WALLET_A)
+
+
+def test_an_address_no_account_holds_leaves_the_leg_pending(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), address='0x' + '9' * 40)
+
+    assert TransferSettlement().settle_by_address() == 0
+    assert Transfer(int(_stored()[0]['oid']), Transfer.Outgoing).is_pending()
+
+
+def test_an_address_registered_on_another_chain_is_not_that_wallet(wallets):
+    # WALLET_B holds this address on Ethereum while the leg moved on Arbitrum. One address is commonly registered
+    # once per chain, and booking the movement onto the wallet of another chain would move assets between chains.
+    _transfer(WALLET_A, None, 400, d2t(210103), address='0x' + '2' * 40)
+
+    assert TransferSettlement().settle_by_address() == 0
+
+
+def test_an_address_two_accounts_hold_is_not_resolved(wallets):
+    _arb_wallet(name='ARB wallet 2')
+    _arb_wallet(name='ARB wallet 3')     # the same address on the same chain, twice
+    _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)
+
+    assert TransferSettlement().settle_by_address() == 0   # nothing here can tell which of the two it went to
+
+
+def test_a_leg_naming_the_address_of_its_own_account_is_not_settled(wallets):
+    # A transaction paying the address it was sent from names no counterparty. Settling it would make the account
+    # transfer to itself, which is not a movement of assets at all.
+    _transfer(WALLET_A, None, 400, d2t(210103), address='0x' + '1' * 40)
+
+    assert TransferSettlement().settle_by_address() == 0
+
+
+def test_a_counterparty_kept_in_another_currency_is_left_alone(wallets):
+    # An asset transfer between two currencies takes its destination cost basis from a 'deposit' no fetcher can know,
+    # so filling this end in would open the arrived lots at zero. Such a pair IS settled when both records of it
+    # exist - a movement seen from both sides - but never invented from an address alone.
+    _arb_wallet(currency=EUR)
+    _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)
+
+    assert TransferSettlement().settle_by_address() == 0
+
+
+def test_the_other_record_of_the_movement_is_folded_in_rather_than_filled_in_beside_it(wallets):
+    # A multisend pays several addresses in one transaction, which is what the pass on the hash refuses: it sees
+    # more than two records of one transaction and asset and cannot tell which of them belong together. The address
+    # can - and what it settles is the two RECORDS, since filling the account in beside the arrival that is already
+    # stored would put the same movement into the ledger twice.
+    other = _arb_wallet()
+    _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)          # ... to a wallet of the user's own
+    _transfer(WALLET_A, None, 500, d2t(210103), address='0x' + '9' * 40)       # ... and to an address nobody holds
+    _transfer(None, other.id(), 400, d2t(210103))                              # the arrival, fetched from that wallet
+
+    assert TransferSettlement().settle_all() == 1
+
+    rows = _stored()
+    assert len(rows) == 2
+    settled = [x for x in rows if x['deposit_account'] != '']
+    assert len(settled) == 1
+    assert (int(settled[0]['withdrawal_account']), int(settled[0]['deposit_account'])) == (WALLET_A, other.id())
+    assert [x['counterparty_address'] for x in rows if x['deposit_account'] == ''] == ['0x' + '9' * 40]
+
+
+def test_a_leg_whose_own_end_is_not_a_wallet_resolves_the_address_on_the_chain_of_its_asset(wallets):
+    # An exchange account has no chain of its own, so the chain the address belongs to is the one the moved token is
+    # listed on. Without it a withdrawal named by its destination address could not be settled at all.
+    other = _arb_wallet()
+    exchange = JalAccountCreator(currency_id=USD, number='', name='Exchange', investing=1, organization=1,
+                                 account_type=PredefinedAccountType.Broker).commit()
+    JalDB._exec("UPDATE asset_symbol SET location_id=:chain WHERE id=:sid",
+                [(":chain", AssetLocation.ARB_BLOCKCHAIN), (":sid", symbol_id_for(USDT))], commit=True)
+    _transfer(exchange.id(), None, 400, d2t(210103), address=ARB2_ADDRESS)
+
+    assert TransferSettlement().settle_by_address() == 1
+    assert int(_stored()[0]['deposit_account']) == other.id()
+
+
+def test_an_address_paid_twice_by_one_transaction_is_left_for_the_user(wallets):
+    # The transaction moved the asset to that account twice, so which of the two arrivals this leg is the other half
+    # of is exactly what nothing here can tell - and filling the account in beside them would book it a second time.
+    other = _arb_wallet()
+    _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)
+    _transfer(None, other.id(), 400, d2t(210103), note='first')
+    _transfer(None, other.id(), 500, d2t(210103), note='second')
+
+    assert TransferSettlement().settle_by_address() == 0
+    assert len(_stored()) == 3

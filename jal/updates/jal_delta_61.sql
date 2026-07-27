@@ -98,6 +98,7 @@ CREATE TABLE transfers_new (
     fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- If and where fee was withdrawn
     fee                  TEXT,                                        -- Fee amount
     number               TEXT        NOT NULL DEFAULT (''),           -- Number of operation in bank/broker systems
+    counterparty_address TEXT,                                        -- Address of the end that has no account (NULL if both are known)
     symbol_id            INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- If it is an asset transfer
     fee_symbol_id        INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- Asset the fee is paid in (crypto only); NULL = fee account currency
     note                 TEXT,                                        -- Free text comment
@@ -105,10 +106,12 @@ CREATE TABLE transfers_new (
 );
 INSERT INTO transfers_new (oid, otype, withdrawal_timestamp, withdrawal_account, withdrawal,
                            deposit_timestamp, deposit_account, deposit, fee_account, fee, number,
-                           symbol_id, fee_symbol_id, note)
+                           counterparty_address, symbol_id, fee_symbol_id, note)
     SELECT oid, otype, withdrawal_timestamp, withdrawal_account, withdrawal,
            deposit_timestamp, deposit_account, deposit, fee_account, fee, number,
-           symbol_id, NULL, note FROM transfers;   -- No transfer paid its fee in an asset before this version
+           -- Every transfer that exists in a v60 database knows both of its ends, so none of them has an end left to
+           -- be named by an address; and no transfer paid its fee in an asset before this version either.
+           NULL, symbol_id, NULL, note FROM transfers;
 DROP TABLE transfers;
 ALTER TABLE transfers_new RENAME TO transfers;
 

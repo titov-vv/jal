@@ -267,6 +267,15 @@ class ChainFetcher(Statement):
         self._counterparty_accounts[wallet.id()] = statement_id
         return statement_id
 
+    # The address of an end that has no account, normalized as the database stores it, or '' when there is none to
+    # keep. The fetched wallet's own address is not one: a transaction that pays the address it was sent from names
+    # no counterparty at all, and storing it would leave a leg to be settled with the account it is already on.
+    def _unresolved_address(self, address: str) -> str:
+        address = normalize_address(self.location_id, address)
+        if not address or address == normalize_address(self.location_id, self._account.address()):
+            return ''
+        return address
+
     # Returns the JSF asset id of a token, creating the asset record if this statement doesn't have it yet.
     # 'address' is empty for the native coin of the chain, which has no contract behind it.
     def _token_asset_id(self, symbol: str, name: str, address: str = '') -> int:
@@ -314,10 +323,9 @@ class ChainFetcher(Statement):
 
     # Adds an asset transfer between the fetched wallet and the outside world. 'counterparty' is the address at the
     # other end: when it belongs to another wallet of the user's own that account is filled in, otherwise the far
-    # side is left as account 0, which makes _import_transfers() ask the user which account the assets came from or
-    # went to - the same flow a broker statement uses for an unmatched transfer. A caller that can't tell which
-    # address the movement was with (a netted transaction touching several of them) passes none, and the transfer
-    # is handled as it always was.
+    # side is left as account 0 and the transfer is stored with that end unknown - "money on the way", which the
+    # address itself is then what settles. A caller that can't tell which address the movement was with (a netted
+    # transaction touching several of them) passes none, and the transfer is handled as it always was.
     def _add_transfer(self, timestamp: int, asset_id: int, amount: Decimal, incoming: bool,
                       tx_hash: str, note: str = '', fee: Decimal = Decimal('0'), fee_asset_id: int = None,
                       counterparty: str = '') -> None:
@@ -340,6 +348,12 @@ class ChainFetcher(Statement):
         transfer = {"id": self._next_id(JSF.TRANSFERS), "account": accounts, "symbol": [symbol_id, symbol_id],
                     "timestamp": timestamp, "withdrawal": amount, "deposit": Decimal('0'),
                     "fee": fee, "number": tx_hash, "description": note}
+        # An end with no account keeps the address it has instead. The transaction named it, so it is a fact about
+        # the movement and not a guess about it, and it is what lets the leg be settled exactly later on - the note
+        # carries the same address as free text, which nothing can match against.
+        address = '' if far_side else self._unresolved_address(counterparty)
+        if address:
+            transfer["counterparty_address"] = address
         if fee > Decimal('0') and fee_asset_id is not None:
             transfer["fee_symbol"] = self._single_symbol_of(fee_asset_id)
         self._data[JSF.TRANSFERS].append(transfer)

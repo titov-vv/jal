@@ -687,6 +687,36 @@ def test_counterparty_of_a_netted_movement_is_left_unresolved(eth_wallet, monkey
     assert len(_transfers(data)) == 1                    # one netted ETH movement of 2 ETH
     assert _transfers(data)[0]['withdrawal'] == Decimal('2')
     assert _transfers(data)[0]['account'].count(0) == 1
+    # ... and with no single counterparty there is no address to keep either
+    assert 'counterparty_address' not in _transfers(data)[0]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# An end with no account keeps the ADDRESS the transaction named for it. That address is what settles the leg later
+# on - exactly, and without a second record of the movement having to exist at all.
+def test_an_unresolved_counterparty_is_kept_as_an_address(eth_wallet, monkeypatch):
+    external = "0x2222222222222222222222222222222222222222"
+    pages = {"txlist": [_tx('0x01', 100, WALLET, external.upper(), value=10 ** 18)]}
+    _fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+    transfer = _transfers(data)[0]
+    assert transfer['account'][1] == 0                          # the destination is an address JAL has no account for
+    assert transfer['counterparty_address'] == external         # ... kept as the chain stores it, case and all
+
+
+def test_a_resolved_counterparty_leaves_no_address_to_settle(eth_wallet, monkeypatch):
+    _own_wallet(OTHER_WALLET)
+    pages = {"txlist": [_tx('0x01', 100, WALLET, OTHER_WALLET, value=10 ** 18)]}
+    _fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+    assert 'counterparty_address' not in _transfers(data)[0]    # both ends are accounts, so no end is an address
+
+
+def test_the_wallets_own_address_is_not_kept_as_a_counterparty(eth_wallet, monkeypatch):
+    # A transaction paying the address it was sent from names no counterparty at all. Keeping that address would
+    # leave a leg waiting to be settled with the very account it already stands on.
+    pages = {"txlist": [_tx('0x01', 100, WALLET, WALLET, value=10 ** 18)]}
+    _fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+    for transfer in _transfers(data):
+        assert 'counterparty_address' not in transfer
 
 
 # ----------------------------------------------------------------------------------------------------------------------

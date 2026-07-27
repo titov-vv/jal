@@ -1214,6 +1214,10 @@ class Transfer(LedgerTransaction):
         "fee": {"mandatory": False, "validation": True, "default": None},
         "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
         "number": {"mandatory": False, "validation": True, "default": ''},
+        # The address of the end that has no account. It is descriptive, not part of the identity of the movement:
+        # the two sightings of one transfer name each other's addresses, so making it a validation field would make
+        # two records of one movement look like two movements (the same reason 'note' isn't one).
+        "counterparty_address": {"mandatory": False, "validation": False, "default": None},
         "symbol_id": {"mandatory": False, "validation": True, "default": None},
         "note": {"mandatory": False, "validation": False}
     }
@@ -1241,8 +1245,8 @@ class Transfer(LedgerTransaction):
         self._opart = opart
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
                                 "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, "
-                                "t.fee_symbol_id, t.symbol_id, t.number, t.note FROM transfers AS t "
-                                "WHERE t.oid=:oid",
+                                "t.fee_symbol_id, t.symbol_id, t.number, t.counterparty_address, t.note "
+                                "FROM transfers AS t WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
@@ -1268,6 +1272,7 @@ class Transfer(LedgerTransaction):
         self._fee_symbol = JalSymbol(self._data['fee_symbol_id'])
         self._fee_asset = self._fee_symbol.asset()
         self._number = self._data['number']
+        self._counterparty_address = self._data['counterparty_address']
         # The source account is where the deals of BOTH legs are recorded - the arriving leg reads them back with
         # _deals_closed_by_operation() to move the lots on. A transfer that has no source has none to move, so its
         # only account stands here (and the lookup then correctly finds nothing).
@@ -1294,6 +1299,11 @@ class Transfer(LedgerTransaction):
     # a source that hasn't been imported yet)
     def is_pending(self) -> bool:
         return not (self._has_out and self._has_in)
+
+    # The address of the end that has no account ('' when the movement doesn't name one). It is what a settlement
+    # resolves into the missing account, and the only exact statement about that end JAL ever holds.
+    def counterparty_address(self) -> str:
+        return self._counterparty_address if self._counterparty_address else ''
 
     def timestamp(self):
         if self._opart == Transfer.Incoming:
@@ -1439,8 +1449,10 @@ class Transfer(LedgerTransaction):
             if self._withdrawal_timestamp > timestamp:
                 logging.warning(self.tr("Arrival precedes departure, transfer is left unsettled: ") + self.dump())
                 return False
+            # The address named the end that had no account; that end is now an account, so it has nothing left to
+            # name and is dropped rather than kept as a second statement of the same thing.
             self._exec("UPDATE transfers SET deposit_account=:account, deposit_timestamp=:timestamp, "
-                       "deposit=:deposit WHERE oid=:oid",
+                       "deposit=:deposit, counterparty_address=NULL WHERE oid=:oid",
                        [(":account", account), (":timestamp", timestamp), (":deposit", deposit),
                         (":oid", self._oid)], commit=True)
         else:
@@ -1451,7 +1463,7 @@ class Transfer(LedgerTransaction):
                 logging.warning(self.tr("Arrival precedes departure, transfer is left unsettled: ") + self.dump())
                 return False
             self._exec("UPDATE transfers SET withdrawal_account=:account, withdrawal_timestamp=:timestamp, "
-                       "deposit=:deposit WHERE oid=:oid",
+                       "deposit=:deposit, counterparty_address=NULL WHERE oid=:oid",
                        [(":account", account), (":timestamp", timestamp), (":deposit", deposit),
                         (":oid", self._oid)], commit=True)
         if 'fee' in data:
@@ -1484,7 +1496,7 @@ class Transfer(LedgerTransaction):
         legs = []
         query = cls._exec(
             "SELECT oid, withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, "
-            "withdrawal, deposit, symbol_id, number, note FROM transfers "
+            "withdrawal, deposit, symbol_id, number, counterparty_address, note FROM transfers "
             "WHERE (withdrawal_account IS NULL OR deposit_account IS NULL) "
             "AND (CASE WHEN deposit_account IS NULL THEN withdrawal_timestamp ELSE deposit_timestamp END)<=:timestamp "
             "ORDER BY CASE WHEN deposit_account IS NULL THEN withdrawal_timestamp ELSE deposit_timestamp END, oid",
@@ -1504,6 +1516,9 @@ class Transfer(LedgerTransaction):
                 'asset': symbol.asset() if symbol else JalAsset(account.currency()),
                 'qty': Decimal(leg['withdrawal'] if (symbol or outgoing) else leg['deposit']),
                 'number': leg['number'],
+                # The address of the unknown end, when the movement named one - what the leg says about the end it
+                # is waiting for, and the only exact thing anyone knows about it
+                'address': leg['counterparty_address'],
                 'note': leg['note']
             })
         return legs

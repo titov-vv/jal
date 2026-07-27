@@ -93,6 +93,16 @@
        </spacer>
       </item>
       <item row="0" column="4">
+       <widget class="QPushButton" name="MatchButton">
+        <property name="toolTip">
+         <string>Pair a leg that was sent with the arrival it belongs to</string>
+        </property>
+        <property name="text">
+         <string>Match...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="5">
        <widget class="QPushButton" name="SaveButton">
         <property name="text">
          <string>Save...</string>

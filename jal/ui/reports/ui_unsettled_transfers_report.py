@@ -60,10 +60,15 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.gridLayout.addItem(self.ReportFrameSpacer, 0, 3, 1, 1)
 
+        self.MatchButton = QPushButton(self.ReportParamsFrame)
+        self.MatchButton.setObjectName(u"MatchButton")
+
+        self.gridLayout.addWidget(self.MatchButton, 0, 4, 1, 1)
+
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 5, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -92,6 +97,10 @@ class Ui_UnsettledTransfersWidget(object):
 #endif // QT_CONFIG(tooltip)
         self.ReportDate.setDisplayFormat(QCoreApplication.translate("UnsettledTransfersWidget", u"dd/MM/yyyy", None))
         self.ReportCurrencyLbl.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Currency:", None))
+#if QT_CONFIG(tooltip)
+        self.MatchButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Pair a leg that was sent with the arrival it belongs to", None))
+#endif // QT_CONFIG(tooltip)
+        self.MatchButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Match...", None))
         self.SaveButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Save...", None))
     # retranslateUi
 

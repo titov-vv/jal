@@ -1,8 +1,10 @@
 import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
+from jal.db.account import JalAccount
 from jal.db.db import JalDB
 from jal.db.helpers import remove_exponent
+from jal.db.symbol import JalSymbol
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -37,6 +39,10 @@ class TransferSettlement(JalDB):
         return QApplication.translate("TransferSettlement", text)
 
     # Pairs every unambiguous pair of pending legs in the database. Returns the number of transfers settled.
+    #
+    # The transaction hash goes first because it settles the two RECORDS of one movement into one, which is what
+    # keeps a movement from being counted twice; the address pass that follows works on what is left over, and part
+    # of what makes it safe is that the records the hash could pair are gone by then.
     def settle_all(self) -> int:
         settled = 0
         for records in self._movements_with_a_pending_leg():
@@ -45,7 +51,7 @@ class TransferSettlement(JalDB):
                 continue
             self._merge(*pair)
             settled += 1
-        return settled
+        return settled + self.settle_by_address()
 
     # Records of movements at least one of whose legs is pending, grouped by the transaction and the asset they moved:
     # one transaction may deliver several assets at once (a token plus a gas top-up) and each of those is a movement of
@@ -64,6 +70,114 @@ class TransferSettlement(JalDB):
             groups.setdefault((record['number'], record['symbol_id']), []).append(record)
         return list(groups.values())
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # Settles the pending legs that NAME the end they are waiting for. Returns the number of transfers settled.
+    #
+    # A movement fetched from a chain always states the address at its other end, and JAL keeps it
+    # ('transfers.counterparty_address') for the end it has no account for. When an account with that address exists,
+    # that end is not a guess to be confirmed - the transaction says the money went there, and the account says the
+    # address is the user's. So this needs no transaction hash to coincide and no second record of the movement to
+    # have been imported at all, which is exactly the case the hash pass above cannot reach: a wallet with no fetcher,
+    # or one whose history simply hasn't been downloaded.
+    #
+    # The address is resolved on ONE chain - the chain of the end that IS known (see _chain_of) - and never against
+    # every chain at once: an EVM address is commonly registered as a wallet on several chains, and the assets a
+    # movement carries stay on the chain it moved on.
+    def settle_by_address(self) -> int:
+        settled = 0
+        for leg in self._legs_naming_their_counterparty():
+            if self._settle_from_address(leg):
+                settled += 1
+        return settled
+
+    # Pending legs that state the address of the end they are missing, earliest first
+    def _legs_naming_their_counterparty(self) -> list:
+        legs = []
+        query = self._exec(
+            "SELECT oid, withdrawal_timestamp, withdrawal_account, withdrawal, deposit_timestamp, deposit_account, "
+            "deposit, fee_account, fee, fee_symbol_id, number, counterparty_address, symbol_id, note FROM transfers "
+            "WHERE (withdrawal_account IS NULL OR deposit_account IS NULL) "
+            "AND NOT counterparty_address IS NULL AND counterparty_address!='' ORDER BY oid")
+        while query.next():
+            legs.append(self._read_record(query, named=True))
+        return legs
+
+    # Settles one leg from the address it recorded, and reports whether it did.
+    def _settle_from_address(self, leg: dict) -> bool:
+        sending = leg['deposit_account'] == ''    # _read_record() gives '' for a SQL NULL - the end with no account
+        known_account = int(leg['withdrawal_account'] if sending else leg['deposit_account'])
+        counterparty = JalAccount.wallet_at(self._chain_of(leg, known_account), leg['counterparty_address'])
+        if counterparty is None or counterparty.id() == known_account:
+            return False   # nothing of the user's holds that address, several accounts do, or it is this very account
+        # The other record of this movement, when it was imported as well. Filling the account in beside it would put
+        # the same movement into the ledger twice, so the two records are folded into one instead - which is what the
+        # hash pass does, and the address is what disambiguates a case it had to refuse (a multisend paying two
+        # addresses leaves more than two records of one transaction and asset).
+        counterparts = self._pending_counterparts_on(leg, counterparty.id(), sending)
+        if len(counterparts) == 1:
+            pair = (leg['oid'], counterparts[0]) if sending else (counterparts[0], leg['oid'])
+            refusal = self.settle_linked(*pair)
+            if refusal:
+                logging.info(self.tr("Legs named by an address are not a transfer, settle them by hand: ") + refusal)
+            return not refusal
+        if counterparts:
+            # The same transaction moved this asset to that account more than once. Which of those records is this
+            # leg's other half is exactly what nothing here can tell - and filling the account in beside them would
+            # book the movement a second time - so it is left for the user to pair by hand.
+            logging.info(self.tr("Transaction moved the asset to that address more than once, settle it by hand: ")
+                         + f"{leg['number']}")
+            return False
+        # A counterparty kept in another currency is left alone, exactly as ChainFetcher._counterparty_account leaves
+        # it: an asset transfer between two currencies takes its destination cost basis from a 'deposit' no fetcher
+        # can know, so it would open the arrived lots at zero. Such a pair IS settled when both records of it exist
+        # (the hash pass says so, and the zero is then visible in every report) - but that is a movement JAL has seen
+        # from both sides, whereas here it would be inventing the far leg from an address alone.
+        if counterparty.currency() != JalAccount(known_account).currency():
+            return False
+        self._fill_end(leg, counterparty.id(), sending)
+        return True
+
+    # The chain an address recorded by this leg belongs to: the chain of the account at the end that IS known, and -
+    # for an end that is not a wallet at all, such as an exchange account whose statement named the address it sent
+    # to - the chain the moved token is listed on. 0 when neither says, which leaves the address unresolvable.
+    @staticmethod
+    def _chain_of(leg: dict, known_account: int) -> int:
+        chain = JalAccount(known_account).chain()
+        if chain:
+            return chain
+        return JalSymbol(leg['symbol_id']).location() if leg['symbol_id'] else 0
+
+    # The pending legs that record the OTHER side of this movement on the given account. It is the same transaction
+    # and the same asset - the identity the hash pass uses - and additionally the account the address resolved to,
+    # which is what tells the several legs of one multisend apart. There is usually none (the wallet at that address
+    # has not been fetched, which is the whole point of settling on the address) or exactly one.
+    def _pending_counterparts_on(self, leg: dict, account_id: int, sending: bool) -> list:
+        if not leg['number'] or not leg['symbol_id']:
+            return []   # a movement that names no transaction or no asset has nothing to be recognized by
+        sides = "t.withdrawal_account IS NULL AND t.deposit_account=:account" if sending \
+            else "t.deposit_account IS NULL AND t.withdrawal_account=:account"
+        query = self._exec("SELECT t.oid FROM transfers AS t JOIN asset_symbol AS s ON s.id=t.symbol_id "
+                           f"WHERE {sides} AND t.number=:hash AND s.asset_id=:asset ORDER BY t.oid",
+                           [(":account", account_id), (":hash", leg['number']),
+                            (":asset", JalSymbol(leg['symbol_id']).asset().id())])
+        oids = []
+        while query.next():
+            oids.append(int(self._read_record(query, cast=[int])))
+        return oids
+
+    # Writes the account the address resolved to into the end that had none. Unlike a merge there is no second record
+    # to take anything else from: what the movement is - when, how much, in what - is what the leg that exists says.
+    def _fill_end(self, leg: dict, account_id: int, sending: bool) -> None:
+        end = "deposit_account" if sending else "withdrawal_account"
+        self._exec(f"UPDATE transfers SET {end}=:account, counterparty_address=NULL WHERE oid=:oid",
+                   [(":account", account_id), (":oid", int(leg['oid']))], commit=True)
+        logging.info(self.tr("Transfer settled by counterparty address: ")
+                     + f"{leg['counterparty_address']}, {remove_exponent(Decimal(leg['withdrawal']))} "
+                     + (self._account_name(int(leg['withdrawal_account'])) + " -> " + self._account_name(account_id)
+                        if sending else
+                        self._account_name(account_id) + " -> " + self._account_name(int(leg['deposit_account']))))
+
+    # ------------------------------------------------------------------------------------------------------------------
     # The (sending, arriving) pair the records of one movement form, or None if they don't form one unambiguously.
     def _pairable(self, records: list):
         if len(records) != 2:
@@ -87,6 +201,11 @@ class TransferSettlement(JalDB):
         # it), and those two legs are not a transfer of the account to itself
         if int(sent['withdrawal_account']) == int(arrived['deposit_account']):
             return self.tr("both legs are on the same account")
+        # A transfer moves ONE thing: what left is what arrived. The hash pass can't reach this - it groups the
+        # records by the symbol they name - but a caller that pairs legs by hand or on somebody's word can, and two
+        # listings of one token on two chains are the SAME asset while their symbols differ.
+        if self._asset_of(sent) != self._asset_of(arrived):
+            return self.tr("the two legs don't move the same asset")
         if Decimal(sent['withdrawal']) != Decimal(arrived['withdrawal']):
             # A transfer carries ONE quantity - what left is what arrived. A move that delivers less than it was sent
             # is a bridge (which has a leg of its own for each side) and must be booked as one.
@@ -95,6 +214,12 @@ class TransferSettlement(JalDB):
         if int(sent['withdrawal_timestamp']) > int(arrived['deposit_timestamp']):
             return self.tr("the arrival precedes the departure")
         return ''
+
+    # The asset a leg moves: the one its symbol lists, or 0 for a money transfer, which carries no asset at all and
+    # is measured in the currency of its own account (so two money legs are never refused on this account).
+    @staticmethod
+    def _asset_of(leg: dict) -> int:
+        return JalSymbol(leg['symbol_id']).asset().id() if leg['symbol_id'] else 0
 
     # ------------------------------------------------------------------------------------------------------------------
     # The two ends of a CROSS-CHAIN move are two different transactions, so the pass above can never pair them: each
@@ -134,19 +259,34 @@ class TransferSettlement(JalDB):
                          [(":hash", tx_hash), (":asset", asset_id)], check_unique=True)
         return int(oid) if oid else None
 
-    # Settles two pending legs that a route source named as the two ends of one movement. Returns '' when they were
-    # merged, and otherwise why they were not - the pair is proven, so a refusal is something to tell the user about
-    # rather than to pass over in silence.
+    # Settles two pending legs that a route source named as the two ends of one movement, or that the user paired by
+    # hand. Returns '' when they were merged, and otherwise why they were not - whoever asked has a reason to believe
+    # the two belong together, so a refusal is something to tell them about rather than to pass over in silence.
     def settle_linked(self, sending_oid: int, arriving_oid: int) -> str:
-        sent = self._pending_leg(sending_oid, 'deposit_account')
-        arrived = self._pending_leg(arriving_oid, 'withdrawal_account')
-        if not sent or not arrived:
+        sent, arrived = self._pending_pair(sending_oid, arriving_oid)
+        if sent is None:
             return self.tr("one of the legs is no longer pending")
         refusal = self._refusal(sent, arrived)
         if refusal:
             return refusal
         self._merge(sent, arrived)
         return ''
+
+    # Why these two pending legs cannot be settled into one transfer, or '' when they can - the same answer
+    # settle_linked() gives, asked before anything is written. It is what lets a chooser say what a pair would do
+    # instead of letting the user find out by trying it.
+    def refusal_for(self, sending_oid: int, arriving_oid: int) -> str:
+        sent, arrived = self._pending_pair(sending_oid, arriving_oid)
+        if sent is None:
+            return self.tr("one of the legs is no longer pending")
+        return self._refusal(sent, arrived)
+
+    # The two records, as (sending, arriving), while both are still pending on the sides being joined - (None, None)
+    # otherwise, since what was true when they were listed may have been settled by anything else since.
+    def _pending_pair(self, sending_oid: int, arriving_oid: int):
+        sent = self._pending_leg(sending_oid, 'deposit_account')
+        arrived = self._pending_leg(arriving_oid, 'withdrawal_account')
+        return (sent, arrived) if sent and arrived else (None, None)
 
     # One transfer record, but only while the named end of it is still unknown - what was true when the sources were
     # asked may have been settled by anything else since.
@@ -166,8 +306,9 @@ class TransferSettlement(JalDB):
         # FIXME Deriving the basis from the quote of the moved asset at the moment of the transfer would settle such a
         #  pair properly; revisit together with the cost-basis handling of the tax reports.
         deposit = Decimal(sent['deposit']) or Decimal(arrived['deposit'])
+        # Both ends are accounts now, so neither of them is an address waiting to be resolved any more
         self._exec("UPDATE transfers SET deposit_account=:account, deposit_timestamp=:timestamp, deposit=:deposit, "
-                   "note=:note WHERE oid=:oid",
+                   "note=:note, counterparty_address=NULL WHERE oid=:oid",
                    [(":account", int(arrived['deposit_account'])), (":timestamp", int(arrived['deposit_timestamp'])),
                     (":deposit", deposit), (":note", sent['note'] if sent['note'] else arrived['note']),
                     (":oid", int(sent['oid']))])
