@@ -45,7 +45,8 @@ class AssetPaymentWidget(AbstractOperationDetails):
                                              self.tr("Fee / Tax"),
                                              self.tr("Gas fee"),
                                              self.tr("Staking reward"),
-                                             self.tr("Dust attack")])   # index == AssetPayment subtype
+                                             self.tr("Dust attack"),
+                                             self.tr("Reward")])   # index == AssetPayment subtype
         self.ui.type.setModel(self.combo_model)
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.ex_date_editor.setFixedWidth(self.ui.ex_date_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
@@ -85,7 +86,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
             self.ui.amount_label.setText(self.tr("Fee / Tax"))
         elif dividend_type_id == AssetPayment.GasFee:
             self.ui.amount_label.setText(self.tr("Gas spent"))      # a quantity of the coin, not a sum of money
-        elif dividend_type_id == AssetPayment.StakingReward:
+        elif dividend_type_id in (AssetPayment.StakingReward, AssetPayment.Reward):
             self.ui.amount_label.setText(self.tr("Coins received"))
         elif dividend_type_id == AssetPayment.DustAttack:
             self.ui.amount_label.setText(self.tr("Dust received"))      # a quantity of the coin, not a sum of money

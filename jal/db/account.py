@@ -22,6 +22,7 @@ class JalAccount(JalDB):
         PredefinedAccountType.Broker: "tag_investing.ico",
         PredefinedAccountType.Wallet: "tag_wallet.ico",
         PredefinedAccountType.Deposit: "tag_deposit.ico",
+        PredefinedAccountType.CEX: "tag_cex.ico",
     }
 
     def __init__(self, account_id: int = 0) -> None:

@@ -189,6 +189,7 @@ class PredefinedAccountType(PredefinedList, QObject):
     Broker = 5
     Wallet = 6     # Crypto wallet
     Deposit = 7    # A term deposit "box": money handed over to a bank for a term, kept as an account of its own
+    CEX = 8        # Centralized crypto exchange: assets are held by the exchange, not on a chain the user controls
 
     # Types the user never picks and never creates by hand - the application writes such accounts itself (a deposit
     # box is created by the Deposits window). They are filtered out of every account picker by one baseline filter
@@ -203,7 +204,8 @@ class PredefinedAccountType(PredefinedList, QObject):
             self.Card: self.tr("Card"),
             self.Broker: self.tr("Broker account"),
             self.Wallet: self.tr("Wallet"),
-            self.Deposit: self.tr("Term deposit")
+            self.Deposit: self.tr("Term deposit"),
+            self.CEX: self.tr("Crypto exchange")
         }
 
     @classmethod
@@ -395,6 +397,12 @@ class AssetLocation(PredefinedList, QObject):
     TMX_EXCHANGE = 207
     MOEX_EXCHANGE = 208
     EURONEXT_EXCHANGE = 209
+    # Coins held on a centralized crypto exchange. One shared location rather than one per exchange: for a location
+    # that is not a blockchain JalAsset.add_symbol() matches a listing by (asset, ticker, currency) and ignores the
+    # location, so a coin held on two exchanges would reuse the first one's listing anyway and a per-exchange
+    # location would be a lie on the second. What the location does say is true of every exchange alike - the coin
+    # is a claim on a custodian and sits on no chain the user controls.
+    CEX_EXCHANGE = 210
     ETH_BLOCKCHAIN = 301
     ARB_BLOCKCHAIN = 302
     BTC_BLOCKCHAIN = 303
@@ -438,6 +446,7 @@ class AssetLocation(PredefinedList, QObject):
             self.WSE_EXCHANGE: self.tr("Warsaw Stock Exchange"),
             self.TMX_EXCHANGE: self.tr("TMX TSX"),
             self.MOEX_EXCHANGE: self.tr("MOEX"),
+            self.CEX_EXCHANGE: self.tr("Crypto exchange"),
             self.ETH_BLOCKCHAIN: self.tr("Ethereum"),
             self.ARB_BLOCKCHAIN: self.tr("Arbitrum"),
             self.BTC_BLOCKCHAIN: self.tr("Bitcoin"),

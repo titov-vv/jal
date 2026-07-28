@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, AssetLocation, PredefinedAsset, PredefinedAgents, SymbolId
+from jal.constants import Setup, AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedAgents, SymbolId
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount, JalAccountCreator
@@ -73,6 +73,7 @@ class JSF:
     PAYMENT_FEE = 'fee'
     PAYMENT_GAS_FEE = 'gas_fee'                 # gas burned by a transaction that moved nothing
     PAYMENT_STAKING_REWARD = 'staking_reward'   # coins received for staking (or as lending interest)
+    PAYMENT_REWARD = 'reward'                   # coins received for anything else (referral/platform bonus, rebate)
     PAYMENT_DUST_ATTACK = 'dust_attack'         # unsolicited native-coin dust below the per-chain threshold
 
     def __init__(self):
@@ -597,7 +598,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     name=account_data.get('name', ''), investing=account_data['investing'],
                     organization=account_data.get('organization', PredefinedAgents.Empty),
                     country=account_data.get('country', ''),
-                    precision=account_data.get('precision', Setup.DEFAULT_ACCOUNT_PRECISION)
+                    precision=account_data.get('precision', Setup.DEFAULT_ACCOUNT_PRECISION),
+                    # A statement that knows what kind of account it describes says so; one that doesn't keeps the
+                    # type every import created before this was threaded through, so no existing parser changes.
+                    account_type=account_data.get('account_type', PredefinedAccountType.Cash)
                 ).commit()
             if new_account.id():
                 self.set_mapped_id(JSF.ACCOUNTS, account['id'], new_account.id())
@@ -878,6 +882,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             elif operation['type'] == JSF.PAYMENT_STAKING_REWARD:
                 operation['type'] = AssetPayment.StakingReward
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+            elif operation['type'] == JSF.PAYMENT_REWARD:
+                operation['type'] = AssetPayment.Reward
+                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] == JSF.PAYMENT_DUST_ATTACK:
                 operation['type'] = AssetPayment.DustAttack
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
@@ -1076,7 +1083,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             self._data[JSF.ASSETS].append(asset)
             if 'symbol' in asset_info:
                 symbol = {"id": self._next_symbol_id()}
-                self._uppend_keys_from(symbol, asset_info, ['symbol', 'currency', 'note'] + self.ID_KEYS)
+                # 'location' names the venue outright, as a chain fetcher and an exchange statement both can; 'note'
+                # names a trading venue that _import_assets looks up in its table of known sources instead.
+                self._uppend_keys_from(symbol, asset_info, ['symbol', 'currency', 'note', 'location'] + self.ID_KEYS)
                 asset[JSF.SYMBOLS].append(symbol)
         else:
             if 'type' in asset and asset['type'] != JSF.ASSET_MONEY:
@@ -1121,7 +1130,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     symbol_exists = True
             if not symbol_exists:
                 new_symbol = {"id": self._next_symbol_id()}
-                self._uppend_keys_from(new_symbol, asset_info, ['symbol', 'currency', 'note', 'alt_symbol'] + self.ID_KEYS)
+                self._uppend_keys_from(new_symbol, asset_info,
+                                       ['symbol', 'currency', 'note', 'alt_symbol', 'location'] + self.ID_KEYS)
                 for sibling in asset[JSF.SYMBOLS]:   # inherit security identifiers already known for the asset
                     self._uppend_keys_from(new_symbol, sibling, self.ID_KEYS)
                 asset[JSF.SYMBOLS].append(new_symbol)

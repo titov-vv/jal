@@ -32,6 +32,7 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 - Currency exchange rates from European and Russian central banks.
 ### Broker Statement Imports
 - Supports various Russian and international brokers.
+- Supports centralized crypto exchange statements (KuCoin, Bitget).
 ### Tax Reports
 - Assistance for tax declaration in Russia and Portugal.
 - Tax burden estimation for a given asset in the portfolio.

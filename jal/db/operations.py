@@ -443,6 +443,11 @@ class AssetPayment(LedgerTransaction):
     GasFee = 7             # Gas burned by a transaction that moved nothing - an approval, a failed call, ...
     StakingReward = 8      # Coins received for staking; lending interest is recorded the same way
     DustAttack = 9         # Unsolicited native-coin dust from address-poisoning, below the per-chain threshold
+    # Coins received for something other than staking - a referral or platform bonus, a fee rebate paid out too late
+    # to belong to the trade it came from. Accounted exactly as a StakingReward (an inflow with no counterpart,
+    # valued at the last known quote and opening a lot at that basis); it exists only to keep the two apart, since
+    # what earned the coins may well be taxed differently from what staking earns.
+    Reward = 10
     _db_table = "asset_payments"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -468,6 +473,7 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.Fee: JalIcon.FEE,
             AssetPayment.GasFee: JalIcon.FEE,
             AssetPayment.StakingReward: JalIcon.INTEREST,
+            AssetPayment.Reward: JalIcon.INTEREST,
             AssetPayment.DustAttack: JalIcon.TRANSFER_IN     # TODO dedicated icon for a dust attack
         }
         self.names = {
@@ -480,7 +486,8 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.Fee: self.tr("Asset fee/tax"),
             AssetPayment.GasFee: self.tr("Gas fee"),
             AssetPayment.StakingReward: self.tr("Staking reward"),
-            AssetPayment.DustAttack: self.tr("Dust attack")
+            AssetPayment.DustAttack: self.tr("Dust attack"),
+            AssetPayment.Reward: self.tr("Reward")
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.AssetPayment
@@ -550,7 +557,7 @@ class AssetPayment(LedgerTransaction):
 
     # Return price of asset for stock dividend and vesting
     def price(self) -> Decimal:
-        if self._subtype == AssetPayment.StakingReward:
+        if self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward):
             # A reward arrives at a block timestamp, which no daily quote series will ever match exactly, so the
             # last known price is used instead of demanding a quote of that very second. A reward that can't be
             # priced at all opens a lot at zero and would show the whole proceeds as gain when sold, so it is
@@ -598,7 +605,8 @@ class AssetPayment(LedgerTransaction):
             if timestamp != self._timestamp:
                 logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
             amount = self._amount * price
-        elif self._subtype in (AssetPayment.StakingReward, AssetPayment.GasFee, AssetPayment.DustAttack):
+        elif self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward, AssetPayment.GasFee,
+                               AssetPayment.DustAttack):
             # A crypto quote is daily, so it never falls on the exact block timestamp the way an exchange quote
             # does for a stock dividend - the last known price is the best available and is not an error.
             timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
@@ -653,8 +661,8 @@ class AssetPayment(LedgerTransaction):
     def value_currency(self) -> str:
         # The amount of these payments is a quantity of the asset, not a sum of money: shares received as a
         # dividend, coins earned by staking, coins burned as gas
-        asset_denominated = (AssetPayment.StockDividend, AssetPayment.StockVesting,
-                             AssetPayment.StakingReward, AssetPayment.GasFee, AssetPayment.DustAttack)
+        asset_denominated = (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
+                             AssetPayment.Reward, AssetPayment.GasFee, AssetPayment.DustAttack)
         if self._subtype in asset_denominated and not self._opart:
             if self._tax:
                 return f" {self._symbol.symbol()}\n {self._account_currency}"
@@ -666,8 +674,8 @@ class AssetPayment(LedgerTransaction):
     def value_total(self) -> list:
         balance = []
         amount = self._money_total(self._account.id())
-        if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting,
-                             AssetPayment.StakingReward, AssetPayment.GasFee, AssetPayment.DustAttack):
+        if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
+                             AssetPayment.Reward, AssetPayment.GasFee, AssetPayment.DustAttack):
             qty = self._asset_total(self._account.id(), self._asset.id())
             if qty is None:
                 return [Decimal('NaN')]
@@ -689,8 +697,8 @@ class AssetPayment(LedgerTransaction):
     def processLedger(self, ledger):
         if not self._peer_id:
             raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
-        if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting \
-                or self._subtype == AssetPayment.StakingReward or self._subtype == AssetPayment.DustAttack:
+        if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
+                             AssetPayment.Reward, AssetPayment.DustAttack):
             self.processStockDividendOrVesting(ledger)
             return
         if self._subtype == AssetPayment.GasFee:
@@ -1710,8 +1718,9 @@ class Transfer(LedgerTransaction):
     #
     # Zero is deliberately not a guess: it keeps the whole of a later disposal as profit rather than understating it,
     # and it is corrected the moment the transfer is settled and its source leg supplies the real basis. The negative
-    # Transfers entry is what makes the arrival visible as in-transit value of its own (see TRANSFER_SETTLEMENT B2:
-    # positive = sent but not arrived, negative = arrived from an unknown source), so a settled pair cancels exactly.
+    # Transfers entry is what makes the arrival visible as in-transit value of its own (see CRYPTO_PATH, the transfer
+    # settlement invariant: positive = sent but not arrived, negative = arrived from an unknown source), so a settled
+    # pair cancels exactly.
     def processPendingArrival(self, ledger, transfer_amount):
         self._deposit_account.open_trade(JalOpenTrade(self, Decimal('0'), transfer_amount), self._asset)
         ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=Decimal('0'))

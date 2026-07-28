@@ -31,9 +31,27 @@ SECONDS_IN_DAY = 86400
 
 # ===================================================================================================================
 # Crypto quotes from DeFiLlama (coins.llama.fi) - free and keyless.
-# Locations that are priced by this source. They are quoted in USD only, so a single (asset, USD) series is stored
-# for a crypto asset no matter which currency its listings or accounts are denominated in - see download_asset_prices().
-BLOCKCHAIN_LOCATIONS = AssetLocation.BLOCKCHAINS
+# Locations that are priced by this source: every blockchain, plus coins held on a centralized exchange. They are
+# quoted in USD only, so a single (asset, USD) series is stored for a crypto asset no matter which currency its
+# listings or accounts are denominated in - see download_asset_prices().
+LLAMA_LOCATIONS = AssetLocation.BLOCKCHAINS + [AssetLocation.CEX_EXCHANGE]
+
+# A coin held on a centralized exchange has no contract address to be keyed by - it is a claim on the exchange, not
+# a token on a chain - so it is priced by ticker through DeFiLlama's CoinGecko passthrough, the same route the native
+# coin of a chain already takes. The mapping is explicit rather than derived because a ticker is not unique: only a
+# coin listed here is priced, and one that is not produces a warning instead of a wrong price borrowed from a
+# same-named coin. Verified against the API 2026-07-28.
+_CEX_COINS = {
+    'USDT': "coingecko:tether",
+    'USDC': "coingecko:usd-coin",
+    'ADA': "coingecko:cardano",
+    'DOT': "coingecko:polkadot",
+    'NEAR': "coingecko:near",
+    'BTC': "coingecko:bitcoin",
+    'ETH': "coingecko:ethereum",
+    'SOL': "coingecko:solana",
+    'TRX': "coingecko:tron"
+}
 
 # The API identifies a token as '{chain}:{contract_address}' - this maps a location to the chain name that the API
 # uses. The identifier that carries the contract address on each chain comes from AssetLocation.address_id_of(),
@@ -70,7 +88,7 @@ _LLAMA_MIN_CONFIDENCE = Decimal('0.7')
 
 
 # Every DeFiLlama coin key worth trying for a given listing, in the order they should be tried; empty if the
-# listing doesn't belong to a supported blockchain.
+# listing is neither on a supported blockchain nor a coin held on an exchange.
 #
 # A listing normally has exactly one key. Hyperliquid is the exception: the API indexes it inconsistently - most of
 # its tokens answer to their HyperEVM contract address (UBTC, USOL, USDT0, ...) while a few - among them USDC, and
@@ -78,6 +96,11 @@ _LLAMA_MIN_CONFIDENCE = Decimal('0.7')
 # its own, so a Hyperliquid symbol carries both identifiers and both keys are offered. The EVM address goes first
 # as it is the form that resolves for the majority of tokens.
 def llama_coin_keys(symbol: JalSymbol) -> list:
+    if symbol.location() == AssetLocation.CEX_EXCHANGE:
+        # Held by an exchange, so there is no address to key by - only the ticker the exchange calls it. An unlisted
+        # ticker returns nothing and the caller reports it, rather than guessing a key from the ticker (see _CEX_COINS).
+        coin = _CEX_COINS.get(symbol.symbol().upper(), '')
+        return [coin] if coin else []
     chain = _LLAMA_CHAIN_NAMES.get(symbol.location(), '')
     keys = []
     if chain:
@@ -331,7 +354,7 @@ class QuoteDownloader(QObject):
             AssetLocation.MILAN_EXCHANGE: self.EuronextMilan_DataReader,
             AssetLocation.WSE_EXCHANGE: self.Stooq_DataReader
         }
-        data_loaders.update({x: self.Llama_Downloader for x in BLOCKCHAIN_LOCATIONS})
+        data_loaders.update({x: self.Llama_Downloader for x in LLAMA_LOCATIONS})
         symbols = JalSymbol.get_active_symbols(start_timestamp, end_timestamp)
         symbols = [(x['symbol'], x['currency']) for x in symbols if x['symbol'].location() in sources_list]
         symbols = self._quote_series(symbols)
@@ -358,7 +381,7 @@ class QuoteDownloader(QObject):
         series = []
         stored = set()
         for symbol, currency in symbols:
-            if symbol.location() in BLOCKCHAIN_LOCATIONS:
+            if symbol.location() in LLAMA_LOCATIONS:
                 if not usd:
                     logging.warning(self.tr("Can't store crypto quotes as there is no USD currency in the ledger: ")
                                     + f"{symbol.symbol()}")
