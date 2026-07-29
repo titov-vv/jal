@@ -6,6 +6,7 @@ from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
 from jal.db.asset_models import SymbolsListModel
 from jal.constants import CmWidth, PredefinedAsset, AssetLocation
+from jal.widgets.delegates import ConstantLookupDelegate
 from jal.widgets.icons import JalIcon
 
 
@@ -52,6 +53,8 @@ class SymbolListDialog(QDialog):
         for currency_id, symbol in sorted([(x.id(), x.symbol()) for x in JalAsset.get_currencies()], key=lambda x: x[1]):
             self.ui.CurrencyCombo.addItem(symbol, currency_id)
         AssetLocation().load2combo(self.ui.LocationCombo, with_empty=True)
+        self._location_delegate = ConstantLookupDelegate(AssetLocation, self.ui.DataView)
+        self.ui.DataView.setItemDelegateForColumn(self.model.fieldIndex("location_id"), self._location_delegate)
 
     @Slot()
     def showEvent(self, event):
