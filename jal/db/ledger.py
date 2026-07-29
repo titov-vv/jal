@@ -225,6 +225,7 @@ class Ledger(QObject, JalDB):
     def rebuild(self, from_timestamp=-1):
         self._cancelled = False
         exception_happened = False
+        incomplete_reason = ''    # Set if the rebuild stopped for a recoverable reason (see LedgerError below)
         last_timestamp = 0
         self.amounts.clear()
         self.values.clear()
@@ -266,14 +267,18 @@ class Ledger(QObject, JalDB):
                     exception_happened = True
                     logging.warning(self.tr("Interrupted by user"))
                     break
+        except LedgerError as e:
+            # An expected stop: the data is sound but something the ledger needs isn't there yet (a quote to value
+            # an operation, a setting that isn't filled in, ...). The ledger simply ends earlier than it might, so
+            # the user gets the reason and what to do about it - not a traceback of a crash.
+            if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
+                raise e
+            incomplete_reason = str(e)
         except Exception as e:
             if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
                 raise e
             exception_happened = True
-            if type(e) == LedgerError:
-                logging.error(e)   # Short log for ledger custom exception
-            else:
-                logging.error(f"{traceback.format_exc()}")  # and full log for anything unexpected
+            logging.error(f"{traceback.format_exc()}")  # Full log for anything unexpected
         finally:
             self.show_progress.emit(False)
         # Fill ledger totals values
@@ -289,6 +294,11 @@ class Ledger(QObject, JalDB):
         JalSettings().setValue('RebuildDB', 0)
         if exception_happened:
             logging.error(self.tr("Exception happened. Ledger is incomplete. Please correct errors listed in log"))
+        elif incomplete_reason:
+            # A warning and not an error - the ledger is incomplete but nothing went wrong and the user has a way
+            # to finish it, so it is reported in the gentler colour of the log viewer and status bar
+            logging.warning(self.tr("Ledger is incomplete, it stopped at ") + f"{ts2dt(last_timestamp)}: "
+                            + incomplete_reason)
         else:
             logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
                          self.tr(", new frontier: ") + f"{ts2dt(last_timestamp)}")

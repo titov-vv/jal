@@ -9,7 +9,7 @@ import jal.db.account
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.db.closed_trade import JalClosedTrade, JalOpenTrade
-from jal.widgets.helpers import ts2dt
+from jal.widgets.helpers import ts2d, ts2dt
 from jal.widgets.icons import JalIcon
 
 
@@ -576,8 +576,13 @@ class AssetPayment(LedgerTransaction):
                 # already stored with the right amount, it is only the valuation that is missing, so downloading
                 # the quotes and rebuilding the ledger completes it. That also resolves the ordering problem of a
                 # first-ever import, where the asset is created by that very import and can have no quotes yet.
-                raise ValueError(self.tr("No quote to value a staking reward - download quotes for this asset "
-                                         "and rebuild the ledger.") + f" Operation: {self.dump()}")
+                # A LedgerError and not an unexpected one: the ledger stops here but nothing is wrong with the
+                # data, so the user is told what to download instead of being shown a traceback. The operation
+                # dump goes to the log for diagnosis and is kept out of the message the user reads.
+                logging.debug(f"Unpriced reward. Operation: {self.dump()}")
+                raise LedgerError(self.tr("No quote to value a staking reward: {} on {}. "
+                                          "Download quotes from an earlier date and rebuild the ledger.").format(
+                                          self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
             return price
         if self._subtype == AssetPayment.DustAttack:
             # Unlike a staking reward, a zero basis here is not a mis-statement to guard against - it is the
@@ -591,7 +596,11 @@ class AssetPayment(LedgerTransaction):
             return Decimal('0')
         quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
         if quote_timestamp != self._timestamp:
-            raise ValueError(self.tr("No stock quote for stock dividend or vesting.") + f" Operation: {self.dump()}")
+            # Recoverable in exactly the same way as an unpriced reward above - a quote is missing, not wrong data
+            logging.debug(f"Unpriced stock dividend/vesting. Operation: {self.dump()}")
+            raise LedgerError(self.tr("No quote to value a stock dividend or vesting: {} on {}. "
+                                      "Download quotes for this asset and rebuild the ledger.").format(
+                                      self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
         return price
 
     # There are no any fee possible for Dividend

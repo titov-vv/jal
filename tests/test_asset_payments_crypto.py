@@ -10,7 +10,7 @@ from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger
-from jal.db.operations import LedgerTransaction, AssetPayment
+from jal.db.operations import LedgerTransaction, AssetPayment, LedgerError
 
 WALLET = 1
 TRX = 4
@@ -64,8 +64,14 @@ def test_staking_reward_opens_lot_at_market(wallet):
 def test_staking_reward_needs_a_quote(wallet):
     # Opening the lot at zero would silently turn the whole proceeds into gain on a later sale, so it is refused
     _payment(AssetPayment.StakingReward, d2t(210202), '100')
-    with pytest.raises(ValueError):
+    # A LedgerError and not an unexpected exception: the rebuild stops but the data is sound, so the ledger
+    # reports it as an incomplete build with a reason instead of a traceback
+    with pytest.raises(LedgerError) as error:
         Ledger().rebuild(from_timestamp=0)
+    # The reason names the asset and the date whose quote is missing and keeps the raw operation dump out of it
+    assert 'TRX' in str(error.value)
+    assert '02/02/2021' in str(error.value)
+    assert 'timestamp' not in str(error.value)
 
 
 def test_dust_attack_opens_lot_at_zero_without_a_quote(wallet):
@@ -148,7 +154,7 @@ def test_unpriced_reward_recovers_after_quotes_arrive(wallet):
     # have quotes yet and the ledger rebuild fails. Nothing is lost - the reward is stored with the right amount,
     # only its valuation is missing - so downloading quotes and rebuilding finishes the job without re-importing.
     _payment(AssetPayment.StakingReward, d2t(210202), '100')
-    with pytest.raises(ValueError):
+    with pytest.raises(LedgerError):
         Ledger().rebuild(from_timestamp=0)
 
     create_quotes(TRX, 2, [(d2t(210201), '0.30')])

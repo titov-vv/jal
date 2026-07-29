@@ -2,9 +2,10 @@ import pandas as pd
 from decimal import Decimal
 from pandas._testing import assert_frame_equal
 
-from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
-from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets, symbol_id_for
+from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex, prepare_db_fifo
+from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets, create_quotes, create_trades, symbol_id_for
 from jal.db.asset import JalAsset, JalAssetCreator
+from jal.db.ledger import Ledger
 from jal.db.symbol import JalSymbol
 from jal.constants import AssetLocation, PredefinedAsset, SymbolId
 from jal.net.downloader import QuoteDownloader, llama_coin_key, llama_coin_keys, parse_llama_chart
@@ -424,6 +425,28 @@ def test_quote_series_selection(prepare_db):
     # A repeated listing of a non-crypto asset (several accounts in one currency) is downloaded once
     series = downloader._quote_series([(JalSymbol(usd_listing), usd), (JalSymbol(usd_listing), usd)])
     assert [(x[0].id(), x[1]) for x in series] == [(usd_listing, usd)]
+
+
+def test_download_start_is_pulled_back_to_first_operation(prepare_db_fifo):
+    usd = 2
+    create_assets([('AAA', 'A Company', '', usd, PredefinedAsset.Stock, 0)])   # asset ID = 4
+    asset = JalAsset(4)
+    create_trades(1, [(d2t(201110), d2t(201110), 4, 10.0, 100.0, 0.0)])
+    Ledger().rebuild(from_timestamp=0)
+    downloader = QuoteDownloader()
+
+    # An asset with no quotes at all is downloaded from its first operation even if a later start is asked for
+    assert downloader._adjust_start(asset, usd, d2t(201201)) == d2t(201110)
+
+    # The same when the stored series doesn't reach back to the first operation: without this the interval would
+    # only ever grow forward from the last quote and the operations before the series would stay unpriced
+    create_quotes(4, usd, [(d2t(201201), 105.0), (d2t(201202), 106.0)])
+    assert downloader._adjust_start(asset, usd, d2t(201201)) == d2t(201110)
+
+    # Once the series covers the whole history it is extended forward only, and nothing is downloaded twice
+    create_quotes(4, usd, [(d2t(201110), 100.0)])
+    assert downloader._adjust_start(asset, usd, d2t(201201)) == d2t(201202)   # from the last stored quote
+    assert downloader._adjust_start(asset, usd, d2t(201101)) == d2t(201101)   # ... or from an earlier start asked
 
 
 def test_crypto_quotes_are_stored_as_usd(prepare_db, monkeypatch):

@@ -3,7 +3,7 @@ import math
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
-from jal.constants import AssetLocation, AssetData, PredefinedAsset, SymbolId
+from jal.constants import AssetLocation, AssetData, BookAccount, PredefinedAsset, SymbolId
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal, year_begin, year_end, day_begin
 from jal.db.country import JalCountry
@@ -258,6 +258,14 @@ class JalAsset(JalDB):
             quotes.append((timestamp, quote))
         quotes = [(t_q, q * math.prod([splits[t_s] for t_s in splits if day_begin(t_s) > t_q])) for t_q, q in quotes]
         return quotes
+
+    # Returns the timestamp of the earliest ledger record of the asset, or 0 if it was never in the ledger.
+    # A quote series is only of use from the moment the asset appears in the ledger, so this is the natural
+    # beginning of the interval to download (see QuoteDownloader._adjust_start).
+    def first_operation_timestamp(self) -> int:
+        timestamp = self._read("SELECT MIN(timestamp) FROM ledger WHERE asset_id=:asset_id AND book_account=:book",
+                               [(":asset_id", self._id), (":book", BookAccount.Assets)])
+        return db_timestamp2int(timestamp) if timestamp else 0
 
     # Returns tuple (begin_timestamp: int, end_timestamp: int) that defines timestamp range for which quotations are
     # available in database for given currency

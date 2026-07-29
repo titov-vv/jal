@@ -307,6 +307,14 @@ class QuoteDownloader(QObject):
     # the end of available quotes interval if needed.
     def _adjust_start(self, asset: JalAsset, currency_id: int, start) -> int:
         quotes_begin, quotes_end = asset.quotes_range(currency_id)
+        # A series that doesn't reach the first operation of the asset leaves that operation unpriced, and no
+        # repeat of the download would ever fix it: the interval below only grows forward, so a 'start' at or
+        # after the first stored quote keeps re-downloading the tail and never the missing head. It is the normal
+        # state of an asset that was just imported - the dialog offers the last month by default while the
+        # operations behind it may be of any age - so the beginning is pulled back to the first operation.
+        first_operation = asset.first_operation_timestamp()
+        if first_operation and (not quotes_begin or first_operation < quotes_begin):
+            start = min(start, day_begin(first_operation))
         if start < quotes_begin:
             from_timestamp = start
         else:
