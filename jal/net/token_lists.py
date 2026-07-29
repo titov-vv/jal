@@ -13,7 +13,8 @@ from jal.net.web_request import WebRequest
 # Different lists spell the same chain id as a number or as a string, so lookups go through _evm_chain().
 _EVM_CHAIN_IDS = {
     1: AssetLocation.ETH_BLOCKCHAIN,
-    42161: AssetLocation.ARB_BLOCKCHAIN
+    42161: AssetLocation.ARB_BLOCKCHAIN,
+    43114: AssetLocation.AVAX_BLOCKCHAIN
 }
 
 # The same, as MyEtherWallet names its networks
@@ -110,7 +111,8 @@ class TokenListProvider(QObject, JalDB):
         },
         TokenList.UNISWAP_DEFAULT: {
             'kind': TokenListKind.Allow,
-            'chains': [AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN],
+            'chains': [AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN,
+                       AssetLocation.AVAX_BLOCKCHAIN],
             'url': "https://tokens.uniswap.org",
             'parser': _parse_tokenlist
         },
@@ -128,6 +130,15 @@ class TokenListProvider(QObject, JalDB):
             'chains': [AssetLocation.TRX_BLOCKCHAIN],
             'url': "https://tokens.coingecko.com/tron/all.json",
             'parser': _parse_tron_tokenlist
+        },
+        # Avalanche C-chain. The Uniswap default list above does carry Avalanche tokens, but only a few dozen of
+        # them, which is thin cover for a chain whose spam volume is what it is - so the CoinGecko per-chain list
+        # (the same shape as the Tron one, standard 'tokenlists' schema with chainId 43114) is loaded beside it.
+        TokenList.COINGECKO_AVAX_LIST: {
+            'kind': TokenListKind.Allow,
+            'chains': [AssetLocation.AVAX_BLOCKCHAIN],
+            'url': "https://tokens.coingecko.com/avalanche/all.json",
+            'parser': _parse_tokenlist
         },
         TokenList.MEW_TOKENS: {
             'kind': TokenListKind.Allow,

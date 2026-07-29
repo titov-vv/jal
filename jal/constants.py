@@ -272,6 +272,7 @@ class SymbolId(PredefinedList, QObject):
     # It is a second identifier rather than the identity: it is optional (HYPE has none) and it belongs to another
     # chain. It is kept because DeFiLlama indexes most Hyperliquid tokens by it - see llama_coin_key().
     HL_EVM_ADDRESS = 12
+    AVAX_ADDRESS = 13  # Avalanche C-chain contract address
 
     def __init__(self):
         super().__init__()
@@ -288,7 +289,8 @@ class SymbolId(PredefinedList, QObject):
             self.SOL_ADDRESS: self.tr("SOL address"),
             self.TRX_ADDRESS: self.tr("TRX address"),
             self.HL_ADDRESS: self.tr("HL token id"),
-            self.HL_EVM_ADDRESS: self.tr("HyperEVM address")
+            self.HL_EVM_ADDRESS: self.tr("HyperEVM address"),
+            self.AVAX_ADDRESS: self.tr("AVAX address")
         }
 
 
@@ -411,11 +413,15 @@ class AssetLocation(PredefinedList, QObject):
     SOL_BLOCKCHAIN = 304
     TRX_BLOCKCHAIN = 305
     HL_BLOCKCHAIN = 306
+    # Avalanche C-chain only: the X- and P-chains have a different model altogether and no EVM address, so a wallet
+    # account of this location always means the C-chain.
+    AVAX_BLOCKCHAIN = 307
     SMA_VICTORIA = 999
 
     # Locations that are blockchains. It is the single definition of that set: the 'Chain' attribute of a wallet
     # account and the crypto quote downloader are both restricted to it, so a new chain is added in one place.
-    BLOCKCHAINS = [ETH_BLOCKCHAIN, ARB_BLOCKCHAIN, BTC_BLOCKCHAIN, SOL_BLOCKCHAIN, TRX_BLOCKCHAIN, HL_BLOCKCHAIN]
+    BLOCKCHAINS = [ETH_BLOCKCHAIN, ARB_BLOCKCHAIN, BTC_BLOCKCHAIN, SOL_BLOCKCHAIN, TRX_BLOCKCHAIN, HL_BLOCKCHAIN,
+                   AVAX_BLOCKCHAIN]
 
     # Identifier that holds a token's contract (or mint) address on each chain. The address is the only trustworthy
     # key for a token - tickers and names are chosen by whoever deployed the contract - so it identifies a token
@@ -425,7 +431,8 @@ class AssetLocation(PredefinedList, QObject):
         ARB_BLOCKCHAIN: SymbolId.ARB_ADDRESS,
         SOL_BLOCKCHAIN: SymbolId.SOL_ADDRESS,
         TRX_BLOCKCHAIN: SymbolId.TRX_ADDRESS,
-        HL_BLOCKCHAIN: SymbolId.HL_ADDRESS
+        HL_BLOCKCHAIN: SymbolId.HL_ADDRESS,
+        AVAX_BLOCKCHAIN: SymbolId.AVAX_ADDRESS
     }
 
     # Returns the SymbolId that stores a contract address on the given chain, or None if the chain has no tokens
@@ -455,6 +462,7 @@ class AssetLocation(PredefinedList, QObject):
             self.SOL_BLOCKCHAIN: self.tr("Solana"),
             self.TRX_BLOCKCHAIN: self.tr("Tron"),
             self.HL_BLOCKCHAIN: self.tr("Hyperliquid"),
+            self.AVAX_BLOCKCHAIN: self.tr("Avalanche"),
             self.SMA_VICTORIA: self.tr("Victoria Seguros")
         }
 
@@ -481,6 +489,7 @@ class TokenList(PredefinedList, QObject):
     DAPPRADAR_BLACKLIST = 4
     MEW_TOKENS = 5
     COINGECKO_TRON_LIST = 6
+    COINGECKO_AVAX_LIST = 7
 
     def __init__(self):
         super().__init__()
@@ -490,7 +499,8 @@ class TokenList(PredefinedList, QObject):
             self.COINGECKO_LIST: self.tr("CoinGecko token list"),
             self.DAPPRADAR_BLACKLIST: self.tr("DappRadar tokens blacklist"),
             self.MEW_TOKENS: self.tr("MyEtherWallet token list"),
-            self.COINGECKO_TRON_LIST: self.tr("CoinGecko Tron token list")
+            self.COINGECKO_TRON_LIST: self.tr("CoinGecko Tron token list"),
+            self.COINGECKO_AVAX_LIST: self.tr("CoinGecko Avalanche token list")
         }
 
 

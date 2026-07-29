@@ -61,7 +61,8 @@ _LLAMA_CHAIN_NAMES = {
     AssetLocation.ARB_BLOCKCHAIN: 'arbitrum',
     AssetLocation.SOL_BLOCKCHAIN: 'solana',
     AssetLocation.TRX_BLOCKCHAIN: 'tron',
-    AssetLocation.HL_BLOCKCHAIN: 'hyperliquid'
+    AssetLocation.HL_BLOCKCHAIN: 'hyperliquid',
+    AssetLocation.AVAX_BLOCKCHAIN: 'avax'
 }
 
 # Native coin of each chain, used for a listing that has no contract address. Mind that a listing on Arbitrum with
@@ -72,7 +73,8 @@ _LLAMA_NATIVE_COINS = {
     AssetLocation.ARB_BLOCKCHAIN: "coingecko:ethereum",
     AssetLocation.BTC_BLOCKCHAIN: "coingecko:bitcoin",
     AssetLocation.SOL_BLOCKCHAIN: "coingecko:solana",
-    AssetLocation.TRX_BLOCKCHAIN: "coingecko:tron"
+    AssetLocation.TRX_BLOCKCHAIN: "coingecko:tron",
+    AssetLocation.AVAX_BLOCKCHAIN: "coingecko:avalanche-2"
 }
 
 # Number of daily points requested in one '/chart' call. Verified 2026-07-18: a span of 500 is served but 1000 is

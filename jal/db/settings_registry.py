@@ -114,6 +114,14 @@ def _register_builtin_settings() -> None:
                                   "API uses one key for every supported chain; a free key allows 5 requests per "
                                   "second and 100000 requests per day.")))
     SettingsRegistry.register(SettingDescriptor(
+        key="ApiKey_Routescan",
+        page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
+        label=QT_TRANSLATE_NOOP("Preferences", "Routescan API key"),
+        tooltip=QT_TRANSLATE_NOOP("Preferences",
+                                  "Required to fetch Avalanche C-chain (AVAX/ERC-20) transactions. Etherscan serves "
+                                  "that chain on a paid tier only, so Routescan is used instead; a free key allows "
+                                  "5 requests per second and 100000 requests per day.")))
+    SettingsRegistry.register(SettingDescriptor(
         key="ApiKey_Helius",
         page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
         label=QT_TRANSLATE_NOOP("Preferences", "Helius API key"),

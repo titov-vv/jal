@@ -18,14 +18,15 @@ from jal.net.chain_fetchers.protocols import protocol_category, protocol_name, P
 from jal.net.web_request import WebRequest
 
 # This module has no JAL_FETCHER_CLASS on purpose: it is the shared base of the EVM chains, not a selectable chain
-# itself. Each concrete chain (Ethereum, Arbitrum, ...) is a thin subclass in its own module that only sets the
-# Etherscan 'chainid' and the native coin - see ethereum.py / arbitrum.py.
+# itself. Each concrete chain (Ethereum, Arbitrum, Avalanche, ...) is a thin subclass in its own module that only
+# sets the 'chainid', the native coin and - where the chain isn't served by Etherscan - the endpoint to read it from.
+# See ethereum.py / arbitrum.py / avalanche.py.
 
 # Etherscan moved to a single V2 endpoint that serves every chain it supports through one 'chainid' parameter and
-# one API key. So every EVM chain shares this root and the same 'ApiKey_Etherscan' key.
-_API_ROOT = "https://api.etherscan.io/v2/api"
-_PAGE_SIZE = 10000                # Maximum 'offset' the API accepts
-_MAX_PAGES = 20                   # Stops a runaway paging loop on an address with a very long history
+# one API key. So every chain Etherscan serves shares this root and the same 'ApiKey_Etherscan' key; a chain it
+# doesn't (Avalanche, which it serves on a paid tier only) is read from another provider offering the same
+# 'module'/'action' surface - see the api_* class attributes below and avalanche.py.
+_ETHERSCAN_API_ROOT = "https://api.etherscan.io/v2/api"
 _WEI = Decimal('10') ** 18        # 1 coin = 10^18 wei, the unit every native amount is returned in
 _NO_TRANSACTIONS = "No transactions found"   # status=0 message that means "empty history", not an error
 
@@ -42,7 +43,7 @@ class _HaltImport(Exception):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Fetches the transaction history of an EVM wallet from Etherscan and turns it into JSF.
+# Fetches the transaction history of an EVM wallet from an Etherscan-compatible API and turns it into JSF.
 #
 # Three account endpoints are read and they do not overlap: 'txlist' returns the top-level transactions the wallet
 # sent or received (native coin movements and the gas of everything it initiated), 'tokentx' returns ERC-20 token
@@ -55,20 +56,35 @@ class _HaltImport(Exception):
 class EVMFetcher(ChainFetcher):
     chain_id = 0                  # Etherscan V2 'chainid' of this chain
     icon_name = ''
-    # Dust threshold is shared by every EVM chain this fetcher backs (Ethereum, Arbitrum, ...)
-    # They all move the same native coin, so one threshold covers them all.
+    # Where the history is read from, and under which name a failure is reported. Etherscan's V2 API is the default
+    # because it serves most of the chains JAL supports through one root and one key; a chain read from a different
+    # provider overrides these three, and that provider's quirks belong to the subclass and must not leak back here.
+    api_root = _ETHERSCAN_API_ROOT
+    api_name = "Etherscan"
+    api_key_setting = "ApiKey_Etherscan"
+    # Result paging. 'page_size' is the 'offset' asked for and 'max_pages' bounds a runaway loop on an address with a
+    # very long history - but their PRODUCT matters too: a provider may cap how deep a single query may be paged
+    # (Routescan refuses page x offset above 10000), so a chain with such a cap sets both together. Running the
+    # budget out costs no data, only another fetch - see _note_window_limit().
+    page_size = 10000
+    max_pages = 20
+    # Dust threshold is shared by every EVM chain this fetcher backs whose native coin is ETH (Ethereum, Arbitrum,
+    # ...). A chain with a native coin of its own (Avalanche) is worth a different amount per unit and overrides it.
     native_dust_threshold = '0.0000001'
 
     def __init__(self):
         super().__init__()
         self._new_cursor = ''
+        # Block from which this fetch could no longer read the history, see _note_window_limit(). None = it read
+        # everything the chain had.
+        self._window_limit = None
 
     # ------------------------------------------------------------------------------------------------------------------
     def _api_key(self) -> str:
-        key = JalSettings().getStr("ApiKey_Etherscan").strip()
+        key = JalSettings().getStr(self.api_key_setting).strip()
         if not key:
             raise Statement_ImportError(
-                self.tr("Etherscan API key isn't set - fill it in Settings/Preferences/Blockchain"))
+                self.tr("API key isn't set - fill it in Settings/Preferences/Blockchain: ") + self.api_name)
         return key
 
     # The wallet address, lower-cased the way every EVM address is stored and the way Etherscan returns 'from'/'to',
@@ -79,34 +95,71 @@ class EVMFetcher(ChainFetcher):
     def _norm(self, address: str) -> str:
         return normalize_address(self.location_id, address)
 
-    # Executes one paged GET against an Etherscan 'account' action and returns the 'result' list. Paging is by page
-    # number (the API caps 'offset' at _PAGE_SIZE), and a short page means the history is exhausted.
+    # Executes one paged GET against an 'account' action and returns the 'result' list. Paging is by page number
+    # (the API caps 'offset' at page_size), and a short page means the history is exhausted.
     def _get_pages(self, action: str, start_block: int) -> list:
         records = []
-        for page in range(1, _MAX_PAGES + 1):
+        for page in range(1, self.max_pages + 1):
             params = {"chainid": self.chain_id, "module": "account", "action": action,
                       "address": self._account.address(), "startblock": start_block, "endblock": 99999999,
-                      "page": page, "offset": _PAGE_SIZE, "sort": "asc", "apikey": self._api_key()}
-            request = WebRequest(WebRequest.GET, _API_ROOT, params=params)
+                      "page": page, "offset": self.page_size, "sort": "asc", "apikey": self._api_key()}
+            request = WebRequest(WebRequest.GET, self.api_root, params=params)
             self._wait_for(request)
             try:
                 answer = json.loads(request.data())
             except (json.JSONDecodeError, TypeError):
-                raise Statement_ImportError(self.tr("Unexpected answer from Etherscan: ") + f"{request.data()}")
+                raise Statement_ImportError(self.tr("Unexpected answer from the blockchain API: ")
+                                            + f"{self.api_name}: {request.data()}")
             result = answer.get('result', [])
             # status=0 is both "no transactions" (an ordinary empty history) and a real error (a bad key, a rate
             # limit); the two are told apart by the message, since only the error carries a string result.
             if str(answer.get('status', '0')) != '1':
                 if answer.get('message', '') == _NO_TRANSACTIONS:
                     break
-                raise Statement_ImportError(self.tr("Etherscan request failed: ") + f"{result or answer}")
+                raise Statement_ImportError(self.tr("Blockchain API request failed: ")
+                                            + f"{self.api_name}: {result or answer}")
             records += result
             self._report_page()
-            if len(result) < _PAGE_SIZE:
+            if len(result) < self.page_size:
                 break
         else:
-            logging.warning(self.tr("Too many pages returned by Etherscan, the history may be incomplete"))
+            self._note_window_limit(action, records)
         return records
+
+    # Called when an endpoint used up its whole page budget while its pages were still full: whatever comes after the
+    # last record it returned could not be read in THIS fetch, because the provider caps how deep one query may be
+    # paged and/or because max_pages stopped the loop.
+    #
+    # Nothing is lost by that - the cap is per query and 'startblock' opens a fresh window, so the next fetch reads on
+    # from where this one stopped. What WOULD lose data is letting the cursor past the point where reading stopped:
+    # the three endpoints are paged independently and run out at different blocks, and a cursor taken from the one
+    # that reached furthest would jump over records another one never delivered, never to be asked for again. So the
+    # lowest block at which any endpoint stopped is remembered and _fetch() imports strictly below it.
+    #
+    # That block is itself the limit rather than the one after it: reading stopped in the middle of it, so part of it
+    # may be missing. (A single block holding a whole budget's worth of records for one address would therefore make
+    # no progress at all - it is logged as the incomplete fetch it is, and no cursor is stored.)
+    def _note_window_limit(self, action: str, records: list) -> None:
+        logging.warning(self.tr("Too many pages returned, the rest is left for the next fetch: ")
+                        + f"{self.api_name}/{action}")
+        if not records:
+            return
+        block = self._block_of(records[-1])
+        self._window_limit = block if self._window_limit is None else min(self._window_limit, block)
+
+    # Drops the transactions at or above the block where reading stopped (see _note_window_limit), so that the cursor
+    # this fetch returns can never point past a transaction it hasn't seen. They are reported as skipped rather than
+    # dropped silently, and the next fetch starts at exactly that block.
+    def _within_window(self, transactions: list) -> list:
+        if self._window_limit is None:
+            return transactions
+        kept = []
+        for tx in transactions:
+            if tx['block'] < self._window_limit:
+                kept.append(tx)
+            else:
+                self._skip(self.tr("beyond what one fetch can read - it will be fetched next time"), tx['hash'])
+        return kept
 
     # The cursor is the block number of the last imported transaction; the next fetch starts at the following block.
     # A block is immutable once mined, so everything up to and including the cursor block was already seen in full.
@@ -123,10 +176,11 @@ class EVMFetcher(ChainFetcher):
         if not is_evm_address(address):
             raise Statement_ImportError(self.tr("Not a valid EVM address: ") + address)
         start_block = self._start_block()
+        self._window_limit = None
         native = self._get_pages("txlist", start_block)
         tokens = self._get_pages("tokentx", start_block)
         internal = self._get_pages("txlistinternal", start_block)
-        transactions = self._group_by_transaction(native, tokens, internal)
+        transactions = self._within_window(self._group_by_transaction(native, tokens, internal))
 
         # Transactions are imported in block order. When the classifier meets a shape it can't support it raises
         # _HaltImport: the current block is rolled back whole and the import stops there, keeping every earlier block
@@ -545,4 +599,5 @@ SettingsRegistry.register(SettingDescriptor(
     tooltip=QT_TRANSLATE_NOOP("Preferences",
                               "An incoming ETH transfer below this amount, from an address you never dealt with, "
                               "is recorded as a dust attack instead of an ordinary transfer. Applies to every EVM "
-                              "chain (Ethereum, Arbitrum, ...), since they share the same native coin.")))
+                              "chain whose native coin is ETH (Ethereum, Arbitrum, ...); a chain with a coin of its "
+                              "own has a threshold of its own.")))

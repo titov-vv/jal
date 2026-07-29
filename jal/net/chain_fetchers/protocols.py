@@ -72,6 +72,13 @@ _REGISTRY = {
         '0xf36029358a684cddd5103a4b84dc8a832c6e5b40': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays FLUID
         '0x94312a608246cecfce6811db84b3ef4b2619054e': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays FLUID
     },
+    # Avalanche C-chain has no entries yet, deliberately. The wallet it was validated against has not sent a single
+    # transaction on that chain, so there is no contract whose category could be read off its own history - and a
+    # registry entry is never written from documentation or from memory (#58). The chain's DeFi protocols (Trader
+    # Joe, Aave v3, LI.FI, ...) deploy at addresses of their own here, NOT at the Ethereum ones a few rows above.
+    # Nothing is missed by the table being empty: the first transaction that swaps or lends through a contract halts
+    # the import and names the address, which is exactly the evidence an entry has to be based on.
+    AssetLocation.AVAX_BLOCKCHAIN: {},
 }
 
 # Why stake.link's PriorityPool is CUSTODY and not LENDING or REWARD (verified on-chain, 2026-07-22; it is the first
