@@ -297,21 +297,21 @@ def test_bitget_refuses_an_unsupported_file_with_data(bitget):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_cex_coins_are_priced_by_ticker(prepare_db):
-    # A coin held on an exchange has no contract address to be keyed by, so it is priced through the CoinGecko
-    # passthrough by ticker. Without this an imported reward can't be valued at all and the ledger refuses to build.
-    asset = JalAsset(JalAsset.get_base_currency())
-    usdt = JalAsset(3)
-    for ticker, expected in (('USDT', 'coingecko:tether'), ('ADA', 'coingecko:cardano'),
-                             ('DOT', 'coingecko:polkadot'), ('NEAR', 'coingecko:near')):
-        coin = JalAsset(0)
-        from jal.db.asset import JalAssetCreator
+def test_cex_coins_are_priced_by_recorded_coin_id(prepare_db):
+    # A coin held on an exchange has no contract address to be keyed by: the balance is a claim on the exchange and
+    # is fungible across every chain the coin exists on. It is priced through the CoinGecko passthrough, by the id
+    # recorded for the asset - and by nothing else. A ticker is never turned into a key: it is not unique, and
+    # borrowing the address of a wrapped version of the coin would name a different asset.
+    currency = JalAsset(JalAsset.get_base_currency())
+    for ticker, coin_id in (('USDT', 'tether'), ('ADA', 'cardano'), ('DOT', 'polkadot'), ('NEAR', 'near')):
         coin = JalAssetCreator(PredefinedAsset.Crypto, ticker, '').commit()
-        symbol_id = coin.add_symbol(ticker, asset.id(), location_id=AssetLocation.CEX_EXCHANGE)
-        assert llama_coin_key(JalSymbol(symbol_id)) == expected
-    # a ticker the map doesn't list yields no key at all, and the caller reports it instead of guessing one
+        symbol_id = coin.add_symbol(ticker, currency.id(), location_id=AssetLocation.CEX_EXCHANGE)
+        assert llama_coin_key(JalSymbol(symbol_id)) == ''       # nothing is known about the coin yet
+        coin.update_data({'coin_id': coin_id})
+        assert llama_coin_key(JalSymbol(symbol_id)) == f"coingecko:{coin_id}"
+    # A coin whose id was never recorded has no key at all, and the downloader reports it instead of guessing one
     unknown = JalAssetCreator(PredefinedAsset.Crypto, 'NOSUCHCOIN', '').commit()
-    unknown_symbol = unknown.add_symbol('NOSUCHCOIN', asset.id(), location_id=AssetLocation.CEX_EXCHANGE)
+    unknown_symbol = unknown.add_symbol('NOSUCHCOIN', currency.id(), location_id=AssetLocation.CEX_EXCHANGE)
     assert llama_coin_key(JalSymbol(unknown_symbol)) == ''
 
 

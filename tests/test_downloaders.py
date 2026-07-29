@@ -324,6 +324,40 @@ def test_llama_coin_key(prepare_db):
     assert llama_coin_key(JalSymbol(stock)) == ''
 
 
+# A listing on a chain with no contract address is only the native coin of that chain when its ticker says so.
+# Assuming it otherwise priced a whole portfolio of coins (DOT, ALGO, NEAR, ... all recorded on the Ethereum
+# location without an address) as Ethereum: every one of them carried an identical USD quote per day.
+def test_addressless_token_has_no_key(prepare_db):
+    for ticker, location in (('DOT', AssetLocation.ETH_BLOCKCHAIN), ('ALGO', AssetLocation.ETH_BLOCKCHAIN),
+                             ('USDT', AssetLocation.TRX_BLOCKCHAIN), ('ARB', AssetLocation.ARB_BLOCKCHAIN),
+                             ('BONK', AssetLocation.SOL_BLOCKCHAIN)):
+        _, symbol_id = create_crypto(f"{ticker} coin", ticker, 2, location)
+        assert llama_coin_keys(JalSymbol(symbol_id)) == []
+
+
+# The identity of a coin that has no contract address anywhere JAL supports is recorded for the asset, and it is
+# what the source is keyed by - for a coin held by an exchange as well as for the native coin of a chain JAL
+# doesn't support. A ticker is never turned into a key.
+def test_coin_id_identifies_a_coin_without_an_address(prepare_db):
+    asset_id, symbol_id = create_crypto('Polkadot', 'DOT', 2, AssetLocation.CEX_EXCHANGE)
+    assert llama_coin_keys(JalSymbol(symbol_id)) == []       # Nothing is guessed from the ticker
+    JalAsset(asset_id).update_data({'coin_id': 'polkadot'})
+    assert llama_coin_key(JalSymbol(symbol_id)) == 'coingecko:polkadot'
+
+    # The same holds for a listing recorded on a chain: the id answers when there is no address
+    asset_id, symbol_id = create_crypto('Algorand', 'ALGO', 2, AssetLocation.ETH_BLOCKCHAIN)
+    JalAsset(asset_id).update_data({'coin_id': 'algorand'})
+    assert llama_coin_key(JalSymbol(symbol_id)) == 'coingecko:algorand'
+
+    # A contract address is a more precise identity than an id shared by every listing of the asset, so it is
+    # tried first, and the id remains as the next candidate
+    asset_id, symbol_id = create_crypto('Tether', 'USDT', 2, AssetLocation.ETH_BLOCKCHAIN,
+                                        '0xdAC17F958D2ee523a2206206994597C13D831ec7', SymbolId.ETH_ADDRESS)
+    JalAsset(asset_id).update_data({'coin_id': 'tether'})
+    assert llama_coin_keys(JalSymbol(symbol_id)) == ['ethereum:0xdAC17F958D2ee523a2206206994597C13D831ec7',
+                                                     'coingecko:tether']
+
+
 def test_llama_coin_keys_of_hyperliquid(prepare_db):
     # The source indexes Hyperliquid inconsistently: most tokens answer to their HyperEVM contract address while a
     # few - among them USDC, and HYPE which has no EVM deployment at all - answer only to the HyperCore token id.

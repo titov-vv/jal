@@ -37,6 +37,7 @@ class JalAsset(JalDB):
         self._expiry = int(self._data.get('data', {}).get(AssetData.ExpiryDate, 0))
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '')
         self._principal = Decimal(self._principal) if self._principal else Decimal('0')
+        self._coin_id = self._data.get('data', {}).get(AssetData.CoinGeckoId, '')
         try:
             self._tag = JalTag(int(self._data.get('data', {}).get(AssetData.Tag, 0)))
         except (AttributeError, ValueError, TypeError):
@@ -323,6 +324,12 @@ class JalAsset(JalDB):
     def principal(self) -> Decimal:
         return self._principal
 
+    # CoinGecko id of this coin ('polkadot', 'algorand', ...) or '' if none is recorded. It is the identity of a
+    # coin that has no contract address on a chain JAL supports (see AssetData.CoinGeckoId) and is what the crypto
+    # quote source is keyed by in that case - llama_coin_keys() in the downloader.
+    def coin_id(self) -> str:
+        return self._coin_id
+
     def tag(self) -> JalTag:
         return self._tag
 
@@ -342,7 +349,8 @@ class JalAsset(JalDB):
             'name': self._update_name,
             'country': self._update_country,
             'expiry': self._update_expiration,
-            'principal': self._update_principal
+            'principal': self._update_principal,
+            'coin_id': self._update_coin_id
         }
         if not self._id:
             return
@@ -375,6 +383,17 @@ class JalAsset(JalDB):
                        "VALUES(:asset_id, :datatype, :expiry)",
                        [(":asset_id", self._id), (":datatype", AssetData.ExpiryDate), (":expiry", str(new_expiration))])
         self._expiry = new_expiration
+
+    # Records the CoinGecko id of this coin (see AssetData.CoinGeckoId). Unlike a name or a country it is
+    # overwritten when a new value is given: it is not descriptive data but the key a price is downloaded by, so a
+    # correction has to take effect.
+    def _update_coin_id(self, coin_id: str) -> None:
+        if self._type != PredefinedAsset.Crypto:
+            return
+        _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                       "VALUES(:asset_id, :datatype, :coin_id)",
+                       [(":asset_id", self._id), (":datatype", AssetData.CoinGeckoId), (":coin_id", coin_id)])
+        self._coin_id = coin_id
 
     def _update_principal(self, principal: str) -> None:
         if self._type != PredefinedAsset.Bond:

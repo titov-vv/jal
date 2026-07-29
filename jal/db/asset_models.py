@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QModelIndex
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtSql import QSqlQueryModel, QSqlTableModel
 from PySide6.QtWidgets import QCompleter, QMessageBox
 from jal.db.db import JalDB
@@ -8,7 +9,7 @@ from jal.db.common_models_abstract import AbstractReferenceListModel
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.db.tag import JalTag
-from jal.constants import CmColumn, CmWidth, AssetData, SymbolId
+from jal.constants import CmColumn, CmWidth, AssetData, SymbolId, Setup
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -24,7 +25,7 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
             CmColumn("currency", self.tr("Currency")),
             CmColumn("location_id", self.tr("Location")),
             CmColumn("full_name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, details=True),
-            CmColumn("icon", '')
+            CmColumn("icon", '', width=Setup.ASSET_ICON_SIZE + 8)
         ]
         self._filter_by = ''
         self._filter_value = None
@@ -63,6 +64,25 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
                 return self._columns[section].header
         return None
+
+    # The 'icon' column keeps the image itself (asset_symbol.icon is a BLOB filled in by the quote downloader),
+    # so it is displayed as a picture and never as text - the raw bytes of a PNG are not something to show.
+    def data(self, index, role=Qt.DisplayRole):
+        if index.isValid() and index.column() == self.fieldIndex("icon"):
+            if role == Qt.DecorationRole:
+                image = super().data(index, Qt.DisplayRole)
+                if image:   # NULL (never downloaded) and empty (source has none) are both 'nothing to show'
+                    pixmap = QPixmap()
+                    if pixmap.loadFromData(image):
+                        # Logos are stored as they are served (a Trust Wallet one is 256x256), and a decoration is
+                        # painted at its own size - so it is scaled down here, otherwise one icon sets the height
+                        # of every row in the table.
+                        return QIcon(pixmap.scaled(Setup.ASSET_ICON_SIZE, Setup.ASSET_ICON_SIZE,
+                                                   Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                return None
+            if role == Qt.DisplayRole:
+                return None
+        return super().data(index, role)
 
     def fieldIndex(self, field):
         column_data = [i for i, column in enumerate(self._columns) if column.name == field]

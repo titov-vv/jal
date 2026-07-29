@@ -23,6 +23,7 @@ class WebRequest(QThread):
         super().__init__()
         self._mutex = QMutex()
         self._data = ''
+        self._status = 0
         self._operation = operation
         self._url = url
         self._params = params
@@ -41,10 +42,11 @@ class WebRequest(QThread):
         binary = self._binary
         expected_errors = self._expected_errors
         self._mutex.unlock()
-        result = self._request(operation, url, params=params, headers=headers, binary=binary,
-                               expected_errors=expected_errors)
+        status, result = self._request(operation, url, params=params, headers=headers, binary=binary,
+                                       expected_errors=expected_errors)
         self._mutex.lock()
         self._data = result
+        self._status = status
         self._mutex.unlock()
 
     def data(self):
@@ -52,6 +54,15 @@ class WebRequest(QThread):
         data = self._data
         self._mutex.unlock()
         return data
+
+    # HTTP status code the server answered with. It is 0 if no answer was received at all (timeout, no connection),
+    # which lets a caller tell "the server says there is no such thing" from "nobody was asked" - the result is ''
+    # in both cases, but only the first one is an answer worth remembering.
+    def status(self) -> int:
+        self._mutex.lock()
+        status = self._status
+        self._mutex.unlock()
+        return status
 
     def _request(self, operation, url, params=None, headers=None, binary=False, expected_errors=()):
         session = requests.Session()
@@ -69,18 +80,18 @@ class WebRequest(QThread):
                 assert False
         except ConnectTimeout:
             logging.error(self.tr("Timeout") + " URL {url}")
-            return ''
+            return 0, ''
         except ConnectionError as e:
             logging.error(self.tr("Error") + ", URL {url}\n{e}")
-            return ''
+            return 0, ''
         if response.status_code == 200:
             if binary:
-                return response.content
+                return response.status_code, response.content
             else:
-                return response.text
+                return response.status_code, response.text
         elif response.status_code in expected_errors:
             logging.debug(f"Expected [{response.status_code}] URL {url}\n{response.text}")
-            return ''
+            return response.status_code, ''
         else:
             logging.error(self.tr("Failed") + f" [{response.status_code}] URL {url}\n{response.text}")
-            return ''
+            return response.status_code, ''

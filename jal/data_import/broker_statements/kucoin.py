@@ -155,8 +155,11 @@ class StatementKuCoin(StatementCSV):
             "name": f"{self.StatementName}.{uid}", "account_type": PredefinedAccountType.CEX})
 
     # Every coin the statement mentions becomes a crypto asset located on the exchange. The location is what says
-    # the coin is a claim on KuCoin rather than a token on a chain, and it is also what lets its quotes be
-    # downloaded - see _CEX_COINS in jal/net/downloader.py.
+    # the coin is a claim on KuCoin rather than a token on a chain. It does not identify the coin for a price
+    # source: an exchange balance has no contract address, and the statement gives nothing but a ticker, which is
+    # not unique. Quotes are downloaded once the coin's id is recorded for the asset (AssetData.CoinGeckoId, the
+    # Data tab of the symbol dialog); until then the download reports the coin as unidentified rather than pricing
+    # it as something else - see llama_coin_keys() in jal/net/downloader.py.
     def _load_assets(self):
         coins = {x['Currency'] for x in self._ledger()} | {x['Coin'] for x in self._rows('snapshots')}
         for coin in sorted(coins):

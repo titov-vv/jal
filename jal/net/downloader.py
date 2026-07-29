@@ -17,6 +17,7 @@ from jal.constants import AssetLocation, PredefinedAsset, SymbolId
 from jal.db.asset import JalAsset
 from jal.db.helpers import day_begin
 from jal.db.symbol import JalSymbol
+from jal.net.asset_icons import icon_url, coingecko_icons_urls, parse_coingecko_icons
 from jal.net.web_request import WebRequest
 from jal.net.moex import MOEX
 try:
@@ -36,22 +37,12 @@ SECONDS_IN_DAY = 86400
 # listings or accounts are denominated in - see download_asset_prices().
 LLAMA_LOCATIONS = AssetLocation.BLOCKCHAINS + [AssetLocation.CEX_EXCHANGE]
 
-# A coin held on a centralized exchange has no contract address to be keyed by - it is a claim on the exchange, not
-# a token on a chain - so it is priced by ticker through DeFiLlama's CoinGecko passthrough, the same route the native
-# coin of a chain already takes. The mapping is explicit rather than derived because a ticker is not unique: only a
-# coin listed here is priced, and one that is not produces a warning instead of a wrong price borrowed from a
-# same-named coin. Verified against the API 2026-07-28.
-_CEX_COINS = {
-    'USDT': "coingecko:tether",
-    'USDC': "coingecko:usd-coin",
-    'ADA': "coingecko:cardano",
-    'DOT': "coingecko:polkadot",
-    'NEAR': "coingecko:near",
-    'BTC': "coingecko:bitcoin",
-    'ETH': "coingecko:ethereum",
-    'SOL': "coingecko:solana",
-    'TRX': "coingecko:tron"
-}
+# A coin that has no contract address on a chain JAL supports - one held by an exchange, or the native coin of a
+# chain JAL doesn't support - is priced through DeFiLlama's CoinGecko passthrough, by the id recorded for the asset
+# (AssetData.CoinGeckoId, see JalAsset.coin_id()). The id is data and not a ticker table on purpose: a ticker is not
+# unique, and the addresses that a ticker does resolve to in the token lists belong to wrapped or bridged versions
+# of the coin - a different asset, with a price that may part ways with the coin actually held.
+_LLAMA_COINGECKO_PREFIX = "coingecko:"
 
 # The API identifies a token as '{chain}:{contract_address}' - this maps a location to the chain name that the API
 # uses. The identifier that carries the contract address on each chain comes from AssetLocation.address_id_of(),
@@ -98,11 +89,6 @@ _LLAMA_MIN_CONFIDENCE = Decimal('0.7')
 # its own, so a Hyperliquid symbol carries both identifiers and both keys are offered. The EVM address goes first
 # as it is the form that resolves for the majority of tokens.
 def llama_coin_keys(symbol: JalSymbol) -> list:
-    if symbol.location() == AssetLocation.CEX_EXCHANGE:
-        # Held by an exchange, so there is no address to key by - only the ticker the exchange calls it. An unlisted
-        # ticker returns nothing and the caller reports it, rather than guessing a key from the ticker (see _CEX_COINS).
-        coin = _CEX_COINS.get(symbol.symbol().upper(), '')
-        return [coin] if coin else []
     chain = _LLAMA_CHAIN_NAMES.get(symbol.location(), '')
     keys = []
     if chain:
@@ -113,7 +99,15 @@ def llama_coin_keys(symbol: JalSymbol) -> list:
         address = symbol.identifier(AssetLocation.address_id_of(symbol.location()))
         if address:
             keys.append(f"{chain}:{address}")
-    if not keys:
+    # A contract address is the most precise identity a coin can have, so it is asked about first; the id recorded
+    # for the asset answers for a coin that has no such address at all (held by an exchange, or native to a chain
+    # JAL doesn't support). A listing on a blockchain with neither of the two is only the native coin of that chain
+    # when its ticker says so - otherwise it is a token JAL has no address for, and it has no key: nothing here may
+    # substitute the price of the chain's own coin for the price of a token that happens to sit on it.
+    coin_id = symbol.asset().coin_id()
+    if coin_id:
+        keys.append(_LLAMA_COINGECKO_PREFIX + coin_id)
+    if not keys and AssetLocation.is_native_coin(symbol.location(), symbol.symbol()):
         native = _LLAMA_NATIVE_COINS.get(symbol.location(), '')
         if native:
             keys.append(native)
@@ -367,6 +361,7 @@ class QuoteDownloader(QObject):
         data_loaders.update({x: self.Llama_Downloader for x in LLAMA_LOCATIONS})
         symbols = JalSymbol.get_active_symbols(start_timestamp, end_timestamp)
         symbols = [(x['symbol'], x['currency']) for x in symbols if x['symbol'].location() in sources_list]
+        listings = [symbol for symbol, _currency in symbols]   # Icons belong to a listing, quotes to a series
         symbols = self._quote_series(symbols)
         logging.info(self.tr("Loading assets prices"))
         for i, (symbol, currency) in enumerate(symbols):
@@ -379,6 +374,65 @@ class QuoteDownloader(QObject):
                 logging.warning(self.tr("No quotes were downloaded for ") + f"{symbol.symbol()}")
                 continue
             self.update_progress.emit(100.0 * (i + 1) / len(symbols))
+        self.download_icons(listings)
+
+    # Downloads the missing icons of the given listings. Only a listing that was never asked about is requested:
+    # JalSymbol.icon_requested() is True both for a listing that has an icon and for one the source answered 404
+    # for, so neither is downloaded twice and an icon that doesn't exist is asked for exactly once ever.
+    # Icons are cosmetic, so nothing here is allowed to affect the quotes that were just downloaded: a request that
+    # fails is simply left for the next run. The one exception is a user cancellation, which propagates out of
+    # _wait_for_event() exactly as it does from the quote loop.
+    def download_icons(self, listings: list) -> None:
+        pending = [x for x in listings if x.id() and not x.icon_requested()]
+        if not pending:
+            return
+        logging.info(self.tr("Loading asset icons"))
+        coin_icons = self._coin_icons([x.asset().coin_id() for x in pending])
+        for i, symbol in enumerate(pending):
+            image, no_icon_exists = self._fetch_icon(symbol, coin_icons)
+            if image:
+                symbol.set_icon(image)
+            elif no_icon_exists:
+                logging.debug(self.tr("There is no icon available for ") + f"{symbol.symbol()}")
+                symbol.set_icon(b'')
+            self.update_progress.emit(100.0 * (i + 1) / len(pending))
+
+    # Fetches the icon of one listing. The source keyed by the listing itself (its contract address, or its ISIN)
+    # knows the exact instrument, so it is asked first; the logo of the coin the asset is - looked up by the id
+    # recorded for it - answers when that source has nothing, which is the common case for a token the Trust Wallet
+    # repository doesn't carry.
+    # Returns the image and, when there is none, whether every source that could be asked has answered that it has
+    # none: only such an answer is remembered (see JalSymbol.set_icon), so that a source which was merely
+    # unreachable - or a coin logo that couldn't be looked up this time - is asked again on the next run.
+    def _fetch_icon(self, symbol: JalSymbol, coin_icons: dict) -> tuple:
+        coin_id = symbol.asset().coin_id()
+        candidates = [x for x in (icon_url(symbol), coin_icons.get(coin_id, '')) if x]
+        # A coin whose logo isn't in the lookup was not answered about (a rate limit, no connection, or an id the
+        # source doesn't know) - the lookup costs one request per download either way, so it is repeated rather
+        # than settled as "no icon exists".
+        answered = bool(candidates) and not (coin_id and coin_id not in coin_icons)
+        for url in candidates:
+            self._request = WebRequest(WebRequest.GET, url, binary=True, expected_errors=(404,))
+            self._wait_for_event()
+            image = self._request.data()
+            if image:
+                return image, False
+            answered = answered and self._request.status() == 404
+        return b'', answered
+
+    # Resolves {coin id: logo url} for the given ids in as few requests as the source allows. An answer that doesn't
+    # come (a rate limit above all - the source is generous with them) simply leaves the ids unresolved: their icons
+    # stay unset and the next download asks again.
+    def _coin_icons(self, coin_ids: list) -> dict:
+        icons = {}
+        for url in coingecko_icons_urls(coin_ids):
+            self._request = WebRequest(WebRequest.GET, url, expected_errors=(404, 429))
+            self._wait_for_event()
+            resolved = parse_coingecko_icons(self._request.data())
+            if not resolved:
+                logging.debug(self.tr("No coin logos were resolved: ") + f"[{self._request.status()}] {url}")
+            icons.update(resolved)
+        return icons
 
     # Takes a list of (symbol, account currency) pairs and returns a list of (symbol, quote currency) pairs that
     # describe the quote series to download - one pair per series.

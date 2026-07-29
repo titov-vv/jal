@@ -36,6 +36,7 @@ class Setup:
     MAX_TIMESTAMP = 9999999999
     TOKEN_LIST_REFRESH_INTERVAL = 7 * 24 * 60 * 60   # How often allow/block token lists are re-downloaded, seconds
     TOKEN_DUST_THRESHOLD = '1'                       # Incoming token transfer below this value is treated as dust
+    ASSET_ICON_SIZE = 64
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Constants to define presentation of database columns in UI views.
@@ -298,18 +299,24 @@ class AssetData(PredefinedList, QObject):
     Tag = 1  # This value is used in database trigger(s) after tag deletion
     ExpiryDate = 2
     PrincipalValue = 3
+    # Identity of a coin that has no contract address on any chain JAL supports: a coin held by an exchange (an
+    # exchange balance is fungible across chains and sits on none the user controls) or the native coin of a chain
+    # JAL doesn't support (DOT, ALGO, ...). A price source is asked for it by this id.
+    CoinGeckoId = 4
 
     def __init__(self):
         super().__init__()
         self._names = {
             self.Tag: self.tr("Tag"),
             self.ExpiryDate: self.tr("expiry"),
-            self.PrincipalValue: self.tr("principal")
+            self.PrincipalValue: self.tr("principal"),
+            self.CoinGeckoId: self.tr("CoinGecko id")
         }
         self._types = {
             self.Tag: "tag",
             self.ExpiryDate: "date",
-            self.PrincipalValue: "float"
+            self.PrincipalValue: "float",
+            self.CoinGeckoId: "str"
         }
 
     def get_type(self, type_id, default='') -> str:
@@ -439,6 +446,32 @@ class AssetLocation(PredefinedList, QObject):
     @classmethod
     def address_id_of(cls, location_id: int):
         return cls._ADDRESS_IDS.get(location_id)
+
+    # Ticker of the coin that is native to each chain - the coin that pays for gas there and has no contract of its
+    # own. Mind Arbitrum: its native coin is bridged ETH and NOT the ARB token (which is a contract like any other).
+    # This is the single definition of that fact, because it is what tells a listing with no contract address apart
+    # from the native coin: an address-less listing is far more often a token whose address JAL doesn't have, and
+    # assuming otherwise makes a whole portfolio of coins wear the price and the logo of the chain they sit on.
+    _NATIVE_TICKERS = {
+        ETH_BLOCKCHAIN: 'ETH',
+        ARB_BLOCKCHAIN: 'ETH',
+        BTC_BLOCKCHAIN: 'BTC',
+        SOL_BLOCKCHAIN: 'SOL',
+        TRX_BLOCKCHAIN: 'TRX',
+        HL_BLOCKCHAIN: 'HYPE',
+        AVAX_BLOCKCHAIN: 'AVAX'
+    }
+
+    # Ticker of the coin native to the given blockchain location, or '' if the location isn't a blockchain
+    @classmethod
+    def native_ticker_of(cls, location_id: int) -> str:
+        return cls._NATIVE_TICKERS.get(location_id, '')
+
+    # True if the given ticker is the native coin of the given blockchain location
+    @classmethod
+    def is_native_coin(cls, location_id: int, ticker: str) -> bool:
+        native = cls.native_ticker_of(location_id)
+        return bool(native) and ticker.upper() == native
 
     def __init__(self):
         super().__init__()
