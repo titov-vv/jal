@@ -130,9 +130,10 @@ def test_kucoin_payments_keep_the_source_operation_name(kucoin):
     assert len(payments) == 3
     earning = _one(payments, amount=Decimal('0.5'))
     assert earning['type'] == JSF.PAYMENT_STAKING_REWARD
+    # neither a referral bonus nor a platform grant is staking income - both are paid for something other than
+    # holding coins - so both take the payment type that exists to keep promo income apart from staking yield
     referral = _one(payments, amount=Decimal('2'))
-    assert referral['type'] == JSF.PAYMENT_STAKING_REWARD
-    # a platform grant is not staking income, so it takes the payment type that exists to keep the two apart
+    assert referral['type'] == JSF.PAYMENT_REWARD
     platform = _one(payments, amount=Decimal('10'))
     assert platform['type'] == JSF.PAYMENT_REWARD
     # whichever type a payout lands on, the operation KuCoin called it stays readable
@@ -292,11 +293,11 @@ def test_kucoin_statement_imports_into_the_database(prepare_db, data_path):
     assert _table_count('swaps') == 1
     assert _table_count('transfers') == 3
     payments = AssetPayment.get_list(account.id())
-    assert sorted(x.subtype() for x in payments) == [AssetPayment.StakingReward, AssetPayment.StakingReward,
+    assert sorted(x.subtype() for x in payments) == [AssetPayment.StakingReward, AssetPayment.Reward,
                                                      AssetPayment.Reward]
-    # the platform grant is the one that took the new type, and its note still names the KuCoin operation
-    grant = _one_payment(payments, AssetPayment.Reward)
-    assert grant.amount() == Decimal('10')
+    # the Earn payout is the only staking income; the referral bonus and the platform grant both took the promo type
+    assert _one_payment(payments, AssetPayment.StakingReward).amount() == Decimal('0.5')
+    assert sorted(x.amount() for x in payments if x.subtype() == AssetPayment.Reward) == [Decimal('2'), Decimal('10')]
 
 
 def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):

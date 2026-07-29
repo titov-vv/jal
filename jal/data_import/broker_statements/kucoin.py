@@ -71,10 +71,16 @@ class StatementKuCoin(StatementCSV):
         'Withdraw': '_coin_withdrawal',
         'Hold to Earn Earnings': '_staking_reward',
         'KuCoin Earn Profits': '_staking_reward',
-        'Referral Bonus': '_staking_reward',
+        'Referral Bonus': '_reward',
         'Earn Rate-Up Coupon': '_staking_reward',
         'PLATFORM_REWARD_WITHDRAW': '_reward'
     }
+    # Mind the split between the two reward types, which does not follow the KuCoin name. A referral bonus and a
+    # platform grant are paid for something other than holding coins, so they are promo income and stay separable
+    # for tax. 'Earn Rate-Up Coupon' reads like a promo too - it even carries the same 'KuCoin-Activity' remark as
+    # the referral bonus - but what it pays out IS staking yield, merely at a boosted rate, so it belongs with the
+    # Earn payouts. The KuCoin operation name is written into the note of every payment either way, so a payout can
+    # be reclassified later without re-importing the statement.
     # Rows that move coins into and out of a KuCoin Earn product. They are dropped like any other internal move, but
     # the amount they park has to be tracked for the balance check below - see _validate_balances().
     EarnLocked = {'KuCoin Earn Locked': Decimal('1'), 'KuCoin Earn Redemptions': Decimal('-1')}
