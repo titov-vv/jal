@@ -272,6 +272,10 @@ class ChainFetchers(QObject):
         # protects the first fetch of a list-backed chain would only ever abort it. See CRYPTO_PATH decision #67.
         if location_id == AssetLocation.HL_BLOCKCHAIN:
             return True
+        # Bitcoin has no contracts at all, hence no tokens to tell apart and no list to download: everything a BTC
+        # wallet ever holds is BTC itself. The gate would abort every fetch of it over a cache that can never fill.
+        if location_id == AssetLocation.BTC_BLOCKCHAIN:
+            return True
         lists = self.parent.token_lists
         if not lists.is_empty(location_id):
             return True

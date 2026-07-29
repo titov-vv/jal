@@ -8,7 +8,8 @@ from jal.universal_cache import UniversalCache
 
 # Chains where an address is a hex string and its case carries no meaning (EIP-55 checksum casing is
 # only a checksum). Solana mint addresses and Tron base58check addresses (the 'T...' form) ARE
-# case-sensitive and must be kept verbatim, Bitcoin has no tokens.
+# case-sensitive and must be kept verbatim; Bitcoin has no tokens at all and is a mixed case of its
+# own - see the bech32 rule in normalize_address() below.
 # Hyperliquid belongs here for both of the things it stores as an address: a wallet is an EVM-shaped address, and a
 # token is identified by its HyperCore token id - a hex string as well, with no case meaning either.
 _CASE_INSENSITIVE_CHAINS = [AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN,
@@ -22,6 +23,12 @@ def normalize_address(location_id: int, address: str) -> str:
         return ''
     address = address.strip()
     if location_id in _CASE_INSENSITIVE_CHAINS:
+        address = address.lower()
+    # A bech32 Bitcoin address is valid in either case (BIP173 allows both, mixed case aside) and wallets do show it
+    # uppercase for QR codes, while every API answers in lower case. Storing it as typed would leave an address that
+    # never equals the one the chain reports - and a transfer to it would be read as touching nobody's wallet.
+    # Base58 addresses and extended keys are NOT folded: there case carries meaning.
+    if location_id == AssetLocation.BTC_BLOCKCHAIN and address[:3].lower() == 'bc1':
         address = address.lower()
     return address
 
@@ -125,6 +132,68 @@ def is_solana_address(address: str) -> bool:
         return False
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# A Bitcoin wallet is identified in JAL by one of two things: a single address, or the ACCOUNT-LEVEL EXTENDED PUBLIC
+# KEY of an HD wallet, which stands for all of the wallet's addresses at once (see chain_fetchers/hd_wallet.py). Both
+# forms are validated here, since both are what the user may put into the address field of a wallet account.
+_BECH32_CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+_BECH32_CONSTANTS = (1, 0x2bc830a3)   # BIP173 (SegWit v0, 'bc1q...') and BIP350 (Taproot, 'bc1p...')
+_BTC_PUBKEY_VERSIONS = ('0488b21e', '049d7cb2', '04b24746')   # mainnet xpub, ypub and zpub (SLIP-132) version bytes
+_BTC_ADDRESS_VERSIONS = (0x00, 0x05)  # P2PKH ('1...') and P2SH ('3...') mainnet address prefixes
+
+
+def _bech32_checksum_valid(address: str) -> bool:
+    address = address.lower()
+    position = address.rfind('1')
+    if position < 1 or position + 7 > len(address):
+        return False
+    try:
+        data = [_BECH32_CHARSET.index(x) for x in address[position + 1:]]
+    except ValueError:
+        return False
+    values = [ord(x) >> 5 for x in address[:position]] + [0] + [ord(x) & 31 for x in address[:position]] + data
+    checksum = 1
+    for value in values:
+        top = checksum >> 25
+        checksum = (checksum & 0x1ffffff) << 5 ^ value
+        for i, generator in enumerate((0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3)):
+            checksum ^= generator if (top >> i) & 1 else 0
+    return checksum in _BECH32_CONSTANTS
+
+
+def _is_base58check(address: str, versions: tuple, length: int) -> bool:
+    try:
+        raw = _base58_decode(address)
+    except ValueError:
+        return False
+    if len(raw) != length + 4:
+        return False
+    payload, checksum = raw[:-4], raw[-4:]
+    if sha256(sha256(payload).digest()).digest()[:4] != checksum:
+        return False
+    return payload[0] in versions if length == 21 else payload[:4].hex() in versions
+
+
+# True if the given string is the extended public key of an HD account (xpub/ypub/zpub), checksum included. The
+# prefix says which script type the exporter had in mind, but it is only a hint and is NOT checked here: exporters
+# disagree about it, and the key material is the same BIP32 key whatever the four version bytes say.
+def is_extended_public_key(key: str) -> bool:
+    if not key or not _is_base58check(key, _BTC_PUBKEY_VERSIONS, 78):
+        return False
+    return _base58_decode(key)[45] in (2, 3)   # the 33-byte key that follows the chain code must be a public one
+
+
+# True if the given string is a Bitcoin mainnet address: base58check ('1...' P2PKH, '3...' P2SH) or bech32/bech32m
+# ('bc1...' SegWit). Both forms carry a checksum, so a mistyped address is rejected instead of quietly fetching the
+# empty history of an address nobody owns.
+def is_bitcoin_address(address: str) -> bool:
+    if not address:
+        return False
+    if address.lower().startswith('bc1'):
+        return 14 <= len(address) <= 74 and _bech32_checksum_valid(address)
+    return _is_base58check(address, _BTC_ADDRESS_VERSIONS, 21)
+
+
 # True if the address may belong to the given blockchain. Only the chains that JAL is able to check are checked -
 # an address of any other chain is accepted as it is, so that a missing validator never blocks the user. Validators
 # are added here as the fetcher of each chain is implemented.
@@ -141,6 +210,10 @@ def is_valid_address(location_id: int, address: str) -> bool:
         return is_evm_address(address)
     if location_id == AssetLocation.SOL_BLOCKCHAIN:
         return is_solana_address(address)
+    # A Bitcoin wallet account holds either a single address or the extended public key that stands for the whole
+    # HD account - the fetcher accepts both, so both are valid here.
+    if location_id == AssetLocation.BTC_BLOCKCHAIN:
+        return is_bitcoin_address(address) or is_extended_public_key(address)
     return True
 
 

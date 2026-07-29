@@ -323,7 +323,9 @@ class AccountData(PredefinedList, QObject):
     Credit = 2         # Credit limit for the account
     Country = 3        # Country of the account, stored as countries.id
     Precision = 4      # Number of decimal digits used by the account (default is 2)
-    Address = 5        # On-chain address of a wallet account, in the canonical form of its blockchain
+    Address = 5        # On-chain address of a wallet account, in the canonical form of its blockchain. For a Bitcoin
+                       # wallet it may also hold the account-level EXTENDED PUBLIC KEY of an HD wallet, which stands
+                       # for all of the wallet's addresses at once - see net/chain_fetchers/hd_wallet.py
     Chain = 6          # Blockchain of a wallet account, stored as one of AssetLocation.BLOCKCHAINS
     SyncCursor = 7     # Position of the last completed blockchain fetch, its format is defined by the fetcher
     DepositEnd = 8     # Maturity date of a term deposit box (timestamp)
