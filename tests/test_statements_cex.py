@@ -5,14 +5,14 @@ import pytest
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_quotes, symbol_id_for
 from constants import AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedCategory
-from jal.data_import.statement import JSF, Statement_ImportError
+from jal.data_import.statement import JSF, Statement, Statement_ImportError
 from jal.data_import.broker_statements.kucoin import StatementKuCoin
 from jal.data_import.broker_statements.bitget import StatementBitget
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
-from jal.db.operations import AssetPayment, LedgerTransaction
+from jal.db.operations import AssetPayment, LedgerTransaction, Trade
 from jal.db.symbol import JalSymbol
 from jal.net.downloader import llama_coin_key
 
@@ -168,6 +168,48 @@ def test_kucoin_refuses_an_unknown_operation(kucoin, data_path):
                        JSF.TRANSFERS: [], JSF.SWAPS: [], JSF.ASSET_PAYMENTS: []}
     with pytest.raises(Statement_ImportError, match="Unsupported KuCoin operation"):
         statement._load_statement()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# An exchange that splits an order reports every fill of it under the SAME order number, in the same second and -
+# when the order walked one price level - at the same price and the same size. Those fills are separate movements of
+# the coin, and the generic duplicate check of create_operation() used to ask whether an identical row exists
+# ANYWHERE, so it kept the first fill of such an order and dropped the rest. The position was then short by
+# everything it dropped, and the first withdrawal that spent the coins failed for lack of an amount that was really
+# there. Bounded to what the database held BEFORE the import started, the check can't see the fills this import has
+# just written.
+
+# One fill of an order that KuCoin split - the figures are those of the order that exposed this, which walked a
+# single price level and so reports 15 fills that differ in nothing a trade stores.
+def _fill(oid: int) -> dict:
+    return {"id": oid, "number": 'ORD-SPLIT', "timestamp": d2t(250115), "settlement": d2t(250115),
+            "account": 1, "symbol": 1, "quantity": Decimal('0.3101'), "price": Decimal('0.862'),
+            "fee": Decimal('0.0002673062')}
+
+
+@pytest.fixture
+def split_order(prepare_db):
+    JalAccountCreator(currency_id=3, number='', name='KuCoin.1', investing=1, organization=1,
+                      account_type=PredefinedAccountType.CEX).commit()
+    create_assets([('USDT', 'Tether USD', '', 3, PredefinedAsset.Crypto, 0)])     # ID = 4
+    statement = Statement()
+    statement.set_mapped_id(JSF.ACCOUNTS, 1, 1)
+    statement.set_mapped_id(JSF.SYMBOLS, 1, symbol_id_for(4))
+    yield statement
+
+
+def test_every_fill_of_a_split_order_is_stored(split_order):
+    split_order._import_trades([_fill(1), _fill(2), _fill(3)])
+
+    assert _table_count('trades') == 3
+    assert sum((Trade(oid).qty() for oid in range(1, 4)), Decimal('0')) == Decimal('0.9303')
+
+
+def test_a_reimported_statement_still_duplicates_no_trade(split_order):
+    split_order._import_trades([_fill(1), _fill(2)])
+    split_order._import_trades([_fill(1), _fill(2)])
+
+    assert _table_count('trades') == 2
 
 
 # ----------------------------------------------------------------------------------------------------------------------

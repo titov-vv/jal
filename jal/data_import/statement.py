@@ -16,7 +16,7 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
-from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Transfer
+from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Trade, Transfer
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.token_select import SelectTokenActionDialog
@@ -753,6 +753,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         return stored.settle_with(operation)
 
     def _import_trades(self, trades):
+        # A trade oder can be filled in several identical trades (depending on exchange), so the duplicate check
+        # of create_operation() is bounded to what the database held BEFORE this import started.
+        duplicate_before = Trade.last_oid()
         for trade in trades:
             operation = deepcopy(trade)
             operation['account_id'] = self.mapped_id(JSF.ACCOUNTS, operation.pop('account'))
@@ -769,7 +772,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 if oid:
                     LedgerTransaction.get_operation(LedgerTransaction.Trade, oid).delete()
                 continue
-            LedgerTransaction.create_new(LedgerTransaction.Trade, operation)
+            LedgerTransaction.create_new(LedgerTransaction.Trade, operation, duplicate_before=duplicate_before)
 
     def _import_swaps(self, swaps):
         for swap in swaps:

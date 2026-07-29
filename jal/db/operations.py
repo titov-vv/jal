@@ -94,19 +94,18 @@ class LedgerTransaction(JalDB):
             raise ValueError(f"An attempt to select unknown operation type: {operation_type}")
 
     # 'duplicate_before' bounds the "is this operation stored already" check to operations stored earlier than it -
-    # see JalDB.locate_operation(). Only a transfer takes it today, because its importer is the only one that computes
-    # the boundary of the running import; another operation type adopts it by threading the same parameter through
-    # its constructor.
+    # see JalDB.locate_operation(). A trade and a transfer take it, because their importers compute the boundary of
+    # the running import; another operation type adopts it by threading the same parameter through its constructor.
     @staticmethod
     def create_new(operation_type, operation_data, duplicate_before=None):
-        assert duplicate_before is None or operation_type == LedgerTransaction.Transfer, \
-            "Bounded duplicate check is implemented for transfers only"
+        assert duplicate_before is None or operation_type in (LedgerTransaction.Trade, LedgerTransaction.Transfer), \
+            "Bounded duplicate check is implemented for trades and transfers only"
         if operation_type == LedgerTransaction.IncomeSpending:
             return IncomeSpending(operation_data)
         elif operation_type == LedgerTransaction.AssetPayment:
             return AssetPayment(operation_data)
         elif operation_type == LedgerTransaction.Trade:
-            return Trade(operation_data)
+            return Trade(operation_data, duplicate_before=duplicate_before)
         elif operation_type == LedgerTransaction.Transfer:
             return Transfer(operation_data, Transfer.Outgoing, duplicate_before=duplicate_before)
         elif operation_type == LedgerTransaction.CorporateAction:
@@ -119,6 +118,14 @@ class LedgerTransaction(JalDB):
             return Bridge(operation_data, Bridge.Outgoing)
         else:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
+
+    # The highest id in the table of this operation type, i.e. the last operation of the kind that was stored
+    # (0 when there is none). An importer takes it before it writes anything to bound the duplicate check of
+    # create_operation() to what the database held before the import started - see JalDB.locate_operation().
+    @classmethod
+    def last_oid(cls) -> int:
+        oid = cls._read(f"SELECT MAX(oid) FROM {cls._db_table}")
+        return int(oid) if oid else 0
 
     # Deletes operation from database
     def delete(self) -> None:
@@ -796,8 +803,8 @@ class Trade(LedgerTransaction):
 
     # operation_data is either an integer to select operation from database or a dict with operation data that is used
     # to create a new operation in database and then select it
-    def __init__(self, operation_data=None, opart=None):
-        super().__init__(operation_data)
+    def __init__(self, operation_data=None, opart=None, duplicate_before=None):
+        super().__init__(operation_data, duplicate_before=duplicate_before)
         self._otype = LedgerTransaction.Trade
         self._opart = opart
         self._view_rows = 2
@@ -1478,12 +1485,6 @@ class Transfer(LedgerTransaction):
             self.update_fee(data['fee'], data.get('fee_account', 0), data.get('fee_symbol_id'))
         logging.info(self.tr("Transfer settled by transaction hash: ") + f"{self._number}")
         return True
-
-    # The highest transfer id in the database, i.e. the last transfer stored (0 when there is none)
-    @classmethod
-    def last_oid(cls) -> int:
-        oid = cls._read("SELECT MAX(oid) FROM transfers")
-        return int(oid) if oid else 0
 
     # Every transfer leg that is still unsettled as of 'timestamp'.
     #
