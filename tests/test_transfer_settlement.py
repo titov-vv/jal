@@ -666,3 +666,132 @@ def test_an_address_paid_twice_by_one_transaction_is_left_for_the_user(wallets):
 
     assert TransferSettlement().settle_by_address() == 0
     assert len(_stored()) == 3
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Assigning the missing end by hand.
+#
+# Everything above settles a leg against something recorded. This is what is left when nothing was: a centralized
+# exchange whose statement names neither an address nor a transaction hash leaves the wallet on the other side
+# holding the only record the movement will ever have, and the account at the missing end is then the user's
+# assertion rather than anything that can be deduced. What is tested here is what such an assertion is NOT allowed
+# to do - and that what it carries across is the cost basis, which is the one thing a settlement cannot invent.
+
+def test_an_assignment_fills_the_end_that_was_missing(wallets):
+    transfer = _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)
+
+    assert TransferSettlement().assign_end(transfer.id(), WALLET_B, d2t(210104), Decimal('0')) == ''
+
+    rows = _stored()
+    assert len(rows) == 1                                     # the record is filled in, not merged into another
+    assert int(rows[0]['oid']) == transfer.id()
+    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
+    assert int(rows[0]['deposit_timestamp']) == d2t(210104)
+    assert Decimal(rows[0]['withdrawal']) == Decimal('400')   # what the leg said about the movement is untouched
+    assert rows[0]['counterparty_address'] == ''             # ... and the end it named is an account now
+
+
+def test_an_assignment_names_the_account_an_arrival_came_from(funded):
+    transfer = _transfer(None, WALLET_B, 400, d2t(210104))
+    Ledger().rebuild(from_timestamp=0)     # the lots the assigned account holds are what the ledger has booked
+
+    assert TransferSettlement().assign_end(transfer.id(), WALLET_A, d2t(210103), Decimal('0')) == ''
+
+    rows = _stored()
+    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
+    assert int(rows[0]['withdrawal_timestamp']) == d2t(210103)
+
+
+def test_an_account_cannot_be_assigned_as_its_own_counterpart(wallets):
+    transfer = _transfer(WALLET_A, None, 400, d2t(210103))
+
+    assert TransferSettlement().assign_end(transfer.id(), WALLET_A, d2t(210103), Decimal('0')) != ''
+    assert _stored()[0]['deposit_account'] == ''
+
+
+def test_an_assignment_that_arrives_before_it_departs_is_refused(funded):
+    transfer = _transfer(None, WALLET_B, 400, d2t(210103))
+
+    assert TransferSettlement().assign_end(transfer.id(), WALLET_A, d2t(210104), Decimal('0')) != ''
+    assert _stored()[0]['withdrawal_account'] == ''
+
+
+# The refusal that has no counterpart among the pairing rules, and the reason an assignment is checked at all: an
+# account that never held the asset doesn't merely put the money in the wrong place, it raises inside the rebuild -
+# which then stops there, taking every later operation out of every report until the assignment is undone.
+def test_an_account_that_could_not_have_sent_it_is_refused(funded):
+    transfer = _transfer(None, WALLET_B, 400, d2t(210103))
+    Ledger().rebuild(from_timestamp=0)
+
+    refusal = TransferSettlement().assign_end(transfer.id(), WALLET_C, d2t(210103), Decimal('0'))
+
+    assert 'short' in refusal
+    assert _stored()[0]['withdrawal_account'] == ''
+
+
+def test_a_leg_that_is_no_longer_pending_is_not_assigned(wallets):
+    transfer = _transfer(WALLET_A, WALLET_B, 400, d2t(210103))
+
+    assert TransferSettlement().assign_end(transfer.id(), WALLET_B, d2t(210103), Decimal('0')) != ''
+
+
+# The whole point of asking for a number: the two accounts are kept in different currencies, so what the asset cost
+# has to be restated in the currency it arrives in, and 'deposit' is where processAssetTransfer() reads it from.
+# Without it the lots open at zero and everything the asset is ever sold for counts as gain.
+def test_an_assignment_carries_the_cost_basis_across_currencies(funded):
+    transfer = _transfer(WALLET_A, None, 400, d2t(210103))   # WALLET_A is kept in USD, WALLET_C in EUR
+
+    assert TransferSettlement().assign_end(transfer.id(), WALLET_C, d2t(210103), Decimal('200')) == ''
+    Ledger().rebuild(from_timestamp=0)
+
+    assert JalAccount(WALLET_C).get_asset_amount(d2t(210201), USDT) == Decimal('400')
+    lots = JalAccount(WALLET_C).open_trades_list(JalAsset(USDT))
+    assert len(lots) == 1 and lots[0].open_price(adjusted=True) == Decimal('0.5')   # 200 EUR for the 400 that arrived
+
+
+def test_one_currency_at_both_ends_ignores_the_cost_basis(funded):
+    transfer = _transfer(WALLET_A, None, 400, d2t(210103))   # both wallets are kept in USD
+
+    assert TransferSettlement().assign_end(transfer.id(), WALLET_B, d2t(210103), Decimal('0')) == ''
+    Ledger().rebuild(from_timestamp=0)
+
+    lots = JalAccount(WALLET_B).open_trades_list(JalAsset(USDT))
+    assert len(lots) == 1 and lots[0].open_price(adjusted=True) == Decimal('1')     # the basis travelled with it
+
+
+# A money transfer converts instead of carrying a basis, so each end states its own amount and the one being filled
+# in is the one that was missing - 'withdrawal' when it is the source, not the 'deposit' an asset transfer uses.
+def test_a_money_transfer_takes_the_amount_at_the_end_being_filled_in(wallets):
+    transfer = _transfer(None, WALLET_C, 400, d2t(210103), asset_id=None, number='', deposit=400)
+
+    assert TransferSettlement().assign_end(transfer.id(), WALLET_A, d2t(210103), Decimal('500')) == ''
+
+    rows = _stored()
+    assert Decimal(rows[0]['withdrawal']) == Decimal('500')   # what left the source, in the currency of the source
+    assert Decimal(rows[0]['deposit']) == Decimal('400')      # ... and what arrived is what it already said
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The account an address names, offered rather than acted on
+
+def test_the_account_an_address_names_is_offered_for_a_leg_it_cannot_settle(wallets):
+    other = _arb_wallet(currency=EUR)      # kept in another currency than WALLET_A, so settle_by_address won't act
+    transfer = _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)
+
+    assert TransferSettlement().settle_by_address() == 0      # nothing is written: the cost basis is not deducible
+    assert TransferSettlement().address_suggestion(transfer.id()) == other.id()   # but the account is known
+
+
+def test_no_account_is_suggested_for_a_leg_that_names_no_address(wallets):
+    transfer = _transfer(WALLET_A, None, 400, d2t(210103))
+
+    assert TransferSettlement().address_suggestion(transfer.id()) == 0
+
+
+# The lots an account holds are read from what the ledger has already booked. When it hasn't been rebuilt yet they
+# are simply not there - and an account whose lots were never calculated must not be mistaken for one that never
+# held anything, or a correct assignment would be refused for the sole reason that a rebuild is pending.
+def test_an_unbuilt_ledger_refuses_nothing(funded):
+    transfer = _transfer(None, WALLET_B, 400, d2t(210104))    # no rebuild: 'trades_opened' holds nothing at all
+
+    assert TransferSettlement().assign_end(transfer.id(), WALLET_A, d2t(210103), Decimal('0')) == ''

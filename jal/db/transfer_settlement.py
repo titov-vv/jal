@@ -2,6 +2,7 @@ import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.db.account import JalAccount
+from jal.db.cost_basis import carried_basis
 from jal.db.db import JalDB
 from jal.db.helpers import remove_exponent
 from jal.db.symbol import JalSymbol
@@ -127,11 +128,15 @@ class TransferSettlement(JalDB):
             logging.info(self.tr("Transaction moved the asset to that address more than once, settle it by hand: ")
                          + f"{leg['number']}")
             return False
-        # A counterparty kept in another currency is left alone, exactly as ChainFetcher._counterparty_account leaves
-        # it: an asset transfer between two currencies takes its destination cost basis from a 'deposit' no fetcher
-        # can know, so it would open the arrived lots at zero. Such a pair IS settled when both records of it exist
-        # (the hash pass says so, and the zero is then visible in every report) - but that is a movement JAL has seen
-        # from both sides, whereas here it would be inventing the far leg from an address alone.
+        # A counterparty kept in another currency is not settled HERE, exactly as ChainFetcher._counterparty_account
+        # leaves it: an asset transfer between two currencies takes its destination cost basis from a 'deposit' no
+        # fetcher can know, so settling it silently would open the arrived lots at zero - which is what the hash pass
+        # is left doing when both records of a movement exist (see the FIXME in _merge), and what puts a wrong basis
+        # into the ledger where nothing points at it again.
+        #
+        # It is no longer a dead end, though: address_suggestion() offers the very same account in the unsettled
+        # transfers report, where the user confirms it together with the cost basis. What stays true is that nothing
+        # writes a cost basis on its own - the account an address resolves to is a fact, the basis is not.
         if counterparty.currency() != JalAccount(known_account).currency():
             return False
         self._fill_end(leg, counterparty.id(), sending)
@@ -176,6 +181,139 @@ class TransferSettlement(JalDB):
                      + (self._account_name(int(leg['withdrawal_account'])) + " -> " + self._account_name(account_id)
                         if sending else
                         self._account_name(account_id) + " -> " + self._account_name(int(leg['deposit_account']))))
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # The account the address a leg recorded resolves to, or 0 when nothing of the user's holds it.
+    #
+    # This is what settle_by_address() acts on, asked without acting: it answers for the legs that pass above as well
+    # as for those it has to leave alone (a counterparty kept in another currency), which is what lets the unsettled
+    # transfers report show an account the user only has to confirm instead of an address they have to recognize.
+    def address_suggestion(self, oid: int) -> int:
+        leg = self._read("SELECT oid, withdrawal_account, deposit_account, counterparty_address, symbol_id "
+                         "FROM transfers WHERE oid=:oid "
+                         "AND (withdrawal_account IS NULL OR deposit_account IS NULL)", [(":oid", oid)], named=True)
+        if leg is None or not leg['counterparty_address']:
+            return 0
+        known_account = int(leg['withdrawal_account'] if leg['deposit_account'] == '' else leg['deposit_account'])
+        counterparty = JalAccount.wallet_at(self._chain_of(leg, known_account), leg['counterparty_address'])
+        if counterparty is None or counterparty.id() == known_account:
+            return 0
+        return counterparty.id()
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Fills in the end a leg doesn't know, from what the user knows about it. Returns '' when it did, and otherwise
+    # why it did not.
+    #
+    # Everything above settles a leg against EVIDENCE - the transaction it moved in, the address it paid, the report
+    # of whoever routed it - or against the other record of the same movement. This is what is left when there is no
+    # such record and there never will be: a centralized exchange whose statement names neither the address it sent
+    # to nor the transaction it sent in states nothing that can be matched to anything, so the wallet on the other
+    # side holds the only record the movement will ever have. The account at the missing end is then not something to
+    # be found but something only the user knows, and the whole act is their assertion rather than a deduction.
+    #
+    # Unlike a merge this deletes nothing. The row keeps everything it said and gains only the end it was missing, so
+    # an assignment can be undone by clearing that end again - which matters, because the counterpart may still be
+    # imported later.
+    def assign_end(self, oid: int, account_id: int, timestamp: int, amount: Decimal) -> str:
+        refusal = self.refusal_for_assignment(oid, account_id, timestamp)
+        if refusal:
+            return refusal
+        leg, sending = self._pending_record(oid)
+        # The address named the end that had no account; that end is an account now, so it has nothing left to name
+        if sending:
+            self._exec("UPDATE transfers SET deposit_account=:account, deposit_timestamp=:timestamp, "
+                       "deposit=:amount, counterparty_address=NULL WHERE oid=:oid",
+                       [(":account", account_id), (":timestamp", timestamp), (":amount", amount), (":oid", oid)],
+                       commit=True)
+        else:
+            self._exec(f"UPDATE transfers SET withdrawal_account=:account, withdrawal_timestamp=:timestamp, "
+                       f"{self._amount_field(leg)}=:amount, counterparty_address=NULL WHERE oid=:oid",
+                       [(":account", account_id), (":timestamp", timestamp), (":amount", amount), (":oid", oid)],
+                       commit=True)
+        known_account = int(leg['withdrawal_account'] if sending else leg['deposit_account'])
+        logging.info(self.tr("Transfer end assigned by hand: ")
+                     + f"{remove_exponent(Decimal(leg['withdrawal']))} "
+                     + (self._account_name(known_account) + " -> " + self._account_name(account_id) if sending else
+                        self._account_name(account_id) + " -> " + self._account_name(known_account)))
+        return ''
+
+    # Why the given account cannot be the end this leg is missing, or '' when it can - the same answer assign_end()
+    # gives, asked before anything is written, so that a chooser can say what an assignment would do instead of
+    # letting the user find out by trying it.
+    def refusal_for_assignment(self, oid: int, account_id: int, timestamp: int) -> str:
+        leg, sending = self._pending_record(oid)
+        if leg is None:
+            return self.tr("one of the legs is no longer pending")
+        if not account_id:
+            return self.tr("no account is chosen for the end that is missing")
+        known_account = int(leg['withdrawal_account'] if sending else leg['deposit_account'])
+        if account_id == known_account:
+            return self.tr("both legs are on the same account")
+        departure = int(leg['withdrawal_timestamp']) if sending else timestamp
+        arrival = timestamp if sending else int(leg['deposit_timestamp'])
+        if departure > arrival:
+            return self.tr("the arrival precedes the departure")
+        if sending:
+            return ''   # the account that sends is the one already recorded, and the ledger has already taken it out
+        return self._refusal_to_supply(leg, account_id, departure)
+
+    # Why the account being named as the SOURCE cannot have sent what arrived, or '' when it could have.
+    #
+    # This check has no counterpart among the pairing refusals, and it is the reason an assignment is checked at all:
+    # pairing two legs joins two accounts that each already hold what they say they hold, while an assignment names an
+    # account that may never have held the asset. Recording that doesn't merely put the money in the wrong place -
+    # Transfer.processAssetTransfer() raises on it and the rebuild STOPS there, so every operation after it vanishes
+    # from every report until the assignment is undone. One read here keeps that out of the database.
+    def _refusal_to_supply(self, leg: dict, account_id: int, timestamp: int) -> str:
+        if not leg['symbol_id']:
+            return ''   # a money transfer takes credit instead of failing, exactly as any other withdrawal does
+        if not self._lots_are_calculated_at(timestamp):
+            return ''   # nothing to check against - see below
+        asset = JalSymbol(leg['symbol_id']).asset()
+        account = JalAccount(account_id)
+        # The account's own currency as the target: what is asked here is the quantity, and a rate that isn't needed
+        # shouldn't be able to make the answer unavailable
+        short = carried_basis(account, asset, Decimal(leg['withdrawal']), timestamp, account.currency())['short']
+        if short > Decimal('0'):
+            return self.tr("the account didn't hold enough of the asset at that moment, it is short of ") \
+                + f"{remove_exponent(short)} {asset.symbol()}"
+        return ''
+
+    # Whether the open lots of that moment have been calculated at all.
+    #
+    # They are read from what the ledger has already booked, so an operation it has not reached yet leaves them
+    # incomplete - and an account whose lots were never calculated looks exactly like one that never held anything.
+    # Refusing an assignment on that would be refusing it on no evidence, so the check stands down instead and the
+    # rebuild that follows the assignment is what reports the trouble, if there is any.
+    def _lots_are_calculated_at(self, timestamp: int) -> bool:
+        frontier = self._read("SELECT ledger_frontier FROM frontier")
+        frontier = int(frontier) if frontier else 0
+        unprocessed = self._read("SELECT COUNT(*) FROM operation_sequence "
+                                 "WHERE timestamp>:frontier AND timestamp<=:timestamp",
+                                 [(":frontier", frontier), (":timestamp", timestamp)])
+        return not int(unprocessed)
+
+    # One transfer record while it is still pending, as (record, sending) - 'sending' telling which end it knows:
+    # True when the money left an account and where it went is unknown, False when it arrived and where from is.
+    # (None, False) when the leg isn't pending any more, whatever it was when it was listed.
+    def _pending_record(self, oid: int):
+        leg = self._read("SELECT oid, withdrawal_timestamp, withdrawal_account, withdrawal, deposit_timestamp, "
+                         "deposit_account, deposit, number, counterparty_address, symbol_id, note FROM transfers "
+                         "WHERE oid=:oid AND (withdrawal_account IS NULL OR deposit_account IS NULL)",
+                         [(":oid", oid)], named=True)
+        if leg is None:
+            return None, False
+        return leg, leg['deposit_account'] == ''    # _read() gives '' for a SQL NULL - the end with no account
+
+    # The field the number that comes with an assignment belongs in, when the end being filled in is the SOURCE.
+    #
+    # An asset transfer moves one quantity, stated once in 'withdrawal', and uses 'deposit' for something else
+    # entirely - the cost basis the arrived asset opens at, which only a cross-currency pair reads (see
+    # Transfer.processAssetTransfer). A money transfer converts instead, so each end states its own amount and the
+    # one that was missing is the one being supplied.
+    @staticmethod
+    def _amount_field(leg: dict) -> str:
+        return "deposit" if leg['symbol_id'] else "withdrawal"
 
     # ------------------------------------------------------------------------------------------------------------------
     # The (sending, arriving) pair the records of one movement form, or None if they don't form one unambiguously.
