@@ -60,11 +60,21 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.AssignButton.setEnabled(False)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
+    # The list is a read of the 'transfers' table, so everything that writes one leaves it stale - not only the
+    # settlements started from here, but an import that brings in the missing counterpart, an operation edited in the
+    # main window, a transfer deleted. What all of those have in common is the ledger rebuild that follows them, and
+    # this is what the main window calls on every open report when it happens (MdiWidget.refresh).
+    def refresh(self):
+        self.updateReport(reload=True)
+        self.updateAssignButton()
+
+    # 'reload' is for the case the parameters below can't express: the list is the same list, shown for the same date
+    # in the same currency, and what changed is the data under it (see _settled)
     @Slot()
-    def updateReport(self):
+    def updateReport(self, reload: bool = False):
         self.ui.ReportTreeView.model().updateView(currency_id=self.ui.ReportCurrencyCombo.selected_id,
                                                   date=self.ui.ReportDate.date(),
-                                                  with_basis_gaps=self.ui.BasisGapsCheck.isChecked())
+                                                  with_basis_gaps=self.ui.BasisGapsCheck.isChecked(), update=reload)
 
     # Opens the two-panel matcher. This report is the worklist the matcher works through, which is why it is opened
     # from here - settling is a batch job rather than something done to one operation at a time.
@@ -91,6 +101,12 @@ class UnsettledTransfersReportWindow(MdiWidget):
 
     @Slot()
     def onSelectionChanged(self, _selected, _deselected):
+        self.updateAssignButton()
+
+    # Whether there is a row for the button to act on. Called on a reload as well as on a selection: resetting a
+    # model drops the selection WITHOUT emitting selectionChanged, so after a reload the button would otherwise stay
+    # enabled over the row that was just settled and is no longer there.
+    def updateAssignButton(self):
         self.ui.AssignButton.setEnabled(bool(self._pending_oid(self.ui.ReportTreeView.currentIndex())))
 
     @Slot(QPoint)
@@ -117,9 +133,14 @@ class UnsettledTransfersReportWindow(MdiWidget):
         dialog.exec()
         self._settled(dialog.changed)
 
+    # What a settlement leaves behind. The leg it settled is not pending any more, so the row that offered it has to
+    # go: left standing it is a worklist entry for work already done, and every action on it would be refused (which
+    # is a message about the report being stale, not about the transfer).
     def _settled(self, changed: bool):
         if changed:
             # Settling writes real operations, so the ledger has to catch up before the figures shown are true again.
             # Reports is constructed by the main window, which owns the Ledger - the same one every editor uses.
             self._parent.parent.ledger.rebuild()
-            self.updateReport()
+            # Refreshed here rather than left to the rebuild's own signal: that route runs through the main window,
+            # and this report is opened in tests and reachable in ways that don't involve one.
+            self.refresh()

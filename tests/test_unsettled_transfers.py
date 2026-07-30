@@ -8,11 +8,13 @@ from PySide6.QtCore import Qt, QDate, QModelIndex
 from PySide6.QtWidgets import QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_assets, create_quotes, symbol_id_for
-from constants import PredefinedAsset, PredefinedAccountType, AssetLocation
+from tests.helpers import d2t, create_assets, create_actions, create_quotes, create_trades, symbol_id_for
+from constants import PredefinedAsset, PredefinedAccountType, PredefinedCategory, AssetLocation
 from jal.db.account import JalAccountCreator
 from jal.db.operations import LedgerTransaction, Transfer
+from jal.db.ledger import Ledger
 from jal.db.pending_transfers_model import PendingTransfersModel
+from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
 from jal.reports.reports import Reports
 from jal.reports.unsettled_transfers import UnsettledTransfersReportWindow
@@ -314,6 +316,21 @@ def test_transfers_without_a_cost_basis_are_bounded_by_the_date_asked_about(wall
 # ----------------------------------------------------------------------------------------------------------------------
 # The report window's actions
 
+
+# Settling rebuilds the ledger through the window the report was opened from - the main window owns the one every
+# editor uses, and here it is only that
+class _MainWindowStub:
+    def __init__(self):
+        self.ledger = Ledger()
+
+
+# Settling is followed by a ledger rebuild, which meets the operation it just wrote - so the account the asset leaves
+# has to actually hold it, as it would in any database where these legs came from a real movement
+def _funded_wallet_a():
+    create_actions([(d2t(210101), WALLET_A, 1, [(PredefinedCategory.StartingBalance, 10000.0)])])
+    create_trades(WALLET_A, [(d2t(210102), d2t(210102), USDT, 1000.0, 1.0, 0.0)])
+
+
 # Assigning acts on the selected row, and the rows listed for a missing cost basis are settled transfers that no
 # settlement action applies to - so the button follows what is actually selected rather than clicking into nothing.
 def test_the_assign_button_follows_the_selection(wallets):
@@ -329,3 +346,56 @@ def test_the_assign_button_follows_the_selection(wallets):
     assert window.ui.AssignButton.isEnabled() is True         # the leg waiting for an account
     view.setCurrentIndex(view.model().index(1, 0, QModelIndex()))
     assert window.ui.AssignButton.isEnabled() is False        # the settled one that only lacks a cost basis
+
+
+# What a settlement leaves behind. The list is a worklist, so a leg that has just been settled has to leave it - and
+# the report is shown for the same date in the same currency afterwards, which is exactly the case a model that
+# reloads only when its display parameters change does not notice. The row stayed, listing work already done, and
+# every action offered on it would be refused.
+def test_a_settled_leg_leaves_the_list(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    window = UnsettledTransfersReportWindow(Reports(_MainWindowStub(), None))
+    view = window.ui.ReportTreeView
+    view.setCurrentIndex(view.model().index(0, 0, QModelIndex()))
+    assert _rows(view.model()) == 1
+    assert window.ui.AssignButton.isEnabled() is True
+
+    oid = view.model().transfer_oid(view.currentIndex())
+    assert TransferSettlement().assign_end(oid, WALLET_B, d2t(210103), Decimal('0')) == ''
+    window._settled(True)
+
+    assert _rows(view.model()) == 0
+    # ... and the button doesn't stay enabled over the row that is gone: resetting a model drops the selection
+    # without emitting selectionChanged, so nothing else would have told it
+    assert window.ui.AssignButton.isEnabled() is False
+
+
+# The same reload, for the other way a leg is settled
+def test_matching_two_legs_empties_the_list(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(None, WALLET_B, 400, d2t(210103))
+    window = UnsettledTransfersReportWindow(Reports(_MainWindowStub(), None))
+    assert _rows(window.ui.ReportTreeView.model()) == 2
+
+    legs = {leg['opart']: leg['oid'] for leg in Transfer.pending_legs()}
+    assert TransferSettlement().settle_linked(legs[Transfer.Outgoing], legs[Transfer.Incoming]) == ''
+    window._settled(True)
+
+    assert _rows(window.ui.ReportTreeView.model()) == 0
+
+
+# Legs are also settled where this report isn't looking - an import brings in the counterpart, an operation is edited
+# or deleted in the main window. All of it ends in a ledger rebuild, on which the main window refreshes every report
+# it has open, and this one has to be one of them (MdiWidget.refresh() is a no-op until a window overrides it).
+def test_the_report_refreshes_on_a_change_made_elsewhere(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    window = UnsettledTransfersReportWindow(Reports(_MainWindowStub(), None))
+    assert _rows(window.ui.ReportTreeView.model()) == 1
+
+    assert TransferSettlement().assign_end(Transfer.pending_legs()[0]['oid'], WALLET_B, d2t(210103), Decimal('0')) == ''
+    window.refresh()             # what the main window calls when the ledger is rebuilt
+
+    assert _rows(window.ui.ReportTreeView.model()) == 0

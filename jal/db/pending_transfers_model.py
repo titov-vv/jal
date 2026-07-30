@@ -160,8 +160,9 @@ class PendingTransfersModel(ReportTreeModel):
                                      [self.fieldIndex('timestamp'), self.fieldIndex('qty')])
         super().configureView()
 
-    def updateView(self, currency_id, date, with_basis_gaps: bool = False):
-        update = False
+    # Reloads the list when what it is shown for has changed. 'update' asks for the reload anyway: settling a leg
+    # changes the DATA under parameters that stayed exactly the same, and without it the settled row is still listed.
+    def updateView(self, currency_id, date, with_basis_gaps: bool = False, update: bool = False):
         if self._currency != currency_id:
             self._currency = currency_id
             self._currency_name = JalAsset(currency_id).symbol()
