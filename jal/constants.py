@@ -556,6 +556,11 @@ class CustomColor:
     LightGreen = QColor(127, 255, 127)
     LightRed = QColor(255, 127, 127)
     LightYellow = QColor(255, 255, 200)
+    # Row backgrounds that tell apart the kinds of row a list holds. They are pale on purpose: they group a list at
+    # a glance without competing with the text on top of them or with the selection highlight.
+    PaleYellow = QColor(255, 250, 220)
+    PaleBlue = QColor(225, 240, 255)
+    PaleViolet = QColor(240, 232, 250)
 
 
 class AssetTypeComboBox(QComboBox):

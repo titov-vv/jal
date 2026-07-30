@@ -80,6 +80,16 @@
        <widget class="CurrencyComboBox" name="ReportCurrencyCombo"/>
       </item>
       <item row="0" column="3">
+       <widget class="QCheckBox" name="BasisGapsCheck">
+        <property name="toolTip">
+         <string>Also list settled transfers whose asset arrived with no cost basis</string>
+        </property>
+        <property name="text">
+         <string>Without cost basis</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
        <spacer name="ReportFrameSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -92,7 +102,17 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="4">
+      <item row="0" column="5">
+       <widget class="QPushButton" name="AssignButton">
+        <property name="toolTip">
+         <string>Name the account at the end a leg doesn't know</string>
+        </property>
+        <property name="text">
+         <string>Assign...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
        <widget class="QPushButton" name="MatchButton">
         <property name="toolTip">
          <string>Pair a leg that was sent with the arrival it belongs to</string>
@@ -102,7 +122,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="5">
+      <item row="0" column="7">
        <widget class="QPushButton" name="SaveButton">
         <property name="text">
          <string>Save...</string>

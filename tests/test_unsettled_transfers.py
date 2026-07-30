@@ -4,7 +4,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from decimal import Decimal
 
 import pytest
-from PySide6.QtCore import QDate, QModelIndex
+from PySide6.QtCore import Qt, QDate, QModelIndex
 from PySide6.QtWidgets import QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db
@@ -38,11 +38,12 @@ def wallets(prepare_db):
     yield
 
 
-def _transfer(from_account, to_account, amount, timestamp, asset_id=USDT, deposit=None, number=''):
+def _transfer(from_account, to_account, amount, timestamp, asset_id=USDT, deposit=None, number='', address=None):
     deposit = amount if deposit is None else deposit
     data = {'withdrawal_timestamp': timestamp, 'withdrawal_account': from_account, 'withdrawal': str(amount),
             'deposit_timestamp': timestamp, 'deposit_account': to_account, 'deposit': str(deposit),
-            'number': number, 'symbol_id': symbol_id_for(asset_id) if asset_id else None}
+            'number': number, 'counterparty_address': address,
+            'symbol_id': symbol_id_for(asset_id) if asset_id else None}
     return LedgerTransaction.create_new(LedgerTransaction.Transfer, data)
 
 
@@ -94,11 +95,12 @@ def test_pending_legs_take_the_quantity_from_the_right_side(wallets):
 # ----------------------------------------------------------------------------------------------------------------------
 # The report itself
 
-def _model(currency_id=USD):
+def _model(currency_id=USD, with_basis_gaps=False):
     view = TreeViewWithFooter(QWidget())
     model = PendingTransfersModel(view)
     view.setModel(model)
-    model.updateView(currency_id=currency_id, date=QDate.fromString('01/03/2021', 'dd/MM/yyyy'))
+    model.updateView(currency_id=currency_id, date=QDate.fromString('01/03/2021', 'dd/MM/yyyy'),
+                     with_basis_gaps=with_basis_gaps)
     return model
 
 
@@ -200,3 +202,130 @@ def test_missing_index_is_invalid_not_none(wallets, tmp_path):
     report.output_model("Unsettled transfers", model)
     report.save()
     assert (tmp_path / 'unsettled.xlsx').exists()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The list holds rows that are settled in different ways, and each says which kind it is - the report is read as the
+# few groups it is (each carrying its own background) rather than as one undifferentiated worklist.
+
+EUR_ADDRESS = '0x' + '3' * 40
+
+
+def _eur_wallet(name='EUR wallet', address=EUR_ADDRESS):
+    return JalAccountCreator(currency_id=EUR, number='', name=name, investing=1, organization=1,
+                             account_type=PredefinedAccountType.Wallet, address=address,
+                             chain=AssetLocation.ARB_BLOCKCHAIN).commit()
+
+
+def _background(model, row):
+    return model.data(model.index(row, 0, QModelIndex()), Qt.BackgroundRole).color()
+
+
+def test_each_kind_of_row_says_which_it_is(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(None, WALLET_B, 150, d2t(210104))
+
+    model = _model()
+
+    assert model.transfer_kind(model.index(0, 0, QModelIndex())) == PendingTransfersModel.SENT
+    assert model.transfer_kind(model.index(1, 0, QModelIndex())) == PendingTransfersModel.ARRIVED
+    assert _background(model, 0) != _background(model, 1)
+
+
+# The address of the end that has no account is the only exact thing known about it, and what an assignment is made
+# against - so it is in the row rather than only in a tooltip.
+def test_the_address_a_leg_names_is_shown(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), address=EUR_ADDRESS)
+
+    assert _row(_model(), 0, 'address') == EUR_ADDRESS
+
+
+# An address that resolves to an account of the user's own turns the row from a question into a confirmation. It
+# resolves here even where settlement refuses to act on it by itself - the two accounts below are kept in different
+# currencies, so what the asset cost has to be restated and only the user can state it.
+def test_the_account_an_address_names_is_offered_in_the_row(wallets):
+    wallet = _eur_wallet()
+    _transfer(WALLET_A, None, 400, d2t(210103), address=EUR_ADDRESS)
+
+    assert _row(_model(), 0, 'suggestion') == wallet.name()
+
+
+def test_a_leg_that_names_no_address_suggests_nothing(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+
+    assert _row(_model(), 0, 'suggestion') == ''
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Transfers that are settled but arrived with no cost basis. They are in no other list - the transfer is complete, so
+# every settlement view is done with them - and the zero surfaces only as a gain when the asset is finally sold. A
+# zero may well be right, so they are shown only when asked for.
+
+def test_a_settled_transfer_without_a_cost_basis_is_listed_only_on_request(wallets):
+    _eur_wallet()
+    _transfer(WALLET_A, 3, 400, d2t(210103), deposit=0)      # USD account -> EUR account, nothing states the basis
+
+    assert _rows(_model()) == 0
+    assert _rows(_model(with_basis_gaps=True)) == 1
+
+
+def test_a_transfer_without_a_cost_basis_is_shown_as_settled_and_not_in_transit(wallets):
+    wallet = _eur_wallet()
+    _transfer(WALLET_A, wallet.id(), 400, d2t(210103), deposit=0)
+
+    model = _model(with_basis_gaps=True)
+
+    assert model.transfer_kind(model.index(0, 0, QModelIndex())) == PendingTransfersModel.BASIS
+    assert _row(model, 0, 'from') == 'ARB wallet' and _row(model, 0, 'to') == wallet.name()
+    assert _row(model, 0, 'value') == Decimal('0')           # both ends are known: nothing about it is in flight
+    assert model._root.details()['value'] == Decimal('0')
+
+
+def test_one_currency_at_both_ends_has_no_cost_basis_to_miss(wallets):
+    _transfer(WALLET_A, WALLET_B, 400, d2t(210103), deposit=0)   # both wallets are kept in USD
+
+    assert _rows(_model(with_basis_gaps=True)) == 0
+
+
+def test_a_transfer_that_states_its_cost_basis_is_not_listed(wallets):
+    wallet = _eur_wallet()
+    _transfer(WALLET_A, wallet.id(), 400, d2t(210103), deposit=350)
+
+    assert _rows(_model(with_basis_gaps=True)) == 0
+
+
+def test_a_money_transfer_is_never_listed_as_missing_a_cost_basis(wallets):
+    wallet = _eur_wallet()
+    _transfer(WALLET_A, wallet.id(), 400, d2t(210103), asset_id=None, deposit=0)
+
+    assert Transfer.legs_without_cost_basis() == []
+
+
+def test_transfers_without_a_cost_basis_are_bounded_by_the_date_asked_about(wallets):
+    wallet = _eur_wallet()
+    _transfer(WALLET_A, wallet.id(), 400, d2t(210103), deposit=0)
+    _transfer(WALLET_A, wallet.id(), 500, d2t(210401), deposit=0)     # after the date the report is asked about
+
+    assert len(Transfer.legs_without_cost_basis()) == 2
+    assert len(Transfer.legs_without_cost_basis(d2t(210301))) == 1
+    assert _rows(_model(with_basis_gaps=True)) == 1
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The report window's actions
+
+# Assigning acts on the selected row, and the rows listed for a missing cost basis are settled transfers that no
+# settlement action applies to - so the button follows what is actually selected rather than clicking into nothing.
+def test_the_assign_button_follows_the_selection(wallets):
+    wallet = _eur_wallet()
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(WALLET_A, wallet.id(), 500, d2t(210104), deposit=0)
+    window = UnsettledTransfersReportWindow(Reports(None, None))
+    window.ui.BasisGapsCheck.setChecked(True)
+    view = window.ui.ReportTreeView
+
+    assert window.ui.AssignButton.isEnabled() is False        # nothing is selected yet
+    view.setCurrentIndex(view.model().index(0, 0, QModelIndex()))
+    assert window.ui.AssignButton.isEnabled() is True         # the leg waiting for an account
+    view.setCurrentIndex(view.model().index(1, 0, QModelIndex()))
+    assert window.ui.AssignButton.isEnabled() is False        # the settled one that only lacks a cost basis

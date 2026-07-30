@@ -1,12 +1,15 @@
 from __future__ import annotations
 from decimal import Decimal
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QBrush
 from PySide6.QtWidgets import QHeaderView
+from jal.constants import CustomColor
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
+from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.helpers import localize_decimal, now_ts, day_end
 from jal.db.operations import Transfer
+from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate
 
 
@@ -19,8 +22,8 @@ class PendingLegTreeItem(AbstractTreeItem):
     def __init__(self, leg=None, parent=None, group=''):
         super().__init__(parent, group)
         if leg is None:
-            self._data = {'timestamp': 0, 'from': '', 'to': '', 'asset': '',
-                          'qty': Decimal('0'), 'value': Decimal('0'), 'number': '', 'note': ''}
+            self._data = {'timestamp': 0, 'from': '', 'to': '', 'asset': '', 'qty': Decimal('0'),
+                          'value': Decimal('0'), 'suggestion': '', 'address': '', 'number': '', 'note': ''}
         else:
             self._data = leg.copy()
 
@@ -57,7 +60,20 @@ class PendingLegTreeItem(AbstractTreeItem):
 #     would double it, so it contributes zero. What it lacks is not a location but a cost basis, which stays zero
 #     until the sending leg is found.
 # The total is therefore the money genuinely in flight, while the list itself stays complete.
+#
+# The rows are of kinds that are settled in different ways, and each kind carries its own pale background so the
+# list can be read as the few groups it is rather than as one undifferentiated worklist:
+#   SENT     the money left and where it went is unknown - what the total above is made of
+#   ARRIVED  it landed and where it came from is unknown - already counted, but at a cost basis of zero
+#   BASIS    not pending at all: a settled cross-currency transfer whose destination lots opened at zero because
+#            nothing ever stated their cost basis. Shown only on request (see updateView), because a zero may be
+#            correct and only the user can tell - what matters is that it is possible to look.
 class PendingTransfersModel(ReportTreeModel):
+    SENT = 'sent'
+    ARRIVED = 'arrived'
+    BASIS = 'basis'
+    _BACKGROUND = {SENT: CustomColor.PaleYellow, ARRIVED: CustomColor.PaleBlue, BASIS: CustomColor.PaleViolet}
+
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._grid_delegate = None
@@ -67,6 +83,8 @@ class PendingTransfersModel(ReportTreeModel):
         self._currency = 0
         self._currency_name = ''
         self._date = day_end(now_ts())
+        self._with_basis_gaps = False
+        self._settlement = TransferSettlement()
         bold_font = QFont()
         bold_font.setBold(True)
         italic_font = QFont()
@@ -78,6 +96,8 @@ class PendingTransfersModel(ReportTreeModel):
                          {'name': self.tr("Asset"), 'field': 'asset'},
                          {'name': self.tr("Qty"), 'field': 'qty'},
                          {'name': self.tr("In transit, "), 'field': 'value'},
+                         {'name': self.tr("Suggested"), 'field': 'suggestion'},
+                         {'name': self.tr("Counterparty"), 'field': 'address'},
                          {'name': self.tr("Reference"), 'field': 'number'},
                          {'name': self.tr("Note"), 'field': 'note'}]
 
@@ -94,7 +114,13 @@ class PendingTransfersModel(ReportTreeModel):
         if role == Qt.DisplayRole:
             return details[self._columns[index.column()]['field']]
         if role == Qt.FontRole:
+            # An account the address resolved to is the one thing in the row that is an answer rather than a
+            # question, so it says so wherever the rest of the row is set in the type of what is still unknown
+            if index.column() == self.fieldIndex('suggestion') and details['suggestion']:
+                return self._fonts['bold']
             return self._fonts.get(details.get('font', 'normal'), None)
+        if role == Qt.BackgroundRole:
+            return QBrush(self._BACKGROUND[details['kind']]) if details.get('kind') else None
         if role == Qt.ToolTipRole:
             return details.get('tooltip', None)
         return None
@@ -126,7 +152,7 @@ class PendingTransfersModel(ReportTreeModel):
         # is worthless" rather than "this leg isn't in flight"
         self._float2_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True, parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex('timestamp'), self._timestamp_delegate)
-        for field in ('from', 'to', 'asset', 'number', 'note'):
+        for field in ('from', 'to', 'asset', 'suggestion', 'address', 'number', 'note'):
             self._view.setItemDelegateForColumn(self.fieldIndex(field), self._grid_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('qty'), self._float_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('value'), self._float2_delegate)
@@ -134,7 +160,7 @@ class PendingTransfersModel(ReportTreeModel):
                                      [self.fieldIndex('timestamp'), self.fieldIndex('qty')])
         super().configureView()
 
-    def updateView(self, currency_id, date):
+    def updateView(self, currency_id, date, with_basis_gaps: bool = False):
         update = False
         if self._currency != currency_id:
             self._currency = currency_id
@@ -142,6 +168,9 @@ class PendingTransfersModel(ReportTreeModel):
             update = True
         if self._date != date.endOfDay(Qt.UTC).toSecsSinceEpoch():
             self._date = date.endOfDay(Qt.UTC).toSecsSinceEpoch()
+            update = True
+        if self._with_basis_gaps != with_basis_gaps:
+            self._with_basis_gaps = with_basis_gaps
             update = True
         if update:
             self.prepareData()
@@ -158,18 +187,51 @@ class PendingTransfersModel(ReportTreeModel):
             value = Decimal('0')
             tooltip = self.tr("Arrived, but the account it was sent from isn't known yet. It is already counted in ") \
                       + leg['account'].name() + self.tr(", at a cost basis of zero until the transfer is settled.")
+        # An address only resolves for the legs a chain fetched, and resolving it walks every account, so it is
+        # asked about the legs that state one at all
+        suggested = self._settlement.address_suggestion(leg['oid']) if leg['address'] else 0
+        if suggested:
+            tooltip += self.tr("\nThe address it names belongs to ") + JalAccount(suggested).name() \
+                       + self.tr(" - assign that account to settle the transfer.")
         return {
             'oid': leg['oid'],
+            'kind': self.SENT if outgoing else self.ARRIVED,
             'timestamp': leg['timestamp'],
             'from': leg['account'].name() if outgoing else unknown,
             'to': unknown if outgoing else leg['account'].name(),
             'asset': leg['asset'].symbol(currency=leg['account'].currency()),
             'qty': leg['qty'],
             'value': value,
+            'suggestion': JalAccount(suggested).name() if suggested else '',
+            'address': leg['address'] if leg['address'] else '',
             'number': leg['number'],
             'note': leg['note'],
             'font': 'normal' if outgoing else 'italic',
             'tooltip': tooltip
+        }
+
+    # Turns one transfer of Transfer.legs_without_cost_basis() into a display record. Both of its ends are known, so
+    # nothing about it is in transit and it adds nothing to the total - what it is missing is what the asset cost.
+    def _basis_record(self, leg) -> dict:
+        return {
+            'oid': leg['oid'],
+            'kind': self.BASIS,
+            'timestamp': leg['timestamp'],
+            'from': leg['from_account'].name(),
+            'to': leg['to_account'].name(),
+            'asset': leg['asset'].symbol(currency=leg['to_account'].currency()),
+            'qty': leg['qty'],
+            'value': Decimal('0'),
+            'suggestion': '',
+            'address': '',
+            'number': leg['number'],
+            'note': leg['note'],
+            'font': 'normal',
+            'tooltip': self.tr("Settled, but the asset opened at a cost basis of zero in ")
+                       + leg['to_account'].name()
+                       + self.tr(": the two accounts are kept in different currencies and nothing stated what the "
+                                 "asset had cost. A zero may be right - if it isn't, it is taxed as a gain when the "
+                                 "asset is sold.")
         }
 
     def prepareData(self):
@@ -177,6 +239,9 @@ class PendingTransfersModel(ReportTreeModel):
         self._root = PendingLegTreeItem()
         for leg in Transfer.pending_legs(self._date):
             self._root.appendChild(PendingLegTreeItem(self._leg_record(leg)))
+        if self._with_basis_gaps:
+            for leg in Transfer.legs_without_cost_basis(self._date):
+                self._root.appendChild(PendingLegTreeItem(self._basis_record(leg)))
         self.endResetModel()
         super().prepareData()
 
@@ -185,3 +250,9 @@ class PendingTransfersModel(ReportTreeModel):
         if not index.isValid():
             return 0
         return index.internalPointer().details().get('oid', 0)
+
+    # Which of the kinds above the given row is ('' for an invalid index) - what may be done to it depends on it
+    def transfer_kind(self, index) -> str:
+        if not index.isValid():
+            return ''
+        return index.internalPointer().details().get('kind', '')

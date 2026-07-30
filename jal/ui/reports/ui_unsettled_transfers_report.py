@@ -15,9 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDateEdit, QFrame,
-    QGridLayout, QHeaderView, QLabel, QPushButton,
-    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QDateEdit,
+    QFrame, QGridLayout, QHeaderView, QLabel,
+    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
+    QWidget)
 
 from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
@@ -56,19 +57,29 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.gridLayout.addWidget(self.ReportCurrencyCombo, 0, 2, 1, 1)
 
+        self.BasisGapsCheck = QCheckBox(self.ReportParamsFrame)
+        self.BasisGapsCheck.setObjectName(u"BasisGapsCheck")
+
+        self.gridLayout.addWidget(self.BasisGapsCheck, 0, 3, 1, 1)
+
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 3, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 4, 1, 1)
+
+        self.AssignButton = QPushButton(self.ReportParamsFrame)
+        self.AssignButton.setObjectName(u"AssignButton")
+
+        self.gridLayout.addWidget(self.AssignButton, 0, 5, 1, 1)
 
         self.MatchButton = QPushButton(self.ReportParamsFrame)
         self.MatchButton.setObjectName(u"MatchButton")
 
-        self.gridLayout.addWidget(self.MatchButton, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.MatchButton, 0, 6, 1, 1)
 
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 5, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 7, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -97,6 +108,14 @@ class Ui_UnsettledTransfersWidget(object):
 #endif // QT_CONFIG(tooltip)
         self.ReportDate.setDisplayFormat(QCoreApplication.translate("UnsettledTransfersWidget", u"dd/MM/yyyy", None))
         self.ReportCurrencyLbl.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Currency:", None))
+#if QT_CONFIG(tooltip)
+        self.BasisGapsCheck.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Also list settled transfers whose asset arrived with no cost basis", None))
+#endif // QT_CONFIG(tooltip)
+        self.BasisGapsCheck.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Without cost basis", None))
+#if QT_CONFIG(tooltip)
+        self.AssignButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Name the account at the end a leg doesn't know", None))
+#endif // QT_CONFIG(tooltip)
+        self.AssignButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Assign...", None))
 #if QT_CONFIG(tooltip)
         self.MatchButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Pair a leg that was sent with the arrival it belongs to", None))
 #endif // QT_CONFIG(tooltip)

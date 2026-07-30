@@ -1541,6 +1541,48 @@ class Transfer(LedgerTransaction):
             })
         return legs
 
+    # Every asset transfer that arrived with NO COST BASIS for its position to open at, as of 'timestamp'.
+    #
+    # 'deposit' of an asset transfer is not an amount but the cost basis the arrived asset opens at, and it is read
+    # only when the two accounts are kept in different currencies (see processAssetTransfer): a basis travels with the
+    # asset when they agree, and has to be restated when they don't. Nothing that records a transfer knows that
+    # restatement - no fetcher and no settlement can (see the FIXME in TransferSettlement._merge) - so a
+    # cross-currency transfer opens its destination lots at ZERO unless somebody fills it in, and what was paid for
+    # the asset is lost at the moment it crosses.
+    #
+    # A zero is not necessarily wrong - an asset that genuinely cost nothing has no basis to carry - which is why
+    # this is a list to look through rather than a fault to report. What makes it worth keeping is that such a
+    # transfer sits in no other list: it is complete, so every settlement view is done with it, and the zero surfaces
+    # only as a gain when the asset is finally sold.
+    #
+    # Read straight from 'transfers' like pending_legs() above, and for the same reason: the answer is exact and
+    # cannot go stale between ledger rebuilds.
+    @classmethod
+    def legs_without_cost_basis(cls, timestamp: int = None) -> list:
+        timestamp = Setup.MAX_TIMESTAMP if timestamp is None else timestamp
+        legs = []
+        query = cls._exec(
+            "SELECT t.oid, t.deposit_timestamp, t.withdrawal_account, t.deposit_account, t.withdrawal, t.symbol_id, "
+            "t.number, t.note FROM transfers AS t "
+            "JOIN accounts AS w ON w.id=t.withdrawal_account JOIN accounts AS d ON d.id=t.deposit_account "
+            "WHERE NOT t.symbol_id IS NULL AND w.currency_id<>d.currency_id AND CAST(t.deposit AS REAL)=0 "
+            "AND t.deposit_timestamp<=:timestamp ORDER BY t.deposit_timestamp, t.oid", [(":timestamp", timestamp)])
+        while query.next():
+            leg = cls._read_record(query, named=True)
+            symbol = JalSymbol(leg['symbol_id'])
+            legs.append({
+                'oid': int(leg['oid']),
+                'timestamp': int(leg['deposit_timestamp']),
+                'from_account': jal.db.account.JalAccount(leg['withdrawal_account']),
+                'to_account': jal.db.account.JalAccount(leg['deposit_account']),
+                'symbol': symbol,
+                'asset': symbol.asset(),
+                'qty': Decimal(leg['withdrawal']),
+                'number': leg['number'],
+                'note': leg['note']
+            })
+        return legs
+
     # Attaches a fee to a transfer that was stored without one, and reports whether it did.
     #
     # The two sides of an on-chain transfer are not equally complete: gas is paid by the sender alone, so whichever
