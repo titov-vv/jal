@@ -98,8 +98,28 @@ def test_no_value_is_offered_when_there_is_no_rate(funded):
     assert dialog._amount.text() == ''
     assert _ok(dialog) is False                     # ... and it cannot be assigned while it is empty
     QTest.keyClicks(dialog._amount, '180')
-    dialog._choice_changed()
     assert _ok(dialog) is True
+
+
+# Typing the value is all the user does when none could be offered - no account is chosen again afterwards and no
+# date is touched, so the assignment has to become possible on the keystrokes themselves. It didn't: the button was
+# decided only when the choice was re-read, and the dialog could not be completed at all where a rate was missing or
+# too old to be used - which is precisely where the value has to be entered by hand.
+def test_the_value_typed_by_hand_makes_the_assignment_possible(funded):
+    create_quotes(USD, EUR, [(d2t(180103), 0.5)])   # the newest rate stored, and years before the transfer
+    transfer = _transfer(WALLET_A, None, 400, d2t(210103))
+    Ledger().rebuild(from_timestamp=0)
+
+    dialog = TransferAssignDialog(transfer.id())
+    dialog._account.selection_done(WALLET_EUR)
+
+    assert dialog._amount.text() == ''              # a rate that old is not offered as a value
+    assert _ok(dialog) is False
+    QTest.keyClicks(dialog._amount, '180')
+    assert _ok(dialog) is True                      # ... and nothing else happens before the button is pressed
+    dialog._amount.clear()
+    QTest.keyClicks(dialog._amount, '   ')          # emptied again, and it is waiting for a value once more
+    assert _ok(dialog) is False
 
 
 # A number the user has entered is theirs: re-reading the choice recomputes what is displayed around it, but never

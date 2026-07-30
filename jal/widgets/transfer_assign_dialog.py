@@ -42,6 +42,7 @@ class TransferAssignDialog(QDialog):
         self._settlement = TransferSettlement()
         self._leg = self._pending_leg(oid)
         self._user_typed = False    # a number the user has entered is theirs and is never recomputed over
+        self._refusal = ''          # why the chosen account can't be that end, '' when it can - see _choice_changed()
         # Whether a number is being asked for at all. Kept here rather than read back from the widget: a widget of a
         # dialog that hasn't been shown yet reports itself invisible whatever it was told, and the Ok button is
         # decided before the dialog is shown.
@@ -146,6 +147,7 @@ class TransferAssignDialog(QDialog):
 
     def _amount_typed(self, _text: str) -> None:
         self._user_typed = True
+        self._update_ok_button()
 
     # Re-reads the choice, says what it would do and offers the value it would record
     def _choice_changed(self) -> None:
@@ -157,15 +159,21 @@ class TransferAssignDialog(QDialog):
         timestamp = self._timestamp.dateTime().toSecsSinceEpoch()
         self._account_currency.setText(JalAsset(JalAccount(account_id).currency()).symbol() if account_id else '')
         self._update_amount(account_id, timestamp)
-        refusal = self._settlement.refusal_for_assignment(self._oid, account_id, timestamp)
+        self._refusal = self._settlement.refusal_for_assignment(self._oid, account_id, timestamp)
         if not account_id:
             self._status.setText(self.tr("Choose the account at the end that is missing."))
-        elif refusal:
-            self._status.setText(self.tr("This account can't be that end: ") + refusal)
+        elif self._refusal:
+            self._status.setText(self.tr("This account can't be that end: ") + self._refusal)
         else:
             self._status.setText(self.tr("Assigning makes this one transfer: ") + self._pair_text(account_id))
-        self._buttons.button(QDialogButtonBox.Ok).setEnabled(bool(account_id) and not refusal
-                                                             and not self._amount_missing())
+        self._update_ok_button()
+
+    # What the assignment still lacks, decided again whenever any part of it changes. The refusal is remembered from
+    # the last time the choice was read rather than asked for here: it is a query over the ledger, and this is called
+    # on every keystroke in the value field, which cannot change it.
+    def _update_ok_button(self) -> None:
+        allowed = bool(self._account.selected_id) and not self._refusal and not self._amount_missing()
+        self._buttons.button(QDialogButtonBox.Ok).setEnabled(allowed)
 
     def _pair_text(self, account_id: int) -> str:
         moved = f"{remove_exponent(self._leg['qty'])} {self._leg['asset'].symbol()} "
