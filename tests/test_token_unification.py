@@ -9,6 +9,7 @@ from jal.db.account import JalAccountCreator, JalAccount
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import JalTokenBlacklist
+from jal.net.chain_fetchers.hyperliquid import HyperliquidFetcher
 from jal.net.chain_fetchers.tron import TronFetcher
 
 # The same stablecoin lives on several chains under identical ticker but with an unrelated contract on each chain.
@@ -80,6 +81,36 @@ def test_merge_maps_token_onto_the_existing_asset(known_usdt):
     tron_symbol = JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT)
     assert tron_symbol.asset().id() == known_usdt.id()
     assert len(JalAsset(known_usdt.id()).active_symbol_ids()) == 2   # both chains stay active on the one asset
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Once a coin is listed on a chain under its address there, a later fetch of that chain must resolve it SILENTLY -
+# no prompt, no second asset. This is what carries a completed unification forward, and it is the whole of what a
+# venue-specific wrapper needs: Hyperliquid's UBTC/UETH/USOL are the native coins listed on that chain, so folding
+# them into BTC/ETH/SOL is all that is required and no fetcher needs a table of its own mapping them back.
+def test_a_token_already_listed_on_its_chain_is_matched_without_asking(prepare_db):
+    UBTC = "0x8f254b963e8468305d409b33aa137c67"     # HyperCore token id of Unit's wrapped BTC
+    creator = JalAssetCreator(PredefinedAsset.Crypto, 'Bitcoin')
+    creator.add_symbol('BTC', USD, location_id=AssetLocation.BTC_BLOCKCHAIN)
+    hyperliquid = creator.add_symbol('UBTC', USD, location_id=AssetLocation.HL_BLOCKCHAIN)
+    creator.add_identifier(hyperliquid, SymbolId.HL_ADDRESS, UBTC)
+    bitcoin = creator.commit()
+    JalAccountCreator(currency_id=USD, number='', name='HL wallet', investing=1, organization=1,
+                      account_type=PredefinedAccountType.Wallet, address='0x' + '1' * 40,
+                      chain=AssetLocation.HL_BLOCKCHAIN).commit()
+
+    statement = HyperliquidFetcher()
+    statement._account = JalAccount(1)
+    statement._data = {JSF.ACCOUNTS: [], JSF.ASSETS: [], JSF.TRANSFERS: []}
+    token = statement._token_asset_id('UBTC', 'Unit Bitcoin', address=UBTC)
+    # Asked to fail loudly rather than silently create a second asset: reaching the prompt at all is the bug here
+    statement._token_action_for_tests = (Statement.TOKEN_CREATE_NEW, 0)
+    statement.match_db_ids()
+
+    assert statement.mapped_id(JSF.ASSETS, token) == bitcoin.id()
+    statement.import_into_db()
+    assert JalSymbol.find_by_identifier(SymbolId.HL_ADDRESS, UBTC).asset().id() == bitcoin.id()
+    assert len(JalAsset(bitcoin.id()).active_symbol_ids()) == 2      # one coin, listed on two chains
 
 
 def test_create_new_leaves_the_token_unmapped(known_usdt):
