@@ -17,6 +17,10 @@ from jal.db.operations_model import OperationsModel
 from jal.db.common_models import TagTreeModel
 from jal.db.operations import LedgerTransaction
 from jal.widgets.bridge_match_dialog import BridgeMatchDialog
+from jal.widgets.bridge_convert_dialog import BridgeConvertDialog
+from jal.widgets.swap_convert_dialog import SwapConvertDialog
+from jal.widgets.transfer_assign_dialog import TransferAssignDialog
+from jal.widgets.transfer_match_dialog import TransferMatchDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -145,7 +149,28 @@ class OperationsWidget(MdiWidget):
         if single and self._is_pending_bridge(self.current_index):
             contextMenu.addSeparator()
             contextMenu.addAction(actionMatchBridge)
+        # ... and the same for a transfer that knows only one of its ends. The worklist for those is the Unsettled
+        # transfers report, which is where they are worked through in bulk; these are the same actions offered where
+        # the user happens to be standing, for the leg they are already looking at.
+        if single and self._is_pending_transfer(self.current_index):
+            contextMenu.addSeparator()
+            for action in self._pending_transfer_actions():
+                contextMenu.addAction(action)
         contextMenu.popup(self.ui.OperationsTableView.viewport().mapToGlobal(pos))
+
+    # The settlements of a one-legged transfer, as menu actions. They are built here rather than kept as members
+    # because each has to outlive the menu only as long as it is shown.
+    def _pending_transfer_actions(self) -> list:
+        actions = []
+        for icon, name, slot in (
+                (JalIcon.TRANSFER_IN, self.tr("Assign an account…"), self.assign_transfer_end),
+                (JalIcon.TRANSFER_OUT, self.tr("Match with another leg…"), self.match_transfer_leg),
+                (JalIcon.TRANSFER_ASSET_OUT, self.tr("Convert into a swap…"), self.convert_leg_to_swap),
+                (JalIcon.TRANSFER_ASSET_IN, self.tr("Convert into a bridge…"), self.convert_leg_to_bridge)):
+            action = QAction(JalIcon[icon], name, self)
+            action.triggered.connect(slot)
+            actions.append(action)
+        return actions
 
     # (otype, oid) of the operation at a proxy-model index, or (NA, 0) if the index is invalid
     def _operation_at(self, index):
@@ -160,6 +185,13 @@ class OperationsWidget(MdiWidget):
             return False
         return LedgerTransaction.get_operation(otype, oid).is_pending()
 
+    # A transfer that knows only one of its ends - the shape every settlement below acts on
+    def _is_pending_transfer(self, index) -> bool:
+        otype, oid = self._operation_at(index)
+        if otype != LedgerTransaction.Transfer:
+            return False
+        return LedgerTransaction.get_operation(otype, oid).is_pending()
+
     @Slot()
     def match_bridge(self):
         otype, oid = self._operation_at(self.current_index)
@@ -167,6 +199,34 @@ class OperationsWidget(MdiWidget):
             return
         if BridgeMatchDialog(oid, self).exec() == QDialog.Accepted:
             self.dbUpdated.emit()   # connected to the ledger rebuild + operations refresh
+
+    @Slot()
+    def assign_transfer_end(self):
+        self._settle_pending_transfer(TransferAssignDialog)
+
+    @Slot()
+    def match_transfer_leg(self):
+        self._settle_pending_transfer(TransferMatchDialog)
+
+    @Slot()
+    def convert_leg_to_swap(self):
+        self._settle_pending_transfer(SwapConvertDialog)
+
+    @Slot()
+    def convert_leg_to_bridge(self):
+        self._settle_pending_transfer(BridgeConvertDialog)
+
+    # Opens one of the settlement dialogs on the selected pending leg. All four take the leg's oid and report through
+    # 'changed' whether they wrote anything, so what is left is to tell the main window to rebuild the ledger - every
+    # one of them writes real operations.
+    def _settle_pending_transfer(self, dialog_class) -> None:
+        otype, oid = self._operation_at(self.current_index)
+        if otype != LedgerTransaction.Transfer or not oid:
+            return
+        dialog = dialog_class(oid, parent=self)
+        dialog.exec()
+        if dialog.changed:
+            self.dbUpdated.emit()
 
     @Slot()
     def balances_context_menu(self, pos):

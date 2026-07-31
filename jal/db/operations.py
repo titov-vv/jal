@@ -2245,6 +2245,36 @@ class Bridge(LedgerTransaction):
     def is_pending(self) -> bool:
         return not self._has_in
 
+    # Every cross-chain send whose arrival is still awaited, as of 'timestamp' - the bridge counterpart of
+    # Transfer.pending_legs(), in the same shape, so one worklist can list both.
+    #
+    # They are the same thing economically: the asset has left an account and reached none, so it belongs to no
+    # account and is invisible in every per-account balance. What differs is only how it was recorded - a send the
+    # fetcher recognized as going into a known bridge became this, and one it didn't became a pending transfer leg -
+    # which is an accident of the protocol registry rather than anything about the movement.
+    @classmethod
+    def pending_halves(cls, timestamp: int = None) -> list:
+        timestamp = Setup.MAX_TIMESTAMP if timestamp is None else timestamp
+        halves = []
+        query = cls._exec("SELECT oid, out_timestamp, out_account_id, out_symbol_id, out_qty, out_tx_hash, note "
+                          "FROM bridges WHERE in_account_id IS NULL AND out_timestamp<=:timestamp "
+                          "ORDER BY out_timestamp, oid", [(":timestamp", timestamp)])
+        while query.next():
+            half = cls._read_record(query, named=True)
+            symbol = JalSymbol(half['out_symbol_id'])
+            halves.append({
+                'oid': int(half['oid']),
+                'opart': Bridge.Outgoing,      # a half is a send by definition - nothing has arrived for it
+                'timestamp': int(half['out_timestamp']),
+                'account': jal.db.account.JalAccount(half['out_account_id']),
+                'symbol': symbol,
+                'asset': symbol.asset(),
+                'qty': Decimal(half['out_qty']),
+                'number': half['out_tx_hash'],
+                'note': half['note']
+            })
+        return halves
+
     # Finish time of the bridge (required for FIFO compatibility); a pending half only knows when it was sent
     def settlement(self) -> int:
         return self._in_timestamp if self._has_in else self._out_timestamp

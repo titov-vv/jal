@@ -584,19 +584,24 @@ class TransferSettlement(JalDB):
             return self.tr("the asset can't be received before it was exchanged")
         if Decimal(sent['withdrawal']) <= 0 or Decimal(arrived['withdrawal']) <= 0:
             return self.tr("a swap needs a positive quantity on both sides")
-        # A swap carries ONE fee, charged in one asset on the account the exchange happens on. A fee that names no
-        # asset can't be written at all, one paid on another account would move money that was never spent there, and
-        # two fees in different assets can't be added up. None of them may be quietly dropped - that is money the
-        # user really spent - so a pair carrying one is left to be recorded by hand instead.
+        return self._refusal_over_fees(sent, arrived)
+
+    # Why the fees the two legs carry cannot go onto the one operation they are converted into, or '' when they can.
+    #
+    # A swap and a bridge each carry ONE fee, charged in one asset on the account the operation happens on. A fee that
+    # names no asset can't be written at all, one paid on another account would move money that was never spent there,
+    # and two fees in different assets can't be added up. None of them may be quietly dropped - that is money the user
+    # really spent - so a pair carrying one is left to be recorded by hand instead.
+    def _refusal_over_fees(self, sent: dict, arrived: dict) -> str:
         for leg in (sent, arrived):
             if not leg['fee']:
                 continue
             if not leg['fee_symbol_id']:
-                return self.tr("a leg pays a fee that names no asset, which one swap can't hold")
+                return self.tr("a leg pays a fee that names no asset, which one operation can't hold")
             if leg['fee_account'] != '' and int(leg['fee_account']) != int(sent['withdrawal_account']):
-                return self.tr("a leg pays its fee on another account, which one swap can't hold")
+                return self.tr("a leg pays its fee on another account, which one operation can't hold")
         if sent['fee'] and arrived['fee'] and int(sent['fee_symbol_id']) != int(arrived['fee_symbol_id']):
-            return self.tr("the two legs pay their fees in different assets, which one swap can't hold")
+            return self.tr("the two legs pay their fees in different assets, which one operation can't hold")
         return ''
 
     # The fee of the swap the two legs make, as (amount, symbol id) - the sum of what they carry, which is in one and
@@ -606,6 +611,81 @@ class TransferSettlement(JalDB):
               + (Decimal(arrived['fee']) if arrived['fee'] else Decimal('0'))
         symbol_id = self._or_null(sent['fee_symbol_id']) or self._or_null(arrived['fee_symbol_id'])
         return (fee, int(symbol_id)) if fee else (Decimal('0'), None)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ... and some pairs are one asset crossing chains, which is a Bridge rather than either of them.
+    #
+    # JAL already completes a cross-chain move whose SENDING leg the fetcher recognized: that leg is stored as a
+    # pending half-bridge and BridgeMatcher pairs it with the arriving transfer (Operations -> "Match cross-chain
+    # legs..."). What lands here is the move whose sending leg was NOT recognized - the bridge contract is not in the
+    # protocol registry, so both ends were imported as plain transfers and there is no half to complete.
+    #
+    # A transfer settlement can't rescue those either: a bridge that takes its cut delivers LESS than was sent, and
+    # what arrived not being what left is precisely how _refusal() tells a bridge from a transfer and refuses to
+    # merge the two legs. So without this the pair has no path at all - Match refuses it on the quantity, the swap
+    # conversion refuses it on the asset, and the bridge matcher has nothing to match.
+    #
+    # The rules are BridgeMatcher's, deliberately: whichever way a cross-chain move is completed, the same pair has to
+    # be judged the same way, and that class is where the judgement is written down.
+
+    # Turns the two pending legs into one Bridge operation and deletes them. Returns '' when it was done, and
+    # otherwise why it was not.
+    def convert_to_bridge(self, sending_oid: int, arriving_oid: int) -> str:
+        sent, arrived = self._pending_pair(sending_oid, arriving_oid)
+        if sent is None:
+            return self.tr("one of the legs is no longer pending")
+        refusal = self._refusal_to_bridge(sent, arrived)
+        if refusal:
+            return refusal
+        # 'withdrawal' holds the quantity on both legs of an asset transfer - see convert_to_swap() on why 'deposit'
+        # is not an amount
+        bridge = {'out_timestamp': int(sent['withdrawal_timestamp']), 'out_account_id': int(sent['withdrawal_account']),
+                  'out_symbol_id': int(sent['symbol_id']), 'out_qty': Decimal(sent['withdrawal']),
+                  'out_tx_hash': sent['number'],
+                  'in_timestamp': int(arrived['deposit_timestamp']), 'in_account_id': int(arrived['deposit_account']),
+                  'in_symbol_id': int(arrived['symbol_id']), 'in_qty': Decimal(arrived['withdrawal']),
+                  'in_tx_hash': arrived['number'],
+                  'note': sent['note'] if sent['note'] else arrived['note']}
+        fee, fee_symbol_id = self._fee_of(sent, arrived)
+        if fee:
+            bridge.update({'fee_qty': fee, 'fee_symbol_id': fee_symbol_id})
+        LedgerTransaction.create_new(LedgerTransaction.Bridge, bridge)
+        self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", int(sent['oid']))])
+        self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", int(arrived['oid']))], commit=True)
+        logging.info(self.tr("Transfer legs converted into a bridge: ")
+                     + f"{remove_exponent(Decimal(sent['withdrawal']))} "
+                     + self._account_name(int(sent['withdrawal_account'])) + " -> "
+                     + f"{remove_exponent(Decimal(arrived['withdrawal']))} "
+                     + self._account_name(int(arrived['deposit_account'])))
+        return ''
+
+    # Why these two pending legs cannot be converted into one bridge, or '' when they can - asked before anything is
+    # written, so a chooser can say what the pair would do instead of letting the user find out by trying it.
+    def refusal_to_bridge(self, sending_oid: int, arriving_oid: int) -> str:
+        sent, arrived = self._pending_pair(sending_oid, arriving_oid)
+        if sent is None:
+            return self.tr("one of the legs is no longer pending")
+        return self._refusal_to_bridge(sent, arrived)
+
+    def _refusal_to_bridge(self, sent: dict, arrived: dict) -> str:
+        if not sent['symbol_id'] or not arrived['symbol_id']:
+            return self.tr("a bridge moves an asset, and one of these legs moves money")
+        # The two listings of one token on two chains are one asset (the cross-chain unification merges them), so a
+        # bridge is what the SAME asset does. A different one arriving means the asset changed on the way, which is a
+        # cross-chain swap - a genuine disposal, and a conversion of its own.
+        if self._asset_of(sent) != self._asset_of(arrived):
+            return self.tr("the legs carry different assets, so this is a cross-chain swap and not a bridge")
+        if int(sent['withdrawal_account']) == int(arrived['deposit_account']):
+            return self.tr("both legs are on the same account, so nothing crossed anything")
+        if int(sent['withdrawal_timestamp']) > int(arrived['deposit_timestamp']):
+            return self.tr("the arrival precedes the departure")
+        if Decimal(sent['withdrawal']) <= 0 or Decimal(arrived['withdrawal']) <= 0:
+            return self.tr("a bridge needs a positive quantity on both sides")
+        # What a bridge keeps back is its cut; more arriving than was sent is not a cut but a pair that doesn't belong
+        # together (BridgeMatcher refuses it on the same ground)
+        if Decimal(arrived['withdrawal']) > Decimal(sent['withdrawal']):
+            return self.tr("more arrived than was sent, so these two are not one crossing")
+        return self._refusal_over_fees(sent, arrived)
 
     # _read_record() gives '' for a SQL NULL, which no INTEGER column may be written back
     @staticmethod

@@ -19,9 +19,13 @@ from jal.db.ledger import Ledger
 from jal.db.pending_transfers_model import PendingTransfersModel
 from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
+from jal.widgets.bridge_convert_dialog import BridgeConvertDialog
 from jal.widgets.swap_convert_dialog import SwapConvertDialog
 from jal.reports.reports import Reports
 from jal.reports.unsettled_transfers import UnsettledTransfersReportWindow
+from jal.widgets.operations_widget import OperationsWidget
+from jal.widgets.transfer_assign_dialog import TransferAssignDialog
+from jal.widgets.transfer_match_dialog import TransferMatchDialog
 
 # ----------------------------------------------------------------------------------------------------------------------
 # A transfer may be recorded knowing only one of its two ends. The report of those legs is the safety net of that
@@ -744,3 +748,217 @@ def test_conversion_refuses_a_fee_charged_on_another_account(wallets):
                   commit=True)
 
     assert 'another account' in TransferSettlement().convert_to_swap(sent, arrived)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Converting two legs into the bridge they are.
+#
+# JAL completes a crossing whose SENDING leg the fetcher recognized - that one is a pending half-bridge, matched from
+# the Operations list. What reaches this conversion is the crossing the fetcher did NOT recognize, imported as two
+# plain transfers: Match refuses it as soon as the bridge kept a cut (what arrived isn't what was sent), the swap
+# conversion refuses it on the asset, and the bridge matcher has nothing to match - so it has no other path at all.
+
+def _crossing(quantity_in=395):
+    other = _second_asset_listing()   # the same asset would do; a second listing is what a real crossing arrives as
+    JalDB()._exec("UPDATE asset_symbol SET asset_id=:asset WHERE id=:sym",
+                  [(":asset", USDT), (":sym", other)], commit=True)
+    JalAsset.db_cache.clear_cache()
+    JalSymbol.db_cache.clear_cache()
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103), number='0xsent')
+    _transfer(None, WALLET_B, quantity_in, d2t(210104), number='0xarrived', symbol_id=other, deposit=0)
+    legs = {leg['opart']: leg['oid'] for leg in Transfer.pending_legs()}
+    return legs[Transfer.Outgoing], legs[Transfer.Incoming]
+
+
+def _stored_bridge():
+    return JalDB()._read("SELECT out_timestamp, out_account_id, out_symbol_id, out_qty, out_tx_hash, in_timestamp, "
+                         "in_account_id, in_symbol_id, in_qty, in_tx_hash, fee_symbol_id, fee_qty "
+                         "FROM bridges ORDER BY oid DESC LIMIT 1", named=True)
+
+
+def test_a_crossing_that_kept_a_cut_becomes_a_bridge(wallets):
+    sent, arrived = _crossing(quantity_in=395)
+    # This is the pair that has nowhere else to go: a transfer settlement refuses it outright
+    assert 'not a transfer' in TransferSettlement().refusal_for(sent, arrived)
+
+    assert TransferSettlement().convert_to_bridge(sent, arrived) == ''
+
+    assert Transfer.pending_legs() == []
+    bridge = _stored_bridge()
+    assert int(bridge['out_account_id']) == WALLET_A and Decimal(bridge['out_qty']) == Decimal('400')
+    assert int(bridge['in_account_id']) == WALLET_B and Decimal(bridge['in_qty']) == Decimal('395')
+    assert bridge['out_tx_hash'] == '0xsent' and bridge['in_tx_hash'] == '0xarrived'
+    assert int(bridge['out_timestamp']) == d2t(210103) and int(bridge['in_timestamp']) == d2t(210104)
+
+
+def test_the_bridge_keeps_each_leg_own_listing(wallets):
+    # The two ends are two listings of one token, one per chain - the bridge records the listing each side actually
+    # moved, not one of them twice
+    sent, arrived = _crossing()
+    out_symbol = JalDB()._read("SELECT symbol_id FROM transfers WHERE oid=:oid", [(":oid", sent)])
+    in_symbol = JalDB()._read("SELECT symbol_id FROM transfers WHERE oid=:oid", [(":oid", arrived)])
+
+    assert TransferSettlement().convert_to_bridge(sent, arrived) == ''
+
+    bridge = _stored_bridge()
+    assert int(bridge['out_symbol_id']) == int(out_symbol) and int(bridge['in_symbol_id']) == int(in_symbol)
+    assert bridge['out_symbol_id'] != bridge['in_symbol_id']
+
+
+def test_bridge_refuses_more_arriving_than_was_sent(wallets):
+    sent, arrived = _crossing(quantity_in=401)
+
+    refusal = TransferSettlement().convert_to_bridge(sent, arrived)
+
+    assert 'more arrived than was sent' in refusal
+    assert len(Transfer.pending_legs()) == 2
+
+
+def test_bridge_refuses_two_different_assets(wallets):
+    other = _second_asset_listing()          # left on an asset of its own - the asset changed on the way
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(None, WALLET_B, 395, d2t(210104), symbol_id=other, deposit=0)
+    legs = {leg['opart']: leg['oid'] for leg in Transfer.pending_legs()}
+
+    refusal = TransferSettlement().convert_to_bridge(legs[Transfer.Outgoing], legs[Transfer.Incoming])
+
+    assert 'cross-chain swap' in refusal
+
+
+def test_bridge_refuses_both_legs_on_one_account(wallets):
+    sent, arrived = _crossing()
+    JalDB()._exec("UPDATE transfers SET deposit_account=:acc WHERE oid=:oid",
+                  [(":acc", WALLET_A), (":oid", arrived)], commit=True)
+
+    assert 'same account' in TransferSettlement().convert_to_bridge(sent, arrived)
+
+
+def test_the_ledger_processes_the_converted_bridge(wallets):
+    sent, arrived = _crossing()
+
+    assert TransferSettlement().convert_to_bridge(sent, arrived) == ''
+    Ledger().rebuild(from_timestamp=0)
+
+    assert JalDB()._read("SELECT COUNT(*) FROM ledger WHERE otype=:bridge",
+                         [(":bridge", LedgerTransaction.Bridge)]) != '0'
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A pending half-bridge is the same money in flight as a pending sending leg - it left an account and reached none.
+# Which of the two a movement became depends only on whether the fetcher recognized the contract, so a worklist that
+# listed one and not the other would answer "what money of mine is in flight" with a number leaving the other out.
+
+def _pending_half(qty=300, timestamp=None):
+    data = {'out_timestamp': d2t(210103) if timestamp is None else timestamp, 'out_account_id': WALLET_A,
+            'out_symbol_id': symbol_id_for(USDT), 'out_qty': str(qty), 'out_tx_hash': '0xcrossing',
+            'note': 'Sent through a bridge'}
+    return LedgerTransaction.create_new(LedgerTransaction.Bridge, data)
+
+
+def test_a_pending_half_bridge_is_listed_and_counted_as_money_in_transit(wallets):
+    create_quotes(USDT, USD, [(d2t(210103), 1.0)])
+    _funded_wallet_a()
+    _pending_half(qty=300)
+
+    model = _model()
+
+    assert _rows(model) == 1
+    assert model.transfer_kind(model.index(0, 0, QModelIndex())) == PendingTransfersModel.BRIDGE
+    assert _row(model, 0, 'qty') == Decimal('300')
+    assert _row(model, 0, 'value') == Decimal('300')     # in flight: it left WALLET_A and reached nothing
+
+
+def test_a_completed_bridge_is_not_listed(wallets):
+    _funded_wallet_a()
+    half = _pending_half()
+    JalDB()._exec("UPDATE bridges SET in_account_id=:acc, in_timestamp=:ts, in_symbol_id=:sym, in_qty=:qty "
+                  "WHERE oid=:oid",
+                  [(":acc", WALLET_B), (":ts", d2t(210104)), (":sym", symbol_id_for(USDT)), (":qty", Decimal('295')),
+                   (":oid", half.oid())], commit=True)
+
+    assert _rows(_model()) == 0
+
+
+def test_a_half_bridge_later_than_the_report_date_is_not_listed(wallets):
+    _funded_wallet_a()
+    _pending_half(timestamp=d2t(210304))       # _model() reports as of 01/03/2021
+
+    assert _rows(_model()) == 0
+
+
+# The settlements act on 'transfers' oids. A half-bridge names an oid in 'bridges', which is a perfectly valid number
+# in the wrong table - handing it to one of them would settle a different operation entirely.
+def test_the_transfer_actions_never_reach_a_half_bridge_row(wallets):
+    _funded_wallet_a()
+    _pending_half()
+    window = UnsettledTransfersReportWindow(Reports(None, None))
+    view = window.ui.ReportTreeView
+    view.setCurrentIndex(view.model().index(0, 0, QModelIndex()))
+
+    assert window._pending_oid(view.currentIndex()) == 0        # not offered to Assign/Match/Swap/Bridge
+    assert window._pending_bridge_oid(view.currentIndex()) != 0  # ... and offered to the bridge matcher instead
+    assert window.ui.AssignButton.isEnabled() is False
+    assert window.ui.SwapButton.isEnabled() is False
+    assert window.ui.BridgeButton.isEnabled() is False
+
+
+def test_the_bridge_button_follows_the_selection(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    window = UnsettledTransfersReportWindow(Reports(None, None))
+    view = window.ui.ReportTreeView
+
+    assert window.ui.BridgeButton.isEnabled() is False
+    view.setCurrentIndex(view.model().index(0, 0, QModelIndex()))
+    assert window.ui.BridgeButton.isEnabled() is True
+
+
+# The dialog warns when the arrival it is about to consume is one a pending half-bridge could be waiting for: both
+# paths end at the same Bridge, and taking it here would leave that half stranded with its send still on the books.
+def test_the_bridge_dialog_warns_about_a_half_bridge_that_wants_the_same_arrival(wallets):
+    sent, arrived = _crossing(quantity_in=395)
+    _pending_half(qty=400, timestamp=d2t(210103))
+
+    dialog = BridgeConvertDialog(sent)
+    notes, _emphasize = dialog.marks(dict(oid=arrived, opart=Transfer.Incoming))
+
+    assert notes and 'recorded twice' in notes[0]
+    assert 'Match cross-chain legs' in notes[0]
+
+
+def test_the_bridge_dialog_is_silent_when_no_half_bridge_wants_it(wallets):
+    sent, arrived = _crossing(quantity_in=395)
+
+    dialog = BridgeConvertDialog(sent)
+
+    assert dialog.marks(dict(oid=arrived, opart=Transfer.Incoming)) == ([], False)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The same settlements, offered where the user happens to be standing: the Operations list already opens the bridge
+# matcher on a pending half-bridge, and a one-legged transfer is the same kind of unfinished thing.
+
+def test_operations_offers_the_settlements_on_a_pending_transfer_leg(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    widget = OperationsWidget()
+    names = [action.text() for action in widget._pending_transfer_actions()]
+
+    assert names == ['Assign an account…', 'Match with another leg…', 'Convert into a swap…',
+                     'Convert into a bridge…']
+
+
+# _settle_pending_transfer() opens each of them the same way, so they have to agree on the shape it relies on:
+# constructed from (oid, parent), and reporting through 'changed' whether anything was written.
+@pytest.mark.parametrize("dialog_class",
+                         [TransferAssignDialog, TransferMatchDialog, SwapConvertDialog, BridgeConvertDialog])
+def test_every_settlement_dialog_takes_a_leg_and_reports_what_it_did(wallets, dialog_class):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    oid = Transfer.pending_legs()[0]['oid']
+
+    dialog = dialog_class(oid, parent=None)
+
+    assert dialog.changed is False

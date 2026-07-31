@@ -1,12 +1,14 @@
 from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QModelIndex, QPoint
-from PySide6.QtWidgets import QMenu, QMessageBox
+from PySide6.QtWidgets import QDialog, QMenu, QMessageBox
 from jal.ui.reports.ui_unsettled_transfers_report import Ui_UnsettledTransfersWidget
 from jal.reports.reports import Reports
 from jal.db.asset import JalAsset
 from jal.db.pending_transfers_model import PendingTransfersModel
 from jal.db.transfer_settlement import TransferSettlement
+from jal.widgets.bridge_convert_dialog import BridgeConvertDialog
+from jal.widgets.bridge_match_dialog import BridgeMatchDialog
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.swap_convert_dialog import SwapConvertDialog
 from jal.widgets.transfer_assign_dialog import TransferAssignDialog
@@ -56,6 +58,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.MatchButton.pressed.connect(self.matchLegs)
         self.ui.AssignButton.pressed.connect(self.assignAccount)
         self.ui.SwapButton.pressed.connect(self.convertToSwap)
+        self.ui.BridgeButton.pressed.connect(self.convertToBridge)
         self.ui.ReportTreeView.doubleClicked.connect(self.matchLegAt)
         self.ui.ReportTreeView.customContextMenuRequested.connect(self.onContextMenu)
         # Assigning and converting into a swap act on the row that is selected, so without one there is nothing for
@@ -63,6 +66,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.ReportTreeView.selectionModel().selectionChanged.connect(self.onSelectionChanged)
         self.ui.AssignButton.setEnabled(False)
         self.ui.SwapButton.setEnabled(False)
+        self.ui.BridgeButton.setEnabled(False)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
     # The list is a read of the 'transfers' table, so everything that writes one leaves it stale - not only the
@@ -134,6 +138,26 @@ class UnsettledTransfersReportWindow(MdiWidget):
         dialog.exec()
         self._settled(dialog.changed)
 
+    # Replaces the selected leg and the arrival it crossed chains as by the single Bridge operation the two are. The
+    # move whose send the fetcher DID recognize never gets here - it is a pending half-bridge already, and the bridge
+    # matcher completes it (see matchBridge) - so this is for the one that was imported as two plain transfers.
+    @Slot()
+    def convertToBridge(self):
+        oid = self._pending_oid(self.ui.ReportTreeView.currentIndex())
+        if not oid:
+            return
+        dialog = BridgeConvertDialog(oid, parent=self)
+        dialog.exec()
+        self._settled(dialog.changed)
+
+    # Completes a pending half-bridge listed here, with the same dialog the Operations list opens on it
+    @Slot()
+    def matchBridge(self):
+        oid = self._pending_bridge_oid(self.ui.ReportTreeView.currentIndex())
+        if not oid:
+            return
+        self._settled(BridgeMatchDialog(oid, self).exec() == QDialog.Accepted)
+
     @Slot()
     def onSelectionChanged(self, _selected, _deselected):
         self.updateRowButtons()
@@ -142,27 +166,49 @@ class UnsettledTransfersReportWindow(MdiWidget):
     # model drops the selection WITHOUT emitting selectionChanged, so after a reload a button would otherwise stay
     # enabled over the row that was just settled and is no longer there.
     def updateRowButtons(self):
-        pending = bool(self._pending_oid(self.ui.ReportTreeView.currentIndex()))
+        index = self.ui.ReportTreeView.currentIndex()
+        pending = bool(self._pending_oid(index))
         self.ui.AssignButton.setEnabled(pending)
         self.ui.SwapButton.setEnabled(pending)
+        # The Bridge button converts two transfer legs, so a half-bridge row is not what it acts on - that row is
+        # completed from its context menu instead
+        self.ui.BridgeButton.setEnabled(pending)
 
     @Slot(QPoint)
     def onContextMenu(self, position):
         index = self.ui.ReportTreeView.indexAt(position)
-        if not self._pending_oid(index):
-            return   # a transfer that only lacks a cost basis is settled already - neither action applies to it
         self.ui.ReportTreeView.setCurrentIndex(index)
         menu = QMenu(self.ui.ReportTreeView)
-        menu.addAction(self.tr("Assign an account..."), self.assignAccount)
-        menu.addAction(self.tr("Match with another leg..."), partial(self.matchLegAt, index))
-        menu.addAction(self.tr("Convert into a swap..."), self.convertToSwap)
+        if self._pending_bridge_oid(index):
+            # A half-bridge is completed by the bridge matcher, which needs no second leg from this list - the action
+            # is named exactly as in the Operations list, because it is the same one
+            menu.addAction(self.tr("Match cross-chain legs..."), self.matchBridge)
+        elif self._pending_oid(index):
+            menu.addAction(self.tr("Assign an account..."), self.assignAccount)
+            menu.addAction(self.tr("Match with another leg..."), partial(self.matchLegAt, index))
+            menu.addAction(self.tr("Convert into a swap..."), self.convertToSwap)
+            menu.addAction(self.tr("Convert into a bridge..."), self.convertToBridge)
+        else:
+            return   # a transfer that only lacks a cost basis is settled already - no action applies to it
         menu.popup(self.ui.ReportTreeView.viewport().mapToGlobal(position))
 
-    # oid of the row, but only while it is a leg waiting for an account. The rows listed for a missing cost basis are
-    # settled transfers, and every settlement action would refuse them - the report shows them to be looked at.
+    # oid of the row, but only while it is a TRANSFER leg waiting for its counterpart - which is what every action on
+    # this page acts on. Two kinds of row are not that and must never reach one:
+    #   * a row listed for a missing cost basis is a settled transfer, and every settlement would refuse it - it is
+    #     shown to be looked at;
+    #   * a pending half-bridge names an oid in 'bridges', not in 'transfers'. Passing it on would be worse than
+    #     refusing it, because the number is perfectly valid in the wrong table and would settle another operation
+    #     entirely, so the kind is checked here rather than trusted to a refusal further down.
     def _pending_oid(self, index) -> int:
         model = self.ui.ReportTreeView.model()
-        if model.transfer_kind(index) == PendingTransfersModel.BASIS:
+        if model.transfer_kind(index) in (PendingTransfersModel.BASIS, PendingTransfersModel.BRIDGE):
+            return 0
+        return model.transfer_oid(index)
+
+    # ... and the other side of that: the oid of a pending half-bridge row, which only the bridge matcher acts on
+    def _pending_bridge_oid(self, index) -> int:
+        model = self.ui.ReportTreeView.model()
+        if model.transfer_kind(index) != PendingTransfersModel.BRIDGE:
             return 0
         return model.transfer_oid(index)
 

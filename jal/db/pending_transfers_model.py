@@ -8,7 +8,7 @@ from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.helpers import localize_decimal, now_ts, day_end
-from jal.db.operations import Transfer
+from jal.db.operations import Bridge, Transfer
 from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate
 
@@ -65,14 +65,22 @@ class PendingLegTreeItem(AbstractTreeItem):
 # list can be read as the few groups it is rather than as one undifferentiated worklist:
 #   SENT     the money left and where it went is unknown - what the total above is made of
 #   ARRIVED  it landed and where it came from is unknown - already counted, but at a cost basis of zero
+#   BRIDGE   a cross-chain send whose arrival is still awaited: the same money in flight, recorded as a pending
+#            half-bridge rather than as a transfer leg because the fetcher recognized the contract it went into.
+#            It is listed here for exactly that reason - which of the two a movement became is an accident of the
+#            protocol registry, and a worklist that showed only one of them would answer "what money of mine is in
+#            flight" with a number that leaves the other out. It settles differently, though (BridgeMatcher, from
+#            the Operations list), so it is a kind of its own rather than a leg among the others.
 #   BASIS    not pending at all: a settled cross-currency transfer whose destination lots opened at zero because
 #            nothing ever stated their cost basis. Shown only on request (see updateView), because a zero may be
 #            correct and only the user can tell - what matters is that it is possible to look.
 class PendingTransfersModel(ReportTreeModel):
     SENT = 'sent'
     ARRIVED = 'arrived'
+    BRIDGE = 'bridge'
     BASIS = 'basis'
-    _BACKGROUND = {SENT: CustomColor.PaleYellow, ARRIVED: CustomColor.PaleBlue, BASIS: CustomColor.PaleViolet}
+    _BACKGROUND = {SENT: CustomColor.PaleYellow, ARRIVED: CustomColor.PaleBlue, BRIDGE: CustomColor.PaleGreen,
+                   BASIS: CustomColor.PaleViolet}
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -219,6 +227,28 @@ class PendingTransfersModel(ReportTreeModel):
             'tooltip': tooltip
         }
 
+    # Turns one pending half-bridge of Bridge.pending_halves() into a display record. It is a send like any other in
+    # this list - the asset left and reached nothing - so it counts towards the money in transit the same way.
+    def _bridge_record(self, half) -> dict:
+        return {
+            'oid': half['oid'],
+            'kind': self.BRIDGE,
+            'timestamp': half['timestamp'],
+            'from': half['account'].name(),
+            'to': self.tr("(unknown)"),
+            'asset': half['symbol'].symbol(),
+            'qty': half['qty'],
+            'value': half['qty'] * half['asset'].quote(self._date, self._currency)[1],
+            'suggestion': '',
+            'address': '',
+            'number': half['number'],
+            'note': half['note'],
+            'font': 'normal',
+            'tooltip': self.tr("Sent across chains, and what arrived for it isn't known yet. This one is already "
+                               "recorded as a bridge, so it is completed from the Operations list: right-click it "
+                               "there and choose 'Match cross-chain legs...'.")
+        }
+
     # Turns one transfer of Transfer.legs_without_cost_basis() into a display record. Both of its ends are known, so
     # nothing about it is in transit and it adds nothing to the total - what it is missing is what the asset cost.
     def _basis_record(self, leg) -> dict:
@@ -248,6 +278,8 @@ class PendingTransfersModel(ReportTreeModel):
         self._root = PendingLegTreeItem()
         for leg in Transfer.pending_legs(self._date):
             self._root.appendChild(PendingLegTreeItem(self._leg_record(leg)))
+        for half in Bridge.pending_halves(self._date):
+            self._root.appendChild(PendingLegTreeItem(self._bridge_record(half)))
         if self._with_basis_gaps:
             for leg in Transfer.legs_without_cost_basis(self._date):
                 self._root.appendChild(PendingLegTreeItem(self._basis_record(leg)))

@@ -143,6 +143,16 @@
        </widget>
       </item>
       <item row="0" column="9">
+       <widget class="QPushButton" name="BridgeButton">
+        <property name="toolTip">
+         <string>Replace a leg and the arrival it crossed chains as by the bridge they are</string>
+        </property>
+        <property name="text">
+         <string>Bridge...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="10">
        <widget class="QPushButton" name="SaveButton">
         <property name="text">
          <string>Save...</string>

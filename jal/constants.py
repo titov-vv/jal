@@ -561,6 +561,7 @@ class CustomColor:
     PaleYellow = QColor(255, 250, 220)
     PaleBlue = QColor(225, 240, 255)
     PaleViolet = QColor(240, 232, 250)
+    PaleGreen = QColor(232, 248, 232)
 
 
 class AssetTypeComboBox(QComboBox):

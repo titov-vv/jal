@@ -112,6 +112,22 @@ class BridgeMatcher(JalDB):
                 result.append(toid)
         return result
 
+    # The inverse question of transfer_candidates(): the oids of the pending half-bridges that could claim the given
+    # arriving transfer leg, closest in time first.
+    #
+    # Asked where a transfer leg is about to be consumed by something ELSE (the conversion of two pending legs into
+    # one bridge or swap, from the unsettled-transfers report). Both mechanisms end at the same operation and the
+    # same leg can serve either, but only one of them: converting a pair takes an arrival that a half-bridge may have
+    # been waiting for, and the half is then left with nothing to complete it while the send it holds stays on the
+    # books - the same movement recorded twice. Nothing here decides anything, since a half may equally well be an
+    # unrelated move; it is what lets the chooser say so before the user commits.
+    def halves_claiming(self, transfer_oid) -> list:
+        arrival = self._transfer_side(transfer_oid)
+        if arrival is None:
+            return []
+        halves = [half for half in self._pending_halves() if self._pair_kind(half, arrival) is not None]
+        return [half['oid'] for half in sorted(halves, key=lambda x: abs(x['timestamp'] - arrival['timestamp']))]
+
     # Completes a pending half-bridge from an existing asset Transfer - the arriving leg, which the fetcher can only
     # import as a plain transfer. The transfer's deposit (arrival) side either fills the half's missing leg, when both
     # carry the same asset, or - when the asset changed on the way - becomes the receiving leg of a new cross-chain
