@@ -74,13 +74,23 @@ class PendingLegTreeItem(AbstractTreeItem):
 #   BASIS    not pending at all: a settled cross-currency transfer whose destination lots opened at zero because
 #            nothing ever stated their cost basis. Shown only on request (see updateView), because a zero may be
 #            correct and only the user can tell - what matters is that it is possible to look.
+#   POISONING an arrival from an address minted to be mistaken for one of the user's own - an address-poisoning
+#            attack, waiting to be copied out of the history in place of the real address. It is not a leg awaiting
+#            its other end at all: nobody sent it, so nothing will ever settle it.
+#   AIRDROP  an arrival of an asset the wallet has never otherwise dealt in - which is what something pushed in
+#            uninvited looks like, though a first genuine acquisition looks the same until the second one happens.
+#            A paler shade than the one above, because that is a suspicion and the one above is not.
 class PendingTransfersModel(ReportTreeModel):
     SENT = 'sent'
     ARRIVED = 'arrived'
     BRIDGE = 'bridge'
     BASIS = 'basis'
+    POISONING = 'poisoning'
+    AIRDROP = 'airdrop'
     _BACKGROUND = {SENT: CustomColor.PaleYellow, ARRIVED: CustomColor.PaleBlue, BRIDGE: CustomColor.PaleGreen,
-                   BASIS: CustomColor.PaleViolet}
+                   BASIS: CustomColor.PaleViolet, POISONING: CustomColor.PaleRed, AIRDROP: CustomColor.PaleOrange}
+    # The kinds an arriving leg may turn out to be instead of a plain arrival - what the report colours differently
+    UNSOLICITED = {TransferSettlement.POISONING: POISONING, TransferSettlement.AIRDROP: AIRDROP}
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -210,9 +220,16 @@ class PendingTransfersModel(ReportTreeModel):
                        + Transfer.leg_symbol(leg) + self.tr(" and as ") + duplicate['other_asset'].symbol() \
                        + self.tr(", which is one movement recorded under two assets. If they are the same coin, "
                                  "merge them in the Assets dialog and the two legs settle by themselves.")
+        # An arrival nobody sent is not waiting for anything, and saying so is the point: it would otherwise sit in
+        # this worklist for ever, and the address it names is the very thing the attack wants copied out of it.
+        kind = self.SENT if outgoing else self.ARRIVED
+        unsolicited = None if outgoing else self._settlement.dust_hint(leg['oid'])
+        if unsolicited:
+            kind = self.UNSOLICITED[unsolicited['kind']]
+            tooltip = self._unsolicited_tooltip(unsolicited, leg)
         return {
             'oid': leg['oid'],
-            'kind': self.SENT if outgoing else self.ARRIVED,
+            'kind': kind,
             'timestamp': leg['timestamp'],
             'from': leg['account'].name() if outgoing else unknown,
             'to': unknown if outgoing else leg['account'].name(),
@@ -226,6 +243,20 @@ class PendingTransfersModel(ReportTreeModel):
             'font': 'normal' if outgoing else 'italic',
             'tooltip': tooltip
         }
+
+    # What a row says about an arrival nobody asked for. The poisoning wording names the account being impersonated
+    # and warns about the address rather than the money: the amount is trivial by design, and the loss the attack is
+    # after happens later, when the address is copied out of the history into a real transfer.
+    def _unsolicited_tooltip(self, unsolicited: dict, leg) -> str:
+        if unsolicited['kind'] == TransferSettlement.POISONING:
+            return self.tr("ADDRESS POISONING. It came from an address built to be mistaken for the one of ") \
+                   + unsolicited['impersonated'].name() \
+                   + self.tr(" - the two match at both ends, which is what you see when an address is abbreviated. "
+                             "Never copy this address out of your history: money sent to it is gone. Nobody is "
+                             "waiting to be paired with this, so write it off with Dust.")
+        return self.tr("Nothing else in this wallet has ever dealt in ") + Transfer.leg_symbol(leg) \
+               + self.tr(" - this arrival is the only operation in it, which is what an unsolicited airdrop looks "
+                         "like. If it is one, write it off with Dust; if you really acquired it, settle it as usual.")
 
     # Turns one pending half-bridge of Bridge.pending_halves() into a display record. It is a send like any other in
     # this list - the asset left and reached nothing - so it counts towards the money in transit the same way.

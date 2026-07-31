@@ -10,11 +10,11 @@ from PySide6.QtWidgets import QWidget, QMessageBox, QDialogButtonBox
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_quotes, create_trades, symbol_id_for
 from constants import PredefinedAsset, PredefinedAccountType, PredefinedCategory, AssetLocation
-from jal.db.account import JalAccountCreator
+from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.db import JalDB
 from jal.db.symbol import JalSymbol
-from jal.db.operations import LedgerTransaction, Transfer
+from jal.db.operations import AssetPayment, LedgerTransaction, Transfer
 from jal.db.ledger import Ledger
 from jal.db.pending_transfers_model import PendingTransfersModel
 from jal.db.transfer_settlement import TransferSettlement
@@ -962,3 +962,126 @@ def test_every_settlement_dialog_takes_a_leg_and_reports_what_it_did(wallets, di
     dialog = dialog_class(oid, parent=None)
 
     assert dialog.changed is False
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Legs nobody sent. An arrival from an address minted to imitate one of the user's own is an address-poisoning attack:
+# it is not half of anything, so no settlement will ever complete it and it sits in this worklist for good. Worse, the
+# address it puts in the history is the whole point of the attack - it is there to be copied into a real transfer.
+
+POISONED = '0x6da64f4a6e15251d4c689ce1c3c90c1e7e457e63'   # imitates WALLET_A's address below at both ends
+STRANGER = '0x6357d3843d715496257e338a878ab0b72040a918'
+
+
+def _poisoning_leg(address=POISONED):
+    return _transfer(None, WALLET_B, Decimal('0.001'), d2t(210103), address=address)
+
+
+def test_a_poisoning_arrival_is_marked_and_named(wallets):
+    JalDB()._exec("UPDATE account_data SET value=:addr WHERE account_id=:acc AND value LIKE '0x%'",
+                  [(":addr", '0x6da6708a1b5946cade863f7f5792084731c57e63'), (":acc", WALLET_A)], commit=True)
+    JalAccount.db_cache.clear_cache() if hasattr(JalAccount, 'db_cache') else None
+    _poisoning_leg()
+
+    model = _model()
+    index = model.index(0, 0, QModelIndex())
+
+    assert model.transfer_kind(index) == PendingTransfersModel.POISONING
+    tooltip = model.data(index, Qt.ToolTipRole)
+    assert 'ADDRESS POISONING' in tooltip
+    assert 'ARB wallet' in tooltip          # it names WHICH wallet is being imitated
+    assert 'Never copy this address' in tooltip
+
+
+def test_an_arrival_from_a_stranger_is_an_ordinary_pending_leg(wallets):
+    _funded_wallet_a()      # so the asset it brings is one the wallet really deals in
+    _transfer(None, WALLET_B, 400, d2t(210103), address=STRANGER)
+
+    model = _model()
+
+    assert model.transfer_kind(model.index(0, 0, QModelIndex())) == PendingTransfersModel.ARRIVED
+
+
+# The second, weaker signal: an asset that arrived once and that the wallet has never otherwise dealt in
+def test_an_asset_the_wallet_never_dealt_in_is_marked_as_an_airdrop(wallets):
+    _transfer(None, WALLET_B, 400, d2t(210103), symbol_id=_second_asset_listing('SPAM'))
+
+    model = _model()
+    index = model.index(0, 0, QModelIndex())
+
+    assert model.transfer_kind(index) == PendingTransfersModel.AIRDROP
+    assert 'has ever dealt in' in model.data(index, Qt.ToolTipRole)
+
+
+# ... which must not fire on an asset the wallet really trades. This is the case that made the value-based rules
+# unusable: an asset can be perfectly real and still have no quote and a tiny amount.
+def test_an_asset_the_wallet_trades_is_not_an_airdrop(wallets):
+    _funded_wallet_a()                       # buys USDT, so the wallet has dealt in it
+    _transfer(None, WALLET_B, Decimal('0.000001'), d2t(210103))
+
+    model = _model()
+
+    assert model.transfer_kind(model.index(0, 0, QModelIndex())) == PendingTransfersModel.ARRIVED
+
+
+def test_a_sent_leg_is_never_unsolicited(wallets):
+    # What the user sent, the user sent - only an arrival can come from nowhere
+    _transfer(WALLET_A, None, 400, d2t(210103), address=POISONED, symbol_id=_second_asset_listing('SPAM'))
+
+    model = _model()
+
+    assert model.transfer_kind(model.index(0, 0, QModelIndex())) == PendingTransfersModel.SENT
+    assert TransferSettlement().dust_hint(Transfer.pending_legs()[0]['oid']) is None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_writing_off_dust_keeps_the_coins_and_drops_the_leg(wallets):
+    _poisoning_leg()
+    oid = Transfer.pending_legs()[0]['oid']
+
+    assert TransferSettlement().mark_as_dust(oid) == ''
+
+    assert Transfer.pending_legs() == []          # it stops waiting for a sender it never had ...
+    payment = JalDB()._read("SELECT type, account_id, symbol_id, amount FROM asset_payments ORDER BY oid DESC LIMIT 1",
+                            named=True)
+    assert int(payment['type']) == AssetPayment.DustAttack
+    assert int(payment['account_id']) == WALLET_B          # ... and the coins stay where they really arrived
+    assert Decimal(payment['amount']) == Decimal('0.001')
+
+
+def test_dust_refuses_a_leg_that_was_sent(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    oid = Transfer.pending_legs()[0]['oid']
+
+    assert 'arrived from nowhere' in TransferSettlement().mark_as_dust(oid)
+    assert len(Transfer.pending_legs()) == 1
+
+
+def test_dust_refuses_a_settled_transfer(wallets):
+    _funded_wallet_a()
+    transfer = _transfer(WALLET_A, WALLET_B, 400, d2t(210103))
+
+    assert 'arrived from nowhere' in TransferSettlement().mark_as_dust(transfer.oid())
+
+
+def test_the_ledger_processes_a_written_off_leg(wallets):
+    _poisoning_leg()
+
+    assert TransferSettlement().mark_as_dust(Transfer.pending_legs()[0]['oid']) == ''
+    Ledger().rebuild(from_timestamp=0)
+
+    assert JalDB()._read("SELECT COUNT(*) FROM ledger WHERE otype=:t",
+                         [(":t", LedgerTransaction.AssetPayment)]) != '0'
+
+
+def test_the_dust_button_follows_the_selection(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))      # sent - Dust doesn't apply
+    _poisoning_leg()                                  # arrived from nowhere - it does
+    window = UnsettledTransfersReportWindow(Reports(None, None))
+    view = window.ui.ReportTreeView
+
+    assert window.ui.DustButton.isEnabled() is False
+    view.setCurrentIndex(view.model().index(0, 0, QModelIndex()))
+    assert window.ui.DustButton.isEnabled() is False
+    view.setCurrentIndex(view.model().index(1, 0, QModelIndex()))
+    assert window.ui.DustButton.isEnabled() is True

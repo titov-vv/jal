@@ -1,0 +1,66 @@
+from jal.db.account import JalAccount
+from jal.db.token_blacklist import normalize_address
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Recognizes an ADDRESS-POISONING counterparty: an address minted to look like one of the user's own.
+#
+# The attack is a confidence trick played on the wallet's own history. Nobody reads a 40-digit address; every wallet
+# and every explorer abbreviates it to its ends ("0x6da6...7e63"), and that abbreviation is what a user recognizes and
+# copies when sending money to themselves. So the attacker grinds a vanity address matching the ENDS of an address the
+# victim uses, sends a trivial amount from it, and waits: the poisoned entry now sits in the history looking exactly
+# like the victim's own wallet, and the next transfer copied from there goes to the attacker instead.
+#
+# What makes it detectable is the same thing that makes it work. Matching both ends of an address is astronomically
+# unlikely by chance - each hex digit is one of 16, so agreeing on N digits happens with probability 16^-N - while for
+# the attacker it is the entire point of the address, ground out deliberately. The thresholds below ask for enough
+# digits that coincidence is excluded: 3 at each end and 7 in total is 16^-7, about 4 in a billion per comparison, so
+# a wallet with a handful of addresses and a few hundred counterparties expects false positives in the millionths.
+# They are deliberately NOT tuned to the ends a particular wallet abbreviates to - what is being measured is that the
+# resemblance cannot be an accident, and any display that shows fewer digits than this is one the trick works on.
+_MIN_AT_EACH_END = 3
+_MIN_TOGETHER = 7
+
+
+# How many characters two addresses share at the start and at the end, as (leading, trailing).
+#
+# The chain prefix ('0x') is dropped first: every EVM address carries it, so counting it would credit two unrelated
+# addresses with two digits of resemblance they didn't earn. Comparison is on the normalized form, since EIP-55
+# capitalization is a checksum rather than part of the address, and one chain's address never resembles another's.
+def address_resemblance(location_id: int, first: str, second: str) -> tuple:
+    first, second = normalize_address(location_id, first), normalize_address(location_id, second)
+    if first[:2] == '0x' and second[:2] == '0x':
+        first, second = first[2:], second[2:]
+    if not first or not second:
+        return 0, 0
+    shortest = min(len(first), len(second))
+    leading = next((i for i in range(shortest) if first[i] != second[i]), shortest)
+    trailing = next((i for i in range(shortest) if first[-1 - i] != second[-1 - i]), shortest)
+    return leading, trailing
+
+
+# True when 'address' is built to be mistaken for 'genuine' - see the thresholds above. An address that IS the genuine
+# one is not a lookalike: it resembles itself completely, which is the one case that means nothing.
+def is_lookalike(location_id: int, address: str, genuine: str) -> bool:
+    if not address or not genuine:
+        return False
+    if normalize_address(location_id, address) == normalize_address(location_id, genuine):
+        return False
+    leading, trailing = address_resemblance(location_id, address, genuine)
+    return leading >= _MIN_AT_EACH_END and trailing >= _MIN_AT_EACH_END \
+        and (leading + trailing) >= _MIN_TOGETHER
+
+
+# The account whose address the given one was minted to be mistaken for, or None when it resembles none of them.
+#
+# Every account of the user is considered, not only those of this chain: an EVM address is commonly registered as
+# several accounts, one per chain, and an attacker who copies the ends of an address the user holds on Ethereum has
+# poisoned it just as effectively on Arbitrum. The account returned is what the row can NAME - "this pretends to be
+# your Ethereum wallet" is what tells a user why an entry they half-recognize is dangerous.
+def impersonated_account(location_id: int, address: str):
+    if not address:
+        return None
+    for account in JalAccount.get_all_accounts(active_only=False):
+        if account.address() and is_lookalike(location_id, address, account.address()):
+            return account
+    return None

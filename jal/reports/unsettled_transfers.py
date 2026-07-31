@@ -59,6 +59,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.AssignButton.pressed.connect(self.assignAccount)
         self.ui.SwapButton.pressed.connect(self.convertToSwap)
         self.ui.BridgeButton.pressed.connect(self.convertToBridge)
+        self.ui.DustButton.pressed.connect(self.writeOffAsDust)
         self.ui.ReportTreeView.doubleClicked.connect(self.matchLegAt)
         self.ui.ReportTreeView.customContextMenuRequested.connect(self.onContextMenu)
         # Assigning and converting into a swap act on the row that is selected, so without one there is nothing for
@@ -67,6 +68,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.AssignButton.setEnabled(False)
         self.ui.SwapButton.setEnabled(False)
         self.ui.BridgeButton.setEnabled(False)
+        self.ui.DustButton.setEnabled(False)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
     # The list is a read of the 'transfers' table, so everything that writes one leaves it stale - not only the
@@ -158,6 +160,28 @@ class UnsettledTransfersReportWindow(MdiWidget):
             return
         self._settled(BridgeMatchDialog(oid, self).exec() == QDialog.Accepted)
 
+    # Writes off a leg that arrived from nowhere. It asks first, and names what is about to happen, because this is
+    # the one action here that decides an arrival was never a transfer at all - the coins stay in the account, but
+    # nothing will look for the other end of them again.
+    @Slot()
+    def writeOffAsDust(self):
+        oid = self._pending_oid(self.ui.ReportTreeView.currentIndex())
+        if not oid:
+            return
+        refusal = TransferSettlement().refusal_to_mark_dust(oid)
+        if refusal:
+            QMessageBox().warning(self, self.name, self.tr("This leg can't be written off: ") + refusal)
+            return
+        question = self.tr("Record this as a dust attack?\n\nThe asset stays in the account it arrived on, at a cost "
+                           "basis of zero, and the leg stops waiting for a sender it never had.")
+        if QMessageBox().question(self, self.name, question) != QMessageBox.Yes:
+            return
+        refusal = TransferSettlement().mark_as_dust(oid)
+        if refusal:
+            QMessageBox().warning(self, self.name, self.tr("This leg can't be written off: ") + refusal)
+            return
+        self._settled(True)
+
     @Slot()
     def onSelectionChanged(self, _selected, _deselected):
         self.updateRowButtons()
@@ -173,6 +197,9 @@ class UnsettledTransfersReportWindow(MdiWidget):
         # The Bridge button converts two transfer legs, so a half-bridge row is not what it acts on - that row is
         # completed from its context menu instead
         self.ui.BridgeButton.setEnabled(pending)
+        # Only an ARRIVAL can be unsolicited: what the user sent, the user sent
+        self.ui.DustButton.setEnabled(bool(pending and not TransferSettlement().refusal_to_mark_dust(
+            self._pending_oid(index))))
 
     @Slot(QPoint)
     def onContextMenu(self, position):
@@ -188,6 +215,9 @@ class UnsettledTransfersReportWindow(MdiWidget):
             menu.addAction(self.tr("Match with another leg..."), partial(self.matchLegAt, index))
             menu.addAction(self.tr("Convert into a swap..."), self.convertToSwap)
             menu.addAction(self.tr("Convert into a bridge..."), self.convertToBridge)
+            if not TransferSettlement().refusal_to_mark_dust(self._pending_oid(index)):
+                menu.addSeparator()
+                menu.addAction(self.tr("Write off as dust..."), self.writeOffAsDust)
         else:
             return   # a transfer that only lacks a cost basis is settled already - no action applies to it
         menu.popup(self.ui.ReportTreeView.viewport().mapToGlobal(position))

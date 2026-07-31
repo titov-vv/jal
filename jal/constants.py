@@ -562,6 +562,8 @@ class CustomColor:
     PaleBlue = QColor(225, 240, 255)
     PaleViolet = QColor(240, 232, 250)
     PaleGreen = QColor(232, 248, 232)
+    PaleRed = QColor(255, 226, 226)      # something is wrong with this row
+    PaleOrange = QColor(255, 240, 220)   # ... and the paler one: something MIGHT be
 
 
 class AssetTypeComboBox(QComboBox):

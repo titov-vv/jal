@@ -153,6 +153,16 @@
        </widget>
       </item>
       <item row="0" column="10">
+       <widget class="QPushButton" name="DustButton">
+        <property name="toolTip">
+         <string>Write off a leg nobody sent as the dust attack it is</string>
+        </property>
+        <property name="text">
+         <string>Dust</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="11">
        <widget class="QPushButton" name="SaveButton">
         <property name="text">
          <string>Save...</string>

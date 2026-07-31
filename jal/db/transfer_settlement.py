@@ -6,7 +6,8 @@ from jal.db.asset import JalAsset
 from jal.db.cost_basis import carried_basis
 from jal.db.db import JalDB
 from jal.db.helpers import remove_exponent
-from jal.db.operations import LedgerTransaction
+from jal.db.address_match import impersonated_account
+from jal.db.operations import AssetPayment, LedgerTransaction
 from jal.db.symbol import JalSymbol
 
 
@@ -686,6 +687,98 @@ class TransferSettlement(JalDB):
         if Decimal(arrived['withdrawal']) > Decimal(sent['withdrawal']):
             return self.tr("more arrived than was sent, so these two are not one crossing")
         return self._refusal_over_fees(sent, arrived)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ... and some legs are not a movement of the user's money at all - they are what somebody else pushed into the
+    # wallet uninvited. Those wait for a counterpart that does not exist and never will, so they stay in the worklist
+    # for good unless they can be told apart from the legs that are genuinely unfinished.
+    POISONING = 'poisoning'    # the sender's address was minted to be mistaken for one of the user's own
+    AIRDROP = 'airdrop'        # an asset arrived that the wallet has never dealt in otherwise
+
+    # Why this leg looks like something nobody asked for, as {'kind', 'impersonated'}, or None when it doesn't.
+    #
+    # Two signals, of deliberately different strength, which is why they are kept apart rather than added together:
+    #
+    #   POISONING is as close to proof as this report gets. The sender's address matches one of the user's own at
+    #   both ends, closely enough that chance is excluded (see jal/db/address_match.py) - it exists to be copied out
+    #   of the history in place of the real one. Nothing legitimate produces that.
+    #
+    #   AIRDROP is an observation, not a verdict: this arrival is the ONLY thing the wallet has ever done in that
+    #   asset - never bought it, never sent it, never received it again. An asset that turns up once and is never
+    #   touched is what an unsolicited airdrop looks like, though a first genuine acquisition looks the same until
+    #   the second one happens, so it is offered as something to look at.
+    #
+    # What is deliberately NOT a signal here is the value: neither "worth almost nothing" nor "can't be priced".
+    # The import-time filter judges an unknown token that way (TokenFilter), and rightly - but for a leg already
+    # stored, a missing quote means the quote was never downloaded, and a small amount is very often a real one. Both
+    # would paint the largest genuine movements in this list as spam.
+    def dust_hint(self, oid: int):
+        leg = self._read("SELECT oid, withdrawal_account, deposit_account, symbol_id, counterparty_address "
+                         "FROM transfers WHERE oid=:oid AND withdrawal_account IS NULL", [(":oid", oid)], named=True)
+        if leg is None or not leg['symbol_id']:
+            return None   # only an ARRIVAL can be unsolicited - what the user sent, the user sent
+        account = JalAccount(int(leg['deposit_account']))
+        if leg['counterparty_address']:
+            impersonated = impersonated_account(account.chain(), leg['counterparty_address'])
+            if impersonated is not None:
+                return {'kind': self.POISONING, 'impersonated': impersonated}
+        if self._only_operation_in_its_asset(int(leg['oid']), self._asset_of(leg)):
+            return {'kind': self.AIRDROP, 'impersonated': None}
+        return None
+
+    # Whether this transfer is everything the user has ever done in the asset it brought
+    def _only_operation_in_its_asset(self, oid: int, asset_id: int) -> bool:
+        if not asset_id:
+            return False
+        for table in ("trades", "asset_payments"):
+            if self._read(f"SELECT 1 FROM {table} AS o JOIN asset_symbol AS s ON s.id=o.symbol_id "
+                          "WHERE s.asset_id=:asset LIMIT 1", [(":asset", asset_id)]):
+                return False
+        return not self._read("SELECT 1 FROM transfers AS t JOIN asset_symbol AS s ON s.id=t.symbol_id "
+                              "WHERE s.asset_id=:asset AND t.oid<>:oid LIMIT 1",
+                              [(":asset", asset_id), (":oid", oid)])
+
+    # Records the leg as the dust attack it is: the coins really did arrive, so they stay in the account - what
+    # changes is that they stop being half of a transfer that was never going to be completed.
+    #
+    # AssetPayment.DustAttack is the operation the chain fetchers already write for unsolicited native coin, and it
+    # states this correctly on its own: the quantity is real, the cost basis is zero, and a zero is RIGHT here rather
+    # than a gap to be filled - the coins were unsolicited and cost nothing, so their whole proceeds are a gain if
+    # they are ever sold. Nothing is blacklisted by this: a blacklist is keyed by the token's contract, and poisoning
+    # dust arrives as the genuine token (real USDT, in the case this was built for), so quarantining the contract
+    # would throw away every future transfer of an asset the user actually holds.
+    def mark_as_dust(self, oid: int) -> str:
+        refusal = self.refusal_to_mark_dust(oid)
+        if refusal:
+            return refusal
+        leg = self._read("SELECT oid, deposit_timestamp, deposit_account, withdrawal, symbol_id, number, note "
+                         "FROM transfers WHERE oid=:oid", [(":oid", oid)], named=True)
+        payment = {'timestamp': int(leg['deposit_timestamp']), 'number': leg['number'],
+                   'type': AssetPayment.DustAttack, 'account_id': int(leg['deposit_account']),
+                   'symbol_id': int(leg['symbol_id']), 'amount': Decimal(leg['withdrawal']),
+                   'note': leg['note'] if leg['note'] else self.tr("Unsolicited transfer")}
+        LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
+        self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", int(leg['oid']))], commit=True)
+        logging.info(self.tr("Unsolicited transfer recorded as a dust attack: ")
+                     + f"{remove_exponent(Decimal(leg['withdrawal']))} {JalSymbol(leg['symbol_id']).symbol()} "
+                     + self._account_name(int(leg['deposit_account'])))
+        return ''
+
+    # Why this leg can't be written off as dust, or '' when it can
+    def refusal_to_mark_dust(self, oid: int) -> str:
+        leg = self._read("SELECT oid, withdrawal_account, deposit_account, withdrawal, symbol_id "
+                         "FROM transfers WHERE oid=:oid", [(":oid", oid)], named=True)
+        if leg is None:
+            return self.tr("the transfer doesn't exist")
+        # What the user SENT is theirs and went somewhere; only an arrival can be unsolicited. A settled transfer is
+        # not a candidate either - both of its ends are known, so it is somebody's movement rather than a stray.
+        if leg['withdrawal_account'] != '' or leg['deposit_account'] == '':
+            return self.tr("only a leg that arrived from nowhere can be written off as dust")
+        if not leg['symbol_id']:
+            return self.tr("money can't arrive from nowhere - a dust attack is made of an asset")
+        if Decimal(leg['withdrawal']) <= 0:
+            return self.tr("nothing arrived to write off")
+        return ''
 
     # _read_record() gives '' for a SQL NULL, which no INTEGER column may be written back
     @staticmethod

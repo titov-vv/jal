@@ -12,6 +12,7 @@ from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 from jal.db.settings_registry import SettingsRegistry, SettingDescriptor
 from jal.db.symbol import JalSymbol
+from jal.db.address_match import impersonated_account
 from jal.db.token_blacklist import normalize_address, is_evm_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.chain_fetchers.protocols import protocol_category, protocol_name, ProtocolCategory
@@ -255,6 +256,7 @@ class EVMFetcher(ChainFetcher):
         # swap/lending/bridge shape, and left in it would skew that classification (a real single-asset receive
         # would suddenly look like two assets moving). See _extract_native_dust.
         self._extract_native_dust(deltas, timestamp, tx['hash'])
+        self._extract_poisoning_dust(deltas, timestamp, tx['hash'])
         outs = {asset_id: data for asset_id, data in deltas.items() if data['amount'] < 0}
         ins = {asset_id: data for asset_id, data in deltas.items() if data['amount'] > 0}
         contract = self._norm(own_record.get('to', '')) if own else ''
@@ -396,6 +398,30 @@ class EVMFetcher(ChainFetcher):
             self._add_payment(JSF.PAYMENT_DUST_ATTACK, timestamp, native_id, entry['amount'], tx_hash,
                               note=entry['note'])
             del deltas[native_id]
+
+    # Pulls out every incoming delta that came from an address minted to be mistaken for one of the user's own, and
+    # records it as a DustAttack payment instead - address poisoning, of the kind the native-coin rule above catches
+    # by size. Here the size is no help: the token arrives as the GENUINE asset (real USDT, in the wallet this was
+    # written for), so it passes the spam filter on the allow-list before its value is ever weighed, and the amount
+    # is trivial only by convention rather than by any rule. What gives it away is the sender - see
+    # jal/db/address_match.py on why the resemblance can't be an accident.
+    #
+    # Nothing is blacklisted: the blacklist is keyed by the token's CONTRACT, and the contract here is the real one,
+    # so quarantining it would throw away every future transfer of an asset the user holds for real.
+    #
+    # It is taken out before the transaction is classified for the same reason the native dust is: the coins are
+    # real and are imported, but they are nobody's half of anything, and leaving them among the deltas would make a
+    # plain receive look like two assets moving and a swap look like three.
+    def _extract_poisoning_dust(self, deltas: dict, timestamp: int, tx_hash: str) -> None:
+        for asset_id, entry in list(deltas.items()):
+            if entry['amount'] <= Decimal('0') or not entry['counterparty']:
+                continue
+            impersonated = impersonated_account(self.location_id, entry['counterparty'])
+            if impersonated is None:
+                continue
+            self._add_payment(JSF.PAYMENT_DUST_ATTACK, timestamp, asset_id, entry['amount'], tx_hash,
+                              note=self.tr("Address poisoning, imitating ") + impersonated.name())
+            del deltas[asset_id]
 
     # Records the address an asset's movement was with, and clears it as soon as a second one takes part: the delta
     # is a NET amount, so an account may only be put on it when every leg that formed it was with that same address.

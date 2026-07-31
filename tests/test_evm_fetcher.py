@@ -454,6 +454,63 @@ def test_an_unregistered_settlement_stays_two_transfers(eth_wallet, monkeypatch)
     assert len(_transfers(data)) == 2
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Address poisoning arrives as the GENUINE token, so the spam filter passes it on the allow-list before its value is
+# ever weighed, and the amount is trivial only by convention. What gives it away is the sender: an address ground to
+# match the wallet's own at both ends, so that it is copied out of the history in place of the real one.
+POISONER = "0x1111beef11111111111111111111111111111111"   # WALLET is 0x1111...1111 - both ends agree
+
+
+def test_poisoning_dust_is_booked_as_an_attack_and_not_as_a_transfer(eth_wallet, monkeypatch):
+    p1 = "0xp1".replace('p', 'a') + "0" * 62
+    pages = {
+        "txlist": [],
+        "tokentx": [_token_tx(p1, 100, POISONER, WALLET, 1000)],   # 0.001 USDC - real USDC, from a lookalike
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _transfers(data) == []          # it is nobody's half of anything - it must not wait for a sender
+    payments = [x for x in data[JSF.ASSET_PAYMENTS] if x['type'] == JSF.PAYMENT_DUST_ATTACK]
+    assert len(payments) == 1
+    assert payments[0]['amount'] == Decimal('0.001')
+    assert 'ETH wallet' in payments[0]['description']       # it names the wallet being imitated
+    # The contract is the REAL USDC one - blacklisting it would throw away every future USDC transfer
+    assert not JalTokenBlacklist.is_blacklisted(AssetLocation.ETH_BLOCKCHAIN, USDC_CONTRACT)
+
+
+def test_a_token_from_an_ordinary_address_is_still_a_transfer(eth_wallet, monkeypatch):
+    stranger = "0x2222222222222222222222222222222222222222"
+    p2 = "0xa2" + "0" * 62
+    pages = {
+        "txlist": [],
+        "tokentx": [_token_tx(p2, 100, stranger, WALLET, 900 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert len(_transfers(data)) == 1
+    assert not [x for x in data[JSF.ASSET_PAYMENTS] if x['type'] == JSF.PAYMENT_DUST_ATTACK]
+
+
+def test_poisoning_dust_does_not_disturb_a_swap_in_the_same_transaction(eth_wallet, monkeypatch):
+    # Taken out before the transaction is classified: left among the deltas, a one-out-one-in swap would look like
+    # three assets moving and would halt the import instead
+    allowance_holder = "0x0000000000001ff3684f28c67538d4d072c22734"
+    p3 = "0xa3" + "0" * 62
+    pages = {
+        "txlist": [_tx(p3, 100, WALLET, allowance_holder, value=3 * 10 ** 17)],
+        "tokentx": [_token_tx(p3, 100, allowance_holder, WALLET, 900 * 10 ** 6),
+                    _token_tx(p3, 100, POISONER, WALLET, 1000, contract=SPAM_CONTRACT, symbol='USDC',
+                              name='USD Coin')],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert len(_swaps(data)) == 1
+    assert len([x for x in data[JSF.ASSET_PAYMENTS] if x['type'] == JSF.PAYMENT_DUST_ATTACK]) == 1
+
+
 def test_import_halts_and_checkpoints_at_an_unregistered_exchange(eth_wallet, monkeypatch):
     unknown = "0x7777777777777777777777777777777777777777"
     other = "0x2222222222222222222222222222222222222222"

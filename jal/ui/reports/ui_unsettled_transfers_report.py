@@ -91,10 +91,15 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.gridLayout.addWidget(self.BridgeButton, 0, 9, 1, 1)
 
+        self.DustButton = QPushButton(self.ReportParamsFrame)
+        self.DustButton.setObjectName(u"DustButton")
+
+        self.gridLayout.addWidget(self.DustButton, 0, 10, 1, 1)
+
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 10, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 11, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -147,6 +152,10 @@ class Ui_UnsettledTransfersWidget(object):
         self.BridgeButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Replace a leg and the arrival it crossed chains as by the bridge they are", None))
 #endif // QT_CONFIG(tooltip)
         self.BridgeButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Bridge...", None))
+#if QT_CONFIG(tooltip)
+        self.DustButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Write off a leg nobody sent as the dust attack it is", None))
+#endif // QT_CONFIG(tooltip)
+        self.DustButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Dust", None))
         self.SaveButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Save...", None))
     # retranslateUi
 
