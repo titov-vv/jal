@@ -6,6 +6,7 @@ from jal.db.asset import JalAsset
 from jal.db.cost_basis import carried_basis
 from jal.db.db import JalDB
 from jal.db.helpers import remove_exponent
+from jal.db.operations import LedgerTransaction
 from jal.db.symbol import JalSymbol
 
 
@@ -514,6 +515,97 @@ class TransferSettlement(JalDB):
         if self._currency_of(int(sent['withdrawal_account'])) != self._currency_of(int(arrived['deposit_account'])):
             logging.warning(self.tr("Settled transfer crosses currencies, so it has no cost basis and the arrived "
                                     "asset opens at zero: ") + f"{sent['number']}")
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Some pairs of pending legs are not a transfer at all: one asset left and ANOTHER one arrived, which is an
+    # exchange rather than a movement of the same money. It reaches this report when whoever recorded the two legs
+    # couldn't tell - an intent-based DEX settles a swap through a transaction the wallet never signed, and an
+    # exchange's statement may report the two sides as two withdrawals/deposits - and no settlement can ever pair
+    # them, because they are not two sightings of one thing but the two halves of one exchange.
+    #
+    # Converting them replaces the two transfer records with the single Swap operation they always were. The cost
+    # basis is what makes this matter rather than being cosmetic: as transfers the disposal is never recognized and
+    # the arrival opens at nothing, while a swap disposes of what left at its basis and opens what arrived at its
+    # value - which is what a tax report has to see.
+
+    # Turns the two pending legs into one Swap operation and deletes them. Returns '' when it was done, and otherwise
+    # why it was not.
+    def convert_to_swap(self, sending_oid: int, arriving_oid: int) -> str:
+        sent, arrived = self._pending_pair(sending_oid, arriving_oid)
+        if sent is None:
+            return self.tr("one of the legs is no longer pending")
+        refusal = self._refusal_to_convert(sent, arrived)
+        if refusal:
+            return refusal
+        out_account, in_account = int(sent['withdrawal_account']), int(arrived['deposit_account'])
+        # 'withdrawal' holds the quantity on BOTH legs of an asset transfer - 'deposit' of one is not an amount but
+        # the cost basis the arrived asset opens at (see Transfer.processAssetTransfer), which is exactly what a leg
+        # recorded from a chain leaves at zero. Reading it as the quantity would swap into nothing.
+        swap = {'timestamp': int(sent['withdrawal_timestamp']), 'tx_hash': sent['number'],
+                'account_id': out_account,
+                'out_symbol_id': int(sent['symbol_id']), 'out_qty': Decimal(sent['withdrawal']),
+                'in_symbol_id': int(arrived['symbol_id']), 'in_qty': Decimal(arrived['withdrawal']),
+                'note': sent['note'] if sent['note'] else arrived['note']}
+        # A swap that receives on ANOTHER account is the cross-chain shape the operation already knows: the acquiring
+        # leg keeps its own account, moment and transaction. Left NULL for a same-chain swap, where the acquisition
+        # happens on the spot - which is what tells the two apart everywhere else in JAL (see SwapWidget).
+        if in_account != out_account:
+            swap.update({'in_account_id': in_account, 'in_timestamp': int(arrived['deposit_timestamp']),
+                         'in_tx_hash': arrived['number']})
+        fee, fee_symbol_id = self._fee_of(sent, arrived)
+        if fee:
+            swap.update({'fee_qty': fee, 'fee_symbol_id': fee_symbol_id})
+        LedgerTransaction.create_new(LedgerTransaction.Swap, swap)
+        self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", int(sent['oid']))])
+        self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", int(arrived['oid']))], commit=True)
+        logging.info(self.tr("Transfer legs converted into a swap: ")
+                     + f"{remove_exponent(Decimal(sent['withdrawal']))} {JalSymbol(sent['symbol_id']).symbol()} -> "
+                     + f"{remove_exponent(Decimal(arrived['withdrawal']))} {JalSymbol(arrived['symbol_id']).symbol()}")
+        return ''
+
+    # Why these two pending legs cannot be converted into one swap, or '' when they can - asked before anything is
+    # written, so a chooser can say what the pair would do instead of letting the user find out by trying it.
+    def refusal_to_convert(self, sending_oid: int, arriving_oid: int) -> str:
+        sent, arrived = self._pending_pair(sending_oid, arriving_oid)
+        if sent is None:
+            return self.tr("one of the legs is no longer pending")
+        return self._refusal_to_convert(sent, arrived)
+
+    # One leg being offered as both sides of the swap needs no check of its own: _pending_pair() asks for a row whose
+    # DEPOSIT end is unknown and a row whose WITHDRAWAL end is unknown, and one row is never both.
+    def _refusal_to_convert(self, sent: dict, arrived: dict) -> str:
+        # A money transfer names no symbol, and the swap operation is built of two of them. Money leaving and money
+        # arriving is a conversion or a trade rather than a swap, and JAL records those as their own operations.
+        if not sent['symbol_id'] or not arrived['symbol_id']:
+            return self.tr("a swap exchanges two assets, and one of these legs moves money")
+        if self._asset_of(sent) == self._asset_of(arrived):
+            return self.tr("both legs carry the same asset, so this is a transfer and not an exchange")
+        if int(sent['withdrawal_timestamp']) > int(arrived['deposit_timestamp']):
+            return self.tr("the asset can't be received before it was exchanged")
+        if Decimal(sent['withdrawal']) <= 0 or Decimal(arrived['withdrawal']) <= 0:
+            return self.tr("a swap needs a positive quantity on both sides")
+        # A swap carries ONE fee, charged in one asset on the account the exchange happens on. A fee that names no
+        # asset can't be written at all, one paid on another account would move money that was never spent there, and
+        # two fees in different assets can't be added up. None of them may be quietly dropped - that is money the
+        # user really spent - so a pair carrying one is left to be recorded by hand instead.
+        for leg in (sent, arrived):
+            if not leg['fee']:
+                continue
+            if not leg['fee_symbol_id']:
+                return self.tr("a leg pays a fee that names no asset, which one swap can't hold")
+            if leg['fee_account'] != '' and int(leg['fee_account']) != int(sent['withdrawal_account']):
+                return self.tr("a leg pays its fee on another account, which one swap can't hold")
+        if sent['fee'] and arrived['fee'] and int(sent['fee_symbol_id']) != int(arrived['fee_symbol_id']):
+            return self.tr("the two legs pay their fees in different assets, which one swap can't hold")
+        return ''
+
+    # The fee of the swap the two legs make, as (amount, symbol id) - the sum of what they carry, which is in one and
+    # the same asset by the time this is asked (see the refusals above). Zero when neither of them paid one.
+    def _fee_of(self, sent: dict, arrived: dict):
+        fee = (Decimal(sent['fee']) if sent['fee'] else Decimal('0')) \
+              + (Decimal(arrived['fee']) if arrived['fee'] else Decimal('0'))
+        symbol_id = self._or_null(sent['fee_symbol_id']) or self._or_null(arrived['fee_symbol_id'])
+        return (fee, int(symbol_id)) if fee else (Decimal('0'), None)
 
     # _read_record() gives '' for a SQL NULL, which no INTEGER column may be written back
     @staticmethod

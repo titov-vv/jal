@@ -8,6 +8,7 @@ from jal.db.asset import JalAsset
 from jal.db.pending_transfers_model import PendingTransfersModel
 from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.swap_convert_dialog import SwapConvertDialog
 from jal.widgets.transfer_assign_dialog import TransferAssignDialog
 from jal.widgets.transfer_match_dialog import TransferMatchDialog
 
@@ -54,12 +55,14 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.SettleButton.pressed.connect(self.settleAll)
         self.ui.MatchButton.pressed.connect(self.matchLegs)
         self.ui.AssignButton.pressed.connect(self.assignAccount)
+        self.ui.SwapButton.pressed.connect(self.convertToSwap)
         self.ui.ReportTreeView.doubleClicked.connect(self.matchLegAt)
         self.ui.ReportTreeView.customContextMenuRequested.connect(self.onContextMenu)
-        # Assigning acts on the row that is selected, so without one there is nothing for the button to do. Matching
-        # is different - it opens on the whole list and needs no row at all.
+        # Assigning and converting into a swap act on the row that is selected, so without one there is nothing for
+        # either button to do. Matching is different - it opens on the whole list and needs no row at all.
         self.ui.ReportTreeView.selectionModel().selectionChanged.connect(self.onSelectionChanged)
         self.ui.AssignButton.setEnabled(False)
+        self.ui.SwapButton.setEnabled(False)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
     # The list is a read of the 'transfers' table, so everything that writes one leaves it stale - not only the
@@ -68,7 +71,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
     # this is what the main window calls on every open report when it happens (MdiWidget.refresh).
     def refresh(self):
         self.updateReport(reload=True)
-        self.updateAssignButton()
+        self.updateRowButtons()
 
     # 'reload' is for the case the parameters below can't express: the list is the same list, shown for the same date
     # in the same currency, and what changed is the data under it (see _settled)
@@ -119,15 +122,29 @@ class UnsettledTransfersReportWindow(MdiWidget):
         dialog.exec()
         self._settled(dialog.changed)
 
+    # Replaces the selected leg and the one it was exchanged with by the single Swap operation the two always were -
+    # for the pairs that are not a transfer at all, and that no settlement can therefore ever pair (see
+    # SwapConvertDialog).
+    @Slot()
+    def convertToSwap(self):
+        oid = self._pending_oid(self.ui.ReportTreeView.currentIndex())
+        if not oid:
+            return
+        dialog = SwapConvertDialog(oid, parent=self)
+        dialog.exec()
+        self._settled(dialog.changed)
+
     @Slot()
     def onSelectionChanged(self, _selected, _deselected):
-        self.updateAssignButton()
+        self.updateRowButtons()
 
-    # Whether there is a row for the button to act on. Called on a reload as well as on a selection: resetting a
-    # model drops the selection WITHOUT emitting selectionChanged, so after a reload the button would otherwise stay
+    # Whether there is a row for the buttons to act on. Called on a reload as well as on a selection: resetting a
+    # model drops the selection WITHOUT emitting selectionChanged, so after a reload a button would otherwise stay
     # enabled over the row that was just settled and is no longer there.
-    def updateAssignButton(self):
-        self.ui.AssignButton.setEnabled(bool(self._pending_oid(self.ui.ReportTreeView.currentIndex())))
+    def updateRowButtons(self):
+        pending = bool(self._pending_oid(self.ui.ReportTreeView.currentIndex()))
+        self.ui.AssignButton.setEnabled(pending)
+        self.ui.SwapButton.setEnabled(pending)
 
     @Slot(QPoint)
     def onContextMenu(self, position):
@@ -138,6 +155,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         menu = QMenu(self.ui.ReportTreeView)
         menu.addAction(self.tr("Assign an account..."), self.assignAccount)
         menu.addAction(self.tr("Match with another leg..."), partial(self.matchLegAt, index))
+        menu.addAction(self.tr("Convert into a swap..."), self.convertToSwap)
         menu.popup(self.ui.ReportTreeView.viewport().mapToGlobal(position))
 
     # oid of the row, but only while it is a leg waiting for an account. The rows listed for a missing cost basis are

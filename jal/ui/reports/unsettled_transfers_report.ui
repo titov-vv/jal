@@ -133,6 +133,16 @@
        </widget>
       </item>
       <item row="0" column="8">
+       <widget class="QPushButton" name="SwapButton">
+        <property name="toolTip">
+         <string>Replace a leg and the one it was exchanged with by the swap they are</string>
+        </property>
+        <property name="text">
+         <string>Swap...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="9">
        <widget class="QPushButton" name="SaveButton">
         <property name="text">
          <string>Save...</string>

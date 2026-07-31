@@ -352,6 +352,108 @@ def test_swap_through_0x_allowance_holder_is_recognized(eth_wallet, monkeypatch)
     assert swaps[0]['in_symbol'] in usdc_symbols and swaps[0]['in_qty'] == Decimal('900')
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# An intent-based DEX settles GASLESSLY: the order is signed off-chain and a solver submits the batch, so the wallet is
+# neither the 'from' nor the 'to' of the transaction and shows up only in its token legs. The classifier used to read
+# the protocol off the wallet's own record, found none, and booked the exchange as two plain transfers.
+COW = "0x9008d19f58aabd9ed0d60971565aa8510560ab41"      # CoW Protocol GPv2Settlement
+SOLVER = "0x8888888888888888888888888888888888888888"   # whoever submitted the batch - never the wallet
+FLUID_CONTRACT = "0x6f40d4a6237c257fff2db00fa0510deeecd303eb"
+
+
+def test_gasless_settlement_is_a_swap_although_the_wallet_never_signed_it(eth_wallet, monkeypatch):
+    g1 = "0x91" + "0" * 62
+    pages = {
+        "txlist": [_tx(g1, 100, SOLVER, COW, value=0)],    # the SOLVER's transaction, not the wallet's
+        "tokentx": [_token_tx(g1, 100, WALLET, COW, 800 * 10 ** 6),                          # 800 USDC out ...
+                    _token_tx(g1, 100, COW, WALLET, 21 * 10 ** 18, contract=FLUID_CONTRACT,  # ... 21 FLUID in
+                              symbol='FLUID', name='Fluid', decimals='18')],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert not fetcher.skipped()
+    assert _transfers(data) == []            # no longer two unsettled legs waiting for a counterpart that never comes
+    swaps = _swaps(data)
+    assert len(swaps) == 1
+    fluid_symbols = [s['id'] for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS] if s['symbol'] == 'FLUID']
+    assert swaps[0]['out_symbol'] in _usdc_symbol_ids(data) and swaps[0]['out_qty'] == Decimal('800')
+    assert swaps[0]['in_symbol'] in fluid_symbols and swaps[0]['in_qty'] == Decimal('21')
+    # The wallet paid no gas for it - a fee invented here would be money it never spent
+    assert not swaps[0].get('fee_qty') and not swaps[0].get('fee_symbol')
+
+
+def test_a_gasless_swap_leg_is_not_quarantined_as_spam(eth_wallet, monkeypatch):
+    # Both legs of a solver-submitted settlement look 'incoming from an unknown address' to the spam filter, because
+    # the wallet signed nothing. The received token is thinly priced and on no allow-list - and it is still the user's
+    # own swap, so quarantining it would delete one side of an exchange the user made.
+    g2 = "0x92" + "0" * 62
+    pages = {
+        "txlist": [_tx(g2, 100, SOLVER, COW, value=0)],
+        "tokentx": [_token_tx(g2, 100, WALLET, COW, 800 * 10 ** 6),
+                    _token_tx(g2, 100, COW, WALLET, 21 * 10 ** 18, contract=FLUID_CONTRACT,
+                              symbol='FLUID', name='Fluid', decimals='18')],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert not JalTokenBlacklist.is_blacklisted(AssetLocation.ETH_BLOCKCHAIN, FLUID_CONTRACT)
+    assert len(_swaps(data)) == 1
+    # ... while a token pushed in by an address that is NOT a registered protocol is quarantined exactly as before
+    assert JalTokenBlacklist.is_blacklisted(AssetLocation.ETH_BLOCKCHAIN, SPAM_CONTRACT) is False   # not seen here
+    assert not fetcher.skipped()
+
+
+def test_a_settlement_paying_the_native_coin_is_a_swap(eth_wallet, monkeypatch):
+    # The received side may be the native coin, which a contract sends as an internal transaction - the shape the
+    # wallet's own FLUID -> ETH settlement had.
+    g3 = "0x93" + "0" * 62
+    pages = {
+        "txlist": [_tx(g3, 100, SOLVER, COW, value=0)],
+        "tokentx": [_token_tx(g3, 100, WALLET, COW, 800 * 10 ** 6)],          # 800 USDC out ...
+        "txlistinternal": [_internal_tx(g3, 100, COW, WALLET, 2 * 10 ** 17)],  # ... 0.2 ETH in
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    swaps = _swaps(data)
+    assert len(swaps) == 1
+    assert swaps[0]['out_symbol'] in _usdc_symbol_ids(data) and swaps[0]['out_qty'] == Decimal('800')
+    assert swaps[0]['in_symbol'] in _eth_symbol_ids(data) and swaps[0]['in_qty'] == Decimal('0.2')
+
+
+def test_movements_with_different_counterparties_are_not_fused_into_a_swap(eth_wallet, monkeypatch):
+    # Two unrelated movements that merely share a transaction are NOT an exchange. Only a pair that both moved with
+    # one and the same registered protocol is one - this is what keeps the rule from inventing swaps.
+    g4 = "0x94" + "0" * 62
+    outsider = "0x2222222222222222222222222222222222222222"
+    pages = {
+        "txlist": [_tx(g4, 100, SOLVER, COW, value=0)],
+        "tokentx": [_token_tx(g4, 100, WALLET, COW, 800 * 10 ** 6)],               # USDC out, with the protocol ...
+        "txlistinternal": [_internal_tx(g4, 100, outsider, WALLET, 2 * 10 ** 17)],  # ... ETH in, from someone else
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _swaps(data) == []
+    assert len(_transfers(data)) == 2
+
+
+def test_an_unregistered_settlement_stays_two_transfers(eth_wallet, monkeypatch):
+    # An unknown contract that both takes and gives is not classified by resemblance to a swap. The wallet signed
+    # nothing here, so there is nothing to halt over either - it keeps the plain-transfer treatment it had, and the
+    # legs surface in the Unsettled transfers report where the user decides what they were.
+    g5 = "0x95" + "0" * 62
+    unknown = "0x7777777777777777777777777777777777777777"
+    pages = {
+        "txlist": [_tx(g5, 100, SOLVER, unknown, value=0)],
+        "tokentx": [_token_tx(g5, 100, WALLET, unknown, 800 * 10 ** 6)],
+        "txlistinternal": [_internal_tx(g5, 100, unknown, WALLET, 2 * 10 ** 17)],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _swaps(data) == []
+    assert len(_transfers(data)) == 2
+
+
 def test_import_halts_and_checkpoints_at_an_unregistered_exchange(eth_wallet, monkeypatch):
     unknown = "0x7777777777777777777777777777777777777777"
     other = "0x2222222222222222222222222222222222222222"

@@ -310,6 +310,18 @@ class EVMFetcher(ChainFetcher):
             return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error,
                                               protocol)
 
+        # A swap the wallet never signed. An intent-based DEX (CoW Protocol, and the same way 1inch Fusion, UniswapX
+        # or 0x Settler work) is gasless for the user: the order is signed off-chain and a SOLVER submits the batch
+        # that settles it, so the wallet is neither the 'from' nor the 'to' of the transaction and appears only in its
+        # token/internal legs. There is no own record, hence no interacted-with contract and no category above - and
+        # the transaction would fall through to two plain transfers, which is what it did.
+        # The protocol is therefore read off the address the assets actually moved with, and only when BOTH sides
+        # moved with that same one: that is what makes the pair one exchange rather than two movements that happen to
+        # share a hash. The fee is not lost by taking gas as zero - the wallet paid none, and the protocol's own fee
+        # is already inside the amounts the chain reports.
+        if not own and swap_shape and self._settling_swap_protocol(outs, ins):
+            return self._emit_swap(timestamp, outs, ins, tx['hash'], Decimal('0'))
+
         # From here the contract (if any) is unregistered. A transaction the wallet signed that both spends and
         # receives an asset is a swap/lending/bridge through an unknown contract - it must never be guessed at
         # (reconciliation (a)); likewise an unfamiliar multi-asset shape or an own-initiated pure acquisition (a
@@ -416,6 +428,13 @@ class EVMFetcher(ChainFetcher):
     # from the per-leg version: provenance decides trust - only a transaction the wallet itself signed is user-driven, so any
     # other event, whichever direction it claims, must face the dust filter (a spoofed 'outgoing' fake-USDT otherwise
     # sails in, because the shared filter never treats an outgoing transfer as dust).
+    #
+    # Signing the transaction is not the only proof the user chose the token, though: a leg that moved with a
+    # REGISTERED swap protocol was chosen too, even when a solver submitted the settlement (see the gasless-swap
+    # branch of _classify_transaction - without this a legitimate swap into a thinly-priced token has one of its two
+    # legs quarantined as spam, and what is left of the exchange is a lone transfer). It is not a hole a spoofer can
+    # use: the registry is curated by hand, and the address checked is the real counterparty of the transfer event
+    # rather than anything the token itself claims about its name or ticker.
     def _token_leg(self, record: dict, tx: dict):
         address = self._norm(record.get('contractAddress', ''))
         tx_hash = record.get('hash', '')
@@ -435,8 +454,10 @@ class EVMFetcher(ChainFetcher):
             return None
         initiated = self._own_record(tx) is not None
         counterparty = record.get('from', '') if incoming else record.get('to', '')
+        chosen = initiated or protocol_category(self.location_id, counterparty) in (ProtocolCategory.SWAP,
+                                                                                   ProtocolCategory.AGGREGATOR)
         candidate = TokenCandidate(location_id=self.location_id, address=address, symbol=symbol, name=name,
-                                   incoming=incoming or not initiated, from_swap=initiated, amount=amount,
+                                   incoming=incoming or not initiated, from_swap=chosen, amount=amount,
                                    known_counterparty=self._is_own_address(counterparty),
                                    value=self._value_of(address, amount, self._timestamp_of(record)))
         if not self._filter.accept(candidate):
@@ -444,6 +465,23 @@ class EVMFetcher(ChainFetcher):
             return None
         asset_id = self._token_asset_id(symbol, name, address=address)
         return asset_id, (amount if incoming else -amount), self._counterparty_note(record), counterparty
+
+    # The name of the swap protocol that moved BOTH sides of a transaction the wallet did not sign, or '' when there
+    # is none - see the call site for what it is for.
+    #
+    # Every leg has to name one and the same counterparty: a delta whose counterparty was cleared (several addresses
+    # took part in it, see _merge_counterparty) or that names a different address than the other side is not a
+    # settlement, and an unregistered address is not a protocol JAL may classify by. Only the two categories that
+    # exchange one asset for another on this chain count - a lending, reward or custody contract acting on a wallet
+    # that never asked it to is a shape no evidence covers, and it keeps being imported as the plain transfer it is.
+    def _settling_swap_protocol(self, outs: dict, ins: dict) -> str:
+        counterparties = {data['counterparty'] for data in list(outs.values()) + list(ins.values())}
+        if len(counterparties) != 1:
+            return ''
+        address = counterparties.pop() or ''
+        if protocol_category(self.location_id, address) not in (ProtocolCategory.SWAP, ProtocolCategory.AGGREGATOR):
+            return ''
+        return protocol_name(self.location_id, address)
 
     # Emits a swap: one asset out, one asset in, gas paid in the native coin as the fee.
     def _emit_swap(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal) -> None:

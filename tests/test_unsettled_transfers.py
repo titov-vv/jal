@@ -5,18 +5,21 @@ from decimal import Decimal
 
 import pytest
 from PySide6.QtCore import Qt, QDate, QModelIndex
-from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtWidgets import QWidget, QMessageBox, QDialogButtonBox
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_quotes, create_trades, symbol_id_for
 from constants import PredefinedAsset, PredefinedAccountType, PredefinedCategory, AssetLocation
 from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
+from jal.db.db import JalDB
+from jal.db.symbol import JalSymbol
 from jal.db.operations import LedgerTransaction, Transfer
 from jal.db.ledger import Ledger
 from jal.db.pending_transfers_model import PendingTransfersModel
 from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
+from jal.widgets.swap_convert_dialog import SwapConvertDialog
 from jal.reports.reports import Reports
 from jal.reports.unsettled_transfers import UnsettledTransfersReportWindow
 
@@ -528,3 +531,216 @@ def test_an_ambiguous_transaction_is_not_pointed_out(wallets):
     model = _model()
 
     assert 'two assets' not in model.data(model.index(0, 0, QModelIndex()), Qt.ToolTipRole)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Converting two legs into the swap they are.
+#
+# One asset leaving and ANOTHER arriving is an exchange, not a movement of the same money - no settlement can ever pair
+# such legs, and left as transfers they misstate the money twice: the disposal is never recognized and what arrived
+# opens at no cost basis. It reaches the report because whoever recorded it couldn't tell (an intent-based DEX settles
+# through a transaction the wallet never signed), so the user is the one who says what it was.
+
+# The row the conversion wrote, read back as it is stored - a swap has no accessor for every field it holds
+def _stored_swap():
+    return JalDB()._read("SELECT timestamp, tx_hash, account_id, out_symbol_id, out_qty, in_timestamp, in_account_id, "
+                         "in_symbol_id, in_qty, fee_symbol_id, fee_qty FROM swaps ORDER BY oid DESC LIMIT 1",
+                         named=True)
+
+
+def _swap_pair(quantity_in=350):
+    other = _second_asset_listing()
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_A, quantity_in, d2t(210103), number=HASH, symbol_id=other, deposit=0)
+    legs = {leg['opart']: leg['oid'] for leg in Transfer.pending_legs()}
+    return legs[Transfer.Outgoing], legs[Transfer.Incoming], other
+
+
+def test_conversion_replaces_both_legs_with_one_swap(wallets):
+    sent, arrived, other = _swap_pair()
+
+    assert TransferSettlement().convert_to_swap(sent, arrived) == ''
+
+    assert Transfer.pending_legs() == []                 # the two rows are gone, not merely hidden
+    swap = _stored_swap()
+    assert int(swap['account_id']) == WALLET_A and swap['in_account_id'] == ''   # same-chain: it receives on the spot
+    assert int(swap['out_symbol_id']) == symbol_id_for(USDT) and Decimal(swap['out_qty']) == Decimal('400')
+    assert swap['tx_hash'] == HASH
+
+
+# The quantity of the arrived asset lives in 'withdrawal' on BOTH legs - 'deposit' of an asset transfer is the cost
+# basis it opens at, which a leg recorded from a chain leaves at zero. Reading it as the quantity swaps into nothing.
+def test_the_received_quantity_is_not_read_from_the_cost_basis(wallets):
+    sent, arrived, other = _swap_pair(quantity_in=350)
+
+    assert TransferSettlement().convert_to_swap(sent, arrived) == ''
+
+    swap = _stored_swap()
+    assert int(swap['in_symbol_id']) == other and Decimal(swap['in_qty']) == Decimal('350')
+
+
+def test_conversion_refuses_two_legs_of_the_same_asset(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_B, 400, d2t(210103), number=HASH)
+    legs = {leg['opart']: leg['oid'] for leg in Transfer.pending_legs()}
+
+    refusal = TransferSettlement().convert_to_swap(legs[Transfer.Outgoing], legs[Transfer.Incoming])
+
+    assert 'same asset' in refusal
+    assert len(Transfer.pending_legs()) == 2             # ... and nothing was written
+
+
+def test_conversion_refuses_an_arrival_that_precedes_the_exchange(wallets):
+    other = _second_asset_listing()
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210104), number=HASH)
+    _transfer(None, WALLET_A, 350, d2t(210103), number=HASH, symbol_id=other, deposit=0)
+    legs = {leg['opart']: leg['oid'] for leg in Transfer.pending_legs()}
+
+    refusal = TransferSettlement().convert_to_swap(legs[Transfer.Outgoing], legs[Transfer.Incoming])
+
+    assert 'received before' in refusal
+
+
+def test_conversion_refuses_a_money_leg(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103), asset_id=None, number=HASH)   # money, so it names no symbol
+    _transfer(None, WALLET_A, 350, d2t(210103), number=HASH, deposit=0)
+    legs = {leg['opart']: leg['oid'] for leg in Transfer.pending_legs()}
+
+    refusal = TransferSettlement().convert_to_swap(legs[Transfer.Outgoing], legs[Transfer.Incoming])
+
+    assert 'moves money' in refusal
+
+
+# The legs may sit on two accounts - one asset given on one chain, another received on another. The Swap operation
+# already knows that shape and keeps the acquiring leg's own account and moment.
+def test_legs_on_two_accounts_become_a_cross_chain_swap(wallets):
+    other = _second_asset_listing()
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_B, 350, d2t(210104), number='0xbbbb', symbol_id=other, deposit=0)
+    legs = {leg['opart']: leg['oid'] for leg in Transfer.pending_legs()}
+
+    assert TransferSettlement().convert_to_swap(legs[Transfer.Outgoing], legs[Transfer.Incoming]) == ''
+
+    swap = _stored_swap()
+    assert int(swap['account_id']) == WALLET_A and int(swap['in_account_id']) == WALLET_B
+    assert int(swap['timestamp']) == d2t(210103) and int(swap['in_timestamp']) == d2t(210104)
+
+
+# A fee a leg paid is money that was really spent, so it moves onto the swap rather than vanishing with the row
+def test_the_fee_of_a_leg_is_carried_onto_the_swap(wallets):
+    sent, arrived, _other = _swap_pair()
+    JalDB()._exec("UPDATE transfers SET fee=:fee, fee_account=:account, fee_symbol_id=:symbol WHERE oid=:oid",
+                  [(":fee", Decimal('0.5')), (":account", WALLET_A), (":symbol", symbol_id_for(USDT)),
+                   (":oid", sent)], commit=True)
+
+    assert TransferSettlement().convert_to_swap(sent, arrived) == ''
+
+    swap = _stored_swap()
+    assert Decimal(swap['fee_qty']) == Decimal('0.5') and int(swap['fee_symbol_id']) == symbol_id_for(USDT)
+
+
+def test_refusal_to_convert_answers_before_anything_is_written(wallets):
+    sent, arrived, _other = _swap_pair()
+    settlement = TransferSettlement()
+
+    assert settlement.refusal_to_convert(sent, arrived) == ''
+    # ... and the same leg offered as both sides of the exchange is not a pair at all
+    assert 'no longer pending' in settlement.refusal_to_convert(sent, sent)
+    assert len(Transfer.pending_legs()) == 2
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_the_swap_button_follows_the_selection(wallets):
+    wallet = _eur_wallet()
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(WALLET_A, wallet.id(), 500, d2t(210104), deposit=0)
+    window = UnsettledTransfersReportWindow(Reports(None, None))
+    window.ui.BasisGapsCheck.setChecked(True)
+    view = window.ui.ReportTreeView
+
+    assert window.ui.SwapButton.isEnabled() is False       # nothing is selected yet
+    view.setCurrentIndex(view.model().index(0, 0, QModelIndex()))
+    assert window.ui.SwapButton.isEnabled() is True        # the leg waiting for an account
+    view.setCurrentIndex(view.model().index(1, 0, QModelIndex()))
+    assert window.ui.SwapButton.isEnabled() is False       # the settled one that only lacks a cost basis
+
+
+# The dialog offers the legs of the other side, puts the one sharing a transaction reference first - that is proof the
+# two moved together - and refuses to convert what cannot be a swap.
+def test_the_swap_dialog_offers_the_counterpart_of_the_same_transaction(wallets):
+    other = _second_asset_listing()
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_A, 350, d2t(210110), number='0xelse', symbol_id=_second_asset_listing('OTHER'), deposit=0)
+    _transfer(None, WALLET_A, 350, d2t(210103), number=HASH, symbol_id=other, deposit=0)
+    sending = [leg['oid'] for leg in Transfer.pending_legs() if leg['opart'] == Transfer.Outgoing][0]
+
+    dialog = SwapConvertDialog(sending)
+
+    assert dialog._candidates.topLevelItemCount() == 2
+    first = dialog._candidates.topLevelItem(0)
+    assert HASH in first.toolTip(0)                        # the one that names the same transaction leads
+    dialog._candidates.setCurrentItem(first)
+    assert dialog._buttons.button(QDialogButtonBox.Ok).isEnabled() is True
+
+    dialog.accept()
+
+    assert dialog.changed is True
+    # the pair became a swap; the unrelated leg of another transaction is untouched and still waiting
+    assert [leg['number'] for leg in Transfer.pending_legs()] == ['0xelse']
+
+
+def test_the_swap_dialog_refuses_a_pair_that_is_a_transfer(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_B, 400, d2t(210103), number=HASH)   # the same asset - a transfer, not an exchange
+    sending = [leg['oid'] for leg in Transfer.pending_legs() if leg['opart'] == Transfer.Outgoing][0]
+
+    dialog = SwapConvertDialog(sending)
+
+    assert dialog._candidates.topLevelItemCount() == 1
+    dialog._candidates.setCurrentItem(dialog._candidates.topLevelItem(0))
+    assert dialog._buttons.button(QDialogButtonBox.Ok).isEnabled() is False
+    assert 'same asset' in dialog._status.text()
+
+
+# The conversion writes a real disposal, so the ledger has to be able to process what it wrote - a swap that breaks
+# the next rebuild would be worse than the two transfers it replaced
+def test_the_ledger_processes_the_converted_swap(wallets):
+    sent, arrived, other = _swap_pair()
+    create_quotes(JalSymbol(other).asset().id(), USD, [(d2t(210103), 1.1)])
+
+    assert TransferSettlement().convert_to_swap(sent, arrived) == ''
+    Ledger().rebuild(from_timestamp=0)
+
+    assert JalDB()._read("SELECT COUNT(*) FROM ledger WHERE otype=:swap",
+                         [(":swap", LedgerTransaction.Swap)]) != '0'
+
+
+
+# A fee is money that was really spent, so a pair whose fees one swap cannot hold is refused rather than converted
+# with part of it dropped
+def test_conversion_refuses_fees_one_swap_cannot_hold(wallets):
+    sent, arrived, other = _swap_pair()
+    JalDB()._exec("UPDATE transfers SET fee=:fee, fee_account=:account, fee_symbol_id=:symbol WHERE oid=:oid",
+                  [(":fee", Decimal('0.5')), (":account", WALLET_A), (":symbol", symbol_id_for(USDT)), (":oid", sent)])
+    JalDB()._exec("UPDATE transfers SET fee=:fee, fee_account=:account, fee_symbol_id=:symbol WHERE oid=:oid",
+                  [(":fee", Decimal('0.5')), (":account", WALLET_A), (":symbol", other), (":oid", arrived)],
+                  commit=True)
+
+    assert 'different assets' in TransferSettlement().convert_to_swap(sent, arrived)
+    assert len(Transfer.pending_legs()) == 2
+
+
+def test_conversion_refuses_a_fee_charged_on_another_account(wallets):
+    sent, arrived, _other = _swap_pair()
+    JalDB()._exec("UPDATE transfers SET fee=:fee, fee_account=:account, fee_symbol_id=:symbol WHERE oid=:oid",
+                  [(":fee", Decimal('0.5')), (":account", WALLET_B), (":symbol", symbol_id_for(USDT)), (":oid", sent)],
+                  commit=True)
+
+    assert 'another account' in TransferSettlement().convert_to_swap(sent, arrived)

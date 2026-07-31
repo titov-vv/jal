@@ -81,10 +81,15 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.gridLayout.addWidget(self.MatchButton, 0, 7, 1, 1)
 
+        self.SwapButton = QPushButton(self.ReportParamsFrame)
+        self.SwapButton.setObjectName(u"SwapButton")
+
+        self.gridLayout.addWidget(self.SwapButton, 0, 8, 1, 1)
+
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 8, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 9, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -129,6 +134,10 @@ class Ui_UnsettledTransfersWidget(object):
         self.MatchButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Pair a leg that was sent with the arrival it belongs to", None))
 #endif // QT_CONFIG(tooltip)
         self.MatchButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Match...", None))
+#if QT_CONFIG(tooltip)
+        self.SwapButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Replace a leg and the one it was exchanged with by the swap they are", None))
+#endif // QT_CONFIG(tooltip)
+        self.SwapButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Swap...", None))
         self.SaveButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Save...", None))
     # retranslateUi
 
