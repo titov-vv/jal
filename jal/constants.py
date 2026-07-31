@@ -36,6 +36,11 @@ class Setup:
     MAX_TIMESTAMP = 9999999999
     TOKEN_LIST_REFRESH_INTERVAL = 7 * 24 * 60 * 60   # How often allow/block token lists are re-downloaded, seconds
     TOKEN_DUST_THRESHOLD = '1'                       # Incoming token transfer below this value is treated as dust
+    # Relative difference between two quantities of the same asset below which they are considered to be the same
+    # number, used when open positions are matched by FIFO (see LedgerTransaction._close_deals_fifo). It has to sit
+    # between the rounding of a quantity adjustment (~1E-28 of the amount, the precision of the decimal context) and
+    # the smallest difference that may be real (one unit of an 18-decimals token, ~1E-22 of a four-digit amount).
+    LOT_QTY_TOLERANCE = '1E-25'
     ASSET_ICON_SIZE = 64
 
 # ----------------------------------------------------------------------------------------------------------------------

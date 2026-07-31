@@ -397,7 +397,12 @@ def test_fifo(prepare_db_fifo):
     assert trades[0].profit() == Decimal('75')
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(15))
     assert len(trades) == 3
-    assert [x.profit() for x in trades] == [Decimal('99.80'), Decimal('141.3999999999999999999999999'), Decimal('32.79999999999999999999999997')]
+    # The last deal takes what is left of the sold quantity, not what the rounded quantity adjustments of the merger
+    # and the splits add up to (see LedgerTransaction._close_deals_fifo) - hence the crumb in the last digits.
+    assert [x.qty() for x in trades] == [Decimal('1'), Decimal('4') / 3, Decimal('8') / 3]
+    assert sum([x.qty() for x in trades]) == Decimal('5')   # the whole position was sold, all of it is in the deals
+    assert [x.profit() for x in trades] == [Decimal('99.80'), Decimal('141.3999999999999999999999999'), Decimal('32.80000000000000000000000017')]
+    assert JalAccount(1).open_trades_list(JalAsset(15)) == []   # and no dust position is left behind
 
     # Stock dividend
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(16))

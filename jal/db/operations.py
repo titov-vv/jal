@@ -212,12 +212,27 @@ class LedgerTransaction(JalDB):
         processed_qty = Decimal('0')
         processed_value = Decimal('0')
         open_trades = account.open_trades_list(asset)
+        # The quantity a lot holds is 'remaining_qty' scaled by 'c_qty', and 'c_qty' is a ratio of two arbitrary
+        # amounts (in_qty/out_qty of a conversion, the size change of a corporate action, ...), so it is almost never
+        # exact. The scaled quantities therefore drift from the amount the ledger books hold - by ~1E-28 of the amount,
+        # the precision of the decimal context - and their sum no longer matches the position exactly. That drift is
+        # not removable by asking for more digits: it is the ratio itself that isn't representable. So a difference
+        # this small between what a lot holds and what is still required is read as "the same number" below.
+        tolerance = abs(qty) * Decimal(Setup.LOT_QTY_TOLERANCE)
         for trade in open_trades:
             remaining_qty = trade.open_qty(adjusted=True)
-            next_deal_qty = remaining_qty
-            if (processed_qty + next_deal_qty) > qty:  # We can't close full quantity with current operation
-                next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
-            trade.set_qty((remaining_qty - next_deal_qty)/trade.q_adjustment())
+            required_qty = qty - processed_qty         # Quantity that is still to be taken from the open positions
+            if abs(remaining_qty - required_qty) <= tolerance:
+                # The lot holds exactly what is still required, up to the adjustment rounding described above. Take
+                # the required quantity and close the lot: this leaves neither a shortage that would abort the whole
+                # ledger nor a dust position of ~1E-25 that no future operation would ever be able to consume.
+                next_deal_qty = required_qty
+                trade.set_qty(Decimal('0'))
+            else:
+                next_deal_qty = remaining_qty
+                if next_deal_qty > required_qty:       # We can't close full quantity with current operation
+                    next_deal_qty = required_qty       # If it happens - just process the remainder of the trade
+                trade.set_qty((remaining_qty - next_deal_qty)/trade.q_adjustment())
             account.open_trade(trade, asset, modified_by=self)
             if record_deals:
                 JalClosedTrade.create_from_trades(trade, self, (-deal_sign) * next_deal_qty)

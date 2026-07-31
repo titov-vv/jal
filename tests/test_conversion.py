@@ -133,3 +133,28 @@ def test_conversion_ignores_market_quotes(prepare_db_fifo):
     values = LedgerAmounts("value_acc")
     assert values[(BookAccount.Assets, 1, 5)] == Decimal('300')          # the basis, not 2 * 999
     assert JalAccount(1).closed_trades_list(close_otypes=_WITH_SWAP) == []
+
+
+# A lot's quantity is stored as 'remaining_qty' scaled by the adjustment 'c_qty', and 'c_qty' is the in/out ratio of
+# the conversion that carried the lot over - a ratio of two arbitrary amounts, which is not representable exactly.
+# The scaled quantities of the lots therefore no longer add up to the amount the ledger books hold, and a later
+# conversion of the whole position used to find its lots a rounding crumb short and abort the ledger rebuild
+# ("Processed asset amount is less than conversion amount"). Asking for more digits does not help - the drift stays
+# at ~1E-24 whatever the precision - so a difference this small has to be read as "the same number".
+# The numbers below are a real chain of conversions taken from a live database.
+def test_conversion_absorbs_lot_adjustment_rounding(prepare_db_fifo):
+    create_stocks([('USDT', 'Stablecoin'), ('aEthUSDT', 'Lending receipt')], currency_id=2)
+    t1, t2, t3, t4 = d2t(220101), d2t(220201), d2t(220301), d2t(220401)
+    create_trades(1, [(t1, t1, 4, Decimal('5089.698147'), Decimal('1'), Decimal('0')),
+                      (t1, t1, 4, Decimal('2994.98'), Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(t1, 4, '5089.698147', 5, '5089.698146'),    # c_qty 0.999999999803524694172791776
+                           (t2, 4, '2994.98', 5, '2999.321832'),        # c_qty 1.001449703169971084948814349
+                           (t3, 5, '572.934836', 4, '585')])            # partial - leaves both adjusted lots in place
+    # 5089.698146 + 2999.321832 - 572.934836 = 7516.085142 in the books, but the two adjusted lots sum to
+    # 7516.085141999999999999999999 - the whole position is converted here and must not come up short
+    create_conversions(1, [(t4, 5, '7516.085142', 4, '7549.608271')])
+    Ledger().rebuild(from_timestamp=0)
+
+    assert JalAccount(1).get_asset_amount(t4, 5) == Decimal('0')
+    assert JalAccount(1).open_trades_list(JalAsset(5)) == []            # and no ~1E-25 dust lot is left behind
+    assert JalAccount(1).closed_trades_list(close_otypes=_WITH_SWAP) == []
