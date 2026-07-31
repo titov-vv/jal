@@ -259,7 +259,7 @@ class PendingTransfersModel(ReportTreeModel):
             else:
                 self._view.header().setSectionResizeMode(self.fieldIndex(field), QHeaderView.ResizeToContents)
         self._grid_delegate = GridLinesDelegate(self._view)
-        self._timestamp_delegate = TimestampDelegate(display_format='%d/%m/%Y', parent=self._view)
+        self._timestamp_delegate = TimestampDelegate(parent=self._view)
         self._float_delegate = FloatDelegate(0, allow_tail=True, parent=self._view)
         # empty_zero: an arriving leg adds nothing to the money in transit, and a 0.00 there would read as "this leg
         # is worthless" rather than "this leg isn't in flight"
