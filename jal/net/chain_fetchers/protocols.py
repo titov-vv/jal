@@ -79,6 +79,16 @@ _REGISTRY = {
         # the 'from' nor the 'to' of that transaction and it has no interacted-with contract to look up - it lands as
         # a plain incoming transfer and is paired by hand, exactly as the USDT0 mint above is.
         '0x80226fc0ee2b096224eeac085bb9a8cba1146f7d': (ProtocolCategory.BRIDGE, 'Chainlink CCIP Router'),
+        # Staking SDL into stake.link's SDLPool. The address is the SDL TOKEN, not the pool: the wallet stakes by
+        # calling the token's transferAndCall(), which forwards the SDL onwards, so the pool
+        # (0x0b2ef910ad0b34bf575eb09d37fd7da6c148ca4d, an ERC1967Proxy over 'SDLPool') is never named by the
+        # transaction the wallet signed and a registry entry on it would classify nothing. What a classification has
+        # to be keyed by is the contract the WALLET CALLED - see the CCIP router above for the same lesson.
+        # Verified: 0xA95C5ebB... is named 'StakingAllowance' in its verified source and is the SDL token itself;
+        # the wallet's send of 2026-02-19 calls it with transferAndCall() and 2.406573872940269419 SDL leaves for
+        # the pool. Nothing fungible comes back - the lock is an NFT, which the fetcher never sees - so the shape is
+        # "something left, nothing returned", which is what CUSTODY is for and what the PriorityPool above also is.
+        '0xa95c5ebb86e0de73b4fb8c47a45b792cfea28c23': (ProtocolCategory.CUSTODY, 'stake.link SDL staking'),
         '0xf398e66b1273a34558aebbec550dccaf4acc7714': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays GHO
         '0xd833484b198d3d05707832cc1c2d62b520d95b8a': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays FLUID
     },
@@ -114,6 +124,30 @@ _REGISTRY = {
         # and 'OnRamp' (0x76a443768a5e3b8d1aed0105fc250877841deb40) in 2026. CCIP replaced its onramps in between,
         # which is precisely why the entry is the Router the wallet calls and not a contract the token reaches.
         '0x141fa059441e0ca23ce184b6a78bafd2a517dde8': (ProtocolCategory.BRIDGE, 'Chainlink CCIP Router'),
+        # Circle's own USDC bridge: CCTP burns the USDC here and mints it on the destination chain, so a send is one
+        # asset leaving and nothing coming back - a crossing, not an exchange.
+        # Verified: the contract is named 'CctpExtension' in its verified source, and the wallet's sends of
+        # 2026-06-07 and 2026-06-28 call it with batchDepositForBurnWithAuth(); 968.12 and 226.59 USDC leave the
+        # wallet for it and nothing returns in either transaction.
+        '0xa95d9c1f655341597c94393fddc30cf3c08e4fce': (ProtocolCategory.BRIDGE, 'Circle CCTP'),
+        # Rango, a cross-chain aggregator of the same kind as LI.FI - one diamond that routes through whichever
+        # bridge is cheapest (its facets name Across, Stargate, CCTP, Wormhole, Symbiosis and a dozen more). An
+        # AGGREGATOR rather than a BRIDGE because it settles either way: both legs on this chain is a swap, one leg
+        # is a crossing whose counterpart lives elsewhere.
+        # Verified: the contract is named 'RangoDiamond' in its verified source and the wallet's send of 2026-06-27
+        # calls it with genericSwapAndBridge(), which 15 GHO leaves for.
+        '0x69460570c93f9de5e2edbc3052bf10125f0ca22d': (ProtocolCategory.AGGREGATOR, 'Rango Diamond'),
+        # Aori, an intent-based settlement layer: the wallet deposits what it is giving up and the fill is delivered
+        # by a solver, which is why nothing comes back in the same transaction. Registered as an AGGREGATOR because
+        # the fill may be same-chain or cross-chain, and only the pair decides which.
+        # Verified: the contract is named 'Aori' in its verified source; the wallet's send of 2025-12-13 calls it
+        # with deposit(), 7.630805 USD₮0 leaves on Arbitrum, and 7.570364 USDT arrived on Ethereum the same day.
+        '0xc6868edf1d2a7a8b759856cb8afa333210dfeda6': (ProtocolCategory.AGGREGATOR, 'Aori'),
+        # Relay.link's deposit contract - the wallet pays in on this chain and the relayer delivers on the other.
+        # Verified: the contract is named 'RelayDepository' in its verified source, and the wallet's send of
+        # 2026-06-03 calls it with depositNative(), carrying 0.000542499403250656 ETH as the transaction's own value
+        # (no token leg at all, which is why only the native amount moves).
+        '0x4cd00e387622c35bddb9b4c962c136462338bc31': (ProtocolCategory.BRIDGE, 'Relay Depository'),
     },
     # Avalanche C-chain has no entries yet, deliberately. The wallet it was validated against has not sent a single
     # transaction on that chain, so there is no contract whose category could be read off its own history - and a
