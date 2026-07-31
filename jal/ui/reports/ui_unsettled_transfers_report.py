@@ -62,65 +62,70 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.gridLayout.addWidget(self.BasisGapsCheck, 0, 3, 1, 1)
 
+        self.UnsolicitedCheck = QCheckBox(self.ReportParamsFrame)
+        self.UnsolicitedCheck.setObjectName(u"UnsolicitedCheck")
+
+        self.gridLayout.addWidget(self.UnsolicitedCheck, 0, 4, 1, 1)
+
         self.FilterLbl = QLabel(self.ReportParamsFrame)
         self.FilterLbl.setObjectName(u"FilterLbl")
 
-        self.gridLayout.addWidget(self.FilterLbl, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.FilterLbl, 0, 5, 1, 1)
 
         self.FilterEdit = QLineEdit(self.ReportParamsFrame)
         self.FilterEdit.setObjectName(u"FilterEdit")
         self.FilterEdit.setClearButtonEnabled(True)
 
-        self.gridLayout.addWidget(self.FilterEdit, 0, 5, 1, 1)
+        self.gridLayout.addWidget(self.FilterEdit, 0, 6, 1, 1)
 
         self.GroupLbl = QLabel(self.ReportParamsFrame)
         self.GroupLbl.setObjectName(u"GroupLbl")
 
-        self.gridLayout.addWidget(self.GroupLbl, 0, 6, 1, 1)
+        self.gridLayout.addWidget(self.GroupLbl, 0, 7, 1, 1)
 
         self.GroupCombo = QComboBox(self.ReportParamsFrame)
         self.GroupCombo.setObjectName(u"GroupCombo")
 
-        self.gridLayout.addWidget(self.GroupCombo, 0, 7, 1, 1)
+        self.gridLayout.addWidget(self.GroupCombo, 0, 8, 1, 1)
 
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 8, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 9, 1, 1)
 
         self.SettleButton = QPushButton(self.ReportParamsFrame)
         self.SettleButton.setObjectName(u"SettleButton")
 
-        self.gridLayout.addWidget(self.SettleButton, 0, 9, 1, 1)
+        self.gridLayout.addWidget(self.SettleButton, 0, 10, 1, 1)
 
         self.AssignButton = QPushButton(self.ReportParamsFrame)
         self.AssignButton.setObjectName(u"AssignButton")
 
-        self.gridLayout.addWidget(self.AssignButton, 0, 10, 1, 1)
+        self.gridLayout.addWidget(self.AssignButton, 0, 11, 1, 1)
 
         self.MatchButton = QPushButton(self.ReportParamsFrame)
         self.MatchButton.setObjectName(u"MatchButton")
 
-        self.gridLayout.addWidget(self.MatchButton, 0, 11, 1, 1)
+        self.gridLayout.addWidget(self.MatchButton, 0, 12, 1, 1)
 
         self.SwapButton = QPushButton(self.ReportParamsFrame)
         self.SwapButton.setObjectName(u"SwapButton")
 
-        self.gridLayout.addWidget(self.SwapButton, 0, 12, 1, 1)
+        self.gridLayout.addWidget(self.SwapButton, 0, 13, 1, 1)
 
         self.BridgeButton = QPushButton(self.ReportParamsFrame)
         self.BridgeButton.setObjectName(u"BridgeButton")
 
-        self.gridLayout.addWidget(self.BridgeButton, 0, 13, 1, 1)
+        self.gridLayout.addWidget(self.BridgeButton, 0, 14, 1, 1)
 
         self.DustButton = QPushButton(self.ReportParamsFrame)
         self.DustButton.setObjectName(u"DustButton")
 
-        self.gridLayout.addWidget(self.DustButton, 0, 14, 1, 1)
+        self.gridLayout.addWidget(self.DustButton, 0, 15, 1, 1)
 
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 15, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 16, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -153,6 +158,10 @@ class Ui_UnsettledTransfersWidget(object):
         self.BasisGapsCheck.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Also list settled transfers whose asset arrived with no cost basis", None))
 #endif // QT_CONFIG(tooltip)
         self.BasisGapsCheck.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Without cost basis", None))
+#if QT_CONFIG(tooltip)
+        self.UnsolicitedCheck.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Hide the arrivals nobody sent - poisoning attacks and suspected airdrops, which no settlement will ever pair", None))
+#endif // QT_CONFIG(tooltip)
+        self.UnsolicitedCheck.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Hide unsolicited", None))
         self.FilterLbl.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Filter:", None))
 #if QT_CONFIG(tooltip)
         self.FilterEdit.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Show only the legs whose asset, account, counterparty, reference or note contains this text", None))

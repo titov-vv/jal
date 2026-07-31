@@ -21,7 +21,7 @@ class PendingLegTreeItem(AbstractTreeItem):
     def __init__(self, leg=None, parent=None, group=''):
         super().__init__(parent, group)
         if leg is None:
-            self._data = {'timestamp': 0, 'from': '', 'to': '', 'asset': '', 'qty': Decimal('0'),
+            self._data = {'timestamp': 0, 'age': 0, 'from': '', 'to': '', 'asset': '', 'qty': Decimal('0'),
                           'value': Decimal('0'), 'action': '', 'suggestion': '', 'address': '', 'number': '',
                           'note': '', 'account': '', 'protocol': ''}
         else:
@@ -114,7 +114,7 @@ class PendingTransfersModel(ReportTreeModel):
     # numbers would be a different feature (and a misleading one - '100' would match a quantity of 1002.5).
     # 'action' is among them on purpose - "show me everything that only needs an account named" is the question a
     # worklist of this length is most often asked.
-    _FILTERED = ('from', 'to', 'asset', 'action', 'suggestion', 'address', 'number', 'note')
+    _FILTERED = ('from', 'to', 'asset', 'protocol', 'action', 'suggestion', 'address', 'number', 'note')
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -127,6 +127,12 @@ class PendingTransfersModel(ReportTreeModel):
         self._date = day_end(now_ts())
         self._with_basis_gaps = False
         self._filter = ''
+        self._hide_unsolicited = False
+        # How many of the shown rows add nothing to the money in transit, by the reason they don't: an arrival is
+        # already counted in the account it landed on, a basis row is a settled transfer. Counted while the tree is
+        # built and kept, because the footer asks for it on every repaint - see footerData().
+        self._arrived_count = 0
+        self._basis_count = 0
         self._protocol_names = None
         # What the list may be filed under. None of these is a column: a heading answers a question the columns
         # can't ("what is stuck behind this wallet", "which of these belong to one transaction"), and the two that
@@ -148,11 +154,18 @@ class PendingTransfersModel(ReportTreeModel):
         italic_font.setItalic(True)
         self._fonts = {'normal': None, 'bold': bold_font, 'italic': italic_font}
         self._columns = [{'name': self.tr("Date"), 'field': 'timestamp'},
+                         # How long a leg has been waiting. The date says the same thing, but a worklist is read for
+                         # what has been stuck longest, and "180" answers that where a date has to be subtracted
+                         # from today first. It is what the report is asked to sort by more than anything else.
+                         {'name': self.tr("Age, days"), 'field': 'age'},
                          {'name': self.tr("From"), 'field': 'from'},
                          {'name': self.tr("To"), 'field': 'to'},
                          {'name': self.tr("Asset"), 'field': 'asset'},
                          {'name': self.tr("Qty"), 'field': 'qty'},
                          {'name': self.tr("In transit, "), 'field': 'value'},
+                         # The protocol the operation went through, where JAL knows it. It is read back out of the
+                         # description by name (see _protocol_of), which is the only place an import records it.
+                         {'name': self.tr("Protocol"), 'field': 'protocol'},
                          {'name': self.tr("Action"), 'field': 'action'},
                          {'name': self.tr("Suggested"), 'field': 'suggestion'},
                          {'name': self.tr("Counterparty"), 'field': 'address'},
@@ -191,6 +204,18 @@ class PendingTransfersModel(ReportTreeModel):
             return details.get('tooltip', None)
         return None
 
+    # What the total LEAVES OUT, said beside it. A list of several hundred rows totalling far less than it appears
+    # to is not a mistake - an arrival is already counted in the account it landed on, and a basis row is a settled
+    # transfer - but nothing on screen said so, and a total that can't be reconciled with the rows above it is a
+    # total nobody trusts.
+    def _not_in_transit(self) -> str:
+        parts = []
+        if self._arrived_count:
+            parts.append(f"{self._arrived_count} " + self.tr("already arrived"))
+        if self._basis_count:
+            parts.append(f"{self._basis_count} " + self.tr("settled"))
+        return (self.tr("Not in transit: ") + ", ".join(parts)) if parts else ''
+
     # A group heading. It carries the name of what it collects and the part of the money in transit that is stuck
     # behind it - the second is the reason to group at all, since "where is my money stuck" is what a total of
     # everything cannot answer.
@@ -217,6 +242,8 @@ class PendingTransfersModel(ReportTreeModel):
                 return self.tr("Total in transit:")
             if section == self.fieldIndex('value'):
                 return localize_decimal(self._root.details()['value'], precision=2)
+            if section == self.fieldIndex('action'):
+                return self._not_in_transit()
         elif role == Qt.FontRole:
             return self._fonts['bold']
         elif role == Qt.TextAlignmentRole:
@@ -238,7 +265,8 @@ class PendingTransfersModel(ReportTreeModel):
         # is worthless" rather than "this leg isn't in flight"
         self._float2_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True, parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex('timestamp'), self._timestamp_delegate)
-        for field in ('from', 'to', 'asset', 'action', 'suggestion', 'address', 'number', 'note'):
+        for field in ('age', 'from', 'to', 'asset', 'protocol', 'action', 'suggestion', 'address', 'number',
+                      'note'):
             self._view.setItemDelegateForColumn(self.fieldIndex(field), self._grid_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('qty'), self._float_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('value'), self._float2_delegate)
@@ -253,7 +281,7 @@ class PendingTransfersModel(ReportTreeModel):
     # what they are worth, so they discard the rows that were read; the filter only changes which of the rows
     # already in hand are shown, and re-reading the database for it would be work done for nothing.
     def updateView(self, currency_id, date, with_basis_gaps: bool = False, filter_text: str = '',
-                   grouping: str = '', update: bool = False):
+                   grouping: str = '', hide_unsolicited: bool = False, update: bool = False):
         if self._currency != currency_id:
             self._currency = currency_id
             self._currency_name = JalAsset(currency_id).symbol()
@@ -269,6 +297,9 @@ class PendingTransfersModel(ReportTreeModel):
         filter_text = filter_text.strip().lower()
         if self._filter != filter_text:
             self._filter = filter_text
+            update = True
+        if self._hide_unsolicited != hide_unsolicited:
+            self._hide_unsolicited = hide_unsolicited
             update = True
         if self.setGrouping(grouping):     # like the filter, this only re-files rows that are already in hand
             update = True
@@ -311,9 +342,21 @@ class PendingTransfersModel(ReportTreeModel):
     # that hold text - the point is to narrow a long worklist down to one asset, one account or one protocol, and
     # anything cleverer would have to be explained to be used.
     def _matches(self, record: dict) -> bool:
+        # An arrival nobody sent is not unfinished work: nothing will ever settle it, so it sits in the worklist for
+        # good until it is written off. Hiding those is what lets the list be read as the work that is left - and it
+        # is a HIDE rather than a removal, because a suspected airdrop may well be a real acquisition.
+        if self._hide_unsolicited and record.get('kind') in (self.POISONING, self.AIRDROP):
+            return False
         if not self._filter:
             return True
         return any(self._filter in str(record[field]).lower() for field in self._FILTERED)
+
+    # The legs an address-poisoning attack left behind, oldest first. Written off in one go from the report: the
+    # attack is identified by an address minted to imitate one of the user's own accounts, which is a fact about the
+    # address rather than a resemblance between two amounts - and it arrives in bulk, which is the point of it.
+    # A suspected airdrop is NOT here: that is a suspicion, and a first genuine acquisition looks exactly like one.
+    def poisoning_oids(self) -> list:
+        return [record['oid'] for record in (self._records or []) if record.get('kind') == self.POISONING]
 
     # Turns one leg of Transfer.pending_legs() into a display record. The end that is missing is named rather than
     # left blank, so the row says what is unknown about it instead of looking like a transfer with a hole in it.
@@ -352,6 +395,7 @@ class PendingTransfersModel(ReportTreeModel):
             'oid': leg['oid'],
             'kind': kind,
             'timestamp': leg['timestamp'],
+            'age': self._age_of(leg['timestamp']),
             'from': leg['account'].name() if outgoing else unknown,
             'to': unknown if outgoing else leg['account'].name(),
             'asset': Transfer.leg_symbol(leg),
@@ -369,6 +413,11 @@ class PendingTransfersModel(ReportTreeModel):
             'font': 'normal' if outgoing else 'italic',
             'tooltip': tooltip
         }
+
+    # How long the leg has been waiting, in whole days as of the date the report is drawn for. Never below zero: a
+    # leg dated later in the day the report ends on has not been waiting a negative time, it has just arrived.
+    def _age_of(self, timestamp: int) -> int:
+        return max((self._date - timestamp) // 86400, 0)
 
     # The protocol an operation went through, or '' when it went through none that JAL knows.
     #
@@ -426,6 +475,7 @@ class PendingTransfersModel(ReportTreeModel):
             'oid': half['oid'],
             'kind': self.BRIDGE,
             'timestamp': half['timestamp'],
+            'age': self._age_of(half['timestamp']),
             'from': half['account'].name(),
             'to': self.tr("(unknown)"),
             'asset': half['symbol'].symbol(),
@@ -453,6 +503,7 @@ class PendingTransfersModel(ReportTreeModel):
             'oid': leg['oid'],
             'kind': self.BASIS,
             'timestamp': leg['timestamp'],
+            'age': self._age_of(leg['timestamp']),
             'from': leg['from_account'].name(),
             'to': leg['to_account'].name(),
             'asset': leg['symbol'].symbol(),
@@ -488,7 +539,10 @@ class PendingTransfersModel(ReportTreeModel):
         # The total in the footer is accumulated as the rows are added, so it follows the filter - it says what is
         # in transit among the rows that are shown, which is the question a filtered list is asking. Each heading
         # accumulates the same way, out of the rows filed under it.
-        for record in self._shown():
+        shown = self._shown()
+        self._arrived_count = sum(1 for r in shown if r['kind'] in (self.ARRIVED, self.POISONING, self.AIRDROP))
+        self._basis_count = sum(1 for r in shown if r['kind'] == self.BASIS)
+        for record in shown:
             leaf = PendingLegTreeItem(record)
             self._root.getGroupLeaf(self._groups, leaf).appendChild(leaf)
         self.endResetModel()

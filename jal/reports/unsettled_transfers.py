@@ -65,6 +65,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.BasisGapsCheck.stateChanged.connect(self.updateReport)
         self.ui.FilterEdit.textChanged.connect(self.updateReport)
         self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
+        self.ui.UnsolicitedCheck.stateChanged.connect(self.updateReport)
         self.ui.SettleButton.pressed.connect(self.settleAll)
         self.ui.MatchButton.pressed.connect(self.matchLegs)
         self.ui.AssignButton.pressed.connect(self.assignAccount)
@@ -101,6 +102,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
                                                   date=self.ui.ReportDate.date(),
                                                   with_basis_gaps=self.ui.BasisGapsCheck.isChecked(),
                                                   filter_text=self.ui.FilterEdit.text(), grouping=grouping,
+                                                  hide_unsolicited=self.ui.UnsolicitedCheck.isChecked(),
                                                   update=reload)
 
     # Runs the settlements that need nobody's judgement: the legs that one and the same transaction hash pairs, and
@@ -198,6 +200,31 @@ class UnsettledTransfersReportWindow(MdiWidget):
             return
         self._settled(True)
 
+    # Writes off every poisoning arrival at once. This is the one bulk settlement that needs nobody's judgement, and
+    # for the same reason the passes behind Settle don't: a poisoning leg is identified by an address MINTED to
+    # imitate one of the user's own accounts, which is a fact about the address rather than a resemblance between
+    # two amounts. It is also the one that arrives in bulk - the attack is cheap to repeat, so a wallet collects
+    # them by the dozen, and writing them off one dialog at a time is what leaves them sitting in the worklist.
+    #
+    # A suspected airdrop is never included: that IS a resemblance ("nothing else in this wallet has dealt in this
+    # asset"), and a first genuine acquisition looks exactly like one until the second one happens.
+    @Slot()
+    def writeOffPoisoning(self):
+        oids = self.ui.ReportTreeView.model().poisoning_oids()
+        if not oids:
+            return
+        question = self.tr("Write off every arrival from a poisoned address?") + f"\n\n{len(oids)} " \
+                   + self.tr("legs are recorded as dust attacks. Each asset stays in the account it arrived on, at "
+                             "a cost basis of zero, and none of them waits for a sender again.")
+        if QMessageBox().question(self, self.name, question) != QMessageBox.Yes:
+            return
+        settlement = TransferSettlement()
+        refusals = [refusal for refusal in (settlement.mark_as_dust(oid) for oid in oids) if refusal]
+        self._settled(len(refusals) < len(oids))
+        if refusals:
+            QMessageBox().warning(self, self.name, self.tr("Some legs could not be written off: ")
+                                  + f"{len(refusals)}/{len(oids)}")
+
     @Slot()
     def onSelectionChanged(self, _selected, _deselected):
         self.updateRowButtons()
@@ -234,9 +261,33 @@ class UnsettledTransfersReportWindow(MdiWidget):
             if not TransferSettlement().refusal_to_mark_dust(self._pending_oid(index)):
                 menu.addSeparator()
                 menu.addAction(self.tr("Write off as dust..."), self.writeOffAsDust)
+        elif self.transfers_model.transfer_kind(index) == PendingTransfersModel.BASIS:
+            # No settlement applies to a settled transfer, but a right-click that opens nothing at all reads as a
+            # broken menu rather than as an answer - so the row says what it is waiting for and where that is done
+            menu.addAction(self.tr("Why is this listed?"), self.explainBasisGap)
         else:
-            return   # a transfer that only lacks a cost basis is settled already - no action applies to it
+            return   # a group heading, or a row nothing can be done to from here
+        # Offered wherever the click landed: it acts on the whole list rather than on the row under the cursor, and
+        # a wallet that collects these has them scattered through it
+        poisoned = self.transfers_model.poisoning_oids()
+        if poisoned:
+            menu.addSeparator()
+            menu.addAction(self.tr("Write off all poisoning arrivals") + f" ({len(poisoned)})...",
+                           self.writeOffPoisoning)
         menu.popup(self.ui.ReportTreeView.viewport().mapToGlobal(position))
+
+    # What a row listed for a missing cost basis is waiting for. It is not a settlement - the transfer is complete -
+    # so it is not one of this report's actions, and the answer is where the number itself has to be stated.
+    @Slot()
+    def explainBasisGap(self):
+        QMessageBox().information(self, self.name,
+                                  self.tr("This transfer is settled - both of its ends are known - so nothing here "
+                                          "can pair it. What is missing is what the asset COST: the two accounts "
+                                          "are kept in different currencies, and nothing stated the value the asset "
+                                          "arrived at, so its lots opened at zero and the whole of a later sale "
+                                          "would be taxed as gain.\n\nA zero may well be right. If it isn't, open "
+                                          "this transfer in the operations list and state the amount it arrived "
+                                          "for, in the currency of the receiving account."))
 
     # oid of the row, but only while it is a TRANSFER leg waiting for its counterpart - which is what every action on
     # this page acts on. Two kinds of row are not that and must never reach one:

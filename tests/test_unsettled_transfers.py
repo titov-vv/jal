@@ -107,12 +107,13 @@ def test_pending_legs_take_the_quantity_from_the_right_side(wallets):
 # ----------------------------------------------------------------------------------------------------------------------
 # The report itself
 
-def _model(currency_id=USD, with_basis_gaps=False, filter_text='', grouping=''):
+def _model(currency_id=USD, with_basis_gaps=False, filter_text='', grouping='', hide_unsolicited=False):
     view = TreeViewWithFooter(QWidget())
     model = PendingTransfersModel(view)
     view.setModel(model)
     model.updateView(currency_id=currency_id, date=QDate.fromString('01/03/2021', 'dd/MM/yyyy'),
-                     with_basis_gaps=with_basis_gaps, filter_text=filter_text, grouping=grouping)
+                     with_basis_gaps=with_basis_gaps, filter_text=filter_text, grouping=grouping,
+                     hide_unsolicited=hide_unsolicited)
     return model
 
 
@@ -498,6 +499,17 @@ def test_the_two_ends_of_one_crossing_are_filed_together(wallets):
     assert headings == {'Protocol: LI.FI Diamond (Jumper)': 1, 'Protocol: (none)': 2}
 
 
+def test_the_protocol_is_a_column_of_its_own(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), note='Sent through LI.FI Diamond (Jumper)')
+    _transfer(WALLET_A, None, 150, d2t(210104))               # through nothing the registry knows
+
+    model = _model()
+
+    assert _row(model, 0, 'protocol') == 'LI.FI Diamond (Jumper)'
+    assert _row(model, 1, 'protocol') == ''
+    assert _rows(_model(filter_text='li.fi')) == 1            # ... and the list can be narrowed to it
+
+
 def test_a_protocol_name_is_read_out_of_either_end_of_a_crossing(wallets):
     _transfer(WALLET_A, None, 400, d2t(210103), note='Sent through LI.FI Diamond (Jumper)')
     _transfer(None, WALLET_B, 395, d2t(210104), note='[bridge] LI.FI Diamond (Jumper): arriving leg')
@@ -540,6 +552,108 @@ def test_the_list_is_flat_again_when_nothing_is_grouped(wallets):
 
     assert _rows(model) == 2 and _under(model, 0) == 0
     assert model.transfer_oid(model.index(0, 0, QModelIndex())) != 0
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Age. The date is already in the row, but a worklist is read for what has been stuck longest, and that question is
+# answered by a number of days rather than by a date the reader has to subtract today from.
+
+def test_a_leg_says_how_long_it_has_been_waiting(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(WALLET_A, None, 150, d2t(210203))     # a month later, so a month less of waiting
+
+    model = _model()                                # ... as of 01/03/2021
+
+    assert _row(model, 0, 'age') - _row(model, 1, 'age') == 31
+    assert _row(model, 1, 'age') == 26
+
+
+def test_a_leg_of_the_report_day_itself_has_waited_nothing(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210301))
+
+    assert _row(_model(), 0, 'age') == 0
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Arrivals nobody sent. They are not unfinished work - nothing will ever settle them - so they sit in the list for
+# good until they are written off, and a worklist they fill up is one that stops being read.
+
+def test_unsolicited_arrivals_can_be_hidden(wallets):
+    _poisoned_wallet_a()
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103))                                  # real work
+    _transfer(None, WALLET_B, 400, d2t(210104), symbol_id=_second_asset_listing('SPAM'))   # an airdrop
+    _poisoning_leg()                                                             # ... and an attack
+
+    assert _rows(_model()) == 3
+    hidden = _model(hide_unsolicited=True)
+    assert _rows(hidden) == 1
+    assert hidden.transfer_kind(hidden.index(0, 0, QModelIndex())) == PendingTransfersModel.SENT
+
+
+# The one bulk settlement that needs nobody's judgement: a poisoning leg is identified by an address MINTED to
+# imitate one of the user's accounts, which is a fact about the address rather than a resemblance between amounts
+def test_only_poisoning_legs_are_offered_for_a_bulk_write_off(wallets):
+    _poisoned_wallet_a()
+    _poisoning_leg()
+    _poisoning_leg(timestamp=d2t(210104))       # a second one: the attack is cheap to repeat, which is the point
+    _transfer(None, WALLET_B, 400, d2t(210104), symbol_id=_second_asset_listing('SPAM'))   # a suspicion, not a fact
+    _transfer(WALLET_A, None, 400, d2t(210105))
+
+    model = _model()
+
+    assert len(model.poisoning_oids()) == 2
+
+
+def test_the_bulk_write_off_clears_every_poisoning_leg(wallets, monkeypatch):
+    monkeypatch.setattr(QMessageBox, 'question', lambda *args, **kwargs: QMessageBox.Yes)
+    _poisoned_wallet_a()
+    _funded_wallet_a()          # the sending leg below meets the ledger rebuild that follows the write-off
+    _poisoning_leg()
+    _poisoning_leg(timestamp=d2t(210104))
+    _transfer(WALLET_A, None, 400, d2t(210105))
+    window = UnsettledTransfersReportWindow(Reports(_MainWindowStub(), None))
+    assert _rows(window.ui.ReportTreeView.model()) == 3
+
+    window.writeOffPoisoning()
+
+    assert _rows(window.ui.ReportTreeView.model()) == 1        # only the leg that is real work is left
+    dust = JalDB()._read("SELECT count(*) FROM asset_payments WHERE type=:type", [(":type", AssetPayment.DustAttack)])
+    assert int(dust) == 2
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# What the total leaves out. Hundreds of rows totalling far less than they appear to is not a mistake - an arrival is
+# already counted in the account it landed on - but a total that can't be reconciled with the rows above it is a
+# total nobody trusts.
+
+def test_the_footer_says_what_is_not_in_transit(wallets):
+    create_quotes(USDT, USD, [(d2t(210101), 1.05)])
+    _transfer(WALLET_A, None, 400, d2t(210103))     # in transit
+    _transfer(None, WALLET_B, 150, d2t(210104))     # arrived: counted in ETH wallet already
+
+    model = _model()
+
+    assert model.footerData(_column(model, 'value')) == '420.00'
+    assert model.footerData(_column(model, 'action')) == 'Not in transit: 1 already arrived'
+
+
+def test_the_footer_counts_the_settled_rows_apart(wallets):
+    _eur_wallet()
+    _transfer(None, WALLET_B, 150, d2t(210103))
+    _transfer(WALLET_A, 3, 400, d2t(210104), deposit=0)
+
+    model = _model(with_basis_gaps=True)
+
+    assert model.footerData(_column(model, 'action')) == 'Not in transit: 1 already arrived, 1 settled'
+
+
+def test_the_footer_says_nothing_when_everything_is_in_flight(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+
+    model = _model()
+
+    assert model.footerData(_column(model, 'action')) == ''
 
 
 def test_the_report_offers_every_grouping_the_list_knows(wallets):
@@ -1259,8 +1373,17 @@ POISONED = '0x6da64f4a6e15251d4c689ce1c3c90c1e7e457e63'   # imitates WALLET_A's 
 STRANGER = '0x6357d3843d715496257e338a878ab0b72040a918'
 
 
-def _poisoning_leg(address=POISONED):
-    return _transfer(None, WALLET_B, Decimal('0.001'), d2t(210103), address=address)
+# Makes WALLET_A's address the one POISONED was minted to imitate, so an arrival from POISONED is recognized
+# as the attack it is rather than as an ordinary stranger
+def _poisoned_wallet_a():
+    JalDB()._exec("UPDATE account_data SET value=:addr WHERE account_id=:acc AND value LIKE '0x%'",
+                  [(":addr", '0x6da6708a1b5946cade863f7f5792084731c57e63'), (":acc", WALLET_A)], commit=True)
+    JalAccount.db_cache.clear_cache() if hasattr(JalAccount, 'db_cache') else None
+
+
+def _poisoning_leg(address=POISONED, timestamp=None):
+    return _transfer(None, WALLET_B, Decimal('0.001'), d2t(210103) if timestamp is None else timestamp,
+                     address=address)
 
 
 def test_a_poisoning_arrival_is_marked_and_named(wallets):
