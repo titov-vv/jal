@@ -140,3 +140,27 @@ def test_ticker_shared_by_two_assets_stays_unresolved(prepare_db):
     impostor = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Impostor')
     impostor.add_symbol('DUP', 2, AssetLocation.ETH_BLOCKCHAIN)
     assert JalAsset.find({'symbol': 'DUP', 'type': PredefinedAsset.Crypto}).id() == 0
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Asking an ASSET for its ticker in a given currency
+def test_a_currency_alone_does_not_name_one_listing_of_a_token_held_on_several_chains(prepare_db):
+    # A blockchain token is a separate active listing per chain (add_symbol scopes the deactivation by location), so
+    # the currency alone leaves several of them, and the answer was their texts run together into a ticker that
+    # exists nowhere ("USDTUSDT"). The chain is what picks one.
+    asset = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tether USD')
+    asset.add_symbol('USDT', 2, AssetLocation.ETH_BLOCKCHAIN)
+    JalAsset(asset.id()).add_symbol('USDT', 2, AssetLocation.ARB_BLOCKCHAIN)
+
+    assert JalAsset(asset.id()).symbol(currency=2, location=AssetLocation.ETH_BLOCKCHAIN) == 'USDT'
+    assert JalAsset(asset.id()).symbol(currency=2, location=AssetLocation.ARB_BLOCKCHAIN) == 'USDT'
+
+
+# A location the asset isn't listed on says nothing about it, and answering an account that has no chain of its own
+# (a broker, an exchange) with an empty ticker would be worse than answering it with what the currency knows.
+def test_a_location_the_asset_is_not_listed_on_is_ignored(prepare_db):
+    asset = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tether USD')
+    asset.add_symbol('USDT', 2, AssetLocation.ETH_BLOCKCHAIN)
+
+    assert JalAsset(asset.id()).symbol(currency=2, location=AssetLocation.TRX_BLOCKCHAIN) == 'USDT'
+    assert JalAsset(asset.id()).symbol(currency=2, location=0) == 'USDT'

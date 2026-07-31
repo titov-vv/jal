@@ -108,15 +108,22 @@ class JalAsset(JalDB):
 
     # Returns asset symbol for given currency or all symbols if no currency is given.
     # For a specific listing's symbol text use JalSymbol.symbol().
-    def symbol(self, currency: int = None) -> str:
+    #
+    # A currency alone doesn't always name ONE listing: a blockchain token is a separate active listing per chain
+    # (see add_symbol below), so an asset held on several chains has several active listings in one and the same
+    # currency. 'location' picks the listing of one chain among them; a location the asset isn't listed on is
+    # ignored rather than answered with an empty string, so an account whose chain says nothing about the asset
+    # still gets the answer the currency alone gives.
+    def symbol(self, currency: int = None, location: int = None) -> str:
         if not self._data:
             return ''
         currency = None if self._type == PredefinedAsset.Money else currency  # Money have one unique symbol
         if currency is None:
             return ','.join([x['symbol'] for x in self._data['symbols'] if x['active'] == 1])  # concatenate all symbols via comma
-        else:
-            symbol = [x['symbol'] for x in self._data['symbols'] if x['active'] == 1 and x['currency_id'] == currency]
-            return ''.join(x for x in symbol)   # return symbol or empty string (there shouldn't be more than one)
+        listings = [x for x in self._data['symbols'] if x['active'] == 1 and x['currency_id'] == currency]
+        if location and [x for x in listings if x['location_id'] == location]:
+            listings = [x for x in listings if x['location_id'] == location]
+        return ''.join(x['symbol'] for x in listings)   # return symbol or empty string
 
     # Returns list of ids of asset's active symbols
     def active_symbol_ids(self) -> list:

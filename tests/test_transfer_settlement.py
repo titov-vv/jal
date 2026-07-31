@@ -48,12 +48,13 @@ def wallets(prepare_db):
 
 
 def _transfer(from_account, to_account, amount, timestamp, asset_id=USDT, deposit=0, number=HASH,
-              deposit_timestamp=None, fee=None, fee_account=None, note='', address=None):
+              deposit_timestamp=None, fee=None, fee_account=None, note='', address=None, symbol_id=None):
+    if symbol_id is None:
+        symbol_id = symbol_id_for(asset_id) if asset_id else None
     data = {'withdrawal_timestamp': timestamp, 'withdrawal_account': from_account, 'withdrawal': str(amount),
             'deposit_timestamp': timestamp if deposit_timestamp is None else deposit_timestamp,
             'deposit_account': to_account, 'deposit': str(deposit), 'number': number, 'note': note,
-            'counterparty_address': address,
-            'symbol_id': symbol_id_for(asset_id) if asset_id else None}
+            'counterparty_address': address, 'symbol_id': symbol_id}
     if fee is not None:
         data['fee'] = str(fee)
         data['fee_account'] = fee_account
@@ -151,6 +152,35 @@ def test_legs_of_different_quantity_are_not_paired(wallets):
     _transfer(None, WALLET_B, 399, d2t(210103))
 
     assert TransferSettlement().settle_all() == 0
+
+
+# What identifies a movement is the ASSET the two records name, never the listing that names it. One asset carries an
+# active listing per chain and per currency, so the two records of one movement routinely name two different ones -
+# the ends of a bridged move are two chains, and an exchange kept in another currency lists what it holds in that
+# currency. Grouping the records by their listing left such a movement as two groups of one, which is a group nothing
+# can pair, and the transfer stayed unsettled forever with no sign of why.
+def test_two_listings_of_one_asset_are_still_one_movement(wallets):
+    arb_usdt = JalAsset(USDT).add_symbol('USDT', USD, AssetLocation.ARB_BLOCKCHAIN)   # a second chain, still active
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(None, WALLET_B, 400, d2t(210103), symbol_id=arb_usdt)
+
+    assert TransferSettlement().settle_all() == 1
+
+    rows = _stored()
+    assert len(rows) == 1
+    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
+
+
+# ... and widening what one group holds never widens what is SETTLED: a transaction that moved the asset more than
+# twice is ambiguous whichever listings its records name, and stays the user's to pair by hand
+def test_a_third_record_under_another_listing_is_still_ambiguous(wallets):
+    arb_usdt = JalAsset(USDT).add_symbol('USDT', USD, AssetLocation.ARB_BLOCKCHAIN)
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(WALLET_A, None, 400, d2t(210103), symbol_id=arb_usdt)
+    _transfer(None, WALLET_B, 400, d2t(210103), symbol_id=arb_usdt)
+
+    assert TransferSettlement().settle_all() == 0
+    assert len(_stored()) == 3
 
 
 # One transaction may deliver several assets at once (a token plus a gas top-up) and each is a movement of its own
@@ -272,14 +302,15 @@ def test_a_cross_currency_pair_is_settled_with_no_cost_basis(funded):
 STATEMENT_ASSET, STATEMENT_SYMBOL = 10, 100     # ids inside the statement, mapped to the db ones
 
 
-def _statement(monkeypatch) -> Statement:
+def _statement(monkeypatch, symbol_id=None) -> Statement:
     statement = Statement()
     monkeypatch.setattr(type(statement), "_transfers_are_unique_per_transaction", True)
     for statement_id, account_id in ((1, WALLET_A), (2, WALLET_B)):
         statement.set_mapped_id(JSF.ACCOUNTS, statement_id, account_id)
     statement.set_mapped_id(JSF.ASSETS, 1, USD)        # the currency the statement states its symbols in
     statement.set_mapped_id(JSF.ASSETS, STATEMENT_ASSET, USDT)
-    statement.set_mapped_id(JSF.SYMBOLS, STATEMENT_SYMBOL, symbol_id_for(USDT))
+    statement.set_mapped_id(JSF.SYMBOLS, STATEMENT_SYMBOL,
+                            symbol_id_for(USDT) if symbol_id is None else symbol_id)
     statement._data[JSF.ASSETS] = [
         {"id": STATEMENT_ASSET, "type": JSF.ASSET_CRYPTO, "name": "Tether USD",
          JSF.SYMBOLS: [{"id": STATEMENT_SYMBOL, "symbol": "USDT", "currency": 1,
@@ -294,8 +325,8 @@ def _record(accounts: list, number: str = HASH, amount=Decimal('1000'), fee=Deci
             "withdrawal": amount, "deposit": Decimal('0'), "fee": fee, "number": number}
 
 
-def _import(monkeypatch, records: list):
-    statement = _statement(monkeypatch)
+def _import(monkeypatch, records: list, symbol_id=None):
+    statement = _statement(monkeypatch, symbol_id=symbol_id)
     for index, record in enumerate(records):
         record['id'] = index + 1
     statement._import_transfers(records)
@@ -308,6 +339,19 @@ def _import(monkeypatch, records: list):
 def test_a_record_of_both_ends_completes_a_leg_stored_earlier(wallets, monkeypatch, pending, complete):
     _import(monkeypatch, [_record(pending)])
     _import(monkeypatch, [_record(complete)])
+
+    rows = _stored()
+    assert len(rows) == 1
+    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
+
+
+# ... and the record that completes it may name another LISTING of the asset than the leg it completes: the wallet on
+# the other side is fetched on another chain, or the exchange keeps its books in another currency. What makes the two
+# one movement is the ASSET, exactly as it is for the pairing above.
+def test_a_record_of_both_ends_completes_a_leg_stored_under_another_listing(wallets, monkeypatch):
+    arb_usdt = JalAsset(USDT).add_symbol('USDT', USD, AssetLocation.ARB_BLOCKCHAIN)
+    _import(monkeypatch, [_record([1, 0, 1])])
+    _import(monkeypatch, [_record([1, 2, 1])], symbol_id=arb_usdt)
 
     rows = _stored()
     assert len(rows) == 1

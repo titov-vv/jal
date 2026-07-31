@@ -58,17 +58,28 @@ class TransferSettlement(JalDB):
     # one transaction may deliver several assets at once (a token plus a gas top-up) and each of those is a movement of
     # its own. Only records that name a transaction and an asset take part - a money transfer's 'number' is a free-form
     # reference, which identifies nothing.
+    #
+    # The ASSET is what groups them, never the symbol: one asset has an active listing per chain and per currency, so
+    # the two records of one movement routinely name two different listings of the very same thing - the two ends of a
+    # bridged move are two chains, and an exchange kept in another currency lists what it holds in that currency. This
+    # is the identity every other pass here uses (_asset_of, _pending_counterparts_on, pending_arrival_of), and
+    # grouping by the symbol instead left such a movement as two groups of one, which is a group nothing can pair.
+    #
+    # Grouping by the asset only ever makes a group WIDER, and a group of more than two is refused rather than
+    # settled (see _pairable), so this cannot pair anything that the narrower grouping would have refused.
     def _movements_with_a_pending_leg(self) -> list:
         groups = {}
         query = self._exec(
-            "SELECT oid, withdrawal_timestamp, withdrawal_account, withdrawal, deposit_timestamp, deposit_account, "
-            "deposit, fee_account, fee, fee_symbol_id, number, symbol_id, note FROM transfers AS t "
-            "WHERE t.number!='' AND NOT t.symbol_id IS NULL AND EXISTS "
-            "(SELECT 1 FROM transfers AS p WHERE p.number=t.number AND p.symbol_id=t.symbol_id "
+            "SELECT t.oid, t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, "
+            "t.deposit_account, t.deposit, t.fee_account, t.fee, t.fee_symbol_id, t.number, t.symbol_id, t.note, "
+            "s.asset_id FROM transfers AS t JOIN asset_symbol AS s ON s.id=t.symbol_id "
+            "WHERE t.number!='' AND EXISTS "
+            "(SELECT 1 FROM transfers AS p JOIN asset_symbol AS ps ON ps.id=p.symbol_id "
+            "WHERE p.number=t.number AND ps.asset_id=s.asset_id "
             "AND (p.withdrawal_account IS NULL OR p.deposit_account IS NULL)) ORDER BY t.oid")
         while query.next():
             record = self._read_record(query, named=True)
-            groups.setdefault((record['number'], record['symbol_id']), []).append(record)
+            groups.setdefault((record['number'], record['asset_id']), []).append(record)
         return list(groups.values())
 
     # ------------------------------------------------------------------------------------------------------------------

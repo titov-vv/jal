@@ -104,7 +104,7 @@ class TransferMatchDialog(QDialog):
         for leg, refusal in self._ranked(legs, anchor):
             item = QTreeWidgetItem([ts2dt(leg['timestamp']), leg['account'].name(),
                                     localize_decimal(remove_exponent(leg['qty'])),
-                                    leg['asset'].symbol(currency=leg['account'].currency()),
+                                    Transfer.leg_symbol(leg),
                                     localize_decimal(leg['value'], precision=2),
                                     self._difference(leg, anchor)])
             item.setData(0, self.OID, leg['oid'])
@@ -207,7 +207,7 @@ class TransferMatchDialog(QDialog):
 
     def _pair_text(self, sending_oid: int, arriving_oid: int) -> str:
         sent, arrived = self._legs[sending_oid], self._legs[arriving_oid]
-        return f"{remove_exponent(sent['qty'])} {sent['asset'].symbol()} " \
+        return f"{remove_exponent(sent['qty'])} {Transfer.leg_symbol(sent)} " \
                + sent['account'].name() + " -> " + arrived['account'].name()
 
     def accept(self):

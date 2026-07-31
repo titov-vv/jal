@@ -1443,11 +1443,15 @@ class Transfer(LedgerTransaction):
             return 0
         if data.get('withdrawal_account') is None or data.get('deposit_account') is None:
             return 0   # a record that doesn't know both ends completes nothing - it is a pending leg itself
-        oid = cls._read("SELECT oid FROM transfers WHERE number=:number AND symbol_id=:symbol_id "
-                        "AND withdrawal=:withdrawal AND oid<=:not_after_oid "
-                        "AND ((withdrawal_account IS NULL AND deposit_account=:deposit_account) "
-                        "OR (deposit_account IS NULL AND withdrawal_account=:withdrawal_account))",
-                        [(":number", data['number']), (":symbol_id", data['symbol_id']),
+        # The ASSET is the identity that is compared, not the listing that names it: the leg stored earlier may have
+        # been recorded on another chain or in another currency, and those are two listings of one and the same thing
+        # (the rule TransferSettlement follows throughout - see _movements_with_a_pending_leg).
+        oid = cls._read("SELECT t.oid FROM transfers AS t JOIN asset_symbol AS s ON s.id=t.symbol_id "
+                        "WHERE t.number=:number AND s.asset_id=:asset_id "
+                        "AND t.withdrawal=:withdrawal AND t.oid<=:not_after_oid "
+                        "AND ((t.withdrawal_account IS NULL AND t.deposit_account=:deposit_account) "
+                        "OR (t.deposit_account IS NULL AND t.withdrawal_account=:withdrawal_account))",
+                        [(":number", data['number']), (":asset_id", JalSymbol(data['symbol_id']).asset().id()),
                          (":withdrawal", data['withdrawal']), (":not_after_oid", not_after_oid),
                          (":withdrawal_account", data['withdrawal_account']),
                          (":deposit_account", data['deposit_account'])], check_unique=True)
@@ -1494,6 +1498,16 @@ class Transfer(LedgerTransaction):
             self.update_fee(data['fee'], data.get('fee_account', 0), data.get('fee_symbol_id'))
         logging.info(self.tr("Transfer settled by transaction hash: ") + f"{self._number}")
         return True
+
+    # The ticker to show for a leg of pending_legs(): the text of the very listing the leg names.
+    #
+    # The listing, not the asset: an asset held on several chains has one ACTIVE listing per chain (see
+    # JalAsset.add_symbol), so asking the ASSET for its symbol in the leg's currency answers with all of them at once
+    # ("USDTUSDT"). Only a money transfer has no listing of its own - it moves the currency of its own account, which
+    # is a single symbol.
+    @staticmethod
+    def leg_symbol(leg: dict) -> str:
+        return leg['symbol'].symbol() if leg['symbol'] else leg['asset'].symbol()
 
     # Every transfer leg that is still unsettled as of 'timestamp'.
     #

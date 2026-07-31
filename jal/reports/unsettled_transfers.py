@@ -1,11 +1,12 @@
 from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QModelIndex, QPoint
-from PySide6.QtWidgets import QMenu
+from PySide6.QtWidgets import QMenu, QMessageBox
 from jal.ui.reports.ui_unsettled_transfers_report import Ui_UnsettledTransfersWidget
 from jal.reports.reports import Reports
 from jal.db.asset import JalAsset
 from jal.db.pending_transfers_model import PendingTransfersModel
+from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.transfer_assign_dialog import TransferAssignDialog
 from jal.widgets.transfer_match_dialog import TransferMatchDialog
@@ -50,6 +51,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.ReportDate.dateChanged.connect(self.updateReport)
         self.ui.ReportCurrencyCombo.changed.connect(self.updateReport)
         self.ui.BasisGapsCheck.stateChanged.connect(self.updateReport)
+        self.ui.SettleButton.pressed.connect(self.settleAll)
         self.ui.MatchButton.pressed.connect(self.matchLegs)
         self.ui.AssignButton.pressed.connect(self.assignAccount)
         self.ui.ReportTreeView.doubleClicked.connect(self.matchLegAt)
@@ -75,6 +77,24 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.ReportTreeView.model().updateView(currency_id=self.ui.ReportCurrencyCombo.selected_id,
                                                   date=self.ui.ReportDate.date(),
                                                   with_basis_gaps=self.ui.BasisGapsCheck.isChecked(), update=reload)
+
+    # Runs the settlements that need nobody's judgement: the legs that one and the same transaction hash pairs, and
+    # the legs that name an address an account of the user's holds. Both act on PROOF rather than on a resemblance,
+    # which is why they commit without asking - the same passes an import runs, and for the same reason.
+    #
+    # They are reachable from here because an import is not the only thing that makes them able to settle something.
+    # What they need may have appeared since: an address settles the moment an account holding it is created, and a
+    # rule they follow may itself have been corrected. Without this the only way to re-run them over legs already
+    # stored is to import something, which is not an answer to "why is this leg still here".
+    @Slot()
+    def settleAll(self):
+        settled = TransferSettlement().settle_all()
+        self._settled(settled > 0)
+        if settled:
+            message = self.tr("Transfers settled: ") + f"{settled}"
+        else:
+            message = self.tr("Nothing could be settled on its own - what is left needs Match or Assign.")
+        QMessageBox().information(self, self.name, message)
 
     # Opens the two-panel matcher. This report is the worklist the matcher works through, which is why it is opened
     # from here - settling is a batch job rather than something done to one operation at a time.

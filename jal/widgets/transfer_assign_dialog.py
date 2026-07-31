@@ -121,7 +121,7 @@ class TransferAssignDialog(QDialog):
             return self.tr("This transfer is not waiting for an account any more.")
         leg = self._leg
         known = leg['account'].name()
-        moved = f"{remove_exponent(leg['qty'])} {leg['asset'].symbol(currency=leg['account'].currency())}"
+        moved = f"{remove_exponent(leg['qty'])} {Transfer.leg_symbol(leg)}"
         if self._sending():
             what = self.tr("{} left {} on {} and where it arrived isn't known.")
         else:

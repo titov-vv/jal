@@ -254,7 +254,7 @@ class HoldingsModel(ReportTreeModel):
                     "account_id": account.id(),
                     "account": account.name(),
                     "asset_id": asset.id(),
-                    "asset": asset.symbol(currency=account.currency()),
+                    "asset": asset.symbol(currency=account.currency(), location=account.chain()),
                     "asset_name": asset.name() + expiry_text,
                     "asset_is_currency": False,
                     "country_id": asset.country().id(),

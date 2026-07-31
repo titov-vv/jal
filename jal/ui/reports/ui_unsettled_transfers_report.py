@@ -66,20 +66,25 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.gridLayout.addItem(self.ReportFrameSpacer, 0, 4, 1, 1)
 
+        self.SettleButton = QPushButton(self.ReportParamsFrame)
+        self.SettleButton.setObjectName(u"SettleButton")
+
+        self.gridLayout.addWidget(self.SettleButton, 0, 5, 1, 1)
+
         self.AssignButton = QPushButton(self.ReportParamsFrame)
         self.AssignButton.setObjectName(u"AssignButton")
 
-        self.gridLayout.addWidget(self.AssignButton, 0, 5, 1, 1)
+        self.gridLayout.addWidget(self.AssignButton, 0, 6, 1, 1)
 
         self.MatchButton = QPushButton(self.ReportParamsFrame)
         self.MatchButton.setObjectName(u"MatchButton")
 
-        self.gridLayout.addWidget(self.MatchButton, 0, 6, 1, 1)
+        self.gridLayout.addWidget(self.MatchButton, 0, 7, 1, 1)
 
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 7, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 8, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -112,6 +117,10 @@ class Ui_UnsettledTransfersWidget(object):
         self.BasisGapsCheck.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Also list settled transfers whose asset arrived with no cost basis", None))
 #endif // QT_CONFIG(tooltip)
         self.BasisGapsCheck.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Without cost basis", None))
+#if QT_CONFIG(tooltip)
+        self.SettleButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Settle every leg that its transaction hash or the address it names pairs unambiguously", None))
+#endif // QT_CONFIG(tooltip)
+        self.SettleButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Settle", None))
 #if QT_CONFIG(tooltip)
         self.AssignButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Name the account at the end a leg doesn't know", None))
 #endif // QT_CONFIG(tooltip)

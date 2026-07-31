@@ -103,6 +103,16 @@
        </spacer>
       </item>
       <item row="0" column="5">
+       <widget class="QPushButton" name="SettleButton">
+        <property name="toolTip">
+         <string>Settle every leg that its transaction hash or the address it names pairs unambiguously</string>
+        </property>
+        <property name="text">
+         <string>Settle</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
        <widget class="QPushButton" name="AssignButton">
         <property name="toolTip">
          <string>Name the account at the end a leg doesn't know</string>
@@ -112,7 +122,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="6">
+      <item row="0" column="7">
        <widget class="QPushButton" name="MatchButton">
         <property name="toolTip">
          <string>Pair a leg that was sent with the arrival it belongs to</string>
@@ -122,7 +132,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="7">
+      <item row="0" column="8">
        <widget class="QPushButton" name="SaveButton">
         <property name="text">
          <string>Save...</string>

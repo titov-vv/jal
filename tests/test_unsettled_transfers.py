@@ -5,12 +5,13 @@ from decimal import Decimal
 
 import pytest
 from PySide6.QtCore import Qt, QDate, QModelIndex
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_quotes, create_trades, symbol_id_for
 from constants import PredefinedAsset, PredefinedAccountType, PredefinedCategory, AssetLocation
 from jal.db.account import JalAccountCreator
+from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, Transfer
 from jal.db.ledger import Ledger
 from jal.db.pending_transfers_model import PendingTransfersModel
@@ -40,12 +41,14 @@ def wallets(prepare_db):
     yield
 
 
-def _transfer(from_account, to_account, amount, timestamp, asset_id=USDT, deposit=None, number='', address=None):
+def _transfer(from_account, to_account, amount, timestamp, asset_id=USDT, deposit=None, number='', address=None,
+              symbol_id=None):
     deposit = amount if deposit is None else deposit
+    if symbol_id is None:
+        symbol_id = symbol_id_for(asset_id) if asset_id else None
     data = {'withdrawal_timestamp': timestamp, 'withdrawal_account': from_account, 'withdrawal': str(amount),
             'deposit_timestamp': timestamp, 'deposit_account': to_account, 'deposit': str(deposit),
-            'number': number, 'counterparty_address': address,
-            'symbol_id': symbol_id_for(asset_id) if asset_id else None}
+            'number': number, 'counterparty_address': address, 'symbol_id': symbol_id}
     return LedgerTransaction.create_new(LedgerTransaction.Transfer, data)
 
 
@@ -259,6 +262,29 @@ def test_a_leg_that_names_no_address_suggests_nothing(wallets):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# The asset column names the listing the LEG names, and never the asset behind it. A token held on several chains has
+# one active listing per chain in one and the same currency, so asking the asset for its ticker in the account's
+# currency answered with all of them run together - 'USDTUSDT' - a ticker that exists nowhere and says nothing about
+# which chain the leg moved on, which is precisely what tells the two ends of such a leg apart.
+def test_the_asset_column_names_the_listing_the_leg_moved(wallets):
+    arb_usdt = JalAsset(USDT).add_symbol('USDT', USD, AssetLocation.ARB_BLOCKCHAIN)  # a second chain, still active
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(None, WALLET_B, 150, d2t(210104), symbol_id=arb_usdt)
+
+    model = _model()
+
+    assert _row(model, 0, 'asset') == 'USDT'
+    assert _row(model, 1, 'asset') == 'USDT'
+
+
+# A money transfer names no listing at all - it moves the currency of its own account, which is a single symbol
+def test_a_money_leg_is_named_by_its_currency(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), asset_id=None)
+
+    assert _row(_model(), 0, 'asset') == JalAsset(USD).symbol()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Transfers that are settled but arrived with no cost basis. They are in no other list - the transfer is complete, so
 # every settlement view is done with them - and the zero surfaces only as a gain when the asset is finally sold. A
 # zero may well be right, so they are shown only when asked for.
@@ -399,3 +425,44 @@ def test_the_report_refreshes_on_a_change_made_elsewhere(wallets):
     window.refresh()             # what the main window calls when the ledger is rebuilt
 
     assert _rows(window.ui.ReportTreeView.model()) == 0
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Settling what needs nobody's judgement, started from the report rather than only by an import.
+#
+# The two automatic passes act on PROOF - the transaction hash two records share, the address a leg names and an
+# account of the user's holds - so they commit without asking and need no dialog. What makes them worth a button is
+# that an import is not the only thing that can make them able to settle something: an address settles the moment the
+# account holding it is created, and a rule they follow may itself have been corrected. Without it the only way to
+# re-run them over legs already stored is to import something again, which is no answer to "why is this leg here".
+
+HASH = '0x' + 'a' * 64
+
+
+def test_the_settle_button_pairs_what_needs_no_judgement(wallets, monkeypatch):
+    monkeypatch.setattr(QMessageBox, 'information', lambda *args, **kwargs: None)
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_B, 400, d2t(210103), number=HASH)
+    window = UnsettledTransfersReportWindow(Reports(_MainWindowStub(), None))
+    assert _rows(window.ui.ReportTreeView.model()) == 2
+
+    window.ui.SettleButton.click()
+
+    assert _rows(window.ui.ReportTreeView.model()) == 0
+
+
+# A leg nothing can pair is left exactly as it was - the button reports that it did nothing rather than doing
+# something on a resemblance
+def test_the_settle_button_leaves_what_it_cannot_prove(wallets, monkeypatch):
+    reported = []
+    monkeypatch.setattr(QMessageBox, 'information', lambda _self, _parent, _title, text: reported.append(text))
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_B, 400, d2t(210103), number='0x' + 'b' * 64)   # another transaction: not a pair
+    window = UnsettledTransfersReportWindow(Reports(_MainWindowStub(), None))
+
+    window.ui.SettleButton.click()
+
+    assert _rows(window.ui.ReportTreeView.model()) == 2
+    assert len(reported) == 1 and 'Match' in reported[0]
