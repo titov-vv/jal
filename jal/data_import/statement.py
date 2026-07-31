@@ -362,30 +362,56 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     self.set_mapped_id(JSF.ASSETS, asset['id'], db_id)
                     break
 
-    # An addressed token (chain fetcher output) reached this point without a contract-address match. If a known
-    # crypto asset already uses its ticker, the two may be the same token on different chains (e.g. USDT on Ethereum
-    # and on Tron) or two unrelated coins reusing a ticker - only the user can tell, so they are asked once per new
-    # token. Every outcome records an address identifier (merge/create -> _import_assets writes this chain's address)
-    # or a blacklist row (discard), so the same token resolves automatically on later imports - no curated registry.
+    # An addressed token (chain fetcher output) reached this point without a contract-address match, so it is a token
+    # JAL has never seen on this chain. It may be a coin the user already holds - the same token on another chain
+    # (USDT on Ethereum and on Tron), or one that was RENAMED on this chain (Tether's 'USDT' is called 'USD₮0' on
+    # Arbitrum) - or a genuinely new coin, or a scam. Only the user can tell, so they are asked once per new token.
+    # Every outcome records an address identifier (merge/create -> _import_assets writes this chain's address) or a
+    # blacklist row (discard), so the same token resolves automatically on later imports - no curated registry.
+    #
+    # The question is asked WHATEVER the ticker says. It used to be asked only when some existing asset carried the
+    # very same ticker, which is exactly the case a rename isn't: 'USD₮0' collides with nothing, so no question was
+    # asked and a second asset was created for a coin already held - counted apart in every report and unsettleable
+    # across (a transfer moves ONE asset). A ticker match is a good suggestion and a poor filter, so it now ranks the
+    # candidates rather than deciding whether there are any.
     def _resolve_cross_chain_token(self, asset: dict, addressed: list) -> None:
-        candidates = self._crypto_ticker_candidates(addressed)
-        if not candidates:
-            return   # nothing shares the ticker - _import_assets simply stages a new asset carrying the address
-        action, target = self.select_token_action(asset, addressed, candidates)
+        action, target = self.select_token_action(asset, addressed, self._crypto_ticker_candidates(addressed))
         if action == self.TOKEN_MERGE and target:
             self.set_mapped_id(JSF.ASSETS, asset['id'], target)
         elif action == self.TOKEN_DISCARD:
             self._discard_token(asset, addressed)
         # TOKEN_CREATE_NEW (and a merge without a target): leave unmapped so a new asset is created on import
 
-    # Returns the ids of existing crypto assets whose active listing shares a ticker with any of the token's symbols.
+    # The existing crypto assets worth suggesting for this token, best first. An exact ticker match comes first, then
+    # one whose ticker is the same thing written differently - see _comparable_ticker(). Neither is evidence and
+    # nothing acts on them: they only put the likely answer at the top of a list the user chooses from.
     def _crypto_ticker_candidates(self, addressed: list) -> list:
-        candidates = []
+        exact, alike = [], []
         for symbol in addressed:
             for asset_id in JalAsset.get_crypto_assets_by_symbol(symbol['symbol']):
-                if asset_id not in candidates:
-                    candidates.append(asset_id)
-        return candidates
+                if asset_id not in exact:
+                    exact.append(asset_id)
+        tickers = [self._comparable_ticker(symbol['symbol']) for symbol in addressed]
+        for candidate in JalAsset.get_crypto_assets():
+            if candidate['id'] in exact or candidate['id'] in alike or not candidate['symbol']:
+                continue
+            known = self._comparable_ticker(candidate['symbol'])
+            if known and any(t and (t.startswith(known) or known.startswith(t)) for t in tickers):
+                alike.append(candidate['id'])
+        return exact + alike
+
+    # A ticker reduced to what two spellings of one coin have in common: case ignored, the decorative glyphs a
+    # rebranding reaches for folded back to the letter they stand for, and everything that isn't a letter or a digit
+    # dropped. 'USD₮0' becomes 'usdt0', which the ticker 'USDT' of the coin it was renamed from is a prefix of.
+    #
+    # This is a resemblance and is used as nothing more - it only offers a candidate for the user to accept. Acting
+    # on it would be unsafe for the very reason the address is the identity: a ticker is chosen by whoever deploys
+    # the token, and a lookalike is as easy to deploy as a copy.
+    @staticmethod
+    def _comparable_ticker(ticker: str) -> str:
+        lookalikes = {'₮': 't', '₿': 'b', '€': 'e', '$': 's', '₽': 'r', '£': 'l', '¥': 'y'}
+        folded = ''.join(lookalikes.get(x, x) for x in ticker.lower())
+        return ''.join(x for x in folded if x.isalnum())
 
     # Asks the user whether an unmatched addressed token should merge into an existing crypto asset, become a new
     # asset, or be discarded. Returns (action, target_asset_id); target is only meaningful for a merge.
@@ -393,9 +419,14 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         if "pytest" in sys.modules:
             return self._token_action_for_tests
         token = addressed[0]
-        options = [(asset_id, self._candidate_label(asset_id)) for asset_id in candidates]
+        # The suggestions first and then everything else, because a merge target the ticker didn't point at is
+        # exactly what a renamed coin needs and there is nothing else to find it by
+        suggested = [asset_id for asset_id in candidates]
+        rest = [x['id'] for x in JalAsset.get_crypto_assets() if x['id'] not in suggested]
+        options = [(asset_id, self._candidate_label(asset_id)) for asset_id in suggested + rest]
         dialog = SelectTokenActionDialog(asset.get('name', ''), token['symbol'],
-                                         AssetLocation().get_name(token['location']), token['address'], options)
+                                         AssetLocation().get_name(token['location']), token['address'], options,
+                                         suggested=len(suggested))
         if dialog.exec() != QDialog.Accepted:
             return self.TOKEN_CREATE_NEW, 0   # closing the dialog never silently merges or discards
         mapping = {SelectTokenActionDialog.Merge: self.TOKEN_MERGE,
@@ -1045,7 +1076,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         if asset is None and asset_info.get('search_offline', False):   # If allowed fetch asset data from database
             db_asset = JalAsset.find(asset_info)
             if db_asset.id():
-                symbol = {'id': self._next_symbol_id(), 'symbol': db_asset.symbol(asset_info['currency']),
+                # This ticker is not shown but STORED - _import_assets() writes it back as a listing of its own - so
+                # an asset that is listed under more than one ticker in this currency has to be refused rather than
+                # answered with the several of them run together, which would create a listing under a ticker that
+                # exists nowhere (see JalAsset.tickers).
+                tickers = db_asset.tickers(asset_info['currency'])
+                if len(tickers) > 1:
+                    raise Statement_ImportError(self.tr("Asset found in the database is listed under several tickers, "
+                                                        "it can't be matched by one: ") + f"{db_asset.name()}: {tickers}")
+                symbol = {'id': self._next_symbol_id(), 'symbol': tickers[0] if tickers else '',
                           'currency': asset_info['currency']}
                 if db_asset.symbol_id(SymbolId.ISIN):
                     symbol['isin'] = db_asset.symbol_id(SymbolId.ISIN)

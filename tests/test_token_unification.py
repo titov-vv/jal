@@ -105,18 +105,64 @@ def test_discard_blacklists_and_drops_the_operations(known_usdt):
     assert statement._data[JSF.TRANSFERS] == []
 
 
-def test_unrelated_ticker_creates_a_new_asset_without_asking(prepare_db):
-    # No existing crypto asset shares the ticker, so there is nothing to disambiguate and the prompt never fires.
+def test_a_token_matching_nothing_is_still_asked_about(prepare_db):
+    # A token that resembles nothing is asked about too, and with nothing to suggest. Firing only on a ticker
+    # collision was exactly wrong for the case that matters most: a coin RENAMED on one chain ('USDT' is called
+    # 'USD₮0' on Arbitrum) collides with nothing, so no question was asked and a second asset was created for a coin
+    # the user already held. Answering 'create new' is what used to happen silently.
     JalAccountCreator(currency_id=USD, number='', name='Tron wallet', investing=1, organization=1,
                       account_type=PredefinedAccountType.Wallet, address='TMuA6YqfCeX8EhbfYEg5y7S4DqzSJireY9',
                       chain=AssetLocation.TRX_BLOCKCHAIN).commit()
     statement, token = _tron_statement_with_usdt()
 
-    def fail(*args, **kwargs):
-        raise AssertionError("The token prompt must not be shown when no known asset shares the ticker")
-    statement.select_token_action = fail
+    asked = []
+
+    def record(_asset, _addressed, candidates):
+        asked.append(candidates)
+        return Statement.TOKEN_CREATE_NEW, 0
+    statement.select_token_action = record
     statement.match_db_ids()
 
+    assert asked == [[]]        # asked once, with nothing to offer as a merge target
     assert statement.mapped_id(JSF.ASSETS, token) == 0
     statement.import_into_db()
     assert JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT).asset().id()
+
+
+# The case the ticker collision was never going to catch: the coin is the same, the ticker is not. It is offered as a
+# candidate because 'USD₮0' and 'USDT' are the same string once the decorative glyph is folded back to the letter it
+# stands for - a resemblance, offered for the user to accept and never acted on by itself.
+def test_a_renamed_coin_is_offered_as_a_candidate(known_usdt):
+    statement = TronFetcher()
+    statement._account = JalAccount(1)
+    statement._data = {JSF.ACCOUNTS: [], JSF.ASSETS: [], JSF.TRANSFERS: []}
+    token = statement._token_asset_id('USD₮0', 'USD₮0', address=TRX_USDT)
+
+    offered = []
+
+    def record(_asset, _addressed, candidates):
+        offered.append(candidates)
+        return Statement.TOKEN_MERGE, candidates[0]
+    statement.select_token_action = record
+    statement.match_db_ids()
+
+    assert offered == [[known_usdt.id()]]
+    assert statement.mapped_id(JSF.ASSETS, token) == known_usdt.id()
+
+
+# ... while a ticker that merely happens to be short is not turned into a resemblance with everything
+def test_an_unrelated_ticker_is_not_offered_as_a_candidate(known_usdt):
+    statement = TronFetcher()
+    statement._account = JalAccount(1)
+    statement._data = {JSF.ACCOUNTS: [], JSF.ASSETS: [], JSF.TRANSFERS: []}
+    statement._token_asset_id('SCAM', 'Not Tether', address=TRX_USDT)
+
+    offered = []
+
+    def record(_asset, _addressed, candidates):
+        offered.append(candidates)
+        return Statement.TOKEN_CREATE_NEW, 0
+    statement.select_token_action = record
+    statement.match_db_ids()
+
+    assert offered == [[]]

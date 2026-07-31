@@ -154,6 +154,10 @@ def test_a_currency_alone_does_not_name_one_listing_of_a_token_held_on_several_c
 
     assert JalAsset(asset.id()).symbol(currency=2, location=AssetLocation.ETH_BLOCKCHAIN) == 'USDT'
     assert JalAsset(asset.id()).symbol(currency=2, location=AssetLocation.ARB_BLOCKCHAIN) == 'USDT'
+    # ... and the currency alone is answered by the ticker rather than by the listings that carry it: the two say
+    # the same thing, and running them together made a 'USDTUSDT' that exists nowhere
+    assert JalAsset(asset.id()).symbol(currency=2) == 'USDT'
+    assert JalAsset(asset.id()).symbol() == 'USDT'
 
 
 # A location the asset isn't listed on says nothing about it, and answering an account that has no chain of its own
@@ -164,3 +168,34 @@ def test_a_location_the_asset_is_not_listed_on_is_ignored(prepare_db):
 
     assert JalAsset(asset.id()).symbol(currency=2, location=AssetLocation.TRX_BLOCKCHAIN) == 'USDT'
     assert JalAsset(asset.id()).symbol(currency=2, location=0) == 'USDT'
+
+
+# Several DIFFERENT tickers for one asset in one currency is a real ambiguity, not a duplicate: a token renamed on
+# one chain only, or a security quoted under two names. Nothing here can pick one of them, so the answer names them
+# both - visibly not a ticker - instead of choosing silently or refusing to answer at all.
+def test_two_different_tickers_of_one_asset_are_both_named(prepare_db):
+    asset = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tether USD')
+    asset.add_symbol('USDT', 2, AssetLocation.ETH_BLOCKCHAIN)
+    JalAsset(asset.id()).add_symbol('USD0', 2, AssetLocation.ARB_BLOCKCHAIN)   # renamed on that chain only
+
+    assert JalAsset(asset.id()).symbol(currency=2) == 'USDT,USD0'
+    assert JalAsset(asset.id()).tickers(currency=2) == ['USDT', 'USD0']
+    # ... and naming the chain resolves it, which is what a caller that needs one listing has to do
+    assert JalAsset(asset.id()).symbol(currency=2, location=AssetLocation.ARB_BLOCKCHAIN) == 'USD0'
+
+
+# An asset with nothing listed in that currency has no ticker there, and says so rather than falling back to one it
+# has somewhere else
+def test_an_asset_not_listed_in_that_currency_has_no_ticker(prepare_db):
+    asset = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tether USD')
+    asset.add_symbol('USDT', 2, AssetLocation.ETH_BLOCKCHAIN)
+
+    assert JalAsset(asset.id()).symbol(currency=3) == ''
+    assert JalAsset(asset.id()).tickers(currency=3) == []
+
+
+# A currency is one symbol whatever is asked about it - the currency argument is what a ticker is being asked IN, and
+# money is the thing it would be asked in
+def test_money_is_one_symbol_whatever_currency_is_asked_for(prepare_db):
+    assert JalAsset(2).symbol(currency=3) == JalAsset(2).symbol()
+    assert len(JalAsset(2).tickers(currency=3)) == 1

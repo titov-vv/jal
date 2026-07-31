@@ -2,6 +2,7 @@ import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.cost_basis import carried_basis
 from jal.db.db import JalDB
 from jal.db.helpers import remove_exponent
@@ -210,6 +211,42 @@ class TransferSettlement(JalDB):
         if counterparty is None or counterparty.id() == known_account:
             return 0
         return counterparty.id()
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # The pending leg that looks like the other half of this one but is recorded under a DIFFERENT asset, as
+    # {'oid', 'asset', 'other_asset'} - or None when there is no such leg.
+    #
+    # One transaction, one quantity, one leg leaving and one arriving is a movement whichever way it is read. When the
+    # two records name two different assets, one of two things is true and neither is settleable: the transaction
+    # moved two different things at once (a swap through a contract, which is not a transfer at all), or the same coin
+    # is recorded as two assets. The second happens where a token's identity is its contract address and its ticker is
+    # only a label: a coin RENAMED on one chain (Tether's 'USDT' is called 'USD₮0' on Arbitrum) matches no address and
+    # collides with no ticker, so it is fetched as an asset of its own - see Statement._resolve_cross_chain_token().
+    #
+    # The QUANTITY is what tells the two apart, and it is why this is worth reporting at all. A swap gives back an
+    # amount of the other coin, which is not the amount that went in; a transfer delivers exactly what was sent. So a
+    # pair that agrees on the quantity to the last digit is one movement under two asset identities - not proof, but
+    # far too specific to be coincidence, and nothing else in JAL would ever point it out. Acting on it stays the
+    # user's business: merging two assets rewrites what every report counts, and only they know whether the two
+    # tickers are one coin.
+    def duplicate_asset_hint(self, oid: int):
+        leg = self._read("SELECT oid, withdrawal_account, deposit_account, withdrawal, number, symbol_id "
+                         "FROM transfers WHERE oid=:oid "
+                         "AND (withdrawal_account IS NULL OR deposit_account IS NULL)", [(":oid", oid)], named=True)
+        if leg is None or not leg['number'] or not leg['symbol_id']:
+            return None
+        sending = leg['deposit_account'] == ''    # _read() gives '' for a SQL NULL - the end with no account
+        # The counterpart is pending on the side this leg knows, so that the two together make one whole movement
+        missing = "t.withdrawal_account IS NULL" if sending else "t.deposit_account IS NULL"
+        counterpart = self._read(
+            "SELECT t.oid, s.asset_id FROM transfers AS t JOIN asset_symbol AS s ON s.id=t.symbol_id "
+            f"WHERE {missing} AND t.number=:hash AND t.withdrawal=:qty AND s.asset_id<>:asset AND t.oid<>:oid",
+            [(":hash", leg['number']), (":qty", leg['withdrawal']), (":oid", int(leg['oid'])),
+             (":asset", JalSymbol(leg['symbol_id']).asset().id())], named=True, check_unique=True)
+        if counterpart is None:
+            return None
+        return {'oid': int(counterpart['oid']), 'asset': JalSymbol(leg['symbol_id']).asset(),
+                'other_asset': JalAsset(int(counterpart['asset_id']))}
 
     # ------------------------------------------------------------------------------------------------------------------
     # Fills in the end a leg doesn't know, from what the user knows about it. Returns '' when it did, and otherwise

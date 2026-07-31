@@ -1,10 +1,13 @@
 import base64
-from PySide6.QtCore import Signal, Slot, QPoint
-from PySide6.QtWidgets import QAbstractItemView, QDialog, QHeaderView, QMessageBox
+import logging
+from PySide6.QtCore import Qt, Signal, Slot, QPoint
+from PySide6.QtWidgets import QAbstractItemView, QDialog, QHeaderView, QMenu, QMessageBox
 from jal.ui.ui_asset_list_dlg import Ui_AssetsListDialog
 from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
 from jal.db.asset_models import SymbolsListModel
+from jal.db.ledger import Ledger
+from jal.db.symbol import JalSymbol
 from jal.constants import CmWidth, PredefinedAsset, AssetLocation
 from jal.widgets.delegates import ConstantLookupDelegate
 from jal.widgets.icons import JalIcon
@@ -39,6 +42,8 @@ class SymbolListDialog(QDialog):
         self.ui.AddBtn.clicked.connect(self.onAdd)
         self.ui.EditBtn.clicked.connect(self.onEdit)
         self.ui.RemoveBtn.clicked.connect(self.onRemove)
+        self.ui.DataView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.DataView.customContextMenuRequested.connect(self.onContextMenu)
 
     def setup_ui(self):
         self.ui.DataView.setModel(self.model)
@@ -148,6 +153,59 @@ class SymbolListDialog(QDialog):
             return
         if self.model.remove_symbol(symbol_id):
             self.setFilter()
+
+    @Slot(QPoint)
+    def onContextMenu(self, position):
+        index = self.ui.DataView.indexAt(position)
+        if not index.isValid() or self.selection_enabled:
+            return   # while the dialog is being used to PICK a symbol, acting on one is not what a click means
+        self.ui.DataView.setCurrentIndex(index)
+        menu = QMenu(self.ui.DataView)
+        menu.addAction(self.tr("Merge asset into..."), self.onMergeAsset)
+        menu.popup(self.ui.DataView.viewport().mapToGlobal(position))
+
+    # Declares that the asset behind the chosen listing and the asset behind another one are one and the same thing,
+    # and folds the first into the second.
+    #
+    # It is offered on a LISTING because that is what this dialog lists, and it is a listing that shows the problem:
+    # a coin whose ticker was changed on one chain is fetched as an asset of its own (see
+    # Statement._resolve_cross_chain_token), so what the user sees is two rows that they know are one coin. Nothing
+    # can tell that from the data - the two contract addresses are genuinely different tokens as far as any chain is
+    # concerned - so it stays an assertion the user makes, like naming the account at a transfer's missing end.
+    @Slot()
+    def onMergeAsset(self):
+        index = self.ui.DataView.currentIndex()
+        if not index.isValid():
+            return
+        merged = JalSymbol(self.model.getId(index)).asset()
+        selector = SymbolListDialog(self)
+        if selector.exec(enable_selection=True) != QDialog.Accepted:
+            return
+        survivor = JalSymbol(selector.selected_id).asset()
+        refusal = merged.refusal_to_replace(survivor.id())
+        if refusal:
+            QMessageBox().warning(self, self.tr("Assets are not merged"), refusal)
+            return
+        # Everything the merged asset was is renamed rather than deleted, but the ledger is dropped and has to be
+        # recalculated - so the user is told what it costs before it happens rather than after
+        question = self.tr("'{}' will become part of '{}': its symbols, quotes and whole history move over and the "
+                           "asset itself is removed. The ledger will be rebuilt. Continue?").format(merged.name(),
+                                                                                                    survivor.name())
+        if QMessageBox().warning(self, self.tr("Confirmation"), question,
+                                 QMessageBox.Yes, QMessageBox.No) != QMessageBox.Yes:
+            return
+        merged_name = merged.name()
+        refusal = merged.replace_with(survivor.id())
+        if refusal:
+            QMessageBox().warning(self, self.tr("Assets are not merged"), refusal)
+            return
+        logging.info(self.tr("Asset '") + merged_name + self.tr("' was merged into '") + survivor.name() + "'")
+        # Rebuilt here and now rather than left for the next start: replace_with() drops the ledger, and until it is
+        # recalculated every report is empty - which looks like the merge destroyed the history it in fact moved.
+        # From scratch and without asking again, because the whole ledger is what is gone and the cost was the
+        # question already answered above.
+        Ledger().rebuild(from_timestamp=0)
+        self.setFilter()
 
     @Slot()
     def OnDoubleClicked(self, index):

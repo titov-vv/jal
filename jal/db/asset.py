@@ -50,7 +50,10 @@ class JalAsset(JalDB):
             asset_data = self._read_record(query, named=True)
             asset_data['symbols'] = []
             asset_data['ID'] = {}  # Dictionary of various asset IDs linked to symbols
-            symbols_query = self._exec("SELECT * FROM asset_symbol WHERE asset_id=:id", [(":id", asset_data['id'])])
+            # Ordered so that the listings answer in a stable order: tickers() hands out the first of them and
+            # symbol() lists them, and neither may say something different from one run to the next
+            symbols_query = self._exec("SELECT * FROM asset_symbol WHERE asset_id=:id ORDER BY id",
+                                       [(":id", asset_data['id'])])
             while symbols_query.next():
                 symbol = self._read_record(symbols_query, named=True)
                 del symbol['asset_id']
@@ -114,16 +117,40 @@ class JalAsset(JalDB):
     # currency. 'location' picks the listing of one chain among them; a location the asset isn't listed on is
     # ignored rather than answered with an empty string, so an account whose chain says nothing about the asset
     # still gets the answer the currency alone gives.
+    #
+    # Whatever is left is answered by its TICKERS rather than by its listings, which is what keeps several listings
+    # of one and the same ticker - a token held on three chains - from being run together into 'USDCUSDCUSDC', a
+    # ticker that exists nowhere and reads as if it did. Several DIFFERENT tickers is a real ambiguity (one asset
+    # renamed on one chain only, a security quoted under two names) and stays visible as the comma-separated list the
+    # no-currency answer above has always been: the caller that needs one listing has to say which, and there is
+    # nothing here that could pick for it.
+    #
+    # This never raises. Several active listings is a state add_symbol() creates on purpose, and this is asked from
+    # logging, from tax report builders and from inside Qt model data() - places where an exception costs a download,
+    # a document or the process, and where a ticker is being displayed rather than acted on. A caller that STORES
+    # what it gets back has to ask tickers() instead and refuse an answer that names more than one.
     def symbol(self, currency: int = None, location: int = None) -> str:
+        tickers = self.tickers(currency, location)
+        if currency is not None and self._type != PredefinedAsset.Money and len(tickers) > 1:
+            logging.warning(self.tr("Asset is listed under several tickers in one currency, "
+                                    "the listing has to be named to get one of them: ") + f"{tickers}")
+        return ','.join(tickers)   # return symbol or empty string
+
+    # The distinct tickers of this asset's active listings, narrowed by currency and location exactly as symbol()
+    # describes above - what symbol() answers with, before they are run together for display. More than one of them
+    # is an ambiguity nothing here can resolve, so a caller that acts on the answer rather than showing it looks at
+    # the list rather than at the text: a text naming two tickers is a display, and storing it would create a
+    # listing under a ticker that exists nowhere.
+    def tickers(self, currency: int = None, location: int = None) -> list:
         if not self._data:
-            return ''
+            return []
         currency = None if self._type == PredefinedAsset.Money else currency  # Money have one unique symbol
-        if currency is None:
-            return ','.join([x['symbol'] for x in self._data['symbols'] if x['active'] == 1])  # concatenate all symbols via comma
-        listings = [x for x in self._data['symbols'] if x['active'] == 1 and x['currency_id'] == currency]
-        if location and [x for x in listings if x['location_id'] == location]:
-            listings = [x for x in listings if x['location_id'] == location]
-        return ''.join(x['symbol'] for x in listings)   # return symbol or empty string
+        listings = [x for x in self._data['symbols'] if x['active'] == 1]
+        if currency is not None:
+            listings = [x for x in listings if x['currency_id'] == currency]
+            if location and [x for x in listings if x['location_id'] == location]:
+                listings = [x for x in listings if x['location_id'] == location]
+        return list(dict.fromkeys(x['symbol'] for x in listings))   # de-duplicated, first listing first
 
     # Returns list of ids of asset's active symbols
     def active_symbol_ids(self) -> list:
@@ -369,6 +396,72 @@ class JalAsset(JalDB):
                     continue
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # Folds this asset into 'new_id', which is kept, and reports '' when it did or why it did not.
+    #
+    # Two records of ONE asset happen where a token's identity is a contract address and its ticker is only a label:
+    # a coin renamed on one chain (Tether's 'USDT' became 'USD₮0' on Arbitrum) shares no ticker with the asset JAL
+    # already holds, so the cross-chain prompt that would have offered the merge never fires and a second asset is
+    # created - see Statement._resolve_cross_chain_token(). What the user then holds is one coin counted as two,
+    # which no report adds up and no transfer settles across (a transfer moves ONE asset, see
+    # TransferSettlement._refusal).
+    #
+    # What moves is what names the asset. Every operation references a LISTING (asset_symbol.id) rather than an
+    # asset, so repointing the listings carries the whole history with them and nothing else has to be rewritten -
+    # the trades, transfers, swaps and payments never learn that anything happened.
+    #
+    # The ledger and everything derived from it is DISCARDED instead of being moved, and the caller has to rebuild.
+    # It cannot be kept: deleting the merged asset cascades away its ledger rows, which would leave the running
+    # balances of every later row for that asset short of what it had, while the frontier went on claiming the ledger
+    # was calculated up to today - a ledger that is silently incomplete rather than visibly absent. Dropping it takes
+    # the frontier with it (it is MAX(ledger.timestamp)), so the next rebuild is a full one, exactly as after a
+    # restore. This is what the operation tables' own triggers do for a much smaller change.
+    #
+    # Nothing already stated about the surviving asset is overwritten. Extra data and quotes it lacks are adopted
+    # from the one being folded in - the merged asset may be the one whose price was downloaded - while a value the
+    # survivor has is kept and a disagreement is reported rather than silently resolved.
+    def replace_with(self, new_id: int) -> str:
+        refusal = self.refusal_to_replace(new_id)
+        if refusal:
+            return refusal
+        # Adopted first, while the rows still name this asset: a quote or a datatype the survivor already has stays
+        # its own, so only what it is missing crosses over. The rest goes with the asset that is deleted.
+        self._exec("UPDATE OR IGNORE asset_data SET asset_id=:new_id WHERE asset_id=:old_id",
+                   [(":new_id", new_id), (":old_id", self._id)])
+        self._exec("UPDATE OR IGNORE quotes SET asset_id=:new_id WHERE asset_id=:old_id",
+                   [(":new_id", new_id), (":old_id", self._id)])
+        self._exec("UPDATE asset_symbol SET asset_id=:new_id WHERE asset_id=:old_id",
+                   [(":new_id", new_id), (":old_id", self._id)])
+        # ON DELETE CASCADE takes the asset_data and quotes rows that did not cross over (the survivor stated them
+        # already), and nothing that names a listing is reached: the listings belong to the other asset now.
+        self._exec("DELETE FROM assets WHERE id=:old_id", [(":old_id", self._id)])
+        for table in ("trades_closed", "trades_opened", "ledger_totals"):
+            self._exec(f"DELETE FROM {table}")
+        self._exec("DELETE FROM ledger", commit=True)
+        logging.info(self.tr("Assets merged: ") + f"{self._name} -> {JalAsset(new_id).name()}")
+        JalDB().invalidate_cache()   # listings moved, so both assets' and both symbols' cached rows are stale
+        self._id = 0
+        return ''
+
+    # Why this asset cannot be folded into 'new_id', or '' when it can - the same answer replace_with() gives, asked
+    # before anything is written, so a chooser can say what a merge would do instead of letting the user try it.
+    def refusal_to_replace(self, new_id: int) -> str:
+        if not self._id or not new_id:
+            return self.tr("one of the assets doesn't exist")
+        if self._id == new_id:
+            return self.tr("an asset can't be merged into itself")
+        target = JalAsset(new_id)
+        if not target.name() and not target.tickers():
+            return self.tr("the asset to merge into doesn't exist")
+        # A currency is what accounts, quotes and the base currency are KEPT IN, not something operations hold, so
+        # folding one into another rewrites what every balance is denominated in - a different operation from this
+        # one, and not one to reach by way of a token that shares its ticker.
+        if self._type == PredefinedAsset.Money or target.type() == PredefinedAsset.Money:
+            return self.tr("a currency can't be merged")
+        if self._type != target.type():
+            return self.tr("the two are assets of different types")
+        return ''
+
     def _update_name(self, new_name: str) -> None:
         if not self._name:
             _ = self._exec("UPDATE assets SET full_name=:new_name WHERE id=:id",
@@ -497,6 +590,24 @@ class JalAsset(JalDB):
         while query is not None and query.next():
             asset_ids.append(cls._read_record(query, cast=[int]))
         return asset_ids
+
+    # Every crypto asset there is, together with the ticker of an active listing and its name, ordered by name.
+    #
+    # A ticker match is a good SUGGESTION and a poor filter: a coin renamed on one chain (Tether's 'USDT' is called
+    # 'USD₮0' on Arbitrum) shares no ticker with the asset that already holds it, and offering only ticker matches
+    # left the user with nothing to merge into and no way to say so. This is what the chooser searches instead.
+    @classmethod
+    def get_crypto_assets(cls) -> list:
+        assets = []
+        query = cls._exec("SELECT a.id, a.full_name, "
+                          "(SELECT s.symbol FROM asset_symbol s WHERE s.asset_id=a.id AND s.active=1 "
+                          "ORDER BY s.id LIMIT 1) AS symbol "
+                          "FROM assets a WHERE a.type_id=:crypto ORDER BY a.full_name COLLATE NOCASE",
+                          [(":crypto", PredefinedAsset.Crypto)])
+        while query is not None and query.next():
+            record = cls._read_record(query, named=True)
+            assets.append({'id': int(record['id']), 'name': record['full_name'], 'symbol': record['symbol']})
+        return assets
 
     # Method returns a list of JalAsset objects that describe all assets defined in ledger
     @classmethod

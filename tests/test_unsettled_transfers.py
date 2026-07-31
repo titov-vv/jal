@@ -11,7 +11,7 @@ from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_quotes, create_trades, symbol_id_for
 from constants import PredefinedAsset, PredefinedAccountType, PredefinedCategory, AssetLocation
 from jal.db.account import JalAccountCreator
-from jal.db.asset import JalAsset
+from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.operations import LedgerTransaction, Transfer
 from jal.db.ledger import Ledger
 from jal.db.pending_transfers_model import PendingTransfersModel
@@ -466,3 +466,65 @@ def test_the_settle_button_leaves_what_it_cannot_prove(wallets, monkeypatch):
 
     assert _rows(window.ui.ReportTreeView.model()) == 2
     assert len(reported) == 1 and 'Match' in reported[0]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# One movement recorded under two assets.
+#
+# A pending leg whose counterpart is whole except that it names a DIFFERENT asset is the one shape of unsettled leg no
+# settlement can ever reach: what stands in the way is not a missing end but the two assets. It happens where a coin's
+# identity is its contract address and its ticker only a label - a coin renamed on one chain is fetched as an asset of
+# its own - and nothing else in JAL would ever point it out.
+
+def _second_asset_listing(symbol: str = 'USD₮0'):
+    asset = JalAssetCreator(PredefinedAsset.Crypto, symbol)
+    listing = asset.add_symbol(symbol, USD, location_id=AssetLocation.ARB_BLOCKCHAIN)
+    asset.commit()
+    return listing
+
+
+# The QUANTITY is what makes this worth saying: a swap gives back an amount of the other coin, a transfer delivers
+# exactly what was sent. Two records of one transaction agreeing to the last digit are one movement.
+def test_a_counterpart_under_another_asset_is_pointed_out(wallets):
+    other = _second_asset_listing()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_B, 400, d2t(210103), number=HASH, symbol_id=other)
+
+    model = _model()
+    tooltip = model.data(model.index(0, 0, QModelIndex()), Qt.ToolTipRole)
+
+    assert 'USDT' in tooltip and 'USD₮0' in tooltip
+    assert 'two assets' in tooltip
+
+
+# ... and a transaction that gave back a different amount is a swap, not one movement under two names
+def test_a_counterpart_of_another_quantity_is_not_pointed_out(wallets):
+    other = _second_asset_listing()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_B, 399, d2t(210103), number=HASH, symbol_id=other)
+
+    model = _model()
+
+    assert 'two assets' not in model.data(model.index(0, 0, QModelIndex()), Qt.ToolTipRole)
+
+
+def test_a_counterpart_of_the_same_asset_is_not_pointed_out(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_B, 400, d2t(210103), number=HASH)
+
+    model = _model()
+
+    assert 'two assets' not in model.data(model.index(0, 0, QModelIndex()), Qt.ToolTipRole)
+
+
+# One transaction paying two different assets to two accounts says nothing about either being the other, and a hint
+# that named an arbitrary one of them would be worse than none
+def test_an_ambiguous_transaction_is_not_pointed_out(wallets):
+    _second_asset_listing()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_B, 400, d2t(210103), number=HASH, symbol_id=_second_asset_listing('OTHER'))
+    _transfer(None, WALLET_B, 400, d2t(210103), number=HASH, symbol_id=_second_asset_listing('THIRD'))
+
+    model = _model()
+
+    assert 'two assets' not in model.data(model.index(0, 0, QModelIndex()), Qt.ToolTipRole)

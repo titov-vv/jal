@@ -194,6 +194,14 @@ class PendingTransfersModel(ReportTreeModel):
         if suggested:
             tooltip += self.tr("\nThe address it names belongs to ") + JalAccount(suggested).name() \
                        + self.tr(" - assign that account to settle the transfer.")
+        # A leg that has a whole counterpart which only disagrees about WHAT was moved is the one shape of unsettled
+        # leg that no settlement can ever reach, because the two assets are the obstacle rather than the missing end
+        duplicate = self._settlement.duplicate_asset_hint(leg['oid'])
+        if duplicate:
+            tooltip += self.tr("\nOne transaction moved this exact quantity as ") \
+                       + Transfer.leg_symbol(leg) + self.tr(" and as ") + duplicate['other_asset'].symbol() \
+                       + self.tr(", which is one movement recorded under two assets. If they are the same coin, "
+                                 "merge them in the Assets dialog and the two legs settle by themselves.")
         return {
             'oid': leg['oid'],
             'kind': self.SENT if outgoing else self.ARRIVED,
