@@ -283,7 +283,7 @@ class EVMFetcher(ChainFetcher):
             raise _HaltImport(self.tr("unrecognized lending/wrap shape"))
         if category == ProtocolCategory.BRIDGE:
             return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error,
-                                              protocol)
+                                              protocol, contract)
         if category == ProtocolCategory.REWARD:
             if ins and not outs:
                 return self._emit_rewards(timestamp, ins, tx['hash'], gas, is_error, own_record)
@@ -310,7 +310,7 @@ class EVMFetcher(ChainFetcher):
                 return self._emit_swap(timestamp, outs, ins, tx['hash'], gas)
             # a single leg -> one side of a cross-chain move, whose counterpart lives on another chain
             return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error,
-                                              protocol)
+                                              protocol, contract)
 
         # A swap the wallet never signed. An intent-based DEX (CoW Protocol, and the same way 1inch Fusion, UniswapX
         # or 0x Settler work) is gasless for the user: the order is signed off-chain and a SOLVER submits the batch
@@ -526,7 +526,8 @@ class EVMFetcher(ChainFetcher):
     #     ones, and the user pairs it with its pending sending half by hand.
     # A cross-chain move that both spends and receives on the same chain isn't a shape we recognize, so it halts.
     def _emit_cross_chain_leg(self, timestamp: int, deltas: dict, outs: dict, ins: dict, tx_hash: str, gas: Decimal,
-                              own_record, is_error: bool, protocol: str = '') -> None:
+                              own_record, is_error: bool, protocol: str = '', contract: str = '') -> None:
+        gas += self._take_messaging_fee(deltas, outs, contract)
         if len(outs) == 1 and not ins:
             asset_id, data = next(iter(outs.items()))
             # The half is already an operation of its own kind, so it needs no mark - but naming the protocol it went
@@ -542,6 +543,31 @@ class EVMFetcher(ChainFetcher):
                                  mark=self._bridge_arrival_mark(protocol))
             return
         raise _HaltImport(self.tr("unrecognized cross-chain transaction shape"))
+
+    # Takes the protocol's MESSAGING FEE out of a cross-chain send and returns it, to be charged with the gas.
+    #
+    # A LayerZero OFT - which is what USDT0 is - is paid for delivering the message in native coin, sent to the very
+    # contract the asset is being bridged through, in the same transaction. On the chain that looks like two assets
+    # leaving at once, and the shape below would refuse it: "one asset out" is what a crossing is, and the second
+    # one would halt the import of every send the wallet ever makes through such a bridge.
+    #
+    # It is not a second asset crossing, though - nothing of it arrives anywhere. It is a cost of the transfer, the
+    # same kind of thing as the gas it is folded into, and charging it that way is what keeps the amount that
+    # actually crossed equal to the amount that arrives.
+    #
+    # Narrow on purpose: only the native coin, only when it went to the very contract being classified by (a native
+    # amount to anyone else is a movement of its own), and only when something else left too - a send of nothing but
+    # native coin IS the asset being bridged, and taking it as a fee would leave a crossing of nothing.
+    def _take_messaging_fee(self, deltas: dict, outs: dict, contract: str) -> Decimal:
+        native = self._native_asset_id()
+        if not contract or len(outs) < 2 or native not in outs:
+            return Decimal('0')
+        if self._norm(outs[native]['counterparty'] or '') != self._norm(contract):
+            return Decimal('0')
+        fee = abs(outs[native]['amount'])
+        del outs[native]
+        deltas.pop(native, None)
+        return fee
 
     # Emits a conversion: the position is kept but changes shape (supply/withdraw a lending position, wrap/unwrap,
     # liquid staking). No profit or loss is realized and the quantity is free to differ - a rebasing receipt token

@@ -53,6 +53,14 @@ _REGISTRY = {
         '0x4655ce3d625a63d30ba704087e52b4c31e38188b': (ProtocolCategory.REWARD, 'Aave rewards distributor'),  # pays out aEthUSDT with no counter-leg
         '0xddc796a66e8b83d0bccd97df33a6ccfba8fd60ea': (ProtocolCategory.CUSTODY, 'stake.link PriorityPool'),   # see below
         '0x7060fe0dd3e31be01efac6b28c8d38018fd163b0': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays FLUID
+        # USDT0's LayerZero OFT Adapter, the lock side of Tether's omnichain USDT: USDT is locked here on Ethereum
+        # and USD₮0 is minted on the destination chain (which is why the arriving leg there comes from the zero
+        # address and names no contract of its own, so it has no registry entry and is paired by hand).
+        # Verified three ways: the wallet's own history shows USDT going in and coming back out of this address on
+        # Ethereum with a USD₮0 mint on Arbitrum minutes later for the same amount; usdt0.to's deployment list names
+        # it "OFT Adapter" on Ethereum (chain id 1, LZ EID 30101); and Everdawn Labs' audit-report repository lists
+        # the same address with 0xdac17f958d2ee523a2206206994597c13d831ec7 (native USDT) as its inner token.
+        '0x6c96de32cea08842dcc4058c14d3aaad7fa41dee': (ProtocolCategory.BRIDGE, 'USDT0 OFT Adapter'),
         '0xf398e66b1273a34558aebbec550dccaf4acc7714': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays GHO
         '0xd833484b198d3d05707832cc1c2d62b520d95b8a': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays FLUID
     },
@@ -71,6 +79,14 @@ _REGISTRY = {
         '0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae': (ProtocolCategory.REWARD, 'Merkl Distributor'),   # VERIFY
         '0xf36029358a684cddd5103a4b84dc8a832c6e5b40': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays FLUID
         '0x94312a608246cecfce6811db84b3ef4b2619054e': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays FLUID
+        # The other end of the USDT0 bridge, and NOT the address it has on Ethereum: there the contract is an
+        # adapter that locks real USDT, here USD₮0 is the omnichain token itself, which the send burns. So the two
+        # sides are two contracts with two roles, and each needs its entry - a protocol that does reuse one address
+        # across chains (the LI.FI diamond above) still needs one per chain, since the registry is keyed by both.
+        # Verified: usdt0.to lists it as the Arbitrum "OFT" (against Ethereum's "OFT Adapter"), and the wallet's own
+        # history pays it the LayerZero messaging fee in ETH in the very transaction that burns USD₮0 to the zero
+        # address - the burn names no contract, so this fee is what identifies the crossing on this side.
+        '0x14e4a1b13bf7f943c8ff7c51fb60fa964a298d92': (ProtocolCategory.BRIDGE, 'USDT0 OFT'),
     },
     # Avalanche C-chain has no entries yet, deliberately. The wallet it was validated against has not sent a single
     # transaction on that chain, so there is no contract whose category could be read off its own history - and a

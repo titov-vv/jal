@@ -25,6 +25,28 @@ SPAM_CONTRACT = "0x9999999999999999999999999999999999999999"
 
 _FIXTURE = {"txlist": "eth_txlist.json", "tokentx": "eth_tokentx.json", "txlistinternal": "eth_internal.json"}
 
+ARB_WALLET = "0x3333333333333333333333333333333333333333"
+
+
+@pytest.fixture
+def arb_wallet(prepare_db):
+    JalSettings().setValue("ApiKey_Etherscan", "test-key")
+    TokenListProvider()._store(TokenList.UNISWAP_DEFAULT, TokenListKind.Allow, AssetLocation.ARB_BLOCKCHAIN,
+                               [{'address': USDC_CONTRACT, 'symbol': 'USDT0', 'name': 'USD T0'}])
+    yield JalAccountCreator(currency_id=2, number='', name='ARB wallet', investing=1, organization=1,
+                            account_type=PredefinedAccountType.Wallet, address=ARB_WALLET,
+                            chain=AssetLocation.ARB_BLOCKCHAIN).commit()
+
+
+def _drive_arb(account, monkeypatch, pages):
+    from jal.net.chain_fetchers.arbitrum import ArbitrumFetcher
+
+    def fake_pages(self, action, start_block):
+        return [r for r in pages.get(action, []) if int(r['blockNumber']) >= start_block]
+    monkeypatch.setattr(ArbitrumFetcher, "_get_pages", fake_pages)
+    fetcher = ArbitrumFetcher()
+    return fetcher, fetcher.fetch(account)
+
 
 @pytest.fixture
 def eth_wallet(prepare_db):
@@ -720,6 +742,64 @@ def test_bridge_send_is_emitted_as_a_pending_send_half(eth_wallet, monkeypatch):
 # The ARRIVING leg of a cross-chain move is never recognized as such: nothing in it says what was sent from the other
 # chain (or even whether the asset changed on the way), so it is imported as a plain incoming transfer - the same way a
 # relayer-delivered arrival is - and the user pairs it with its pending sending half by hand.
+# A LayerZero OFT (USDT0 and its kind) charges for delivering the message in native coin, sent to the very contract
+# the asset is bridged through, in the same transaction. On-chain that is two assets leaving at once - and one asset
+# out is what a crossing is, so without recognizing the fee every such send would halt the import.
+def test_a_bridge_messaging_fee_is_charged_and_does_not_break_the_shape(eth_wallet, monkeypatch):
+    usdt0 = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"      # USDT0 OFT Adapter, a registered BRIDGE
+    m1 = "0xb1" + "0" * 62
+    pages = {
+        "txlist": [_tx(m1, 100, WALLET, usdt0, value=31344835695747, gas_used='120000')],   # the LZ messaging fee
+        "tokentx": [_token_tx(m1, 100, WALLET, usdt0, 5553699)],                            # 5.553699 USDC bridged
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert not fetcher.skipped()               # it must not halt on "two assets out"
+    bridges = _bridges(data)
+    assert len(bridges) == 1
+    assert bridges[0]['symbol'] in _usdc_symbol_ids(data)
+    assert bridges[0]['qty'] == Decimal('5.553699')           # what crosses is the token, whole
+    assert _transfers(data) == []                             # the fee is not a movement of its own
+    # ... it is charged with the gas, in the native coin, exactly as gas itself is
+    gas = Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18
+    assert bridges[0]['fee_qty'] == gas + Decimal('31344835695747') / Decimal('10') ** 18
+    assert bridges[0]['fee_symbol'] in _eth_symbol_ids(data)
+    assert 'USDT0 OFT Adapter' in bridges[0]['description']
+
+
+def test_native_coin_sent_elsewhere_is_not_taken_as_a_messaging_fee(eth_wallet, monkeypatch):
+    # Only what went to the bridge contract itself is its fee; native coin to anyone else is a movement of its own,
+    # and a transaction doing both is a shape nothing here may guess at
+    usdt0 = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"
+    stranger = "0x2222222222222222222222222222222222222222"
+    m2 = "0xb2" + "0" * 62
+    pages = {
+        "txlist": [_tx(m2, 100, WALLET, usdt0, value=0)],
+        "tokentx": [_token_tx(m2, 100, WALLET, usdt0, 5553699)],
+        "txlistinternal": [_internal_tx(m2, 100, WALLET, stranger, 31344835695747)],
+        }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _bridges(data) == []
+    assert any('stopped' in reason for reason in fetcher.skipped())
+
+
+def test_a_bridge_send_of_the_native_coin_alone_still_crosses(eth_wallet, monkeypatch):
+    # The guard that keeps the fee rule from eating the asset: when native coin is all that left, it IS what crosses
+    usdt0 = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"
+    m3 = "0xb3" + "0" * 62
+    pages = {
+        "txlist": [_tx(m3, 100, WALLET, usdt0, value=2 * 10 ** 17, gas_used='120000')],
+        "tokentx": [], "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    bridges = _bridges(data)
+    assert len(bridges) == 1
+    assert bridges[0]['symbol'] in _eth_symbol_ids(data) and bridges[0]['qty'] == Decimal('0.2')
+
+
 def test_bridge_receive_via_own_tx_is_emitted_as_a_plain_transfer(eth_wallet, monkeypatch):
     lifi = "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae"
     f6 = "0xf6" + "0" * 62
@@ -932,3 +1012,41 @@ def test_wallet_dialog_all_checkbox_from_partial_checks_everything(prepare_db):
     assert dialog._all.checkState() == Qt.PartiallyChecked
     _click_all(dialog)                                 # clicking "all" from partial checks every wallet
     assert dialog.selected_ids() == [1, 2, 3]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The other direction of the same bridge, which is NOT the same contract. USD₮0 is the omnichain token itself on the
+# L2, so the send BURNS it - the asset leg names the zero address and no protocol at all. What identifies the crossing
+# is the transaction's own destination: the OFT contract the wallet called, which is also what it pays the LayerZero
+# messaging fee to. (Being an L2 shares no addresses with L1 - and the registry is keyed by chain AND address anyway.)
+def test_a_burn_send_on_the_l2_is_a_crossing_not_two_transfers(arb_wallet, monkeypatch):
+    oft = "0x14e4a1b13bf7f943c8ff7c51fb60fa964a298d92"      # USDT0 OFT on Arbitrum, a registered BRIDGE
+    zero = "0x0000000000000000000000000000000000000000"
+    b1 = "0xc1" + "0" * 62
+    pages = {
+        "txlist": [_tx(b1, 100, ARB_WALLET, oft, value=193521415647447, gas_used='120000')],   # the LZ fee ...
+        "tokentx": [_token_tx(b1, 100, ARB_WALLET, zero, 11365836072)],   # ... and the burn of what crosses
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive_arb(arb_wallet, monkeypatch, pages)
+
+    assert not fetcher.skipped()
+    halves = _bridges(data)
+    assert len(halves) == 1
+    assert halves[0]['qty'] == Decimal('11365.836072')      # the burnt amount is what crossed
+    assert 'USDT0 OFT' in halves[0]['description']
+    assert _transfers(data) == []                            # neither leg is a transfer of its own
+    # The fee went to the OFT contract, so it is charged with the gas rather than counted as a second asset leaving
+    gas = Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18
+    assert halves[0]['fee_qty'] == gas + Decimal('193521415647447') / Decimal('10') ** 18
+
+
+# The Ethereum adapter address must NOT be recognized on the L2 - one address on the wrong chain is a different
+# contract, and classifying by it would book somebody else's contract as a bridge
+def test_the_ethereum_adapter_is_not_a_protocol_on_the_l2():
+    adapter = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"
+    assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, adapter) == ProtocolCategory.BRIDGE
+    assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, adapter) is None
+    oft = "0x14e4a1b13bf7f943c8ff7c51fb60fa964a298d92"
+    assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, oft) == ProtocolCategory.BRIDGE
+    assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, oft) is None
