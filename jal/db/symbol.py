@@ -38,13 +38,17 @@ class JalSymbol(JalDB):
         return True
 
     # Returns a list of {"symbol": JalSymbol, "currency": currency_id} that describes symbols involved into ledger
-    # operations between begin and end timestamps or that have non-zero value in ledger. The 'symbol' is the active
+    # operations between begin and end timestamps or that have non-zero value in ledger, together with the symbols of
+    # the operations that the ledger doesn't cover yet (see _symbols_beyond_ledger). The 'symbol' is the active
     # listing for its currency, so its text, identifiers and location resolve against that exact listing. If an asset
     # has ledger activity but no active listing for the account currency the symbol is empty (JalSymbol(0)) - such
     # rows have no downloadable location and are skipped by the quote downloader.
+    # A (symbol, currency) pair is reported once - the same pair may come from several accounts and from both
+    # sources, while its consumers (a quote download, an icon fetch) have nothing to do with it a second time.
     @classmethod
     def get_active_symbols(cls, begin: int, end: int) -> list:
         symbols = []
+        listed = set()
         query = cls._exec("SELECT DISTINCT l.asset_id, a.currency_id, s.id "
                           "FROM ledger l LEFT JOIN accounts a ON a.id=l.account_id "
                           "LEFT JOIN asset_symbol s ON s.asset_id=l.asset_id AND s.currency_id=a.currency_id AND s.active=1 "
@@ -61,8 +65,46 @@ class JalSymbol(JalDB):
                     query, cast=[int, int, lambda x: int(x) if x not in (None, '') else 0])
             except TypeError:  # Skip if None is returned (i.e. there are no assets)
                 continue
+            if (symbol_id, currency_id) in listed:
+                continue
+            listed.add((symbol_id, currency_id))
+            symbols.append({"symbol": cls(symbol_id), "currency": currency_id})
+        for symbol_id, currency_id in cls._symbols_beyond_ledger(end):
+            if (symbol_id, currency_id) in listed:
+                continue
+            listed.add((symbol_id, currency_id))
             symbols.append({"symbol": cls(symbol_id), "currency": currency_id})
         return symbols
+
+    # (symbol_id, currency_id) pairs of the operations that the ledger hasn't accounted for - those at or after its
+    # frontier and no later than 'end'.
+    # The ledger is not the whole truth about which symbols exist: it ends at its frontier, and it stops there for
+    # good when an operation can't be processed - a staking reward with no quote to value it, above all. An asset
+    # first acquired beyond that point has no ledger row at all, so a list built from the ledger alone leaves it out
+    # of the quote download, which in turn is what the ledger is waiting for. Reading the operations directly breaks
+    # that deadlock: the asset gets its quotes and the next rebuild carries the ledger past the operation.
+    # Only the tail beyond the frontier is read - what the ledger does cover is already reported from it - so this
+    # costs a scan of the operation tables over a range that is normally empty.
+    # The listing is resolved exactly as it is for a ledger row (the asset's active listing in the currency of the
+    # account the operation belongs to) so that both sources describe a symbol in the same way.
+    @classmethod
+    def _symbols_beyond_ledger(cls, end: int) -> list:
+        frontier = cls._read("SELECT ledger_frontier FROM frontier")   # '' when the ledger is empty
+        frontier = 0 if frontier in ('', None) else int(frontier)
+        pairs = []
+        query = cls._exec("SELECT DISTINCT s.id, a.currency_id FROM (" + cls._OPERATION_SYMBOLS + ") AS o "
+                          "LEFT JOIN asset_symbol os ON os.id=o.symbol_id "
+                          "LEFT JOIN accounts a ON a.id=o.account_id "
+                          "LEFT JOIN asset_symbol s ON s.asset_id=os.asset_id AND s.currency_id=a.currency_id AND s.active=1 "
+                          "WHERE o.timestamp>=:frontier AND o.timestamp<=:end AND NOT s.id IS NULL",
+                          [(":frontier", frontier), (":end", end)])
+        while query.next():
+            try:
+                symbol_id, currency_id = cls._read_record(query, cast=[int, int])
+            except TypeError:
+                continue
+            pairs.append((symbol_id, currency_id))
+        return pairs
 
     # Loads a single asset_symbol row (as a dict) plus its identifiers (in ['ID'] keyed by id_type), or an empty
     # dict if there is no such symbol. Used as the loader behind the shared UniversalCache (keyed by symbol id).

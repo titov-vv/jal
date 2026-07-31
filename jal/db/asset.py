@@ -23,6 +23,10 @@ def db_timestamp2int(timestamp_string: str) -> int:
 
 class JalAsset(JalDB):
     db_cache = UniversalCache()
+    # Quotes already reported as missing, as the texts that were logged - see _report_missing_quote().
+    # Emptied whenever quotes are stored, as that is the only thing that may turn a missing quote into a present one
+    # and thus the only moment when a repeat of the message could carry new information.
+    _missing_quotes = set()
 
     def __init__(self, asset_id: int = 0) -> None:
         super().__init__(cached=True)
@@ -79,6 +83,7 @@ class JalAsset(JalDB):
 
     def invalidate_cache(self):
         self.db_cache.clear_cache()
+        JalAsset._missing_quotes.clear()   # the data behind the reported misses is being re-read as well
 
     # JalAsset maintains single cache available for all instances
     @classmethod
@@ -243,8 +248,7 @@ class JalAsset(JalDB):
                 cross_quote = self._cross_currency_quote(timestamp, currency_id)
                 if cross_quote is not None:
                     return cross_quote
-            logging.warning(self.tr("There are no quote/rate for ") +
-                            f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) {ts2d(timestamp)}")
+            self._report_missing_quote(timestamp, currency_id)
             return 0, Decimal('0')
         return int(quote[0]), Decimal(quote[1])
 
@@ -268,6 +272,21 @@ class JalAsset(JalDB):
         if rate == Decimal('0'):
             return None
         return quote_timestamp, value * rate
+
+    # Reports a quote that is missing, once per asset, currency and date.
+    # A single holdings or report calculation asks for the same quote hundreds of times, and repeating an identical
+    # line that many times buries every other message in the log instead of telling the user anything new. What has
+    # to be said is which asset needs a download, so it is said once and the log stays readable.
+    # The asset is named by its ticker in the requested currency when it has one and by any of its tickers when it
+    # doesn't: crypto is listed in USD only while the value of a portfolio is asked for in the base currency, so the
+    # currency-scoped name of the asset that is missing its quotes is empty exactly when it is needed most.
+    def _report_missing_quote(self, timestamp: int, currency_id: int) -> None:
+        name = self.symbol(currency_id) or self.symbol() or self._name or f"id={self._id}"
+        reported = f"{name} ({JalAsset(currency_id).symbol()}) {ts2d(timestamp)}"
+        if reported in self._missing_quotes:
+            return
+        self._missing_quotes.add(reported)
+        logging.warning(self.tr("There are no quote/rate for ") + reported)
 
     # Return a list of tuples (timestamp:int, quote:Decimal) of all quotes available for asset
     # for time interval begin-end
@@ -294,12 +313,22 @@ class JalAsset(JalDB):
         quotes = [(t_q, q * math.prod([splits[t_s] for t_s in splits if day_begin(t_s) > t_q])) for t_q, q in quotes]
         return quotes
 
-    # Returns the timestamp of the earliest ledger record of the asset, or 0 if it was never in the ledger.
-    # A quote series is only of use from the moment the asset appears in the ledger, so this is the natural
-    # beginning of the interval to download (see QuoteDownloader._adjust_start).
+    # Returns the timestamp of the earliest ledger record of the asset, or of its earliest operation when the ledger
+    # has none, or 0 if the asset was never operated at all.
+    # A quote series is only of use from the moment the asset first appears, so this is the natural beginning of the
+    # interval to download (see QuoteDownloader._adjust_start).
+    # The fallback is what makes that beginning right for an asset the ledger doesn't cover - the ledger ends at its
+    # frontier, and an asset acquired beyond it has no ledger record at all (see JalSymbol._symbols_beyond_ledger).
+    # Without it such an asset would be downloaded from whatever date the user happened to ask for, which is the one
+    # that leaves the operation blocking the ledger unpriced and the ledger stuck exactly where it was.
     def first_operation_timestamp(self) -> int:
         timestamp = self._read("SELECT MIN(timestamp) FROM ledger WHERE asset_id=:asset_id AND book_account=:book",
                                [(":asset_id", self._id), (":book", BookAccount.Assets)])
+        if timestamp:
+            return db_timestamp2int(timestamp)
+        timestamp = self._read("SELECT MIN(o.timestamp) FROM (" + self._OPERATION_SYMBOLS + ") AS o "
+                               "LEFT JOIN asset_symbol s ON s.id=o.symbol_id WHERE s.asset_id=:asset_id",
+                               [(":asset_id", self._id)])
         return db_timestamp2int(timestamp) if timestamp else 0
 
     # Returns tuple (begin_timestamp: int, end_timestamp: int) that defines timestamp range for which quotations are
@@ -340,6 +369,7 @@ class JalAsset(JalDB):
             begin = min(data, key=lambda x: x['timestamp'])['timestamp']
             end = max(data, key=lambda x: x['timestamp'])['timestamp']
             self.commit()
+            JalAsset._missing_quotes.clear()   # A quote that was reported as missing may be present now
             logging.info(self.tr("Quotations were updated: ") +
                          f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) {ts2d(begin)} - {ts2d(end)}")
 

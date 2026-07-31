@@ -73,6 +73,30 @@ class JalSqlError:
 
 # ----------------------------------------------------------------------------------------------------------------------
 class JalDB:
+    # Every (symbol, account, timestamp) an operation puts on the books - the counterpart of the 'operation_sequence'
+    # view, which lists the same operations by account only. A symbol that is optional for an operation (the asset of
+    # a cash transfer, a fee paid in no asset at all) is NULL here and drops out on the join that reads this.
+    # Meant for the few questions the ledger can't answer because they are about operations it doesn't cover yet
+    # (JalSymbol._symbols_beyond_ledger, JalAsset.first_operation_timestamp) - it is not a substitute for the ledger
+    # anywhere the ledger does answer, and reading it costs a scan of every operation table.
+    _OPERATION_SYMBOLS = \
+        "SELECT symbol_id, account_id, timestamp FROM trades " \
+        "UNION ALL SELECT symbol_id, account_id, timestamp FROM asset_payments " \
+        "UNION ALL SELECT symbol_id, account_id, timestamp FROM asset_actions " \
+        "UNION ALL SELECT r.symbol_id, a.account_id, a.timestamp FROM asset_action_results AS r " \
+        "LEFT JOIN asset_actions AS a ON a.oid=r.action_id " \
+        "UNION ALL SELECT symbol_id, withdrawal_account, withdrawal_timestamp FROM transfers " \
+        "UNION ALL SELECT symbol_id, deposit_account, deposit_timestamp FROM transfers " \
+        "UNION ALL SELECT fee_symbol_id, fee_account, withdrawal_timestamp FROM transfers " \
+        "UNION ALL SELECT out_symbol_id, account_id, timestamp FROM conversions " \
+        "UNION ALL SELECT in_symbol_id, account_id, timestamp FROM conversions " \
+        "UNION ALL SELECT fee_symbol_id, account_id, timestamp FROM conversions " \
+        "UNION ALL SELECT out_symbol_id, account_id, timestamp FROM swaps " \
+        "UNION ALL SELECT in_symbol_id, COALESCE(in_account_id, account_id), COALESCE(in_timestamp, timestamp) FROM swaps " \
+        "UNION ALL SELECT fee_symbol_id, account_id, timestamp FROM swaps " \
+        "UNION ALL SELECT out_symbol_id, out_account_id, out_timestamp FROM bridges " \
+        "UNION ALL SELECT in_symbol_id, COALESCE(in_account_id, out_account_id), COALESCE(in_timestamp, out_timestamp) FROM bridges " \
+        "UNION ALL SELECT fee_symbol_id, out_account_id, out_timestamp FROM bridges"
     _tables = []
     _instances_with_cache = []
     _sql_call_count = 0

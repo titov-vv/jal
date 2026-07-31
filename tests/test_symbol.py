@@ -1,12 +1,16 @@
 from decimal import Decimal
 
+import pytest
+
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_assets, symbol_id_for, create_trades, create_actions
 from constants import PredefinedAsset, SymbolId, AssetLocation
+from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.ledger import Ledger
+from jal.db.operations import LedgerTransaction, AssetPayment, LedgerError
 from jal.db.asset_models import SymbolsListModel
 from tests.helpers import d2t
 
@@ -96,6 +100,31 @@ def test_get_active_symbols_returns_jalsymbol(prepare_db):
     assert symbol.symbol() == 'AAPL'
     assert symbol.identifier(SymbolId.ISIN) == 'US0378331005'
     assert entries[0]['currency'] == 2
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# An asset the ledger hasn't reached must be reported as well - it is the list the quote downloader works from, and
+# an incomplete ledger is exactly the state that needs quotes to be completed. A staking reward that can't be valued
+# stops the rebuild (see AssetPayment.price), so a list built from the ledger alone would leave that very asset out
+# of the download and nothing would ever complete the ledger.
+def test_get_active_symbols_beyond_incomplete_ledger(prepare_db):
+    JalAccountCreator(currency_id=2, number='W1', name='Wallet', investing=1, organization=1).commit()
+    create_assets([('TRX', 'Tron', '', 2, PredefinedAsset.Crypto, 0)])  # asset id 4, no quotes at all
+    create_actions([(d2t(220101), 1, 1, [(4, 1000.0)])])
+    reward = {'timestamp': d2t(220301), 'type': AssetPayment.StakingReward, 'account_id': 1,
+              'symbol_id': symbol_id_for(4), 'amount': '100', 'tax': '0', 'number': 'txhash', 'note': ''}
+    LedgerTransaction.create_new(LedgerTransaction.AssetPayment, reward)
+    with pytest.raises(LedgerError):  # The unpriced reward stops the ledger before it books the asset
+        Ledger().rebuild(from_timestamp=0)
+    assert JalDB._read("SELECT COUNT(*) FROM ledger WHERE asset_id=4") == 0  # nothing about the asset in the ledger
+
+    entries = [x for x in JalSymbol.get_active_symbols(0, d2t(221231)) if x['symbol'].asset().id() == 4]
+    assert len(entries) == 1
+    assert entries[0]['symbol'].symbol() == 'TRX'
+    assert entries[0]['currency'] == 2   # the currency of the account the operation belongs to
+
+    # Only the operations of the requested interval are reported - one that happens later needs no quote yet
+    assert [x for x in JalSymbol.get_active_symbols(0, d2t(220201)) if x['symbol'].asset().id() == 4] == []
 
 
 # SymbolsListModel.setFilter() has to produce valid SQL when nothing is filtered. An unfiltered list is the normal

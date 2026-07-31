@@ -835,7 +835,7 @@ class QuoteDownloader(QObject):
     # ignored here - the caller stores the result as a USD series (see download_asset_prices) and conversion into
     # any other currency is a matter of quote look-up, not of download.
     def Llama_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
-        coins = llama_coin_keys(symbol)
+        coins = self._asset_coin_keys(symbol)
         if not coins:
             logging.warning(self.tr("Can't identify crypto asset to download quotes: ") + f"{symbol.symbol()}")
             return None
@@ -849,6 +849,21 @@ class QuoteDownloader(QObject):
         logging.warning(self.tr("No quotes were received from DeFiLlama for ")
                         + f"{symbol.symbol()} ({', '.join(coins)})")
         return None
+
+    # Every DeFiLlama key that may answer for the asset behind the given listing, that listing's own keys first.
+    # A crypto asset is downloaded as a single series shared by all of its listings (see _quote_series), so which
+    # listing represents the series is a matter of row order - while the key is not: the same token deployed on
+    # several chains may be indexed by the source on one of them only (fGHO answers on Ethereum but not on
+    # Arbitrum). Offering the keys of the sibling listings too makes the download independent of that order.
+    @staticmethod
+    def _asset_coin_keys(symbol: JalSymbol) -> list:
+        keys = list(llama_coin_keys(symbol))
+        for symbol_id in symbol.asset().active_symbol_ids():
+            sibling = JalSymbol(symbol_id)
+            if symbol_id == symbol.id() or sibling.location() not in LLAMA_LOCATIONS:
+                continue
+            keys += [x for x in llama_coin_keys(sibling) if x not in keys]
+        return keys
 
     # Daily quotes of one DeFiLlama coin key, or None when the source has none for it
     def _llama_chart(self, coin: str, start_timestamp, end_timestamp):

@@ -4,6 +4,7 @@ from pandas._testing import assert_frame_equal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex, prepare_db_fifo
 from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets, create_quotes, create_trades, symbol_id_for
+from jal.db.db import JalDB
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.ledger import Ledger
 from jal.db.symbol import JalSymbol
@@ -375,6 +376,28 @@ def test_llama_coin_keys_of_hyperliquid(prepare_db):
     assert llama_coin_keys(JalSymbol(hype)) == ['hyperliquid:0x0d01dc56dcaaca66ad901c959b4011ec']
 
 
+# One asset deployed on two chains is downloaded as a single series, and which of its listings represents that
+# series is decided by row order. The source may index only one of the deployments, so every listing of the asset
+# has to be asked about - otherwise the same asset is priced or not depending on that order alone.
+def test_asset_coin_keys_cover_every_listing(prepare_db):
+    creator = JalAssetCreator(PredefinedAsset.Crypto, 'Fluid GHO')
+    eth_listing = creator.add_symbol('fGHO', 2, location_id=AssetLocation.ETH_BLOCKCHAIN)
+    creator.add_identifier(eth_listing, SymbolId.ETH_ADDRESS, '0x6a29a46e21c730dca1d8b23d637c101cec605c5b')
+    arb_listing = creator.add_symbol('fGHO', 2, location_id=AssetLocation.ARB_BLOCKCHAIN)
+    creator.add_identifier(arb_listing, SymbolId.ARB_ADDRESS, '0x037dff1c12805707d7c29f163e0f09fc9102657a')
+    creator.commit()
+
+    ethereum = 'ethereum:0x6a29a46e21c730dca1d8b23d637c101cec605c5b'
+    arbitrum = 'arbitrum:0x037dff1c12805707d7c29f163e0f09fc9102657a'
+    # The keys of the listing that was picked come first, the ones of its siblings follow
+    assert QuoteDownloader._asset_coin_keys(JalSymbol(arb_listing)) == [arbitrum, ethereum]
+    assert QuoteDownloader._asset_coin_keys(JalSymbol(eth_listing)) == [ethereum, arbitrum]
+
+    # The coin id belongs to the asset and not to a listing, so it is offered once and not once per listing
+    JalAsset(JalSymbol(eth_listing).asset().id()).update_data({'coin_id': 'fluid-gho'})
+    assert QuoteDownloader._asset_coin_keys(JalSymbol(eth_listing)) == [ethereum, 'coingecko:fluid-gho', arbitrum]
+
+
 def test_llama_chart_parsing(data_path):
     coin = 'arbitrum:0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
     with open(data_path + 'defillama_chart.json', 'r') as sample:
@@ -481,6 +504,21 @@ def test_download_start_is_pulled_back_to_first_operation(prepare_db_fifo):
     create_quotes(4, usd, [(d2t(201110), 100.0)])
     assert downloader._adjust_start(asset, usd, d2t(201201)) == d2t(201202)   # from the last stored quote
     assert downloader._adjust_start(asset, usd, d2t(201101)) == d2t(201101)   # ... or from an earlier start asked
+
+
+# The operation that stops the ledger is the one that needs a quote, and it lies beyond the ledger frontier - so the
+# beginning of the download can't be read from the ledger either. Taken from the operations instead, it reaches the
+# blocking operation and one download completes the ledger; taken from the ledger it would be 0, the interval would
+# start wherever the user happened to ask and the operation would stay unpriced whatever they downloaded.
+def test_download_start_reaches_an_operation_beyond_the_ledger(prepare_db_fifo):
+    usd = 2
+    create_assets([('BBB', 'B Company', '', usd, PredefinedAsset.Stock, 0)])   # asset ID = 4
+    create_trades(1, [(d2t(201110), d2t(201110), 4, 10.0, 100.0, 0.0)])
+    # No ledger rebuild at all - the same state as an asset acquired after the frontier of an incomplete ledger
+    assert JalDB._read("SELECT COUNT(*) FROM ledger WHERE asset_id=4") == 0
+
+    assert JalAsset(4).first_operation_timestamp() == d2t(201110)
+    assert QuoteDownloader()._adjust_start(JalAsset(4), usd, d2t(201201)) == d2t(201110)
 
 
 def test_crypto_quotes_are_stored_as_usd(prepare_db, monkeypatch):
