@@ -41,6 +41,15 @@ class Setup:
     # between the rounding of a quantity adjustment (~1E-28 of the amount, the precision of the decimal context) and
     # the smallest difference that may be real (one unit of an 18-decimals token, ~1E-22 of a four-digit amount).
     LOT_QTY_TOLERANCE = '1E-25'
+    # Bounds on the quantity a rebasing receipt token may be found to have gained without announcing it, which is
+    # what AssetPayment.RebaseAdjustment books (see RebaseResidue.absorb()). The shortage has to pass BOTH.
+    # The relative one is the real gate and needs no quote: the residue is the truncation of a scaled balance, some
+    # units of the token's last decimal against a whole position - 6E-11 in the case this was built from - while the
+    # smallest genuinely missing operation would be many orders of magnitude larger. The value one is a second fence
+    # for a big position in a valuable token, where even 1E-9 of it could be money; it applies only when the asset
+    # can be priced at all, since an unpriced one is already held by the relative bound.
+    REBASE_RESIDUE_TOLERANCE = '1E-9'                # of the quantity the operation converts
+    REBASE_RESIDUE_MAX_VALUE = '0.01'                # in the account's currency
     ASSET_ICON_SIZE = 64
 
 # ----------------------------------------------------------------------------------------------------------------------

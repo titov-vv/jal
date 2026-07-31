@@ -9,6 +9,8 @@ from PySide6.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QLabel, QListWi
 
 from jal.constants import Setup, AssetLocation
 from jal.db.ledger import Ledger
+from jal.db.operations import LedgerAssetShortage, LedgerError
+from jal.db.rebase_residue import RebaseResidue
 from jal.db.settings import JalSettings
 from jal.data_import.statement import Statement_ImportError
 from jal.net.arrival_reconciler import ArrivalReconciler, log_findings
@@ -106,6 +108,9 @@ class ChainFetchers(QObject):
     # history has no known total ahead of time, so this is text ("<ticker>: fetching page N...") rather than a
     # second percentage.
     update_progress_text = Signal(str)
+    # A rebase residue is booked one per closing of a position, so a wallet may legitimately leave several behind.
+    # The bound only keeps a rebuild that stops without progressing from looping - it is not a limit anybody meets.
+    _MAX_ABSORBED_RESIDUES = 32
 
     def __init__(self, parent):
         super().__init__()
@@ -186,6 +191,7 @@ class ChainFetchers(QObject):
         self._report_failures(failed)
         if imported_any:
             self._settle_transfers()
+            self._absorb_rebase_residue()
             self._audit_swaps()
         if not imported_any:
             self.load_failed.emit()
@@ -210,6 +216,33 @@ class ChainFetchers(QObject):
         if settled:
             logging.info(self.tr("Transfers settled from the route they were sent by: ") + f"{settled}")
             Ledger().rebuild()
+
+    # Finishes a ledger that stopped one crumb short of a lending withdrawal, which is what a rebasing receipt token
+    # leaves behind: its Transfer events under-report the balance the protocol really hands back, so closing the
+    # position in full asks for a few units of the last decimal more than the books hold. RebaseResidue books the
+    # difference (and refuses anything that isn't plainly one) - see it for what is and isn't absorbed here.
+    #
+    # It runs after the import, where the shortage comes into being, and drives the rebuild itself because the stop
+    # is the only place the numbers exist: the ledger reports where it halted and by how much, the crumb is booked,
+    # and the rebuild resumes past it. A position that was opened and closed several times leaves one residue per
+    # closing, so this repeats until the ledger completes, refuses, or fails - never more times than there are
+    # conversions to stop at.
+    def _absorb_rebase_residue(self) -> None:
+        ledger = Ledger()
+        reconciler = RebaseResidue()
+        for _ in range(self._MAX_ABSORBED_RESIDUES):
+            try:
+                ledger.rebuild()
+            except LedgerError:
+                pass          # under pytest rebuild() re-raises what it stopped on; 'stopped_by' is set either way
+            except Exception as error:   # like the checks around it, a failure here must not fail the import
+                logging.warning(self.tr("Rebase residue could not be checked: ") + f"{error}")
+                return
+            if not isinstance(ledger.stopped_by, LedgerAssetShortage):
+                return        # the ledger is complete, or stopped on something this can't make good
+            if not reconciler.absorb(ledger.stopped_by):
+                return
+        logging.warning(self.tr("Too many rebase residues in a row - the ledger was left incomplete"))
 
     # Checks the swaps the database holds against the routes they really were.
     #

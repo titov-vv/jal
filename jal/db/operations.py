@@ -19,6 +19,23 @@ class LedgerError(Exception):
     pass
 
 
+# A LedgerError raised because an account holds less of an asset than the operation disposes of. It carries what the
+# message says in fields as well, so a caller that knows how to make the shortage good may act on it instead of only
+# reporting it (RebaseResidue.absorb() does exactly that). The ledger stops at the operation either way.
+class LedgerAssetShortage(LedgerError):
+    def __init__(self, message: str, operation, account_id: int, symbol_id: int, available: Decimal,
+                 required: Decimal):
+        super().__init__(message)
+        self.operation = operation      # the LedgerTransaction that couldn't be processed
+        self.account_id = account_id
+        self.symbol_id = symbol_id      # the listing the operation names, which is what an operation is written with
+        self.available = available
+        self.required = required
+
+    def shortage(self) -> Decimal:
+        return self.required - self.available
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 class LedgerTransaction(JalDB):
     NoOpException = 'NoLedgerOperation'
@@ -470,6 +487,16 @@ class AssetPayment(LedgerTransaction):
     # valued at the last known quote and opening a lot at that basis); it exists only to keep the two apart, since
     # what earned the coins may well be taxed differently from what staking earns.
     Reward = 10
+    # Quantity a rebasing receipt token gained without ever announcing it. An aToken balance is a scaled number times
+    # the protocol's index, and the amount each Transfer event reports is re-derived from that ray math and truncates,
+    # so the sum of every event a wallet ever saw is a few units of the last decimal BELOW the balance the protocol
+    # will actually hand back. The gap stays invisible until the position is closed in full - a "withdraw max" burns
+    # the true balance - and the books are then short by the accumulated truncation. This operation books that
+    # quantity, and books it at ZERO value: the position's cost basis is whatever was paid for it and none of it
+    # belongs to the crumb, so the crumb comes in free and the per-unit basis of the rest is left exactly as it was.
+    # Never written by hand - see RebaseResidue.absorb(), which is the only thing that may create one and refuses
+    # anything whose value is not negligible.
+    RebaseAdjustment = 11
     _db_table = "asset_payments"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -496,7 +523,8 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.GasFee: JalIcon.FEE,
             AssetPayment.StakingReward: JalIcon.INTEREST,
             AssetPayment.Reward: JalIcon.INTEREST,
-            AssetPayment.DustAttack: JalIcon.TRANSFER_IN     # TODO dedicated icon for a dust attack
+            AssetPayment.DustAttack: JalIcon.TRANSFER_IN,     # TODO dedicated icon for a dust attack
+            AssetPayment.RebaseAdjustment: JalIcon.TRANSFER_IN
         }
         self.names = {
             AssetPayment.NA: self.tr("UNDEFINED"),
@@ -509,7 +537,8 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.GasFee: self.tr("Gas fee"),
             AssetPayment.StakingReward: self.tr("Staking reward"),
             AssetPayment.DustAttack: self.tr("Dust attack"),
-            AssetPayment.Reward: self.tr("Reward")
+            AssetPayment.Reward: self.tr("Reward"),
+            AssetPayment.RebaseAdjustment: self.tr("Rebase adjustment")
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.AssetPayment
@@ -579,6 +608,11 @@ class AssetPayment(LedgerTransaction):
 
     # Return price of asset for stock dividend and vesting
     def price(self) -> Decimal:
+        if self._subtype == AssetPayment.RebaseAdjustment:
+            # Zero by definition, not for want of a quote: this operation only books quantity that a rebasing token
+            # gained without announcing it, and the cost basis of the position it belongs to was paid in full long
+            # before. Pricing the crumb at market would move basis into it and out of the units that were bought.
+            return Decimal('0')
         if self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward):
             # A reward arrives at a block timestamp, which no daily quote series will ever match exactly, so the
             # last known price is used instead of demanding a quote of that very second. A reward that can't be
@@ -636,6 +670,11 @@ class AssetPayment(LedgerTransaction):
             if timestamp != self._timestamp:
                 logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
             amount = self._amount * price
+        elif self._subtype == AssetPayment.RebaseAdjustment:
+            # Worth nothing by definition, the same zero price() gives the ledger: this books quantity a position
+            # already owned, not something acquired, so pricing it at market here would report money the account
+            # never received and would disagree with the zero the position's value carries on the books.
+            amount = Decimal('0')
         elif self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward, AssetPayment.GasFee,
                                AssetPayment.DustAttack):
             # A crypto quote is daily, so it never falls on the exact block timestamp the way an exchange quote
@@ -693,7 +732,8 @@ class AssetPayment(LedgerTransaction):
         # The amount of these payments is a quantity of the asset, not a sum of money: shares received as a
         # dividend, coins earned by staking, coins burned as gas
         asset_denominated = (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
-                             AssetPayment.Reward, AssetPayment.GasFee, AssetPayment.DustAttack)
+                             AssetPayment.Reward, AssetPayment.GasFee, AssetPayment.DustAttack,
+                             AssetPayment.RebaseAdjustment)
         if self._subtype in asset_denominated and not self._opart:
             if self._tax:
                 return f" {self._symbol.symbol()}\n {self._account_currency}"
@@ -706,7 +746,8 @@ class AssetPayment(LedgerTransaction):
         balance = []
         amount = self._money_total(self._account.id())
         if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
-                             AssetPayment.Reward, AssetPayment.GasFee, AssetPayment.DustAttack):
+                             AssetPayment.Reward, AssetPayment.GasFee, AssetPayment.DustAttack,
+                             AssetPayment.RebaseAdjustment):
             qty = self._asset_total(self._account.id(), self._asset.id())
             if qty is None:
                 return [Decimal('NaN')]
@@ -729,7 +770,7 @@ class AssetPayment(LedgerTransaction):
         if not self._peer_id:
             raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
         if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
-                             AssetPayment.Reward, AssetPayment.DustAttack):
+                             AssetPayment.Reward, AssetPayment.DustAttack, AssetPayment.RebaseAdjustment):
             self.processStockDividendOrVesting(ledger)
             return
         if self._subtype == AssetPayment.GasFee:
@@ -2127,9 +2168,14 @@ class Conversion(LedgerTransaction):
             raise LedgerError(self.tr("Conversion quantities must be positive. Operation: ") + self.dump())
         available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._out_asset.id())
         if available < self._out_qty:
-            raise LedgerError(self.tr("Asset amount is not enough for conversion processing. Date: ")
-                              + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
-                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+            # Raised with the shortage in fields and not only in the message: the out leg of a conversion is where a
+            # rebasing receipt token reveals the quantity it gained without announcing it (see
+            # AssetPayment.RebaseAdjustment), and RebaseResidue.absorb() needs the numbers to decide whether this is
+            # that crumb or a real gap in the data. It stops the ledger here exactly as any other LedgerError does.
+            raise LedgerAssetShortage(self.tr("Asset amount is not enough for conversion processing. Date: ")
+                                      + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
+                                      + f"Required: {self._out_qty}, Operation: {self.dump()}",
+                                      self, self._account.id(), self._out_symbol.id(), available, self._out_qty)
         # The lots of the converted asset are closed at their own cost basis (self.price() is None, so the deals
         # carry no profit or loss) and then re-opened on the acquired asset - each one keeping the operation that
         # opened it, and therefore its acquisition date. The whole position is re-scaled by the quantity the

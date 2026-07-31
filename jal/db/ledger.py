@@ -89,6 +89,10 @@ class Ledger(QObject, JalDB):
         self._cancelled = False
         self.amounts = LedgerAmounts("amount_acc")    # store last amount for [book, account, asset]
         self.values = LedgerAmounts("value_acc")      # together with corresponding value
+        # The LedgerError that ended the last rebuild, or None when it ran to the end. The message of it is logged
+        # for the user either way; the exception itself is kept so that a caller who knows how to make the stop good
+        # can act on what it carries (ChainFetchers._absorb_rebase_residue) instead of parsing the text back out.
+        self.stopped_by = None
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
@@ -224,6 +228,7 @@ class Ledger(QObject, JalDB):
     # any - re-build all operations after given timestamp
     def rebuild(self, from_timestamp=-1):
         self._cancelled = False
+        self.stopped_by = None
         exception_happened = False
         incomplete_reason = ''    # Set if the rebuild stopped for a recoverable reason (see LedgerError below)
         last_timestamp = 0
@@ -271,6 +276,7 @@ class Ledger(QObject, JalDB):
             # An expected stop: the data is sound but something the ledger needs isn't there yet (a quote to value
             # an operation, a setting that isn't filled in, ...). The ledger simply ends earlier than it might, so
             # the user gets the reason and what to do about it - not a traceback of a crash.
+            self.stopped_by = e
             if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
                 raise e
             incomplete_reason = str(e)

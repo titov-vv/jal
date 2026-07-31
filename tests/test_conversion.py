@@ -3,12 +3,13 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
-from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_conversions
-from constants import BookAccount, PredefinedCategory
+from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_conversions, symbol_id_for
+from constants import AccountData, BookAccount, PredefinedCategory
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, LedgerError
+from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage
+from jal.db.rebase_residue import RebaseResidue
 
 _WITH_SWAP = (LedgerTransaction.Trade, LedgerTransaction.Swap)   # what the Deals report asks for
 
@@ -158,3 +159,97 @@ def test_conversion_absorbs_lot_adjustment_rounding(prepare_db_fifo):
     assert JalAccount(1).get_asset_amount(t4, 5) == Decimal('0')
     assert JalAccount(1).open_trades_list(JalAsset(5)) == []            # and no ~1E-25 dust lot is left behind
     assert JalAccount(1).closed_trades_list(close_otypes=_WITH_SWAP) == []
+
+
+# An Aave aToken balance is a scaled number times the protocol's index, and the amount each Transfer event carries is
+# re-derived from that ray math and truncates. The sum of every event a wallet ever saw is therefore a few units of
+# the token's last decimal BELOW the balance the protocol really hands back, and a fetcher - which can only book what
+# the chain emitted - is short by exactly that. Nothing shows it while the position is open; it surfaces on the
+# "withdraw max" that closes the position, which burns the true balance. The ledger then stops on that conversion.
+# The numbers are the real ones from a live database: aEthUSDG, 10 transfer events summing to 50246.880296 against a
+# closing burn of 50246.880299 - a residue of 3 units of 1E-6, or 6E-11 of the position.
+def test_conversion_stops_on_rebase_residue(prepare_db_fifo):
+    JalAccount(1).set_data(AccountData.Precision, 18)   # every ledger posting is rounded to it
+    create_stocks([('USDG', 'Stablecoin'), ('aEthUSDG', 'Lending receipt')], currency_id=2)
+    t_buy, t_supply, t_exit = d2t(220101), d2t(220201), d2t(220301)
+    create_trades(1, [(t_buy, t_buy, 4, Decimal('50246.880296'), Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(t_supply, 4, '50246.880296', 5, '50246.880296')])
+    create_conversions(1, [(t_exit, 5, '50246.880299', 4, '50251.319007')])
+
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    assert stop.value.shortage() == Decimal('0.000003')
+    assert stop.value.symbol_id == symbol_id_for(5, 2)
+    assert RebaseResidue().refusal_to_absorb(stop.value) == ''
+
+
+# The residue is booked where the ledger found it, and booked at zero value: the quantity comes in free, so the
+# position's cost basis is exactly what was paid for it and the per-unit basis of the units already held is untouched.
+def test_rebase_residue_is_absorbed_at_zero_value(prepare_db_fifo):
+    JalAccount(1).set_data(AccountData.Precision, 18)   # every ledger posting is rounded to it
+    create_stocks([('USDG', 'Stablecoin'), ('aEthUSDG', 'Lending receipt')], currency_id=2)
+    t_buy, t_supply, t_exit = d2t(220101), d2t(220201), d2t(220301)
+    create_trades(1, [(t_buy, t_buy, 4, Decimal('50246.880296'), Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(t_supply, 4, '50246.880296', 5, '50246.880296')])
+    create_conversions(1, [(t_exit, 5, '50246.880299', 4, '50251.319007')])
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    assert RebaseResidue().absorb(stop.value)
+
+    Ledger().rebuild(from_timestamp=0)                                  # completes now
+    assert JalAccount(1).get_asset_amount(t_exit, 5) == Decimal('0')    # the whole position was converted
+    assert JalAccount(1).get_asset_amount(t_exit, 4) == Decimal('50251.319007')
+    values = LedgerAmounts("value_acc")
+    # The crumb cost nothing, so what the USDG position is worth is still what was paid for the 50246.880296 bought
+    assert values[(BookAccount.Assets, 1, 4)] == Decimal('50246.880296')
+    assert values[(BookAccount.Incomes, 1, 2)] == Decimal('0')          # and it is not income either
+    assert JalAccount(1).closed_trades_list(close_otypes=_WITH_SWAP) == []
+
+
+# What keeps this from papering over a genuinely missing transaction: a shortage that is a quantity rather than a
+# truncation crumb is refused and the ledger stays stopped, exactly as it did before any of this existed.
+def test_real_shortage_is_not_absorbed_as_rebase_residue(prepare_db_fifo):
+    JalAccount(1).set_data(AccountData.Precision, 18)   # every ledger posting is rounded to it
+    create_stocks([('USDG', 'Stablecoin'), ('aEthUSDG', 'Lending receipt')], currency_id=2)
+    t_buy, t_supply, t_exit = d2t(220101), d2t(220201), d2t(220301)
+    create_trades(1, [(t_buy, t_buy, 4, Decimal('50246.880296'), Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(t_supply, 4, '50246.880296', 5, '50246.880296')])
+    create_conversions(1, [(t_exit, 5, '50247', 4, '50251.319007')])    # 0.119704 missing - a supply never imported
+
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    assert RebaseResidue().refusal_to_absorb(stop.value) != ''
+    assert not RebaseResidue().absorb(stop.value)
+
+
+# A residue that is negligible against the position but worth real money is refused as well: the relative bound alone
+# would let it through on a big enough holding of a valuable token.
+def test_valuable_rebase_residue_is_not_absorbed(prepare_db_fifo):
+    JalAccount(1).set_data(AccountData.Precision, 18)   # every ledger posting is rounded to it
+    create_stocks([('WBTC', 'Wrapped coin'), ('aEthWBTC', 'Lending receipt')], currency_id=2)
+    t_buy, t_supply, t_exit = d2t(220101), d2t(220201), d2t(220301)
+    create_quotes(5, 2, [(t_supply, 100000)])                           # a unit is worth 100k of the account currency
+    create_trades(1, [(t_buy, t_buy, 4, Decimal('1000'), Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(t_supply, 4, '1000', 5, '1000')])
+    create_conversions(1, [(t_exit, 5, '1000.0000009', 4, '1000')])     # 9E-7 of the position, but worth 0.09
+
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    assert stop.value.shortage() == Decimal('0.0000009')                # inside the relative bound...
+    assert RebaseResidue().refusal_to_absorb(stop.value) != ''          # ...but not inside the value one
+
+
+# Every ledger posting is rounded to the account's precision, so a residue finer than that would be booked as a zero
+# and leave the shortage exactly where it was - and the rebuild would come back to it forever. Refused instead: such
+# an account is simply too coarse for the asset it holds.
+def test_rebase_residue_finer_than_account_precision_is_refused(prepare_db_fifo):
+    create_stocks([('USDG', 'Stablecoin'), ('aEthUSDG', 'Lending receipt')], currency_id=2)
+    t_buy, t_supply, t_exit = d2t(220101), d2t(220201), d2t(220301)   # account precision left at the default of 2
+    create_trades(1, [(t_buy, t_buy, 4, Decimal('50246.88'), Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(t_supply, 4, '50246.88', 5, '50246.88')])
+    create_conversions(1, [(t_exit, 5, '50246.880003', 4, '50251.319007')])
+
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    assert RebaseResidue().refusal_to_absorb(stop.value) != ''
+    assert not RebaseResidue().absorb(stop.value)
