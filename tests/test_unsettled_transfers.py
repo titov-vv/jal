@@ -379,6 +379,71 @@ def test_a_leg_that_names_no_address_suggests_nothing(wallets):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# The report offers six buttons and the row never said which of them applied - the knowledge was in the tooltips and
+# in the user's head, and picking wrong means being refused by a dialog rather than being told. The Action column
+# says it, named as the button that does it, out of the hints the row already asked for.
+
+def test_a_leg_waiting_for_a_counterpart_is_matched(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+
+    assert _row(_model(), 0, 'action') == 'Match...'
+
+
+# An address that resolves to an account of the user's is a fact about where the money went, so the row asks for
+# that account to be named rather than for a counterpart to be hunted for
+def test_a_leg_whose_address_resolves_is_assigned(wallets):
+    _eur_wallet()
+    _transfer(WALLET_A, None, 400, d2t(210103), address=EUR_ADDRESS)
+
+    assert _row(_model(), 0, 'action') == 'Assign...'
+
+
+# An arrival nobody sent is waiting for nothing at all, which is why it comes before every other answer
+def test_an_unsolicited_arrival_is_written_off(wallets):
+    _transfer(None, WALLET_B, 400, d2t(210103), symbol_id=_second_asset_listing('SPAM'))
+
+    assert _row(_model(), 0, 'action') == 'Dust'
+
+
+# Two legs of one transaction recorded under two assets are the one shape no settlement can pair - the obstacle is
+# the assets, so that is what the row asks for
+def test_a_leg_recorded_under_two_assets_asks_for_a_merge(wallets):
+    other = _second_asset_listing()
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(None, WALLET_B, 400, d2t(210103), number=HASH, symbol_id=other)
+
+    assert _row(_model(), 0, 'action') == 'Merge the assets'
+
+
+# A half-bridge is already recorded as a crossing, so what it waits for is its arrival rather than a settlement of
+# this report - and it is completed from a menu rather than from one of these buttons
+def test_a_half_bridge_asks_for_its_arrival(wallets):
+    _funded_wallet_a()
+    _pending_half()
+
+    assert _row(_model(), 0, 'action') == 'Match cross-chain legs...'
+
+
+# A row listed for a missing cost basis is settled, and no action of this report applies to it - an empty cell would
+# read as "the answer isn't known" rather than "there is nothing to do here"
+def test_a_basis_row_asks_to_be_looked_at(wallets):
+    _eur_wallet()
+    _transfer(WALLET_A, 3, 400, d2t(210103), deposit=0)
+
+    assert _row(_model(with_basis_gaps=True), 0, 'action') == 'Check the cost basis'
+
+
+# ... and because it is a column like any other, the worklist can be narrowed to one kind of work
+def test_the_list_can_be_narrowed_to_one_kind_of_work(wallets):
+    _eur_wallet()
+    _transfer(WALLET_A, None, 400, d2t(210103), address=EUR_ADDRESS)     # to assign
+    _transfer(WALLET_A, None, 150, d2t(210104))                          # to match
+
+    assert _rows(_model(filter_text='assign')) == 1
+    assert _row(_model(filter_text='assign'), 0, 'qty') == Decimal('400')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # The asset column names the listing the LEG names, and never the asset behind it. A token held on several chains has
 # one active listing per chain in one and the same currency, so asking the asset for its ticker in the account's
 # currency answered with all of them run together - 'USDTUSDT' - a ticker that exists nowhere and says nothing about

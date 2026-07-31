@@ -94,7 +94,9 @@ class PendingTransfersModel(ReportTreeModel):
 
     # The columns a filter looks through: the ones that hold a name, a reference or free text. A filter over the
     # numbers would be a different feature (and a misleading one - '100' would match a quantity of 1002.5).
-    _FILTERED = ('from', 'to', 'asset', 'suggestion', 'address', 'number', 'note')
+    # 'action' is among them on purpose - "show me everything that only needs an account named" is the question a
+    # worklist of this length is most often asked.
+    _FILTERED = ('from', 'to', 'asset', 'action', 'suggestion', 'address', 'number', 'note')
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -126,6 +128,7 @@ class PendingTransfersModel(ReportTreeModel):
                          {'name': self.tr("Asset"), 'field': 'asset'},
                          {'name': self.tr("Qty"), 'field': 'qty'},
                          {'name': self.tr("In transit, "), 'field': 'value'},
+                         {'name': self.tr("Action"), 'field': 'action'},
                          {'name': self.tr("Suggested"), 'field': 'suggestion'},
                          {'name': self.tr("Counterparty"), 'field': 'address'},
                          {'name': self.tr("Reference"), 'field': 'number'},
@@ -182,7 +185,7 @@ class PendingTransfersModel(ReportTreeModel):
         # is worthless" rather than "this leg isn't in flight"
         self._float2_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True, parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex('timestamp'), self._timestamp_delegate)
-        for field in ('from', 'to', 'asset', 'suggestion', 'address', 'number', 'note'):
+        for field in ('from', 'to', 'asset', 'action', 'suggestion', 'address', 'number', 'note'):
             self._view.setItemDelegateForColumn(self.fieldIndex(field), self._grid_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('qty'), self._float_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('value'), self._float2_delegate)
@@ -299,6 +302,7 @@ class PendingTransfersModel(ReportTreeModel):
             'asset': Transfer.leg_symbol(leg),
             'qty': leg['qty'],
             'value': value,
+            'action': self._leg_action(kind, suggested, duplicate),
             'suggestion': JalAccount(suggested).name() if suggested else '',
             'address': leg['address'] if leg['address'] else '',
             'number': leg['number'],
@@ -306,6 +310,28 @@ class PendingTransfersModel(ReportTreeModel):
             'font': 'normal' if outgoing else 'italic',
             'tooltip': tooltip
         }
+
+    # Which of the report's actions this leg is waiting for, named as the button that performs it.
+    #
+    # The worklist offers six buttons and the row itself never said which of them applied - the knowledge was in the
+    # tooltips and in the user's head, and picking wrong means being refused by a dialog rather than being told. It
+    # costs nothing to say: the three hints this answer is made of (dust_hint, address_suggestion,
+    # duplicate_asset_hint) are already asked for above, to build the rest of the row.
+    #
+    # The order is the order of certainty, and it is the same one the row's kind follows. An arrival nobody sent
+    # isn't waiting for a counterpart at all, so it comes first; then an address that resolves to an account of the
+    # user's, which is a fact about where the money went rather than a guess; then two legs that a single
+    # transaction recorded under two assets, which no settlement can pair until the assets are merged. What is left
+    # needs a counterpart chosen by hand, and Match is where that is done - including through the conversions
+    # (Swap, Bridge) that start from the same pair.
+    def _leg_action(self, kind: str, suggested: int, duplicate) -> str:
+        if kind in (self.POISONING, self.AIRDROP):
+            return self.tr("Dust")
+        if suggested:
+            return self.tr("Assign...")
+        if duplicate:
+            return self.tr("Merge the assets")
+        return self.tr("Match...")
 
     # What a row says about an arrival nobody asked for. The poisoning wording names the account being impersonated
     # and warns about the address rather than the money: the amount is trivial by design, and the loss the attack is
@@ -333,6 +359,9 @@ class PendingTransfersModel(ReportTreeModel):
             'asset': half['symbol'].symbol(),
             'qty': half['qty'],
             'value': half['qty'] * half['asset'].quote(self._date, self._currency)[1],
+            # Not one of this report's buttons: a half-bridge is already recorded as a crossing, so what it waits
+            # for is its arrival rather than a settlement - named here as the menu entry that completes it
+            'action': self.tr("Match cross-chain legs..."),
             'suggestion': '',
             'address': '',
             'number': half['number'],
@@ -355,6 +384,9 @@ class PendingTransfersModel(ReportTreeModel):
             'asset': leg['symbol'].symbol(),
             'qty': leg['qty'],
             'value': Decimal('0'),
+            # This row is settled and no action of this report applies to it - it is listed to be looked at, and
+            # saying so is better than an empty cell, which would read as "the answer isn't known"
+            'action': self.tr("Check the cost basis"),
             'suggestion': '',
             'address': '',
             'number': leg['number'],
