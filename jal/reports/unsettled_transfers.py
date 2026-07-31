@@ -46,6 +46,10 @@ class UnsettledTransfersReportWindow(MdiWidget):
         # set to the order the model builds by default, so the header doesn't claim a different one.
         self.ui.ReportTreeView.setSortingEnabled(True)
         self.ui.ReportTreeView.sortByColumn(self.transfers_model.fieldIndex('timestamp'), Qt.AscendingOrder)
+        # The chooser is filled from the model, so what it offers and the headings that come out of it are one list
+        self.ui.GroupCombo.addItem(self.tr("Nothing"), '')
+        for field, name in self.transfers_model.groupings():
+            self.ui.GroupCombo.addItem(name, field)
 
         current_time = QDateTime.currentDateTime()
         current_time.setTimeSpec(Qt.UTC)   # We use UTC everywhere so need to force TZ info
@@ -60,6 +64,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.ReportCurrencyCombo.changed.connect(self.updateReport)
         self.ui.BasisGapsCheck.stateChanged.connect(self.updateReport)
         self.ui.FilterEdit.textChanged.connect(self.updateReport)
+        self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
         self.ui.SettleButton.pressed.connect(self.settleAll)
         self.ui.MatchButton.pressed.connect(self.matchLegs)
         self.ui.AssignButton.pressed.connect(self.assignAccount)
@@ -89,10 +94,14 @@ class UnsettledTransfersReportWindow(MdiWidget):
     # in the same currency, and what changed is the data under it (see _settled)
     @Slot()
     def updateReport(self, reload: bool = False):
+        grouping = self.ui.GroupCombo.currentData() or ''   # None while the chooser is still being filled
+        # A flat list needs no expanders, and showing them would indent every row for nothing
+        self.ui.ReportTreeView.setRootIsDecorated(bool(grouping))
         self.ui.ReportTreeView.model().updateView(currency_id=self.ui.ReportCurrencyCombo.selected_id,
                                                   date=self.ui.ReportDate.date(),
                                                   with_basis_gaps=self.ui.BasisGapsCheck.isChecked(),
-                                                  filter_text=self.ui.FilterEdit.text(), update=reload)
+                                                  filter_text=self.ui.FilterEdit.text(), grouping=grouping,
+                                                  update=reload)
 
     # Runs the settlements that need nobody's judgement: the legs that one and the same transaction hash pairs, and
     # the legs that name an address an account of the user's holds. Both act on PROOF rather than on a resemblance,

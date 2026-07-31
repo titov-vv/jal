@@ -49,13 +49,13 @@ def wallets(prepare_db):
 
 
 def _transfer(from_account, to_account, amount, timestamp, asset_id=USDT, deposit=None, number='', address=None,
-              symbol_id=None):
+              symbol_id=None, note=''):
     deposit = amount if deposit is None else deposit
     if symbol_id is None:
         symbol_id = symbol_id_for(asset_id) if asset_id else None
     data = {'withdrawal_timestamp': timestamp, 'withdrawal_account': from_account, 'withdrawal': str(amount),
             'deposit_timestamp': timestamp, 'deposit_account': to_account, 'deposit': str(deposit),
-            'number': number, 'counterparty_address': address, 'symbol_id': symbol_id}
+            'number': number, 'counterparty_address': address, 'symbol_id': symbol_id, 'note': note}
     return LedgerTransaction.create_new(LedgerTransaction.Transfer, data)
 
 
@@ -107,12 +107,12 @@ def test_pending_legs_take_the_quantity_from_the_right_side(wallets):
 # ----------------------------------------------------------------------------------------------------------------------
 # The report itself
 
-def _model(currency_id=USD, with_basis_gaps=False, filter_text=''):
+def _model(currency_id=USD, with_basis_gaps=False, filter_text='', grouping=''):
     view = TreeViewWithFooter(QWidget())
     model = PendingTransfersModel(view)
     view.setModel(model)
     model.updateView(currency_id=currency_id, date=QDate.fromString('01/03/2021', 'dd/MM/yyyy'),
-                     with_basis_gaps=with_basis_gaps, filter_text=filter_text)
+                     with_basis_gaps=with_basis_gaps, filter_text=filter_text, grouping=grouping)
     return model
 
 
@@ -441,6 +441,117 @@ def test_the_list_can_be_narrowed_to_one_kind_of_work(wallets):
 
     assert _rows(_model(filter_text='assign')) == 1
     assert _row(_model(filter_text='assign'), 0, 'qty') == Decimal('400')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Grouping. A worklist of several hundred legs is read by what ties its rows together - the wallet they are stuck on,
+# the transaction that recorded them, the protocol they went through - and each heading carries the part of the money
+# in transit that is stuck behind it, which a total of everything cannot say.
+
+def _heading(model, row) -> str:
+    return model.data(model.index(row, _column(model, 'from'), QModelIndex()))
+
+
+def _under(model, row) -> int:
+    return model.rowCount(model.index(row, 0, QModelIndex()))
+
+
+def test_grouping_files_the_legs_under_headings(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(WALLET_A, None, 150, d2t(210104))
+    _transfer(None, WALLET_B, 900, d2t(210105))
+
+    model = _model(grouping='account')
+
+    assert _rows(model) == 2                                  # two accounts, not three legs
+    assert _heading(model, 0) == 'Account: ARB wallet' and _under(model, 0) == 2
+    assert _heading(model, 1) == 'Account: ETH wallet' and _under(model, 1) == 1
+
+
+# The money is filed under the account the leg is ON - the end that is KNOWN. Grouping by the 'from' column instead
+# would put every send under one '(unknown)' heading, which is the opposite of telling them apart.
+def test_a_heading_totals_the_money_stuck_behind_it(wallets):
+    create_quotes(USDT, USD, [(d2t(210101), 1.05)])
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(WALLET_B, None, 200, d2t(210104))
+
+    model = _model(grouping='account')
+
+    assert model.data(model.index(0, _column(model, 'value'), QModelIndex())) == Decimal('420')
+    assert model.data(model.index(1, _column(model, 'value'), QModelIndex())) == Decimal('210')
+    assert model.footerData(_column(model, 'value')) == '630.00'   # ... and the whole is still the whole
+
+
+# The point of grouping by protocol: the two ends of one crossing are recorded by two different imports, which write
+# two different sentences around the protocol's name ("Sent through X" on the send, "[bridge] X: ..." on the
+# arrival). Reading the NAME rather than the sentence is what puts them under one heading - and keeps doing so in a
+# database imported in another language.
+def test_the_two_ends_of_one_crossing_are_filed_together(wallets):
+    _funded_wallet_a()
+    _pending_half(qty=300, timestamp=d2t(210103))              # note: 'Sent through a bridge'
+    _transfer(None, WALLET_B, 295, d2t(210104), note='[bridge] LI.FI Diamond (Jumper): arriving leg')
+    _transfer(None, WALLET_B, 150, d2t(210105))                # through nothing the registry knows
+
+    model = _model(grouping='protocol')
+
+    headings = {_heading(model, row): _under(model, row) for row in range(_rows(model))}
+    assert headings == {'Protocol: LI.FI Diamond (Jumper)': 1, 'Protocol: (none)': 2}
+
+
+def test_a_protocol_name_is_read_out_of_either_end_of_a_crossing(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), note='Sent through LI.FI Diamond (Jumper)')
+    _transfer(None, WALLET_B, 395, d2t(210104), note='[bridge] LI.FI Diamond (Jumper): arriving leg')
+
+    model = _model(grouping='protocol')
+
+    assert _rows(model) == 1 and _under(model, 0) == 2
+
+
+# One transaction that pays two addresses leaves one pending leg per recipient, and that is exactly the group the
+# hash pass REFUSES to settle - so those rows are the ones most in need of being seen together
+def test_grouping_by_transaction_puts_one_hash_together(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), number=HASH)
+    _transfer(WALLET_A, None, 150, d2t(210103), number=HASH)
+    _transfer(WALLET_A, None, 900, d2t(210104), number='0xother')
+
+    model = _model(grouping='number')
+
+    assert _rows(model) == 2
+    assert _under(model, 0) == 2 and _under(model, 1) == 1
+
+
+# A heading is not a leg: every settlement acts on an oid, and a heading has none to give
+def test_a_heading_is_never_offered_to_a_settlement(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    model = _model(grouping='account')
+
+    heading = model.index(0, 0, QModelIndex())
+
+    assert model.transfer_oid(heading) == 0
+    assert model.transfer_kind(heading) == ''
+    assert model.data(heading, Qt.BackgroundRole) is None      # ... and it carries no leg's colour
+
+
+def test_the_list_is_flat_again_when_nothing_is_grouped(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(None, WALLET_B, 150, d2t(210104))
+
+    model = _model(grouping='')
+
+    assert _rows(model) == 2 and _under(model, 0) == 0
+    assert model.transfer_oid(model.index(0, 0, QModelIndex())) != 0
+
+
+def test_the_report_offers_every_grouping_the_list_knows(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    window = UnsettledTransfersReportWindow(Reports(None, None))
+    model = window.ui.ReportTreeView.model()
+
+    offered = [window.ui.GroupCombo.itemData(row) for row in range(window.ui.GroupCombo.count())]
+
+    assert offered == [''] + [field for field, _name in model.groupings()]
+    window.ui.GroupCombo.setCurrentIndex(offered.index('account'))
+    assert _heading(model, 0) == 'Account: ARB wallet'
 
 
 # ----------------------------------------------------------------------------------------------------------------------

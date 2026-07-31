@@ -169,3 +169,21 @@ def protocol_category(location_id: int, address: str):
 def protocol_name(location_id: int, address: str) -> str:
     entry = _protocol_entry(location_id, address)
     return entry[1] if entry else ''
+
+
+# Every name the registry knows, longest first.
+#
+# It is what lets an operation be traced back to the protocol it went through AFTER it was imported. The name is the
+# only part of that which is recorded: an import writes it into the operation's description, and nothing else about
+# the contract survives - the address in a transfer is the one the asset moved with (a bridge's token pool), not the
+# contract the wallet called. So a reader that wants the protocol looks for these names in the description.
+#
+# Longest first because the names overlap by design - 'USDT0 OFT' is the whole of 'USDT0 OFT Adapter', which is a
+# different contract on a different chain - and the first match found must be the more specific one.
+#
+# Reading the names rather than the text around them is what makes this survive translation: the sentence an import
+# writes around the name is localized and differs between the two ends of one crossing ("Sent through X" on the
+# send, "[bridge] X: ..." on the arrival), while the name itself is data and is written the same way in both.
+def protocol_names() -> list:
+    names = {name for protocols in _REGISTRY.values() for _, name in protocols.values()}
+    return sorted(names, key=len, reverse=True)

@@ -10,24 +10,25 @@ from jal.db.asset import JalAsset
 from jal.db.helpers import localize_decimal, now_ts, day_end
 from jal.db.operations import Bridge, Transfer
 from jal.db.transfer_settlement import TransferSettlement
+from jal.net.chain_fetchers.protocols import protocol_names
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# One unsettled transfer leg - a transfer that knows only one of its two ends ("money on the way").
-#
-# The list is flat: it is a worklist of things to settle, and every row is one leg, so there is nothing to group by
-# that the columns don't already say.
+# One unsettled transfer leg - a transfer that knows only one of its two ends ("money on the way") - or, when it
+# carries a 'group', the heading the leg was filed under.
 class PendingLegTreeItem(AbstractTreeItem):
     def __init__(self, leg=None, parent=None, group=''):
         super().__init__(parent, group)
         if leg is None:
             self._data = {'timestamp': 0, 'from': '', 'to': '', 'asset': '', 'qty': Decimal('0'),
-                          'value': Decimal('0'), 'suggestion': '', 'address': '', 'number': '', 'note': ''}
+                          'value': Decimal('0'), 'action': '', 'suggestion': '', 'address': '', 'number': '',
+                          'note': '', 'account': '', 'protocol': ''}
         else:
             self._data = leg.copy()
 
-    # Only the invisible root accumulates here, and only the money in transit is worth totalling
+    # The money in transit is what is worth totalling, and it totals the same way for a group as for the whole list:
+    # a group heading says how much of the total is stuck behind that one heading.
     def _calculateGroupTotals(self, child_data):
         self._data['value'] += child_data['value']
 
@@ -43,6 +44,23 @@ class PendingLegTreeItem(AbstractTreeItem):
 
     def getGroup(self):
         return (self._group, self._data[self._group]) if self._group else None
+
+    # The item a leg belongs under, creating the headings it needs on the way - the shape every grouped report here
+    # is built with (see TradeTreeItem/AssetTreeItem). With no grouping asked for this is the root itself, and the
+    # list stays the flat worklist it has always been.
+    def getGroupLeaf(self, group_fields: list, item: PendingLegTreeItem) -> PendingLegTreeItem:
+        if not group_fields:
+            return self
+        group_name = group_fields[0]
+        group_item = None
+        for child in self._children:
+            if child.details()[group_name] == item.details()[group_name]:
+                group_item = child
+        if group_item is None:
+            group_item = PendingLegTreeItem(None, parent=self, group=group_name)
+            group_item.setGroupValue(item.details()[group_name])
+            self._children.append(group_item)
+        return group_item.getGroupLeaf(group_fields[1:], item)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -109,6 +127,13 @@ class PendingTransfersModel(ReportTreeModel):
         self._date = day_end(now_ts())
         self._with_basis_gaps = False
         self._filter = ''
+        self._protocol_names = None
+        # What the list may be filed under. None of these is a column: a heading answers a question the columns
+        # can't ("what is stuck behind this wallet", "which of these belong to one transaction"), and the two that
+        # are columns already - the account and the asset - say something different in a heading than in a row.
+        self._group_names = {'account': self.tr("Account"), 'asset': self.tr("Asset"),
+                             'protocol': self.tr("Protocol"), 'number': self.tr("Transaction"),
+                             'action': self.tr("Action")}
         # Every row the report could show, read from the database and kept: filtering and sorting only choose
         # which of them are shown and in what order, and rebuilding the list for that would re-read three tables
         # and re-run the per-leg hints (address_suggestion, dust_hint, duplicate_asset_hint) on every keystroke.
@@ -140,10 +165,18 @@ class PendingTransfersModel(ReportTreeModel):
             value += self._currency_name
         return value
 
+    # What the report may be grouped by, as (field, name) pairs - the chooser is filled from this, so the list and
+    # the headings it produces cannot drift apart
+    def groupings(self) -> list:
+        return list(self._group_names.items())
+
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
-        details = index.internalPointer().details()
+        item = index.internalPointer()
+        if item.isGroup():
+            return self._group_data(item, self._columns[index.column()]['field'], role)
+        details = item.details()
         if role == Qt.DisplayRole:
             return details[self._columns[index.column()]['field']]
         if role == Qt.FontRole:
@@ -156,6 +189,26 @@ class PendingTransfersModel(ReportTreeModel):
             return QBrush(self._BACKGROUND[details['kind']]) if details.get('kind') else None
         if role == Qt.ToolTipRole:
             return details.get('tooltip', None)
+        return None
+
+    # A group heading. It carries the name of what it collects and the part of the money in transit that is stuck
+    # behind it - the second is the reason to group at all, since "where is my money stuck" is what a total of
+    # everything cannot answer.
+    #
+    # The heading is written into the 'from' column rather than the first one: the first column is the date, whose
+    # delegate renders anything but a number as invalid, and a zero there is shown as empty (TimestampDelegate).
+    def _group_data(self, item, field: str, role):
+        if role == Qt.DisplayRole:
+            if field == 'from':
+                group, value = item.getGroup()
+                return f"{self._group_names[group]}: {value if value else self.tr('(none)')}"
+            if field == 'value':
+                return item.details()['value']
+            if field == 'timestamp':
+                return 0
+            return ''
+        if role == Qt.FontRole:
+            return self._fonts['bold']
         return None
 
     def footerData(self, section, role=Qt.DisplayRole):
@@ -200,7 +253,7 @@ class PendingTransfersModel(ReportTreeModel):
     # what they are worth, so they discard the rows that were read; the filter only changes which of the rows
     # already in hand are shown, and re-reading the database for it would be work done for nothing.
     def updateView(self, currency_id, date, with_basis_gaps: bool = False, filter_text: str = '',
-                   update: bool = False):
+                   grouping: str = '', update: bool = False):
         if self._currency != currency_id:
             self._currency = currency_id
             self._currency_name = JalAsset(currency_id).symbol()
@@ -216,6 +269,8 @@ class PendingTransfersModel(ReportTreeModel):
         filter_text = filter_text.strip().lower()
         if self._filter != filter_text:
             self._filter = filter_text
+            update = True
+        if self.setGrouping(grouping):     # like the filter, this only re-files rows that are already in hand
             update = True
         if update:
             self.prepareData()
@@ -303,6 +358,10 @@ class PendingTransfersModel(ReportTreeModel):
             'qty': leg['qty'],
             'value': value,
             'action': self._leg_action(kind, suggested, duplicate),
+            # The account this leg is ON - which is the end that is KNOWN, and so the only one a heading could
+            # collect it under. Grouping by 'from' or 'to' instead would file every send under '(unknown)'.
+            'account': leg['account'].name(),
+            'protocol': self._protocol_of(leg['note']),
             'suggestion': JalAccount(suggested).name() if suggested else '',
             'address': leg['address'] if leg['address'] else '',
             'number': leg['number'],
@@ -310,6 +369,19 @@ class PendingTransfersModel(ReportTreeModel):
             'font': 'normal' if outgoing else 'italic',
             'tooltip': tooltip
         }
+
+    # The protocol an operation went through, or '' when it went through none that JAL knows.
+    #
+    # An import writes the protocol's name into the description and keeps nothing else about the contract - the
+    # address a transfer records is the one the asset moved with (a bridge's token pool), never the contract the
+    # wallet called - so the name in the text is all there is to read it back from. It is looked for by NAME rather
+    # than by the sentence around it: that sentence is localized, and it differs between the two ends of one
+    # crossing ("Sent through X" on the send, "[bridge] X: ..." on the arrival), which would file the two halves of
+    # one movement under two different headings - the exact opposite of what grouping them is for.
+    def _protocol_of(self, note: str) -> str:
+        if self._protocol_names is None:
+            self._protocol_names = protocol_names()   # longest first, so 'USDT0 OFT Adapter' wins over 'USDT0 OFT'
+        return next((name for name in self._protocol_names if name in (note or '')), '')
 
     # Which of the report's actions this leg is waiting for, named as the button that performs it.
     #
@@ -362,6 +434,8 @@ class PendingTransfersModel(ReportTreeModel):
             # Not one of this report's buttons: a half-bridge is already recorded as a crossing, so what it waits
             # for is its arrival rather than a settlement - named here as the menu entry that completes it
             'action': self.tr("Match cross-chain legs..."),
+            'account': half['account'].name(),
+            'protocol': self._protocol_of(half['note']),
             'suggestion': '',
             'address': '',
             'number': half['number'],
@@ -387,6 +461,10 @@ class PendingTransfersModel(ReportTreeModel):
             # This row is settled and no action of this report applies to it - it is listed to be looked at, and
             # saying so is better than an empty cell, which would read as "the answer isn't known"
             'action': self.tr("Check the cost basis"),
+            # Both ends are known here, so the account is a choice: it is filed under the one that is MISSING the
+            # cost basis, which is where the zero was opened and the only end the row is about
+            'account': leg['to_account'].name(),
+            'protocol': self._protocol_of(leg['note']),
             'suggestion': '',
             'address': '',
             'number': leg['number'],
@@ -408,9 +486,11 @@ class PendingTransfersModel(ReportTreeModel):
         self.beginResetModel()
         self._root = PendingLegTreeItem()
         # The total in the footer is accumulated as the rows are added, so it follows the filter - it says what is
-        # in transit among the rows that are shown, which is the question a filtered list is asking.
+        # in transit among the rows that are shown, which is the question a filtered list is asking. Each heading
+        # accumulates the same way, out of the rows filed under it.
         for record in self._shown():
-            self._root.appendChild(PendingLegTreeItem(record))
+            leaf = PendingLegTreeItem(record)
+            self._root.getGroupLeaf(self._groups, leaf).appendChild(leaf)
         self.endResetModel()
         super().prepareData()
 
