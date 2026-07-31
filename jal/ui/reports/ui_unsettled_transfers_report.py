@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QDateEdit,
     QFrame, QGridLayout, QHeaderView, QLabel,
-    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
-    QWidget)
+    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
@@ -62,44 +62,55 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.gridLayout.addWidget(self.BasisGapsCheck, 0, 3, 1, 1)
 
+        self.FilterLbl = QLabel(self.ReportParamsFrame)
+        self.FilterLbl.setObjectName(u"FilterLbl")
+
+        self.gridLayout.addWidget(self.FilterLbl, 0, 4, 1, 1)
+
+        self.FilterEdit = QLineEdit(self.ReportParamsFrame)
+        self.FilterEdit.setObjectName(u"FilterEdit")
+        self.FilterEdit.setClearButtonEnabled(True)
+
+        self.gridLayout.addWidget(self.FilterEdit, 0, 5, 1, 1)
+
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 4, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 6, 1, 1)
 
         self.SettleButton = QPushButton(self.ReportParamsFrame)
         self.SettleButton.setObjectName(u"SettleButton")
 
-        self.gridLayout.addWidget(self.SettleButton, 0, 5, 1, 1)
+        self.gridLayout.addWidget(self.SettleButton, 0, 7, 1, 1)
 
         self.AssignButton = QPushButton(self.ReportParamsFrame)
         self.AssignButton.setObjectName(u"AssignButton")
 
-        self.gridLayout.addWidget(self.AssignButton, 0, 6, 1, 1)
+        self.gridLayout.addWidget(self.AssignButton, 0, 8, 1, 1)
 
         self.MatchButton = QPushButton(self.ReportParamsFrame)
         self.MatchButton.setObjectName(u"MatchButton")
 
-        self.gridLayout.addWidget(self.MatchButton, 0, 7, 1, 1)
+        self.gridLayout.addWidget(self.MatchButton, 0, 9, 1, 1)
 
         self.SwapButton = QPushButton(self.ReportParamsFrame)
         self.SwapButton.setObjectName(u"SwapButton")
 
-        self.gridLayout.addWidget(self.SwapButton, 0, 8, 1, 1)
+        self.gridLayout.addWidget(self.SwapButton, 0, 10, 1, 1)
 
         self.BridgeButton = QPushButton(self.ReportParamsFrame)
         self.BridgeButton.setObjectName(u"BridgeButton")
 
-        self.gridLayout.addWidget(self.BridgeButton, 0, 9, 1, 1)
+        self.gridLayout.addWidget(self.BridgeButton, 0, 11, 1, 1)
 
         self.DustButton = QPushButton(self.ReportParamsFrame)
         self.DustButton.setObjectName(u"DustButton")
 
-        self.gridLayout.addWidget(self.DustButton, 0, 10, 1, 1)
+        self.gridLayout.addWidget(self.DustButton, 0, 12, 1, 1)
 
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 11, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 13, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -132,6 +143,11 @@ class Ui_UnsettledTransfersWidget(object):
         self.BasisGapsCheck.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Also list settled transfers whose asset arrived with no cost basis", None))
 #endif // QT_CONFIG(tooltip)
         self.BasisGapsCheck.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Without cost basis", None))
+        self.FilterLbl.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Filter:", None))
+#if QT_CONFIG(tooltip)
+        self.FilterEdit.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Show only the legs whose asset, account, counterparty, reference or note contains this text", None))
+#endif // QT_CONFIG(tooltip)
+        self.FilterEdit.setPlaceholderText(QCoreApplication.translate("UnsettledTransfersWidget", u"asset, account, protocol...", None))
 #if QT_CONFIG(tooltip)
         self.SettleButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Settle every leg that its transaction hash or the address it names pairs unambiguously", None))
 #endif // QT_CONFIG(tooltip)

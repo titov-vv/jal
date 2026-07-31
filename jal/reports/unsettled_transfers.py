@@ -41,6 +41,11 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.transfers_model = PendingTransfersModel(self.ui.ReportTreeView)
         self.ui.ReportTreeView.setModel(self.transfers_model)
         self.ui.ReportTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
+        # The list is a worklist rather than a statement, so its order is a question the user asks of it ("the
+        # oldest leg", "the largest amount still in flight") rather than a property of the data. The indicator is
+        # set to the order the model builds by default, so the header doesn't claim a different one.
+        self.ui.ReportTreeView.setSortingEnabled(True)
+        self.ui.ReportTreeView.sortByColumn(self.transfers_model.fieldIndex('timestamp'), Qt.AscendingOrder)
 
         current_time = QDateTime.currentDateTime()
         current_time.setTimeSpec(Qt.UTC)   # We use UTC everywhere so need to force TZ info
@@ -54,6 +59,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.ReportDate.dateChanged.connect(self.updateReport)
         self.ui.ReportCurrencyCombo.changed.connect(self.updateReport)
         self.ui.BasisGapsCheck.stateChanged.connect(self.updateReport)
+        self.ui.FilterEdit.textChanged.connect(self.updateReport)
         self.ui.SettleButton.pressed.connect(self.settleAll)
         self.ui.MatchButton.pressed.connect(self.matchLegs)
         self.ui.AssignButton.pressed.connect(self.assignAccount)
@@ -85,7 +91,8 @@ class UnsettledTransfersReportWindow(MdiWidget):
     def updateReport(self, reload: bool = False):
         self.ui.ReportTreeView.model().updateView(currency_id=self.ui.ReportCurrencyCombo.selected_id,
                                                   date=self.ui.ReportDate.date(),
-                                                  with_basis_gaps=self.ui.BasisGapsCheck.isChecked(), update=reload)
+                                                  with_basis_gaps=self.ui.BasisGapsCheck.isChecked(),
+                                                  filter_text=self.ui.FilterEdit.text(), update=reload)
 
     # Runs the settlements that need nobody's judgement: the legs that one and the same transaction hash pairs, and
     # the legs that name an address an account of the user's holds. Both act on PROOF rather than on a resemblance,

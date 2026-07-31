@@ -90,6 +90,26 @@
        </widget>
       </item>
       <item row="0" column="4">
+       <widget class="QLabel" name="FilterLbl">
+        <property name="text">
+         <string>Filter:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <widget class="QLineEdit" name="FilterEdit">
+        <property name="toolTip">
+         <string>Show only the legs whose asset, account, counterparty, reference or note contains this text</string>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="placeholderText">
+         <string>asset, account, protocol...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
        <spacer name="ReportFrameSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -102,7 +122,7 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="5">
+      <item row="0" column="7">
        <widget class="QPushButton" name="SettleButton">
         <property name="toolTip">
          <string>Settle every leg that its transaction hash or the address it names pairs unambiguously</string>
@@ -112,7 +132,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="6">
+      <item row="0" column="8">
        <widget class="QPushButton" name="AssignButton">
         <property name="toolTip">
          <string>Name the account at the end a leg doesn't know</string>
@@ -122,7 +142,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="7">
+      <item row="0" column="9">
        <widget class="QPushButton" name="MatchButton">
         <property name="toolTip">
          <string>Pair a leg that was sent with the arrival it belongs to</string>
@@ -132,7 +152,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="8">
+      <item row="0" column="10">
        <widget class="QPushButton" name="SwapButton">
         <property name="toolTip">
          <string>Replace a leg and the one it was exchanged with by the swap they are</string>
@@ -142,7 +162,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="9">
+      <item row="0" column="11">
        <widget class="QPushButton" name="BridgeButton">
         <property name="toolTip">
          <string>Replace a leg and the arrival it crossed chains as by the bridge they are</string>
@@ -152,7 +172,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="10">
+      <item row="0" column="12">
        <widget class="QPushButton" name="DustButton">
         <property name="toolTip">
          <string>Write off a leg nobody sent as the dust attack it is</string>
@@ -162,7 +182,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="11">
+      <item row="0" column="13">
        <widget class="QPushButton" name="SaveButton">
         <property name="text">
          <string>Save...</string>

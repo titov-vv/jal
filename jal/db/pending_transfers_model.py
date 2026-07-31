@@ -92,6 +92,10 @@ class PendingTransfersModel(ReportTreeModel):
     # The kinds an arriving leg may turn out to be instead of a plain arrival - what the report colours differently
     UNSOLICITED = {TransferSettlement.POISONING: POISONING, TransferSettlement.AIRDROP: AIRDROP}
 
+    # The columns a filter looks through: the ones that hold a name, a reference or free text. A filter over the
+    # numbers would be a different feature (and a misleading one - '100' would match a quantity of 1002.5).
+    _FILTERED = ('from', 'to', 'asset', 'suggestion', 'address', 'number', 'note')
+
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._grid_delegate = None
@@ -102,6 +106,14 @@ class PendingTransfersModel(ReportTreeModel):
         self._currency_name = ''
         self._date = day_end(now_ts())
         self._with_basis_gaps = False
+        self._filter = ''
+        # Every row the report could show, read from the database and kept: filtering and sorting only choose
+        # which of them are shown and in what order, and rebuilding the list for that would re-read three tables
+        # and re-run the per-leg hints (address_suggestion, dust_hint, duplicate_asset_hint) on every keystroke.
+        # None means "not read yet, or read for parameters that no longer apply" - see updateView().
+        self._records = None
+        self._sort_field = 'timestamp'
+        self._sort_order = Qt.AscendingOrder
         self._settlement = TransferSettlement()
         bold_font = QFont()
         bold_font.setBold(True)
@@ -180,7 +192,12 @@ class PendingTransfersModel(ReportTreeModel):
 
     # Reloads the list when what it is shown for has changed. 'update' asks for the reload anyway: settling a leg
     # changes the DATA under parameters that stayed exactly the same, and without it the settled row is still listed.
-    def updateView(self, currency_id, date, with_basis_gaps: bool = False, update: bool = False):
+    #
+    # Two kinds of change are told apart here. Date, currency and the basis-gap switch change WHICH rows exist and
+    # what they are worth, so they discard the rows that were read; the filter only changes which of the rows
+    # already in hand are shown, and re-reading the database for it would be work done for nothing.
+    def updateView(self, currency_id, date, with_basis_gaps: bool = False, filter_text: str = '',
+                   update: bool = False):
         if self._currency != currency_id:
             self._currency = currency_id
             self._currency_name = JalAsset(currency_id).symbol()
@@ -192,7 +209,53 @@ class PendingTransfersModel(ReportTreeModel):
             self._with_basis_gaps = with_basis_gaps
             update = True
         if update:
+            self._records = None
+        filter_text = filter_text.strip().lower()
+        if self._filter != filter_text:
+            self._filter = filter_text
+            update = True
+        if update:
             self.prepareData()
+
+    # Re-orders the list by the column the user clicked. The rows are already in memory, so this only rebuilds the
+    # tree out of them - see _records.
+    def sort(self, column: int, order=Qt.AscendingOrder):
+        if not 0 <= column < len(self._columns):
+            return
+        field = self._columns[column]['field']
+        if (field, order) == (self._sort_field, self._sort_order):
+            return
+        self._sort_field, self._sort_order = field, order
+        if self._records is None:
+            return   # nothing has been read yet (the view sets its indicator before the first updateView) - the
+                     # order is remembered and the first read applies it, rather than reading for parameters
+                     # nobody has stated yet
+        self.prepareData()
+
+    # The rows to show, in the order to show them in.
+    #
+    # The three sources this list is made of are three different tables, each already ordered by itself - and
+    # appending them one after another laid three date sequences on top of each other, which put every pending
+    # half-bridge below every transfer leg whatever the dates were. The two ends of one movement are what this
+    # report exists to bring together, and they could not even be near each other. So the rows are merged and
+    # ordered as ONE list, by date until the user asks for something else.
+    #
+    # The timestamp is the tie-breaker under every other sort, and the oid under that: without them rows that
+    # agree on the sorted column (the same asset, the same account, an empty note) would come out in whatever
+    # order the tables happened to be read in, and would move around between two identical reloads.
+    def _shown(self) -> list:
+        rows = [record for record in self._records if self._matches(record)]
+        rows.sort(key=lambda record: (record[self._sort_field], record['timestamp'], record['oid']),
+                  reverse=(self._sort_order == Qt.DescendingOrder))
+        return rows
+
+    # Whether a row survives the filter. It is a plain case-insensitive substring, looked for in any of the columns
+    # that hold text - the point is to narrow a long worklist down to one asset, one account or one protocol, and
+    # anything cleverer would have to be explained to be used.
+    def _matches(self, record: dict) -> bool:
+        if not self._filter:
+            return True
+        return any(self._filter in str(record[field]).lower() for field in self._FILTERED)
 
     # Turns one leg of Transfer.pending_legs() into a display record. The end that is missing is named rather than
     # left blank, so the row says what is unknown about it instead of looking like a transfer with a hole in it.
@@ -305,15 +368,17 @@ class PendingTransfersModel(ReportTreeModel):
         }
 
     def prepareData(self):
+        if self._records is None:
+            self._records = [self._leg_record(leg) for leg in Transfer.pending_legs(self._date)]
+            self._records += [self._bridge_record(half) for half in Bridge.pending_halves(self._date)]
+            if self._with_basis_gaps:
+                self._records += [self._basis_record(leg) for leg in Transfer.legs_without_cost_basis(self._date)]
         self.beginResetModel()
         self._root = PendingLegTreeItem()
-        for leg in Transfer.pending_legs(self._date):
-            self._root.appendChild(PendingLegTreeItem(self._leg_record(leg)))
-        for half in Bridge.pending_halves(self._date):
-            self._root.appendChild(PendingLegTreeItem(self._bridge_record(half)))
-        if self._with_basis_gaps:
-            for leg in Transfer.legs_without_cost_basis(self._date):
-                self._root.appendChild(PendingLegTreeItem(self._basis_record(leg)))
+        # The total in the footer is accumulated as the rows are added, so it follows the filter - it says what is
+        # in transit among the rows that are shown, which is the question a filtered list is asking.
+        for record in self._shown():
+            self._root.appendChild(PendingLegTreeItem(record))
         self.endResetModel()
         super().prepareData()
 

@@ -107,12 +107,12 @@ def test_pending_legs_take_the_quantity_from_the_right_side(wallets):
 # ----------------------------------------------------------------------------------------------------------------------
 # The report itself
 
-def _model(currency_id=USD, with_basis_gaps=False):
+def _model(currency_id=USD, with_basis_gaps=False, filter_text=''):
     view = TreeViewWithFooter(QWidget())
     model = PendingTransfersModel(view)
     view.setModel(model)
     model.updateView(currency_id=currency_id, date=QDate.fromString('01/03/2021', 'dd/MM/yyyy'),
-                     with_basis_gaps=with_basis_gaps)
+                     with_basis_gaps=with_basis_gaps, filter_text=filter_text)
     return model
 
 
@@ -181,6 +181,116 @@ def test_value_follows_the_report_currency(wallets):
 
     assert _row(_model(currency_id=USD), 0, 'value') == Decimal('420')
     assert _row(_model(currency_id=EUR), 0, 'value') == Decimal('210')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The list is made of three different tables, each read in an order of its own. Appended one after another they laid
+# three date sequences on top of each other - and the two ends of one movement, which is what this report exists to
+# bring together, could then never be near each other whatever their dates were.
+
+def test_the_three_sources_are_listed_as_one_ordered_list(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103))               # a pending leg ...
+    _pending_half(qty=300, timestamp=d2t(210104))             # ... a half-bridge dated between it and ...
+    _transfer(None, WALLET_B, 150, d2t(210105))               # ... an arrival, read from a third source
+
+    model = _model()
+
+    assert _rows(model) == 3
+    assert [model.transfer_kind(model.index(row, 0, QModelIndex())) for row in range(3)] == \
+           [PendingTransfersModel.SENT, PendingTransfersModel.BRIDGE, PendingTransfersModel.ARRIVED]
+
+
+# The order is a question the user asks of a worklist ("the largest amount still in flight"), not a property of the
+# data - so any column may be sorted by, and the rows are already in memory to do it with.
+def test_the_list_can_be_sorted_by_another_column(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(WALLET_A, None, 900, d2t(210104))
+    _transfer(WALLET_A, None, 150, d2t(210105))
+    model = _model()
+
+    model.sort(_column(model, 'qty'), Qt.DescendingOrder)
+
+    assert [_row(model, row, 'qty') for row in range(3)] == [Decimal('900'), Decimal('400'), Decimal('150')]
+    model.sort(_column(model, 'timestamp'), Qt.AscendingOrder)
+    assert [_row(model, row, 'qty') for row in range(3)] == [Decimal('400'), Decimal('900'), Decimal('150')]
+
+
+# Rows that agree on the sorted column must not move around between two identical reports, so the date and then the
+# oid decide under every other order - without them the order would be whatever the tables were read in.
+def test_rows_that_agree_on_the_sorted_column_keep_a_stable_order(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103), number='0xfirst')
+    _transfer(WALLET_A, None, 400, d2t(210104), number='0xsecond')
+    model = _model()
+
+    model.sort(_column(model, 'qty'), Qt.AscendingOrder)
+
+    assert [_row(model, row, 'number') for row in range(2)] == ['0xfirst', '0xsecond']
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A worklist is only usable while it is short enough to read, and this one is as long as the wallets are busy. The
+# filter is what narrows it to one asset, one account or one protocol.
+
+def test_the_filter_keeps_only_the_rows_that_name_its_text(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))               # leaves 'ARB wallet'
+    _transfer(None, WALLET_B, 150, d2t(210104))               # arrives at 'ETH wallet'
+
+    model = _model(filter_text='eth wallet')
+
+    assert _rows(model) == 1
+    assert _row(model, 0, 'qty') == Decimal('150')
+
+
+# It looks through every column that holds a name, a reference or free text - which is what makes "show me this
+# protocol" work, since the protocol a leg went through is named in its note
+def test_the_filter_looks_through_the_text_columns(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210103), number='0xsent', address=EUR_ADDRESS)
+    _pending_half(qty=300, timestamp=d2t(210104))             # its note says 'Sent through a bridge'
+
+    assert _rows(_model(filter_text='0xsent')) == 1           # the reference ...
+    assert _rows(_model(filter_text=EUR_ADDRESS[:10])) == 1   # ... the counterparty address ...
+    assert _rows(_model(filter_text='through a bridge')) == 1  # ... and the note
+    assert _rows(_model(filter_text='usdt')) == 2             # the asset names both
+    assert _rows(_model(filter_text='nothing here')) == 0
+
+
+# The total is accumulated as the rows are added, so it follows the filter - it says what is in transit among the
+# rows that are shown, which is the question a filtered list is asking
+def test_the_total_follows_the_filter(wallets):
+    create_quotes(USDT, USD, [(d2t(210101), 1.05)])
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(WALLET_B, None, 200, d2t(210104))
+
+    everything = _model()
+    assert everything.footerData(_column(everything, 'value')) == '630.00'
+    narrowed = _model(filter_text='arb wallet')
+    assert narrowed.footerData(_column(narrowed, 'value')) == '420.00'
+
+
+# The filter only changes which of the rows already read are shown, so it must not be mistaken for a reason to
+# re-read the database - and a change that DOES alter the data has to discard them
+def test_the_filter_reuses_the_rows_it_has_and_a_reload_discards_them(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    model = _model()
+    read = model._records
+
+    model.updateView(currency_id=USD, date=QDate.fromString('01/03/2021', 'dd/MM/yyyy'), filter_text='arb')
+    assert model._records is read                             # narrowed, not re-read
+    model.updateView(currency_id=USD, date=QDate.fromString('01/03/2021', 'dd/MM/yyyy'), filter_text='arb',
+                     update=True)
+    assert model._records is not read                         # a settlement happened - the rows are stale
+
+
+def test_the_report_passes_its_filter_box_to_the_list(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(None, WALLET_B, 150, d2t(210104))
+    window = UnsettledTransfersReportWindow(Reports(None, None))
+
+    window.ui.FilterEdit.setText('eth wallet')
+
+    assert window.ui.ReportTreeView.model().rowCount(QModelIndex()) == 1
 
 
 # The window is discovered by the report loader, so it appears in the Reports menu
