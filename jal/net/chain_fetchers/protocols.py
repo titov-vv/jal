@@ -61,6 +61,24 @@ _REGISTRY = {
         # it "OFT Adapter" on Ethereum (chain id 1, LZ EID 30101); and Everdawn Labs' audit-report repository lists
         # the same address with 0xdac17f958d2ee523a2206206994597c13d831ec7 (native USDT) as its inner token.
         '0x6c96de32cea08842dcc4058c14d3aaad7fa41dee': (ProtocolCategory.BRIDGE, 'USDT0 OFT Adapter'),
+        # Chainlink CCIP, the bridge behind app.aave.com's GHO transfers. The wallet calls the Router and nothing
+        # else - the token pool that takes the asset, the OnRamp that is paid the fee and the OffRamp that delivers
+        # on the other side are all called by CCIP itself, so the Router is the only address a wallet-signed
+        # transaction ever names here. It carries any CCIP token, not GHO alone.
+        # Verified: the contract is Chainlink's documented mainnet Router and is named 'Router' in its verified
+        # source; the wallet's send of 2026-06-14 calls it with ccipSend() (0x96f4e9f9) and moves GHO in TWO legs -
+        # 48100.476931 to the token pool (0x06179f7c1be40863405f374e7f5f8806c728660a) and 0.523069 as the CCIP fee
+        # to the OnRamp (0x913814782144864e523c3fdb78e3ca25d2c2aeca) - and 17 minutes later exactly the pool's
+        # amount was minted to the wallet on Arbitrum.
+        # The fee needs no rule of its own here: it is paid in the very token being bridged, so the two legs net
+        # into ONE asset leaving and the crossing keeps its shape. What is sent is therefore slightly more than what
+        # arrives, and the difference surfaces as the Bridge's in-kind fee (out_qty - in_qty) once the arrival is
+        # matched - which is what it is. That is unlike the LayerZero fee above, paid in the native coin and so a
+        # second asset leaving, which _take_messaging_fee has to lift out before the shape can be read.
+        # Only the sending side is a registry entry: an arrival is submitted by the OffRamp, so the wallet is neither
+        # the 'from' nor the 'to' of that transaction and it has no interacted-with contract to look up - it lands as
+        # a plain incoming transfer and is paired by hand, exactly as the USDT0 mint above is.
+        '0x80226fc0ee2b096224eeac085bb9a8cba1146f7d': (ProtocolCategory.BRIDGE, 'Chainlink CCIP Router'),
         '0xf398e66b1273a34558aebbec550dccaf4acc7714': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays GHO
         '0xd833484b198d3d05707832cc1c2d62b520d95b8a': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),  # pays FLUID
     },
@@ -87,6 +105,15 @@ _REGISTRY = {
         # history pays it the LayerZero messaging fee in ETH in the very transaction that burns USD₮0 to the zero
         # address - the burn names no contract, so this fee is what identifies the crossing on this side.
         '0x14e4a1b13bf7f943c8ff7c51fb60fa964a298d92': (ProtocolCategory.BRIDGE, 'USDT0 OFT'),
+        # The Arbitrum end of Chainlink CCIP - a different address than on Ethereum, and verified on its own: the
+        # contract is named 'Router' in its verified source and the wallet's sends of 2025-12-03 and 2026-07-10 call
+        # it with ccipSend() (0x96f4e9f9), each answered on Ethereum ~20 minutes later by a release of the same
+        # amount from the Ethereum token pool. Same two-leg shape as on Ethereum: the bridged GHO goes to the
+        # Arbitrum token pool (0xb94ab28c6869466a46a42aba834ca2b3cecca5eb, unchanged between the two sends) and the
+        # fee to the lane's OnRamp - which was 'EVM2EVMOnRamp' (0x67761742ac8a21ec4d76ca18cbd701e5a6f3bef3) in 2025
+        # and 'OnRamp' (0x76a443768a5e3b8d1aed0105fc250877841deb40) in 2026. CCIP replaced its onramps in between,
+        # which is precisely why the entry is the Router the wallet calls and not a contract the token reaches.
+        '0x141fa059441e0ca23ce184b6a78bafd2a517dde8': (ProtocolCategory.BRIDGE, 'Chainlink CCIP Router'),
     },
     # Avalanche C-chain has no entries yet, deliberately. The wallet it was validated against has not sent a single
     # transaction on that chain, so there is no contract whose category could be read off its own history - and a

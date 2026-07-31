@@ -1050,3 +1050,86 @@ def test_the_ethereum_adapter_is_not_a_protocol_on_the_l2():
     oft = "0x14e4a1b13bf7f943c8ff7c51fb60fa964a298d92"
     assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, oft) == ProtocolCategory.BRIDGE
     assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, oft) is None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Chainlink CCIP (what app.aave.com bridges GHO with) charges its fee IN THE TOKEN BEING BRIDGED, and pays it to the
+# OnRamp rather than to the Router the wallet called - so one send moves the same token twice, to two addresses, and
+# neither of them is the contract the transaction names. Both legs are the wallet's own outflow of ONE asset, so they
+# net into the single asset out that a crossing is and no messaging-fee rule is needed here: what leaves stays
+# slightly larger than what arrives, and a matched Bridge accounts for that difference as its in-kind fee.
+def test_a_ccip_send_pays_its_fee_in_the_bridged_token_and_still_crosses(eth_wallet, monkeypatch):
+    router = "0x80226fc0ee2b096224eeac085bb9a8cba1146f7d"    # Chainlink CCIP Router on Ethereum, a registered BRIDGE
+    pool = "0x06179f7c1be40863405f374e7f5f8806c728660a"      # the token pool that takes what crosses ...
+    onramp = "0x913814782144864e523c3fdb78e3ca25d2c2aeca"    # ... and the OnRamp that is paid the fee
+    c1 = "0xcc" + "0" * 62
+    pages = {
+        "txlist": [_tx(c1, 100, WALLET, router, value=0, gas_used='120000', method='0x96f4e9f9')],   # ccipSend()
+        "tokentx": [_token_tx(c1, 100, WALLET, pool, 48100476931),      # what crosses ...
+                    _token_tx(c1, 100, WALLET, onramp, 523068)],        # ... and the CCIP fee, in the same token
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert not fetcher.skipped()                  # two legs of one token are not "two assets out"
+    halves = _bridges(data)
+    assert len(halves) == 1
+    assert halves[0]['symbol'] in _usdc_symbol_ids(data)
+    # The fee is part of what was sent - it is deducted on the way, not before - so the half carries both legs and
+    # the arrival, when it is matched in, is what makes the difference an in-kind fee
+    assert halves[0]['qty'] == Decimal('48100.476931') + Decimal('0.523068')
+    assert halves[0]['fee_qty'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18   # gas alone
+    assert halves[0]['fee_symbol'] in _eth_symbol_ids(data)
+    assert 'Chainlink CCIP Router' in halves[0]['description']
+    assert _transfers(data) == [] and _swaps(data) == []    # neither leg is a movement of its own
+
+
+# The Arbitrum Router is a different address, and the same send shape goes through it - with the fee going to an
+# OnRamp that CCIP has already replaced once (EVM2EVMOnRamp -> OnRamp) while the Router stayed put. That is why the
+# registry names the Router the wallet calls rather than any contract the token actually reaches.
+def test_the_ccip_routers_are_one_entry_per_chain(arb_wallet, monkeypatch):
+    eth_router = "0x80226fc0ee2b096224eeac085bb9a8cba1146f7d"
+    arb_router = "0x141fa059441e0ca23ce184b6a78bafd2a517dde8"
+    assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, eth_router) == ProtocolCategory.BRIDGE
+    assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, eth_router) is None
+    assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, arb_router) == ProtocolCategory.BRIDGE
+    assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, arb_router) is None
+
+    pool = "0xb94ab28c6869466a46a42aba834ca2b3cecca5eb"      # the Arbitrum token pool ...
+    onramp = "0x76a443768a5e3b8d1aed0105fc250877841deb40"    # ... and the lane's OnRamp of 2026
+    c2 = "0xcd" + "0" * 62
+    pages = {
+        "txlist": [_tx(c2, 100, ARB_WALLET, arb_router, value=0, gas_used='120000', method='0x96f4e9f9')],
+        "tokentx": [_token_tx(c2, 100, ARB_WALLET, pool, 48300778335),
+                    _token_tx(c2, 100, ARB_WALLET, onramp, 1685806)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive_arb(arb_wallet, monkeypatch, pages)
+
+    assert not fetcher.skipped()
+    halves = _bridges(data)
+    assert len(halves) == 1
+    assert halves[0]['qty'] == Decimal('48300.778335') + Decimal('1.685806')
+    assert 'Chainlink CCIP Router' in halves[0]['description']
+    assert _transfers(data) == []
+
+
+# The arriving side of a CCIP crossing is not a registry case at all: the OffRamp submits that transaction, so the
+# wallet is neither its 'from' nor its 'to' and there is no interacted-with contract to look up. It lands as a plain
+# incoming transfer - unmarked, because nothing in it even says a bridge was involved - and the user pairs it with
+# its pending half by hand.
+def test_a_ccip_arrival_is_an_unmarked_incoming_transfer(eth_wallet, monkeypatch):
+    pool = "0x06179f7c1be40863405f374e7f5f8806c728660a"
+    c3 = "0xce" + "0" * 62
+    pages = {
+        "txlist": [],                                                    # the wallet signed nothing here
+        "tokentx": [_token_tx(c3, 100, pool, WALLET, 48300778335)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _bridges(data) == [] and _swaps(data) == []
+    transfers = _transfers(data)
+    assert len(transfers) == 1 and transfers[0]['withdrawal'] == Decimal('48300.778335')
+    assert transfers[0]['account'][0] == 0                               # incoming: the source account is unknown
+    assert TransferMark.BRIDGE not in transfers[0]['description']
