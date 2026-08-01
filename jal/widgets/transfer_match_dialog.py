@@ -144,10 +144,13 @@ class TransferMatchDialog(QDialog):
         candidates = [(leg, self._refusal_between(leg, anchor)) for leg in legs]
         return sorted(candidates, key=lambda x: (bool(x[1]), score(x[0]), x[0]['oid']))
 
-    # Why this candidate and the leg selected on the other side would not make one transfer, or '' when they would
+    # Why this candidate and the leg selected on the other side could not be made one transfer, or '' when they could.
+    # What is asked for is what the user cannot overrule (override=True): a pair whose two moments merely disagree is
+    # matchable - it is confirmed rather than refused (see accept()) - and ranking it with the impossible ones would
+    # bury exactly the pair that needs the user's judgement.
     def _refusal_between(self, leg, anchor) -> str:
         sending, arriving = (leg, anchor) if leg['opart'] == Transfer.Outgoing else (anchor, leg)
-        return self._settlement.refusal_for(sending['oid'], arriving['oid'])
+        return self._settlement.refusal_for(sending['oid'], arriving['oid'], override=True)
 
     # The difference between the two values in per cent of the larger one, or None when either of them has no quote
     @staticmethod
@@ -196,11 +199,19 @@ class TransferMatchDialog(QDialog):
         for tree, legs, anchor in ((self._sent_panel, self._of_side(Transfer.Outgoing), self._legs.get(arrived)),
                                    (self._arrived_panel, self._of_side(Transfer.Incoming), self._legs.get(sent))):
             self._fill(tree, legs, anchor)
-        refusal = self._settlement.refusal_for(sent, arrived) if sent and arrived else ''
+        refusal = self._settlement.refusal_for(sent, arrived, override=True) if sent and arrived else ''
+        # The moment the pair would be stamped with, which is set only when the two legs disagree about when the
+        # movement happened. Matching is still offered - the two sources of one movement never share a clock, and the
+        # user is the one who knows whether these are that movement - but what it does to the dates is said first.
+        moment = self._settlement.agreed_moment_for(sent, arrived) if sent and arrived and not refusal else 0
         if not sent or not arrived:
             self._status.setText(self.tr("Select one leg on each side."))
         elif refusal:
             self._status.setText(self.tr("These two are not the two ends of one transfer: ") + refusal)
+        elif moment:
+            self._status.setText(self.tr("These two disagree about when it happened - the arrival is dated before the "
+                                         "departure. Matching stamps both ends with ") + ts2dt(moment) + ": "
+                                 + self._pair_text(sent, arrived))
         else:
             self._status.setText(self.tr("Matching makes these one transfer: ") + self._pair_text(sent, arrived))
         self._buttons.button(QDialogButtonBox.Ok).setEnabled(bool(sent and arrived and not refusal))
@@ -214,7 +225,18 @@ class TransferMatchDialog(QDialog):
         sending_oid, arriving_oid = self._selected_oid(self._sent_panel), self._selected_oid(self._arrived_panel)
         if not sending_oid or not arriving_oid:
             return
-        refusal = self._settlement.settle_linked(sending_oid, arriving_oid)
+        # An arrival dated before its departure is the one thing about a pair the user may overrule, and this is where
+        # they do it: the two moments come from two different clocks (an exchange's books and a chain's block), so
+        # their order is evidence about the sources rather than about the movement. What it costs is that both ends
+        # lose the moment their own source stated, and that is what is confirmed here rather than done quietly.
+        moment = self._settlement.agreed_moment_for(sending_oid, arriving_oid)
+        if moment and QMessageBox().warning(
+                self, self.tr("Legs disagree about the time"),
+                self.tr("The arrival is dated before the departure, so the two sources disagree about when this "
+                        "movement happened.\n\nMatch them anyway and stamp both ends with ") + ts2dt(moment) + "?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No) != QMessageBox.Yes:
+            return
+        refusal = self._settlement.settle_linked(sending_oid, arriving_oid, override=True)
         if refusal:
             QMessageBox().warning(self, self.tr("Legs are not matched"), refusal)
             self._load()

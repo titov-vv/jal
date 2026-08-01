@@ -231,13 +231,124 @@ def test_a_wallet_that_both_sends_and_receives_is_not_paired_with_itself(wallets
     assert TransferSettlement().settle_all() == 0
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Two records of one transaction that disagree about WHEN it happened.
+#
 # An arrival can't precede its departure, and a transfer that says it does can't be processed at all: the arriving leg
-# reads the value the sending leg parked in the Transfers book, which isn't there yet
-def test_an_arrival_before_its_departure_is_not_paired(wallets):
+# reads the value the sending leg parked in the Transfers book, which isn't there yet. But two records of ONE
+# TRANSACTION are not two events to be ordered - the movement happened once, in the block that carried it, and every
+# other moment stated about it is bookkeeping around that one (an exchange debits its own ledger some twenty seconds
+# after the block that took the coins away, and its statement carries that moment, not the block's). Their order is
+# evidence about the two sources, not about the movement, so it cannot refuse a pair the hash has already proved.
+# What it does instead is cost the pair its two moments: both ends are stamped with one reading.
+
+
+def _exchange() -> int:
+    return JalAccountCreator(currency_id=USD, number='', name='CEX', investing=1, organization=1,
+                             account_type=PredefinedAccountType.CEX).commit().id()
+
+
+# The reading to keep is the CHAIN's - the block is when the movement happened - and the leg on a wallet account is
+# the chain's side of the pair. Here that is the arrival, dated 21 seconds before the exchange booked the withdrawal.
+def test_legs_of_one_transaction_that_disagree_are_stamped_with_the_chain_moment(wallets):
+    _transfer(_exchange(), None, 400, d2t(210103) + 21)
+    _transfer(None, WALLET_A, 400, d2t(210103))
+
+    assert TransferSettlement().settle_all() == 1
+
+    rows = _stored()
+    assert len(rows) == 1
+    assert int(rows[0]['withdrawal_timestamp']) == d2t(210103)
+    assert int(rows[0]['deposit_timestamp']) == d2t(210103)
+
+
+# ... and the same when the chain is the SENDING end and the exchange books the arrival earlier than the block
+def test_the_chain_moment_wins_whichever_end_it_is(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))
+    _transfer(None, _exchange(), 400, d2t(210103) - 3600)
+
+    assert TransferSettlement().settle_all() == 1
+
+    rows = _stored()
+    assert int(rows[0]['withdrawal_timestamp']) == int(rows[0]['deposit_timestamp']) == d2t(210103)
+
+
+# When both ends are wallets nothing tells the two readings apart, so the earlier one is taken: it is the departure,
+# which is the end the ledger reads first and the one that must not move forward past what it funds.
+def test_two_wallet_legs_that_disagree_take_the_earlier_moment(wallets):
     _transfer(WALLET_A, None, 400, d2t(210105))
     _transfer(None, WALLET_B, 400, d2t(210103))
 
-    assert TransferSettlement().settle_all() == 0
+    assert TransferSettlement().settle_all() == 1
+
+    rows = _stored()
+    assert int(rows[0]['withdrawal_timestamp']) == int(rows[0]['deposit_timestamp']) == d2t(210103)
+
+
+# The point of all of it: what a pair like this settles into is a transfer the ledger can actually process - which is
+# what an arrival before its departure is not (see Transfer.processAssetTransfer)
+def test_a_pair_that_disagreed_settles_into_a_transfer_the_ledger_processes(funded):
+    _transfer(WALLET_A, None, 400, d2t(210105))
+    _transfer(None, WALLET_B, 400, d2t(210103))
+
+    assert TransferSettlement().settle_all() == 1
+
+    Ledger().rebuild(from_timestamp=0)
+    assert JalAccount(WALLET_B).get_asset_amount(d2t(210201), USDT) == Decimal('400')
+    assert _in_transit(USDT) == Decimal('0')
+
+
+# Nothing of this reaches a pair that names two DIFFERENT transactions, or none at all: there the two moments are the
+# only thing said about the order of two events, and an arrival before its departure stays refused. Whoever pairs such
+# legs - the address pass, a route source, the user - is told so instead.
+def test_an_arrival_before_its_departure_of_another_transaction_is_still_refused(wallets):
+    sent = _transfer(WALLET_A, None, 400, d2t(210105), number='0x' + 'b' * 64).oid()
+    arrived = _transfer(None, WALLET_B, 400, d2t(210103)).oid()
+
+    assert 'precedes' in TransferSettlement().refusal_for(sent, arrived)
+    assert 'precedes' in TransferSettlement().settle_linked(sent, arrived)
+    assert len(_stored()) == 2
+
+
+# ... but it is a refusal the user may overrule, which is what the manual matcher does after saying what it costs:
+# the two legs are one movement or they are not, and only the user can tell. The moment both ends are stamped with is
+# chosen exactly as it is above.
+def test_the_user_may_overrule_the_order_of_two_moments(wallets):
+    sent = _transfer(_exchange(), None, 400, d2t(210105), number='').oid()
+    arrived = _transfer(None, WALLET_A, 400, d2t(210103), number='').oid()
+
+    assert TransferSettlement().refusal_for(sent, arrived, override=True) == ''
+    assert TransferSettlement().agreed_moment_for(sent, arrived) == d2t(210103)
+    assert TransferSettlement().settle_linked(sent, arrived, override=True) == ''
+
+    rows = _stored()
+    assert len(rows) == 1
+    assert int(rows[0]['withdrawal_timestamp']) == int(rows[0]['deposit_timestamp']) == d2t(210103)
+
+
+# The override waives THAT refusal and nothing else: what a transfer cannot express is not a matter of anyone's word
+@pytest.mark.parametrize("quantity, arriving_account", [(399, WALLET_B), (400, WALLET_A)])
+def test_an_override_waives_nothing_a_transfer_cannot_express(wallets, quantity, arriving_account):
+    sent = _transfer(WALLET_A, None, 400, d2t(210105), number='').oid()
+    arrived = _transfer(None, arriving_account, quantity, d2t(210103), number='').oid()
+
+    assert TransferSettlement().refusal_for(sent, arrived, override=True) != ''
+    assert TransferSettlement().settle_linked(sent, arrived, override=True) != ''
+    assert len(_stored()) == 2
+
+
+# A pair in the right order is left exactly as it was: two readings of one movement in the order they happened are
+# what the movement TOOK, and nothing about it needs correcting (see also test_each_side_keeps_its_own_timestamp)
+def test_a_pair_in_the_right_order_is_not_restamped(wallets):
+    sent = _transfer(WALLET_A, None, 400, d2t(210103)).oid()
+    arrived = _transfer(None, WALLET_B, 400, d2t(210105)).oid()
+
+    assert TransferSettlement().agreed_moment_for(sent, arrived) == 0
+    assert TransferSettlement().settle_linked(sent, arrived) == ''
+
+    rows = _stored()
+    assert int(rows[0]['withdrawal_timestamp']) == d2t(210103)
+    assert int(rows[0]['deposit_timestamp']) == d2t(210105)
 
 
 # A record that already knows both of its ends is not a leg waiting for anything - and within one transaction it is

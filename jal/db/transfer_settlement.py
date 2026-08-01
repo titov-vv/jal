@@ -1,6 +1,7 @@
 import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
+from jal.constants import PredefinedAccountType
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.cost_basis import carried_basis
@@ -9,6 +10,7 @@ from jal.db.helpers import remove_exponent
 from jal.db.address_match import impersonated_account
 from jal.db.operations import AssetPayment, LedgerTransaction
 from jal.db.symbol import JalSymbol
+from jal.widgets.helpers import ts2dt
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -384,7 +386,10 @@ class TransferSettlement(JalDB):
     # flag because the caller that pairs legs on a HASH has already proved they belong together: a refusal there is
     # not "these are unrelated" but "this movement is not what a transfer can express", and the user has to be told
     # which of the two it was.
-    def _refusal(self, sent: dict, arrived: dict) -> str:
+    #
+    # 'override' waives the one refusal that is about the two SOURCES rather than about the movement - see the
+    # ordering check below - and is what the user confirming a pair by hand passes.
+    def _refusal(self, sent: dict, arrived: dict, override: bool = False) -> str:
         # One wallet may both send and receive the same asset in one transaction (a contract passing money through
         # it), and those two legs are not a transfer of the account to itself
         if int(sent['withdrawal_account']) == int(arrived['deposit_account']):
@@ -399,9 +404,25 @@ class TransferSettlement(JalDB):
             # is a bridge (which has a leg of its own for each side) and must be booked as one.
             return self.tr("what arrived isn't what was sent, so this is not a transfer: ") \
                 + f"{remove_exponent(Decimal(sent['withdrawal']))} -> {remove_exponent(Decimal(arrived['withdrawal']))}"
-        if int(sent['withdrawal_timestamp']) > int(arrived['deposit_timestamp']):
+        # An arrival that precedes its departure is not a movement JAL can process (see Transfer.processAssetTransfer),
+        # so a pair that says it does is refused - but only while the two moments are evidence of anything. Two records
+        # of ONE TRANSACTION are not two events to be ordered: the movement happened once, at the moment the block
+        # carrying it was mined, and everything else is bookkeeping around it (an exchange debits its own ledger
+        # seconds after the block that took the coins away, and its statement states that moment). The order of two
+        # such readings says nothing about the movement, so it can't refuse it; _merge() reduces them to one moment
+        # instead. The same holds for a pair the user vouches for by hand, which is what 'override' carries.
+        if int(sent['withdrawal_timestamp']) > int(arrived['deposit_timestamp']) \
+                and not self._one_transaction(sent, arrived) and not override:
             return self.tr("the arrival precedes the departure")
         return ''
+
+    # Whether the two legs are two records of one and the same transaction, which is what makes their disagreement
+    # about the moment a disagreement of two clocks rather than of two events. The hash is compared as it is stored,
+    # without case folding, exactly as everywhere else here: chains disagree on the case of a hash and a wrong pair is
+    # worse than a missed one. A money transfer's 'number' identifies nothing, so it proves nothing either.
+    @staticmethod
+    def _one_transaction(sent: dict, arrived: dict) -> bool:
+        return bool(sent['symbol_id']) and bool(sent['number']) and sent['number'] == arrived['number']
 
     # The asset a leg moves: the one its symbol lists, or 0 for a money transfer, which carries no asset at all and
     # is measured in the currency of its own account (so two money legs are never refused on this account).
@@ -450,11 +471,14 @@ class TransferSettlement(JalDB):
     # Settles two pending legs that a route source named as the two ends of one movement, or that the user paired by
     # hand. Returns '' when they were merged, and otherwise why they were not - whoever asked has a reason to believe
     # the two belong together, so a refusal is something to tell them about rather than to pass over in silence.
-    def settle_linked(self, sending_oid: int, arriving_oid: int) -> str:
+    #
+    # 'override' is the user's word that the two are one movement despite their moments being in the wrong order (the
+    # only refusal that can be overruled - see _refusal), and only a caller that showed them what it means may pass it.
+    def settle_linked(self, sending_oid: int, arriving_oid: int, override: bool = False) -> str:
         sent, arrived = self._pending_pair(sending_oid, arriving_oid)
         if sent is None:
             return self.tr("one of the legs is no longer pending")
-        refusal = self._refusal(sent, arrived)
+        refusal = self._refusal(sent, arrived, override)
         if refusal:
             return refusal
         self._merge(sent, arrived)
@@ -462,12 +486,21 @@ class TransferSettlement(JalDB):
 
     # Why these two pending legs cannot be settled into one transfer, or '' when they can - the same answer
     # settle_linked() gives, asked before anything is written. It is what lets a chooser say what a pair would do
-    # instead of letting the user find out by trying it.
-    def refusal_for(self, sending_oid: int, arriving_oid: int) -> str:
+    # instead of letting the user find out by trying it. Asked with override=True it gives what the user CANNOT
+    # overrule, so a chooser can tell the pairs that are impossible from the one that only needs to be confirmed.
+    def refusal_for(self, sending_oid: int, arriving_oid: int, override: bool = False) -> str:
         sent, arrived = self._pending_pair(sending_oid, arriving_oid)
         if sent is None:
             return self.tr("one of the legs is no longer pending")
-        return self._refusal(sent, arrived)
+        return self._refusal(sent, arrived, override)
+
+    # The moment both legs would be stamped with if they were settled, or 0 when they keep their own - what a chooser
+    # shows before asking the user to confirm a pair whose two moments are in the wrong order.
+    def agreed_moment_for(self, sending_oid: int, arriving_oid: int) -> int:
+        sent, arrived = self._pending_pair(sending_oid, arriving_oid)
+        if sent is None or int(sent['withdrawal_timestamp']) <= int(arrived['deposit_timestamp']):
+            return 0
+        return self._agreed_moment(sent, arrived)
 
     # The two records, as (sending, arriving), while both are still pending on the sides being joined - (None, None)
     # otherwise, since what was true when they were listed may have been settled by anything else since.
@@ -494,10 +527,20 @@ class TransferSettlement(JalDB):
         # FIXME Deriving the basis from the quote of the moved asset at the moment of the transfer would settle such a
         #  pair properly; revisit together with the cost-basis handling of the tax reports.
         deposit = Decimal(sent['deposit']) or Decimal(arrived['deposit'])
+        # Each side normally keeps the moment its own source stated - the two are readings of one movement by two
+        # clocks and the difference between them is what the movement took. When they are in the wrong order they are
+        # not a duration at all but a disagreement, and a transfer that arrives before it left can't be processed, so
+        # both ends are stamped with one reading instead.
+        departure, arrival = int(sent['withdrawal_timestamp']), int(arrived['deposit_timestamp'])
+        if departure > arrival:
+            departure = arrival = self._agreed_moment(sent, arrived)
+            logging.warning(self.tr("Legs disagree about when the movement happened, both are stamped with: ")
+                            + ts2dt(departure) + (f" ({sent['number']})" if sent['number'] else ''))
         # Both ends are accounts now, so neither of them is an address waiting to be resolved any more
-        self._exec("UPDATE transfers SET deposit_account=:account, deposit_timestamp=:timestamp, deposit=:deposit, "
-                   "note=:note, counterparty_address=NULL WHERE oid=:oid",
-                   [(":account", int(arrived['deposit_account'])), (":timestamp", int(arrived['deposit_timestamp'])),
+        self._exec("UPDATE transfers SET withdrawal_timestamp=:departure, deposit_account=:account, "
+                   "deposit_timestamp=:timestamp, deposit=:deposit, note=:note, counterparty_address=NULL "
+                   "WHERE oid=:oid",
+                   [(":departure", departure), (":account", int(arrived['deposit_account'])), (":timestamp", arrival),
                     (":deposit", deposit), (":note", sent['note'] if sent['note'] else arrived['note']),
                     (":oid", int(sent['oid']))])
         # A fee an earlier record didn't know about is adopted rather than dropped with the row that brought it - the
@@ -516,6 +559,22 @@ class TransferSettlement(JalDB):
         if self._currency_of(int(sent['withdrawal_account'])) != self._currency_of(int(arrived['deposit_account'])):
             logging.warning(self.tr("Settled transfer crosses currencies, so it has no cost basis and the arrived "
                                     "asset opens at zero: ") + f"{sent['number']}")
+
+    # The one moment two records that disagree about when their movement happened are both stamped with.
+    #
+    # The reading of the CHAIN is the one to keep: the block is when the movement happened, while an exchange states
+    # when its own books recorded it, which is around it rather than at it (KuCoin debits its ledger some twenty
+    # seconds after the block that carried the withdrawal away, and its statement carries that moment). The leg held
+    # on a WALLET account is the chain's side of the pair. When both ends are wallets, or neither is, nothing tells
+    # the two readings apart and the earlier one is taken - it is the departure, which is the end the ledger reads
+    # first and the one that must not move forward past what it funds.
+    @staticmethod
+    def _agreed_moment(sent: dict, arrived: dict) -> int:
+        departure, arrival = int(sent['withdrawal_timestamp']), int(arrived['deposit_timestamp'])
+        on_chain = [moment for moment, account in ((departure, int(sent['withdrawal_account'])),
+                                                   (arrival, int(arrived['deposit_account'])))
+                    if JalAccount(account).account_type() == PredefinedAccountType.Wallet]
+        return on_chain[0] if len(on_chain) == 1 else min(departure, arrival)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Some pairs of pending legs are not a transfer at all: one asset left and ANOTHER one arrived, which is an

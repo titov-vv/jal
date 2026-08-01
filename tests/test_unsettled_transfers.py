@@ -26,6 +26,7 @@ from jal.reports.unsettled_transfers import UnsettledTransfersReportWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.transfer_assign_dialog import TransferAssignDialog
 from jal.widgets.transfer_match_dialog import TransferMatchDialog
+from jal.widgets.helpers import ts2dt
 
 # ----------------------------------------------------------------------------------------------------------------------
 # A transfer may be recorded knowing only one of its two ends. The report of those legs is the safety net of that
@@ -873,6 +874,73 @@ def test_the_settle_button_leaves_what_it_cannot_prove(wallets, monkeypatch):
 
     assert _rows(window.ui.ReportTreeView.model()) == 2
     assert len(reported) == 1 and 'Match' in reported[0]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Pairing two legs whose sources disagree about WHEN the movement happened.
+#
+# An arrival dated before its departure is the one thing about a pair the user may overrule: the two moments come from
+# two clocks that never agreed (an exchange books a withdrawal seconds after the block that carried it away), so their
+# order says something about the sources rather than about the movement. Overruling it costs both ends the moment
+# their own source stated - they are stamped with one reading instead - which is why it is confirmed and not quiet.
+
+
+def _legs_whose_clocks_disagree():
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210105))       # the departure, as the sending source dated it
+    _transfer(None, WALLET_B, 400, d2t(210103))       # the arrival, dated earlier by the other source
+    return {leg['opart']: leg['oid'] for leg in Transfer.pending_legs()}
+
+
+def _selected_pair(legs) -> TransferMatchDialog:
+    dialog = TransferMatchDialog(legs[Transfer.Outgoing])
+    dialog._select(legs[Transfer.Incoming])
+    dialog._selection_changed()
+    return dialog
+
+
+# The pair is offered rather than refused, and what matching would do to the dates is said before it is done
+def test_the_match_dialog_offers_a_pair_whose_moments_disagree(wallets):
+    dialog = _selected_pair(_legs_whose_clocks_disagree())
+
+    assert dialog._buttons.button(QDialogButtonBox.Ok).isEnabled() is True
+    assert 'disagree' in dialog._status.text()
+    assert ts2dt(d2t(210103)) in dialog._status.text()     # the moment both ends would be stamped with
+
+
+def test_matching_them_is_confirmed_and_stamps_both_ends_with_one_moment(wallets, monkeypatch):
+    monkeypatch.setattr(QMessageBox, 'warning', lambda *args, **kwargs: QMessageBox.Yes)
+    dialog = _selected_pair(_legs_whose_clocks_disagree())
+
+    dialog.accept()
+
+    assert dialog.changed is True
+    assert Transfer.pending_legs() == []
+    row = JalDB()._read("SELECT withdrawal_timestamp, deposit_timestamp FROM transfers", named=True)
+    assert int(row['withdrawal_timestamp']) == int(row['deposit_timestamp']) == d2t(210103)
+
+
+# ... and answering "no" to that question leaves both legs exactly as they were
+def test_the_legs_are_left_alone_when_the_disagreement_is_not_confirmed(wallets, monkeypatch):
+    monkeypatch.setattr(QMessageBox, 'warning', lambda *args, **kwargs: QMessageBox.No)
+    dialog = _selected_pair(_legs_whose_clocks_disagree())
+
+    dialog.accept()
+
+    assert dialog.changed is False
+    assert len(Transfer.pending_legs()) == 2
+
+
+# A pair that cannot be a transfer whatever anyone confirms is still refused outright: the confirmation waives the
+# order of two moments and nothing else
+def test_the_match_dialog_still_refuses_what_is_not_a_transfer(wallets):
+    _funded_wallet_a()
+    _transfer(WALLET_A, None, 400, d2t(210105))
+    _transfer(None, WALLET_B, 399, d2t(210103))
+    dialog = _selected_pair({leg['opart']: leg['oid'] for leg in Transfer.pending_legs()})
+
+    assert dialog._buttons.button(QDialogButtonBox.Ok).isEnabled() is False
+    assert 'not the two ends' in dialog._status.text()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
