@@ -366,14 +366,14 @@ class EVMFetcher(ChainFetcher):
     # across the native, internal and (spam-filtered) token legs. Gas is NOT part of it - it is charged separately.
     # Net-zero assets (a token routed in and back out) are dropped, so only what actually changed hands remains.
     def _wallet_deltas(self, tx: dict) -> dict:
-        deltas = defaultdict(lambda: {'amount': Decimal('0'), 'note': '', 'counterparty': None})
+        deltas = defaultdict(lambda: {'amount': Decimal('0'), 'note': '', 'counterparty': None, 'sent_to': set()})
         for record in tx['native'] + tx['internal']:      # native coin, moved directly or by a contract
             signed = self._native_signed_amount(record)
             if signed != Decimal('0'):
                 entry = deltas[self._native_asset_id()]
                 entry['amount'] += signed
                 entry['note'] = entry['note'] or self._counterparty_note(record)
-                self._merge_counterparty(entry, self._counterparty_of(record))
+                self._merge_counterparty(entry, self._counterparty_of(record), signed)
         for record in tx['tokens']:
             leg = self._token_leg(record, tx)
             if leg is not None:
@@ -381,7 +381,7 @@ class EVMFetcher(ChainFetcher):
                 entry = deltas[asset_id]
                 entry['amount'] += signed
                 entry['note'] = entry['note'] or note
-                self._merge_counterparty(entry, counterparty)
+                self._merge_counterparty(entry, counterparty, signed)
         return {asset_id: data for asset_id, data in deltas.items() if data['amount'] != Decimal('0')}
 
     # Pulls the native coin's entry out of 'deltas' and records it as a DustAttack payment instead, when it is
@@ -426,8 +426,16 @@ class EVMFetcher(ChainFetcher):
     # Records the address an asset's movement was with, and clears it as soon as a second one takes part: the delta
     # is a NET amount, so an account may only be put on it when every leg that formed it was with that same address.
     # A cleared counterparty leaves the far side of the transfer unresolved, exactly as an outside address does.
-    def _merge_counterparty(self, entry: dict, counterparty: str) -> None:
+    #
+    # 'sent_to' collects the same addresses but from the OUTGOING legs alone, and is never cleared. The two answer
+    # different questions: 'counterparty' asks who the whole net movement was with (which nothing can answer once
+    # several addresses took part), while 'sent_to' asks where the wallet's money actually went - a question each leg
+    # answers for itself, and which stays answerable however many addresses paid something back. See
+    # _take_messaging_fee for what needs the difference.
+    def _merge_counterparty(self, entry: dict, counterparty: str, signed: Decimal) -> None:
         counterparty = self._norm(counterparty)
+        if signed < Decimal('0'):
+            entry['sent_to'].add(counterparty)
         if entry['counterparty'] is None:
             entry['counterparty'] = counterparty
         elif entry['counterparty'] != counterparty:
@@ -558,11 +566,19 @@ class EVMFetcher(ChainFetcher):
     # Narrow on purpose: only the native coin, only when it went to the very contract being classified by (a native
     # amount to anyone else is a movement of its own), and only when something else left too - a send of nothing but
     # native coin IS the asset being bridged, and taking it as a fee would leave a crossing of nothing.
+    #
+    # "Went to the contract" is asked of the OUTGOING legs ('sent_to'), not of the delta's net counterparty. The fee
+    # is quoted before the transaction runs and the wallet has to cover it in full, so a protocol that settles for
+    # less REFUNDS the excess in the same transaction - and a LayerZero OFT pays that refund out of its endpoint,
+    # which is not the contract the asset was bridged through. That second address is what a net counterparty cannot
+    # survive (_merge_counterparty clears it), and judging by it would refuse every refunded send while accepting the
+    # unrefunded one - the same operation, told apart by nothing that concerns the user. What the refund does to the
+    # amount needs no handling at all: the delta is already net of it, which is exactly the fee that was really paid.
     def _take_messaging_fee(self, deltas: dict, outs: dict, contract: str) -> Decimal:
         native = self._native_asset_id()
         if not contract or len(outs) < 2 or native not in outs:
             return Decimal('0')
-        if self._norm(outs[native]['counterparty'] or '') != self._norm(contract):
+        if outs[native]['sent_to'] != {self._norm(contract)}:
             return Decimal('0')
         fee = abs(outs[native]['amount'])
         del outs[native]

@@ -785,6 +785,53 @@ def test_native_coin_sent_elsewhere_is_not_taken_as_a_messaging_fee(eth_wallet, 
     assert any('stopped' in reason for reason in fetcher.skipped())
 
 
+# ... and neither is it a fee when the wallet paid the bridge AND somebody else in the same transaction: the fee is
+# what went to the contract, and nothing here can say how much of the two that was.
+def test_native_coin_sent_to_the_bridge_and_elsewhere_is_not_taken_as_a_messaging_fee(eth_wallet, monkeypatch):
+    usdt0 = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"
+    stranger = "0x2222222222222222222222222222222222222222"
+    m3 = "0xb3" + "0" * 62
+    pages = {
+        "txlist": [_tx(m3, 100, WALLET, usdt0, value=31344835695747)],
+        "tokentx": [_token_tx(m3, 100, WALLET, usdt0, 5553699)],
+        "txlistinternal": [_internal_tx(m3, 100, WALLET, stranger, 5000000000000)],
+        }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _bridges(data) == []
+    assert any('stopped' in reason for reason in fetcher.skipped())
+
+
+# The fee is quoted before the transaction runs, so the wallet has to cover it in full and the protocol refunds
+# whatever it did not spend - a LayerZero OFT out of its ENDPOINT, which is not the adapter the asset was bridged
+# through. Two addresses then take part in the native delta, which is what clears its net counterparty
+# (_merge_counterparty), and judging the fee by that counterparty refused the send outright - halting the import of
+# the very shape this rule exists to accept, and telling a refunded send apart from an unrefunded one by nothing that
+# concerns the user.
+def test_a_refunded_messaging_fee_is_still_recognized(eth_wallet, monkeypatch):
+    usdt0 = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"      # USDT0 OFT Adapter, a registered BRIDGE
+    endpoint = "0x1a44076050125825900e736c501f859c50fe728c"   # LayerZero EndpointV2, which pays the refund back
+    m4 = "0xb4" + "0" * 62
+    pages = {
+        "txlist": [_tx(m4, 100, WALLET, usdt0, value=23358479028892, gas_used='120000')],   # the quoted fee
+        "tokentx": [_token_tx(m4, 100, WALLET, usdt0, 5553699)],                            # 5.553699 USDC bridged
+        "txlistinternal": [_internal_tx(m4, 100, endpoint, WALLET, 15320000000)],           # ... its unspent part
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert not fetcher.skipped()               # it must not halt on "two assets out"
+    bridges = _bridges(data)
+    assert len(bridges) == 1
+    assert bridges[0]['symbol'] in _usdc_symbol_ids(data)
+    assert bridges[0]['qty'] == Decimal('5.553699')           # what crosses is the token, whole
+    assert _transfers(data) == []                             # neither the fee nor its refund is a movement of its own
+    # What is charged is the fee that was really paid - the quote net of what came back - together with the gas
+    gas = Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18
+    paid = (Decimal('23358479028892') - Decimal('15320000000')) / Decimal('10') ** 18
+    assert bridges[0]['fee_qty'] == gas + paid
+    assert bridges[0]['fee_symbol'] in _eth_symbol_ids(data)
+
+
 def test_a_bridge_send_of_the_native_coin_alone_still_crosses(eth_wallet, monkeypatch):
     # The guard that keeps the fee rule from eating the asset: when native coin is all that left, it IS what crosses
     usdt0 = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"
