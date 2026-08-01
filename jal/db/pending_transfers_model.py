@@ -3,7 +3,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QBrush
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import CustomColor
+from jal.constants import AssetLocation, CustomColor
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -21,9 +21,9 @@ class PendingLegTreeItem(AbstractTreeItem):
     def __init__(self, leg=None, parent=None, group=''):
         super().__init__(parent, group)
         if leg is None:
-            self._data = {'timestamp': 0, 'age': 0, 'from': '', 'to': '', 'asset': '', 'qty': Decimal('0'),
-                          'value': Decimal('0'), 'action': '', 'suggestion': '', 'address': '', 'number': '',
-                          'note': '', 'account': '', 'protocol': ''}
+            self._data = {'timestamp': 0, 'age': 0, 'from': '', 'to': '', 'asset': '', 'chain': '',
+                          'qty': Decimal('0'), 'value': Decimal('0'), 'action': '', 'suggestion': '', 'address': '',
+                          'number': '', 'note': '', 'account': '', 'protocol': ''}
         else:
             self._data = leg.copy()
 
@@ -114,7 +114,7 @@ class PendingTransfersModel(ReportTreeModel):
     # numbers would be a different feature (and a misleading one - '100' would match a quantity of 1002.5).
     # 'action' is among them on purpose - "show me everything that only needs an account named" is the question a
     # worklist of this length is most often asked.
-    _FILTERED = ('from', 'to', 'asset', 'protocol', 'action', 'suggestion', 'address', 'number', 'note')
+    _FILTERED = ('from', 'to', 'asset', 'chain', 'protocol', 'action', 'suggestion', 'address', 'number', 'note')
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -134,6 +134,7 @@ class PendingTransfersModel(ReportTreeModel):
         self._arrived_count = 0
         self._basis_count = 0
         self._protocol_names = None
+        self._locations = None
         # What the list may be filed under. None of these is a column: a heading answers a question the columns
         # can't ("what is stuck behind this wallet", "which of these belong to one transaction"), and the two that
         # are columns already - the account and the asset - say something different in a heading than in a row.
@@ -161,6 +162,11 @@ class PendingTransfersModel(ReportTreeModel):
                          {'name': self.tr("From"), 'field': 'from'},
                          {'name': self.tr("To"), 'field': 'to'},
                          {'name': self.tr("Asset"), 'field': 'asset'},
+                         # The chain the LISTING this leg names sits on - which is a property of the asset side of
+                         # the row rather than of the account, and is what tells two listings of one token apart
+                         # (the two ends of a crossing name the same asset on two chains). Empty for anything that
+                         # is on no chain: a money transfer, and a listing held at an exchange or nowhere.
+                         {'name': self.tr("Chain"), 'field': 'chain'},
                          {'name': self.tr("Qty"), 'field': 'qty'},
                          {'name': self.tr("In transit, "), 'field': 'value'},
                          # The protocol the operation went through, where JAL knows it. It is read back out of the
@@ -265,8 +271,8 @@ class PendingTransfersModel(ReportTreeModel):
         # is worthless" rather than "this leg isn't in flight"
         self._float2_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True, parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex('timestamp'), self._timestamp_delegate)
-        for field in ('age', 'from', 'to', 'asset', 'protocol', 'action', 'suggestion', 'address', 'number',
-                      'note'):
+        for field in ('age', 'from', 'to', 'asset', 'chain', 'protocol', 'action', 'suggestion', 'address',
+                      'number', 'note'):
             self._view.setItemDelegateForColumn(self.fieldIndex(field), self._grid_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('qty'), self._float_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('value'), self._float2_delegate)
@@ -399,6 +405,7 @@ class PendingTransfersModel(ReportTreeModel):
             'from': leg['account'].name() if outgoing else unknown,
             'to': unknown if outgoing else leg['account'].name(),
             'asset': Transfer.leg_symbol(leg),
+            'chain': self._chain_of(leg['symbol']),
             'qty': leg['qty'],
             'value': value,
             'action': self._leg_action(kind, suggested, duplicate),
@@ -413,6 +420,17 @@ class PendingTransfersModel(ReportTreeModel):
             'font': 'normal' if outgoing else 'italic',
             'tooltip': tooltip
         }
+
+    # The chain a listing sits on, or '' when it sits on none. Only a BLOCKCHAIN is named: the other locations are
+    # not chains at all ('Crypto exchange' is the custodian's books, 'Unknown' is a listing nobody located), and a
+    # column headed 'Chain' that answered those would be stating something the location doesn't say. A money
+    # transfer names no listing to ask - it moves the account's own currency.
+    def _chain_of(self, symbol) -> str:
+        if symbol is None or symbol.location() not in AssetLocation.BLOCKCHAINS:
+            return ''
+        if self._locations is None:
+            self._locations = AssetLocation()
+        return self._locations.get_name(symbol.location())
 
     # How long the leg has been waiting, in whole days as of the date the report is drawn for. Never below zero: a
     # leg dated later in the day the report ends on has not been waiting a negative time, it has just arrived.
@@ -479,6 +497,7 @@ class PendingTransfersModel(ReportTreeModel):
             'from': half['account'].name(),
             'to': self.tr("(unknown)"),
             'asset': half['symbol'].symbol(),
+            'chain': self._chain_of(half['symbol']),
             'qty': half['qty'],
             'value': half['qty'] * half['asset'].quote(self._date, self._currency)[1],
             # Not one of this report's buttons: a half-bridge is already recorded as a crossing, so what it waits
@@ -507,6 +526,7 @@ class PendingTransfersModel(ReportTreeModel):
             'from': leg['from_account'].name(),
             'to': leg['to_account'].name(),
             'asset': leg['symbol'].symbol(),
+            'chain': self._chain_of(leg['symbol']),
             'qty': leg['qty'],
             'value': Decimal('0'),
             # This row is settled and no action of this report applies to it - it is listed to be looked at, and

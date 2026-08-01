@@ -185,6 +185,29 @@ def test_value_follows_the_report_currency(wallets):
     assert _row(_model(currency_id=EUR), 0, 'value') == Decimal('210')
 
 
+# The chain a row names is the chain of the LISTING it moves, not of the account holding it: one token has a
+# listing per chain, and which of them a leg names is what tells the two ends of a crossing apart in a list where
+# both read as the same ticker.
+def test_the_chain_column_names_the_chain_of_the_listing(wallets):
+    JalDB()._exec("UPDATE asset_symbol SET location_id=:location WHERE id=:symbol",
+                  [(":location", AssetLocation.ARB_BLOCKCHAIN), (":symbol", symbol_id_for(USDT))], commit=True)
+    JalSymbol.db_cache.clear_cache()
+    _transfer(WALLET_A, None, 400, d2t(210103))
+
+    assert _row(_model(), 0, 'chain') == 'Arbitrum'
+
+
+# ... and what sits on no chain says nothing there rather than something vaguely true: a listing nobody located, a
+# coin held on an exchange (the custodian's books are not a chain), and a money transfer, which names no listing
+def test_a_leg_that_is_on_no_chain_leaves_the_column_empty(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))                     # a listing with no location
+    _transfer(WALLET_A, None, 1000, d2t(210104), asset_id=None)     # money: the account's own currency
+
+    model = _model()
+
+    assert _row(model, 0, 'chain') == '' and _row(model, 1, 'chain') == ''
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # The list is made of three different tables, each read in an order of its own. Appended one after another they laid
 # three date sequences on top of each other - and the two ends of one movement, which is what this report exists to
