@@ -123,7 +123,7 @@ class TransferSettlement(JalDB):
     def _settle_from_address(self, leg: dict) -> bool:
         sending = leg['deposit_account'] == ''    # _read_record() gives '' for a SQL NULL - the end with no account
         known_account = int(leg['withdrawal_account'] if sending else leg['deposit_account'])
-        counterparty = JalAccount.wallet_at(self._chain_of(leg, known_account), leg['counterparty_address'])
+        counterparty = JalAccount.at_address(self._chain_of(leg, known_account), leg['counterparty_address'])
         if counterparty is None or counterparty.id() == known_account:
             return False   # nothing of the user's holds that address, several accounts do, or it is this very account
         # The other record of this movement, when it was imported as well. Filling the account in beside it would put
@@ -211,7 +211,7 @@ class TransferSettlement(JalDB):
         if leg is None or not leg['counterparty_address']:
             return 0
         known_account = int(leg['withdrawal_account'] if leg['deposit_account'] == '' else leg['deposit_account'])
-        counterparty = JalAccount.wallet_at(self._chain_of(leg, known_account), leg['counterparty_address'])
+        counterparty = JalAccount.at_address(self._chain_of(leg, known_account), leg['counterparty_address'])
         if counterparty is None or counterparty.id() == known_account:
             return 0
         return counterparty.id()

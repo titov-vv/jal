@@ -221,20 +221,21 @@ class ChainFetcher(Statement):
             return False
         return any(normalize_address(self.location_id, x.address()) == address for x in self.wallets())
 
-    # The wallet account that holds the given address, or None when JAL has no single account for it.
+    # The account that holds the given address, or None when JAL has no single account for it.
     #
-    # Only wallets of THIS chain are considered - which is what wallets() returns. That restriction is essential
-    # rather than an optimization: one EVM address is commonly registered as several accounts, one per chain, and
-    # the assets a transfer moves stay on the chain it happened on. Resolving an Ethereum transfer to the Arbitrum
-    # account of the same address would book the coins on the wrong chain.
+    # Only accounts of THIS chain are considered. That restriction is essential rather than an optimization: one EVM
+    # address is commonly registered as several accounts, one per chain, and the assets a transfer moves stay on the
+    # chain it happened on. Resolving an Ethereum transfer to the Arbitrum account of the same address would book the
+    # coins on the wrong chain.
     # An address that matches several accounts of one chain is left unresolved: nothing here can tell which of them
     # the transfer belongs to, and the import asks the user rather than guessing.
+    #
+    # It asks JalAccount rather than filtering wallets(), so that a STAKING BOX resolves here as well: the container
+    # an asset was staked into has an address of its own, and a movement to it is a movement into the box. wallets()
+    # can't answer that - it is the list of accounts a fetch SCANS, and a box must never be scanned: its address is a
+    # validator's stake account or a protocol contract holding everybody's money, not a wallet to read a history off.
     def _own_wallet(self, address: str):
-        address = normalize_address(self.location_id, address)
-        if not address:
-            return None
-        matched = [x for x in self.wallets() if normalize_address(self.location_id, x.address()) == address]
-        return matched[0] if len(matched) == 1 else None
+        return JalAccount.at_address(self.location_id, address)
 
     # Statement account id of the wallet the given address belongs to, or 0 when it isn't one JAL knows - which is
     # what makes the import ask the user which account the address stands for.

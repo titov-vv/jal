@@ -232,7 +232,12 @@ class HoldingsModel(ReportTreeModel):
     def prepareData(self):
         self.beginResetModel()
         holdings = []
-        accounts = JalAccount.get_all_accounts(investing_only=True, active_only=self._only_active_accounts)
+        # Hidden accounts are asked for explicitly, because a STAKING BOX is one: an asset staked into a container
+        # has left the wallet and sits in the box, and leaving it out here would understate the portfolio by exactly
+        # what is staked. Deposit boxes - the other hidden type - hold money and are not investing, so they stay out
+        # through 'investing_only' as they always did.
+        accounts = JalAccount.get_all_accounts(investing_only=True, active_only=self._only_active_accounts,
+                                               include_hidden=True)
         for account in accounts:
             account_holdings = []
             assets = account.assets_list(self._date)

@@ -2,18 +2,21 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, QDateTime, QTimeZone
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QDateTimeEdit, QGroupBox,
-                               QDialogButtonBox, QMessageBox)
-from jal.constants import CustomColor
+                               QDialogButtonBox, QMessageBox, QPushButton)
+from jal.constants import CustomColor, PredefinedAccountType, AssetLocation
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.symbol import JalSymbol
 from jal.db.common_models import AccountListModel
 from jal.db.cost_basis import carried_basis, STALE_RATE_LIMIT
 from jal.db.helpers import localize_decimal, delocalize_decimal, remove_exponent
 from jal.db.operations import Transfer
 from jal.db.transfer_settlement import TransferSettlement
+from jal.net.chain_fetchers.protocols import protocol_names
 from jal.widgets.helpers import ts2d, ts2dt
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.reference_selector import ReferenceSelectorWidget
+from jal.widgets.staking_dialogs import NewStakingBoxDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -34,8 +37,14 @@ from jal.widgets.reference_selector import ReferenceSelectorWidget
 # knows that number - left empty it becomes a zero, and the asset is taxed as though it had been free. So it is
 # computed here from what the sending account paid and the rate of the day, shown together with the age of that rate,
 # and left editable: the computation is a starting point offered to the user, never an answer written behind them.
+#
+# 'staking' switches the account being asked for to a STAKING BOX - the container an asset was staked into, which is
+# an account of a hidden type and so is missing from the ordinary chooser by design. Nothing else about the
+# assignment changes: a box is an account, what moves into it is a transfer, and every refusal and every cost-basis
+# rule below applies to it word for word. What the mode adds is a way to create the box on the spot, prefilled from
+# the leg being settled - a position is nearly always met for the first time exactly here.
 class TransferAssignDialog(QDialog):
-    def __init__(self, oid: int = 0, parent=None):
+    def __init__(self, oid: int = 0, parent=None, staking: bool = False):
         super().__init__(parent)
         self.changed = False    # the caller rebuilds the ledger on it - an assignment writes a real operation
         self._oid = oid
@@ -47,7 +56,7 @@ class TransferAssignDialog(QDialog):
         # dialog that hasn't been shown yet reports itself invisible whatever it was told, and the Ok button is
         # decided before the dialog is shown.
         self._amount_shown = False
-        self.setWindowTitle(self.tr("Assign an account"))
+        self.setWindowTitle(self.tr("Assign a staked position") if staking else self.tr("Assign an account"))
         self.setMinimumWidth(600)
 
         layout = QVBoxLayout(self)
@@ -58,12 +67,27 @@ class TransferAssignDialog(QDialog):
         form = QGridLayout()
         form.addWidget(QLabel(self.tr("Arrived at:") if self._sending() else self.tr("Sent from:")), 0, 0)
         self._account = ReferenceSelectorWidget(self)
-        self._account_model = AccountListModel(self)
-        self._account_dialog = AccountListDialog(self)
+        # A staking box is hidden from every picker, so the chooser is asked for the hidden types and then narrowed
+        # to that one: the box is what this mode assigns to, and a deposit box is not something a chain movement
+        # ever ends in.
+        self._account_model = AccountListModel(self, include_hidden=staking)
+        self._account_dialog = AccountListDialog(self, include_hidden=staking)
+        if staking:
+            self._narrow_to_boxes()
+            # The list the "..." button opens is a model of its own, and it rebuilds its filter from its own search
+            # and grouping state on every open - so the narrowing has to go through the one condition that survives
+            # that (see ReferenceDataDialog.setFilter), not through a filter set once here.
+            self._account_dialog.filter_field = "accounts.account_type"
+            self._account_dialog.setFilterValue(PredefinedAccountType.Staking)
         self._account.setup_selector(self._account_model, self._account_dialog)
         form.addWidget(self._account, 0, 1)
         self._account_currency = QLabel()
         form.addWidget(self._account_currency, 0, 2)
+        if staking:
+            self._new_box = QPushButton(self.tr("New..."), self)
+            self._new_box.setToolTip(self.tr("Create the staked position this leg goes into"))
+            self._new_box.pressed.connect(self._create_box)
+            form.addWidget(self._new_box, 0, 3)
         form.addWidget(QLabel(self.tr("on:")), 1, 0)
         self._timestamp = QDateTimeEdit(self)
         self._timestamp.setTimeSpec(Qt.UTC)
@@ -144,6 +168,46 @@ class TransferAssignDialog(QDialog):
         self._account.selected_id = self._settlement.address_suggestion(self._oid)
         # Both ends of a fetched movement carry the same moment, and one of them is all that is known here
         self._timestamp.setDateTime(QDateTime.fromSecsSinceEpoch(self._leg['timestamp'], QTimeZone(0)))
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Creates the staked position this leg goes into and chooses it, prefilled with everything the leg already says:
+    # the protocol named in the description a custody import wrote, the chain the movement happened on and the
+    # address the asset went to (or came from). The address is the part that matters beyond this one dialog - a box
+    # that holds it settles every further stake and unstake by itself.
+    def _create_box(self) -> None:
+        if self._leg is None:
+            return
+        dialog = NewStakingBoxDialog(self._leg['account'], protocol=self._protocol_of(self._leg),
+                                     chain=self._chain_of(self._leg), address=self._leg['address'] or '', parent=self)
+        if not dialog.exec():
+            return
+        self._narrow_to_boxes()   # setting a filter re-selects the model, which is what makes the new box show up
+        self._account.selected_id = dialog.box.id()
+        self._choice_changed()    # setting the selector from code emits nothing, so the choice is re-read by hand
+
+    # Both models the selector reads - the list it shows and the plain one its name field completes on - narrowed to
+    # staking boxes alone
+    def _narrow_to_boxes(self) -> None:
+        box_only = f"accounts.account_type={PredefinedAccountType.Staking}"
+        self._account_model.setFilter(box_only)
+        self._account_model.completion_model.setFilter(box_only)
+
+    # The protocol a custody import named in the leg's description, or '' when it named none. The registry's own
+    # names are matched rather than the sentence around them: that sentence is translated and differs between the
+    # two ends of one movement, while the name is data and is written the same way everywhere (see protocol_names).
+    @staticmethod
+    def _protocol_of(leg: dict) -> str:
+        note = leg['note'] if leg['note'] else ''
+        return next((name for name in protocol_names() if name in note), '')
+
+    # The chain the leg moved on: the one the known end tracks, or - when that end is not a wallet at all - the one
+    # the moved asset is listed on. It is the same question TransferSettlement._chain_of answers about an address.
+    @staticmethod
+    def _chain_of(leg: dict) -> int:
+        chain = leg['account'].chain()
+        if chain:
+            return chain
+        return JalSymbol(leg['symbol']).location() if leg['symbol'] else AssetLocation.UNDEFINED
 
     def _amount_typed(self, _text: str) -> None:
         self._user_typed = True

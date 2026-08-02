@@ -700,6 +700,53 @@ def test_custody_return_is_a_transfer_not_a_reward(eth_wallet, monkeypatch):
     assert transfers[0]['description'].startswith(f"{TransferMark.CUSTODY} stake.link PriorityPool: ")
 
 
+# A protocol reached through the token instead of being called: an ERC-677 transferAndCall() names the TOKEN as the
+# contract the wallet interacted with, so the registry lookup on it finds nothing - while the coins went to a
+# registered custody pool all the same. This is how LINK is queued into stake.link, and the wallet's own history had
+# four such sends recorded as bare transfers while the withdrawals (which call the pool directly) carried the mark.
+def test_protocol_reached_through_a_token_is_recognized(eth_wallet, monkeypatch):
+    pool = "0xddc796a66e8b83d0bccd97df33a6ccfba8fd60ea"      # registered as ProtocolCategory.CUSTODY
+    link = "0x514910771af9ca656af840dff83e8264ecf986ca"      # ... and the token is deliberately NOT registered
+    ca = "0xca" + "0" * 62
+    pages = {
+        # The wallet calls the TOKEN (transferAndCall), and the token moves the coins on to the pool
+        "txlist": [_tx(ca, 100, WALLET, link, value=0, method='0x4000aea0')],
+        "tokentx": [_token_tx(ca, 100, WALLET, pool, 15 * 10 ** 18, contract=link, symbol='LINK',
+                              name='ChainLink Token', decimals='18')],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    transfers = _transfers(data)
+    assert len(transfers) == 1
+    assert transfers[0]['account'] == [1, 0, 1] and transfers[0]['withdrawal'] == Decimal('15')
+    assert transfers[0]['description'].startswith(f"{TransferMark.CUSTODY} stake.link PriorityPool: ")
+    assert _conversions(data) == [] and _swaps(data) == [] and _bridges(data) == []
+    assert fetcher.skipped() == {}
+
+
+# The same deduction must not reach a transaction that gives something back: what came in is what tells a purchase
+# from a deposit, and the contract the user CHOSE to call is what says which it was. Here the wallet sends a token
+# to the custody pool and is paid another one in the same transaction, through a contract that names no protocol -
+# so nothing is resolved and the transaction halts naming its contract, exactly as it did before the deduction
+# existed. Silently booking it as custody would record a purchase as a deposit into a box.
+def test_forwarding_deduction_ignores_a_transaction_that_pays_back(eth_wallet, monkeypatch):
+    pool = "0xddc796a66e8b83d0bccd97df33a6ccfba8fd60ea"
+    link = "0x514910771af9ca656af840dff83e8264ecf986ca"
+    cb = "0xcb" + "0" * 62
+    pages = {
+        "txlist": [_tx(cb, 100, WALLET, link, value=0, method='0x4000aea0')],
+        "tokentx": [_token_tx(cb, 100, WALLET, pool, 15 * 10 ** 18, contract=link, symbol='LINK',
+                              name='ChainLink Token', decimals='18'),
+                    _token_tx(cb, 100, pool, WALLET, 1000 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _transfers(data) == [] and _conversions(data) == [] and _swaps(data) == []
+    assert any('unregistered contract' in reason for reason in fetcher.skipped())
+
+
 # A custody contract that hands something back in exchange isn't holding the asset any more - that shape is a
 # conversion or a swap and must be classified as one, so it halts instead of being flattened into two transfers.
 def test_custody_exchange_shape_halts(eth_wallet, monkeypatch):

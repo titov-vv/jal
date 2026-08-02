@@ -379,9 +379,12 @@ class ReferenceDataDialog(QDialog):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListDialog(ReferenceDataDialog):
-    def __init__(self, parent=None):
+    # 'include_hidden' opens the dialog on the account types the user never picks by hand (a deposit or a staking
+    # box). It exists for the one caller that assigns a transfer leg TO such a box, and is meant to be used together
+    # with 'filter_field' narrowing the list to the single type that caller means - see TransferAssignDialog.
+    def __init__(self, parent=None, include_hidden: bool = False):
         super().__init__(parent=parent, window_title=self.tr("Accounts"))
-        self.model = AccountListModel(self)
+        self.model = AccountListModel(self, include_hidden=include_hidden)
         self.ui.DataView.setModel(self.model)
         self.setup_ui()
 

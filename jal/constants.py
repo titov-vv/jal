@@ -205,11 +205,16 @@ class PredefinedAccountType(PredefinedList, QObject):
     Wallet = 6     # Crypto wallet
     Deposit = 7    # A term deposit "box": money handed over to a bank for a term, kept as an account of its own
     CEX = 8        # Centralized crypto exchange: assets are held by the exchange, not on a chain the user controls
+    Staking = 9    # A staking "box": an ASSET held for the wallet by a container it was staked into - a validator's
+                   # stake account, a venue's staking balance, a custody contract that issues no receipt token. The
+                   # same "a box is an account" pattern as Deposit (CRYPTO_PATH #49-#51), one step further: what it
+                   # holds is an asset rather than money, so nothing here is denominated in the account's currency.
 
     # Types the user never picks and never creates by hand - the application writes such accounts itself (a deposit
-    # box is created by the Deposits window). They are filtered out of every account picker by one baseline filter
-    # in AccountListModel, which every selector in the application goes through, and of the account type combo box.
-    _HIDDEN = [Deposit]
+    # box is created by the Deposits window, a staking box by the Staked positions one). They are filtered out of
+    # every account picker by one baseline filter in AccountListModel, which every selector in the application goes
+    # through, and of the account type combo box.
+    _HIDDEN = [Deposit, Staking]
 
     def __init__(self):
         super().__init__()
@@ -220,7 +225,8 @@ class PredefinedAccountType(PredefinedList, QObject):
             self.Broker: self.tr("Broker account"),
             self.Wallet: self.tr("Wallet"),
             self.Deposit: self.tr("Term deposit"),
-            self.CEX: self.tr("Crypto exchange")
+            self.CEX: self.tr("Crypto exchange"),
+            self.Staking: self.tr("Staking")
         }
 
     @classmethod
@@ -354,6 +360,9 @@ class AccountData(PredefinedList, QObject):
     DepositEnd = 8     # Maturity date of a term deposit box (timestamp)
     DepositRate = 9    # Nominal interest rate of a term deposit box, per cent per annum
     StakeAccounts = 10  # Native staking state of a wallet: {stake account address: amount staked}, as JSON
+    StakeProtocol = 11  # Protocol/venue that holds the asset of a staking box, named as a human calls it. It is the
+                        # same name the protocol registry (net/chain_fetchers/protocols.py) writes into the
+                        # description of a custody transfer, which is what ties a box to the legs it settles.
 
     # Attributes that the application maintains itself and that must never be typed in by hand: they are kept
     # out of the attribute selector and their rows are not editable in the account details grid. A wrong sync
@@ -373,7 +382,8 @@ class AccountData(PredefinedList, QObject):
             self.SyncCursor: self.tr("Sync cursor"),
             self.DepositEnd: self.tr("Deposit end date"),
             self.DepositRate: self.tr("Interest rate, %"),
-            self.StakeAccounts: self.tr("Staking state")
+            self.StakeAccounts: self.tr("Staking state"),
+            self.StakeProtocol: self.tr("Staking protocol")
         }
         self._types = {
             self.Number: "str",
@@ -385,7 +395,8 @@ class AccountData(PredefinedList, QObject):
             self.SyncCursor: "str",
             self.DepositEnd: "date",
             self.DepositRate: "float",
-            self.StakeAccounts: "str"
+            self.StakeAccounts: "str",
+            self.StakeProtocol: "str"
         }
 
     def get_type(self, type_id, default='') -> str:
@@ -603,6 +614,13 @@ class AccountTypeComboBox(QComboBox):
         return self.currentData()
 
     def set_key(self, value):
-        self.setCurrentIndex(self.findData(value))
+        index = self.findData(value)
+        if index < 0 and value is not None:
+            # The account being shown is of a type that is never OFFERED - a deposit or a staking box, which the
+            # application creates itself. It still has to be shown as what it is: a combo that cannot display its
+            # own value reads as "no type chosen" and would write that back over the box's type.
+            self.addItem(PredefinedAccountType().get_name(value), userData=value)
+            index = self.findData(value)
+        self.setCurrentIndex(index)
 
     key = Property(int, get_key, set_key, user=True)

@@ -225,6 +225,11 @@ class SolanaFetcher(ChainFetcher):
     # A withdrawal returns MORE than was staked, the difference being the yield earned inside the container. The
     # amount staked into each stake account is therefore remembered between fetches (see _load_stakes), which lets
     # the withdrawal be split into the principal - a transfer back out of the box - and a StakingReward for the rest.
+    #
+    # The stake account is recorded as the leg's COUNTERPARTY and not only named in its description: an address is
+    # what settles a leg without anybody being asked, so a staking box holding that address adopts every further
+    # stake and withdrawal of that validator by itself (JalAccount.at_address / TransferSettlement.settle_by_address),
+    # while free text in a note can be matched against nothing.
     def _process_stake(self, tx: dict, timestamp: int, signature: str, gas: Decimal) -> None:
         kind = tx.get('type', '')
         if kind == _STAKE_DEACTIVATE:
@@ -242,7 +247,8 @@ class SolanaFetcher(ChainFetcher):
             self._add_transfer(timestamp, self._native_asset_id(), amount, False, signature,
                                note=self._joined_note(self._custody_mark(self.tr("Solana staking")),
                                                       self.tr("Staked to ") + stake_account),
-                               fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
+                               fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None,
+                               counterparty=stake_account)
             return
         if kind == _STAKE_WITHDRAW and native > Decimal('0'):
             withdrawn = native
@@ -266,7 +272,8 @@ class SolanaFetcher(ChainFetcher):
             self._add_transfer(timestamp, self._native_asset_id(), principal, True, signature,
                                note=self._joined_note(self._custody_mark(self.tr("Solana staking")),
                                                       self.tr("Withdrawn from ") + stake_account),
-                               fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
+                               fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None,
+                               counterparty=stake_account)
             if reward > Decimal('0'):
                 self._add_payment(JSF.PAYMENT_STAKING_REWARD, timestamp, self._native_asset_id(), reward, signature,
                                   note=self.tr("Staking reward"))

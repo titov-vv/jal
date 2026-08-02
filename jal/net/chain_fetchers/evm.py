@@ -270,6 +270,7 @@ class EVMFetcher(ChainFetcher):
                 self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx['hash'],
                                   note=self._gas_note(own_record, is_error))
             return
+        contract, category, protocol = self._forwarded_protocol(own, outs, ins, contract, category, protocol)
 
         if category == ProtocolCategory.LENDING:
             # One asset in, one out - supplying to (or withdrawing from) a lending protocol, wrapping a coin, or
@@ -361,6 +362,39 @@ class EVMFetcher(ChainFetcher):
         if own_record is not None and remaining_gas > Decimal('0'):
             self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), remaining_gas, tx_hash,
                               note=self._gas_note(own_record, is_error))
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Resolves a protocol the wallet reached THROUGH a token instead of calling it, as the (contract, category,
+    # protocol) the classification should go on with - unchanged when there is nothing to resolve.
+    #
+    # A transaction is classified by the contract the WALLET CALLED, which is the right question to ask: that contract
+    # is what the user chose to deal with, and an address the money merely passed through (a bridge's token pool) says
+    # nothing about the operation. But a token implementing ERC-677 transferAndCall() carries the call itself - the
+    # wallet calls the TOKEN, the token forwards the coins onwards, and the transaction names the token as the
+    # contract it interacted with. Queueing LINK into stake.link's PriorityPool is exactly that, and it is why the
+    # answer can't be a registry entry on LINK: LINK is an ordinary coin sent to ordinary addresses every day, while
+    # the pool it was forwarded to is a protocol whichever route the coins took to reach it.
+    #
+    # So when the contract the wallet called is not a protocol JAL knows, where the money ACTUALLY WENT is asked
+    # instead - and only in the shape a forwarding call has:
+    #   * the wallet signed the transaction (what a contract does to the wallet's tokens on somebody else's
+    #     transaction is not a choice of the wallet's, and is read by the rules at the end of the classification);
+    #   * assets left and nothing came back - anything given in exchange makes this a trade of some kind, which is
+    #     told apart by the contract the user picked and not by an address the coins travelled through;
+    #   * every outgoing leg went to one and the same registered address, so there is a single protocol to name.
+    # An address that resolves to no registry entry changes nothing, which is the normal case: a plain transfer to
+    # somebody's wallet lands here and leaves exactly as it arrived.
+    def _forwarded_protocol(self, own: bool, outs: dict, ins: dict, contract: str, category, protocol: str):
+        if category is not None or not own or not outs or ins:
+            return contract, category, protocol
+        destinations = {address for data in outs.values() for address in data['sent_to']}
+        if len(destinations) != 1:
+            return contract, category, protocol
+        destination = destinations.pop()
+        forwarded = protocol_category(self.location_id, destination)
+        if forwarded is None:
+            return contract, category, protocol
+        return destination, forwarded, protocol_name(self.location_id, destination)
 
     # The wallet's net movement per asset in this transaction: incoming amounts positive, outgoing negative, summed
     # across the native, internal and (spam-filtered) token legs. Gas is NOT part of it - it is charged separately.

@@ -186,6 +186,9 @@ def test_staking_deposit_is_an_outgoing_transfer(fetcher, sol_wallet):
         # findable in the ledger and the stake account it went to is kept behind it
         assert transfer[0]['description'].startswith(TransferMark.CUSTODY)
         assert 'Staked to' in transfer[0]['description']
+        # ... and the stake account is recorded as the counterparty ADDRESS as well, which is what lets a staking
+        # box holding it settle this leg without being asked. The note names it too, but nothing can match on text.
+        assert transfer[0]['counterparty_address'] in transfer[0]['description']
     # The amounts are the gross movements, with the transaction fee excluded rather than folded in
     amounts = sorted(t['withdrawal'] for t in _transfers(data)
                      if t['number'] in {tx['signature'] for tx in staked})

@@ -237,7 +237,7 @@ class ArrivalReconciler(QObject):
     # same question a pending leg asks about the address it recorded, and answered in one place for both.
     @staticmethod
     def _wallet_account(location_id: int, address: str):
-        return JalAccount.wallet_at(location_id, address)
+        return JalAccount.at_address(location_id, address)
 
     # The listing (symbol) of the arrived token on its chain: by contract address for a token - the only identity of a
     # token that can be trusted - and by ticker for the chain's own coin, which has no contract behind it and is

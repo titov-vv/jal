@@ -146,6 +146,18 @@ class UnsettledTransfersReportWindow(MdiWidget):
         dialog.exec()
         self._settled(dialog.changed)
 
+    # Names the staked position at the missing end of the selected leg. It is the same assignment as above - a box is
+    # an account and what moved into it is a transfer - offered as an action of its own because the box is hidden
+    # from the ordinary chooser and because this is where a position is usually met for the first time.
+    @Slot()
+    def assignStakingBox(self):
+        oid = self._pending_oid(self.ui.ReportTreeView.currentIndex())
+        if not oid:
+            return
+        dialog = TransferAssignDialog(oid, parent=self, staking=True)
+        dialog.exec()
+        self._settled(dialog.changed)
+
     # Replaces the selected leg and the one it was exchanged with by the single Swap operation the two always were -
     # for the pairs that are not a transfer at all, and that no settlement can therefore ever pair (see
     # SwapConvertDialog).
@@ -255,6 +267,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
             menu.addAction(self.tr("Match cross-chain legs..."), self.matchBridge)
         elif self._pending_oid(index):
             menu.addAction(self.tr("Assign an account..."), self.assignAccount)
+            menu.addAction(self.tr("Assign a staked position..."), self.assignStakingBox)
             menu.addAction(self.tr("Match with another leg..."), partial(self.matchLegAt, index))
             menu.addAction(self.tr("Convert into a swap..."), self.convertToSwap)
             menu.addAction(self.tr("Convert into a bridge..."), self.convertToBridge)

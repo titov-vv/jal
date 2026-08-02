@@ -23,7 +23,14 @@ class JalAccount(JalDB):
         PredefinedAccountType.Wallet: "tag_wallet.ico",
         PredefinedAccountType.Deposit: "tag_deposit.ico",
         PredefinedAccountType.CEX: "tag_cex.ico",
+        PredefinedAccountType.Staking: "tag_deposit.ico",   # a box like the deposit one, and shares its icon
     }
+
+    # Account types an on-chain address may resolve to. A wallet is the obvious one; a staking box is the other,
+    # because the container it stands for HAS an address of its own - a validator's stake account, or the contract
+    # a custody protocol holds the asset in - and a movement into or out of that address is a movement into or out
+    # of the box. Everything else (a bank account, an exchange) is reached by no address at all.
+    _ADDRESSED_TYPES = [PredefinedAccountType.Wallet, PredefinedAccountType.Staking]
 
     def __init__(self, account_id: int = 0) -> None:
         super().__init__(cached=True)
@@ -129,18 +136,22 @@ class JalAccount(JalDB):
             accounts.append(JalAccount(account_id))
         return accounts
 
-    # The wallet account that holds 'address' on the given chain, or None when there is no single such account.
+    # The account that holds 'address' on the given chain, or None when there is no single such account.
     # Both the chain and the address must match: one address is commonly registered once per chain, and the assets a
     # movement carries stay on the chain they moved on. An address matching several accounts of one chain is left
     # unresolved - nothing here can tell which of them a movement belongs to, and guessing books money into the wrong
     # account (ChainFetcher._own_wallet refuses it the same way while a statement is being built).
+    #
+    # Hidden accounts are searched too: a staking box is hidden from every picker precisely because it is not an
+    # account the user handles by hand, and yet it is the one thing an address may resolve to besides a wallet -
+    # which is what settles a stake or an unstake without asking anybody (see _ADDRESSED_TYPES).
     @classmethod
-    def wallet_at(cls, location_id: int, address: str):
+    def at_address(cls, location_id: int, address: str):
         address = normalize_address(location_id, address)
         if not address or not location_id:
             return None
-        matched = [x for x in cls.get_all_accounts(active_only=True)
-                   if x.account_type() == PredefinedAccountType.Wallet and x.chain() == location_id
+        matched = [x for x in cls.get_all_accounts(active_only=True, include_hidden=True)
+                   if x.account_type() in cls._ADDRESSED_TYPES and x.chain() == location_id
                    and normalize_address(location_id, x.address()) == address]
         return matched[0] if len(matched) == 1 else None
 
