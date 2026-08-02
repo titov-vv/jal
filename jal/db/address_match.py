@@ -1,5 +1,6 @@
 from jal.db.account import JalAccount
 from jal.db.token_blacklist import normalize_address
+from jal.net.chain_fetchers.protocols import protocol_category, protocol_contracts
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -51,16 +52,52 @@ def is_lookalike(location_id: int, address: str, genuine: str) -> bool:
         and (leading + trailing) >= _MIN_TOGETHER
 
 
-# The account whose address the given one was minted to be mistaken for, or None when it resembles none of them.
+# What the given address was ground to be mistaken FOR, or None when it resembles nothing the user would recognize.
 #
-# Every account of the user is considered, not only those of this chain: an EVM address is commonly registered as
-# several accounts, one per chain, and an attacker who copies the ends of an address the user holds on Ethereum has
-# poisoned it just as effectively on Arbitrum. The account returned is what the row can NAME - "this pretends to be
-# your Ethereum wallet" is what tells a user why an entry they half-recognize is dangerous.
-def impersonated_account(location_id: int, address: str):
+# The attack works on recognition, so what can be poisoned is whatever the user's eye is used to seeing in their own
+# history - and that is more than their own wallets. Two sources are asked, in this order:
+#
+#   ACCOUNT   one of the user's own addresses. Every account is considered, not only those of this chain: an EVM
+#             address is commonly registered as several accounts, one per chain, and an attacker who copies the ends
+#             of an address held on Ethereum has poisoned it just as effectively on Arbitrum.
+#   PROTOCOL  a contract of the protocol registry. These are the addresses a wallet deals with most often and knows
+#             least well - nobody memorizes a bridge's address, which is exactly what makes imitating one work. The
+#             three USDC lookalikes of the Hyperliquid Bridge2 contract that this was built from imitate no account
+#             of the user's at all, and so were invisible while only accounts were asked.
+#
+# Accounts come first because naming one is the more useful answer ("this pretends to be your Arbitrum wallet"), and
+# because an address that is both is the user's own by the stronger claim.
+#
+# Deliberately NOT a source: the counterparty addresses stored in 'transfers'. A settlement clears the address it
+# resolved (see TransferSettlement._fill_end and _merge), so what is left there is only the addresses of legs that
+# are still unsettled - which is a handful, is not the history the eye is used to, and is full of the poisoning
+# addresses themselves. Comparing lookalikes against lookalikes is how a GENUINE arrival gets accused of imitating
+# the fake that was ground to imitate it.
+ACCOUNT = 'account'          # kinds of thing an address may have been minted to imitate
+PROTOCOL = 'protocol'
+
+
+def impersonated_target(location_id: int, address: str):
     if not address:
+        return None
+    # An address that IS the user's own or IS a contract the registry knows is the genuine article. It resembles
+    # every lookalike ground to imitate it exactly as closely as they resemble it, so without this the real one
+    # would be accused of impersonating the fake as soon as the fake is a candidate.
+    if _is_genuine(location_id, address):
         return None
     for account in JalAccount.get_all_accounts(active_only=False):
         if account.address() and is_lookalike(location_id, address, account.address()):
-            return account
+            return {'kind': ACCOUNT, 'name': account.name(), 'account': account}
+    for contract, name in protocol_contracts(location_id):
+        if is_lookalike(location_id, address, contract):
+            return {'kind': PROTOCOL, 'name': name, 'account': None}
     return None
+
+
+# Whether the address is one JAL already knows to be real - the user's own, or a registered contract
+def _is_genuine(location_id: int, address: str) -> bool:
+    if protocol_category(location_id, address) is not None:
+        return True
+    normalized = normalize_address(location_id, address)
+    return any(account.address() and normalize_address(location_id, account.address()) == normalized
+               for account in JalAccount.get_all_accounts(active_only=False))

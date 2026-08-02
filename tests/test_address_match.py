@@ -3,7 +3,7 @@ import pytest
 from tests.fixtures import project_root, data_path, prepare_db
 from constants import AssetLocation, PredefinedAccountType
 from jal.db.account import JalAccountCreator
-from jal.db.address_match import address_resemblance, is_lookalike, impersonated_account
+from jal.db.address_match import address_resemblance, is_lookalike, impersonated_target, ACCOUNT, PROTOCOL
 
 ETH = AssetLocation.ETH_BLOCKCHAIN
 # The wallet address and, under it, the vanity addresses ground to be mistaken for it - taken from a real
@@ -62,9 +62,10 @@ def wallet(prepare_db):
 def test_the_impersonated_account_is_named(wallet):
     # The row has to be able to say WHICH of the user's wallets is being imitated - that is what makes an entry the
     # user half-recognizes explicable rather than just alarming
-    assert impersonated_account(ETH, POISONED[0]).id() == wallet.id()
-    assert impersonated_account(ETH, UNRELATED) is None
-    assert impersonated_account(ETH, GENUINE) is None
+    target = impersonated_target(ETH, POISONED[0])
+    assert target['kind'] == ACCOUNT and target['account'].id() == wallet.id() and target['name'] == 'ETH wallet'
+    assert impersonated_target(ETH, UNRELATED) is None
+    assert impersonated_target(ETH, GENUINE) is None
 
 
 def test_an_address_held_on_another_chain_is_still_impersonated(prepare_db):
@@ -73,4 +74,50 @@ def test_an_address_held_on_another_chain_is_still_impersonated(prepare_db):
     account = JalAccountCreator(currency_id=2, number='', name='ARB wallet', investing=1, organization=1,
                                 account_type=PredefinedAccountType.Wallet, address=GENUINE,
                                 chain=AssetLocation.ARB_BLOCKCHAIN).commit()
-    assert impersonated_account(ETH, POISONED[0]).id() == account.id()
+    assert impersonated_target(ETH, POISONED[0])['account'].id() == account.id()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The Hyperliquid Bridge2 contract on Arbitrum and the three real lookalikes of it that reached the wallet. None of
+# them imitates an account of the user's at all, which is why nothing saw them while only accounts were compared.
+ARB = AssetLocation.ARB_BLOCKCHAIN
+HL_BRIDGE = "0x2df1c51e09aecf9cacb7bc98cb1742757f163df7"
+HL_LOOKALIKES = ["0x2df139edd28fe18eb884c347d05a45757f163df7",     # 4 leading, 10 trailing
+                 "0x2df17470c5de6a5d2d41feb8fcf5fb0deeb43df7",     # 4 leading, 4 trailing
+                 "0x2df1df582d0a1efc7178fd78b2bcd9aa08a73df7"]     # 4 leading, 4 trailing
+
+
+def test_a_contract_of_the_registry_is_impersonated_too(prepare_db):
+    # Nobody memorizes a bridge's address, which is exactly what makes imitating one work
+    for address in HL_LOOKALIKES:
+        target = impersonated_target(ARB, address)
+        assert target is not None, address
+        assert target['kind'] == PROTOCOL and target['name'] == 'Hyperliquid Bridge2', address
+        assert target['account'] is None
+
+
+def test_the_real_contract_is_never_accused_of_imitating_its_own_fakes(prepare_db):
+    # The genuine address resembles every lookalike ground to imitate it exactly as closely as they resemble it. A
+    # real arrival FROM the bridge must never be painted as poisoning - that would offer the user's own money for
+    # write-off as dust.
+    assert impersonated_target(ARB, HL_BRIDGE) is None
+
+
+def test_the_users_own_address_is_never_accused_either(wallet):
+    assert impersonated_target(ETH, GENUINE) is None
+
+
+def test_an_account_wins_over_a_contract(prepare_db):
+    # An address that resembles both is the user's own by the stronger claim, and naming the wallet is the more
+    # useful answer
+    JalAccountCreator(currency_id=2, number='', name='ARB wallet', investing=1, organization=1,
+                      account_type=PredefinedAccountType.Wallet, address=HL_LOOKALIKES[0],
+                      chain=AssetLocation.ARB_BLOCKCHAIN).commit()
+    target = impersonated_target(ARB, HL_LOOKALIKES[1])
+    assert target['kind'] == ACCOUNT and target['name'] == 'ARB wallet'
+
+
+def test_a_contract_of_another_chain_is_not_a_candidate(prepare_db):
+    # The registry is asked for the chain the movement happened on: the same address is a different contract (or
+    # none at all) elsewhere, and one chain's protocol says nothing about another's.
+    assert impersonated_target(ETH, HL_LOOKALIKES[0]) is None

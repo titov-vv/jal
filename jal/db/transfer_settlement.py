@@ -7,7 +7,7 @@ from jal.db.asset import JalAsset
 from jal.db.cost_basis import carried_basis
 from jal.db.db import JalDB
 from jal.db.helpers import remove_exponent
-from jal.db.address_match import impersonated_account
+from jal.db.address_match import impersonated_target
 from jal.db.operations import AssetPayment, LedgerTransaction
 from jal.db.symbol import JalSymbol
 from jal.widgets.helpers import ts2dt
@@ -778,7 +778,7 @@ class TransferSettlement(JalDB):
             return None   # only an ARRIVAL can be unsolicited - what the user sent, the user sent
         account = JalAccount(int(leg['deposit_account']))
         if leg['counterparty_address']:
-            impersonated = impersonated_account(account.chain(), leg['counterparty_address'])
+            impersonated = impersonated_target(account.chain(), leg['counterparty_address'])
             if impersonated is not None:
                 return {'kind': self.POISONING, 'impersonated': impersonated}
         if self._only_operation_in_its_asset(int(leg['oid']), self._asset_of(leg)):

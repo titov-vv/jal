@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QBrush
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import AssetLocation, CustomColor
+from jal.db import address_match
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -477,8 +478,17 @@ class PendingTransfersModel(ReportTreeModel):
     # after happens later, when the address is copied out of the history into a real transfer.
     def _unsolicited_tooltip(self, unsolicited: dict, leg) -> str:
         if unsolicited['kind'] == TransferSettlement.POISONING:
-            return self.tr("ADDRESS POISONING. It came from an address built to be mistaken for the one of ") \
-                   + unsolicited['impersonated'].name() \
+            # What was imitated is named as what it IS: one of the user's own wallets, or a contract they deal with.
+            # The second reads nothing like the first ("built to be mistaken for the Hyperliquid Bridge2 contract"),
+            # and saying "the one of" about a contract would make the warning sound like it is about an account.
+            target = unsolicited['impersonated']
+            if target['kind'] == address_match.ACCOUNT:
+                opening = self.tr("ADDRESS POISONING. It came from an address built to be mistaken for the one of ") \
+                          + target['name']
+            else:
+                opening = self.tr("ADDRESS POISONING. It came from an address built to be mistaken for the "
+                                  "contract of ") + target['name']
+            return opening \
                    + self.tr(" - the two match at both ends, which is what you see when an address is abbreviated. "
                              "Never copy this address out of your history: money sent to it is gone. Nobody is "
                              "waiting to be paired with this, so write it off with Dust.")

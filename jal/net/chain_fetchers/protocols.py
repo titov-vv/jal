@@ -221,3 +221,13 @@ def protocol_name(location_id: int, address: str) -> str:
 def protocol_names() -> list:
     names = {name for protocols in _REGISTRY.values() for _, name in protocols.values()}
     return sorted(names, key=len, reverse=True)
+
+
+# Every contract the registry holds for one chain, as (address, name) pairs.
+#
+# The addresses are stored normalized, so they come out ready to be compared with one the chain reported. It exists
+# for the reader that needs the whole set rather than one lookup - address_match.impersonated_target(), which asks
+# which KNOWN address a poisoning lookalike was ground to imitate, and for which these contracts are the addresses a
+# wallet meets most often and recognizes least well.
+def protocol_contracts(location_id: int) -> list:
+    return [(address, name) for address, (_, name) in _REGISTRY.get(location_id, {}).items()]
