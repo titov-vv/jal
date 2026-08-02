@@ -330,6 +330,14 @@ class SolanaFetcher(ChainFetcher):
             if incoming and self._is_native_dust(native, self._is_own_address(counterparty)):
                 self._add_payment(JSF.PAYMENT_DUST_ATTACK, timestamp, self._native_asset_id(), native,
                                   tx.get('signature', ''), note=self._counterparty_note(counterparty, incoming))
+            elif self._is_token_account(tx, counterparty):
+                # The rent of a token account, going in or coming back - see _is_token_account(). It is real SOL
+                # that changed the wallet's balance, so it is imported, but it is nobody's transfer: the account it
+                # went to is not a wallet anyone holds a balance on, and left as a transfer leg it would wait for a
+                # counterpart that does not exist (which is what leg 4596 of the real wallet did for months).
+                self._add_payment(JSF.PAYMENT_TOKEN_RENT if not incoming else JSF.PAYMENT_TOKEN_RENT_RETURN,
+                                  timestamp, self._native_asset_id(), abs(native), tx.get('signature', ''),
+                                  note=self._rent_note(tx, counterparty, incoming))
             else:
                 entry = deltas[self._native_asset_id()]
                 entry['amount'] += native
@@ -450,6 +458,35 @@ class SolanaFetcher(ChainFetcher):
             if not incoming and transfer.get('fromUserAccount', '') == address:
                 return transfer.get('toUserAccount', '') or ''
         return ''
+
+    # Whether the address the native coin moved with is a TOKEN ACCOUNT of this transaction, which is what makes the
+    # movement a rent rather than a payment to anybody.
+    #
+    # A token on Solana lives in an account of its own, and that account must hold the rent-exempt minimum to exist -
+    # so sending a token to an address that has no account for it creates one and charges the SENDER its rent. The
+    # coin does not reach the recipient's balance: a token account is a separate account, its lamports are not part
+    # of its owner's balance, and closing it later pays them to the owner rather than back to whoever funded it.
+    #
+    # It is recognized by what the transaction itself shows: the address is one whose TOKEN balance changed here,
+    # which no ordinary wallet address ever does (a wallet owns token accounts, it is not one). That is a fact of the
+    # transaction and needs no lamport constant - the rent-exempt minimum differs between a standard token account
+    # and a Token-2022 one with extensions, so matching on 2 039 280 would recognize only the common case.
+    @staticmethod
+    def _is_token_account(tx: dict, address: str) -> bool:
+        if not address:
+            return False
+        return any(entry.get('account', '') == address and entry.get('tokenBalanceChanges')
+                   for entry in tx.get('accountData', []))
+
+    # What a rent movement says about itself: the token account, and the mint it holds - which is what tells the user
+    # WHICH delivery locked the coin, since the amount alone says nothing.
+    def _rent_note(self, tx: dict, address: str, incoming: bool) -> str:
+        mints = {change.get('mint', '') for entry in tx.get('accountData', [])
+                 if entry.get('account', '') == address
+                 for change in entry.get('tokenBalanceChanges', [])}
+        mint = mints.pop() if len(mints) == 1 else ''
+        rent = self.tr("Token account rent returned by ") if incoming else self.tr("Token account rent locked in ")
+        return rent + address + (self.tr(", holding ") + mint if mint else '')
 
     def _token_counterparty(self, tx: dict, mint: str, incoming: bool) -> str:
         address = self._account.address()

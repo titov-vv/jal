@@ -497,6 +497,27 @@ class AssetPayment(LedgerTransaction):
     # Never written by hand - see RebaseResidue.absorb(), which is the only thing that may create one and refuses
     # anything whose value is not negligible.
     RebaseAdjustment = 11
+    # Native coin locked as the rent of a token account, and the same coin coming back when that account is closed.
+    #
+    # Solana charges a rent-exempt deposit for every account that holds a token (2 039 280 lamports for a standard
+    # SPL token account), and whoever SENDS a token to an address that has none pays it. The coin is not consumed the
+    # way gas is - it sits in the token account and is returned in full if that account is ever closed - but it does
+    # leave the paying wallet for good: the token account belongs to its OWNER, so a rent paid to deliver a token to
+    # somebody else's address (including another wallet of the user's) is never coming back to the payer.
+    #
+    # That is why it is booked as a cost rather than as a movement to the owner's account: the owner's balance does
+    # NOT rise. A token account is an account of its own on the chain, its lamports are not part of the owner's
+    # balance, and no balance query will ever show them - so crediting the owner would invent coins the chain does
+    # not report there (verified on the real wallet: the payer's and the owner's balances both match the chain to the
+    # lamport with the rent booked as a cost). What is lost by this is the household view - the coins do still exist
+    # and are still the user's, just in a container no account holds. That is the same gap JAL has wherever it has no
+    # notion of a locked balance, and the place to close it is that notion, not a lie about who holds what.
+    TokenRent = 12
+    # ... and the other side. It arrives on the account that OWNED the token account, which is not necessarily the
+    # one that paid, so nothing here can link it back to the TokenRent it reverses. It is therefore valued like any
+    # other inflow that cost the receiving account nothing - at the quote of the moment it arrives - rather than at
+    # the value it left the payer at, which this account never bore.
+    TokenRentReturn = 13
     _db_table = "asset_payments"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -524,7 +545,9 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.StakingReward: JalIcon.INTEREST,
             AssetPayment.Reward: JalIcon.INTEREST,
             AssetPayment.DustAttack: JalIcon.TRANSFER_IN,     # TODO dedicated icon for a dust attack
-            AssetPayment.RebaseAdjustment: JalIcon.TRANSFER_IN
+            AssetPayment.RebaseAdjustment: JalIcon.TRANSFER_IN,
+            AssetPayment.TokenRent: JalIcon.FEE,
+            AssetPayment.TokenRentReturn: JalIcon.TRANSFER_IN
         }
         self.names = {
             AssetPayment.NA: self.tr("UNDEFINED"),
@@ -538,7 +561,9 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.StakingReward: self.tr("Staking reward"),
             AssetPayment.DustAttack: self.tr("Dust attack"),
             AssetPayment.Reward: self.tr("Reward"),
-            AssetPayment.RebaseAdjustment: self.tr("Rebase adjustment")
+            AssetPayment.RebaseAdjustment: self.tr("Rebase adjustment"),
+            AssetPayment.TokenRent: self.tr("Token account rent"),
+            AssetPayment.TokenRentReturn: self.tr("Token account rent returned")
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.AssetPayment
@@ -613,7 +638,7 @@ class AssetPayment(LedgerTransaction):
             # gained without announcing it, and the cost basis of the position it belongs to was paid in full long
             # before. Pricing the crumb at market would move basis into it and out of the units that were bought.
             return Decimal('0')
-        if self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward):
+        if self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward, AssetPayment.TokenRentReturn):
             # A reward arrives at a block timestamp, which no daily quote series will ever match exactly, so the
             # last known price is used instead of demanding a quote of that very second. A reward that can't be
             # priced at all opens a lot at zero and would show the whole proceeds as gain when sold, so it is
@@ -676,7 +701,8 @@ class AssetPayment(LedgerTransaction):
             # never received and would disagree with the zero the position's value carries on the books.
             amount = Decimal('0')
         elif self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward, AssetPayment.GasFee,
-                               AssetPayment.DustAttack):
+                               AssetPayment.DustAttack, AssetPayment.TokenRent,
+                               AssetPayment.TokenRentReturn):
             # A crypto quote is daily, so it never falls on the exact block timestamp the way an exchange quote
             # does for a stock dividend - the last known price is the best available and is not an error.
             timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
@@ -722,7 +748,8 @@ class AssetPayment(LedgerTransaction):
                 return [-self._tax]
             else:
                 return [Decimal('NaN')]
-        amount = -self._amount if self._subtype == AssetPayment.GasFee else self._amount
+        amount = -self._amount if self._subtype in (AssetPayment.GasFee, AssetPayment.TokenRent) \
+            else self._amount
         if self._tax:
             return [amount, -self._tax]
         else:
@@ -733,7 +760,8 @@ class AssetPayment(LedgerTransaction):
         # dividend, coins earned by staking, coins burned as gas
         asset_denominated = (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
                              AssetPayment.Reward, AssetPayment.GasFee, AssetPayment.DustAttack,
-                             AssetPayment.RebaseAdjustment)
+                             AssetPayment.RebaseAdjustment, AssetPayment.TokenRent,
+                             AssetPayment.TokenRentReturn)
         if self._subtype in asset_denominated and not self._opart:
             if self._tax:
                 return f" {self._symbol.symbol()}\n {self._account_currency}"
@@ -747,7 +775,8 @@ class AssetPayment(LedgerTransaction):
         amount = self._money_total(self._account.id())
         if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
                              AssetPayment.Reward, AssetPayment.GasFee, AssetPayment.DustAttack,
-                             AssetPayment.RebaseAdjustment):
+                             AssetPayment.RebaseAdjustment, AssetPayment.TokenRent,
+                             AssetPayment.TokenRentReturn):
             qty = self._asset_total(self._account.id(), self._asset.id())
             if qty is None:
                 return [Decimal('NaN')]
@@ -770,10 +799,14 @@ class AssetPayment(LedgerTransaction):
         if not self._peer_id:
             raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
         if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
-                             AssetPayment.Reward, AssetPayment.DustAttack, AssetPayment.RebaseAdjustment):
+                             AssetPayment.Reward, AssetPayment.DustAttack, AssetPayment.RebaseAdjustment,
+                             AssetPayment.TokenRentReturn):
             self.processStockDividendOrVesting(ledger)
             return
-        if self._subtype == AssetPayment.GasFee:
+        # Rent leaves the account exactly as gas does - the coin goes out at the basis the account holds it at, so
+        # nothing is realized - and differs only in never having been consumed. See the subtype for why the owner of
+        # the token account is not credited with it.
+        if self._subtype in (AssetPayment.GasFee, AssetPayment.TokenRent):
             self.processGasFee(ledger)
             return
         if self._subtype == AssetPayment.BondAmortization:

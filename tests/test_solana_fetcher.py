@@ -355,6 +355,71 @@ def test_import_creates_assets_and_is_idempotent(fetcher, sol_wallet):
     assert len(JalAccount(1).dump_transfers()) == first
 
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Sending a token to an address that has no account for it CREATES one, and the sender pays its rent-exempt minimum.
+# The coin leaves the wallet but reaches nobody's balance: a token account is an account of its own, its lamports are
+# not part of its owner's balance, and closing it later pays them to the OWNER rather than back to the sender. Left as
+# a transfer it waits for a counterpart that does not exist - which is what leg 4596 of the real wallet did.
+ATA = "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin"      # the token account created for the recipient
+OTHER = "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9"    # an ordinary wallet address
+
+
+def _rent_tx(recorded, incoming=False, is_token_account=True):
+    lamports = 2039280
+    # fee=0 keeps the arithmetic readable: Helius reports 'nativeBalanceChange' NET of the fee and the fetcher adds
+    # it back, so a non-zero fee here would make the delta the rent minus the fee rather than the rent
+    return dict(recorded, signature='RentSignature', type='TRANSFER', instructions=[], feePayer=WALLET, fee=0,
+                accountData=[{'account': WALLET, 'nativeBalanceChange': lamports if incoming else -lamports,
+                              'tokenBalanceChanges': []},
+                             {'account': ATA, 'nativeBalanceChange': -lamports if incoming else lamports,
+                              # what marks it a TOKEN account: its own token balance changed here
+                              'tokenBalanceChanges': ([{'userAccount': OTHER, 'mint': JUP_MINT,
+                                                        'rawTokenAmount': {'tokenAmount': '1000000',
+                                                                           'decimals': 6}}]
+                                                      if is_token_account else [])}],
+                nativeTransfers=[{'fromUserAccount': ATA if incoming else WALLET,
+                                  'toUserAccount': WALLET if incoming else ATA, 'amount': lamports}],
+                tokenTransfers=[])
+
+
+def test_rent_paid_into_a_token_account_is_not_a_transfer(fetcher, sol_wallet, monkeypatch):
+    recorded = _recorded(fetcher)
+    rent = _rent_tx(recorded[0])
+    monkeypatch.setattr(SolanaFetcher, "_get_transactions", lambda self, until: [rent])
+    data = fetcher.fetch(sol_wallet)
+
+    assert _transfers(data) == []                     # nothing is left waiting for a counterpart
+    paid = _payments(data, JSF.PAYMENT_TOKEN_RENT)
+    assert len(paid) == 1
+    assert paid[0]['amount'] == Decimal('0.00203928')     # the rent-exempt minimum of a standard token account
+    assert ATA in paid[0]['description'] and JUP_MINT in paid[0]['description']
+
+
+def test_rent_returned_when_the_token_account_is_closed(fetcher, sol_wallet, monkeypatch):
+    recorded = _recorded(fetcher)
+    monkeypatch.setattr(SolanaFetcher, "_get_transactions", lambda self, until: [_rent_tx(recorded[0], incoming=True)])
+    data = fetcher.fetch(sol_wallet)
+
+    assert _transfers(data) == []
+    returned = _payments(data, JSF.PAYMENT_TOKEN_RENT_RETURN)
+    assert len(returned) == 1 and returned[0]['amount'] == Decimal('0.00203928')
+    assert not _payments(data, JSF.PAYMENT_TOKEN_RENT)
+
+
+# The rule is "the address is a token account", not "the amount is 2039280" - the rent-exempt minimum differs for a
+# Token-2022 account with extensions, so matching on the constant would recognize only the common case.
+def test_the_same_amount_to_an_ordinary_address_stays_a_transfer(fetcher, sol_wallet, monkeypatch):
+    recorded = _recorded(fetcher)
+    plain = _rent_tx(recorded[0], is_token_account=False)
+    monkeypatch.setattr(SolanaFetcher, "_get_transactions", lambda self, until: [plain])
+    data = fetcher.fetch(sol_wallet)
+
+    assert _payments(data, JSF.PAYMENT_TOKEN_RENT) == []
+    transfers = _transfers(data)
+    assert len(transfers) == 1 and transfers[0]['withdrawal'] == Decimal('0.00203928')
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # The recorded fixture, read through the fetcher's own (monkeypatched) accessor so a test never re-opens the file
 def _recorded(fetcher) -> list:

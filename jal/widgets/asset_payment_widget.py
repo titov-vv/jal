@@ -47,7 +47,9 @@ class AssetPaymentWidget(AbstractOperationDetails):
                                              self.tr("Staking reward"),
                                              self.tr("Dust attack"),
                                              self.tr("Reward"),
-                                             self.tr("Rebase adjustment")])   # index == AssetPayment subtype
+                                             self.tr("Rebase adjustment"),
+                                             self.tr("Token account rent"),
+                                             self.tr("Token account rent returned")])   # index == AssetPayment subtype
         self.ui.type.setModel(self.combo_model)
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.ex_date_editor.setFixedWidth(self.ui.ex_date_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
@@ -93,6 +95,10 @@ class AssetPaymentWidget(AbstractOperationDetails):
             self.ui.amount_label.setText(self.tr("Dust received"))      # a quantity of the coin, not a sum of money
         elif dividend_type_id == AssetPayment.RebaseAdjustment:
             self.ui.amount_label.setText(self.tr("Quantity gained"))    # a quantity of the token, booked at zero
+        elif dividend_type_id == AssetPayment.TokenRent:
+            self.ui.amount_label.setText(self.tr("Rent locked"))        # a quantity of the coin, not a sum of money
+        elif dividend_type_id == AssetPayment.TokenRentReturn:
+            self.ui.amount_label.setText(self.tr("Rent returned"))
         else:
             self.ui.amount_label.setText(self.tr("Dividend"))
         self.ui.price_label.setVisible(

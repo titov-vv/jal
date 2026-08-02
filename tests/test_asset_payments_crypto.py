@@ -197,3 +197,58 @@ def test_format_decimal_is_lossless():
         value = Decimal(text)
         assert Decimal(format_decimal(value)) == value, f"{text} does not round-trip"
     assert Decimal(format_decimal(Decimal('NaN'))).is_nan()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Rent of a token account: the coin leaves the wallet the way gas does, but is not consumed - it sits in the token
+# account and is paid to that account's OWNER if it is ever closed. The payer never gets it back, which is why it is
+# booked as a cost here and never as a movement to the owner (whose balance does not rise - see AssetPayment.TokenRent).
+
+def test_token_rent_leaves_the_wallet_at_its_own_basis(wallet):
+    create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 100.0, 0.20, 0.0)])
+    _payment(AssetPayment.TokenRent, d2t(210202), '10')
+    Ledger().rebuild(from_timestamp=0)
+
+    assert _amount() == Decimal('90')             # the coins are gone from the payer
+    assert _open_lots() == Decimal('90')
+    assert _closed_deals() == []                  # nothing is realized - it leaves at the basis it was held at
+
+    costs = JalDB._read("SELECT SUM(CAST(amount AS REAL)) FROM ledger WHERE book_account=:book AND otype=:otype",
+                        [(":book", BookAccount.Costs), (":otype", LedgerTransaction.AssetPayment)])
+    assert abs(float(costs) - 2.0) < 1e-9         # 10 coins at 0.20, so no P&L anywhere
+
+
+def test_token_rent_needs_no_quote(wallet):
+    # Like gas and unlike a reward: it is valued from the lots it consumes, so it books with no price history at all
+    create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 100.0, 0.20, 0.0)])
+    _payment(AssetPayment.TokenRent, d2t(210202), '10')
+    Ledger().rebuild(from_timestamp=0)
+    assert _amount() == Decimal('90')
+
+
+def test_token_rent_needs_the_coins_to_be_there(wallet):
+    create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 5.0, 0.20, 0.0)])
+    _payment(AssetPayment.TokenRent, d2t(210202), '10')
+    with pytest.raises(Exception):
+        Ledger().rebuild(from_timestamp=0)
+
+
+# The return arrives on whoever OWNED the token account, which need not be whoever paid, so nothing links it back to
+# the rent it reverses - it opens a lot at the quote of the moment it arrives, like any other inflow that cost the
+# receiving account nothing.
+def test_token_rent_return_opens_a_lot_at_market(wallet):
+    create_quotes(TRX, 2, [(d2t(210202), 0.50)])
+    _payment(AssetPayment.TokenRentReturn, d2t(210202), '10')
+    Ledger().rebuild(from_timestamp=0)
+
+    assert _amount() == Decimal('10')
+    lots = JalAccount(WALLET).open_trades_list(JalAsset(TRX))
+    assert len(lots) == 1 and lots[0].open_price(adjusted=True) == Decimal('0.5')
+
+
+def test_token_rent_return_needs_a_quote(wallet):
+    # Refused rather than opened at zero, exactly as a reward is: a zero basis would report the whole proceeds as
+    # gain when the coins are eventually sold
+    _payment(AssetPayment.TokenRentReturn, d2t(210202), '10')
+    with pytest.raises(LedgerError):
+        Ledger().rebuild(from_timestamp=0)
