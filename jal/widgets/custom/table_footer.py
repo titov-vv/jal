@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, QAbstractItemModel, QRect
+from PySide6.QtCore import Qt, QAbstractItemModel, QRect, QTimer
 from PySide6.QtWidgets import QTreeView, QHeaderView, QStyle, QStyleOptionHeaderV2
 from PySide6.QtGui import QPainter, QIcon, QFontMetrics
 
@@ -17,6 +17,14 @@ class FooterView(QHeaderView):
         self._linked_header.geometriesChanged.connect(self.on_header_geometry)
         self._linked_header.sectionResized.connect(self.on_header_resize)
         self._linked_header.sectionMoved.connect(self.on_header_move)
+        # A horizontal scrollbar appears and disappears without the view being resized (it is the columns that
+        # changed, not the widget), and it takes the strip of the contents rect the footer is placed in - so the
+        # footer has to be put back above it whenever it comes or goes. rangeChanged is what says so: the bar is
+        # shown exactly while its range is non-empty.
+        self._parent.horizontalScrollBar().rangeChanged.connect(self.on_scroll_range)
+        # ... and while it is there the view is scrolled sideways under a footer that would otherwise stay put,
+        # which would put every total under the wrong column
+        self._parent.horizontalScrollBar().valueChanged.connect(self.on_scroll)
 
     def setModel(self, model: QAbstractItemModel) -> None:
         self._model = model
@@ -43,10 +51,27 @@ class FooterView(QHeaderView):
         self.style().drawControl(QStyle.CE_Header, opt, painter, self)
         painter.restore()
 
+    # The footer goes into the strip the bottom viewport margin reserves for it - the mirror of the header's strip
+    # at the top. It is placed against the VIEWPORT rather than against the bottom of the contents rect, because the
+    # two are not the same whenever a horizontal scrollbar is shown: the bar takes the bottom of the contents rect
+    # for itself, and a footer measured from there is drawn underneath it and can't be read.
     def on_header_geometry(self):
-        cr = self._parent.contentsRect()
+        viewport = self._parent.viewport().geometry()
         hs = self._linked_header.geometry()
-        self.setGeometry(cr.left(), cr.top() + cr.height() - hs.height() + 1, hs.width(), hs.height())
+        self.setGeometry(viewport.left(), viewport.bottom() + 1, hs.width(), hs.height())
+        self.setOffset(self._linked_header.offset())
+
+    # The scrollbar has just been shown or hidden (an empty range means it is not needed), so the strip the footer
+    # is placed in has changed height. The geometry is recomputed once the change has been applied, because the bar
+    # is still reported visible while the range that hides it is being set.
+    def on_scroll_range(self, _minimum: int, _maximum: int) -> None:
+        QTimer.singleShot(0, self, self.on_header_geometry)
+
+    # Keeps the footer aligned with the columns while the view is scrolled sideways. The offset is taken from the
+    # header rather than from the scrollbar, so that it follows whichever way the view scrolls (by pixel or by
+    # section) instead of assuming one of them.
+    def on_scroll(self, _value: int) -> None:
+        self.setOffset(self._linked_header.offset())
 
     def on_header_resize(self, section: int, _old_size: int, new_size: int) -> None:
         if section not in self._span:   # Simply set size, if section doesn't span to multiple columns
