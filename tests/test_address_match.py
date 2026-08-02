@@ -3,7 +3,8 @@ import pytest
 from tests.fixtures import project_root, data_path, prepare_db
 from constants import AssetLocation, PredefinedAccountType
 from jal.db.account import JalAccountCreator
-from jal.db.address_match import address_resemblance, is_lookalike, impersonated_target, ACCOUNT, PROTOCOL
+from jal.db.address_match import address_resemblance, is_lookalike, impersonated_target, _thresholds, \
+    ACCOUNT, PROTOCOL
 
 ETH = AssetLocation.ETH_BLOCKCHAIN
 # The wallet address and, under it, the vanity addresses ground to be mistaken for it - taken from a real
@@ -121,3 +122,54 @@ def test_a_contract_of_another_chain_is_not_a_candidate(prepare_db):
     # The registry is asked for the chain the movement happened on: the same address is a different contract (or
     # none at all) elsewhere, and one chain's protocol says nothing about another's.
     assert impersonated_target(ETH, HL_LOOKALIKES[0]) is None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The thresholds are a statement about PROBABILITY and were written for hex, so an address in a richer alphabet must
+# not be asked for the same character COUNT - that would demand far more improbability of it than hex was ever asked.
+SOL = AssetLocation.SOL_BLOCKCHAIN
+SOL_GENUINE = "7FBMXMu2cC2s8jJHbTGz3M6fYEq31GyXGNWwszV34ETP"
+
+
+def test_thresholds_keep_the_probability_not_the_character_count():
+    assert _thresholds(ETH, "0x" + "a" * 40) == (3, 7)          # hex is the baseline and does not move
+    assert _thresholds(SOL, SOL_GENUINE) == (3, 5)              # 58^-5 is already stricter than 16^-7
+    assert _thresholds(AssetLocation.TRX_BLOCKCHAIN, "T" + "a" * 33) == (3, 5)
+    assert _thresholds(AssetLocation.BTC_BLOCKCHAIN, "1" + "a" * 33) == (3, 5)
+    assert _thresholds(AssetLocation.BTC_BLOCKCHAIN, "bc1q" + "a" * 38) == (3, 6)   # 32 symbols, told by the prefix
+
+
+# A base58 lookalike matching three characters at each end is one chance in 38 billion - far past the bar hex is
+# held to - and was refused only for being six characters rather than seven.
+def test_a_three_and_three_base58_lookalike_is_now_recognized():
+    lookalike = SOL_GENUINE[:3] + "Z" * 38 + SOL_GENUINE[-3:]
+    assert address_resemblance(SOL, lookalike, SOL_GENUINE) == (3, 3)
+    assert is_lookalike(SOL, lookalike, SOL_GENUINE)
+
+
+# ... while the per-end bar does NOT move: two base58 characters is 1/3364, weaker than the 1/4096 hex demands, so
+# an address agreeing on only two at one end stays below the bar however long the other end is.
+def test_two_characters_at_one_end_are_still_not_enough_in_base58():
+    lookalike = SOL_GENUINE[:6] + "Z" * 36 + SOL_GENUINE[-2:]
+    assert address_resemblance(SOL, lookalike, SOL_GENUINE) == (6, 2)
+    assert is_lookalike(SOL, lookalike, SOL_GENUINE) is False
+
+
+# The real 0.00001 SOL arrival of 2026-02-15 (leg 4597). It agrees on three characters at the front and only two at
+# the back, so it stays below the bar - and rightly: a Solana wallet abbreviates to four and four, and
+# '7FBM...4ETP' against '7FBY...szTP' is a pair a user reads as different. It is dust to be written off, not an
+# imitation the detector can vouch for.
+def test_the_real_solana_dust_of_2026_02_15_is_not_called_poisoning():
+    sender = "7FBYsS4zSc2NVvFjxUyPyTjNkZHhwJH5tzrYgGyYszTP"
+    assert address_resemblance(SOL, sender, SOL_GENUINE) == (3, 2)
+    assert is_lookalike(SOL, sender, SOL_GENUINE) is False
+
+
+# An EVM lookalike is judged exactly as before - the rescaling must not touch the chains the numbers were written for
+def test_the_hex_chains_are_unchanged():
+    for address in POISONED:
+        assert is_lookalike(ETH, address, GENUINE), address
+    body = GENUINE[2:]                                          # the '0x' is stripped before anything is counted
+    six_of_seven = "0x" + body[:3] + "9" * 34 + body[-3:]       # 3 + 3 = 6, one short in hex
+    assert address_resemblance(ETH, six_of_seven, GENUINE) == (3, 3)
+    assert is_lookalike(ETH, six_of_seven, GENUINE) is False

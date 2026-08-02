@@ -1,3 +1,6 @@
+from math import ceil, log
+
+from jal.constants import AssetLocation
 from jal.db.account import JalAccount
 from jal.db.token_blacklist import normalize_address
 from jal.net.chain_fetchers.protocols import protocol_category, protocol_contracts
@@ -19,8 +22,53 @@ from jal.net.chain_fetchers.protocols import protocol_category, protocol_contrac
 # a wallet with a handful of addresses and a few hundred counterparties expects false positives in the millionths.
 # They are deliberately NOT tuned to the ends a particular wallet abbreviates to - what is being measured is that the
 # resemblance cannot be an accident, and any display that shows fewer digits than this is one the trick works on.
-_MIN_AT_EACH_END = 3
-_MIN_TOGETHER = 7
+#
+# Those two numbers are a statement about PROBABILITY, and they were written for hex. An address in another alphabet
+# carries more per character - a base58 character is one of 58, not one of 16 - so asking it for the same COUNT asks
+# it for far more improbability than hex was ever asked for, and a Solana lookalike can be beyond doubt while still
+# falling short of seven. The counts are therefore derived per chain from the hex ones, keeping the probability the
+# same rather than the character count:
+#
+#   alphabet                each end          together
+#   hex (EVM)               3  (1/4096)       7  (1 in 268 million)
+#   base58 (SOL/BTC/TRX)    3  (1/195k)       5  (1 in 656 million)
+#   bech32 (BTC bc1)        3  (1/32768)      6  (1 in 1.07 billion)
+#
+# Rounding is always UP, so no chain is ever asked for less improbability than hex is. That matters at the per-end
+# bar: two base58 characters would be 1/3364, which is WEAKER than the 1/4096 hex demands, so the bar stays at three.
+# The gain is at the combined bar - a base58 lookalike matching 3+3 is one in 38 billion and was refused for being
+# six characters long, while a 4+4 one (which is what a wallet showing four-and-four displays) already passed.
+_HEX_AT_EACH_END = 3
+_HEX_TOGETHER = 7
+_HEX_ALPHABET = 16
+# The alphabet an address of each chain is written in. EVM addresses (and Hyperliquid's, which are EVM-shaped) are
+# hex; Solana mints, Tron's 'T...' form and Bitcoin's legacy addresses are base58. A bech32 Bitcoin address is a
+# 32-character alphabet and is told apart by its prefix, not by its chain - see _alphabet_of().
+_BASE58 = 58
+_BECH32 = 32
+_HEX_CHAINS = [AssetLocation.ETH_BLOCKCHAIN, AssetLocation.ARB_BLOCKCHAIN,
+               AssetLocation.HL_BLOCKCHAIN, AssetLocation.AVAX_BLOCKCHAIN]
+
+
+# The size of the alphabet the given address is written in. Taken from the address itself where the chain doesn't
+# settle it: Bitcoin writes both base58 ('1...', '3...') and bech32 ('bc1...') addresses, and the two are compared
+# against each other only when they are the same kind anyway.
+def _alphabet_of(location_id: int, address: str) -> int:
+    if location_id in _HEX_CHAINS:
+        return _HEX_ALPHABET
+    if address[:3].lower() == 'bc1':
+        return _BECH32
+    return _BASE58
+
+
+# The (at each end, together) thresholds for an address of the given chain - the hex pair above, restated in an
+# alphabet that may carry more per character. Never weaker than hex at either bar (see the note above).
+def _thresholds(location_id: int, address: str) -> tuple:
+    alphabet = _alphabet_of(location_id, address)
+    if alphabet == _HEX_ALPHABET:
+        return _HEX_AT_EACH_END, _HEX_TOGETHER
+    scale = log(_HEX_ALPHABET) / log(alphabet)
+    return ceil(_HEX_AT_EACH_END * scale), ceil(_HEX_TOGETHER * scale)
 
 
 # How many characters two addresses share at the start and at the end, as (leading, trailing).
@@ -47,9 +95,9 @@ def is_lookalike(location_id: int, address: str, genuine: str) -> bool:
         return False
     if normalize_address(location_id, address) == normalize_address(location_id, genuine):
         return False
+    at_each_end, together = _thresholds(location_id, genuine)
     leading, trailing = address_resemblance(location_id, address, genuine)
-    return leading >= _MIN_AT_EACH_END and trailing >= _MIN_AT_EACH_END \
-        and (leading + trailing) >= _MIN_TOGETHER
+    return leading >= at_each_end and trailing >= at_each_end and (leading + trailing) >= together
 
 
 # What the given address was ground to be mistaken FOR, or None when it resembles nothing the user would recognize.
