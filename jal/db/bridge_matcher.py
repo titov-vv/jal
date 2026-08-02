@@ -1,8 +1,10 @@
+import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.db.db import JalDB
 from jal.db.helpers import remove_exponent
 from jal.db.operations import LedgerTransaction
+from jal.widgets.helpers import ts2dt
 
 
 class BridgeMatchError(Exception):
@@ -34,18 +36,20 @@ class BridgeMatcher(JalDB):
     def tr(self, text):
         return QApplication.translate("BridgeMatcher", text)
 
-    # All pending half-bridges - a sending leg whose arrival is still awaited - each as a dict describing that leg
+    # All pending half-bridges - a sending leg whose arrival is still awaited - each as a dict describing that leg.
+    # The transaction it was sent in comes along because a pair that names ONE transaction is judged differently -
+    # see _one_transaction().
     def _pending_halves(self) -> list:
         halves = []
         query = self._exec(
             "SELECT b.oid, b.out_account_id AS account_id, s.asset_id AS asset_id, b.out_qty AS qty, "
-            "b.out_timestamp AS timestamp "
+            "b.out_timestamp AS timestamp, b.out_tx_hash AS tx_hash "
             "FROM bridges b JOIN asset_symbol s ON s.id=b.out_symbol_id WHERE b.in_account_id IS NULL")
         while query.next():
-            oid, account_id, asset_id, qty, timestamp = self._read_record(
-                query, cast=[int, int, int, Decimal, int])
+            oid, account_id, asset_id, qty, timestamp, tx_hash = self._read_record(
+                query, cast=[int, int, int, Decimal, int, str])
             halves.append({'oid': oid, 'account_id': account_id, 'asset_id': asset_id,
-                           'qty': qty, 'timestamp': timestamp})
+                           'qty': qty, 'timestamp': timestamp, 'tx_hash': tx_hash})
         return halves
 
     @staticmethod
@@ -63,13 +67,38 @@ class BridgeMatcher(JalDB):
     def _pair_kind(out_h, in_h):
         if out_h['account_id'] == in_h['account_id']:
             return None
-        if out_h['timestamp'] > in_h['timestamp']:     # an arrival can't precede its departure
+        # An arrival can't precede its departure - unless the two are two READINGS of one and the same transaction,
+        # in which case they are not two events to be ordered at all (see _one_transaction).
+        if out_h['timestamp'] > in_h['timestamp'] and not BridgeMatcher._one_transaction(out_h, in_h):
             return None
         if out_h['qty'] <= Decimal('0') or in_h['qty'] <= Decimal('0'):
             return None
         if out_h['asset_id'] != in_h['asset_id']:
             return BridgeMatcher.SWAP
         return BridgeMatcher.BRIDGE if in_h['qty'] <= out_h['qty'] else None   # can't receive more than was sent
+
+    # Whether the two legs are two records of ONE transaction, which is what makes their disagreement about the
+    # moment a disagreement of two clocks rather than of two events. The same rule TransferSettlement uses, for the
+    # same reason (see its _one_transaction) - and it happens on a crossing whenever one side is a venue that
+    # reports its own ledger rather than a block: a withdrawal from Hyperliquid names the ARBITRUM transaction that
+    # released the coins on both sides, while the moment it carries is the moment HL's books recorded it, which is
+    # 8-22 seconds AFTER that block on every movement of the wallet this was built from - in both directions.
+    #
+    # The hash is compared as it is stored, without case folding, exactly as everywhere else here: chains disagree on
+    # the case of a hash and a wrong pair is worse than a missed one.
+    @staticmethod
+    def _one_transaction(out_h, in_h) -> bool:
+        return bool(out_h.get('tx_hash')) and out_h.get('tx_hash') == in_h.get('tx_hash')
+
+    # The one moment two readings of a single transaction are both stamped with: the EARLIER of the two.
+    #
+    # Not a tie-break. Both numbers describe one event, and every delay between an event and a record of it is
+    # non-negative - a venue writes its ledger when it OBSERVES the block, never before it - so of two readings the
+    # earlier is necessarily the closer to the event, and taking it can only move a timestamp towards the truth.
+    # (That argument holds only because the two are one transaction, which is exactly when this is asked.)
+    @staticmethod
+    def _agreed_moment(departure: int, arrival: int) -> int:
+        return min(departure, arrival)
 
     # The operation the pending half 'oid' would form with the transfer 'transfer_oid' (BRIDGE or SWAP), or None if
     # they can't be matched at all. Used by the UI to name what accepting a candidate is going to create.
@@ -101,13 +130,17 @@ class BridgeMatcher(JalDB):
             return []
         result = []
         query = self._exec(
-            "SELECT t.oid, t.withdrawal, t.deposit_timestamp, t.deposit_account, s.asset_id "
+            "SELECT t.oid, t.withdrawal, t.deposit_timestamp, t.deposit_account, s.asset_id, t.number "
             "FROM transfers t JOIN asset_symbol s ON s.id=t.symbol_id "
             "WHERE NOT t.deposit_account IS NULL "
             "ORDER BY ABS(t.deposit_timestamp - :ts)", [(":ts", half['timestamp'])])
         while query.next():
-            toid, qty, d_ts, d_acc, asset_id = self._read_record(query, cast=[int, Decimal, int, int, int])
-            arrival = {'account_id': d_acc, 'asset_id': asset_id, 'qty': qty, 'timestamp': d_ts}
+            toid, qty, d_ts, d_acc, asset_id, number = self._read_record(
+                query, cast=[int, Decimal, int, int, int, str])
+            # 'tx_hash' belongs in here and not only in _transfer_side(): this method builds its own arrival, and
+            # without the hash _pair_kind() cannot see that a leg is the other reading of the half's own
+            # transaction - so the one candidate that matters would be the one silently left out of the list.
+            arrival = {'account_id': d_acc, 'asset_id': asset_id, 'qty': qty, 'timestamp': d_ts, 'tx_hash': number}
             if self._pair_kind(half, arrival) is not None:
                 result.append(toid)
         return result
@@ -167,25 +200,39 @@ class BridgeMatcher(JalDB):
         kind = self._pair_kind(half, arrival)
         if kind is None:
             raise BridgeMatchError(self.tr("The arriving leg doesn't match by asset, account, amount or dates"))
-        leg = {'in_timestamp': arrival['timestamp'], 'in_account_id': arrival['account_id'],
+        # A pair that _pair_kind() let through on the one-transaction waiver still has its two moments in the wrong
+        # order, and storing them that way would produce an operation the LEDGER refuses ("Bridge receive can't
+        # precede its send", Bridge.processLedger) - the match would appear to work and then halt the rebuild. So
+        # both ends are stamped with one moment instead, which is what the two readings were always describing.
+        departure, landing = half['timestamp'], arrival['timestamp']
+        if departure > landing:
+            departure = landing = self._agreed_moment(departure, landing)
+            logging.warning(self.tr("Legs disagree about when the crossing happened, both are stamped with: ")
+                            + ts2dt(departure) + (f" ({half['tx_hash']})" if half.get('tx_hash') else ''))
+        leg = {'in_timestamp': landing, 'in_account_id': arrival['account_id'],
                'in_symbol_id': arrival['symbol_id'], 'in_qty': arrival['qty'], 'in_tx_hash': arrival['tx_hash']}
         if kind == self.SWAP:
-            oid = self._create_swap(half_oid, leg)
+            oid = self._create_swap(half_oid, leg, departure)
             self._exec("DELETE FROM bridges WHERE oid=:oid", [(":oid", half_oid)], commit=True)
             return oid
-        self._exec("UPDATE bridges SET in_timestamp=:ts, in_account_id=:acc, in_symbol_id=:sym, in_qty=:qty, "
-                   "in_tx_hash=:hash WHERE oid=:oid",
-                   [(":ts", leg['in_timestamp']), (":acc", leg['in_account_id']), (":sym", leg['in_symbol_id']),
-                    (":qty", leg['in_qty']), (":hash", leg['in_tx_hash']), (":oid", half_oid)], commit=True)
+        self._exec("UPDATE bridges SET out_timestamp=:out_ts, in_timestamp=:ts, in_account_id=:acc, "
+                   "in_symbol_id=:sym, in_qty=:qty, in_tx_hash=:hash WHERE oid=:oid",
+                   [(":out_ts", departure), (":ts", leg['in_timestamp']), (":acc", leg['in_account_id']),
+                    (":sym", leg['in_symbol_id']), (":qty", leg['in_qty']), (":hash", leg['in_tx_hash']),
+                    (":oid", half_oid)], commit=True)
         return half_oid
 
     # Builds a cross-chain Swap out of a pending SEND half (which holds the disposed asset and the gas paid for it)
     # and the arriving leg described by 'in_leg' (in_timestamp/in_account_id/in_symbol_id/in_qty/in_tx_hash).
-    def _create_swap(self, out_oid, in_leg: dict) -> int:
+    # 'out_timestamp' is the moment the disposal is stamped with, which is the half's own unless the pair had to
+    # agree one (see _adopt) - a swap that acquires before it disposes is as wrong as a bridge that does.
+    def _create_swap(self, out_oid, in_leg: dict, out_timestamp: int = None) -> int:
         out = self._read("SELECT out_timestamp, out_account_id, out_symbol_id, out_qty, out_tx_hash, "
                          "fee_symbol_id, fee_qty, note FROM bridges WHERE oid=:oid", [(":oid", out_oid)], named=True)
         present = lambda v: v is not None and v != ''   # _read() returns '' (not None) for a SQL NULL
-        data = {'timestamp': int(out['out_timestamp']), 'account_id': int(out['out_account_id']),
+        if out_timestamp is None:
+            out_timestamp = int(out['out_timestamp'])
+        data = {'timestamp': out_timestamp, 'account_id': int(out['out_account_id']),
                 'tx_hash': out['out_tx_hash'], 'out_symbol_id': int(out['out_symbol_id']),
                 'out_qty': Decimal(out['out_qty']), 'in_timestamp': int(in_leg['in_timestamp']),
                 'in_account_id': int(in_leg['in_account_id']), 'in_symbol_id': int(in_leg['in_symbol_id']),

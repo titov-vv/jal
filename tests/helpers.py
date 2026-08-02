@@ -242,6 +242,8 @@ def create_transfers(transfers) -> list:
         data = {'withdrawal_timestamp': transfer[0], 'withdrawal_account': transfer[1], 'withdrawal': transfer[2],
                 'deposit_timestamp': transfer[0], 'deposit_account': transfer[3], 'deposit': transfer[4],
                 'symbol_id': symbol_id_for(transfer[5], currency_id)}
+        if len(transfer) > 6:      # optional transaction hash, for the pairings that are judged by it
+            data['number'] = transfer[6]
         oids.append(LedgerTransaction.create_new(LedgerTransaction.Transfer, data).oid())
     return oids
 

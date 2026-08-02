@@ -111,3 +111,103 @@ def test_cross_chain_swap_keeps_the_gas_of_its_sending_half(accounts):
     fee = JalDB._read("SELECT fee_qty FROM swaps WHERE oid=:o", [(":o", swap_oid)])
     assert Decimal(fee) == Decimal('0.01')
     assert _open_qty(ACC1) == Decimal('0.99')                    # 3 - 2 sent - 0.01 burned as gas
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A crossing whose two ends disagree about WHEN it happened.
+#
+# It is what a venue that keeps its own ledger produces: a Hyperliquid withdrawal names the ARBITRUM transaction that
+# released the coins on both of its ends, while the moment its own books carry is the moment HL recorded observing
+# that block - 8 to 22 seconds after it, measured on every movement of the wallet this was built from, in both
+# directions. On a deposit the lag is invisible (chain first, venue second); on a withdrawal it puts the arrival
+# BEFORE the departure and the pair stops being offered at all.
+HASH = '0x' + 'd8' * 32
+OTHER_HASH = '0x' + 'ab' * 32
+
+
+def test_a_pair_of_one_transaction_is_matched_despite_the_order(accounts):
+    create_trades(ACC1, [(d2t(210102), d2t(210102), ETH, 3.0, 1000.0, 0.0)])
+    landing = d2t(210104)
+    # the venue stamped its books 11 seconds AFTER the block that released the coins
+    send_oid = create_bridges([{'asset': ETH, 'out_ts': landing + 11, 'out_acc': ACC1, 'out_qty': 2,
+                                'out_hash': HASH}])[0]
+    transfer_oid = create_transfers([(landing, ACC3, 2, ACC2, 0, ETH, HASH)])[0]
+
+    matcher = BridgeMatcher()
+    assert matcher.pair_kind(send_oid, transfer_oid) == BridgeMatcher.BRIDGE
+    # Both directions have to OFFER it - the candidate list is where this was invisible, and it builds its own
+    # arrival record rather than going through _transfer_side()
+    assert transfer_oid in matcher.transfer_candidates(send_oid)
+    assert send_oid in matcher.halves_claiming(transfer_oid)
+
+    matcher.match_with_transfer(send_oid, transfer_oid)
+    stored = JalDB._read("SELECT out_timestamp || '/' || in_timestamp FROM bridges WHERE oid=:o", [(":o", send_oid)])
+    # Both ends are stamped with the EARLIER reading: a record of an event never precedes it, so of two readings of
+    # one transaction the earlier is the closer to the block that carried it.
+    assert stored == f"{landing}/{landing}"
+
+    Ledger().rebuild(from_timestamp=0)      # ... and what was stored is something the ledger accepts
+    assert _open_qty(ACC1) == Decimal('1')
+    assert _open_qty(ACC2) == Decimal('2') and _open_basis(ACC2) == Decimal('2000')
+
+
+# Without the shared transaction the two moments are two EVENTS, and an arrival that precedes its departure is
+# refused exactly as before - the waiver must not become a general loosening of the ordering rule.
+def test_a_wrong_order_without_one_transaction_is_still_refused(accounts):
+    landing = d2t(210104)
+    send_oid = create_bridges([{'asset': ETH, 'out_ts': landing + 11, 'out_acc': ACC1, 'out_qty': 2,
+                                'out_hash': HASH}])[0]
+    transfer_oid = create_transfers([(landing, ACC3, 2, ACC2, 0, ETH, OTHER_HASH)])[0]
+
+    matcher = BridgeMatcher()
+    assert matcher.pair_kind(send_oid, transfer_oid) is None
+    assert transfer_oid not in matcher.transfer_candidates(send_oid)
+    assert send_oid not in matcher.halves_claiming(transfer_oid)
+    with pytest.raises(BridgeMatchError):
+        matcher.match_with_transfer(send_oid, transfer_oid)
+
+
+# Two legs that name NO transaction are not "one transaction" either - an empty hash equals an empty hash, and
+# taking that as proof would pair every hand-entered leg with every other one.
+def test_legs_naming_no_transaction_are_not_one_transaction(accounts):
+    landing = d2t(210104)
+    send_oid = create_bridges([{'asset': ETH, 'out_ts': landing + 11, 'out_acc': ACC1, 'out_qty': 2}])[0]
+    transfer_oid = create_transfers([(landing, ACC3, 2, ACC2, 0, ETH)])[0]
+
+    matcher = BridgeMatcher()
+    assert matcher.pair_kind(send_oid, transfer_oid) is None
+    with pytest.raises(BridgeMatchError):
+        matcher.match_with_transfer(send_oid, transfer_oid)
+
+
+# A pair whose moments are in the RIGHT order is stamped with nothing agreed - each end keeps its own reading, which
+# is the duration the crossing really took.
+def test_a_pair_in_the_right_order_keeps_both_moments(accounts):
+    create_trades(ACC1, [(d2t(210102), d2t(210102), ETH, 3.0, 1000.0, 0.0)])
+    departure = d2t(210103)
+    send_oid = create_bridges([{'asset': ETH, 'out_ts': departure, 'out_acc': ACC1, 'out_qty': 2,
+                                'out_hash': HASH}])[0]
+    transfer_oid = create_transfers([(departure + 300, ACC3, 2, ACC2, 0, ETH, HASH)])[0]
+
+    BridgeMatcher().match_with_transfer(send_oid, transfer_oid)
+    stored = JalDB._read("SELECT out_timestamp || '/' || in_timestamp FROM bridges WHERE oid=:o", [(":o", send_oid)])
+    assert stored == f"{departure}/{departure + 300}"
+
+
+# The agreed moment reaches a cross-chain SWAP as well: an acquisition that precedes its own disposal is as wrong
+# there as a bridge receive that precedes its send, and the swap is built from the half rather than updated in place.
+def test_the_agreed_moment_reaches_a_cross_chain_swap(accounts):
+    create_trades(ACC1, [(d2t(210102), d2t(210102), ETH, 3.0, 1000.0, 0.0)])
+    create_quotes(ETH, 2, [(d2t(210103), 1200.0)])
+    landing = d2t(210104)
+    send_oid = create_bridges([{'asset': ETH, 'out_ts': landing + 11, 'out_acc': ACC1, 'out_qty': 2,
+                                'out_hash': HASH}])[0]
+    transfer_oid = create_transfers([(landing, ACC3, 2400, ACC2, 0, USDC, HASH)])[0]
+
+    assert BridgeMatcher().pair_kind(send_oid, transfer_oid) == BridgeMatcher.SWAP
+    swap_oid = BridgeMatcher().match_with_transfer(send_oid, transfer_oid)
+    stored = JalDB._read("SELECT timestamp || '/' || in_timestamp FROM swaps WHERE oid=:o", [(":o", swap_oid)])
+    assert stored == f"{landing}/{landing}"
+
+    Ledger().rebuild(from_timestamp=0)
+    assert _open_qty(ACC2, USDC) == Decimal('2400')
