@@ -325,6 +325,23 @@ class EVMFetcher(ChainFetcher):
         if not own and swap_shape and self._settling_swap_protocol(outs, ins):
             return self._emit_swap(timestamp, outs, ins, tx['hash'], Decimal('0'))
 
+        # ... and a reward CLAIMED FOR this wallet rather than BY it. Merkl and the other distributors let anyone
+        # submit the claim on a recipient's behalf, so the beneficiary may sign nothing and pay no gas: the wallet
+        # then appears only in the token leg, exactly as above, and the payout falls through to a plain incoming
+        # transfer - a leg no settlement can ever pair, opened at a zero cost basis, with the income never recognized.
+        #
+        # What makes it readable is the registry entry itself, and only that. A REWARD contract is by definition one
+        # that pays out a CLAIMABLE reward - it pays what the recipient earned, whoever presses the button - and the
+        # category is decided per address by hand, with the returned-principal cases deliberately kept out of it
+        # (stake.link's PriorityPool is CUSTODY and not REWARD for exactly that reason, see protocols.py). So who
+        # signed says nothing here that the payer's address doesn't already say, which is as well: the signer is not
+        # in what a fetch reads at all - 'txlist' returns only the transactions the wallet is the 'from' or 'to' of,
+        # and this one is neither.
+        #
+        # Gas is taken as zero because the wallet paid none; whoever signed the claim books it on their own account.
+        if not own and ins and not outs and self._claimed_reward_protocol(ins):
+            return self._emit_rewards(timestamp, ins, tx['hash'], Decimal('0'), is_error, None)
+
         # From here the contract (if any) is unregistered. A transaction the wallet signed that both spends and
         # receives an asset is a swap/lending/bridge through an unknown contract - it must never be guessed at
         # (reconciliation (a)); likewise an unfamiliar multi-asset shape or an own-initiated pure acquisition (a
@@ -500,9 +517,12 @@ class EVMFetcher(ChainFetcher):
     # Signing the transaction is not the only proof the user chose the token, though: a leg that moved with a
     # REGISTERED swap protocol was chosen too, even when a solver submitted the settlement (see the gasless-swap
     # branch of _classify_transaction - without this a legitimate swap into a thinly-priced token has one of its two
-    # legs quarantined as spam, and what is left of the exchange is a lone transfer). It is not a hole a spoofer can
-    # use: the registry is curated by hand, and the address checked is the real counterparty of the transfer event
-    # rather than anything the token itself claims about its name or ticker.
+    # legs quarantined as spam, and what is left of the exchange is a lone transfer). A REWARD payer counts for the
+    # same reason and would otherwise break the same way: a reward CLAIMED FOR the wallet by somebody else is signed
+    # by nobody the filter can see, so a thinly-priced reward token would be quarantined and the claim would come out
+    # empty (see _claimed_reward_protocol). It is not a hole a spoofer can use: the registry is curated by hand, and
+    # the address checked is the real counterparty of the transfer event rather than anything the token itself claims
+    # about its name or ticker.
     def _token_leg(self, record: dict, tx: dict):
         address = self._norm(record.get('contractAddress', ''))
         tx_hash = record.get('hash', '')
@@ -523,7 +543,8 @@ class EVMFetcher(ChainFetcher):
         initiated = self._own_record(tx) is not None
         counterparty = record.get('from', '') if incoming else record.get('to', '')
         chosen = initiated or protocol_category(self.location_id, counterparty) in (ProtocolCategory.SWAP,
-                                                                                   ProtocolCategory.AGGREGATOR)
+                                                                                   ProtocolCategory.AGGREGATOR,
+                                                                                   ProtocolCategory.REWARD)
         candidate = TokenCandidate(location_id=self.location_id, address=address, symbol=symbol, name=name,
                                    incoming=incoming or not initiated, from_swap=chosen, amount=amount,
                                    known_counterparty=self._is_own_address(counterparty),
@@ -540,8 +561,9 @@ class EVMFetcher(ChainFetcher):
     # Every leg has to name one and the same counterparty: a delta whose counterparty was cleared (several addresses
     # took part in it, see _merge_counterparty) or that names a different address than the other side is not a
     # settlement, and an unregistered address is not a protocol JAL may classify by. Only the two categories that
-    # exchange one asset for another on this chain count - a lending, reward or custody contract acting on a wallet
-    # that never asked it to is a shape no evidence covers, and it keeps being imported as the plain transfer it is.
+    # exchange one asset for another on this chain count - a lending or custody contract acting on a wallet that
+    # never asked it to is a shape no evidence covers, and it keeps being imported as the plain transfer it is.
+    # (A REWARD payer is the one exception, and it is read separately - see _claimed_reward_protocol.)
     def _settling_swap_protocol(self, outs: dict, ins: dict) -> str:
         counterparties = {data['counterparty'] for data in list(outs.values()) + list(ins.values())}
         if len(counterparties) != 1:
@@ -550,6 +572,21 @@ class EVMFetcher(ChainFetcher):
         if protocol_category(self.location_id, address) not in (ProtocolCategory.SWAP, ProtocolCategory.AGGREGATOR):
             return ''
         return protocol_name(self.location_id, address)
+
+    # The name of the REWARD protocol that paid EVERY incoming leg of a transaction the wallet did not sign, or ''
+    # when there is none - see the call site for what it is for.
+    #
+    # The demand made of the counterparty is the same one above: every leg has to name one and the same address, so
+    # a delta whose counterparty was cleared (several addresses took part in it, see _merge_counterparty) names
+    # nobody and settles nothing. Two distributors paying into one transaction is left alone rather than guessed at.
+    def _claimed_reward_protocol(self, ins: dict) -> str:
+        payers = {data['counterparty'] for data in ins.values()}
+        if len(payers) != 1:
+            return ''
+        payer = payers.pop() or ''
+        if protocol_category(self.location_id, payer) != ProtocolCategory.REWARD:
+            return ''
+        return protocol_name(self.location_id, payer)
 
     # Emits a swap: one asset out, one asset in, gas paid in the native coin as the fee.
     def _emit_swap(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal) -> None:

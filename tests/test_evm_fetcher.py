@@ -949,6 +949,86 @@ def test_reward_claim_of_several_assets_pays_each_one(eth_wallet, monkeypatch):
     assert fetcher.skipped() == {}
 
 
+# A distributor lets anyone submit the claim on a recipient's behalf, so the wallet that EARNED the reward may sign
+# nothing and pay no gas - it appears only in the token leg, and 'txlist' doesn't return the transaction for it at
+# all. Booked as the reward it is: the payer is a registered REWARD contract, which pays what the recipient earned
+# whoever pressed the button. Without this it fell through to a plain incoming transfer - a leg nothing can ever
+# settle, opened at a zero cost basis, with the income unrecognized.
+def test_reward_claimed_for_the_wallet_by_somebody_else_is_still_a_reward(eth_wallet, monkeypatch):
+    merkl = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"     # registered as ProtocolCategory.REWARD
+    d6 = "0xd6" + "0" * 62
+    pages = {
+        "txlist": [],                                        # the wallet is neither 'from' nor 'to' of the claim
+        "tokentx": [_token_tx(d6, 100, merkl, WALLET, 13 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    assert len(rewards) == 1 and rewards[0]['amount'] == Decimal('13')
+    assert _transfers(data) == [] and _swaps(data) == []
+    # No gas: the wallet signed nothing, so whoever did pays it on their own account
+    assert not [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_GAS_FEE]
+    assert fetcher.skipped() == {}
+
+
+# ... but only when the payer is a registered REWARD contract. An unknown address pushing a token into the wallet is
+# an ordinary receive (or an airdrop), and it must keep landing as the plain transfer it always was.
+def test_an_unregistered_payer_is_still_a_plain_incoming_transfer(eth_wallet, monkeypatch):
+    stranger = "0x7777777777777777777777777777777777777777"
+    d7 = "0xd7" + "0" * 62
+    pages = {
+        "txlist": [],
+        "tokentx": [_token_tx(d7, 100, stranger, WALLET, 13 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert not [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    transfers = _transfers(data)
+    assert len(transfers) == 1 and transfers[0]['withdrawal'] == Decimal('13')
+    assert transfers[0]['account'][0] == 0                              # incoming: the source account is unknown
+
+
+# One asset reaching the wallet from TWO senders in a single transaction nets into one delta whose counterparty is
+# cleared (see _merge_counterparty), so nothing names the payer any more - and a claim whose payer can't be named is
+# left as the transfer it was imported as rather than guessed at.
+def test_a_cleared_counterparty_is_not_read_as_a_reward(eth_wallet, monkeypatch):
+    merkl = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"
+    somebody = "0x6666666666666666666666666666666666666666"
+    d8 = "0xd8" + "0" * 62
+    pages = {
+        "txlist": [],
+        "tokentx": [_token_tx(d8, 100, merkl, WALLET, 13 * 10 ** 6),        # same token, two senders
+                    _token_tx(d8, 100, somebody, WALLET, 7 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert not [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    transfers = _transfers(data)
+    assert len(transfers) == 1 and transfers[0]['withdrawal'] == Decimal('20')   # the netted arrival
+
+
+# A reward token nobody has ever heard of must not be quarantined as spam when a REGISTERED distributor paid it: the
+# wallet signed nothing, so signing can't be what vouches for it, and without this the claim imports as nothing at
+# all. The same rule that keeps a gasless swap's thinly-priced leg out of the blacklist (see _token_leg).
+def test_an_unknown_token_from_a_registered_distributor_is_not_quarantined(eth_wallet, monkeypatch):
+    merkl = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"
+    obscure = "0x9999999999999999999999999999999999999999"
+    d9 = "0xd9" + "0" * 62
+    pages = {
+        "txlist": [],
+        "tokentx": [_token_tx(d9, 100, merkl, WALLET, 5 * 10 ** 6,
+                              contract=obscure, symbol='OBSCURE', name='Obscure reward')],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    assert len(rewards) == 1 and rewards[0]['amount'] == Decimal('5')
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 def test_is_evm_address_accepts_valid_and_rejects_malformed():
     assert is_evm_address(WALLET)
