@@ -1,5 +1,6 @@
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton,
+                               QMessageBox)
 from jal.widgets.helpers import center_window
 
 
@@ -14,15 +15,21 @@ from jal.widgets.helpers import center_window
 # filter: a coin renamed on one chain resembles nothing, and a chooser that only offered the resemblances left the
 # user with no way to say what the token really was. The search box is what makes a list of that length usable.
 #
+# 'cross_chain' holds the ids of those candidates that are listed on a chain this token isn't on. Merging into one
+# of them is confirmed separately - see _on_merge() for why that case deserves a question of its own.
+#
 # The outcome is read from .action / .target_asset_id after exec().
 class SelectTokenActionDialog(QDialog):
     Merge, CreateNew, Discard = 1, 2, 3
 
-    def __init__(self, name: str, ticker: str, chain: str, address: str, candidates: list, suggested: int = 0):
+    def __init__(self, name: str, ticker: str, chain: str, address: str, candidates: list, suggested: int = 0,
+                 cross_chain: set = None):
         super().__init__()
         self.action = self.CreateNew
         self._candidates = candidates
         self._suggested = suggested
+        self._cross_chain = cross_chain if cross_chain else set()
+        self._chain = chain
         self.target_asset_id = candidates[0][0] if candidates else 0
         self.setWindowTitle(self.tr("New crypto token"))
 
@@ -81,7 +88,27 @@ class SelectTokenActionDialog(QDialog):
         self.target_asset_id = self.candidate_combo.currentData()
         if not self.target_asset_id:
             self.action = self.CreateNew   # nothing is selected to merge into, so there is nothing to merge
+        elif self.target_asset_id in self._cross_chain and not self._confirm_cross_chain():
+            return   # the dialog stays open so that another target - or another action - can be chosen
         self.accept()
+
+    # A merge across chains is asked about a second time because it is the one choice here that can be wrong
+    # silently. Quotes are keyed by asset, so both chains would then share a single price series, and which of the
+    # two deployments that series follows is not something the user picks - it falls out of the order the
+    # downloader happens to reach the listings in. For a token that is the same value everywhere that is exactly
+    # right; for a yield-bearing one it is a mispricing that shows up as a plausible number, never as an error.
+    def _confirm_cross_chain(self) -> bool:
+        answer = QMessageBox().warning(
+            self, self.tr("Merge across chains?"),
+            self.tr("This token is on {chain}, and the asset you are merging it into is listed on another chain.\n\n"
+                    "Both would then share one price series. That is correct for a token that holds the same value "
+                    "on every chain (USDT, USDC, a bridged coin).\n\n"
+                    "It is WRONG for a token whose value accrues per chain - a lending or vault receipt such as "
+                    "Fluid's fUSDT or fGHO, an aToken, any ERC-4626 share. Those are separate contracts on each "
+                    "chain and their rates drift apart, so one of the two would be priced with the other's rate.\n\n"
+                    "Merge anyway?").format(chain=self._chain),
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        return answer == QMessageBox.Yes
 
     def _on_create(self):
         self.action = self.CreateNew

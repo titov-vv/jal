@@ -454,6 +454,19 @@ def test_llama_downloader(prepare_db):
     assert_frame_equal(expected, downloader.Llama_Downloader(JalSymbol(symbol_id), 2, d2t(240701), d2t(240703)))
 
 
+# A deployment of a token on a second chain is a coin of its own to the source, and is downloaded as such. This is
+# the Arbitrum vault share whose price parted ways with the Ethereum one - each has to be asked about by its own
+# address, which is what keeps the two from being priced by whichever of them the downloader reaches first.
+def test_llama_downloader_of_a_second_chain_deployment(prepare_db):
+    _, symbol_id = create_crypto('Fluid Gho Token', 'fGHO', 2, AssetLocation.ARB_BLOCKCHAIN,
+                                 '0x037dff1c12805707d7c29f163e0f09fc9102657a', SymbolId.ARB_ADDRESS)
+    downloader = QuoteDownloader()
+    data = downloader.Llama_Downloader(JalSymbol(symbol_id), 2, d2t(260620), d2t(260622))
+    assert list(data.index) == [d2dt(260620), d2dt(260621), d2dt(260622)]
+    # A share of the Arbitrum GHO vault, which is worth distinctly less than a share of the Ethereum one (~1.11)
+    assert all(Decimal('1.02') < quote < Decimal('1.04') for quote in data['Close'])
+
+
 def test_quote_series_selection(prepare_db):
     downloader = QuoteDownloader()
     usd, eur = 2, 3

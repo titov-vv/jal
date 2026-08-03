@@ -197,3 +197,32 @@ def test_an_unrelated_ticker_is_not_offered_as_a_candidate(known_usdt):
     statement.match_db_ids()
 
     assert offered == [[]]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Merging a token into an asset that is listed on ANOTHER chain puts both chains under one asset, and therefore under
+# one quote series - quotes are keyed by asset, not by listing. For a coin that holds the same value everywhere that
+# is the whole point of unification; for a yield-bearing one (Fluid's fUSDT/fGHO, an aToken, any ERC-4626 share) it
+# silently prices one chain's holding with the other chain's rate, which is how a real Arbitrum fUSDT position came
+# to be valued 6.8% high. Nothing here can tell the two kinds apart, so such a target is flagged for the dialog to
+# confirm separately - and a target on the SAME chain, which cannot cause this, is not flagged.
+def test_cross_chain_merge_targets_are_flagged(known_usdt):
+    statement, _token = _tron_statement_with_usdt()
+    addressed = [{'symbol': 'USDT', 'location': AssetLocation.TRX_BLOCKCHAIN, 'address': TRX_USDT}]
+
+    # known_usdt is listed on Ethereum while this token is on Tron - one asset would then span two chains
+    assert statement._cross_chain_merge_targets(addressed, [known_usdt.id()]) == {known_usdt.id()}
+
+    # An asset listed on the token's own chain adds no second chain, so merging into it needs no warning
+    tron_only = JalAssetCreator(PredefinedAsset.Crypto, 'Some Tron Coin')
+    tron_only.add_symbol('STC', USD, location_id=AssetLocation.TRX_BLOCKCHAIN)
+    tron_only = tron_only.commit()
+    assert statement._cross_chain_merge_targets(addressed, [tron_only.id()]) == set()
+
+    # Both are judged independently when both are offered
+    assert statement._cross_chain_merge_targets(addressed, [known_usdt.id(), tron_only.id()]) == {known_usdt.id()}
+
+    # A token seen on both chains within one statement spans neither: the asset adds no chain it isn't already on
+    both = [{'symbol': 'USDT', 'location': AssetLocation.TRX_BLOCKCHAIN, 'address': TRX_USDT},
+            {'symbol': 'USDT', 'location': AssetLocation.ETH_BLOCKCHAIN, 'address': ETH_USDT}]
+    assert statement._cross_chain_merge_targets(both, [known_usdt.id()]) == set()
