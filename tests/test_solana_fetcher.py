@@ -407,6 +407,24 @@ def test_rent_returned_when_the_token_account_is_closed(fetcher, sol_wallet, mon
     assert not _payments(data, JSF.PAYMENT_TOKEN_RENT)
 
 
+# The gas of the transaction must not go missing when the rent is pulled out of the deltas: with nothing else of the
+# wallet's moving, the fee falls through to the GasFee that _emit_transfers() charges for a transaction that only
+# paid. Without this the wallet quietly keeps the fee it really spent.
+def test_the_gas_of_a_rent_payment_is_still_charged(fetcher, sol_wallet, monkeypatch):
+    recorded = _recorded(fetcher)
+    rent = _rent_tx(recorded[0])
+    rent['fee'] = 5000                                     # lamports, paid by the wallet
+    rent['accountData'][0]['nativeBalanceChange'] = -2039280 - 5000     # Helius reports the change NET of the fee
+    monkeypatch.setattr(SolanaFetcher, "_get_transactions", lambda self, until: [rent])
+    data = fetcher.fetch(sol_wallet)
+
+    paid = _payments(data, JSF.PAYMENT_TOKEN_RENT)
+    assert len(paid) == 1 and paid[0]['amount'] == Decimal('0.00203928')   # the rent itself is the gross amount
+    gas = _payments(data, JSF.PAYMENT_GAS_FEE)
+    assert len(gas) == 1 and gas[0]['amount'] == Decimal('0.000005')
+    assert _transfers(data) == []
+
+
 # The rule is "the address is a token account", not "the amount is 2039280" - the rent-exempt minimum differs for a
 # Token-2022 account with extensions, so matching on the constant would recognize only the common case.
 def test_the_same_amount_to_an_ordinary_address_stays_a_transfer(fetcher, sol_wallet, monkeypatch):
