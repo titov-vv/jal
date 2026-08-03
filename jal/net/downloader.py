@@ -853,8 +853,13 @@ class QuoteDownloader(QObject):
     # Every DeFiLlama key that may answer for the asset behind the given listing, that listing's own keys first.
     # A crypto asset is downloaded as a single series shared by all of its listings (see _quote_series), so which
     # listing represents the series is a matter of row order - while the key is not: the same token deployed on
-    # several chains may be indexed by the source on one of them only (fGHO answers on Ethereum but not on
-    # Arbitrum). Offering the keys of the sibling listings too makes the download independent of that order.
+    # several chains may be indexed by the source on one of them only. Offering the keys of the sibling listings
+    # too makes the download independent of that order.
+    #
+    # This is right for a token that is the same value on every chain and wrong for one that isn't - a vault share
+    # such as Fluid's fUSDT accrues at its own rate per chain, and a sibling key would price one chain's holding
+    # with another chain's rate. Nothing here can tell the two apart, so the guard sits where the two deployments
+    # are put under one asset in the first place: see Statement._cross_chain_merge_targets().
     @staticmethod
     def _asset_coin_keys(symbol: JalSymbol) -> list:
         keys = list(llama_coin_keys(symbol))

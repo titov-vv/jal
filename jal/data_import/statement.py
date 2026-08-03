@@ -428,13 +428,32 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         options = [(asset_id, self._candidate_label(asset_id)) for asset_id in suggested + rest]
         dialog = SelectTokenActionDialog(asset.get('name', ''), token['symbol'],
                                          AssetLocation().get_name(token['location']), token['address'], options,
-                                         suggested=len(suggested))
+                                         suggested=len(suggested),
+                                         cross_chain=self._cross_chain_merge_targets(addressed,
+                                                                                     suggested + rest))
         if dialog.exec() != QDialog.Accepted:
             return self.TOKEN_CREATE_NEW, 0   # closing the dialog never silently merges or discards
         mapping = {SelectTokenActionDialog.Merge: self.TOKEN_MERGE,
                    SelectTokenActionDialog.CreateNew: self.TOKEN_CREATE_NEW,
                    SelectTokenActionDialog.Discard: self.TOKEN_DISCARD}
         return mapping[dialog.action], dialog.target_asset_id
+
+    # The candidates that are already listed on a chain this token isn't on, so that merging into one of them would
+    # put two chains under a single asset - and therefore under a single quote series, because quotes are keyed by
+    # asset and not by listing. That is what a bridged token needs and what a yield-bearing one must not have: two
+    # deployments of a vault share (Fluid's fUSDT, an aToken, any ERC-4626 receipt) are separate contracts whose
+    # exchange rates drift apart, and one series can only carry one of them. Nothing here decides anything - only
+    # the user knows which kind of token this is, so the dialog warns and asks.
+    def _cross_chain_merge_targets(self, addressed: list, candidates: list) -> set:
+        token_chains = {symbol['location'] for symbol in addressed}
+        cross_chain = set()
+        for asset_id in candidates:
+            for symbol_id in JalAsset(asset_id).active_symbol_ids():
+                location = JalSymbol(symbol_id).location()
+                if location in AssetLocation.BLOCKCHAINS and location not in token_chains:
+                    cross_chain.add(asset_id)
+                    break
+        return cross_chain
 
     # Human-readable description of a merge candidate: its name and the chains it is already listed on.
     def _candidate_label(self, asset_id: int) -> str:
