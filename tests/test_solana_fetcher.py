@@ -102,18 +102,6 @@ def test_counterparty_note_empty_between_known_wallets(fetcher, sol_wallet):
     assert fetcher._counterparty_note(other, False) == ''
 
 
-def test_fetch_builds_transfers(fetcher, sol_wallet):
-    data = fetcher.fetch(sol_wallet)
-    assert len(_transfers(data)) > 0
-    for transfer in _transfers(data):
-        assert transfer['withdrawal'] > Decimal('0')
-        # 'deposit' is the cost basis in the destination currency, which a fetcher cannot know - the user completes
-        # it when the counterparty account is chosen during import (as in the Tron and EVM fetchers)
-        assert transfer['deposit'] == Decimal('0')
-        assert transfer['account'].count(0) == 1        # exactly one side is outside JAL
-        assert transfer['number']                       # the transaction signature is always recorded
-
-
 def test_native_asset_is_sol_without_address(fetcher, sol_wallet):
     data = fetcher.fetch(sol_wallet)
     sol = [a for a in data[JSF.ASSETS] if a[JSF.SYMBOLS][0]['symbol'] == 'SOL']

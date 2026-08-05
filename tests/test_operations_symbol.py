@@ -3,6 +3,8 @@
 # null-symbol (cash transfer) behavior must stay identical before and after the refactor.
 from decimal import Decimal
 
+import pytest
+
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_dividends, \
     create_corporate_actions, create_transfers
@@ -18,25 +20,31 @@ def _last_oid(table: str) -> int:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_trade_asset_resolution(prepare_db):
+# All three operation subtypes below resolve .asset() through the identical shared base-class
+# LedgerTransaction.asset() logic - only the operation subtype constructing self._symbol differs.
+@pytest.mark.parametrize('op_type', ['trade', 'dividend', 'corporate_action'])
+def test_operation_asset_resolution(prepare_db, op_type):
     JalAccountCreator(currency_id=2, number='U1', name='Acc', investing=1, organization=1).commit()
-    create_stocks([('AAPL', 'Apple Inc.')], currency_id=2)  # asset id 4
-    create_trades(1, [(d2t(220201), d2t(220203), 4, 10.0, 100.0, 1.0)])
+    if op_type == 'trade':
+        create_stocks([('AAPL', 'Apple Inc.')], currency_id=2)  # asset id 4
+        create_trades(1, [(d2t(220201), d2t(220203), 4, 10.0, 100.0, 1.0)])
+        op = LedgerTransaction.get_operation(LedgerTransaction.Trade, _last_oid("trades"))
+        expected_symbol = 'AAPL'
+    elif op_type == 'dividend':
+        create_stocks([('AAPL', 'Apple Inc.')], currency_id=2)  # asset id 4
+        create_dividends([(d2t(220301), 1, 4, 5.0, 0.5, "dividend")])
+        op = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, _last_oid("asset_payments"))
+        expected_symbol = 'AAPL'
+    else:  # corporate_action: merger OLD (id 4) -> NEW (id 5)
+        create_stocks([('OLD', 'Old Co'), ('NEW', 'New Co')], currency_id=2)  # asset ids 4, 5
+        create_actions([(d2t(220101), 1, 1, [(4, 1000.0)])])
+        create_trades(1, [(d2t(220201), d2t(220203), 4, 10.0, 100.0, 1.0)])
+        create_corporate_actions(1, [(d2t(220301), CorporateAction.Merger, 4, 10.0, 'merger', [(5, 10.0, 1.0)])])
+        op = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, _last_oid("asset_actions"))
+        expected_symbol = 'OLD'
 
-    trade = LedgerTransaction.get_operation(LedgerTransaction.Trade, _last_oid("trades"))
-    assert trade.asset().id() == 4
-    assert trade.asset().symbol() == 'AAPL'
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-def test_dividend_asset_resolution(prepare_db):
-    JalAccountCreator(currency_id=2, number='U1', name='Acc', investing=1, organization=1).commit()
-    create_stocks([('AAPL', 'Apple Inc.')], currency_id=2)  # asset id 4
-    create_dividends([(d2t(220301), 1, 4, 5.0, 0.5, "dividend")])
-
-    div = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, _last_oid("asset_payments"))
-    assert div.asset().id() == 4
-    assert div.asset().symbol() == 'AAPL'
+    assert op.asset().id() == 4
+    assert op.asset().symbol() == expected_symbol
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -65,17 +73,3 @@ def test_asset_transfer_resolves_asset(prepare_db):
 
     out = LedgerTransaction.get_operation(LedgerTransaction.Transfer, _last_oid("transfers"), Transfer.Outgoing)
     assert out.asset().id() == 4
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-def test_corporate_action_asset_resolution(prepare_db):
-    JalAccountCreator(currency_id=2, number='U1', name='Acc', investing=1, organization=1).commit()
-    create_stocks([('OLD', 'Old Co'), ('NEW', 'New Co')], currency_id=2)  # asset ids 4, 5
-    create_actions([(d2t(220101), 1, 1, [(4, 1000.0)])])
-    create_trades(1, [(d2t(220201), d2t(220203), 4, 10.0, 100.0, 1.0)])
-    # Merger: OLD (id 4) -> NEW (id 5)
-    create_corporate_actions(1, [(d2t(220301), CorporateAction.Merger, 4, 10.0, 'merger', [(5, 10.0, 1.0)])])
-
-    ca = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, _last_oid("asset_actions"))
-    assert ca.asset().id() == 4
-    assert ca.asset().symbol() == 'OLD'

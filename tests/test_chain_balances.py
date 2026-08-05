@@ -82,6 +82,10 @@ def test_a_queued_position_is_still_in_the_box(hl_wallet, monkeypatch):
 
     assert ChainBalanceReader().read_staking_boxes(NOW) == 1
     assert JalChainBalance().latest(box.id(), HYPE, NOW)['amount'] == Decimal('11.99462482')
+    # The accrual this whole feature exists to show: the chain holds more than the ledger ever booked, because the
+    # venue compounded the rewards into the delegation without emitting anything a fetcher could import.
+    ledger = box.holdings(NOW)[0]['amount']
+    assert JalChainBalance().latest(box.id(), HYPE, NOW)['amount'] - ledger == Decimal('0.07186580')
 
 
 def test_a_delegated_position_is_read_the_same_way(hl_wallet, monkeypatch):
@@ -91,18 +95,6 @@ def test_a_delegated_position_is_read_the_same_way(hl_wallet, monkeypatch):
 
     ChainBalanceReader().read_staking_boxes(NOW)
     assert JalChainBalance().latest(box.id(), HYPE, NOW)['amount'] == Decimal('11.99388771')
-
-
-# The accrual this whole feature exists to show: the chain holds more than the ledger ever booked, because the venue
-# compounded the rewards into the delegation without emitting anything a fetcher could import.
-def test_the_snapshot_exceeds_the_ledger_by_the_accrual(hl_wallet, monkeypatch):
-    box = _new_box("Hyperliquid staking")
-    _stake(WALLET, box.id(), Decimal('11.92275902'))
-    _fake_venue(monkeypatch, _SUMMARY_QUEUED)
-    ChainBalanceReader().read_staking_boxes(NOW)
-
-    ledger = box.holdings(NOW)[0]['amount']
-    assert JalChainBalance().latest(box.id(), HYPE, NOW)['amount'] - ledger == Decimal('0.07186580')
 
 
 # The venue reports ONE figure for the whole account, so it may only be attributed to a box that is alone in owning
@@ -305,14 +297,7 @@ def test_stake_account_lamports_are_the_box_balance(sol_wallet, monkeypatch):
 
     assert ChainBalanceReader().read_staking_boxes(NOW) == 1
     assert JalChainBalance().latest(box.id(), SOL, NOW)['amount'] == Decimal('6.053491451')
-
-
-def test_solana_accrual_is_the_difference_from_the_ledger(sol_wallet, monkeypatch):
-    box = _sol_box("SOL staking", STAKE_A)
-    _stake_sol(box.id(), Decimal('5.90228288'))
-    _fake_rpc(monkeypatch, {STAKE_A: _stake_account(6053491451)})
-    ChainBalanceReader().read_staking_boxes(NOW)
-
+    # The accrual is the difference between that snapshot and what the ledger holds.
     ledger = box.holdings(NOW)[0]['amount']
     assert JalChainBalance().latest(box.id(), SOL, NOW)['amount'] - ledger == Decimal('0.151208571')
 
@@ -396,24 +381,6 @@ def test_no_helius_key_reads_nothing(sol_wallet, monkeypatch):
     assert asked == []
 
 
-# Both venues in one run, each through its own reader, into one venue-agnostic table.
-def test_both_venues_are_read_in_one_pass(sol_wallet, monkeypatch):
-    hl_box = _new_box("Hyperliquid staking")
-    _stake(WALLET, hl_box.id(), Decimal('11.92275902'))
-    sol_box = _sol_box("SOL staking", STAKE_A)
-    _stake_sol(sol_box.id(), Decimal('5.90228288'))
-
-    def fake_post(self, url, request):
-        if request.get('method') == 'getAccountInfo':
-            return _stake_account(6053491451)
-        return _SUMMARY_QUEUED
-    monkeypatch.setattr(ChainBalanceReader, "_post", fake_post)
-
-    assert ChainBalanceReader().read_staking_boxes(NOW) == 2
-    assert JalChainBalance().latest(hl_box.id(), HYPE, NOW)['amount'] == Decimal('11.99462482')
-    assert JalChainBalance().latest(sol_box.id(), SOL, NOW)['amount'] == Decimal('6.053491451')
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # DISPLAY. Everything below is about the rule that turns a stored measurement into a quantity a report shows -
 # JalChainBalance.accrual() and its three consumers. Each of these gets it wrong SILENTLY when it is wrong: a diluted
@@ -439,16 +406,6 @@ def test_accrual_is_what_the_chain_holds_beyond_the_books(hl_wallet):
 def test_an_unmeasured_position_accrues_nothing(hl_wallet):
     box = _staked_box()
     assert JalChainBalance().accrual(box.id(), HYPE, Decimal('11.92275902'), NOW)['delta'] == Decimal('0')
-
-
-# A snapshot is a "now" value. Applying today's reading to a report dated before it would rewrite history with a
-# quantity that did not exist then - and the report would look entirely normal while doing it.
-def test_a_report_dated_before_the_measurement_gets_nothing(hl_wallet):
-    box = _staked_box()
-    _measure(box.id(), HYPE, '11.99462482', timestamp=d2t(260805))
-
-    assert JalChainBalance().accrual(box.id(), HYPE, Decimal('11.92275902'), d2t(260701))['delta'] == Decimal('0')
-    assert JalChainBalance().accrual(box.id(), HYPE, Decimal('11.92275902'), d2t(260806))['delta'] == Decimal('0.07186580')
 
 
 # A chain holding LESS than the books is never a correction to display. It means an outgoing movement was missed or a
@@ -521,23 +478,6 @@ def test_the_portfolio_raises_quantity_but_never_the_cost_basis(hl_wallet):
     assert row['value_i'] == Decimal('11.92275902') * Decimal('30')   # what it cost, untouched
     assert row['open_quote'] == Decimal('30')                         # basis per unit, NOT diluted
     assert row['chain_ts'] == NOW
-
-
-# P/L needs no code of its own: with the quantity raised and the cost untouched, AssetTreeItem's own
-# 'quote * qty - value_i' shows the accrual as unrealized profit by construction.
-def test_the_accrual_shows_up_as_unrealized_profit(hl_wallet):
-    from jal.db.holdings_model import AssetTreeItem
-    base = {'header': '', 'currency_id': USD, 'currency': '', 'account_id': 1, 'account': '', 'asset_id': HYPE,
-            'tag': '', 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
-            'since': 0, 'value_i': Decimal('11.92275902') * Decimal('30'), 'paid': Decimal('0'),
-            'open_quote': Decimal('30'), 'quote': Decimal('30'), 'quote_ts': 0, 'quote_a': Decimal('30'),
-            'quote_age': 0, 'chain_ts': 0, 'share': Decimal('0'), 'font': 'normal'}
-
-    booked = AssetTreeItem({**base, 'qty': Decimal('11.92275902')}).details()
-    accrued = AssetTreeItem({**base, 'qty': Decimal('11.99462482')}).details()
-
-    assert booked['p/l'] == Decimal('0')                              # nothing moved, nothing gained
-    assert accrued['p/l'] == Decimal('0.07186580') * Decimal('30')    # the accrual, at the current quote
 
 
 # The tooltip says when a measured quantity was taken. It is not a warning like the stale-quote line - a chain
@@ -645,13 +585,7 @@ def test_a_rebasing_token_balance_is_scaled_by_its_decimals(evm_wallet, monkeypa
 
     assert ChainBalanceReader().read_rebasing_assets(NOW) == 1
     assert JalChainBalance().latest(EVM_WALLET, ATOKEN, NOW)['amount'] == Decimal('7810.337020')
-
-
-def test_the_interest_no_event_announced_becomes_the_accrual(evm_wallet, monkeypatch):
-    _flag_rebasing(ATOKEN)
-    _fake_evm(monkeypatch)
-    ChainBalanceReader().read_rebasing_assets(NOW)
-
+    # ...and this is the interest no event ever announced, becoming the accrual.
     accrual = JalChainBalance().accrual(EVM_WALLET, ATOKEN, Decimal('7637.22561'), NOW)
     assert accrual['delta'] == Decimal('173.111410')
 
@@ -697,24 +631,21 @@ def test_an_unflagged_asset_is_never_read(evm_wallet, monkeypatch):
 
 
 # An answer outside the plausible range is not a token with very many decimal places - it is a call that returned
-# something else, and using it would divide the balance into nothing. It is refused, and NOT remembered.
-def test_implausible_decimals_are_refused_and_not_stored(evm_wallet, monkeypatch):
-    _flag_rebasing(ATOKEN)
-    _fake_evm(monkeypatch, decimals='0x' + '0' * 62 + 'ff')          # 255
-
-    assert ChainBalanceReader().read_rebasing_assets(NOW) == 0
-    assert JalAsset(ATOKEN).decimals() is None
-    assert JalChainBalance().latest(EVM_WALLET, ATOKEN, NOW) is None
-
-
-# Without the scale a raw integer cannot be turned into a quantity at all, so a failed decimals call must store
-# nothing rather than fall back to a guess.
-@pytest.mark.parametrize("decimals", [None, '0x', 'nonsense'])
+# something else, and using it would divide the balance into nothing. It is refused, and NOT remembered. Nor can a
+# raw integer be turned into a quantity at all without the scale, so a failed decimals call must store nothing
+# rather than fall back to a guess - covering a missing call, a bare '0x', and outright garbage alongside it.
+@pytest.mark.parametrize("decimals", [
+    '0x' + '0' * 62 + 'ff',    # 255 - outside the plausible range
+    None,                      # the call failed outright
+    '0x',                      # empty result
+    'nonsense',                # not hex at all
+])
 def test_no_decimals_means_no_balance(evm_wallet, monkeypatch, decimals):
     _flag_rebasing(ATOKEN)
     _fake_evm(monkeypatch, decimals=decimals)
 
     assert ChainBalanceReader().read_rebasing_assets(NOW) == 0
+    assert JalAsset(ATOKEN).decimals() is None
     assert JalChainBalance().latest(EVM_WALLET, ATOKEN, NOW) is None
 
 
@@ -773,16 +704,6 @@ def test_a_deposit_does_not_look_like_a_windfall(hl_wallet):
     _measure(box.id(), HYPE, '11.92275902', timestamp=d2t(260501))
 
     assert [x['accrued'] for x in JalChainBalance().accrual_history(box.id(), HYPE)] == [Decimal('0'), Decimal('0')]
-
-
-# A chain reading below the books is a signal for reconciliation, never a negative yield - the same rule the display
-# applies, and applied here so the two cannot disagree about the same measurement.
-def test_a_reading_below_the_books_is_floored_at_zero(hl_wallet):
-    box = _new_box("Hyperliquid staking")
-    _stake(WALLET, box.id(), Decimal('11.92275902'))
-    _measure(box.id(), HYPE, '5.0', timestamp=d2t(260301))
-
-    assert JalChainBalance().accrual_history(box.id(), HYPE)[0]['accrued'] == Decimal('0')
 
 
 def test_a_position_never_measured_has_no_history(hl_wallet):

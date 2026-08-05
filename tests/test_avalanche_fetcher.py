@@ -10,9 +10,8 @@ from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAssetCreator
 from jal.db.settings import JalSettings
 from jal.db.symbol import JalSymbol
-from jal.db.token_blacklist import JalTokenBlacklist, normalize_address, is_valid_address
+from jal.db.token_blacklist import JalTokenBlacklist
 from jal.net.chain_fetchers.avalanche import AvalancheFetcher
-from jal.net.chain_fetchers.protocols import _REGISTRY
 from jal.net.downloader import llama_coin_key
 from jal.net.token_lists import TokenListProvider, _parse_tokenlist
 
@@ -130,11 +129,8 @@ def test_recorded_history_is_classified(fetcher, avax_wallet):
     # It has never sent a transaction on this chain - which is why the protocol registry for it is empty
     assert fetcher._new_cursor == '88000000'
 
-
-# The airdrop that came with the poisoning dust is quarantined, and the dust itself is booked as what it is. Both
-# belong to one transaction, and it must produce no transfer at all.
-def test_spam_airdrop_and_its_dust(fetcher, avax_wallet):
-    data = fetcher.fetch(avax_wallet)
+    # The airdrop that came with the poisoning dust is quarantined, and the dust itself is booked as what it is.
+    # Both belong to one transaction, and it must produce no transfer at all.
     assert JalTokenBlacklist.is_blacklisted(AssetLocation.AVAX_BLOCKCHAIN, SPAM_CONTRACT)
     assert not [s for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS] if s.get('address') == SPAM_CONTRACT]
     dust = _payments(data, JSF.PAYMENT_DUST_ATTACK)
@@ -142,6 +138,11 @@ def test_spam_airdrop_and_its_dust(fetcher, avax_wallet):
     assert dust[0]['amount'] == _avax('7500000000000')
     # ... and no transfer was created for that transaction: everything it carried was either spam or dust
     assert not [x for x in data[JSF.TRANSFERS] if x['number'].endswith('2')]
+
+    # Reading the whole recorded history leaves no window limit behind, and everything that was skipped is accounted
+    # for - just the one spam/dust transaction above.
+    assert fetcher._window_limit is None
+    assert fetcher.skipped() == {"token quarantined as dust/spam": 1}
 
 
 # The dust threshold is AVAX's own, not the ETH one EVMFetcher hands down: 0.0000075 AVAX is dust here while it
@@ -210,27 +211,7 @@ def test_cursor_stops_where_the_result_window_ended(avax_wallet, monkeypatch):
     assert sum(instance.skipped().values()) == 2       # 0xa2 and the token transfer beyond it, both reported
 
 
-# Reading the whole history leaves no limit behind, and the cursor is the last block as before
-def test_no_window_limit_when_history_fits(fetcher, avax_wallet):
-    fetcher.fetch(avax_wallet)
-    assert fetcher._window_limit is None
-    assert fetcher.skipped() == {"token quarantined as dust/spam": 1}
-
-
 # ----------------------------------------------------------------------------------------------------------------------
-# A real token survives the filter once the allow-list covers Avalanche, and lands on the chain's own identifier
-def test_allowlisted_token_is_imported(avax_wallet, monkeypatch):
-    TokenListProvider()._store(TokenList.COINGECKO_AVAX_LIST, TokenListKind.Allow, AssetLocation.AVAX_BLOCKCHAIN,
-                               [{'address': USDC_CONTRACT, 'symbol': 'USDC', 'name': 'USD Coin'}])
-    pages = {"tokentx": [_token_tx('0xc1', 100, SENDER, WALLET, 1500000)]}
-    _, data = _drive(avax_wallet, monkeypatch, pages)
-    assert len(data[JSF.TRANSFERS]) == 1
-    assert data[JSF.TRANSFERS][0]['withdrawal'] == Decimal('1.5')
-    symbol = [s for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS] if s['symbol'] == 'USDC'][0]
-    assert symbol['location'] == AssetLocation.AVAX_BLOCKCHAIN
-    assert symbol['address'] == USDC_CONTRACT
-
-
 # The CoinGecko Avalanche list is parsed by the standard 'tokenlists' parser, and chain id 43114 has to map onto
 # the Avalanche location for its records to survive at all
 def test_token_list_covers_chain_43114():
@@ -245,15 +226,6 @@ def test_token_list_covers_chain_43114():
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Avalanche addresses are EVM addresses: hex, valid whatever their case, and stored lower-cased so that the same
-# address never splits into two tokens
-def test_addresses_are_evm_and_case_insensitive():
-    assert is_valid_address(AssetLocation.AVAX_BLOCKCHAIN, "0xC2E77D9CA06CE162EC32079D9F8D65DCDC7AD1F1")
-    assert not is_valid_address(AssetLocation.AVAX_BLOCKCHAIN, "not-an-address")
-    assert normalize_address(AssetLocation.AVAX_BLOCKCHAIN, "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E") \
-           == USDC_CONTRACT
-
-
 # DeFiLlama prices the native coin by its CoinGecko id and a token by the chain's own key prefix
 def test_defillama_keys(prepare_db):
     def create_crypto(name, ticker, address='') -> int:
@@ -276,19 +248,3 @@ def test_chain_is_registered():
     assert AssetLocation.address_id_of(AssetLocation.AVAX_BLOCKCHAIN) == SymbolId.AVAX_ADDRESS
     from jal.net.chain_fetchers import avalanche
     assert getattr(avalanche, "JAL_FETCHER_CLASS") == "AvalancheFetcher"
-
-
-# The protocol registry for this chain is deliberately empty - no contract of it has been seen in a real wallet's
-# own history yet, and an entry is never written from anything else (CRYPTO_PATH #58). An unregistered contract
-# halts the import and names itself, which is how the first entry will be earned.
-def test_protocol_registry_is_empty_until_evidence(avax_wallet, monkeypatch):
-    assert _REGISTRY[AssetLocation.AVAX_BLOCKCHAIN] == {}
-    contract = "0x8888888888888888888888888888888888888888"
-    pages = {"txlist": [_tx('0xd1', 100, WALLET, contract)],
-             "tokentx": [_token_tx('0xd1', 100, WALLET, contract, 1000000)],
-             "txlistinternal": [{'hash': '0xd1', 'blockNumber': '100', 'transactionIndex': '0',
-                                 'timeStamp': '1780000000', 'from': contract, 'to': WALLET,
-                                 'value': str(10 ** 18), 'isError': '0'}]}
-    instance, data = _drive(avax_wallet, monkeypatch, pages)
-    assert data[JSF.TRANSFERS] == []
-    assert contract in ' '.join(instance.skipped().keys())

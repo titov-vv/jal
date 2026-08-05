@@ -83,15 +83,13 @@ def test_gas_fee_in_another_asset(wallets):
     assert _amount(WALLET_B, USDT) == Decimal('500')
     assert _amount(WALLET_B, TRX) == Decimal('0')      # gas never travels to the destination
 
-
-def test_gas_fee_creates_no_deal(wallets):
-    _buy(WALLET_A, d2t(210102), TRX, 100, '0.20')
-    _buy(WALLET_A, d2t(210102), USDT, 1000, '1.00')
-    _transfer(USDT, 500, d2t(210103), fee=10, fee_asset=TRX)
-    Ledger().rebuild(from_timestamp=0)
-
     # Gas is an expense and not a disposal, so it leaves no closed deal and realizes no profit or loss
     assert _closed_deals_of(TRX) == []
+
+    # It is shown in its own asset/currency, not the account currency, and at its own value
+    fee = Transfer(1, Transfer.Fee)
+    assert fee.value_currency() == 'TRX'               # the asset the fee was paid in, not the account currency
+    assert fee.value_change() == [Decimal('-10')]
 
 
 def test_gas_fee_in_the_transferred_asset(wallets):
@@ -109,17 +107,6 @@ def test_gas_fee_in_the_transferred_asset(wallets):
     # cost basis behind a balance of 50 - invisible until something is sold out of that account.
     assert _open_lots(WALLET_A, TRX) == Decimal('40')
     assert _open_lots(WALLET_B, TRX) == Decimal('50')
-
-
-def test_gas_fee_is_shown_in_its_own_asset(wallets):
-    _buy(WALLET_A, d2t(210102), TRX, 100, '0.20')
-    _buy(WALLET_A, d2t(210102), USDT, 1000, '1.00')
-    _transfer(USDT, 500, d2t(210103), fee=10, fee_asset=TRX)
-    Ledger().rebuild(from_timestamp=0)
-
-    fee = Transfer(1, Transfer.Fee)
-    assert fee.value_currency() == 'TRX'               # the asset the fee was paid in, not the account currency
-    assert fee.value_change() == [Decimal('-10')]
 
 
 def test_money_fee_is_unaffected(wallets):

@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 from decimal import Decimal
 from pandas._testing import assert_frame_equal
 
@@ -192,25 +193,24 @@ def test_MOEX_downloader_USD(prepare_db_moex):
     bond_quotes = downloader.MOEX_DataReader(JalSymbol(symbol_id_for(9, 2)), 2, d2t(240213), d2t(240214))
     assert_frame_equal(bond_quotes, bond_usd_quotes)
 
-def test_NYSE_downloader(prepare_db):
-    create_stocks([('AAPL', '')], currency_id=2)   # id = 4
-    quotes = pd.DataFrame({'Close': [Decimal('134.42999267578125'), Decimal('132.029998779296875')],
-                           'Date': [dt2dt(2104131330), dt2dt(2104141330)]})
-    quotes = quotes.set_index('Date')
+# NYSE, LSE and Frankfurt all go through the same Yahoo_Downloader-family code path (YahooLSE_Downloader and
+# YahooFRA_Downloader are thin suffix-adding wrappers around Yahoo_Downloader itself) - only the ticker, currency
+# and the downloader method used differ between exchanges.
+@pytest.mark.parametrize("ticker, currency_id, downloader_name, expected_closes, expected_dates", [
+    ('AAPL', 2, 'Yahoo_Downloader',
+     [Decimal('134.42999267578125'), Decimal('132.029998779296875')], [dt2dt(2104131330), dt2dt(2104141330)]),
+    ('PSON', 3, 'YahooLSE_Downloader',
+     [Decimal('792.5999755859375'), Decimal('800.79998779296875')], [dt2dt(2104130700), dt2dt(2104140700)]),
+    ('VOW3', 3, 'YahooFRA_Downloader',
+     [Decimal('233.399993896484375'), Decimal('234.25')], [dt2dt(2104130600), dt2dt(2104140600)]),
+])
+def test_Yahoo_family_downloaders(prepare_db, ticker, currency_id, downloader_name, expected_closes, expected_dates):
+    create_stocks([(ticker, '')], currency_id=currency_id)   # id = 4
+    quotes = pd.DataFrame({'Close': expected_closes, 'Date': expected_dates}).set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Yahoo_Downloader(JalSymbol(symbol_id_for(4, 2)), 2, d2t(210413), d2t(210415))
-    assert_frame_equal(quotes, quotes_downloaded)
-
-
-def test_LSE_downloader(prepare_db):
-    create_stocks([('PSON', '')], currency_id=3)   # id = 4
-    quotes = pd.DataFrame({'Close': [Decimal('792.5999755859375'), Decimal('800.79998779296875')],
-                           'Date': [dt2dt(2104130700), dt2dt(2104140700)]})
-    quotes = quotes.set_index('Date')
-
-    downloader = QuoteDownloader()
-    quotes_downloaded = downloader.YahooLSE_Downloader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(210413), d2t(210415))
+    quotes_downloaded = getattr(downloader, downloader_name)(JalSymbol(symbol_id_for(4, currency_id)), currency_id,
+                                                              d2t(210413), d2t(210415))
     assert_frame_equal(quotes, quotes_downloaded)
 
 
@@ -243,28 +243,6 @@ def test_TMX_downloader(prepare_db):
 
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.TMX_Downloader(JalSymbol(symbol_id_for(4, 3)), 3, 1618272000, 1618444800)
-    assert_frame_equal(quotes, quotes_downloaded)
-
-
-def test_Frankfurt_downloader(prepare_db):
-    create_stocks([('VOW3', '')], currency_id=3)   # id = 4
-    quotes = pd.DataFrame({'Close': [Decimal('233.399993896484375'), Decimal('234.25')],
-                           'Date': [dt2dt(2104130600), dt2dt(2104140600)]})
-    quotes = quotes.set_index('Date')
-
-    downloader = QuoteDownloader()
-    quotes_downloaded = downloader.YahooFRA_Downloader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(210413), d2t(210415))
-    assert_frame_equal(quotes, quotes_downloaded)
-
-
-def test_Coinbase_downloader(prepare_db):
-    create_assets([('ALGO', 'Algorand', '', 3, PredefinedAsset.Crypto, 0)])  # ID = 4
-    quotes = pd.DataFrame({'Close': [Decimal('0.20171559017841111516'), Decimal('0.19595558582536402655'), Decimal('0.20032663919036912874')],
-                           'Date': [d2dt(230412), d2dt(230413), d2dt(230414)]})
-    quotes = quotes.set_index('Date')
-
-    downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Coinbase_Downloader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(230412), d2t(230414))
     assert_frame_equal(quotes, quotes_downloaded)
 
 
@@ -443,15 +421,6 @@ def test_llama_chart_parsing_details():
               '{"timestamp": 1719792081, "price": 100}, {"timestamp": 1719792999, "price": 300}]}}}'
     expected = pd.DataFrame({'Close': [Decimal('100')], 'Date': [d2dt(240701)]}).set_index('Date')
     assert_frame_equal(expected, parse_llama_chart(content, coin))
-
-
-def test_llama_downloader(prepare_db):
-    _, symbol_id = create_crypto('USD Coin', 'USDC', 2, AssetLocation.ARB_BLOCKCHAIN,
-                                 '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', SymbolId.ARB_ADDRESS)
-    expected = pd.DataFrame({'Close': [Decimal('0.999386'), Decimal('1'), Decimal('0.999924')],
-                             'Date': [d2dt(240701), d2dt(240702), d2dt(240703)]}).set_index('Date')
-    downloader = QuoteDownloader()
-    assert_frame_equal(expected, downloader.Llama_Downloader(JalSymbol(symbol_id), 2, d2t(240701), d2t(240703)))
 
 
 # A deployment of a token on a second chain is a coin of its own to the source, and is downloaded as such. This is

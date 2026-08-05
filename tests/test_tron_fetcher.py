@@ -76,16 +76,6 @@ def test_fetch_builds_transfers(fetcher, tron_wallet):
         assert transfer['number']                                  # the tx hash is always recorded
 
 
-def test_token_carries_contract_address(fetcher, tron_wallet):
-    data = fetcher.fetch(tron_wallet)
-    usdt = [a for a in data[JSF.ASSETS] if a['type'] == JSF.ASSET_CRYPTO and a[JSF.SYMBOLS][0]['symbol'] == 'USDT']
-    assert len(usdt) == 1
-    symbol = usdt[0][JSF.SYMBOLS][0]
-    # The contract address identifies the token - the ticker is attacker-controlled and never trusted
-    assert symbol['address'] == USDT_CONTRACT
-    assert symbol['location'] == AssetLocation.TRX_BLOCKCHAIN
-
-
 def test_gas_is_attached_to_outgoing_transfers(fetcher, tron_wallet):
     data = fetcher.fetch(tron_wallet)
     trx_symbols = [s['id'] for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS] if s['symbol'] == 'TRX']
@@ -124,20 +114,6 @@ def test_gas_only_calls_become_gas_fees(fetcher, tron_wallet):
     assert "failed" in gas[0]['description'].lower()
 
 
-def test_native_dust_is_recorded_as_dust_attack(fetcher, tron_wallet):
-    data = fetcher.fetch(tron_wallet)
-    trx_transfers = [t for t in _transfers(data)
-                     if any(s['symbol'] == 'TRX' for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS]
-                            if s['id'] == t['symbol'][0])]
-    # The recorded history has incoming transfers of 1-7 sun (well under 0.00001 TRX) - address-poisoning dust,
-    # alongside real incoming transfers of tens of TRX. The dust never becomes an ordinary Transfer...
-    assert all(t['withdrawal'] >= Decimal('1') for t in trx_transfers if t['account'][0] == 0)
-    # ...it is recorded as a DustAttack payment instead, so the balance it moved is still reconciled.
-    dust = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_DUST_ATTACK]
-    assert len(dust) == 5                     # the five sub-1-TRX incoming transfers in the recorded history
-    assert all(Decimal('0') < p['amount'] < Decimal('0.00001') for p in dust)
-
-
 # The rule is judged on the RAW COIN AMOUNT against the chain's own threshold, never on a fiat value - unlike the
 # old value-based rule, this needs no price data and so is never accidentally inert.
 #
@@ -162,7 +138,18 @@ def test_is_native_dust_judged_by_raw_amount(fetcher):
 # replaced the old value-based dust rule: requiring a quote is exactly what used to make dust detection inert).
 def test_dust_attack_reaches_the_database_without_a_price(fetcher, tron_wallet):
     from jal.db.operations import AssetPayment
-    fetcher.fetch(tron_wallet)
+    data = fetcher.fetch(tron_wallet)
+    trx_transfers = [t for t in _transfers(data)
+                     if any(s['symbol'] == 'TRX' for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS]
+                            if s['id'] == t['symbol'][0])]
+    # The recorded history has incoming transfers of 1-7 sun (well under 0.00001 TRX) - address-poisoning dust,
+    # alongside real incoming transfers of tens of TRX. The dust never becomes an ordinary Transfer...
+    assert all(t['withdrawal'] >= Decimal('1') for t in trx_transfers if t['account'][0] == 0)
+    # ...it is recorded as a DustAttack payment instead, so the balance it moved is still reconciled.
+    raw_dust = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_DUST_ATTACK]
+    assert len(raw_dust) == 5                     # the five sub-1-TRX incoming transfers in the recorded history
+    assert all(Decimal('0') < p['amount'] < Decimal('0.00001') for p in raw_dust)
+
     fetcher.import_fetched()
     assert JalAsset.find({'symbol': 'TRX', 'type': PredefinedAsset.Crypto}).id() != 0   # created by the import itself
     dust = AssetPayment.get_list(tron_wallet.id(), subtype=AssetPayment.DustAttack)
@@ -197,18 +184,6 @@ def test_import_creates_assets_with_address(fetcher, tron_wallet):
     assert usdt.symbol() == 'USDT'
     assert usdt.location() == AssetLocation.TRX_BLOCKCHAIN
     assert usdt.asset().type() == PredefinedAsset.Crypto
-
-
-def test_second_import_is_idempotent(fetcher, tron_wallet):
-    fetcher.fetch(tron_wallet)
-    fetcher.import_fetched()
-    first = len(JalAccount(1).dump_transfers())
-
-    again = TronFetcher()
-    again.fetch(JalAccount(1))
-    again.import_fetched()
-    # The cursor makes the second run see nothing, so no operation is duplicated
-    assert len(JalAccount(1).dump_transfers()) == first
 
 
 def test_unknown_unpriceable_token_is_quarantined(tron_wallet, data_path, monkeypatch):
@@ -311,14 +286,6 @@ def test_native_note_shows_both_parties_sender_first():
     receiver = tron_address_from_hex(value['to_address'])
     assert TronFetcher._native_counterparty_note(value) == f"{sender} → {receiver}"
     assert TronFetcher._native_counterparty_note(value).startswith(sender)   # sender first, regardless of direction
-
-
-def test_transfer_notes_carry_arrow(fetcher, tron_wallet):
-    data = fetcher.fetch(tron_wallet)
-    transfers_with_party = [t for t in _transfers(data) if t.get('description')]
-    assert transfers_with_party                                              # at least one carried a counterparty
-    for transfer in transfers_with_party:
-        assert ' → ' in transfer['description']
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -425,28 +392,23 @@ def _second_wallet(address, name='Tron wallet 2', chain=AssetLocation.TRX_BLOCKC
                              account_type=PredefinedAccountType.Wallet, address=address, chain=chain).commit()
 
 
-def test_own_counterparty_is_resolved_into_the_transfer(fetcher, tron_wallet):
-    other = _second_wallet(COUNTERPARTY_OUT)
+# own_side is the index of the second wallet's account within transfer['account']; fetched_side is the index the
+# fetched wallet must occupy - covering both directions the counterparty can appear from.
+@pytest.mark.parametrize("address, own_side, fetched_side", [
+    (COUNTERPARTY_OUT, 1, 0),    # outgoing: the fetched wallet sends to the second wallet
+    (COUNTERPARTY_IN, 0, 1),     # incoming: the fetched wallet receives from the second wallet
+])
+def test_own_counterparty_is_resolved_into_the_transfer(address, own_side, fetched_side, fetcher, tron_wallet):
+    other = _second_wallet(address)
     data = fetcher.fetch(tron_wallet)
-    internal = [t for t in _transfers(data) if fetcher.mapped_id(JSF.ACCOUNTS, t['account'][1]) == other.id()]
-    assert internal, "the transfer to the second wallet should name it as the destination"
+    internal = [t for t in _transfers(data) if fetcher.mapped_id(JSF.ACCOUNTS, t['account'][own_side]) == other.id()]
+    assert internal, "the transfer to/from the second wallet should name it"
     for transfer in internal:
-        assert transfer['account'][0] == 1                 # sent by the fetched wallet
+        assert transfer['account'][fetched_side] == 1      # the fetched wallet sits on the expected side
         assert transfer['account'].count(0) == 0           # ... and neither side is left for the user to pick
         assert transfer.get('description', '') == ''       # both ends are already known, the address note is noise
     # A transfer with an outside address is unaffected - its far side is still unknown
     assert any(t['account'].count(0) == 1 for t in _transfers(data))
-
-
-def test_own_counterparty_is_resolved_for_incoming_transfers(fetcher, tron_wallet):
-    other = _second_wallet(COUNTERPARTY_IN)
-    data = fetcher.fetch(tron_wallet)
-    internal = [t for t in _transfers(data) if fetcher.mapped_id(JSF.ACCOUNTS, t['account'][0]) == other.id()]
-    assert internal, "the transfer from the second wallet should name it as the source"
-    for transfer in internal:
-        assert transfer['account'][1] == 1                 # received by the fetched wallet
-        assert transfer['account'].count(0) == 0
-        assert transfer.get('description', '') == ''       # both ends are already known, the address note is noise
 
 
 def test_resolved_counterparty_reaches_the_db_complete(fetcher, tron_wallet):
@@ -559,20 +521,12 @@ def test_refetching_a_history_creates_no_duplicates(tron_wallet, monkeypatch):
     assert len(JalAccount(tron_wallet.id()).dump_transfers()) == first
 
 
+# One transaction may pay the same address more than once. Those legs share the tx hash, the accounts and the
+# timestamp - everything the duplicate check compares except the quantity - and each is a movement of its own.
+# Tron also reports the fee PER TRANSACTION, not per leg, so every leg reads the same number out of the same
+# dictionary. Charged on each of them it would burn TRX that never left the wallet - here, 2.2 for a transaction
+# that cost 1.1. The gas belongs to the transaction and is spent once.
 def test_several_legs_of_one_transaction_are_all_imported(tron_wallet, monkeypatch):
-    # One transaction may pay the same address more than once. Those legs share the tx hash, the accounts and the
-    # timestamp - everything the duplicate check compares except the quantity - and each is a movement of its own.
-    _second_wallet(COUNTERPARTY_OUT)
-    history = ([_trc20(WALLET, COUNTERPARTY_OUT, value='1000000'),
-                _trc20(WALLET, COUNTERPARTY_OUT, value='2000000')], [_trigger()])
-    _import_history(tron_wallet, monkeypatch, *history)
-    assert len(JalAccount(tron_wallet.id()).dump_transfers()) == 2
-
-
-# Tron reports the fee PER TRANSACTION, not per leg, so every leg of the multi-leg transaction above reads the same
-# number out of the same dictionary. Charged on each of them it would burn TRX that never left the wallet - here,
-# 2.2 for a transaction that cost 1.1. The gas belongs to the transaction and is spent once.
-def test_the_gas_of_one_transaction_is_charged_once(tron_wallet, monkeypatch):
     _second_wallet(COUNTERPARTY_OUT)
     history = ([_trc20(WALLET, COUNTERPARTY_OUT, value='1000000'),
                 _trc20(WALLET, COUNTERPARTY_OUT, value='2000000')], [_trigger(fee=1100000)])

@@ -249,10 +249,18 @@ def _exchange() -> int:
 
 
 # The reading to keep is the CHAIN's - the block is when the movement happened - and the leg on a wallet account is
-# the chain's side of the pair. Here that is the arrival, dated 21 seconds before the exchange booked the withdrawal.
-def test_legs_of_one_transaction_that_disagree_are_stamped_with_the_chain_moment(wallets):
-    _transfer(_exchange(), None, 400, d2t(210103) + 21)
-    _transfer(None, WALLET_A, 400, d2t(210103))
+# the chain's side of the pair, whichever end of the pair that turns out to be.
+@pytest.mark.parametrize('chain_is_sender', [False, True], ids=['chain_receives', 'chain_sends'])
+def test_the_chain_moment_wins_whichever_end_it_is(wallets, chain_is_sender):
+    if chain_is_sender:
+        # Here the chain is the SENDING end and the exchange books the arrival earlier than the block.
+        _transfer(WALLET_A, None, 400, d2t(210103))
+        _transfer(None, _exchange(), 400, d2t(210103) - 3600)
+    else:
+        # Here the chain is the RECEIVING end - the arrival - dated 21 seconds before the exchange booked the
+        # withdrawal.
+        _transfer(_exchange(), None, 400, d2t(210103) + 21)
+        _transfer(None, WALLET_A, 400, d2t(210103))
 
     assert TransferSettlement().settle_all() == 1
 
@@ -260,17 +268,6 @@ def test_legs_of_one_transaction_that_disagree_are_stamped_with_the_chain_moment
     assert len(rows) == 1
     assert int(rows[0]['withdrawal_timestamp']) == d2t(210103)
     assert int(rows[0]['deposit_timestamp']) == d2t(210103)
-
-
-# ... and the same when the chain is the SENDING end and the exchange books the arrival earlier than the block
-def test_the_chain_moment_wins_whichever_end_it_is(wallets):
-    _transfer(WALLET_A, None, 400, d2t(210103))
-    _transfer(None, _exchange(), 400, d2t(210103) - 3600)
-
-    assert TransferSettlement().settle_all() == 1
-
-    rows = _stored()
-    assert int(rows[0]['withdrawal_timestamp']) == int(rows[0]['deposit_timestamp']) == d2t(210103)
 
 
 # When both ends are wallets nothing tells the two readings apart, so the earlier one is taken: it is the departure,
@@ -713,27 +710,25 @@ def _arb_wallet(name='ARB wallet 2', address=ARB2_ADDRESS, currency=USD, chain=A
                              account_type=PredefinedAccountType.Wallet, address=address, chain=chain).commit()
 
 
-def test_a_leg_settles_with_the_account_that_holds_the_address_it_names(wallets):
+# A leg settles with the account that holds the address it names whichever end it is on: a departure settles with
+# the account it names as its destination, and an arrival settles with the account it names as its source.
+@pytest.mark.parametrize('sending', [True, False], ids=['sending_leg', 'arriving_leg'])
+def test_a_leg_settles_with_the_account_that_holds_the_address_it_names(wallets, sending):
     other = _arb_wallet()
-    _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)
+    if sending:
+        _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)
+        expected = (WALLET_A, other.id())
+    else:
+        _transfer(None, WALLET_A, 400, d2t(210103), address=ARB2_ADDRESS)
+        expected = (other.id(), WALLET_A)
 
     assert TransferSettlement().settle_by_address() == 1
 
     rows = _stored()
     assert len(rows) == 1
-    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, other.id())
+    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == expected
     assert Decimal(rows[0]['withdrawal']) == Decimal('400')   # what the leg states about the movement is untouched
     assert rows[0]['counterparty_address'] == ''             # ... and the end it named is an account now, not an address
-
-
-def test_an_arrival_settles_with_the_account_it_names_as_its_source(wallets):
-    other = _arb_wallet()
-    _transfer(None, WALLET_A, 400, d2t(210103), address=ARB2_ADDRESS)
-
-    assert TransferSettlement().settle_by_address() == 1
-
-    rows = _stored()
-    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (other.id(), WALLET_A)
 
 
 def test_an_address_no_account_holds_leaves_the_leg_pending(wallets):
@@ -832,29 +827,31 @@ def test_an_address_paid_twice_by_one_transaction_is_left_for_the_user(wallets):
 # assertion rather than anything that can be deduced. What is tested here is what such an assertion is NOT allowed
 # to do - and that what it carries across is the cost basis, which is the one thing a settlement cannot invent.
 
-def test_an_assignment_fills_the_end_that_was_missing(wallets):
-    transfer = _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)
+# An assignment fills whichever end was missing: the account a departure is filled in with as its destination, or
+# the account an arrival names as the source it came from.
+@pytest.mark.parametrize('sending', [True, False], ids=['fills_the_deposit_end', 'fills_the_withdrawal_end'])
+def test_an_assignment_fills_the_end_that_was_missing(funded, sending):
+    if sending:
+        transfer = _transfer(WALLET_A, None, 400, d2t(210103), address=ARB2_ADDRESS)
 
-    assert TransferSettlement().assign_end(transfer.id(), WALLET_B, d2t(210104), Decimal('0')) == ''
+        assert TransferSettlement().assign_end(transfer.id(), WALLET_B, d2t(210104), Decimal('0')) == ''
 
-    rows = _stored()
-    assert len(rows) == 1                                     # the record is filled in, not merged into another
-    assert int(rows[0]['oid']) == transfer.id()
-    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
-    assert int(rows[0]['deposit_timestamp']) == d2t(210104)
-    assert Decimal(rows[0]['withdrawal']) == Decimal('400')   # what the leg said about the movement is untouched
-    assert rows[0]['counterparty_address'] == ''             # ... and the end it named is an account now
+        rows = _stored()
+        assert len(rows) == 1                                     # the record is filled in, not merged into another
+        assert int(rows[0]['oid']) == transfer.id()
+        assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
+        assert int(rows[0]['deposit_timestamp']) == d2t(210104)
+        assert Decimal(rows[0]['withdrawal']) == Decimal('400')   # what the leg said about the movement is untouched
+        assert rows[0]['counterparty_address'] == ''             # ... and the end it named is an account now
+    else:
+        transfer = _transfer(None, WALLET_B, 400, d2t(210104))
+        Ledger().rebuild(from_timestamp=0)     # the lots the assigned account holds are what the ledger has booked
 
+        assert TransferSettlement().assign_end(transfer.id(), WALLET_A, d2t(210103), Decimal('0')) == ''
 
-def test_an_assignment_names_the_account_an_arrival_came_from(funded):
-    transfer = _transfer(None, WALLET_B, 400, d2t(210104))
-    Ledger().rebuild(from_timestamp=0)     # the lots the assigned account holds are what the ledger has booked
-
-    assert TransferSettlement().assign_end(transfer.id(), WALLET_A, d2t(210103), Decimal('0')) == ''
-
-    rows = _stored()
-    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
-    assert int(rows[0]['withdrawal_timestamp']) == d2t(210103)
+        rows = _stored()
+        assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
+        assert int(rows[0]['withdrawal_timestamp']) == d2t(210103)
 
 
 def test_an_account_cannot_be_assigned_as_its_own_counterpart(wallets):

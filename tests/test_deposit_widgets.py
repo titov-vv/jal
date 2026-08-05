@@ -39,8 +39,6 @@ def test_operations_tabs_include_conversion(accounts):
     assert tabs.indexOf(tabs.widgets[LedgerTransaction.Conversion]) == LedgerTransaction.Conversion
     assert tabs.get_operations_list()[LedgerTransaction.Conversion] == "Conversion"
 
-
-def test_conversion_widget_prepare_new(accounts):
     widget = ConversionWidget()
     widget.prepareNew(1)
     assert widget.operation_type == LedgerTransaction.Conversion

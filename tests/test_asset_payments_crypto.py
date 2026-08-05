@@ -61,9 +61,10 @@ def test_staking_reward_opens_lot_at_market(wallet):
     assert AssetPayment(1).price() == Decimal('0.30')
 
 
-def test_staking_reward_needs_a_quote(wallet):
+@pytest.mark.parametrize('subtype', [AssetPayment.StakingReward, AssetPayment.TokenRentReturn])
+def test_income_payment_needs_a_quote(wallet, subtype):
     # Opening the lot at zero would silently turn the whole proceeds into gain on a later sale, so it is refused
-    _payment(AssetPayment.StakingReward, d2t(210202), '100')
+    _payment(subtype, d2t(210202), '100')
     # A LedgerError and not an unexpected exception: the rebuild stops but the data is sound, so the ledger
     # reports it as an incomplete build with a reason instead of a traceback
     with pytest.raises(LedgerError) as error:
@@ -122,31 +123,18 @@ def test_gas_fee_consumes_position_at_cost_basis(wallet):
     assert _open_lots() == Decimal('90')          # the open lots agree with the ledger
     assert _closed_deals() == []                  # gas is an expense, not a disposal - no deal, no profit or loss
 
-
-def test_gas_fee_books_cost_basis_to_costs(wallet):
-    create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 100.0, 0.20, 0.0)])
-    _payment(AssetPayment.GasFee, d2t(210202), '10')
-    Ledger().rebuild(from_timestamp=0)
-
     # 10 coins at a basis of 0.20 leave the position and arrive in Costs - equal values, so no P&L anywhere
     costs = JalDB._read("SELECT SUM(CAST(amount AS REAL)) FROM ledger WHERE book_account=:book AND otype=:otype",
                         [(":book", BookAccount.Costs), (":otype", LedgerTransaction.AssetPayment)])
     assert abs(float(costs) - 2.0) < 1e-9
 
 
-def test_gas_fee_needs_enough_of_the_asset(wallet):
+@pytest.mark.parametrize('subtype', [AssetPayment.GasFee, AssetPayment.TokenRent])
+def test_payment_needs_enough_of_the_asset(wallet, subtype):
     create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 5.0, 0.20, 0.0)])
-    _payment(AssetPayment.GasFee, d2t(210202), '10')
+    _payment(subtype, d2t(210202), '10')
     with pytest.raises(Exception):
         Ledger().rebuild(from_timestamp=0)
-
-
-def test_gas_fee_needs_no_quote(wallet):
-    # Unlike a staking reward, gas is valued from the lots it consumes, so it imports with no quote at all
-    create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 100.0, 0.20, 0.0)])
-    _payment(AssetPayment.GasFee, d2t(210202), '10')
-    Ledger().rebuild(from_timestamp=0)
-    assert _amount() == Decimal('90')
 
 
 def test_unpriced_reward_recovers_after_quotes_arrive(wallet):
@@ -218,21 +206,6 @@ def test_token_rent_leaves_the_wallet_at_its_own_basis(wallet):
     assert abs(float(costs) - 2.0) < 1e-9         # 10 coins at 0.20, so no P&L anywhere
 
 
-def test_token_rent_needs_no_quote(wallet):
-    # Like gas and unlike a reward: it is valued from the lots it consumes, so it books with no price history at all
-    create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 100.0, 0.20, 0.0)])
-    _payment(AssetPayment.TokenRent, d2t(210202), '10')
-    Ledger().rebuild(from_timestamp=0)
-    assert _amount() == Decimal('90')
-
-
-def test_token_rent_needs_the_coins_to_be_there(wallet):
-    create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 5.0, 0.20, 0.0)])
-    _payment(AssetPayment.TokenRent, d2t(210202), '10')
-    with pytest.raises(Exception):
-        Ledger().rebuild(from_timestamp=0)
-
-
 # The return arrives on whoever OWNED the token account, which need not be whoever paid, so nothing links it back to
 # the rent it reverses - it opens a lot at the quote of the moment it arrives, like any other inflow that cost the
 # receiving account nothing.
@@ -245,10 +218,3 @@ def test_token_rent_return_opens_a_lot_at_market(wallet):
     lots = JalAccount(WALLET).open_trades_list(JalAsset(TRX))
     assert len(lots) == 1 and lots[0].open_price(adjusted=True) == Decimal('0.5')
 
-
-def test_token_rent_return_needs_a_quote(wallet):
-    # Refused rather than opened at zero, exactly as a reward is: a zero basis would report the whole proceeds as
-    # gain when the coins are eventually sold
-    _payment(AssetPayment.TokenRentReturn, d2t(210202), '10')
-    with pytest.raises(LedgerError):
-        Ledger().rebuild(from_timestamp=0)

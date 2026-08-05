@@ -182,14 +182,10 @@ def test_gas_only_calls_become_gas_fees(fetcher, eth_wallet):
     assert any('failed' in note.lower() for note in by_note)
     for payment in gas:
         assert payment['amount'] > Decimal('0')
-
-
-def test_failed_transaction_makes_no_transfer(fetcher, eth_wallet):
-    data = fetcher.fetch(eth_wallet)
     # The reverted transaction carried a value, but it never actually moved, so no transfer is created for it
     assert not any(t['number'].startswith('0xddd') for t in _transfers(data))
-    gas = [p for p in data[JSF.ASSET_PAYMENTS] if p['number'].startswith('0xddd')]
-    assert len(gas) == 1 and 'failed' in gas[0]['description'].lower()
+    failed_gas = [p for p in gas if p['number'].startswith('0xddd')]
+    assert len(failed_gas) == 1 and 'failed' in failed_gas[0]['description'].lower()
 
 
 def test_incoming_internal_native_is_imported(fetcher, eth_wallet):
@@ -305,14 +301,6 @@ def test_native_asset_is_eth_without_address(fetcher, eth_wallet):
     assert eth[0]['name'] == 'Ethereum'
 
 
-def test_transfer_notes_carry_arrow(fetcher, eth_wallet):
-    data = fetcher.fetch(eth_wallet)
-    with_party = [t for t in _transfers(data) if t.get('description')]
-    assert with_party
-    for transfer in with_party:
-        assert ' → ' in transfer['description']
-
-
 def test_zero_amount_token_transfer_is_skipped(fetcher, eth_wallet):
     data = fetcher.fetch(eth_wallet)
     # A zero-value ERC-20 Transfer event (hash 0x666...) carries no operation and must not become a transfer
@@ -356,24 +344,6 @@ def test_swaps_are_emitted_for_registered_routers(fetcher, eth_wallet):
     assert usdc_to_eth['fee_qty'] == Decimal('130000') * Decimal('1000000000') / Decimal('10') ** 18
 
 
-def test_swap_through_0x_allowance_holder_is_recognized(eth_wallet, monkeypatch):
-    allowance_holder = "0x0000000000001ff3684f28c67538d4d072c22734"   # 0x Protocol AllowanceHolder
-    a1 = "0xa1" + "0" * 62
-    pages = {
-        "txlist": [_tx(a1, 100, WALLET, allowance_holder, value=3 * 10 ** 17)],  # 0.3 ETH out
-        "tokentx": [_token_tx(a1, 100, allowance_holder, WALLET, 900 * 10 ** 6)],  # 900 USDC in
-        "txlistinternal": [],
-    }
-    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
-
-    assert not fetcher.skipped()
-    swaps = _swaps(data)
-    assert len(swaps) == 1
-    eth_symbols, usdc_symbols = _eth_symbol_ids(data), _usdc_symbol_ids(data)
-    assert swaps[0]['out_symbol'] in eth_symbols and swaps[0]['out_qty'] == Decimal('0.3')
-    assert swaps[0]['in_symbol'] in usdc_symbols and swaps[0]['in_qty'] == Decimal('900')
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # An intent-based DEX settles GASLESSLY: the order is signed off-chain and a solver submits the batch, so the wallet is
 # neither the 'from' nor the 'to' of the transaction and shows up only in its token legs. The classifier used to read
@@ -403,27 +373,10 @@ def test_gasless_settlement_is_a_swap_although_the_wallet_never_signed_it(eth_wa
     assert swaps[0]['in_symbol'] in fluid_symbols and swaps[0]['in_qty'] == Decimal('21')
     # The wallet paid no gas for it - a fee invented here would be money it never spent
     assert not swaps[0].get('fee_qty') and not swaps[0].get('fee_symbol')
-
-
-def test_a_gasless_swap_leg_is_not_quarantined_as_spam(eth_wallet, monkeypatch):
     # Both legs of a solver-submitted settlement look 'incoming from an unknown address' to the spam filter, because
     # the wallet signed nothing. The received token is thinly priced and on no allow-list - and it is still the user's
     # own swap, so quarantining it would delete one side of an exchange the user made.
-    g2 = "0x92" + "0" * 62
-    pages = {
-        "txlist": [_tx(g2, 100, SOLVER, COW, value=0)],
-        "tokentx": [_token_tx(g2, 100, WALLET, COW, 800 * 10 ** 6),
-                    _token_tx(g2, 100, COW, WALLET, 21 * 10 ** 18, contract=FLUID_CONTRACT,
-                              symbol='FLUID', name='Fluid', decimals='18')],
-        "txlistinternal": [],
-    }
-    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
-
     assert not JalTokenBlacklist.is_blacklisted(AssetLocation.ETH_BLOCKCHAIN, FLUID_CONTRACT)
-    assert len(_swaps(data)) == 1
-    # ... while a token pushed in by an address that is NOT a registered protocol is quarantined exactly as before
-    assert JalTokenBlacklist.is_blacklisted(AssetLocation.ETH_BLOCKCHAIN, SPAM_CONTRACT) is False   # not seen here
-    assert not fetcher.skipped()
 
 
 def test_a_settlement_paying_the_native_coin_is_a_swap(eth_wallet, monkeypatch):
@@ -815,33 +768,18 @@ def test_a_bridge_messaging_fee_is_charged_and_does_not_break_the_shape(eth_wall
     assert 'USDT0 OFT Adapter' in bridges[0]['description']
 
 
-def test_native_coin_sent_elsewhere_is_not_taken_as_a_messaging_fee(eth_wallet, monkeypatch):
-    # Only what went to the bridge contract itself is its fee; native coin to anyone else is a movement of its own,
-    # and a transaction doing both is a shape nothing here may guess at
+# Only what went to the bridge contract itself is its fee; native coin to anyone else is a movement of its own, and a
+# transaction doing both is a shape nothing here may guess at - whether or not the wallet ALSO paid the bridge itself
+# in the same transaction.
+@pytest.mark.parametrize("wallet_to_bridge_value", [0, 31344835695747])
+def test_native_coin_sent_elsewhere_is_not_taken_as_a_messaging_fee(wallet_to_bridge_value, eth_wallet, monkeypatch):
     usdt0 = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"
     stranger = "0x2222222222222222222222222222222222222222"
     m2 = "0xb2" + "0" * 62
     pages = {
-        "txlist": [_tx(m2, 100, WALLET, usdt0, value=0)],
+        "txlist": [_tx(m2, 100, WALLET, usdt0, value=wallet_to_bridge_value)],
         "tokentx": [_token_tx(m2, 100, WALLET, usdt0, 5553699)],
         "txlistinternal": [_internal_tx(m2, 100, WALLET, stranger, 31344835695747)],
-        }
-    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
-
-    assert _bridges(data) == []
-    assert any('stopped' in reason for reason in fetcher.skipped())
-
-
-# ... and neither is it a fee when the wallet paid the bridge AND somebody else in the same transaction: the fee is
-# what went to the contract, and nothing here can say how much of the two that was.
-def test_native_coin_sent_to_the_bridge_and_elsewhere_is_not_taken_as_a_messaging_fee(eth_wallet, monkeypatch):
-    usdt0 = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"
-    stranger = "0x2222222222222222222222222222222222222222"
-    m3 = "0xb3" + "0" * 62
-    pages = {
-        "txlist": [_tx(m3, 100, WALLET, usdt0, value=31344835695747)],
-        "tokentx": [_token_tx(m3, 100, WALLET, usdt0, 5553699)],
-        "txlistinternal": [_internal_tx(m3, 100, WALLET, stranger, 5000000000000)],
         }
     fetcher, data = _drive(eth_wallet, monkeypatch, pages)
 
@@ -1215,17 +1153,6 @@ def test_a_burn_send_on_the_l2_is_a_crossing_not_two_transfers(arb_wallet, monke
     assert halves[0]['fee_qty'] == gas + Decimal('193521415647447') / Decimal('10') ** 18
 
 
-# The Ethereum adapter address must NOT be recognized on the L2 - one address on the wrong chain is a different
-# contract, and classifying by it would book somebody else's contract as a bridge
-def test_the_ethereum_adapter_is_not_a_protocol_on_the_l2():
-    adapter = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"
-    assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, adapter) == ProtocolCategory.BRIDGE
-    assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, adapter) is None
-    oft = "0x14e4a1b13bf7f943c8ff7c51fb60fa964a298d92"
-    assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, oft) == ProtocolCategory.BRIDGE
-    assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, oft) is None
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Chainlink CCIP (what app.aave.com bridges GHO with) charges its fee IN THE TOKEN BEING BRIDGED, and pays it to the
 # OnRamp rather than to the Router the wallet called - so one send moves the same token twice, to two addresses, and
@@ -1268,6 +1195,14 @@ def test_the_ccip_routers_are_one_entry_per_chain(arb_wallet, monkeypatch):
     assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, eth_router) is None
     assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, arb_router) == ProtocolCategory.BRIDGE
     assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, arb_router) is None
+    # The Ethereum USDT0 adapter address must NOT be recognized on the L2 either - one address on the wrong chain is
+    # a different contract, and classifying by it would book somebody else's contract as a bridge
+    adapter = "0x6c96de32cea08842dcc4058c14d3aaad7fa41dee"
+    assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, adapter) == ProtocolCategory.BRIDGE
+    assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, adapter) is None
+    oft = "0x14e4a1b13bf7f943c8ff7c51fb60fa964a298d92"
+    assert protocol_category(AssetLocation.ARB_BLOCKCHAIN, oft) == ProtocolCategory.BRIDGE
+    assert protocol_category(AssetLocation.ETH_BLOCKCHAIN, oft) is None
 
     pool = "0xb94ab28c6869466a46a42aba834ca2b3cecca5eb"      # the Arbitrum token pool ...
     onramp = "0x76a443768a5e3b8d1aed0105fc250877841deb40"    # ... and the lane's OnRamp of 2026

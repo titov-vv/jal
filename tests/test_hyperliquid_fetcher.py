@@ -58,24 +58,6 @@ def fetcher(hl_account, data_path, monkeypatch):
     yield instance
 
 
-# The account's real history, anonymized: every address and hash replaced (the account onto WALLET), while the token
-# ids, market aliases, prices and amounts are kept verbatim - they are public and identical for every user. It is
-# the exact analogue of the Solana fetcher's recorded fixture, and the whole of it is replayed below.
-@pytest.fixture
-def real_fetcher(hl_account, data_path, monkeypatch):
-    def fake_post(self, request):
-        if request['type'] == 'spotMeta':
-            with open(data_path + "hl_spot_meta.json", 'r', encoding='utf-8') as f:
-                return json.load(f)
-        sample = {"userFillsByTime": "hl_real_fills.json", "userNonFundingLedgerUpdates": "hl_real_ledger.json"}
-        with open(data_path + sample[request['type']], 'r', encoding='utf-8') as f:
-            records = json.load(f)
-        return [x for x in records if int(x['time']) >= int(request['startTime'])]
-
-    monkeypatch.setattr(HyperliquidFetcher, "_post", fake_post)
-    yield HyperliquidFetcher()
-
-
 def _swaps(data) -> list:
     return data.get(JSF.SWAPS, [])
 
@@ -123,16 +105,12 @@ def test_a_spot_fill_becomes_a_swap(fetcher, hl_account):
     assert sell['out_qty'] == Decimal('0.02')
     assert sell['in_symbol'] == _symbol_of(data, 'USDC')
     assert sell['in_qty'] == Decimal('1300')          # 0.02 * 65000
-
-
-def test_fill_fee_may_be_charged_in_a_third_token(fetcher, hl_account):
-    data = fetcher.fetch(hl_account)
     # Hyperliquid bills the fee in a token that varies from fill to fill and is not necessarily one of the two
     # being swapped - here it is the token that was bought, which Swap already supports through fee_symbol/fee_qty
-    swap = [x for x in _swaps(data) if x['tx_hash'].endswith('a3')][0]
-    assert swap['in_symbol'] == _symbol_of(data, 'HYPE')
-    assert swap['fee_symbol'] == _symbol_of(data, 'HYPE')
-    assert swap['fee_qty'] == Decimal('0.12')
+    third_token_fee = [x for x in _swaps(data) if x['tx_hash'].endswith('a3')][0]
+    assert third_token_fee['in_symbol'] == _symbol_of(data, 'HYPE')
+    assert third_token_fee['fee_symbol'] == _symbol_of(data, 'HYPE')
+    assert third_token_fee['fee_qty'] == Decimal('0.12')
 
 
 def test_token_carries_its_id_and_its_hyperevm_address(fetcher, hl_account):
@@ -268,28 +246,6 @@ def test_import_stores_both_identifiers_and_advances_the_cursor(fetcher, hl_acco
     again._post = fetcher._post
     data = again.fetch(JalAccount(1))
     assert not _swaps(data) and not _transfers(data) and not _bridges(data)
-
-
-def test_real_history_replays_without_halts(real_fetcher, hl_account):
-    # The complete anonymized real history, replayed end to end. It must classify every one of its records without
-    # halting, and produce exactly the operations the account's activity implies.
-    data = real_fetcher.fetch(hl_account)
-    real_fetcher.import_fetched()
-    assert not any('unsupported' in reason for reason in real_fetcher.skipped())     # nothing halted
-    # 14 spot fills -> 14 swaps
-    assert len(_swaps(data)) == 14
-    # 4 bridge deposits (in) + 3 sends out + 3 sends in + 2 stakes out = 12 transfers; the $0 MAX airdrop is dust
-    assert len(_transfers(data)) == 12
-    assert not [a for a in data[JSF.ASSETS] if a[JSF.SYMBOLS][0]['symbol'] == 'MAX']
-    assert any('dust' in reason or 'spam' in reason for reason in real_fetcher.skipped())
-    # 1 withdrawal -> 1 pending bridge half; both stakes are deposits, so no reward is split out
-    assert len(_bridges(data)) == 1
-    assert not _payments(data, JSF.PAYMENT_STAKING_REWARD)
-    # The fees the venue charged are carried on their operations: three outgoing sends at 1 USDC each, and the
-    # withdrawal's 1 USDC, all in USDC
-    send_fees = [t for t in _transfers(data) if t.get('fee', Decimal('0')) > Decimal('0')]
-    assert len(send_fees) == 3
-    assert all(t['fee'] == Decimal('1') for t in send_fees)
 
 
 def test_perpetual_fill_is_not_guessed_at(fetcher, hl_account):

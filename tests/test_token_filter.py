@@ -173,24 +173,19 @@ def test_allowlisted_token_is_imported(lists):
     assert not JalTokenBlacklist.is_blacklisted(AssetLocation.ETH_BLOCKCHAIN, ONEINCH_ETH)
 
 
-# Layer 2: an unknown worthless token received from a stranger is quarantined
-def test_dust_airdrop_is_blacklisted(lists):
+# Layer 2: the `_is_dust` condition (value is None or value < threshold) blacklists both an unknown worthless
+# token received from a stranger and one that can't be priced at all
+@pytest.mark.parametrize('value', [Decimal('0.01'), None], ids=['below_threshold', 'unpriceable'])
+def test_dust_or_unpriceable_token_is_blacklisted(lists, value):
     token_filter = TokenFilter(lists=lists)
     candidate = TokenCandidate(AssetLocation.ETH_BLOCKCHAIN, NEW_ETH, symbol="USDC",   # a fake 'USDC'
-                               incoming=True, value=Decimal('0.01'))
+                               incoming=True, value=value)
     assert token_filter.classify(candidate) == TokenVerdict.Blacklist
     assert not token_filter.accept(candidate)
     entry = JalTokenBlacklist(AssetLocation.ETH_BLOCKCHAIN, NEW_ETH)
     assert entry.blacklisted()
     assert entry.is_auto()
     assert entry.name_hint() == "USDC"
-
-
-# Layer 2: a token that can't be priced at all is dust as well
-def test_unpriceable_token_is_blacklisted(lists):
-    token_filter = TokenFilter(lists=lists)
-    candidate = TokenCandidate(AssetLocation.ETH_BLOCKCHAIN, NEW_ETH, incoming=True, value=None)
-    assert token_filter.classify(candidate) == TokenVerdict.Blacklist
 
 
 # Layer 2: a block-listed token is quarantined even if its transfer looks valuable
