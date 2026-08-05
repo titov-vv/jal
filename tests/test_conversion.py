@@ -9,6 +9,7 @@ from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage
+from jal.db.db import JalDB
 from jal.db.rebase_residue import RebaseResidue
 
 _WITH_SWAP = (LedgerTransaction.Trade, LedgerTransaction.Swap)   # what the Deals report asks for
@@ -252,4 +253,155 @@ def test_rebase_residue_finer_than_account_precision_is_refused(prepare_db_fifo)
     with pytest.raises(LedgerAssetShortage) as stop:
         Ledger().rebuild(from_timestamp=0)
     assert RebaseResidue().refusal_to_absorb(stop.value) != ''
+    assert not RebaseResidue().absorb(stop.value)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# REALIZING ACCRUED INTEREST. A rebasing position also earns real interest, and unlike the truncation crumb above it
+# is a quantity of real value: the position these figures come from had booked 7637.22561 aEthUSDG against 7810.33702
+# really held on chain - 2.27%, and $173. Nothing about its SIZE distinguishes that from a transaction that was
+# missed, which is why it is not a heuristic that decides but an independent measurement of what the chain holds.
+#
+# It is unrealized while the position is open and is recognized only when a withdrawal turns it into something the
+# wallet actually received - one operation per position lifetime, valued at the market of that day.
+_LEDGER_QTY = Decimal('7637.22561')          # what the books hold after supplying
+_CHAIN_QTY = Decimal('7810.33702')           # what the chain says is really there
+_ACCRUED = _CHAIN_QTY - _LEDGER_QTY          # 173.11141
+
+
+# Builds the position and stops the ledger on a withdrawal of 'withdrawn'. 'measured' is what the chain was last seen
+# holding - None when it was never read.
+def _rebasing_position(withdrawn, measured=_CHAIN_QTY):
+    from jal.db.chain_balance import JalChainBalance
+    from jal.constants import AssetData
+    from jal.db.db import JalDB
+    JalAccount(1).set_data(AccountData.Precision, 18)
+    create_stocks([('USDG', 'Stablecoin'), ('aEthUSDG', 'Lending receipt')], currency_id=2)
+    t_buy, t_supply, t_exit = d2t(220101), d2t(220201), d2t(220301)
+    create_trades(1, [(t_buy, t_buy, 4, _LEDGER_QTY, Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(t_supply, 4, str(_LEDGER_QTY), 5, str(_LEDGER_QTY))])
+    create_conversions(1, [(t_exit, 5, str(withdrawn), 4, str(withdrawn))])
+    create_quotes(5, 2, [(t_buy, Decimal('1')), (t_exit, Decimal('1'))])   # a reward has to be priced to be booked
+    # Only a token whose quantity can grow on its own may have a shortage explained as interest
+    JalDB()._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) VALUES(5, :dt, '1')",
+                  [(":dt", AssetData.Rebasing)], commit=True)
+    JalAsset(5).invalidate_cache()
+    if measured is not None:
+        JalChainBalance().store(d2t(220401), 1, 5, measured)
+    return t_exit
+
+
+# CASE 1 - the withdrawal fits inside what the books hold. There is no shortage, the ledger never stops, and the
+# interest stays unrealized and still in the position, which is exactly right: nothing has been taken out of it.
+def test_a_withdrawal_within_the_books_realizes_nothing(prepare_db_fifo):
+    from jal.db.chain_balance import JalChainBalance
+    t_exit = _rebasing_position(Decimal('3000'))
+    Ledger().rebuild(from_timestamp=0)                                  # completes, no shortage
+
+    assert JalAccount(1).get_asset_amount(t_exit, 5) == _LEDGER_QTY - Decimal('3000')
+    # The measurement survives untouched - the accrual is still there and still unrealized
+    assert JalChainBalance().latest(1, 5, d2t(220501))['amount'] == _CHAIN_QTY
+
+
+# CASE 2 - the withdrawal digs into the accrual without closing the position. The WHOLE tracked delta is recognized,
+# not just the part that was missing: booking only the shortage would empty the books while the chain still held a
+# remainder, and a ledger-driven portfolio would drop that remainder out of sight.
+def test_a_withdrawal_beyond_the_books_realizes_the_whole_accrual(prepare_db_fifo):
+    from jal.db.chain_balance import JalChainBalance
+    t_exit = _rebasing_position(Decimal('7700'))
+
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    assert stop.value.shortage() == Decimal('7700') - _LEDGER_QTY       # 62.77439, far past any crumb
+    assert RebaseResidue().refusal_to_absorb(stop.value) != ''          # not a rounding residue...
+    assert RebaseResidue().refusal_to_realize(stop.value) == ''         # ...but it is accrued interest
+    assert RebaseResidue().absorb(stop.value)
+
+    Ledger().rebuild(from_timestamp=0)                                  # completes now
+    # 7637.22561 + 173.11141 - 7700 = 110.33702, and the chain agrees - no orphaned remainder
+    assert JalAccount(1).get_asset_amount(t_exit, 5) == _CHAIN_QTY - Decimal('7700')
+    # The spent measurement is forgotten: compared against books that have just risen by the whole delta it would
+    # report the withdrawn quantity as a fresh accrual and recognize it a second time.
+    assert JalChainBalance().latest(1, 5, d2t(220501)) is None
+
+
+# The accrual is INCOME and is booked as one - valued at the market of the day, opening a lot at that basis. That is
+# the opposite of the truncation crumb, which comes in free precisely so that it moves no basis.
+def test_the_realized_accrual_is_income_at_market_value(prepare_db_fifo):
+    t_exit = _rebasing_position(Decimal('7700'))
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    RebaseResidue().absorb(stop.value)
+    Ledger().rebuild(from_timestamp=0)
+
+    payments = JalDB()._read_to_list(
+        "SELECT type, amount FROM asset_payments WHERE account_id=1 AND symbol_id=:s",
+        [(":s", symbol_id_for(5, 2))], named=True)
+    assert len(payments) == 1
+    assert int(payments[0]['type']) == 8                                # AssetPayment.StakingReward
+    assert Decimal(payments[0]['amount']) == _ACCRUED
+    # ...and it carried VALUE into the position. The ledger posting of a rebase crumb is worth exactly zero; this one
+    # is worth the accrued quantity at the market of the day, which is what makes it income rather than a correction.
+    booked = JalDB()._read_to_list(
+        "SELECT amount, value FROM ledger WHERE otype=2 AND account_id=1 AND asset_id=5 AND book_account=:assets",
+        [(":assets", BookAccount.Assets)], named=True)
+    assert len(booked) == 1
+    assert Decimal(booked[0]['amount']) == _ACCRUED
+    assert Decimal(booked[0]['value']) == _ACCRUED * Decimal('1')
+
+
+# CASE 3 - the full close. Everything the chain holds comes out, so the whole accrual is realized and the position
+# ends at exactly zero on both sides.
+def test_a_full_close_realizes_the_accrual_and_empties_the_position(prepare_db_fifo):
+    t_exit = _rebasing_position(_CHAIN_QTY)
+
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    assert stop.value.shortage() == _ACCRUED
+    assert RebaseResidue().absorb(stop.value)
+
+    Ledger().rebuild(from_timestamp=0)
+    assert JalAccount(1).get_asset_amount(t_exit, 5) == Decimal('0')
+    assert JalAccount(1).open_trades_list(JalAsset(5)) == []            # nothing left behind
+
+
+# CASE 4 - THE GUARD. A withdrawal asking for more than the chain was ever seen holding is not accrual: it is a
+# movement that was missed, and it must still stop the ledger dead. This is the case a size-and-value heuristic
+# cannot judge - 173 of interest and 200 of a missed transfer look alike by every measure except this one.
+def test_a_shortage_beyond_the_measured_balance_still_halts(prepare_db_fifo):
+    _rebasing_position(_CHAIN_QTY + Decimal('100'))
+
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    assert RebaseResidue().refusal_to_realize(stop.value) != ''
+    assert not RebaseResidue().absorb(stop.value)
+
+    with pytest.raises(LedgerAssetShortage):                            # and it stays stopped
+        Ledger().rebuild(from_timestamp=0)
+
+
+# Without a measurement there is nothing to judge the shortage against, so it is refused. An unread position behaves
+# exactly as it did before any of this existed.
+def test_an_unmeasured_position_is_never_absorbed(prepare_db_fifo):
+    _rebasing_position(Decimal('7700'), measured=None)
+
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    assert RebaseResidue().refusal_to_realize(stop.value) != ''
+    assert not RebaseResidue().absorb(stop.value)
+
+
+# The flag is the licence. On an ordinary token a shortage means a movement was missed - which is what the ledger
+# stopping is FOR - and no measurement may explain it away.
+def test_an_unflagged_asset_is_never_absorbed_as_accrual(prepare_db_fifo):
+    from jal.db.chain_balance import JalChainBalance
+    from jal.constants import AssetData
+    _rebasing_position(Decimal('7700'))
+    JalDB()._exec("DELETE FROM asset_data WHERE asset_id=5 AND datatype=:dt",
+                  [(":dt", AssetData.Rebasing)], commit=True)
+    JalAsset(5).invalidate_cache()
+
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    assert RebaseResidue().refusal_to_realize(stop.value) != ''
     assert not RebaseResidue().absorb(stop.value)
