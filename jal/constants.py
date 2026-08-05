@@ -10,7 +10,7 @@ class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 61
+    DB_REQUIRED_VERSION = 62
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'
@@ -323,6 +323,15 @@ class AssetData(PredefinedList, QObject):
     # exchange balance is fungible across chains and sits on none the user controls) or the native coin of a chain
     # JAL doesn't support (DOT, ALGO, ...). A price source is asked for it by this id.
     CoinGeckoId = 4
+    # Marks a REBASING receipt token - one whose on-chain balance grows on its own, with no transfer and no event
+    # behind it (an Aave aToken: balance = scaledBalance * the reserve's liquidityIndex, and the index rises every
+    # block). A fetcher can only book the movements a chain announces, so the ledger of such a token is structurally
+    # short of its real balance, and only an out-of-band balance read can say by how much.
+    # It is set BY HAND and never inferred from a ticker: an 'aEth...' prefix is a naming convention, not a property,
+    # and a wrongly flagged asset would have an invented quantity added to it. Share tokens (Fluid's fTokens,
+    # stkAAVE) must NOT carry it - their quantity is fixed and it is the price that accrues, which the quote source
+    # already reports correctly. Stored as 0/1.
+    Rebasing = 5
 
     def __init__(self):
         super().__init__()
@@ -330,13 +339,15 @@ class AssetData(PredefinedList, QObject):
             self.Tag: self.tr("Tag"),
             self.ExpiryDate: self.tr("expiry"),
             self.PrincipalValue: self.tr("principal"),
-            self.CoinGeckoId: self.tr("CoinGecko id")
+            self.CoinGeckoId: self.tr("CoinGecko id"),
+            self.Rebasing: self.tr("rebasing")
         }
         self._types = {
             self.Tag: "tag",
             self.ExpiryDate: "date",
             self.PrincipalValue: "float",
-            self.CoinGeckoId: "str"
+            self.CoinGeckoId: "str",
+            self.Rebasing: "int"
         }
 
     def get_type(self, type_id, default='') -> str:

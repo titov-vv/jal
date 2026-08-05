@@ -264,6 +264,39 @@ CREATE TABLE quotes (
 );
 CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
 
+-- Table: chain_balances - the balance an on-chain account REALLY holds of an asset, as the chain itself reports it.
+--
+-- It is VALUATION DATA, not operations, and it is deliberately kept out of the ledger. Two things make a chain
+-- balance drift away from the sum of the movements JAL imported, and neither of them is an economic event a fetcher
+-- could have missed:
+--   * a REBASING receipt token (an Aave aToken, see AssetData.Rebasing) grows through a protocol index that rises
+--     every block, emitting nothing at all;
+--   * a STAKING BOX accrues yield inside the container - Solana credits epoch rewards straight into the stake
+--     account, Hyperliquid auto-compounds them into the delegation - again with no transaction to import.
+-- In both cases the accrued quantity is an UNREALIZED gain, and JAL's convention for unrealized value is valuation
+-- data (a quote), not an operation: nobody books an operation when a stock ticks up. That the accrual arrives as
+-- quantity rather than as price is an implementation accident of the protocol, not a financial event. It is
+-- recognized as income only when it is REALIZED, at withdrawal, where the fetchers already split principal from
+-- yield.
+--
+-- Appended to, never updated: one row per (account, asset) per refresh, and the latest row drives the display, so
+-- the series is a per-position yield history for free. The unique key is (account, asset, timestamp) exactly as
+-- 'quotes' has, so two refreshes within one second replace rather than duplicate.
+--
+-- Rows exist only for what can actually grow - a flagged asset or a box of a venue known to accrue silently - so the
+-- table never fills up with the zero deltas of ordinary tokens. 'amount' is decimal-as-text, like ledger.amount and
+-- quotes.quote, because SQLite has no decimal type and money must never pass through a float.
+DROP TABLE IF EXISTS chain_balances;
+CREATE TABLE chain_balances (
+    id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    timestamp  INTEGER NOT NULL,                     -- when the balance was read from the chain
+    account_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    asset_id   INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    amount     TEXT    NOT NULL                      -- balance the chain reports, in human units
+);
+DROP INDEX IF EXISTS chain_balances_uniqueness;
+CREATE UNIQUE INDEX chain_balances_uniqueness ON chain_balances (account_id, asset_id, timestamp);
+
 -- Unknown/spam token policy: blacklisted tokens are never imported and never become assets/symbols,
 -- so scam names/tickers stay out of the asset tables entirely
 DROP TABLE IF EXISTS token_blacklist;
@@ -790,7 +823,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 61);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 62);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

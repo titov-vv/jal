@@ -42,6 +42,12 @@ class JalAsset(JalDB):
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '')
         self._principal = Decimal(self._principal) if self._principal else Decimal('0')
         self._coin_id = self._data.get('data', {}).get(AssetData.CoinGeckoId, '')
+        # Anything unreadable is taken as "not rebasing": the flag adds quantity to a position, so the safe reading
+        # of a value nobody can make sense of is the one that changes nothing.
+        try:
+            self._rebasing = int(self._data.get('data', {}).get(AssetData.Rebasing, 0)) != 0
+        except (ValueError, TypeError):
+            self._rebasing = False
         try:
             self._tag = JalTag(int(self._data.get('data', {}).get(AssetData.Tag, 0)))
         except (AttributeError, ValueError, TypeError):
@@ -393,6 +399,13 @@ class JalAsset(JalDB):
     # quote source is keyed by in that case - llama_coin_keys() in the downloader.
     def coin_id(self) -> str:
         return self._coin_id
+
+    # True for a rebasing receipt token - one whose on-chain balance grows with no transfer and no event behind it,
+    # so that the ledger is structurally short of the real quantity (see AssetData.Rebasing). It is what decides
+    # whether a balance is read from the chain and kept in 'chain_balances' at all: an asset that cannot grow gets no
+    # row, which is what keeps that table free of zero deltas.
+    def rebasing(self) -> bool:
+        return self._rebasing
 
     def tag(self) -> JalTag:
         return self._tag
