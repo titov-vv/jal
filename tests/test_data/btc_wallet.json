@@ -1,8 +1,8 @@
 {
   "_comment": [
     "Recorded shapes of Esplora (mempool.space) answers, rewritten onto the PUBLIC BIP84 test-vector",
-    "wallet ('abandon abandon ... about', m/84'/0'/0') - never a real user's addresses, see",
-    "tests/local_test_data.json.example. The two confirmed shapes that matter (an incoming receive and",
+    "wallet ('abandon abandon ... about', m/84'/0'/0') - never a real user's addresses, as an on-chain",
+    "address can't be anonymized afterwards. The two confirmed shapes that matter (an incoming receive and",
     "an outgoing spend with change) keep the satoshi values of the transactions they were recorded from;",
     "the self-move, the dust attack and the unconfirmed transaction are constructed, as no wallet",
     "validated so far has one.",

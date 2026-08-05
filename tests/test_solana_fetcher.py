@@ -17,7 +17,7 @@ from jal.net.chain_fetchers.solana import SolanaFetcher, _STAKE_PROGRAM
 from jal.net.token_lists import TokenListProvider
 
 # The wallet the recorded fixture was anonymized onto - deterministic, valid, and obviously not anyone's real
-# address (see tests/local_test_data.json.example on why an on-chain address must never be committed). Program ids
+# address - an on-chain address can't be anonymized afterwards, so a real one is never committed. Program ids
 # and token mints in the fixture are the real, public ones: they are the same for every user of the chain.
 WALLET = "JALW6VdPLoxJYjMAhBo5BK897aYkEYUpE9aSPaETA7KF"
 JUP_MINT = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"

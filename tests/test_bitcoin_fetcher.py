@@ -10,8 +10,8 @@ from jal.db.account import JalAccountCreator
 from jal.net.chain_fetchers.bitcoin import BitcoinFetcher, _GAP_LIMIT
 from jal.net.chain_fetchers.hd_wallet import ScriptType
 
-# The fixture wallet is the published BIP84 test vector, so no address in this file belongs to anybody (see
-# tests/local_test_data.json.example on why a real one must never be committed). Its account key is serialized with
+# The fixture wallet is the published BIP84 test vector, so no address in this file belongs to anybody - a real
+# one must never be committed, as an on-chain address can't be anonymized. Its account key is serialized with
 # 'xpub' version bytes although the account is BIP84 - a real exporter does that, and the script-type detection has
 # to survive it.
 RECEIVE_0 = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu"

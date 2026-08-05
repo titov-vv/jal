@@ -16,8 +16,8 @@ from jal.net.chain_fetchers.tron import TronFetcher, _METHOD_TRANSFER
 from jal.net.token_lists import TokenListProvider
 from jal.db.token_blacklist import JalTokenBlacklist
 
-# The address the fixtures were recorded for - a public wallet, never the address of a real user (see the note in
-# tests/local_test_data.json.example on why an on-chain address must not be committed)
+# The address the fixtures were recorded for - a public wallet, never the address of a real user, as an on-chain
+# address can't be anonymized afterwards
 WALLET = "TMuA6YqfCeX8EhbfYEg5y7S4DqzSJireY9"
 USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 

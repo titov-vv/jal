@@ -18,7 +18,7 @@ from jal.net.token_lists import TokenListProvider, _parse_tokenlist
 
 # The three fixtures beside this file are the real validation wallet's whole Avalanche history, anonymized: every
 # address and every transaction hash is replaced, and the block numbers and amounts are shifted so that no record
-# can be looked up on-chain and traced back (see tests/local_test_data.json.example on why that matters). What is
+# can be looked up on-chain and traced back - an address, once published, is a permanent record. What is
 # kept verbatim is what the classifier is judged by - the shape of each transaction, and the spam token's on-chain
 # name and ticker, which is what the filter has to reject.
 WALLET = "0x2222222222222222222222222222222222222222"

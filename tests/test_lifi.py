@@ -24,7 +24,7 @@ from jal.net.route import Confidence, Route, RouteLeg, RouteResolver
 from jal.net.route_resolvers import RouteResolvers
 from jal.widgets.bridge_match_dialog import BridgeMatchDialog
 
-# Never a real address: an on-chain address can't be anonymized afterwards (see tests/local_test_data.json.example).
+# Never a real address: an on-chain address can't be anonymized afterwards.
 # The same address is registered on both chains, which is how one wallet is normally held - and what makes the
 # destination account of an arrival a question of the CHAIN it landed on, not of the address alone.
 WALLET = "0x1111111111111111111111111111111111111111"

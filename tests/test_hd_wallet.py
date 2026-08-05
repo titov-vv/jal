@@ -2,13 +2,13 @@ import pytest
 from bip_utils import Bip39SeedGenerator, Bip44, Bip44Coins, Bip49, Bip49Coins, Bip84, Bip84Coins, Bip44Changes, \
     Base58Decoder, Base58Encoder
 
-from tests.fixtures import project_root, local_test_data
 from jal.net.chain_fetchers.hd_wallet import HDAccount, ScriptType, RECEIVE_BRANCH, CHANGE_BRANCH, \
     is_extended_key, preferred_script_type
 
 # The BIP39 test-vector mnemonic. It is published in the standard itself and its wallet is the most watched pile of
 # empty addresses in existence - which is exactly why derivation is checked against it and never against a wallet
-# somebody owns (see tests/local_test_data.json.example).
+# somebody owns: an on-chain address can't be anonymized afterwards, and publishing one ties its owner to a
+# permanent, complete record of their transactions and balances.
 TEST_MNEMONIC = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
 XPUB_VERSION = bytes.fromhex('0488b21e')
 
@@ -94,13 +94,25 @@ def test_malformed_keys_are_rejected(key):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# The one check against a wallet that really exists: the user's own key and the first address as their hardware
-# wallet displays it. Everything above proves JAL agrees with bip_utils; only this proves that both agree with the
-# device. Skipped for anyone without tests/local_test_data.json, and needs no network.
-def test_real_wallet_first_address(local_test_data):
-    wallet = local_test_data('bitcoin')
-    if 'first_address' not in wallet:
-        pytest.skip("No 'first_address' in the 'bitcoin' section of tests/local_test_data.json")
-    derived = HDAccount(wallet['xpub'])
-    # The key is BIP84 whatever its prefix claims - which is the trap this wallet exists to guard against
-    assert derived.address(RECEIVE_BRANCH, 0, ScriptType.P2WPKH) == wallet['first_address']
+# The one check against ground truth outside this codebase. Every test above derives its expectation with bip_utils,
+# so a wrong bip_utils would agree with itself and nothing would notice; these strings come from the BIP84 standard
+# instead. They are literals on purpose - deriving them would defeat the entire point of the test.
+BIP84_ACCOUNT_KEY = "zpub6rFR7y4Q2AijBEqTUquhVz398htDFrtymD9xYYfG1m4wAcvPhXNfE3EfH1r1ADqtfSdVCToUG868RvUUkgDKf31mGD" \
+                    "tKsAYz2oz2AGutZYs"
+BIP84_ADDRESSES = [(RECEIVE_BRANCH, 0, "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu"),
+                   (RECEIVE_BRANCH, 1, "bc1qnjg0jd8228aq7egyzacy8cys3knf9xvrerkf9g"),
+                   (CHANGE_BRANCH, 0, "bc1q8c6fshw2dlwun7ekn9qwf37cu2rn755upcp6el")]
+
+
+@pytest.mark.parametrize("branch, index, expected", BIP84_ADDRESSES)
+def test_addresses_match_the_published_standard(branch, index, expected):
+    assert HDAccount(BIP84_ACCOUNT_KEY).address(branch, index, ScriptType.P2WPKH) == expected
+
+
+# The account key a real exporter hands over may carry 'xpub' version bytes although the account is BIP84. That it
+# still derives the standard's own addresses is what a hardware wallet's display confirms by hand (decision #74).
+def test_published_addresses_survive_a_mislabelled_prefix():
+    as_xpub = Base58Encoder.CheckEncode(XPUB_VERSION + Base58Decoder.CheckDecode(BIP84_ACCOUNT_KEY)[4:])
+    assert as_xpub[:4] == 'xpub'
+    for branch, index, expected in BIP84_ADDRESSES:
+        assert HDAccount(as_xpub).address(branch, index, ScriptType.P2WPKH) == expected

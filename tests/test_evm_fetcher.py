@@ -16,8 +16,8 @@ from jal.net.chain_fetchers.fetcher import TransferMark
 from jal.net.chain_fetchers.protocols import _REGISTRY, ProtocolCategory, protocol_category, protocol_name
 from jal.net.token_lists import TokenListProvider
 
-# A sample wallet used only by the recorded fixtures - never the address of a real user (see the note in
-# tests/local_test_data.json.example on why an on-chain address must not be committed). The USDC contract is the
+# A sample wallet used only by the recorded fixtures - never the address of a real user, as an on-chain address
+# can't be anonymized afterwards. The USDC contract is the
 # real mainnet one, allow-listed below so its transfers survive the spam filter the way a real import would.
 WALLET = "0x1111111111111111111111111111111111111111"
 USDC_CONTRACT = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"

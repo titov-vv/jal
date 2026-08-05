@@ -14,7 +14,7 @@ from jal.net.chain_fetchers.hyperliquid import HyperliquidFetcher, _HaltImport
 from jal.net.downloader import llama_coin_keys
 
 # The account the recorded fixtures were anonymized onto - valid in shape and obviously nobody's real address
-# (see tests/local_test_data.json.example on why an on-chain address must never be committed). The token ids and
+# - an on-chain address can't be anonymized afterwards, so a real one is never committed. The token ids and
 # market aliases in the fixtures are the real, public ones: they are the same for every user of the venue.
 WALLET = "0xfa11ba11fa11ba11fa11ba11fa11ba11fa11ba11"
 PEER = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
