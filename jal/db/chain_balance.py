@@ -124,6 +124,36 @@ class JalChainBalance(JalDB):
             [(":asset_id", asset_id), (":timestamp", timestamp)])
         return bool(int(count)) if count else False
 
+    # The yield history of a position, as [{'timestamp', 'chain', 'ledger', 'accrued'}] oldest first.
+    #
+    # This is what the append-only table buys, and it costs nothing extra: every refresh already leaves a row behind,
+    # so the series exists whether or not anyone ever draws it. There is no API anywhere that would give it instead -
+    # a balance is only ever available for NOW - which is why it can only be accumulated going forward.
+    #
+    # 'accrued' is each measurement against the books AS THEY STOOD at that moment, not as they stand today: a
+    # deposit or a withdrawal since then moved the ledger, and comparing an old reading against today's quantity
+    # would draw a step that never happened. It is floored at zero on the same grounds the display rule uses - a
+    # chain reading below the books is a signal for reconciliation, never a negative yield.
+    #
+    # The series is LUMPY by nature, and that is honest rather than a defect: a point exists where a refresh
+    # happened, so the shape of the line says as much about how often quotes were updated as about the yield.
+    #
+    # One shape to expect and NOT to smooth away: a measurement taken while a custody leg was still unassigned shows
+    # the whole un-arrived deposit as accrual, and stays showing it after the leg is settled, because what was
+    # measured then really was that far apart. The display suppresses that case live (see accrual()), but here it is
+    # history and inventing a retroactive gate would hide a real reading. The chart shows both quantities behind
+    # every point for exactly this reason - a spike with the books far below the chain reads as what it is.
+    def accrual_history(self, account_id: int, asset_id: int) -> list:
+        import jal.db.account
+        account = jal.db.account.JalAccount(account_id)
+        series = []
+        for point in self.history(account_id, asset_id):
+            ledger = account.get_asset_amount(point['timestamp'], asset_id)
+            accrued = point['amount'] - ledger
+            series.append({'timestamp': point['timestamp'], 'chain': point['amount'], 'ledger': ledger,
+                           'accrued': accrued if accrued > Decimal('0') else Decimal('0')})
+        return series
+
     # Forgets the measurements of a position that is gone from both the chain and the books.
     #
     # Deletion is deliberately NOT eager: the stored delta is what the realization rule uses as its guard when a

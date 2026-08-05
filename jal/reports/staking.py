@@ -3,7 +3,8 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QAbstractTableModel
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QMessageBox, QMenu
 
 from jal.constants import AssetLocation
 from jal.db.asset import JalAsset
@@ -14,6 +15,8 @@ from jal.db.staking import JalStakingBox
 from jal.reports.reports import Reports
 from jal.ui.reports.ui_staking_report import Ui_StakingReportWidget
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
+from jal.widgets.icons import JalIcon
+from jal.widgets.accrual_chart import AccrualChartWindow
 from jal.widgets.mdi import MdiWidget
 
 JAL_REPORT_CLASS = "StakingReport"
@@ -112,9 +115,14 @@ class StakingListModel(QAbstractTableModel):
 
     # The box shown in a given row, or None if the row doesn't point at one
     def box(self, index) -> JalStakingBox:
+        record = self.record(index)
+        return record['box'] if record else None
+
+    # The whole row behind an index, for a caller that needs the asset too and not only the box it sits in
+    def record(self, index) -> dict:
         if not index.isValid() or index.row() >= len(self._data):
             return None
-        return self._data[index.row()]['box']
+        return self._data[index.row()]
 
     def updateView(self, timestamp=None, currency_id=None, show_closed=None):
         if timestamp is not None:
@@ -304,6 +312,8 @@ class StakingReportWindow(MdiWidget):
         self.ui.ReportCurrencyCombo.changed.connect(self.updateReport)
         self.ui.ClosedCheck.stateChanged.connect(self.updateReport)
         self.ui.ReportTableView.selectionModel().selectionChanged.connect(self.onBoxSelected)
+        self.ui.ReportTableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.ReportTableView.customContextMenuRequested.connect(self.onPositionContextMenu)
         self.ui.CloseButton.pressed.connect(self.closePosition)
         self.ui.SaveButton.pressed.connect(
             partial(self._parent.save_report, self.name, self.ui.ReportTableView.model()))
@@ -327,6 +337,28 @@ class StakingReportWindow(MdiWidget):
                                     currency_id=self.ui.ReportCurrencyCombo.selected_id,
                                     show_closed=self.ui.ClosedCheck.isChecked())
         self.details_model.setBox(self._selected(), self._timestamp())
+
+    # The 'Accrued' column says what a position has earned right now; this draws how it got there. The series is the
+    # 'chain_balances' history, which every quotes update leaves a row in - so it costs no extra request and exists
+    # whether or not anyone opens it.
+    @Slot()
+    def onPositionContextMenu(self, pos):
+        index = self.ui.ReportTableView.indexAt(pos)
+        if not index.isValid():
+            return
+        record = self.boxes_model.record(index)
+        if record is None or record['asset'] is None:
+            return
+        menu = QMenu(self.ui.ReportTableView)
+        action = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show accrual chart"),
+                         parent=self.ui.ReportTableView)
+        action.triggered.connect(partial(self.showAccrualChart, record['box'].id(), record['asset'].id()))
+        menu.addAction(action)
+        menu.popup(self.ui.ReportTableView.viewport().mapToGlobal(pos))
+
+    @Slot()
+    def showAccrualChart(self, account_id, asset_id):
+        self._parent.mdi_area().addSubWindow(AccrualChartWindow(account_id, asset_id))
 
     @Slot()
     def onBoxSelected(self, _selected=None, _deselected=None):

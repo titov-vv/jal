@@ -11,6 +11,8 @@ from jal.widgets.mdi import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
 from jal.db.common_models import TagTreeModel
 from jal.widgets.icons import JalIcon
+from jal.db.chain_balance import JalChainBalance
+from jal.widgets.accrual_chart import AccrualChartWindow
 from jal.widgets.price_chart import ChartWindow
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import TagsListDialog
@@ -80,6 +82,15 @@ class PortfolioReportWindow(MdiWidget):
             actionShowChart = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show Price Chart"), parent=self.ui.PortfolioTreeView)
             actionShowChart.triggered.connect(partial(self.showPriceChart, index))
             contextMenu.addAction(actionShowChart)
+            # Offered beside the price chart because they are the two independent halves of what a position did: one
+            # draws what a unit is worth, the other how many units appeared with no operation behind them. It is
+            # shown only where there is something to draw - i.e. for the handful of positions whose balance is read
+            # from a chain at all.
+            if self._has_accrual_history(index):
+                actionAccrual = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show Accrual Chart"),
+                                        parent=self.ui.PortfolioTreeView)
+                actionAccrual.triggered.connect(partial(self.showAccrualChart, index))
+                contextMenu.addAction(actionAccrual)
             tax_submenu = contextMenu.addMenu(JalIcon[JalIcon.TAX], self.tr("Estimate tax"))
             actionEstimateTaxPt = QAction(icon=JalIcon.country_flag('pt'), text=self.tr("Portugal"), parent=self.ui.PortfolioTreeView)
             actionEstimateTaxPt.triggered.connect(partial(self.estimateSaleTax, index, 'pt'))
@@ -105,6 +116,16 @@ class PortfolioReportWindow(MdiWidget):
         model = index.model()
         account, asset, currency, asset_qty = model.get_data_for_tax(index)
         self._parent.mdi_area().addSubWindow(ChartWindow(account, asset, currency, self.ui.PortfolioDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch()))
+
+    # True when this row's position has been measured on chain more than once - anything less has no line to draw
+    def _has_accrual_history(self, index) -> bool:
+        account, asset, _currency, _qty = index.model().get_data_for_tax(index)
+        return len(JalChainBalance().history(account, asset)) > 1
+
+    @Slot()
+    def showAccrualChart(self, index):
+        account, asset, _currency, _qty = index.model().get_data_for_tax(index)
+        self._parent.mdi_area().addSubWindow(AccrualChartWindow(account, asset))
 
     @Slot()
     def estimateSaleTax(self, index, country_code):

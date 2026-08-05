@@ -745,3 +745,82 @@ def test_chains_not_selected_are_not_asked(evm_wallet, monkeypatch):
     assert ChainBalanceReader().read_rebasing_assets(NOW, locations=[AssetLocation.ARB_BLOCKCHAIN]) == 0
     assert asked == []
     assert ChainBalanceReader().read_rebasing_assets(NOW, locations=[AssetLocation.ETH_BLOCKCHAIN]) == 1
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# THE YIELD HISTORY. The append-only table IS the series, so it costs nothing beyond the row each refresh already
+# leaves behind - and there is no API that would give it instead, since a balance is only ever available for NOW.
+def test_the_history_is_measured_against_the_books_of_that_moment(hl_wallet):
+    box = _new_box("Hyperliquid staking")
+    _stake(WALLET, box.id(), Decimal('6.79524'), timestamp=d2t(260201))
+    _measure(box.id(), HYPE, '6.80', timestamp=d2t(260301))
+    # ...a top-up moves the books, and every reading after it has to be judged against the NEW quantity
+    _stake(WALLET, box.id(), Decimal('5.12751902'), timestamp=d2t(260401))
+    _measure(box.id(), HYPE, '11.99462482', timestamp=d2t(260501))
+
+    series = JalChainBalance().accrual_history(box.id(), HYPE)
+    assert [x['ledger'] for x in series] == [Decimal('6.79524'), Decimal('11.92275902')]
+    assert [x['accrued'] for x in series] == [Decimal('0.00476'), Decimal('0.07186580')]
+
+
+# A deposit raises both sides at once, so it must not show up as a jump in the yield - which is exactly what
+# comparing old readings against today's quantity would produce.
+def test_a_deposit_does_not_look_like_a_windfall(hl_wallet):
+    box = _new_box("Hyperliquid staking")
+    _stake(WALLET, box.id(), Decimal('6.79524'), timestamp=d2t(260201))
+    _measure(box.id(), HYPE, '6.79524', timestamp=d2t(260301))
+    _stake(WALLET, box.id(), Decimal('5.12751902'), timestamp=d2t(260401))
+    _measure(box.id(), HYPE, '11.92275902', timestamp=d2t(260501))
+
+    assert [x['accrued'] for x in JalChainBalance().accrual_history(box.id(), HYPE)] == [Decimal('0'), Decimal('0')]
+
+
+# A chain reading below the books is a signal for reconciliation, never a negative yield - the same rule the display
+# applies, and applied here so the two cannot disagree about the same measurement.
+def test_a_reading_below_the_books_is_floored_at_zero(hl_wallet):
+    box = _new_box("Hyperliquid staking")
+    _stake(WALLET, box.id(), Decimal('11.92275902'))
+    _measure(box.id(), HYPE, '5.0', timestamp=d2t(260301))
+
+    assert JalChainBalance().accrual_history(box.id(), HYPE)[0]['accrued'] == Decimal('0')
+
+
+def test_a_position_never_measured_has_no_history(hl_wallet):
+    box = _new_box("Hyperliquid staking")
+    _stake(WALLET, box.id(), Decimal('11.92275902'))
+
+    assert JalChainBalance().accrual_history(box.id(), HYPE) == []
+
+
+# The window builds, draws the series and says so plainly when there is not enough of one yet - an empty chart here
+# means "not measured yet" and never "nothing was earned".
+def test_the_accrual_chart_window_builds(hl_wallet):
+    from jal.widgets.accrual_chart import AccrualChartWindow
+    box = _new_box("Hyperliquid staking")
+    _stake(WALLET, box.id(), Decimal('11.92275902'))
+    for day, amount in ((260301, '11.93'), (260401, '11.96'), (260501, '11.99462482')):
+        _measure(box.id(), HYPE, amount, timestamp=d2t(day))
+
+    window = AccrualChartWindow(box.id(), HYPE)
+    assert window.ready
+    assert 'HYPE' in window.windowTitle()
+
+    # ...and one measurement is not a line
+    other = _new_box("Hyperliquid staking #2")
+    _stake(WALLET, other.id(), Decimal('1'), timestamp=d2t(260202))
+    _measure(other.id(), HYPE, '1.1', timestamp=d2t(260301))
+    assert AccrualChartWindow(other.id(), HYPE).ready
+
+
+# The vertical axis starts at zero, so a position that grew by a hundredth of a percent is not drawn as a dramatic
+# climb - the size of the accrual relative to nothing is the whole point of the picture.
+def test_the_accrual_axis_starts_at_zero(hl_wallet):
+    from jal.widgets.accrual_chart import AccrualChartWindow
+    series = [{'timestamp': d2t(260301), 'chain': Decimal('11.93'), 'ledger': Decimal('11.92'),
+               'accrued': Decimal('0.01')},
+              {'timestamp': d2t(260501), 'chain': Decimal('11.99'), 'ledger': Decimal('11.92'),
+               'accrued': Decimal('0.07')}]
+    bounds = AccrualChartWindow._range(series)
+
+    assert bounds[2] == 0
+    assert bounds[3] >= Decimal('0.07')
