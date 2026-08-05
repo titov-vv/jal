@@ -9,7 +9,10 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.chain_balance import JalChainBalance
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
+from jal.db.settings import JalSettings
+from jal.db.db import JalDB
 from jal.db.staking import JalStakingBox
+from jal.db.symbol import JalSymbol
 from jal.net.chain_balances import ChainBalanceReader
 
 HYPE = 4                       # the asset created by the fixture below
@@ -225,3 +228,186 @@ def test_amounts_keep_every_decimal(hl_wallet):
     storage.store(d2t(260801), 1, HYPE, Decimal('11.99462482'))
 
     assert storage.latest(1, HYPE, d2t(260801))['amount'] == Decimal('11.99462482')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Solana native staking - the same silent accrual as Hyperliquid's (epoch rewards are credited straight into the
+# stake account, with no transaction and no event), read a completely different way because a stake account IS an
+# address on the chain.
+STAKE_A = 'StakeAcct1111111111111111111111111111111111'
+STAKE_B = 'StakeAcct2222222222222222222222222222222222'
+SOL_ADDRESS = 'SoLWaLLet2222222222222222222222222222222222'
+STAKE_PROGRAM = 'Stake11111111111111111111111111111111111111'
+
+
+# Ids are looked up rather than hardcoded: this fixture stacks on top of the Hyperliquid one, so both the account
+# and the asset land on whatever number the previous fixture left free.
+SOL_WALLET = 0
+SOL = 0
+
+
+@pytest.fixture
+def sol_wallet(hl_wallet):
+    global SOL_WALLET, SOL
+    JalSettings().setValue("ApiKey_Helius", "test-key")
+    SOL_WALLET = JalAccountCreator(currency_id=USD, number='', name='Solana wallet', investing=1, organization=1,
+                                   precision=9, account_type=PredefinedAccountType.Wallet, address=SOL_ADDRESS,
+                                   chain=AssetLocation.SOL_BLOCKCHAIN).commit().id()
+    create_assets([('SOL', 'Solana', '', USD, PredefinedAsset.Crypto, 0)])
+    SOL = JalSymbol(symbol_id_for_ticker('SOL')).asset().id()
+    create_trades(SOL_WALLET, [(d2t(260101), d2t(260101), SOL, Decimal('50'), Decimal('100'), Decimal('0'))])
+    Ledger().rebuild(from_timestamp=0)
+    yield
+
+
+def symbol_id_for_ticker(ticker) -> int:
+    return JalDB._read("SELECT id FROM asset_symbol WHERE symbol=:ticker ORDER BY id LIMIT 1", [(":ticker", ticker)])
+
+
+def _sol_box(name, address) -> JalStakingBox:
+    return JalStakingBox.create(JalAccount(SOL_WALLET), name, protocol='Solana staking',
+                                chain=AssetLocation.SOL_BLOCKCHAIN, address=address)
+
+
+def _stake_sol(box_id, amount, timestamp=d2t(260201)):
+    LedgerTransaction.create_new(LedgerTransaction.Transfer, {
+        'withdrawal_timestamp': timestamp, 'withdrawal_account': SOL_WALLET, 'withdrawal': str(amount),
+        'deposit_timestamp': timestamp, 'deposit_account': box_id, 'deposit': str(amount),
+        'number': '', 'note': '', 'symbol_id': symbol_id_for(SOL)}).oid()
+    Ledger().rebuild(from_timestamp=0)
+
+
+# Answers 'getAccountInfo' per address, so a test may describe a whole wallet's worth of stake accounts at once.
+def _fake_rpc(monkeypatch, by_address):
+    asked = []
+
+    def fake_post(self, url, request):
+        address = request['params'][0]
+        asked.append(address)
+        return by_address.get(address, {'jsonrpc': '2.0', 'id': 1, 'result': {'value': None}})
+    monkeypatch.setattr(ChainBalanceReader, "_post", fake_post)
+    return asked
+
+
+def _stake_account(lamports, owner=STAKE_PROGRAM):
+    return {'jsonrpc': '2.0', 'id': 1, 'result': {'value': {'lamports': lamports, 'owner': owner, 'data': ['', 'base64']}}}
+
+
+# The lamports of the stake account ARE the position, and the rent-exempt reserve inside them is deliberately NOT
+# deducted: the fetcher books the whole native delta when the stake is made, so the recorded principal contains the
+# reserve too. Subtracting it here would invent a shortfall on every Solana box. Figures are the real shape of the
+# validation wallet - a stake of 5.90228288 SOL that the chain has grown to 6.053491451.
+def test_stake_account_lamports_are_the_box_balance(sol_wallet, monkeypatch):
+    box = _sol_box("SOL staking", STAKE_A)
+    _stake_sol(box.id(), Decimal('5.90228288'))
+    _fake_rpc(monkeypatch, {STAKE_A: _stake_account(6053491451)})
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 1
+    assert JalChainBalance().latest(box.id(), SOL, NOW)['amount'] == Decimal('6.053491451')
+
+
+def test_solana_accrual_is_the_difference_from_the_ledger(sol_wallet, monkeypatch):
+    box = _sol_box("SOL staking", STAKE_A)
+    _stake_sol(box.id(), Decimal('5.90228288'))
+    _fake_rpc(monkeypatch, {STAKE_A: _stake_account(6053491451)})
+    ChainBalanceReader().read_staking_boxes(NOW)
+
+    ledger = box.holdings(NOW)[0]['amount']
+    assert JalChainBalance().latest(box.id(), SOL, NOW)['amount'] - ledger == Decimal('0.151208571')
+
+
+# A Solana box is asked about ITS OWN address - a stake account is a real account on the chain, so unlike a venue's
+# internal balance there is no wallet to resolve and nothing to disambiguate.
+def test_a_solana_box_is_asked_about_its_own_stake_account(sol_wallet, monkeypatch):
+    box = _sol_box("SOL staking", STAKE_A)
+    _stake_sol(box.id(), Decimal('5.90228288'))
+    asked = _fake_rpc(monkeypatch, {STAKE_A: _stake_account(6053491451)})
+    ChainBalanceReader().read_staking_boxes(NOW)
+
+    assert asked == [STAKE_A]
+
+
+# The contrast with Hyperliquid, and the reason the "several boxes" guard must NOT be applied here: every stake
+# account has its own address and its own balance, so a wallet staking to several validators is perfectly ordinary
+# and each of its boxes is measured on its own. Applying the venue guard would silence all of them.
+def test_several_solana_boxes_on_one_wallet_are_all_read(sol_wallet, monkeypatch):
+    first = _sol_box("SOL staking A", STAKE_A)
+    second = _sol_box("SOL staking B", STAKE_B)
+    _stake_sol(first.id(), Decimal('5.90228288'))
+    _stake_sol(second.id(), Decimal('2'))
+    _fake_rpc(monkeypatch, {STAKE_A: _stake_account(6053491451), STAKE_B: _stake_account(2100000000)})
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 2
+    assert JalChainBalance().latest(first.id(), SOL, NOW)['amount'] == Decimal('6.053491451')
+    assert JalChainBalance().latest(second.id(), SOL, NOW)['amount'] == Decimal('2.1')
+
+
+# A stake account is closed once it is emptied, and the chain then reports it as simply not existing. That is the
+# ordinary end of a position, not a failure - so zero is recorded as the honest measurement rather than the box
+# freezing at its last reading. It is also what lets the books be seen still holding what the chain no longer has.
+def test_a_closed_stake_account_is_recorded_as_zero(sol_wallet, monkeypatch):
+    box = _sol_box("SOL staking", STAKE_A)
+    _stake_sol(box.id(), Decimal('5.90228288'))
+    _fake_rpc(monkeypatch, {STAKE_A: {'jsonrpc': '2.0', 'id': 1, 'result': {'value': None}}})
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 1
+    assert JalChainBalance().latest(box.id(), SOL, NOW)['amount'] == Decimal('0')
+
+
+# The one check that makes reading a bare address safe. A box carries its container's address, and if that address
+# were ever wrong - mistyped, or pointing at an ordinary wallet - the whole balance sitting there would be read as
+# this position's staked amount. Only the stake program owning the account proves it is a stake account at all.
+def test_an_address_that_is_not_a_stake_account_is_refused(sol_wallet, monkeypatch):
+    box = _sol_box("SOL staking", STAKE_A)
+    _stake_sol(box.id(), Decimal('5.90228288'))
+    _fake_rpc(monkeypatch, {STAKE_A: _stake_account(900000000000, owner='11111111111111111111111111111111')})
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 0
+    assert JalChainBalance().latest(box.id(), SOL, NOW) is None
+
+
+# An RPC failure is an 'error' object and must never be confused with the null that means "no such account" - one is
+# "we could not ask", the other is "it is genuinely gone", and only the second is a measurement.
+@pytest.mark.parametrize("answer", [
+    {'jsonrpc': '2.0', 'id': 1, 'error': {'code': -32603, 'message': 'Internal error'}},
+    {'jsonrpc': '2.0', 'id': 1},                                       # no 'result' at all
+    {'jsonrpc': '2.0', 'id': 1, 'result': {'value': {'owner': STAKE_PROGRAM}}},   # no 'lamports'
+    [],                                                                # not a dict
+])
+def test_a_failed_stake_account_call_stores_nothing(sol_wallet, monkeypatch, answer):
+    box = _sol_box("SOL staking", STAKE_A)
+    _stake_sol(box.id(), Decimal('5.90228288'))
+    _fake_rpc(monkeypatch, {STAKE_A: answer})
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 0
+    assert JalChainBalance().latest(box.id(), SOL, NOW) is None
+
+
+# Without a key nothing can be asked, and that is a configuration problem to be reported rather than a balance of
+# zero to be recorded.
+def test_no_helius_key_reads_nothing(sol_wallet, monkeypatch):
+    JalSettings().setValue("ApiKey_Helius", "")
+    box = _sol_box("SOL staking", STAKE_A)
+    _stake_sol(box.id(), Decimal('5.90228288'))
+    asked = _fake_rpc(monkeypatch, {STAKE_A: _stake_account(6053491451)})
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 0
+    assert asked == []
+
+
+# Both venues in one run, each through its own reader, into one venue-agnostic table.
+def test_both_venues_are_read_in_one_pass(sol_wallet, monkeypatch):
+    hl_box = _new_box("Hyperliquid staking")
+    _stake(WALLET, hl_box.id(), Decimal('11.92275902'))
+    sol_box = _sol_box("SOL staking", STAKE_A)
+    _stake_sol(sol_box.id(), Decimal('5.90228288'))
+
+    def fake_post(self, url, request):
+        if request.get('method') == 'getAccountInfo':
+            return _stake_account(6053491451)
+        return _SUMMARY_QUEUED
+    monkeypatch.setattr(ChainBalanceReader, "_post", fake_post)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 2
+    assert JalChainBalance().latest(hl_box.id(), HYPE, NOW)['amount'] == Decimal('11.99462482')
+    assert JalChainBalance().latest(sol_box.id(), SOL, NOW)['amount'] == Decimal('6.053491451')

@@ -8,6 +8,7 @@ from jal.constants import AssetLocation, PredefinedAccountType
 from jal.db.account import JalAccount
 from jal.db.chain_balance import JalChainBalance
 from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 from jal.db.staking import JalStakingBox
 from jal.net.web_request import WebRequest
 
@@ -28,6 +29,17 @@ _HL_BALANCE_FIELDS = ('delegated', 'undelegated', 'totalPendingWithdrawal')
 # Hyperliquid stakes one coin and only one. The reader refuses a box holding anything else rather than attributing
 # an account-level HYPE figure to some other asset - see _hyperliquid_box_balance().
 _HL_STAKED_SYMBOL = 'HYPE'
+
+# Solana's JSON-RPC, which is a different endpoint from the 'Enhanced Transactions' REST API the fetcher reads its
+# history from - 'getAccountInfo' is a plain node method and is not part of that enriched surface. Same Helius key.
+_SOL_RPC_URL = "https://mainnet.helius-rpc.com/"
+_LAMPORTS = Decimal('10') ** 9      # 1 SOL = 10^9 lamports, the unit a stake account's balance is reported in
+
+# Owner of every native stake account. Checking it is what makes the reading safe: a staking box carries its
+# container's address, and if that address were ever wrong - mistyped, or pointing at an ordinary wallet - the whole
+# balance sitting there would be read as this position's staked amount. The stake program is the one thing that
+# proves the address really is a stake account, and it costs nothing to ask for.
+_SOL_STAKE_PROGRAM = 'Stake11111111111111111111111111111111111111'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -165,6 +177,58 @@ class ChainBalanceReader(JalDB):
         return asset.id(), total
 
     # ------------------------------------------------------------------------------------------------------------------
+    # Solana native staking: one 'getAccountInfo' on the stake account, whose lamports ARE the position.
+    #
+    # This is the same mechanic as Hyperliquid's and the reader is a great deal simpler, because a Solana box knows
+    # its own address - a stake account is a real account on the chain, unlike a venue's internal balance. Three
+    # consequences follow, and each is the opposite of the Hyperliquid case:
+    #  - no wallet has to be resolved: the box's own address is what is asked about;
+    #  - no "several boxes share one figure" guard is needed or wanted. Every stake account has its own address and
+    #    its own balance, so several Solana boxes on one wallet are perfectly normal - a wallet may stake to as many
+    #    validators as it likes, and the new-box dialog already refuses a duplicate address;
+    #  - the validator is visible in the answer but is not read: it is an attribute of the position, not a place the
+    #    assets live, and the box balance is the whole account either way.
+    #
+    # The rent-exempt reserve inside those lamports is deliberately NOT deducted. It looks like something that should
+    # be corrected for, and correcting it would be a bug: the fetcher books the whole native delta when the stake is
+    # made (solana.py, _process_stake), so the recorded principal contains the reserve too and the two figures are
+    # already comparable. Subtracting it here would invent a shortfall of ~0.00228 SOL on every Solana box.
+    def _solana_box_balance(self, box: JalStakingBox, timestamp: int):
+        address = box.address()
+        if not address:
+            return None
+        asset = self._sole_asset_of(box, timestamp)
+        if asset is None:
+            return None
+        key = JalSettings().getStr("ApiKey_Helius").strip()
+        if not key:
+            logging.warning(self.tr("On-chain balance not read - the Helius API key isn't set"))
+            return None
+        answer = self._post(f"{_SOL_RPC_URL}?api-key={key}",
+                            {"jsonrpc": "2.0", "id": 1, "method": "getAccountInfo",
+                             "params": [address, {"encoding": "base64"}]})
+        if not isinstance(answer, dict) or 'error' in answer or 'result' not in answer:
+            logging.warning(self.tr("Unexpected answer from Helius for stake account ") + address)
+            return None
+        account = answer['result'].get('value') if isinstance(answer['result'], dict) else None
+        if account is None:
+            # JSON-RPC says a null value for an existing call means the account is genuinely NOT on the chain - a
+            # stake account is closed once it is emptied, so this is the ordinary end of a position's life rather
+            # than a failure. Zero is the honest measurement and is recorded as one: it is what lets the books be
+            # seen still holding something the chain no longer has, instead of the position quietly freezing at its
+            # last reading. (An RPC failure is an 'error' object, handled above, and never reaches here.)
+            logging.info(self.tr("Stake account no longer exists on chain: ") + address)
+            return asset.id(), Decimal('0')
+        if account.get('owner') != _SOL_STAKE_PROGRAM:
+            logging.warning(self.tr("On-chain balance not read - the address is not a stake account: ") + address)
+            return None
+        try:
+            return asset.id(), Decimal(str(account['lamports'])) / _LAMPORTS
+        except (DecimalException, ValueError, KeyError, TypeError):
+            logging.warning(self.tr("Unreadable balance of stake account ") + address)
+            return None
+
+    # ------------------------------------------------------------------------------------------------------------------
     # Which venues accrue silently, and how each of them is read. The table is venue knowledge deliberately kept OUT
     # of the storage: 'chain_balances' is keyed by (account, asset) and knows nothing about staking or rebasing, which
     # is what lets the same table serve the box readers here and the rebasing-asset reader that comes later.
@@ -173,7 +237,8 @@ class ChainBalanceReader(JalDB):
     # pot paid out by an explicit claim - a receivable, not balance growth. A CEX staking box has no API to ask at
     # all. A box of an unlisted venue simply never gets a row, which is the correct outcome rather than a gap.
     def _box_readers(self) -> dict:
-        return {AssetLocation.HL_BLOCKCHAIN: self._hyperliquid_box_balance}
+        return {AssetLocation.HL_BLOCKCHAIN: self._hyperliquid_box_balance,
+                AssetLocation.SOL_BLOCKCHAIN: self._solana_box_balance}
 
     # Reads and records the real balance of every staking box whose venue is known to accrue silently.
     #
