@@ -18,6 +18,7 @@ from jal.db.asset import JalAsset
 from jal.db.helpers import day_begin
 from jal.db.symbol import JalSymbol
 from jal.net.asset_icons import icon_url, coingecko_icons_urls, parse_coingecko_icons
+from jal.net.chain_balances import ChainBalanceReader
 from jal.net.web_request import WebRequest
 from jal.net.moex import MOEX
 try:
@@ -290,12 +291,33 @@ class QuoteDownloader(QObject):
             if AssetLocation.BANK_ACCOUNT in sources_list:
                 self.download_currency_rates(start_timestamp, end_timestamp)
             self.download_asset_prices(start_timestamp, end_timestamp, sources_list)
+            self.download_chain_balances(sources_list)
         except KeyboardInterrupt:
             logging.warning(self.tr("Interrupted by user"))
         finally:
             self.show_progress.emit(False)
         if not self._cancelled:
             logging.info(self.tr("Download completed"))
+
+    # The third part of an update, beside currency rates and asset prices: what the chain says a position REALLY
+    # holds, for the positions whose quantity can grow without any transaction behind it (a staking box that accrues
+    # inside the container, a rebasing receipt token). It belongs here rather than in a corner of its own because it
+    # is the same kind of thing as a quote - a dated measurement of value that no operation produced
+    #
+    # It deliberately IGNORES the dialog's date range. A balance is a "now" value and no API offers it for a past
+    # date, so there is no history to request and a date range would only suggest one exists. Nothing is back-dated:
+    # the reading is stored under the moment it was taken and the reports decide what to do with it.
+    def download_chain_balances(self, sources_list) -> None:
+        timestamp = int(datetime.now(tz=timezone.utc).timestamp())
+        try:
+            count = ChainBalanceReader().read_staking_boxes(timestamp, locations=sources_list)
+        except Exception as error:
+            # A balance reading is an extra, not a prerequisite: the quotes are already downloaded and stored by the
+            # time this runs, and losing the whole update because a venue's API misbehaved would be a bad trade.
+            logging.warning(self.tr("Failed to read on-chain balances: ") + f"{error}")
+            return
+        if count:
+            logging.info(self.tr("On-chain balances read: ") + f"{count}")
 
     # Checks for present quotations of 'asset' in given 'currency' and adjusts 'start' timestamp to be at
     # the end of available quotes interval if needed.
