@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QMessageBox
 
 from jal.constants import AssetLocation
 from jal.db.asset import JalAsset
+from jal.db.chain_balance import JalChainBalance
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.db.staking import JalStakingBox
@@ -28,7 +29,8 @@ class StakingListModel(QAbstractTableModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._columns = [self.tr("Name"), self.tr("Protocol"), self.tr("Blockchain"), self.tr("Asset"),
-                         self.tr("Quantity"), self.tr("Value"), self.tr("Staked since"), self.tr("Address")]
+                         self.tr("Quantity"), self.tr("Accrued"), self.tr("Value"), self.tr("Staked since"),
+                         self.tr("Address")]
         self._timestamp = 0
         self._currency_id = 0
         self._show_closed = False
@@ -79,10 +81,18 @@ class StakingListModel(QAbstractTableModel):
         if column == 4:
             return record['amount']
         if column == 5:
-            return record['value']
+            # Unlike the Asset Portfolio, this report DOES get a column of its own for the accrual, and the reason is
+            # what the report is for. jal/db/staking.py and this module both state, deliberately, that JAL cannot say
+            # what a given box earned: yield reaches the wallet and nothing records which container produced it, so
+            # any per-box figure would be a guess. A live chain balance minus the booked principal IS that figure,
+            # measured instead of guessed - so here it is the subject of the report rather than a rarity that would
+            # leave the column empty on every other row.
+            return record['accrued']
         if column == 6:
-            return box.opened_at()
+            return record['value']
         if column == 7:
+            return box.opened_at()
+        if column == 8:
             return box.address()
         return ''
 
@@ -90,14 +100,14 @@ class StakingListModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             if section == 0:
                 return self.tr("Total")
-            if section == 5:
+            if section == 6:
                 return localize_decimal(self._value_total, precision=2)
         elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)
             return font
         elif role == Qt.TextAlignmentRole:
-            return Qt.AlignRight | Qt.AlignVCenter if section in (4, 5) else Qt.AlignLeft | Qt.AlignVCenter
+            return Qt.AlignRight | Qt.AlignVCenter if section in (4, 5, 6) else Qt.AlignLeft | Qt.AlignVCenter
         return None
 
     # The box shown in a given row, or None if the row doesn't point at one
@@ -125,12 +135,18 @@ class StakingListModel(QAbstractTableModel):
             if not holdings:
                 # Only reachable with closed positions shown - a box that holds nothing is what a finished stake
                 # leaves behind, and it is listed so that what WAS staked can still be found
-                self._data.append({'box': box, 'asset': None, 'amount': Decimal('0'), 'value': Decimal('0')})
+                self._data.append({'box': box, 'asset': None, 'amount': Decimal('0'), 'accrued': Decimal('0'),
+                                   'value': Decimal('0')})
                 continue
             for holding in holdings:
                 rate = holding['asset'].quote(self._timestamp, self._currency_id)[1]
+                # 'amount' stays the booked principal and the accrual is shown beside it rather than folded into it,
+                # so the two can be told apart - which is the whole point here. The VALUE is of both together,
+                # because that is what the position is worth and what the total at the bottom has to add up to.
+                accrued = JalChainBalance().accrual(box.id(), holding['asset'].id(), holding['amount'],
+                                                    self._timestamp)['delta']
                 self._data.append({'box': box, 'asset': holding['asset'], 'amount': holding['amount'],
-                                   'value': holding['amount'] * rate})
+                                   'accrued': accrued, 'value': (holding['amount'] + accrued) * rate})
         self._value_total = sum([x['value'] for x in self._data], Decimal('0'))
         self.endResetModel()
 
@@ -144,16 +160,20 @@ class StakingListModel(QAbstractTableModel):
         self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._timestamp_delegate = TimestampDelegate(display_format='%d/%m/%Y')
         self._view.setItemDelegateForColumn(4, self._qty_delegate)
-        self._view.setItemDelegateForColumn(5, self._float_delegate)
-        self._view.setItemDelegateForColumn(6, self._timestamp_delegate)
+        # The accrual keeps its tail for the same reason the quantity does, and more so: it is a small fraction of
+        # the position (0.07 HYPE on 11.9, 0.15 SOL on 5.9), so two decimals would round most of it out of sight.
+        self._view.setItemDelegateForColumn(5, self._qty_delegate)
+        self._view.setItemDelegateForColumn(6, self._float_delegate)
+        self._view.setItemDelegateForColumn(7, self._timestamp_delegate)
         self._view.setColumnWidth(0, 200)
         self._view.setColumnWidth(1, 160)
         self._view.setColumnWidth(2, 100)
         self._view.setColumnWidth(3, 80)
         self._view.setColumnWidth(4, 140)
-        self._view.setColumnWidth(5, 120)
-        self._view.setColumnWidth(6, self._view.fontMetrics().horizontalAdvance("00/00/0000") * 1.1)
-        self._view.setColumnWidth(7, 300)
+        self._view.setColumnWidth(5, 140)
+        self._view.setColumnWidth(6, 120)
+        self._view.setColumnWidth(7, self._view.fontMetrics().horizontalAdvance("00/00/0000") * 1.1)
+        self._view.setColumnWidth(8, 300)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -249,9 +269,15 @@ class StakingReport(QObject):
 # on behalf of the wallet it left - and it is filled by settling the transfer legs a stake and an unstake are: see
 # jal/db/staking.py and the unsettled transfers report, which is where a position is created.
 #
-# There is deliberately no "what it earned" column. Staking yield is booked on the WALLET the coins return to, as a
-# StakingReward payment, and nothing records which position produced it - a wallet may stake into several at once.
-# A zero there would be a claim, not a gap, so the report states what it knows: what is held, since when, by whom.
+# 'Accrued' is what the position has earned and NOT yet been paid - the difference between what the chain says the
+# container holds and what the books say was put into it. It is filled in only for the venues whose balance JAL can
+# actually read (see jal/net/chain_balances.py); elsewhere it is zero, which here means "not measured" rather than
+# "earned nothing".
+#
+# It is deliberately NOT the same thing as what a position has PAID OUT. Realized staking yield is booked on the
+# WALLET the coins return to, as a StakingReward payment, and nothing records which container produced it - a wallet
+# may stake into several at once, so a per-box figure for it would still be a guess. What this column shows is the
+# unrealized part, which is measurable exactly because it is still sitting in the container.
 class StakingReportWindow(MdiWidget):
     def __init__(self, parent: Reports, settings: dict = None):
         super().__init__(parent.mdi_area())

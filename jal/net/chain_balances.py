@@ -85,13 +85,11 @@ class ChainBalanceReader(JalDB):
     # The wallet a box was filled from. A box is always created FROM an account and every fill is a transfer, so the
     # relation is recorded even though no column names it - which is what lets an address-less box (a venue's internal
     # staking balance names nothing on a chain) still be tied to the address its balance has to be read at.
-    def _wallet_of_box(self, box_id: int) -> JalAccount:
-        wallets = self._read_to_list(
-            "SELECT DISTINCT withdrawal_account FROM transfers "
-            "WHERE deposit_account=:box AND NOT withdrawal_account IS NULL", [(":box", box_id)])
+    def _wallet_of_box(self, box: JalStakingBox) -> JalAccount:
+        wallets = box.source_accounts()
         if len(wallets) != 1:
             return None
-        return JalAccount(int(wallets[0]))
+        return wallets[0]
 
     # Every staking box that was ever filled from this wallet.
     #
@@ -144,7 +142,7 @@ class ChainBalanceReader(JalDB):
     # amount HyperCore reports is a decimal string in human units - and the call is keyless, so this is by far the
     # cheapest of the balance readers.
     def _hyperliquid_box_balance(self, box: JalStakingBox, timestamp: int):
-        wallet = self._wallet_of_box(box.id())
+        wallet = self._wallet_of_box(box)
         if wallet is None or not wallet.address():
             return None
         if not self._box_may_take_account_total(box, wallet, timestamp):

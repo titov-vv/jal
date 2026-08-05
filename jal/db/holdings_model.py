@@ -10,6 +10,7 @@ from jal.db.helpers import now_ts, day_end
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.chain_balance import JalChainBalance
 from jal.db.operations import LedgerTransaction, Transfer, CorporateAction
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate
 from jal.widgets.helpers import ts2d
@@ -28,7 +29,7 @@ class AssetTreeItem(AbstractTreeItem):
                 'since': 0, 'qty': None, 'value_i': Decimal('0'), 'paid': Decimal('0'),
                 'open_quote': None, 'quote': None, 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
                 'value': Decimal('0'), 'value_common': Decimal('0'), 'p/l': Decimal('0'), 'p/l%': Decimal('0'),
-                'font': 'bold', 'quote_age': 0, 'share': Decimal('0')
+                'font': 'bold', 'quote_age': 0, 'chain_ts': 0, 'share': Decimal('0')
             }
             if self._group == 'asset_id':   # Asset grouping will calculate average price and total qty
                 self._data['qty'] = self._data['open_quote'] = self._data['quote'] = Decimal('0')
@@ -151,10 +152,17 @@ class HoldingsModel(ReportTreeModel):
         except Exception as e:
             print(e)
 
+    # Both lines say the same kind of thing - HOW OLD the numbers behind this row are - and a row may need either or
+    # both. The quote line appears only for a stale quote, while the on-chain one appears whenever a quantity was
+    # measured rather than booked: a balance read from a chain is a "now" value with no history behind it, so when it
+    # was taken is part of reading the row rather than a warning about it.
     def data_tooltip(self, data):
+        lines = []
         if data['quote_age'] > OLD_QUOTE_AGE:
-            return self.tr("Last quote date: ") + ts2d(int(data['quote_ts']))
-        return None
+            lines.append(self.tr("Last quote date: ") + ts2d(int(data['quote_ts'])))
+        if data.get('chain_ts'):
+            lines.append(self.tr("On-chain balance as of: ") + ts2d(int(data['chain_ts'])))
+        return '\n'.join(lines) if lines else None
 
     def configureView(self):
         for field in [x['field'] for x in self._columns]:
@@ -249,6 +257,14 @@ class HoldingsModel(ReportTreeModel):
                 quote_ts, quote = asset.quote(self._date, account.currency())
                 quote_age = int((datetime.now(tz=timezone.utc) - datetime.fromtimestamp(quote_ts, tz=timezone.utc)).total_seconds() / 86400)
                 since, payments_amount = self.get_asset_history_payments(account, asset, self._date)
+                # What the chain holds beyond what the books do - see JalChainBalance.accrual(). Only 'qty' moves:
+                # 'value_i' is what the position COST and no part of that cost belongs to the accrued quantity, so
+                # computing the average purchase price from anything but the ledger quantity would dilute it by the
+                # accrual (2.2% on the aToken this was measured against) and quietly restate the basis of a position
+                # nobody traded. With 'qty' raised and 'value_i' untouched, AssetTreeItem's own
+                # 'p/l = quote * qty - value_i' shows the accrual as unrealized profit by construction - which is
+                # exactly what it is, and why this needs no column of its own.
+                accrual = JalChainBalance().accrual(account.id(), asset.id(), asset_data['amount'], self._date)
                 font = 'italic' if quote_age > OLD_QUOTE_AGE else 'normal'
                 font = 'strikeout' if asset.days2expiration() < 0 else font
                 expiry_header = self.tr("Exp:")
@@ -266,7 +282,7 @@ class HoldingsModel(ReportTreeModel):
                     "country": asset.country().name(),
                     "tag": asset.tag().name() if asset.tag().name() else self.tr("N/A"),
                     "since": since,
-                    "qty": asset_data['amount'],
+                    "qty": asset_data['amount'] + accrual['delta'],
                     "value_i": asset_data['value'],
                     "paid": payments_amount,
                     "open_quote": asset_data['value'] / asset_data['amount'],
@@ -274,6 +290,7 @@ class HoldingsModel(ReportTreeModel):
                     "quote_ts": quote_ts,
                     "quote_a": rate * quote,
                     "quote_age": quote_age,
+                    "chain_ts": accrual['measured'] if accrual['delta'] else 0,
                     "share": Decimal('0'),
                     "font": font
                 }

@@ -3,6 +3,7 @@ from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 import jal.db.operations
 import jal.db.closed_trade
+import jal.db.chain_balance
 from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountData, AssetLocation
 from jal.db.country import JalCountry
 from jal.db.token_blacklist import normalize_address, is_valid_address
@@ -518,12 +519,18 @@ class JalAccount(JalDB):
             return Decimal('0')
 
     # Returns account balance at given timestamp
+    #
+    # The quantity is the ledger one PLUS whatever the chain says is really there and no operation ever announced -
+    # the interest an Aave aToken folded into its own balance, the rewards a validator credited straight into a stake
+    # account. See JalChainBalance.accrual(); it answers zero for everything else, which is every asset but a handful.
     def balance(self, timestamp: int) -> Decimal:
         value = Decimal('0')
         assets = self.assets_list(timestamp)
         for asset_data in assets:
             asset = asset_data['asset']
-            asset_value = asset_data['amount'] * asset.quote(timestamp, self.currency())[1]
+            accrued = jal.db.chain_balance.JalChainBalance().accrual(self._id, asset.id(), asset_data['amount'],
+                                                                    timestamp)['delta']
+            asset_value = (asset_data['amount'] + accrued) * asset.quote(timestamp, self.currency())[1]
             value += asset_value
         money = self.get_asset_amount(timestamp, self.currency())
         value += money

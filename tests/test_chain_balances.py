@@ -411,3 +411,180 @@ def test_both_venues_are_read_in_one_pass(sol_wallet, monkeypatch):
     assert ChainBalanceReader().read_staking_boxes(NOW) == 2
     assert JalChainBalance().latest(hl_box.id(), HYPE, NOW)['amount'] == Decimal('11.99462482')
     assert JalChainBalance().latest(sol_box.id(), SOL, NOW)['amount'] == Decimal('6.053491451')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# DISPLAY. Everything below is about the rule that turns a stored measurement into a quantity a report shows -
+# JalChainBalance.accrual() and its three consumers. Each of these gets it wrong SILENTLY when it is wrong: a diluted
+# cost basis, a back-dated quantity or a phantom profit all look like perfectly ordinary numbers on screen.
+def _measure(box_id, asset_id, amount, timestamp=None):
+    JalChainBalance().store(NOW if timestamp is None else timestamp, box_id, asset_id, Decimal(amount))
+
+
+def _staked_box(amount='11.92275902'):
+    box = _new_box("Hyperliquid staking")
+    _stake(WALLET, box.id(), Decimal(amount))
+    return box
+
+
+def test_accrual_is_what_the_chain_holds_beyond_the_books(hl_wallet):
+    box = _staked_box()
+    _measure(box.id(), HYPE, '11.99462482')
+
+    assert JalChainBalance().accrual(box.id(), HYPE, Decimal('11.92275902'), NOW)['delta'] == Decimal('0.07186580')
+
+
+# An asset nobody ever measured must behave exactly as it did before this feature existed
+def test_an_unmeasured_position_accrues_nothing(hl_wallet):
+    box = _staked_box()
+    assert JalChainBalance().accrual(box.id(), HYPE, Decimal('11.92275902'), NOW)['delta'] == Decimal('0')
+
+
+# A snapshot is a "now" value. Applying today's reading to a report dated before it would rewrite history with a
+# quantity that did not exist then - and the report would look entirely normal while doing it.
+def test_a_report_dated_before_the_measurement_gets_nothing(hl_wallet):
+    box = _staked_box()
+    _measure(box.id(), HYPE, '11.99462482', timestamp=d2t(260805))
+
+    assert JalChainBalance().accrual(box.id(), HYPE, Decimal('11.92275902'), d2t(260701))['delta'] == Decimal('0')
+    assert JalChainBalance().accrual(box.id(), HYPE, Decimal('11.92275902'), d2t(260806))['delta'] == Decimal('0.07186580')
+
+
+# A chain holding LESS than the books is never a correction to display. It means an outgoing movement was missed or a
+# stake was slashed, and quietly subtracting it would hide the one discrepancy worth raising.
+def test_a_chain_balance_below_the_ledger_is_never_subtracted(hl_wallet):
+    box = _staked_box()
+    _measure(box.id(), HYPE, '5.0')
+
+    assert JalChainBalance().accrual(box.id(), HYPE, Decimal('11.92275902'), NOW)['delta'] == Decimal('0')
+
+
+# The phantom-accrual case, measured on the real account: a staking deposit that has been imported but not yet
+# ASSIGNED sits in neither the wallet nor the box, so the whole un-arrived quantity reads as unrealized profit - a
+# number that scales with the DEPOSIT rather than with the yield, and looks plausible on screen.
+def test_an_unassigned_leg_suppresses_the_accrual_entirely(hl_wallet):
+    box = _new_box("Hyperliquid staking")
+    _stake(WALLET, box.id(), Decimal('6.79524'))
+    _measure(box.id(), HYPE, '11.99462482')
+    # The far end is still unknown - what a fetcher leaves behind until the user picks the account
+    LedgerTransaction.create_new(LedgerTransaction.Transfer, {
+        'withdrawal_timestamp': d2t(260803), 'withdrawal_account': WALLET, 'withdrawal': '5.12751902',
+        'deposit_timestamp': d2t(260803), 'deposit_account': None, 'deposit': '5.12751902',
+        'number': '', 'note': '', 'symbol_id': symbol_id_for(HYPE)})
+    Ledger().rebuild(from_timestamp=0)
+
+    assert JalChainBalance().accrual(box.id(), HYPE, Decimal('6.79524'), NOW)['delta'] == Decimal('0')
+
+
+# ...and it heals itself the moment the leg is assigned, WITHOUT the stored snapshot having to be taken again - which
+# is why the delta is suppressed rather than the snapshot skipped.
+def test_assigning_the_leg_restores_the_accrual_without_a_new_measurement(hl_wallet):
+    box = _staked_box()          # the leg is assigned, so the box holds the full 11.92275902
+    _measure(box.id(), HYPE, '11.99462482')
+
+    assert JalChainBalance().accrual(box.id(), HYPE, Decimal('11.92275902'), NOW)['delta'] == Decimal('0.07186580')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The Asset Portfolio. The accrual raises the QUANTITY and nothing else: 'value_i' is what the position cost, no part
+# of that cost belongs to the accrued units, and a basis computed from the raised quantity would be diluted by the
+# accrual on a position nobody traded.
+# The prepared rows live in the report tree rather than in a list, so the leaves are collected back out of it.
+def _portfolio_rows():
+    from jal.db.holdings_model import HoldingsModel
+    from PySide6.QtWidgets import QTreeView
+    model = HoldingsModel(QTreeView())
+    model._currency = USD
+    model._date = NOW
+    model.prepareData()
+    rows = []
+
+    def collect(item):
+        if not item.childrenCount():
+            rows.append(item.details())
+        for i in range(item.childrenCount()):
+            collect(item.getChild(i))
+    collect(model._root)
+    return rows
+
+
+def test_the_portfolio_raises_quantity_but_never_the_cost_basis(hl_wallet):
+    box = _staked_box()
+    _measure(box.id(), HYPE, '11.99462482')
+
+    rows = [x for x in _portfolio_rows() if x['account_id'] == box.id() and x['asset_id'] == HYPE]
+
+    assert len(rows) == 1
+    row = rows[0]
+    assert row['qty'] == Decimal('11.99462482')                       # ledger + accrual
+    assert row['value_i'] == Decimal('11.92275902') * Decimal('30')   # what it cost, untouched
+    assert row['open_quote'] == Decimal('30')                         # basis per unit, NOT diluted
+    assert row['chain_ts'] == NOW
+
+
+# P/L needs no code of its own: with the quantity raised and the cost untouched, AssetTreeItem's own
+# 'quote * qty - value_i' shows the accrual as unrealized profit by construction.
+def test_the_accrual_shows_up_as_unrealized_profit(hl_wallet):
+    from jal.db.holdings_model import AssetTreeItem
+    base = {'header': '', 'currency_id': USD, 'currency': '', 'account_id': 1, 'account': '', 'asset_id': HYPE,
+            'tag': '', 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
+            'since': 0, 'value_i': Decimal('11.92275902') * Decimal('30'), 'paid': Decimal('0'),
+            'open_quote': Decimal('30'), 'quote': Decimal('30'), 'quote_ts': 0, 'quote_a': Decimal('30'),
+            'quote_age': 0, 'chain_ts': 0, 'share': Decimal('0'), 'font': 'normal'}
+
+    booked = AssetTreeItem({**base, 'qty': Decimal('11.92275902')}).details()
+    accrued = AssetTreeItem({**base, 'qty': Decimal('11.99462482')}).details()
+
+    assert booked['p/l'] == Decimal('0')                              # nothing moved, nothing gained
+    assert accrued['p/l'] == Decimal('0.07186580') * Decimal('30')    # the accrual, at the current quote
+
+
+# The tooltip says when a measured quantity was taken. It is not a warning like the stale-quote line - a chain
+# balance is a "now" value with no history behind it, so its date is part of reading the row.
+def test_the_tooltip_dates_a_measured_quantity(hl_wallet):
+    from jal.db.holdings_model import HoldingsModel
+    from PySide6.QtWidgets import QTreeView
+    model = HoldingsModel(QTreeView())
+
+    assert model.data_tooltip({'quote_age': 0, 'quote_ts': 0, 'chain_ts': NOW}) is not None
+    assert 'On-chain balance as of' in model.data_tooltip({'quote_age': 0, 'quote_ts': 0, 'chain_ts': NOW})
+    assert model.data_tooltip({'quote_age': 0, 'quote_ts': 0, 'chain_ts': 0}) is None
+    # a group row carries no such field at all and must not raise
+    assert model.data_tooltip({'quote_age': 0, 'quote_ts': 0}) is None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The Balances tree gets the accrual too, silently - it is a REVALUATION, exactly like a quote moving, and a Balances
+# total already changes when a price does with nothing at that level to explain it.
+def test_the_balances_tree_values_the_accrued_quantity(hl_wallet):
+    from tests.helpers import create_quotes
+    box = _staked_box()
+    create_quotes(HYPE, USD, [(NOW, Decimal('30'))])
+
+    before = JalAccount(box.id()).balance(NOW)
+    _measure(box.id(), HYPE, '11.99462482')
+    JalAccount(box.id()).invalidate_cache()
+
+    assert before == Decimal('11.92275902') * Decimal('30')
+    assert JalAccount(box.id()).balance(NOW) == Decimal('11.99462482') * Decimal('30')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The Staked positions report is the one place the accrual gets a column of its own, because there it is the subject
+# rather than a rarity - it closes the limitation that JAL cannot say what a given box earned.
+def test_the_staking_report_shows_the_accrual_beside_the_principal(hl_wallet):
+    from jal.reports.staking import StakingListModel
+    from tests.helpers import create_quotes
+    from PySide6.QtWidgets import QTableView
+    box = _staked_box()
+    create_quotes(HYPE, USD, [(NOW, Decimal('30'))])
+    _measure(box.id(), HYPE, '11.99462482')
+
+    model = StakingListModel(QTableView())
+    model.updateView(timestamp=NOW, currency_id=USD, show_closed=False)
+    rows = [x for x in model._data if x['box'].id() == box.id()]
+
+    assert len(rows) == 1
+    assert rows[0]['amount'] == Decimal('11.92275902')      # the principal, as booked
+    assert rows[0]['accrued'] == Decimal('0.07186580')      # measured, not guessed
+    assert rows[0]['value'] == Decimal('11.99462482') * Decimal('30')   # worth of both together

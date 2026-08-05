@@ -71,6 +71,59 @@ class JalChainBalance(JalDB):
                 continue
         return records
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # How much MORE the chain holds of (account, asset) than the books do, as {'delta', 'measured'} - the quantity a
+    # report has to add to the ledger one, and the moment it was measured (0 when nothing was ever measured).
+    #
+    # This is the single place the display rule is stated, because it is used by the Balances tree, the Asset
+    # Portfolio and the Staked positions report, and the three must never disagree about what a position holds.
+    #
+    # Three things it refuses to do, each of which would be wrong in a way that is invisible on screen:
+    #
+    #  * it never applies a measurement to a report dated BEFORE it. A snapshot is a "now" value; letting today's
+    #    reading into a report of last January would silently rewrite history with a quantity that did not exist
+    #    then. latest() enforces this by asking for the newest reading as of the report date.
+    #  * it never returns a NEGATIVE delta. A chain holding LESS than the books is not a correction to display - it
+    #    means an outgoing movement was missed, or a stake was slashed, and it is a signal for reconciliation to
+    #    raise. Subtracting it here would quietly hide the very discrepancy that matters, so the display falls back
+    #    to the ledger and lets the books be seen for what they say.
+    #  * it is suppressed entirely while a PENDING LEG exists for the position (see _has_pending_leg).
+    def accrual(self, account_id: int, asset_id: int, ledger_amount: Decimal, timestamp: int) -> dict:
+        snapshot = self.latest(account_id, asset_id, timestamp)
+        if snapshot is None:
+            return {'delta': Decimal('0'), 'measured': 0}
+        delta = snapshot['amount'] - ledger_amount
+        if delta <= Decimal('0') or self._has_pending_leg(account_id, asset_id, timestamp):
+            return {'delta': Decimal('0'), 'measured': snapshot['timestamp']}
+        return {'delta': delta, 'measured': snapshot['timestamp']}
+
+    # True while a movement of this asset has been imported but not yet ASSIGNED to both of its ends.
+    #
+    # A fetcher leaves the far end of a custody transfer NULL until the user picks the account it went to, and until
+    # then the coins are in neither place: they have left the wallet and have not arrived in the container. The chain
+    # has them, the ledger has not, so the whole pending quantity is indistinguishable from accrual and shows up as
+    # unrealized PROFIT. Measured on the real account: a 5.12751902 HYPE staking deposit displayed ~$160 of phantom
+    # gain on a box whose true accrual was 0.0711 HYPE - a wrong number that scales with the DEPOSIT rather than with
+    # the yield, and that looks entirely plausible on screen.
+    #
+    # It is transient and heals itself the moment the leg is assigned, which is why the delta is SUPPRESSED rather
+    # than the snapshot being skipped: skipping the snapshot would leave the previous, smaller one in place and go on
+    # comparing it against a ledger that has moved.
+    #
+    # The accounts that matter are this one and - when it is a staking box - the wallets that fill it, because the
+    # unassigned leg of a stake sits on the WALLET while the quantity it is missing is the box's.
+    def _has_pending_leg(self, account_id: int, asset_id: int, timestamp: int) -> bool:
+        import jal.db.staking
+        accounts = {account_id} | {x.id() for x in jal.db.staking.JalStakingBox(account_id).source_accounts()}
+        placeholders = ', '.join(str(int(x)) for x in accounts)
+        count = self._read(
+            "SELECT COUNT(*) FROM transfers t JOIN asset_symbol s ON s.id=t.symbol_id "
+            "WHERE (t.withdrawal_account IS NULL OR t.deposit_account IS NULL) AND s.asset_id=:asset_id "
+            f"AND (t.withdrawal_account IN ({placeholders}) OR t.deposit_account IN ({placeholders})) "
+            "AND (CASE WHEN t.deposit_account IS NULL THEN t.withdrawal_timestamp ELSE t.deposit_timestamp END)<=:timestamp",
+            [(":asset_id", asset_id), (":timestamp", timestamp)])
+        return bool(int(count)) if count else False
+
     # Forgets the measurements of a position that is gone from both the chain and the books.
     #
     # Deletion is deliberately NOT eager: the stored delta is what the realization rule uses as its guard when a

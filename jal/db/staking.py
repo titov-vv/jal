@@ -112,6 +112,21 @@ class JalStakingBox(JalDB):
     def is_active(self) -> bool:
         return self._account.is_active()
 
+    # The accounts this box was ever filled FROM, i.e. the wallets it belongs to.
+    #
+    # No column records the relation, and none needs to: a box is created from a source account and every fill is a
+    # transfer, so the transfers themselves say it. That matters most for a box that has no address of its own - a
+    # venue's internal staking balance names nothing on a chain, so the wallet found here is the only thing that says
+    # which address its balance may be read at.
+    #
+    # A container box normally answers with exactly one account; the list is not narrowed to one here because a
+    # caller that CARES whether there is more than one has to be able to see that for itself.
+    def source_accounts(self) -> list:
+        accounts = self._read_to_list(
+            "SELECT DISTINCT withdrawal_account FROM transfers "
+            "WHERE deposit_account=:box AND NOT withdrawal_account IS NULL", [(":box", self._id)])
+        return [JalAccount(int(x)) for x in accounts]
+
     # Timestamp of the first transfer that put an asset into the box, i.e. when staking started (0 if empty)
     def opened_at(self) -> int:
         timestamp = self._read("SELECT MIN(deposit_timestamp) FROM transfers WHERE deposit_account=:id",
