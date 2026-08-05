@@ -6,6 +6,7 @@ from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_trades, symbol_id_for
 from constants import PredefinedAsset, PredefinedAccountType, AssetLocation
 from jal.db.account import JalAccount, JalAccountCreator
+from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
@@ -588,3 +589,159 @@ def test_the_staking_report_shows_the_accrual_beside_the_principal(hl_wallet):
     assert rows[0]['amount'] == Decimal('11.92275902')      # the principal, as booked
     assert rows[0]['accrued'] == Decimal('0.07186580')      # measured, not guessed
     assert rows[0]['value'] == Decimal('11.99462482') * Decimal('30')   # worth of both together
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# REBASING ASSETS - the case the whole design was built from. An Aave aToken's balance is a scaled number times the
+# reserve's liquidity index, and the index rises every block emitting NOTHING, so a fetcher is short by the entire
+# accrued interest. Figures below are the real position: 7637.22561 booked against 7810.33702 on chain.
+ATOKEN_CONTRACT = '0x7c0477d085ecb607cf8429f3ec91ae5e1e460f4f'
+EVM_WALLET_ADDRESS = '0x' + 'd' * 40
+EVM_WALLET = 0
+ATOKEN = 0
+
+
+@pytest.fixture
+def evm_wallet(prepare_db):
+    from jal.db.asset import JalAssetCreator
+    from jal.constants import SymbolId
+    global EVM_WALLET, ATOKEN
+    JalSettings().setValue("ApiKey_Etherscan", "test-key")
+    EVM_WALLET = JalAccountCreator(currency_id=USD, number='', name='ETH wallet', investing=1, organization=1,
+                                   precision=18, account_type=PredefinedAccountType.Wallet,
+                                   address=EVM_WALLET_ADDRESS, chain=AssetLocation.ETH_BLOCKCHAIN).commit().id()
+    creator = JalAssetCreator(PredefinedAsset.Crypto, "Aave Ethereum USDG")
+    symbol_id = creator.add_symbol('aEthUSDG', USD, AssetLocation.ETH_BLOCKCHAIN)
+    creator.add_identifier(symbol_id, SymbolId.ETH_ADDRESS, ATOKEN_CONTRACT)
+    ATOKEN = creator.commit().id()
+    create_trades(EVM_WALLET, [(d2t(260101), d2t(260101), ATOKEN, Decimal('7637.22561'), Decimal('1'), Decimal('0'))])
+    Ledger().rebuild(from_timestamp=0)
+    yield
+
+
+def _flag_rebasing(asset_id):
+    JalDB()._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) VALUES(:a, 5, '1')",
+                  [(":a", asset_id)], commit=True)
+    JalAsset(asset_id).invalidate_cache()
+
+
+# Answers the two GET calls a rebasing read makes - 'decimals()' once ever, 'tokenbalance' every time - and records
+# which of them were actually asked, which is how the "asked once" property below is checked.
+def _fake_evm(monkeypatch, decimals='0x' + '0' * 62 + '06', balance='7810337020', status='1'):
+    asked = []
+
+    def fake_get(self, url, params):
+        asked.append(params['action'])
+        if params['action'] == 'eth_call':
+            return {'result': decimals} if decimals is not None else {}
+        return {'status': status, 'result': balance}
+    monkeypatch.setattr(ChainBalanceReader, "_get", fake_get)
+    return asked
+
+
+def test_a_rebasing_token_balance_is_scaled_by_its_decimals(evm_wallet, monkeypatch):
+    _flag_rebasing(ATOKEN)
+    _fake_evm(monkeypatch)
+
+    assert ChainBalanceReader().read_rebasing_assets(NOW) == 1
+    assert JalChainBalance().latest(EVM_WALLET, ATOKEN, NOW)['amount'] == Decimal('7810.337020')
+
+
+def test_the_interest_no_event_announced_becomes_the_accrual(evm_wallet, monkeypatch):
+    _flag_rebasing(ATOKEN)
+    _fake_evm(monkeypatch)
+    ChainBalanceReader().read_rebasing_assets(NOW)
+
+    accrual = JalChainBalance().accrual(EVM_WALLET, ATOKEN, Decimal('7637.22561'), NOW)
+    assert accrual['delta'] == Decimal('173.111410')
+
+
+# Decimals are asked of the contract ONCE and remembered for good. Asking on demand rather than recording them at
+# import is what makes a token JAL already holds readable at all: a value written only by new imports would leave
+# every existing position unreadable until it happened to move again.
+def test_decimals_are_asked_once_and_remembered(evm_wallet, monkeypatch):
+    _flag_rebasing(ATOKEN)
+    asked = _fake_evm(monkeypatch)
+
+    ChainBalanceReader().read_rebasing_assets(NOW)
+    assert asked == ['eth_call', 'tokenbalance']
+    assert JalAsset(ATOKEN).decimals() == 6
+
+    asked.clear()
+    ChainBalanceReader().read_rebasing_assets(NOW + 1)
+    assert asked == ['tokenbalance']          # the contract is not asked a second time
+
+
+# 0 decimals is a real value and must survive as one - it is None that means "never asked", and confusing the two
+# would read a raw integer as a whole quantity.
+def test_zero_decimals_is_a_value_and_not_a_missing_one(evm_wallet, monkeypatch):
+    _flag_rebasing(ATOKEN)
+    asked = _fake_evm(monkeypatch, decimals='0x' + '0' * 64, balance='42')
+
+    ChainBalanceReader().read_rebasing_assets(NOW)
+    assert JalAsset(ATOKEN).decimals() == 0
+    assert JalChainBalance().latest(EVM_WALLET, ATOKEN, NOW)['amount'] == Decimal('42')
+    asked.clear()
+    ChainBalanceReader().read_rebasing_assets(NOW + 1)
+    assert asked == ['tokenbalance']
+
+
+# The flag is the whole trigger. A token that cannot grow on its own gets no row - a row saying the chain and the
+# books agree is worth nothing and would bury the handful of rows that are worth something.
+def test_an_unflagged_asset_is_never_read(evm_wallet, monkeypatch):
+    asked = _fake_evm(monkeypatch)
+
+    assert ChainBalanceReader().read_rebasing_assets(NOW) == 0
+    assert asked == []
+    assert JalChainBalance().latest(EVM_WALLET, ATOKEN, NOW) is None
+
+
+# An answer outside the plausible range is not a token with very many decimal places - it is a call that returned
+# something else, and using it would divide the balance into nothing. It is refused, and NOT remembered.
+def test_implausible_decimals_are_refused_and_not_stored(evm_wallet, monkeypatch):
+    _flag_rebasing(ATOKEN)
+    _fake_evm(monkeypatch, decimals='0x' + '0' * 62 + 'ff')          # 255
+
+    assert ChainBalanceReader().read_rebasing_assets(NOW) == 0
+    assert JalAsset(ATOKEN).decimals() is None
+    assert JalChainBalance().latest(EVM_WALLET, ATOKEN, NOW) is None
+
+
+# Without the scale a raw integer cannot be turned into a quantity at all, so a failed decimals call must store
+# nothing rather than fall back to a guess.
+@pytest.mark.parametrize("decimals", [None, '0x', 'nonsense'])
+def test_no_decimals_means_no_balance(evm_wallet, monkeypatch, decimals):
+    _flag_rebasing(ATOKEN)
+    _fake_evm(monkeypatch, decimals=decimals)
+
+    assert ChainBalanceReader().read_rebasing_assets(NOW) == 0
+    assert JalChainBalance().latest(EVM_WALLET, ATOKEN, NOW) is None
+
+
+def test_a_failed_balance_call_stores_nothing(evm_wallet, monkeypatch):
+    _flag_rebasing(ATOKEN)
+    _fake_evm(monkeypatch, status='0', balance='Max rate limit reached')
+
+    assert ChainBalanceReader().read_rebasing_assets(NOW) == 0
+    assert JalChainBalance().latest(EVM_WALLET, ATOKEN, NOW) is None
+
+
+# An asset flagged but with no contract on the chain the wallet is on cannot be asked about, and is passed over
+# rather than asked about with somebody else's address.
+def test_an_asset_without_a_contract_on_this_chain_is_skipped(evm_wallet, monkeypatch):
+    JalDB()._exec("DELETE FROM symbol_ids", commit=True)
+    JalAsset(ATOKEN).invalidate_cache()
+    _flag_rebasing(ATOKEN)
+    asked = _fake_evm(monkeypatch)
+
+    assert ChainBalanceReader().read_rebasing_assets(NOW) == 0
+    assert asked == []
+
+
+def test_chains_not_selected_are_not_asked(evm_wallet, monkeypatch):
+    _flag_rebasing(ATOKEN)
+    asked = _fake_evm(monkeypatch)
+
+    assert ChainBalanceReader().read_rebasing_assets(NOW, locations=[AssetLocation.ARB_BLOCKCHAIN]) == 0
+    assert asked == []
+    assert ChainBalanceReader().read_rebasing_assets(NOW, locations=[AssetLocation.ETH_BLOCKCHAIN]) == 1

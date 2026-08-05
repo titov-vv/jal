@@ -310,7 +310,9 @@ class QuoteDownloader(QObject):
     def download_chain_balances(self, sources_list) -> None:
         timestamp = int(datetime.now(tz=timezone.utc).timestamp())
         try:
-            count = ChainBalanceReader().read_staking_boxes(timestamp, locations=sources_list)
+            reader = ChainBalanceReader()
+            count = reader.read_staking_boxes(timestamp, locations=sources_list)
+            count += reader.read_rebasing_assets(timestamp, locations=sources_list)
         except Exception as error:
             # A balance reading is an extra, not a prerequisite: the quotes are already downloaded and stored by the
             # time this runs, and losing the whole update because a venue's API misbehaved would be a bad trade.

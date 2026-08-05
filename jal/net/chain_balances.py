@@ -41,6 +41,14 @@ _LAMPORTS = Decimal('10') ** 9      # 1 SOL = 10^9 lamports, the unit a stake ac
 # proves the address really is a stake account, and it costs nothing to ask for.
 _SOL_STAKE_PROGRAM = 'Stake11111111111111111111111111111111111111'
 
+# Call data of ERC-20 'decimals()' - the function selector alone, as it takes no arguments. It is the only way to
+# learn the scale of a balance, which is reported as a bare integer (see _token_decimals).
+_ERC20_DECIMALS = '0x313ce567'
+
+# Decimals is a uint8, but no real token is anywhere near that: 18 is the usual value and 36 leaves generous room.
+# An answer beyond this is not a token with very many decimal places, it is a call that returned something else.
+_MAX_TOKEN_DECIMALS = 36
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Reads what a chain really holds and records it in 'chain_balances'.
@@ -75,6 +83,14 @@ class ChainBalanceReader(JalDB):
 
     def _post(self, url: str, request: dict):
         web_request = WebRequest(WebRequest.POST_JSON, url, params=request)
+        self._wait_for(web_request)
+        try:
+            return json.loads(web_request.data())
+        except (json.JSONDecodeError, TypeError):
+            return None
+
+    def _get(self, url: str, params: dict):
+        web_request = WebRequest(WebRequest.GET, url, params=params)
         self._wait_for(web_request)
         try:
             return json.loads(web_request.data())
@@ -225,6 +241,125 @@ class ChainBalanceReader(JalDB):
         except (DecimalException, ValueError, KeyError, TypeError):
             logging.warning(self.tr("Unreadable balance of stake account ") + address)
             return None
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # REBASING ASSETS. The other half of what this module reads, and the one the whole design was built from: an Aave
+    # aToken's balance is a scaled number times the reserve's liquidity index, and that index rises EVERY BLOCK with
+    # no event and no transfer behind it. A fetcher that can only book what a chain announces is therefore short by
+    # the entire accrued interest - 2.24% on the position this was measured against, and growing.
+    #
+    # Unlike a staking box, the trigger is the ASSET rather than the account: the flag says this token's quantity can
+    # grow on its own (AssetData.Rebasing), and it is set by hand per asset because inferring it from a ticker prefix
+    # would eventually add invented quantity to a position that never grows. Share tokens must never carry it -
+    # Fluid's fTokens and stkAAVE hold a fixed quantity whose PRICE accrues, which the quote source already reports.
+
+    # {location_id: EVM fetcher class}. The endpoint configuration is read off the fetchers rather than repeated here,
+    # so a chain served by a different provider (Avalanche, on Routescan, with its own root and its own key) is
+    # already right and cannot drift out of step with the fetcher that shares it.
+    @staticmethod
+    def _evm_chains() -> dict:
+        from jal.net.chain_fetchers.ethereum import EthereumFetcher
+        from jal.net.chain_fetchers.arbitrum import ArbitrumFetcher
+        from jal.net.chain_fetchers.avalanche import AvalancheFetcher
+        return {x.location_id: x for x in (EthereumFetcher, ArbitrumFetcher, AvalancheFetcher)}
+
+    # Contract address of an asset on one chain, or '' when it has no listing there (or none carrying an address).
+    def _contract_of(self, asset_id: int, location_id: int) -> str:
+        id_type = AssetLocation.address_id_of(location_id)
+        if id_type is None:
+            return ''
+        address = self._read(
+            "SELECT i.id_value FROM asset_symbol s JOIN symbol_ids i ON i.symbol_id=s.id "
+            "WHERE s.asset_id=:asset_id AND s.location_id=:location_id AND i.id_type=:id_type AND s.active=1 LIMIT 1",
+            [(":asset_id", asset_id), (":location_id", location_id), (":id_type", id_type)])
+        return address if address else ''
+
+    # Decimals of a token, asked of the contract once and remembered for good (AssetData.Decimals).
+    #
+    # A history endpoint reports the decimals beside every amount, which is why importing transfers never needed
+    # this; a BALANCE answers with a bare integer and nothing else, so the scale has to come from somewhere and the
+    # contract is the only authority on it. Asking on demand rather than recording it at import time is what makes
+    # tokens JAL already holds work: a value written only by new imports would leave every existing position unable
+    # to be read until it happened to move again.
+    #
+    # A value outside the plausible range is refused rather than stored. Decimals is a uint8 and an answer of, say,
+    # 200 would not be a token with 200 decimal places - it would be a call that returned something else entirely,
+    # and using it would divide a balance into nothing.
+    def _token_decimals(self, asset: JalAsset, chain, contract: str, api_key: str):
+        known = asset.decimals()
+        if known is not None:
+            return known
+        answer = self._get(chain.api_root, {"chainid": chain.chain_id, "module": "proxy", "action": "eth_call",
+                                            "to": contract, "data": _ERC20_DECIMALS, "tag": "latest",
+                                            "apikey": api_key})
+        result = answer.get('result') if isinstance(answer, dict) else None
+        if not result or not isinstance(result, str) or not result.startswith('0x') or len(result) < 3:
+            logging.warning(self.tr("Could not read the decimals of token ") + f"{asset.symbol()} ({contract})")
+            return None
+        try:
+            decimals = int(result, 16)
+        except ValueError:
+            logging.warning(self.tr("Unreadable decimals of token ") + f"{asset.symbol()} ({contract})")
+            return None
+        if not 0 <= decimals <= _MAX_TOKEN_DECIMALS:
+            logging.warning(self.tr("Implausible decimals of token ") + f"{asset.symbol()}: {decimals}")
+            return None
+        asset.set_decimals(decimals)
+        return decimals
+
+    # What one wallet really holds of one rebasing token, as {asset id: quantity}, or None when it could not be read.
+    def _evm_token_balance(self, account: JalAccount, asset: JalAsset, timestamp: int):
+        chain = self._evm_chains().get(account.chain())
+        contract = self._contract_of(asset.id(), account.chain())
+        if chain is None or not contract:
+            return None
+        api_key = JalSettings().getStr(chain.api_key_setting).strip()
+        if not api_key:
+            logging.warning(self.tr("On-chain balance not read - the API key isn't set: ") + chain.api_name)
+            return None
+        decimals = self._token_decimals(asset, chain, contract, api_key)
+        if decimals is None:
+            return None
+        answer = self._get(chain.api_root, {"chainid": chain.chain_id, "module": "account", "action": "tokenbalance",
+                                            "contractaddress": contract, "address": account.address(),
+                                            "tag": "latest", "apikey": api_key})
+        if not isinstance(answer, dict) or str(answer.get('status', '0')) != '1':
+            logging.warning(self.tr("Could not read the balance of ") + f"{asset.symbol()} @ {account.name()}")
+            return None
+        try:
+            return asset.id(), Decimal(str(answer['result'])) / (Decimal('10') ** decimals)
+        except (DecimalException, ValueError, KeyError, TypeError):
+            logging.warning(self.tr("Unreadable balance of ") + f"{asset.symbol()} @ {account.name()}")
+            return None
+
+    # Reads and records what every wallet really holds of every FLAGGED asset.
+    #
+    # Only flagged assets are asked about, and that is what keeps this cheap and keeps the table meaningful: a token
+    # that cannot grow on its own would produce a row saying the chain and the books agree, which is worth nothing
+    # and would bury the handful of rows that are worth something. In the author's database it is two requests.
+    #
+    # NOTE, and it cannot be worked around from here: a balance is only ever available for NOW. Asking with a past
+    # block was tested at three different blocks and silently returned the latest value every time - the free proxy
+    # is not archive-backed - so the interest that has already accrued cannot be back-filled and the series can only
+    # start today. It is recognized as income at withdrawal, where the whole tracked delta is realized at once.
+    def read_rebasing_assets(self, timestamp: int, locations: list = None) -> int:
+        chains = self._evm_chains()
+        count = 0
+        for account in JalAccount.get_all_accounts(investing_only=True, include_hidden=True):
+            if account.chain() not in chains or not account.address():
+                continue
+            if locations is not None and account.chain() not in locations:
+                continue
+            for holding in account.assets_list(timestamp):
+                if not holding['asset'].rebasing():
+                    continue
+                measurement = self._evm_token_balance(account, holding['asset'], timestamp)
+                if measurement is None:
+                    continue
+                asset_id, amount = measurement
+                self._storage.store(timestamp, account.id(), asset_id, amount)
+                count += 1
+        return count
 
     # ------------------------------------------------------------------------------------------------------------------
     # Which venues accrue silently, and how each of them is read. The table is venue knowledge deliberately kept OUT

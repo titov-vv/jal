@@ -48,6 +48,11 @@ class JalAsset(JalDB):
             self._rebasing = int(self._data.get('data', {}).get(AssetData.Rebasing, 0)) != 0
         except (ValueError, TypeError):
             self._rebasing = False
+        # Left as None when absent or unreadable - "not known" rather than "zero", see decimals()
+        try:
+            self._decimals = int(self._data['data'][AssetData.Decimals])
+        except (KeyError, ValueError, TypeError):
+            self._decimals = None
         try:
             self._tag = JalTag(int(self._data.get('data', {}).get(AssetData.Tag, 0)))
         except (AttributeError, ValueError, TypeError):
@@ -406,6 +411,26 @@ class JalAsset(JalDB):
     # row, which is what keeps that table free of zero deltas.
     def rebasing(self) -> bool:
         return self._rebasing
+
+    # Decimal places of this token's on-chain integer amount, or None when JAL has never had to ask.
+    #
+    # None and 0 are different answers and must stay so: 0 is a real, valid value (a token with no fractional part),
+    # while None means "unknown" - and treating unknown as 0 would read a raw integer as a whole quantity, inflating a
+    # balance by up to 10^18. Every caller has to handle the None.
+    def decimals(self):
+        return self._decimals
+
+    # Records the decimals of this token, which is learned rather than entered: the first balance read that needs
+    # them asks the contract and stores the answer here, so the question is asked once per token ever.
+    def set_decimals(self, decimals: int) -> None:
+        if self._decimals is not None:
+            return
+        _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                       "VALUES(:asset_id, :datatype, :value)",
+                       [(":asset_id", self._id), (":datatype", AssetData.Decimals), (":value", str(int(decimals)))],
+                       commit=True)
+        self._decimals = int(decimals)
+        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))
 
     def tag(self) -> JalTag:
         return self._tag

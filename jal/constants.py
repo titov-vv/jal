@@ -332,6 +332,18 @@ class AssetData(PredefinedList, QObject):
     # stkAAVE) must NOT carry it - their quantity is fixed and it is the price that accrues, which the quote source
     # already reports correctly. Stored as 0/1.
     Rebasing = 5
+    # Number of decimal places a token's on-chain integer amount carries (an ERC-20 'decimals()'). It is NOT needed to
+    # import a transfer - every history endpoint reports the decimals alongside the amount - but a BALANCE query
+    # answers with a bare integer and nothing else, so without this a balance cannot be turned into a quantity at all.
+    #
+    # Recorded on the ASSET rather than on each listing. Decimals belong to a contract in principle, so a token
+    # deployed on two chains could in principle disagree with itself; in practice it does not, and it was checked
+    # rather than assumed - every multi-chain asset in the author's database (USDT, USDC, GHO, FLUID) reports the
+    # same value on every chain it is deployed on. Should a token ever be met that does disagree, this has to move to
+    # 'asset_symbol'.
+    #
+    # It is filled in on demand, by the first balance read that needs it, and never by hand.
+    Decimals = 6
 
     def __init__(self):
         super().__init__()
@@ -340,14 +352,16 @@ class AssetData(PredefinedList, QObject):
             self.ExpiryDate: self.tr("expiry"),
             self.PrincipalValue: self.tr("principal"),
             self.CoinGeckoId: self.tr("CoinGecko id"),
-            self.Rebasing: self.tr("rebasing")
+            self.Rebasing: self.tr("rebasing"),
+            self.Decimals: self.tr("decimals")
         }
         self._types = {
             self.Tag: "tag",
             self.ExpiryDate: "date",
             self.PrincipalValue: "float",
             self.CoinGeckoId: "str",
-            self.Rebasing: "int"
+            self.Rebasing: "int",
+            self.Decimals: "int"
         }
 
     def get_type(self, type_id, default='') -> str:
