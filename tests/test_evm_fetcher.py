@@ -1307,3 +1307,62 @@ def test_a_ccip_arrival_is_an_unmarked_incoming_transfer(eth_wallet, monkeypatch
     assert len(transfers) == 1 and transfers[0]['withdrawal'] == Decimal('48300.778335')
     assert transfers[0]['account'][0] == 0                               # incoming: the source account is unknown
     assert TransferMark.BRIDGE not in transfers[0]['description']
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The block window every 'account' query asks for. This is the one part of the query the recorded-fixture tests above
+# can never catch: they replace _get_pages outright, so the parameters it builds are never looked at - and a wrong
+# 'endblock' does not fail, it returns an EMPTY answer that reads exactly like an exhausted history.
+def _capture_query(monkeypatch, answer):
+    from jal.net.chain_fetchers import evm as evm_module
+    captured = []
+
+    class _FakeRequest:
+        GET = evm_module.WebRequest.GET
+
+        def __init__(self, operation, url, params=None, **kwargs):
+            captured.append(params)
+
+        @staticmethod
+        def data():
+            return json.dumps(answer)
+
+    monkeypatch.setattr(evm_module, "WebRequest", _FakeRequest)
+    monkeypatch.setattr(evm_module.EVMFetcher, "_wait_for", staticmethod(lambda request: None))
+    monkeypatch.setattr(evm_module.EVMFetcher, "_report_page", lambda self: None)
+    return captured
+
+
+# The window must reach above the height of every chain the fetcher reads
+def test_block_window_reaches_above_every_supported_chain_height(eth_wallet, monkeypatch):
+    captured = _capture_query(monkeypatch, {"status": "1", "message": "OK", "result": []})
+    fetcher = EthereumFetcher()
+    fetcher._account = eth_wallet
+    fetcher._get_pages("txlist", 25000000)
+
+    assert captured, "the query was never built"
+    assert int(captured[0]["endblock"]) > 10 ** 11
+    assert int(captured[0]["startblock"]) == 25000000
+
+
+# 'latest' would be the honest way to say "no upper bound", and Etherscan does accept it - but Routescan, which serves
+# Avalanche through the same code path, rejects the whole request with "Invalid querystring request". The bound is
+# therefore numeric, and this pins that down so it is not "tidied up" into a string later.
+def test_block_window_is_numeric_because_routescan_refuses_latest(eth_wallet, monkeypatch):
+    captured = _capture_query(monkeypatch, {"status": "1", "message": "OK", "result": []})
+    fetcher = EthereumFetcher()
+    fetcher._account = eth_wallet
+    fetcher._get_pages("txlist", 1)
+
+    assert str(captured[0]["endblock"]).isdigit()
+
+
+# An empty history is still a legitimate answer, and it has to stay distinguishable from an error: _get_pages returns
+# no records and does NOT raise. What made the old bug so quiet is exactly this - the provider's answer was correct
+# for the window it was asked about, and only the window was wrong.
+def test_no_transactions_is_an_empty_history_and_not_an_error(eth_wallet, monkeypatch):
+    _capture_query(monkeypatch, {"status": "0", "message": "No transactions found", "result": []})
+    fetcher = EthereumFetcher()
+    fetcher._account = eth_wallet
+
+    assert fetcher._get_pages("txlist", 25000000) == []

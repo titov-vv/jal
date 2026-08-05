@@ -31,6 +31,13 @@ _ETHERSCAN_API_ROOT = "https://api.etherscan.io/v2/api"
 _WEI = Decimal('10') ** 18        # 1 coin = 10^18 wei, the unit every native amount is returned in
 _NO_TRANSACTIONS = "No transactions found"   # status=0 message that means "empty history", not an error
 
+# Upper end of the block window every 'account' query asks for - i.e. "no upper end at all". It has to stay above the
+# height of EVERY chain this fetcher reads, and that is not a formality: the provider enforces 'endblock', and a value
+# a chain has already passed closes the window BELOW the sync cursor. The query then answers
+# _NO_TRANSACTIONS, which is indistinguishable from an exhausted history - so the fetch reports success, imports
+# nothing and leaves the cursor where it was, silently, for as long as the account exists.
+_MAX_BLOCK = 999999999999
+
 _METHOD_APPROVE = '0x095ea7b3'    # approve(address,uint256) selector, the one gas-only call worth naming apart
 
 
@@ -102,7 +109,7 @@ class EVMFetcher(ChainFetcher):
         records = []
         for page in range(1, self.max_pages + 1):
             params = {"chainid": self.chain_id, "module": "account", "action": action,
-                      "address": self._account.address(), "startblock": start_block, "endblock": 99999999,
+                      "address": self._account.address(), "startblock": start_block, "endblock": _MAX_BLOCK,
                       "page": page, "offset": self.page_size, "sort": "asc", "apikey": self._api_key()}
             request = WebRequest(WebRequest.GET, self.api_root, params=params)
             self._wait_for(request)
