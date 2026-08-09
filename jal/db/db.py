@@ -5,6 +5,7 @@ import os
 import sys
 import re
 import logging
+import functools
 import sqlparse
 from configparser import ConfigParser
 from packaging.version import Version
@@ -353,21 +354,29 @@ class JalDB:
         else:
             _ = self._exec("PRAGMA foreign_keys = OFF")
 
+    # DB is rebuilt for many test cases. Parsing/formatting with sqlparse is an expensive operation.
+    # This function caches (small, static) script files themselves, so results are cached per file path -
+    # content of a given script file never changes during the process lifetime.
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def _cleaned_statements(script_file):
+        with open(script_file, 'r', encoding='utf-8') as sql_script:
+            statements = sqlparse.split(sql_script)
+        return tuple(sqlparse.format(statement, strip_comments=True) for statement in statements)
+
     # Method loads sql script into database
     def run_sql_script(self, script_file) -> JalDBError:
         try:
-            with open(script_file, 'r', encoding='utf-8') as sql_script:
-                statements = sqlparse.split(sql_script)
-                for statement in statements:
-                    clean_statement = sqlparse.format(statement, strip_comments=True)
-                    if self._exec(clean_statement, commit=False) is None:
-                        _ = self._exec("ROLLBACK")
-                        self.connection().close()
-                        return JalDBError(JalDBError.SQLFailure, f"FAILED: {clean_statement}")
-                    else:
-                        logging.debug(f"EXECUTED OK:\n{clean_statement}")
+            statements = self._cleaned_statements(script_file)
         except FileNotFoundError:
             return JalDBError(JalDBError.NoDeltaFile, script_file)
+        for clean_statement in statements:
+            if self._exec(clean_statement, commit=False) is None:
+                _ = self._exec("ROLLBACK")
+                self.connection().close()
+                return JalDBError(JalDBError.SQLFailure, f"FAILED: {clean_statement}")
+            else:
+                logging.debug(f"EXECUTED OK:\n{clean_statement}")
         return JalDBError(JalDBError.NoError)
 
     # updates current db schema to the latest available with help of scripts in 'updates' folder
