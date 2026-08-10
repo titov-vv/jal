@@ -203,6 +203,8 @@ def test_MOEX_downloader_USD(prepare_db_moex):
      [Decimal('792.5999755859375'), Decimal('800.79998779296875')], [dt2dt(2104130700), dt2dt(2104140700)]),
     ('VOW3', 3, 'YahooFRA_Downloader',
      [Decimal('233.399993896484375'), Decimal('234.25')], [dt2dt(2104130600), dt2dt(2104140600)]),
+    ('NOKIA', 3, 'YahooHEL_Downloader',
+     [Decimal('3.4934999942779541015625'), Decimal('3.502500057220458984375')], [dt2dt(2104130700), dt2dt(2104140700)])
 ])
 def test_Yahoo_family_downloaders(prepare_db, ticker, currency_id, downloader_name, expected_closes, expected_dates):
     create_stocks([(ticker, '')], currency_id=currency_id)   # id = 4
@@ -211,17 +213,6 @@ def test_Yahoo_family_downloaders(prepare_db, ticker, currency_id, downloader_na
     downloader = QuoteDownloader()
     quotes_downloaded = getattr(downloader, downloader_name)(JalSymbol(symbol_id_for(4, currency_id)), currency_id,
                                                               d2t(210413), d2t(210415))
-    assert_frame_equal(quotes, quotes_downloaded)
-
-
-def test_Euronext_downloader(prepare_db):
-    create_assets([('NOK', 'Nokia', 'FI0009000681', 3, PredefinedAsset.Stock, 0)])   # ID = 4
-    quotes = pd.DataFrame({'Close': [Decimal('4.483'), Decimal('4.481'), Decimal('4.5115')],
-                           'Date': [d2dt(230412), d2dt(230413), d2dt(230414)]})
-    quotes = quotes.set_index('Date')
-
-    downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Euronext_DataReader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(230412), d2t(230414))
     assert_frame_equal(quotes, quotes_downloaded)
 
 def test_EuronextMilan_DataReader(prepare_db):

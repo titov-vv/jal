@@ -372,7 +372,7 @@ class QuoteDownloader(QObject):
     def download_asset_prices(self, start_timestamp, end_timestamp, sources_list):
         data_loaders = {
             AssetLocation.MOEX_EXCHANGE: self.MOEX_DataReader,
-            AssetLocation.EURONEXT_EXCHANGE: self.Euronext_DataReader,
+            AssetLocation.HEL_EXCHANGE: self.YahooHEL_Downloader,
             AssetLocation.NYSE_EXCHANGE: self.Yahoo_Downloader,
             AssetLocation.NASDAQ_EXCHANGE: self.Yahoo_Downloader,
             AssetLocation.TMX_EXCHANGE: self.TMX_Downloader,
@@ -635,49 +635,9 @@ class QuoteDownloader(QObject):
     def YahooFRA_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
         return self.Yahoo_Downloader(symbol, currency_id, start_timestamp, end_timestamp, suffix='.F')
 
-    # noinspection PyMethodMayBeStatic
-    def Euronext_DataReader(self, symbol, currency_id, start_timestamp, end_timestamp):
-        suffix = "ETFP" if symbol.asset().type() == PredefinedAsset.ETF else "BGEM"  # Dates don't work for ETFP due to glitch on their site, 'BGEM' - global equity market
-        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{symbol.identifier(SymbolId.ISIN)}-{suffix}"
-        params = {
-            'format': 'csv',
-            'decimal_separator': '.',
-            'date_form': 'd/m/Y',
-            'op': '',
-            'adjusted': 'N',
-            'base100': '',
-            'startdate': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y-%m-%d'),
-            'enddate': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y-%m-%d')
-        }
-        self._request = WebRequest(WebRequest.GET, url, params=params)
-        self._wait_for_event()
-        quotes = self._request.data()
-        quotes_text = quotes.replace(u'\ufeff', '').splitlines()    # Remove BOM from the beginning
-        if len(quotes_text) < 4:
-            logging.warning(self.tr("Euronext quotes history reply is too short: ") + quotes)
-            return None
-        if quotes_text[0] != '"Historical Data"':
-            logging.warning(self.tr("Euronext quotes header not found in: ") + quotes)
-            return None
-        if quotes_text[2] != symbol.identifier(SymbolId.ISIN):
-            logging.warning(self.tr("Euronext quotes ISIN mismatch in: ") + quotes)
-            return None
-        quotes_text = [x.replace("'", "") for x in quotes_text]   # Some lines have occasional quote in some places
-        quotes = "\n".join(quotes_text)
-        file = StringIO(quotes)
-        try:
-            data = pd.read_csv(file, header=3, sep=';', dtype={'Date': str, 'Close': str}, index_col=False)
-        except ParserError:
-            return None
-        data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y", utc=True)
-        data = data[data.Date >= datetime.fromtimestamp(start_timestamp, tz=timezone.utc)]   # There is a bug on Euronext side - it returns full set regardless of date
-        data = data[data.Date <= datetime.fromtimestamp(end_timestamp, tz=timezone.utc)]
-        data['Close'] = data['Close'].apply(Decimal)
-        data = data.drop(columns=['Open', 'High', 'Low', 'Last', 'Number of Shares', 'Number of Trades', 'Turnover', 'vwap'],
-                         errors='ignore')  # Ignore errors as some columns might be missing
-        close = data.set_index("Date")
-        close.sort_index(inplace=True)
-        return close
+    # The same as Yahoo_Downloader but it adds ".F" suffix to asset_code and returns prices in EUR
+    def YahooHEL_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
+        return self.Yahoo_Downloader(symbol, currency_id, start_timestamp, end_timestamp, suffix='.HE')
 
     # noinspection PyMethodMayBeStatic
     def EuronextMilan_DataReader(self, symbol, currency_id, start_timestamp, end_timestamp):

@@ -464,6 +464,7 @@ class AssetLocation(PredefinedList, QObject):
     # location would be a lie on the second. What the location does say is true of every exchange alike - the coin
     # is a claim on a custodian and sits on no chain the user controls.
     CEX_EXCHANGE = 210
+    HEL_EXCHANGE = 211
     ETH_BLOCKCHAIN = 301
     ARB_BLOCKCHAIN = 302
     BTC_BLOCKCHAIN = 303
@@ -539,6 +540,7 @@ class AssetLocation(PredefinedList, QObject):
             self.TMX_EXCHANGE: self.tr("TMX TSX"),
             self.MOEX_EXCHANGE: self.tr("MOEX"),
             self.CEX_EXCHANGE: self.tr("Crypto exchange"),
+            self.HEL_EXCHANGE: self.tr("Nasdaq Helsinki"),
             self.ETH_BLOCKCHAIN: self.tr("Ethereum"),
             self.ARB_BLOCKCHAIN: self.tr("Arbitrum"),
             self.BTC_BLOCKCHAIN: self.tr("Bitcoin"),
