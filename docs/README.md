@@ -120,3 +120,6 @@ And while I can't name every one of them I would like to confirm my appreciation
 
 
  ---
+
+<img src="https://jal.goatcounter.com/count?p=/github-readme" alt="" width="1" height="1">
+
