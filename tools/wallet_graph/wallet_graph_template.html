@@ -1,0 +1,1046 @@
+<title>Crypto wallet flows</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --plane:      #f2f3f5;
+    --surface:    #fbfbfc;
+    --sunken:     #eceef1;
+    --ink:        #0d0f14;
+    --ink-2:      #4d5361;
+    --muted:      #868c99;
+    --hair:       #dfe2e8;
+    --hair-soft:  #e9ebef;
+    --node:       #333a47;
+    --transfer:   #2a78d6;
+    --bridge:     #eb6834;
+    --swap:       #1baf7a;
+    --custody:    #868c99;
+    --focus:      #2a78d6;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --plane:     #0c0e12;
+      --surface:   #15181e;
+      --sunken:    #1b1f27;
+      --ink:       #f2f4f8;
+      --ink-2:     #b4bac6;
+      --muted:     #7f8695;
+      --hair:      #272b34;
+      --hair-soft: #1f232b;
+      --node:      #cbd1dd;
+      --transfer:  #3987e5;
+      --bridge:    #d95926;
+      --swap:      #199e70;
+      --custody:   #7f8695;
+      --focus:     #3987e5;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --plane:     #0c0e12;
+    --surface:   #15181e;
+    --sunken:    #1b1f27;
+    --ink:       #f2f4f8;
+    --ink-2:     #b4bac6;
+    --muted:     #7f8695;
+    --hair:      #272b34;
+    --hair-soft: #1f232b;
+    --node:      #cbd1dd;
+    --transfer:  #3987e5;
+    --bridge:    #d95926;
+    --swap:      #199e70;
+    --custody:   #7f8695;
+    --focus:     #3987e5;
+  }
+
+  body {
+    margin: 0;
+    background: var(--plane);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0;
+  }
+  h1 {
+    font-size: clamp(26px, 3.4vw, 38px);
+    line-height: 1.1;
+    letter-spacing: -0.022em;
+    font-weight: 600;
+    margin: 6px 0 0;
+    text-wrap: balance;
+  }
+  .lede {
+    margin: 10px 0 0;
+    max-width: 66ch;
+    color: var(--ink-2);
+  }
+
+  /* ---- summary strip ------------------------------------------------- */
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    border: 1px solid var(--hair);
+    border-radius: 3px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .strip div {
+    padding: 12px 16px;
+    border-left: 1px solid var(--hair-soft);
+  }
+  .strip div:first-child { border-left: 0; }
+  .strip dt {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .strip dd {
+    margin: 2px 0 0;
+    font-family: var(--mono);
+    font-size: 21px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* ---- controls ------------------------------------------------------ */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 18px;
+  }
+  .kinds { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kind {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 11px 5px 9px;
+    border: 1px solid var(--hair);
+    border-radius: 999px;
+    background: var(--surface);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    user-select: none;
+  }
+  .kind:hover { border-color: var(--muted); }
+  .kind input { position: absolute; opacity: 0; pointer-events: none; }
+  .kind input:focus-visible + .glyph { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .kind:has(input:checked) { color: var(--ink); border-color: var(--muted); }
+  .kind:has(input:not(:checked)) { opacity: 0.5; }
+  .glyph { width: 26px; height: 8px; flex: none; }
+  button.ghost {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 6px 12px;
+    border: 1px solid var(--hair);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  button.ghost:hover { border-color: var(--muted); color: var(--ink); }
+  button.ghost:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---- plate + rail -------------------------------------------------- */
+  .plate {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 322px;
+    border: 1px solid var(--hair);
+    border-radius: 3px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .canvas-cell { position: relative; min-height: 700px; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .plate-note {
+    position: absolute;
+    left: 14px;
+    bottom: 10px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .rail {
+    border-left: 1px solid var(--hair);
+    background: var(--sunken);
+    padding: 18px;
+    overflow-y: auto;
+    max-height: 780px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .rail h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+  .rail .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--hair);
+    border-radius: 2px;
+    padding: 1px 6px;
+    margin-right: 5px;
+  }
+  .rail .addr {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    overflow-wrap: anywhere;
+    background: var(--surface);
+    border: 1px solid var(--hair-soft);
+    border-radius: 2px;
+    padding: 6px 8px;
+  }
+  .rail section { display: flex; flex-direction: column; gap: 7px; }
+  .rail h3 {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--hair);
+  }
+  .flow {
+    display: grid;
+    grid-template-columns: 8px 1fr auto;
+    gap: 8px;
+    align-items: baseline;
+    font-size: 13px;
+    background: none;
+    border: 0;
+    padding: 3px 0;
+    text-align: left;
+    color: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    width: 100%;
+  }
+  .flow:hover .flow-name { text-decoration: underline; }
+  .flow:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; align-self: center; }
+  .flow-name { overflow-wrap: anywhere; }
+  .flow-name small { display: block; color: var(--muted); font-family: var(--mono); font-size: 10.5px; }
+  .flow-n {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2);
+  }
+  .assets {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .assets span b { font-weight: 500; color: var(--ink); }
+  .empty { color: var(--muted); font-size: 13px; margin: 0; }
+
+  /* ---- ledger table -------------------------------------------------- */
+  details.ledger {
+    border: 1px solid var(--hair);
+    border-radius: 3px;
+    background: var(--surface);
+  }
+  details.ledger > summary {
+    cursor: pointer;
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  details.ledger > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  details.ledger[open] > summary { border-bottom: 1px solid var(--hair); }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td {
+    text-align: left;
+    padding: 7px 16px;
+    border-bottom: 1px solid var(--hair-soft);
+    white-space: nowrap;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+  td.assets-cell { font-family: var(--mono); font-size: 11.5px; white-space: normal; min-width: 240px; color: var(--ink-2); }
+  td.kind-cell { font-family: var(--mono); font-size: 11.5px; }
+  .swatch {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 2px;
+    margin-right: 7px;
+    vertical-align: baseline;
+  }
+
+  footer {
+    font-size: 12.5px;
+    color: var(--muted);
+    max-width: 78ch;
+  }
+  footer code { font-family: var(--mono); font-size: 11.5px; }
+
+  @media (max-width: 900px) {
+    .plate { grid-template-columns: minmax(0, 1fr); }
+    .rail { border-left: 0; border-top: 1px solid var(--hair); max-height: none; }
+    .canvas-cell { min-height: 480px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">jal.sqlite · accounts, transfers, bridges, swaps</p>
+    <h1>Crypto wallet flows</h1>
+    <p class="lede">
+      Every recorded movement of value between the wallets, exchange accounts and staking boxes in
+      this ledger. Nodes are accounts, grouped into the blockchain they live on; each line is one
+      direction of flow, thicker where it carried more transactions. Hover a node or a line to read it.
+    </p>
+  </header>
+
+  <dl class="strip" id="strip"></dl>
+
+  <div class="controls">
+    <div class="kinds" id="kinds"></div>
+    <button class="ghost" type="button" id="toggle-fiat">Hide banks &amp; brokers</button>
+    <button class="ghost" type="button" id="relayout">Re-run layout</button>
+  </div>
+
+  <div class="plate">
+    <div class="canvas-cell">
+      <canvas id="plot"></canvas>
+      <p class="plate-note">Drag a node to rearrange · click to pin · click empty space to clear</p>
+    </div>
+    <aside class="rail" id="rail" aria-live="polite"></aside>
+  </div>
+
+  <details class="ledger">
+    <summary>Ledger view — every flow as a table</summary>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">From</th>
+            <th scope="col">To</th>
+            <th scope="col">Kind</th>
+            <th scope="col" style="text-align:right">Txs</th>
+            <th scope="col">Assets moved (gross)</th>
+            <th scope="col">First</th>
+            <th scope="col">Last</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <footer id="footnote"></footer>
+</div>
+
+<script>
+const GRAPH = /*__GRAPH__*/null;
+
+const KINDS = {
+  transfer: { label: "Transfer",  color: "--transfer", dash: [],       desc: "a plain move of one asset between two accounts" },
+  bridge:   { label: "Bridge",    color: "--bridge",   dash: [9, 4],   desc: "the same value carried across chains" },
+  swap:     { label: "Swap",      color: "--swap",     dash: [2, 3],   desc: "one asset traded for another that lands elsewhere" },
+  custody:  { label: "Custody",   color: "--custody",  dash: [4, 4],   desc: "an asset handed to a staking box and back" }
+};
+const SHAPES = {
+  wallet:   "circle",
+  cex:      "square",
+  staking:  "diamond",
+  external: "hollow"
+};
+const KIND_NAMES = {
+  wallet: "On-chain wallet", cex: "Exchange / custodial account", staking: "Staking box",
+  bank: "Bank account", card: "Card account", cash: "Cash account", broker: "Broker account",
+  external: "Not tracked in JAL", deposit: "Term deposit", other: "Account"
+};
+const FIAT = new Set(["bank", "card", "cash", "broker"]);
+
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmtDate = (ts) => new Date(ts * 1000).toISOString().slice(0, 10);
+
+/* ---------- model ---------------------------------------------------- */
+const nodes = GRAPH.nodes.map((n) => ({ ...n, x: 0, y: 0, vx: 0, vy: 0 }));
+const byId = new Map(nodes.map((n) => [n.id, n]));
+const links = GRAPH.edges
+  .filter((e) => byId.has(e.source) && byId.has(e.target))
+  .map((e) => ({ ...e, s: byId.get(e.source), t: byId.get(e.target) }));
+
+// A staking box carries no chain attribute of its own. When every account it settles
+// with sits on one chain, that is the chain it belongs to; anything less stays unplaced.
+for (const n of nodes) {
+  if (n.kind !== "staking" || n.chain) continue;
+  const peers = links.filter((l) => l.s === n || l.t === n).map((l) => (l.s === n ? l.t : l.s));
+  const chains = new Set(peers.map((p) => p.chain).filter(Boolean));
+  if (chains.size === 1) { n.chain = [...chains][0]; n.chainInferred = true; }
+}
+
+for (const n of nodes) { n.txs = 0; n.out = 0; n.in = 0; }
+for (const l of links) {
+  l.s.txs += l.count; l.t.txs += l.count;
+  l.s.out += l.count; l.t.in += l.count;
+}
+
+const FIAT_GROUP = "Banks & brokers";
+const CEX_GROUP = "Exchanges & custodians";
+// An account's group is its chain; the ones that live on no chain of their own split by what
+// they are. An untracked counterparty belongs nowhere and is left to float to whoever it touches.
+const groupOf = (n) =>
+  n.chain ? n.chain : (n.kind === "external" ? null : (FIAT.has(n.kind) ? FIAT_GROUP : CEX_GROUP));
+const GROUP_POS = {
+  [FIAT_GROUP]:  [0.10, 0.10],
+  [CEX_GROUP]:   [0.07, 0.62],
+  Ethereum:      [0.44, 0.33],
+  Arbitrum:      [0.70, 0.22],
+  Avalanche:     [0.93, 0.44],
+  Hyperliquid:   [0.79, 0.62],
+  Bitcoin:       [0.88, 0.88],
+  Solana:        [0.53, 0.86],
+  Tron:          [0.20, 0.90]
+};
+const GROUP_LABEL = { [FIAT_GROUP]: "BANKS & BROKERS", [CEX_GROUP]: "EXCHANGES & CUSTODIANS" };
+const groups = [...new Set(nodes.map(groupOf))].filter((g) => g && GROUP_POS[g]);
+
+const state = { kinds: new Set(Object.keys(KINDS)), showFiat: true, hover: null, pinned: null, drag: null };
+const isFiat = (n) => FIAT.has(n.kind);
+const linkVisible = (l) =>
+  state.kinds.has(l.kind) && (state.showFiat || (!isFiat(l.s) && !isFiat(l.t)));
+const nodeVisible = (n) =>
+  (state.showFiat || !isFiat(n)) && links.some((l) => linkVisible(l) && (l.s === n || l.t === n));
+
+/* ---------- layout --------------------------------------------------- */
+const canvas = document.getElementById("plot");
+const ctx = canvas.getContext("2d");
+let W = 900, H = 620;
+
+function seedPositions() {
+  const centers = new Map(groups.map((g) => [g, [GROUP_POS[g][0] * W, GROUP_POS[g][1] * H]]));
+  const seen = new Map();
+  for (const n of nodes) {
+    const g = groupOf(n);
+    const c = centers.get(g) || [W * 0.6, H * 0.5];
+    const i = (seen.get(g) || 0); seen.set(g, i + 1);
+    const a = i * 2.399;                       // golden-angle spiral keeps seeds apart
+    n.x = c[0] + Math.cos(a) * (14 + i * 9);
+    n.y = c[1] + Math.sin(a) * (14 + i * 9);
+    n.vx = n.vy = 0;
+  }
+  return centers;
+}
+
+function simulate(steps) {
+  const centers = new Map(groups.map((g) => [g, [GROUP_POS[g][0] * W, GROUP_POS[g][1] * H]]));
+  for (let step = 0; step < steps; step++) {
+    const cool = 1 - step / steps;
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let d2 = dx * dx + dy * dy;
+        if (d2 < 1) { dx = (Math.random() - 0.5); dy = (Math.random() - 0.5); d2 = 1; }
+        const rep = 5000 / d2;
+        const d = Math.sqrt(d2);
+        const fx = (dx / d) * rep, fy = (dy / d) * rep;
+        a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
+      }
+    }
+    for (const l of links) {
+      const same = groupOf(l.s) === groupOf(l.t);
+      const rest = same ? 76 : 165;
+      const dx = l.t.x - l.s.x, dy = l.t.y - l.s.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const f = (d - rest) * (same ? 0.018 : 0.005);   // a flow across chains pulls only gently
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      l.s.vx += fx; l.s.vy += fy; l.t.vx -= fx; l.t.vy -= fy;
+    }
+    for (const n of nodes) {
+      const c = centers.get(groupOf(n));
+      const k = c ? 0.095 : 0.004;               // an ungrouped node only feels the plate's middle
+      const p = c || [W / 2, H / 2];
+      n.vx += (p[0] - n.x) * k;
+      n.vy += (p[1] - n.y) * k;
+      n.x += (n.vx *= 0.82) * cool;
+      n.y += (n.vy *= 0.82) * cool;
+      const m = 46;
+      n.x = Math.max(m, Math.min(W - m, n.x));
+      n.y = Math.max(m, Math.min(H - m, n.y));
+    }
+    if (step > steps * 0.6) separate();
+  }
+  for (let i = 0; i < 40; i++) separate();
+}
+
+// Positional relaxation: no two marks may overlap, whatever the forces wanted.
+function separate() {
+  for (let i = 0; i < nodes.length; i++) {
+    const a = nodes[i];
+    for (let j = i + 1; j < nodes.length; j++) {
+      const b = nodes[j];
+      const min = radius(a) + radius(b) + 13;
+      let dx = b.x - a.x, dy = b.y - a.y;
+      let d = Math.hypot(dx, dy);
+      if (d >= min) continue;
+      if (d < 0.01) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d = 1; }
+      const push = (min - d) / 2;
+      a.x -= (dx / d) * push; a.y -= (dy / d) * push;
+      b.x += (dx / d) * push; b.y += (dy / d) * push;
+    }
+  }
+}
+
+function relayout() {
+  seedPositions();
+  simulate(900);
+  draw();
+}
+
+/* ---------- geometry helpers ----------------------------------------- */
+const radius = (n) => Math.min(13, 4 + Math.sqrt(n.txs) * 1.45);
+
+// Parallel flows between the same pair fan out so none hides another.
+function curveOf(l) {
+  const key = [l.s.id, l.t.id].sort((a, b) => a - b).join(":");
+  const peers = links.filter((o) => linkVisible(o) &&
+    [o.s.id, o.t.id].sort((a, b) => a - b).join(":") === key);
+  const idx = peers.indexOf(l);
+  const spread = peers.length > 1 ? (idx - (peers.length - 1) / 2) * 22 : 0;
+  const mx = (l.s.x + l.t.x) / 2, my = (l.s.y + l.t.y) / 2;
+  const dx = l.t.x - l.s.x, dy = l.t.y - l.s.y;
+  const d = Math.hypot(dx, dy) || 1;
+  const bow = spread + (spread === 0 ? 13 : 0);
+  return { cx: mx - (dy / d) * bow, cy: my + (dx / d) * bow };
+}
+const qpoint = (l, c, u) => {
+  const v = 1 - u;
+  return [v * v * l.s.x + 2 * v * u * c.cx + u * u * l.t.x,
+          v * v * l.s.y + 2 * v * u * c.cy + u * u * l.t.y];
+};
+
+/* ---------- drawing --------------------------------------------------- */
+function draw() {
+  const dpr = window.devicePixelRatio || 1;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  const ink = css("--ink"), ink2 = css("--ink-2"), muted = css("--muted");
+  const hair = css("--hair"), surface = css("--surface");
+  const active = state.pinned || state.hover;
+  const lit = (l) => !active ? true :
+    active.type === "node" ? (l.s === active.node || l.t === active.node) :
+    l === active.link;
+  const litNode = (n) => !active ? true :
+    active.type === "node" ? (n === active.node || links.some((l) => linkVisible(l) &&
+      ((l.s === active.node && l.t === n) || (l.t === active.node && l.s === n)))) :
+    (n === active.link.s || n === active.link.t);
+
+  // chain regions: dashed enclosure + a name, so the chain reads without a colour
+  const reserved = [];
+  ctx.save();
+  ctx.setLineDash([2, 5]);
+  ctx.lineWidth = 1;
+  for (const g of groups) {
+    const members = nodes.filter((n) => groupOf(n) === g && nodeVisible(n));
+    if (!members.length) continue;
+    const xs = members.map((n) => n.x), ys = members.map((n) => n.y);
+    const pad = 30;
+    const x0 = Math.min(...xs) - pad, x1 = Math.max(...xs) + pad;
+    const y0 = Math.min(...ys) - pad, y1 = Math.max(...ys) + pad;
+    ctx.strokeStyle = hair;
+    ctx.beginPath();
+    ctx.roundRect(x0, y0, x1 - x0, y1 - y0, 14);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = muted;
+    ctx.font = '600 10px ' + css("--mono");
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    const label = (GROUP_LABEL[g] || g.toUpperCase()).split("").join(" ");
+    ctx.fillText(label, x0 + 2, y0 - 5);
+    reserved.push({ x0: x0 + 2, x1: x0 + 2 + ctx.measureText(label).width, y0: y0 - 17, y1: y0 - 3 });
+    ctx.setLineDash([2, 5]);
+  }
+  ctx.restore();
+
+  // flows
+  const drawn = links.filter(linkVisible).sort((a, b) => (lit(a) ? 1 : 0) - (lit(b) ? 1 : 0));
+  for (const l of drawn) {
+    const on = lit(l);
+    const c = curveOf(l);
+    const w = Math.min(6, 1.1 + Math.sqrt(l.count) * 1.05);
+    ctx.save();
+    ctx.globalAlpha = on ? 1 : 0.14;
+    ctx.strokeStyle = css(KINDS[l.kind].color);
+    ctx.lineWidth = w;
+    ctx.lineCap = "round";
+    ctx.setLineDash(KINDS[l.kind].dash.map((d) => d * Math.max(1, w / 2)));
+    ctx.beginPath();
+    ctx.moveTo(l.s.x, l.s.y);
+    ctx.quadraticCurveTo(c.cx, c.cy, l.t.x, l.t.y);
+    ctx.stroke();
+
+    // arrowhead, set back to the rim of the target node
+    const r = radius(l.t) + 4;
+    let u = 1;
+    for (let k = 1; k >= 0; k -= 0.01) {
+      const [px, py] = qpoint(l, c, k);
+      if (Math.hypot(px - l.t.x, py - l.t.y) >= r) { u = k; break; }
+    }
+    const [ax, ay] = qpoint(l, c, u);
+    const [bx, by] = qpoint(l, c, Math.max(0, u - 0.04));
+    const ang = Math.atan2(ay - by, ax - bx);
+    const head = 4.5 + w * 0.9;
+    ctx.setLineDash([]);
+    ctx.fillStyle = css(KINDS[l.kind].color);
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax - head * Math.cos(ang - 0.42), ay - head * Math.sin(ang - 0.42));
+    ctx.lineTo(ax - head * Math.cos(ang + 0.42), ay - head * Math.sin(ang + 0.42));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // nodes
+  const shown = nodes.filter(nodeVisible);
+  for (const n of shown) {
+    const on = litNode(n);
+    const r = radius(n);
+    const shape = SHAPES[n.kind] || (isFiat(n) ? "bank" : "circle");
+    ctx.save();
+    ctx.globalAlpha = on ? 1 : 0.2;
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = surface;                 // 2px surface ring keeps marks apart
+    const selected = active && active.type === "node" && n === active.node;
+    ctx.fillStyle = selected ? ink : css("--node");
+    ctx.beginPath();
+    if (shape === "square" || shape === "bank") {
+      ctx.roundRect(n.x - r, n.y - r, r * 2, r * 2, 2);
+    } else if (shape === "diamond") {
+      const d = r * 1.28;
+      ctx.moveTo(n.x, n.y - d); ctx.lineTo(n.x + d, n.y);
+      ctx.lineTo(n.x, n.y + d); ctx.lineTo(n.x - d, n.y);
+      ctx.closePath();
+    } else {
+      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+    }
+    if (shape === "bank" || shape === "hollow") {
+      ctx.fillStyle = surface;
+      ctx.fill();
+      ctx.strokeStyle = muted;
+      ctx.lineWidth = 1.6;
+      if (shape === "hollow") ctx.setLineDash([3, 3]);
+      ctx.stroke();
+    } else {
+      ctx.stroke();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // labels, placed in the least-crowded of eight slots around the mark
+  const placed = reserved.slice();
+  ctx.font = '10.5px ' + css("--mono");
+  ctx.textBaseline = "middle";
+  for (const n of [...shown].sort((a, b) => b.txs - a.txs)) {
+    const on = litNode(n);
+    if (active && !on) continue;
+    const text = n.name;
+    const w = ctx.measureText(text).width;
+    const r = radius(n) + 7;
+    const dg = r * 0.72;
+    const cands = [
+      { x: n.x, y: n.y + r + 8, align: "center", x0: n.x - w / 2 },
+      { x: n.x, y: n.y - r - 8, align: "center", x0: n.x - w / 2 },
+      { x: n.x + r + 5, y: n.y, align: "left", x0: n.x + r + 5 },
+      { x: n.x - r - 5, y: n.y, align: "right", x0: n.x - r - 5 - w },
+      { x: n.x + dg, y: n.y + r + 8, align: "left", x0: n.x + dg },
+      { x: n.x - dg, y: n.y + r + 8, align: "right", x0: n.x - dg - w },
+      { x: n.x + dg, y: n.y - r - 8, align: "left", x0: n.x + dg },
+      { x: n.x - dg, y: n.y - r - 8, align: "right", x0: n.x - dg - w }
+    ];
+    let best = cands[0], bestScore = Infinity;
+    for (const c of cands) {
+      const box = { x0: c.x0, x1: c.x0 + w, y0: c.y - 7, y1: c.y + 7 };
+      let score = placed.reduce((s, p) =>
+        s + (box.x0 < p.x1 && box.x1 > p.x0 && box.y0 < p.y1 && box.y1 > p.y0 ? 1 : 0), 0);
+      if (box.x0 < 4 || box.x1 > W - 4 || box.y0 < 4 || box.y1 > H - 4) score += 3;
+      if (score < bestScore) { bestScore = score; best = c; }
+      if (score === 0) break;
+    }
+    placed.push({ x0: best.x0, x1: best.x0 + w, y0: best.y - 7, y1: best.y + 7 });
+    ctx.globalAlpha = on ? 1 : 0.35;
+    ctx.textAlign = best.align;
+    ctx.lineWidth = 3.5;                       // halo keeps labels legible over flows
+    ctx.strokeStyle = surface;
+    ctx.strokeText(text, best.x, best.y);
+    ctx.fillStyle = on && active ? ink : ink2;
+    ctx.fillText(text, best.x, best.y);
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* ---------- hit testing ----------------------------------------------- */
+function pick(mx, my) {
+  let hit = null, bestD = Infinity;
+  for (const n of nodes) {
+    if (!nodeVisible(n)) continue;
+    const d = Math.hypot(mx - n.x, my - n.y);
+    if (d < radius(n) + 9 && d < bestD) { bestD = d; hit = { type: "node", node: n }; }
+  }
+  if (hit) return hit;
+  bestD = 9;
+  for (const l of links) {
+    if (!linkVisible(l)) continue;
+    const c = curveOf(l);
+    for (let u = 0.08; u <= 0.92; u += 0.04) {
+      const [px, py] = qpoint(l, c, u);
+      const d = Math.hypot(mx - px, my - py);
+      if (d < bestD) { bestD = d; hit = { type: "link", link: l }; }
+    }
+  }
+  return hit;
+}
+
+/* ---------- inspector -------------------------------------------------- */
+const rail = document.getElementById("rail");
+const el = (tag, cls, text) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+};
+
+function assetList(assets) {
+  const box = el("div", "assets");
+  for (const a of assets.slice(0, 8)) {
+    const s = el("span");
+    s.append(document.createTextNode(a.total + " "));
+    s.append(el("b", null, a.symbol));
+    box.append(s);
+  }
+  if (assets.length > 8) box.append(el("span", null, "+" + (assets.length - 8) + " more"));
+  return box;
+}
+
+function showNode(n) {
+  rail.replaceChildren();
+  rail.append(el("h2", null, n.name));
+  const tags = el("div");
+  tags.append(el("span", "tag", KIND_NAMES[n.kind] || n.kind));
+  if (n.chain) tags.append(el("span", "tag", n.chain + (n.chainInferred ? " (inferred)" : "")));
+  rail.append(tags);
+  if (n.protocol) rail.append(el("p", "empty", "Held by " + n.protocol));
+  if (n.address) rail.append(el("div", "addr", n.address));
+
+  const incident = links.filter((l) => linkVisible(l) && (l.s === n || l.t === n));
+  const out = incident.filter((l) => l.s === n).sort((a, b) => b.count - a.count);
+  const inc = incident.filter((l) => l.t === n).sort((a, b) => b.count - a.count);
+
+  for (const [title, list, dir] of [["Sends to", out, "t"], ["Receives from", inc, "s"]]) {
+    if (!list.length) continue;
+    const sec = el("section");
+    sec.append(el("h3", null, title));
+    for (const l of list) {
+      const other = l[dir];
+      const row = el("button", "flow");
+      row.type = "button";
+      const dot = el("span", "dot");
+      dot.style.background = "var(" + KINDS[l.kind].color + ")";
+      const name = el("span", "flow-name", other.name);
+      name.append(el("small", null,
+        KINDS[l.kind].label.toLowerCase() + " · " + l.assets.map((a) => a.symbol).join(" ")));
+      row.append(dot, name, el("span", "flow-n", l.count + "×"));
+      row.addEventListener("click", () => { state.pinned = { type: "link", link: l }; showLink(l); draw(); });
+      sec.append(row);
+    }
+    rail.append(sec);
+  }
+
+  const sec = el("section");
+  sec.append(el("h3", null, "Activity"));
+  sec.append(el("p", "empty",
+    n.txs + " transaction" + (n.txs === 1 ? "" : "s") + " · " + out.length +
+    " outbound flow" + (out.length === 1 ? "" : "s") + " · " + inc.length +
+    " inbound"));
+  rail.append(sec);
+}
+
+function showLink(l) {
+  rail.replaceChildren();
+  rail.append(el("h2", null, l.s.name + " → " + l.t.name));
+  const tags = el("div");
+  tags.append(el("span", "tag", KINDS[l.kind].label));
+  tags.append(el("span", "tag", l.count + " tx"));
+  rail.append(tags);
+  rail.append(el("p", "empty", KINDS[l.kind].desc[0].toUpperCase() + KINDS[l.kind].desc.slice(1) + "."));
+
+  let sec = el("section");
+  sec.append(el("h3", null, "Gross moved"));
+  sec.append(assetList(l.assets));
+  rail.append(sec);
+
+  sec = el("section");
+  sec.append(el("h3", null, "Most recent"));
+  const box = el("div", "assets");
+  for (const s of l.samples.slice(0, 5)) {
+    const line = el("span");
+    line.append(el("b", null, fmtDate(s.ts)));
+    line.append(document.createTextNode("  " + (s.note && s.note.includes("→")
+      ? s.note : (s.qty || "") + " " + (s.symbol || ""))));
+    box.append(line);
+  }
+  sec.append(box);
+  rail.append(sec);
+
+  sec = el("section");
+  sec.append(el("h3", null, "Span"));
+  sec.append(el("p", "empty", fmtDate(l.first) + " → " + fmtDate(l.last)));
+  rail.append(sec);
+}
+
+function showIdle() {
+  rail.replaceChildren();
+  rail.append(el("h2", null, "Nothing selected"));
+  rail.append(el("p", "empty",
+    "Hover a node to see the account and everything it moves value with; hover a line for the flow itself."));
+  const sec = el("section");
+  sec.append(el("h3", null, "Reading the plate"));
+  const box = el("div", "assets");
+  for (const [k, v] of Object.entries(KINDS)) {
+    const s = el("span");
+    s.append(el("b", null, v.label));
+    s.append(document.createTextNode(" — " + v.desc));
+    box.append(s);
+  }
+  for (const [text] of [["● wallet on a chain"], ["■ exchange or custodial account"],
+                        ["◆ staking box"], ["□ bank / broker (fiat leg)"]]) {
+    box.append(el("span", null, text));
+  }
+  sec.append(box);
+  rail.append(sec);
+}
+
+function refresh() {
+  const a = state.pinned || state.hover;
+  if (!a) showIdle();
+  else if (a.type === "node") showNode(a.node);
+  else showLink(a.link);
+}
+
+/* ---------- interaction ------------------------------------------------ */
+function toLocal(evt) {
+  const r = canvas.getBoundingClientRect();
+  return [evt.clientX - r.left, evt.clientY - r.top];
+}
+
+canvas.addEventListener("pointermove", (e) => {
+  const [mx, my] = toLocal(e);
+  if (state.drag) {
+    state.drag.node.x = Math.max(20, Math.min(W - 20, mx));
+    state.drag.node.y = Math.max(20, Math.min(H - 20, my));
+    draw();
+    return;
+  }
+  const hit = pick(mx, my);
+  canvas.style.cursor = hit ? (hit.type === "node" ? "grab" : "pointer") : "default";
+  const same = JSON.stringify(hit && (hit.node ? hit.node.id : [hit.link.source, hit.link.target, hit.link.kind]))
+    === JSON.stringify(state.hover && (state.hover.node ? state.hover.node.id
+      : [state.hover.link.source, state.hover.link.target, state.hover.link.kind]));
+  if (same) return;
+  state.hover = hit;
+  if (!state.pinned) refresh();
+  draw();
+});
+
+canvas.addEventListener("pointerdown", (e) => {
+  const [mx, my] = toLocal(e);
+  const hit = pick(mx, my);
+  if (hit && hit.type === "node") {
+    state.drag = { node: hit.node, moved: false };
+    canvas.setPointerCapture(e.pointerId);
+    canvas.style.cursor = "grabbing";
+  }
+  state.pinned = hit;
+  refresh();
+  draw();
+});
+
+canvas.addEventListener("pointerup", () => { state.drag = null; canvas.style.cursor = "grab"; });
+canvas.addEventListener("pointerleave", () => {
+  state.drag = null;
+  state.hover = null;
+  if (!state.pinned) refresh();
+  draw();
+});
+
+/* ---------- chrome ------------------------------------------------------ */
+function buildStrip() {
+  const strip = document.getElementById("strip");
+  const txs = links.reduce((s, l) => s + l.count, 0);
+  const first = Math.min(...links.map((l) => l.first));
+  const last = Math.max(...links.map((l) => l.last));
+  const chains = new Set(nodes.map((n) => n.chain).filter(Boolean));
+  const rows = [
+    ["Transactions", txs],
+    ["Flows", links.length],
+    ["Accounts", nodes.filter((n) => n.txs > 0).length],
+    ["Chains", chains.size],
+    ["First", fmtDate(first)],
+    ["Last", fmtDate(last)]
+  ];
+  for (const [k, v] of rows) {
+    const cell = el("div");
+    cell.append(el("dt", null, k), el("dd", null, String(v)));
+    strip.append(cell);
+  }
+}
+
+function buildKinds() {
+  const host = document.getElementById("kinds");
+  for (const [key, v] of Object.entries(KINDS)) {
+    const label = el("label", "kind");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = true;
+    input.addEventListener("change", () => {
+      input.checked ? state.kinds.add(key) : state.kinds.delete(key);
+      if (state.pinned && !((state.pinned.type === "link" && state.kinds.has(state.pinned.link.kind))
+        || state.pinned.type === "node")) state.pinned = null;
+      refresh();
+      draw();
+    });
+    const glyph = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    glyph.setAttribute("class", "glyph");
+    glyph.setAttribute("viewBox", "0 0 26 8");
+    glyph.setAttribute("aria-hidden", "true");
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    line.setAttribute("d", "M0 4 H20");
+    line.setAttribute("stroke", "var(" + v.color + ")");
+    line.setAttribute("stroke-width", "2.4");
+    if (v.dash.length) line.setAttribute("stroke-dasharray", v.dash.join(" "));
+    const head = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    head.setAttribute("d", "M20 0.6 L26 4 L20 7.4 Z");
+    head.setAttribute("fill", "var(" + v.color + ")");
+    glyph.append(line, head);
+    label.append(input, glyph, document.createTextNode(v.label));
+    host.append(label);
+  }
+}
+
+document.getElementById("toggle-fiat").addEventListener("click", (e) => {
+  state.showFiat = !state.showFiat;
+  e.target.textContent = state.showFiat ? "Hide banks & brokers" : "Show banks & brokers";
+  state.pinned = null;
+  refresh();
+  draw();
+});
+document.getElementById("relayout").addEventListener("click", relayout);
+
+function buildTable() {
+  const tbody = document.getElementById("tbody");
+  for (const l of [...links].sort((a, b) => b.count - a.count || a.s.name.localeCompare(b.s.name))) {
+    const tr = document.createElement("tr");
+    const cells = [
+      el("td", null, l.s.name),
+      el("td", null, l.t.name),
+      null,
+      el("td", "num", String(l.count)),
+      el("td", "assets-cell", l.assets.map((a) => a.total + " " + a.symbol).join(" · ")),
+      el("td", "num", fmtDate(l.first)),
+      el("td", "num", fmtDate(l.last))
+    ];
+    const kindCell = el("td", "kind-cell");
+    const sw = el("span", "swatch");
+    sw.style.background = "var(" + KINDS[l.kind].color + ")";
+    kindCell.append(sw, document.createTextNode(KINDS[l.kind].label));
+    cells[2] = kindCell;
+    tr.append(...cells);
+    tbody.append(tr);
+  }
+}
+
+document.getElementById("footnote").textContent =
+  "Built from the local jal.sqlite. Flows are aggregated per direction and per kind, so one line may " +
+  "stand for several transactions; totals are gross amounts of each asset moved, not netted and not " +
+  "converted to a base currency — a bridge or swap leg is counted once, on the asset that left. " +
+  "Accounts with no chain attribute of their own sit in the off-chain group, except staking boxes " +
+  "whose counterparties all share one chain.";
+
+function resize() {
+  const cell = canvas.parentElement;
+  const dpr = window.devicePixelRatio || 1;
+  W = cell.clientWidth;
+  H = cell.clientHeight;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+buildStrip();
+buildKinds();
+buildTable();
+showIdle();
+resize();
+relayout();
+
+let pending;
+new ResizeObserver(() => {
+  clearTimeout(pending);
+  pending = setTimeout(() => { resize(); relayout(); }, 120);
+}).observe(canvas.parentElement);
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => draw());
+new MutationObserver(() => draw())
+  .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
