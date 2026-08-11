@@ -380,7 +380,7 @@ class QuoteDownloader(QObject):
             AssetLocation.FRA_EXCHANGE: self.YahooFRA_Downloader,
             AssetLocation.SMA_VICTORIA: self.Victoria_Downloader,
             AssetLocation.MILAN_EXCHANGE: self.EuronextMilan_DataReader,
-            AssetLocation.WSE_EXCHANGE: self.Stooq_DataReader
+            AssetLocation.WSE_EXCHANGE: self.YahooWSE_Downloader
         }
         data_loaders.update({x: self.Llama_Downloader for x in LLAMA_LOCATIONS})
         symbols = JalSymbol.get_active_symbols(start_timestamp, end_timestamp)
@@ -639,6 +639,10 @@ class QuoteDownloader(QObject):
     def YahooHEL_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
         return self.Yahoo_Downloader(symbol, currency_id, start_timestamp, end_timestamp, suffix='.HE')
 
+    # The same as Yahoo_Downloader but it adds ".WA" suffix to asset_code and returns prices in PLN
+    def YahooWSE_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp):
+        return self.Yahoo_Downloader(symbol, currency_id, start_timestamp, end_timestamp, suffix='.WA')
+
     # noinspection PyMethodMayBeStatic
     def EuronextMilan_DataReader(self, symbol, currency_id, start_timestamp, end_timestamp):
         suffix = "ETF" if symbol.asset().type() == PredefinedAsset.ETF else "MTA"
@@ -782,38 +786,6 @@ class QuoteDownloader(QObject):
             fund_name, price = match.groups()
             self._victoria_quotes.append({'name': fund_name, 'price': Decimal(price.replace(',', '.'))})
         return self._victoria_quotes
-
-    def Stooq_DataReader(self, symbol, currency_id, start_timestamp, end_timestamp):
-        """Fetches historical data from Warsaw Stock Exchange (GPW) using Stooq API"""
-        url = "https://stooq.com/q/d/l/"
-        params = {
-            's': symbol.symbol(),
-            'd1': datetime.fromtimestamp(start_timestamp, tz=timezone.utc).strftime('%Y%m%d'),
-            'd2': datetime.fromtimestamp(end_timestamp, tz=timezone.utc).strftime('%Y%m%d'),
-            'i': 'd'
-        }
-        
-        self._request = WebRequest(WebRequest.GET, url, params=params)
-        self._wait_for_event()
-        
-        try:
-            data = pd.read_csv(
-                StringIO(self._request.data()),
-                converters={'Close': lambda x: Decimal(x.strip())} # не теряем точность при чтении
-            )
-            if data.empty:
-                return None
-                
-            # Convert dates and filter required columns
-            data['Date'] = pd.to_datetime(data['Date'], format='%Y-%m-%d', utc=True)
-            
-            close = data[['Date', 'Close']].set_index('Date')
-            close.sort_index(inplace=True)
-            return close
-            
-        except (ParserError, KeyError, ValueError) as e:
-            logging.error(f"Failed to parse Stooq data: {str(e)}")
-            return None
 
     # Downloads daily crypto quotes from DeFiLlama. The source quotes in USD only, therefore 'currency_id' is
     # ignored here - the caller stores the result as a USD series (see download_asset_prices) and conversion into

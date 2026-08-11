@@ -193,9 +193,9 @@ def test_MOEX_downloader_USD(prepare_db_moex):
     bond_quotes = downloader.MOEX_DataReader(JalSymbol(symbol_id_for(9, 2)), 2, d2t(240213), d2t(240214))
     assert_frame_equal(bond_quotes, bond_usd_quotes)
 
-# NYSE, LSE and Frankfurt all go through the same Yahoo_Downloader-family code path (YahooLSE_Downloader and
-# YahooFRA_Downloader are thin suffix-adding wrappers around Yahoo_Downloader itself) - only the ticker, currency
-# and the downloader method used differ between exchanges.
+# NYSE, LSE, Frankfurt, Helsinki and Warsaw all go through the same Yahoo_Downloader-family code path
+# (YahooLSE_Downloader, YahooFRA_Downloader, YahooHEL_Downloader and YahooWSE_Downloader are thin suffix-adding
+# wrappers around Yahoo_Downloader itself) - only the ticker, currency and the downloader method used differ.
 @pytest.mark.parametrize("ticker, currency_id, downloader_name, expected_closes, expected_dates", [
     ('AAPL', 2, 'Yahoo_Downloader',
      [Decimal('134.42999267578125'), Decimal('132.029998779296875')], [dt2dt(2104131330), dt2dt(2104141330)]),
@@ -204,7 +204,9 @@ def test_MOEX_downloader_USD(prepare_db_moex):
     ('VOW3', 3, 'YahooFRA_Downloader',
      [Decimal('233.399993896484375'), Decimal('234.25')], [dt2dt(2104130600), dt2dt(2104140600)]),
     ('NOKIA', 3, 'YahooHEL_Downloader',
-     [Decimal('3.4934999942779541015625'), Decimal('3.502500057220458984375')], [dt2dt(2104130700), dt2dt(2104140700)])
+     [Decimal('3.4934999942779541015625'), Decimal('3.502500057220458984375')], [dt2dt(2104130700), dt2dt(2104140700)]),
+    ('CDR', 3, 'YahooWSE_Downloader',
+     [Decimal('186.5'), Decimal('185.7599945068359375')], [dt2dt(2104130700), dt2dt(2104140700)])
 ])
 def test_Yahoo_family_downloaders(prepare_db, ticker, currency_id, downloader_name, expected_closes, expected_dates):
     create_stocks([(ticker, '')], currency_id=currency_id)   # id = 4
@@ -235,17 +237,6 @@ def test_TMX_downloader(prepare_db):
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.TMX_Downloader(JalSymbol(symbol_id_for(4, 3)), 3, 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)
-
-
-def test_Stooq_downloader(prepare_db):
-    create_stocks([('CDR', '')], currency_id=3)  # ID = 4
-    downloader = QuoteDownloader()
-    expected = pd.DataFrame({
-        'Date': [d2dt(200102)],
-        'Close': [Decimal('271.81')]
-    }).set_index('Date')
-    result = downloader.Stooq_DataReader(JalSymbol(symbol_id_for(4, 3)), 3, d2t(200102), d2t(200102))
-    assert_frame_equal(expected, result)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
