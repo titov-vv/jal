@@ -94,3 +94,6 @@ database_path=/home/user/some_folder
 
 
  ---
+
+<img src="https://jal.goatcounter.com/count?p=/github-readme-ru" alt="" width="1" height="1">
+
