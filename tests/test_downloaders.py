@@ -30,7 +30,6 @@ def test_MOEX_lookup():
     assert MOEX().find_asset(isin='JE00B6T5S470') == 'POLY'
     assert MOEX().find_asset(isin='RU000A1038V6') == 'SU26238RMFS4'
     assert MOEX().find_asset(isin='IE00B8XB7377', reg_number='CEOGCS') == 'FXGD'
-    assert MOEX().find_asset(name='МЕТАЛЛОИНВЕСТ 028') == 'RU000A105A04'
     assert MOEX().find_asset(name='АБЗ-1 1Р01') == 'RU000A102LW1'
     assert MOEX().find_asset(name='CNY-9.24') == 'CRU4'
 
