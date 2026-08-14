@@ -71,15 +71,14 @@ class TransferAssignDialog(QDialog):
         # to that one: the box is what this mode assigns to, and a deposit box is not something a chain movement
         # ever ends in.
         self._account_model = AccountListModel(self, include_hidden=staking)
-        self._account_dialog = AccountListDialog(self, include_hidden=staking)
+        dialog_args = {'include_hidden': staking}
         if staking:
             self._narrow_to_boxes()
             # The list the "..." button opens is a model of its own, and it rebuilds its filter from its own search
             # and grouping state on every open - so the narrowing has to go through the one condition that survives
-            # that (see ReferenceDataDialog.setFilter), not through a filter set once here.
-            self._account_dialog.filter_field = "accounts.account_type"
-            self._account_dialog.setFilterValue(PredefinedAccountType.Staking)
-        self._account.setup_selector(self._account_model, self._account_dialog)
+            # that (see ReferenceDataDialog.setFilter), not through a filter set once on the model.
+            dialog_args.update(filter_field="accounts.account_type", filter_value=PredefinedAccountType.Staking)
+        self._account.setup_selector(self._account_model, AccountListDialog, self, **dialog_args)
         form.addWidget(self._account, 0, 1)
         self._account_currency = QLabel()
         form.addWidget(self._account_currency, 0, 2)

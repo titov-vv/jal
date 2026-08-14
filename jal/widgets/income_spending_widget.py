@@ -29,19 +29,15 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         super().__init__(parent=parent, ui_class=Ui_IncomeSpendingOperation)
         self.operation_type = LedgerTransaction.IncomeSpending
         self._account_model = AccountListModel(self)
-        self._account_dialog = AccountListDialog(self)
-        self.ui.account_widget.setup_selector(self._account_model, self._account_dialog)
+        self.ui.account_widget.setup_selector(self._account_model, AccountListDialog, self)
         self._peer_model = PeerTreeModel(self)
-        self._peer_dialog = PeerListDialog(self)
-        self.ui.peer_widget.setup_selector(self._peer_model, self._peer_dialog)
+        self.ui.peer_widget.setup_selector(self._peer_model, PeerListDialog, self)
         super()._init_db("actions")
 
         self._category_model = CategoryTreeModel(self)
-        self._category_dialog = CategoryListDialog(self)
-        self.category_delegate = LookupSelectorDelegate(self, self._category_model, self._category_dialog)
+        self.category_delegate = LookupSelectorDelegate(self, self._category_model, CategoryListDialog, self)
         self._tag_model = TagTreeModel(self)
-        self._tag_dialog = TagsListDialog(self)
-        self.tag_delegate = LookupSelectorDelegate(self, self._tag_model, self._tag_dialog)
+        self.tag_delegate = LookupSelectorDelegate(self, self._tag_model, TagsListDialog, self)
         self.float_delegate = FloatDelegate(2)
 
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)

@@ -33,14 +33,12 @@ class CorporateActionWidget(AbstractOperationDetails):
         super().__init__(parent=parent, ui_class=Ui_CorporateActionOperation)
         self.operation_type = LedgerTransaction.CorporateAction
         self._account_model = AccountListModel(self)
-        self._account_dialog = AccountListDialog(self)
-        self.ui.account_widget.setup_selector(self._account_model, self._account_dialog)
+        self.ui.account_widget.setup_selector(self._account_model, AccountListDialog, self)
         self._symbols_model = SymbolsListModel(self)
-        self._symbols_dialog = SymbolListDialog(self)
-        self.ui.symbol_widget.setup_selector(self._symbols_model, self._symbols_dialog)
+        self.ui.symbol_widget.setup_selector(self._symbols_model, SymbolListDialog, self)
         self.combo_model = None
 
-        self.symbol_delegate = LookupSelectorDelegate(self, self._symbols_model, self._symbols_dialog)
+        self.symbol_delegate = LookupSelectorDelegate(self, self._symbols_model, SymbolListDialog, self)
         self.float_delegate = FloatDelegate(2)
         self.percent_delegate = FloatDelegate(2, percent=True)
 

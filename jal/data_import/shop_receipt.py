@@ -70,10 +70,8 @@ class SlipLinesDelegate(QStyledItemDelegate):
         super().__init__(parent=parent)
         self._category_selector = None  # Need to prevent object deletion in a middle
         self._category_model = None
-        self._category_dialog = None
         self._tag_selector = None
         self._tag_model = None
-        self._tag_dialog = None
 
     def paint(self, painter, option, index):
         painter.save()
@@ -106,14 +104,12 @@ class SlipLinesDelegate(QStyledItemDelegate):
         if index.column() == 1:
             self._category_selector = ReferenceSelectorWidget(aParent, validate=False)
             self._category_model = CategoryTreeModel(aParent)
-            self._category_dialog = CategoryListDialog(aParent)
-            self._category_selector.setup_selector(self._category_model, self._category_dialog)
+            self._category_selector.setup_selector(self._category_model, CategoryListDialog, aParent)
             return self._category_selector
         if index.column() == 3:
             self._tag_selector = ReferenceSelectorWidget(aParent, validate=False)
             self._tag_model = TagTreeModel(aParent)
-            self._tag_dialog = TagsListDialog(aParent)
-            self._tag_selector.setup_selector(self._tag_model, self._tag_dialog)
+            self._tag_selector.setup_selector(self._tag_model, TagsListDialog, aParent)
             return self._tag_selector
         return None
 
@@ -245,11 +241,9 @@ class ImportReceiptDialog(QDialog):
         self.ui = Ui_ImportShopReceiptDlg()
         self.ui.setupUi(self)
         self._account_model = AccountListModel(self)
-        self._account_dialog = AccountListDialog(self)
-        self.ui.AccountEdit.setup_selector(self._account_model, self._account_dialog)
+        self.ui.AccountEdit.setup_selector(self._account_model, AccountListDialog, self)
         self._peer_model = PeerTreeModel(self)
-        self._peer_dialog = PeerListDialog(self)
-        self.ui.PeerEdit.setup_selector(self._peer_model, self._peer_dialog)
+        self.ui.PeerEdit.setup_selector(self._peer_model, PeerListDialog, self)
         self.model = None
         self.delegate = []
         self.params_model = None

@@ -53,8 +53,7 @@ class TagReportWindow(MdiWidget):
         self.ui = Ui_TagReportWidget()
         self.ui.setupUi(self)
         self._tag_model = TagTreeModel(self)
-        self._tag_dialog = TagsListDialog(self)
-        self.ui.ReportTagEdit.setModel(self._tag_model, self._tag_dialog)
+        self.ui.ReportTagEdit.setup_selector(self._tag_model, TagsListDialog, self)
         self._parent = parent
 
         self.tag_model = TagOperationsModel(self.ui.ReportTableView)

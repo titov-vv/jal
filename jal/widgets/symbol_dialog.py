@@ -18,13 +18,13 @@ from jal.widgets.reference_dialogs import TagsListDialog
 # Compound delegate for the 'asset_data' grid: column 'datatype' picks an AssetData attribute, column 'value' shows
 # an editor that depends on the type registered for the currently selected attribute (str/int/float/date/tag).
 class AssetAttributeDelegate(QStyledItemDelegate):
-    def __init__(self, key_column, value_column, tag_model, tag_dialog, parent=None):
+    def __init__(self, key_column, value_column, tag_model, tag_dialog_class, parent=None):
         super().__init__(parent=parent)
         self._key = key_column
         self._value = value_column
         self._types = AssetData()
         self._tag_model = tag_model
-        self._tag_dialog = tag_dialog
+        self._tag_dialog_class = tag_dialog_class
 
     def _value_type(self, index):
         type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
@@ -46,7 +46,7 @@ class AssetAttributeDelegate(QStyledItemDelegate):
             return editor
         elif datatype_of == "tag":
             editor = ReferenceSelectorWidget(aParent, validate=False)
-            editor.setup_selector(self._tag_model, self._tag_dialog)
+            editor.setup_selector(self._tag_model, self._tag_dialog_class, aParent)
             return editor
         else:
             assert False, f"Unknown asset attribute type '{datatype_of}'"
@@ -140,7 +140,6 @@ class SymbolDialog(QDialog):
         self._configure_identifiers_view()
 
         self._tag_model = TagTreeModel(self)
-        self._tag_dialog = TagsListDialog(self)
         self._data_model = AssetDataModel(self)
         self.ui.DataTable.setModel(self._data_model)
         self._data_model.select()
@@ -200,7 +199,7 @@ class SymbolDialog(QDialog):
         view.setColumnHidden(model.fieldIndex("asset_id"), True)
         view.horizontalHeader().setSectionResizeMode(model.fieldIndex("value"), QHeaderView.Stretch)
         self._attribute_delegate = AssetAttributeDelegate(model.fieldIndex("datatype"), model.fieldIndex("value"),
-                                                           self._tag_model, self._tag_dialog, view)
+                                                           self._tag_model, TagsListDialog, view)
         view.setItemDelegateForColumn(model.fieldIndex("datatype"), self._attribute_delegate)
         view.setItemDelegateForColumn(model.fieldIndex("value"), self._attribute_delegate)
 

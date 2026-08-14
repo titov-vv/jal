@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex, QPoint
+from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QToolButton
 from PySide6.QtGui import QPalette
 from jal.widgets.icons import JalIcon
@@ -8,7 +8,6 @@ from jal.constants import CustomColor
 #-----------------------------------------------------------------------------------------------------------------------
 class ReferenceSelectorWidget(QWidget):
     changed = Signal()
-    open_dialog = Signal(int, QPoint, dict)
 
     # If validate==True then widget will be highlighted for invalid values
     def __init__(self, parent=None, validate=True):
@@ -18,6 +17,10 @@ class ReferenceSelectorWidget(QWidget):
         self._validate = validate
         self._model = None
         self._dialog_params = {}
+        self._dialog = None
+        self._dialog_class = None
+        self._dialog_parent = None
+        self._dialog_args = {}
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -44,13 +47,30 @@ class ReferenceSelectorWidget(QWidget):
         self.clean_button.clicked.connect(self.on_clean_button_clicked)
 
     # Sets relations of the widget:
-    # model - data model to get values from
-    # selection_dialog - is used for items selection, it must expose 'on_dialog_request' slot and emit 'selection_done' signal on completion
-    def setup_selector(self, model, selection_dialog):
+    # model - data model to get values from, it fills the text field and its completer
+    # dialog_class - class of the dialog that the "..." button opens for selection. It must expose a
+    #                'dialog_requested' slot and emit 'selection_done' on completion.
+    # dialog_parent, dialog_args - passed to dialog_class when the dialog is constructed
+    #
+    # The dialog is a CLASS and not an instance because it is built on the first click of the "..." button and not
+    # here: every operation tab and every reference dialog owns several selectors, so otherwise the application
+    # will build several dozen fully populated modal dialogs at start-up that the user may never open.
+    # The text field self.name itself needs only 'model', which is why that one is still given ready-made.
+    def setup_selector(self, model, dialog_class, dialog_parent=None, **dialog_args):
         self._model = model
         self._model.bind_completer(self.name, self.on_completion)
-        self.open_dialog.connect(selection_dialog.dialog_requested)
-        selection_dialog.selection_done.connect(self.selection_done)
+        self._dialog_class = dialog_class
+        self._dialog_parent = dialog_parent
+        self._dialog_args = dialog_args
+
+    # The selection dialog, built on first use. Kept afterwards, so it holds its geometry, filters and search text
+    # between openings exactly as the eagerly created one did.
+    def selection_dialog(self):
+        assert self._dialog_class is not None, f"Selection dialog is not set for {self.__class__.__name__}"
+        if self._dialog is None:
+            self._dialog = self._dialog_class(self._dialog_parent, **self._dialog_args)
+            self._dialog.selection_done.connect(self.selection_done)
+        return self._dialog
 
     def get_id(self):
         return self.p_selected_id
@@ -93,7 +113,7 @@ class ReferenceSelectorWidget(QWidget):
 
     def on_button_clicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
-        self.open_dialog.emit(self.selected_id, ref_point, self._dialog_params)
+        self.selection_dialog().dialog_requested(self.selected_id, ref_point, self._dialog_params)
 
     @Slot(int)
     def selection_done(self, selected_id):

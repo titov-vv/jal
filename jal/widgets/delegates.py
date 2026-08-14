@@ -278,15 +278,19 @@ class ConstantLookupDelegate(QStyledItemDelegate):
 # Class to allow lookup values selection from reference models
 # Parameters:
 #   model - data model to get values from (from common_models.py)
-#   dialog - selection dialog to be used for selection (from reference_dialogs.py)
+#   dialog_class - class of the selection dialog to be used for selection (from reference_dialogs.py). It is passed
+#                  on to the selector widget, which builds it when the user first asks for it.
+#   dialog_parent, dialog_args - passed to dialog_class on construction
 class LookupSelectorDelegate(QStyledItemDelegate):
-    def __init__(self, parent, model, dialog):
+    def __init__(self, parent, model, dialog_class, dialog_parent=None, **dialog_args):
         super().__init__(parent=parent)
         self._selector = None
         assert model is not None
-        assert dialog is not None
+        assert dialog_class is not None
         self._selector_model = model
-        self._selector_dialog = dialog
+        self._selector_dialog_class = dialog_class
+        self._selector_dialog_parent = dialog_parent
+        self._selector_dialog_args = dialog_args
 
     def displayText(self, value, locale):
         item_name = self._selector_model.getValue(value)
@@ -297,7 +301,8 @@ class LookupSelectorDelegate(QStyledItemDelegate):
 
     def createSelector(self, parent) -> None:
         self._selector = ReferenceSelectorWidget(parent, validate=False)
-        self._selector.setup_selector(self._selector_model, self._selector_dialog)
+        self._selector.setup_selector(self._selector_model, self._selector_dialog_class,
+                                      self._selector_dialog_parent, **self._selector_dialog_args)
 
     def createEditor(self, aParent, option, index):
         self.createSelector(aParent)

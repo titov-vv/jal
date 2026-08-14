@@ -21,8 +21,8 @@ class AccountButton(QPushButton):
         self.Menu.addAction(self.tr("Any account"), self.ClearAccount)
         self.setMenu(self.Menu)
 
-        self.dialog = AccountListDialog(self)
-        self.setText(self.dialog.SelectedName)
+        self._dialog = None            # built on the first 'Choose account', see dialog()
+        self.setText(self.tr("ANY"))   # what an AccountListDialog with nothing selected reports as its name
 
     def get_id(self):
         return self.p_account_id
@@ -37,13 +37,22 @@ class AccountButton(QPushButton):
 
     account_id = Property(int, get_id, set_id, notify=changed)
 
+    # The account chooser, built on first use and kept afterwards.
+    # Lazy call as a report window holds one of these buttons but the user may never open it
+    # (while the dialog behind it is a fully populated account list that eats resources)
+    def dialog(self):
+        if self._dialog is None:
+            self._dialog = AccountListDialog(self)
+        return self._dialog
+
     def ChooseAccount(self):
+        dialog = self.dialog()
         ref_point = self.mapToGlobal(self.geometry().bottomLeft())
-        self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
-        self.dialog.setFilter()
-        res = self.dialog.exec(enable_selection=True)
+        dialog.setGeometry(ref_point.x(), ref_point.y(), dialog.width(), dialog.height())
+        dialog.setFilter()
+        res = dialog.exec(enable_selection=True)
         if res:
-            self.account_id = self.dialog.selected_id
+            self.account_id = dialog.selected_id
 
     def ClearAccount(self):
         self.account_id = 0

@@ -55,7 +55,8 @@ class ReferenceDataDialog(QDialog):
         self.toolbar = None
         self.custom_context_menu = False
         self._delegates = []  # to keep references to delegates to avoid garbage collection
-                              # it also can keep tuples (model, dialog) for LookupSelectorDelegate
+                              # it also keeps the models a LookupSelectorDelegate looks values up in (the dialog of
+                              # such a delegate is built and owned by the selector widget, on first use)
 
         self.ui.AddChildBtn.setVisible(False)
         self.ui.EditBtn.setVisible(False)
@@ -210,21 +211,21 @@ class ReferenceDataDialog(QDialog):
                 delegate_class = LookupSelectorDelegate
                 if spec.delegate_details == CmReference.TAG:
                     model = TagTreeModel(self)
-                    dialog = TagsListDialog(self)
+                    dialog_class = TagsListDialog
                 elif spec.delegate_details == CmReference.PEER:
                     model = PeerTreeModel(self)
-                    dialog = PeerListDialog(self)
+                    dialog_class = PeerListDialog
                 elif spec.delegate_details == CmReference.SYMBOL:
                     model = SymbolsListModel(self)
-                    dialog = SymbolListDialog(self)
+                    dialog_class = SymbolListDialog
                 elif spec.delegate_details == CmReference.ASSET_VIA_SYMBOL:
                     model = SymbolsListModel(self)
-                    dialog = SymbolListDialog(self)
+                    dialog_class = SymbolListDialog
                     delegate_class = AssetSelectorDelegate
                 else:
                     raise NotImplementedError(f"Unsupported reference delegate type {spec.delegate_details}")
-                self._delegates.append((model, dialog))
-                delegate = delegate_class(self._view, model, dialog)
+                self._delegates.append(model)
+                delegate = delegate_class(self._view, model, dialog_class, self)
             elif spec.delegate_type == CmDelegate.TIMESTAMP:
                 delegate = TimestampDelegate(display_format=spec.delegate_details, parent=self._view)
             else:
@@ -381,12 +382,17 @@ class ReferenceDataDialog(QDialog):
 class AccountListDialog(ReferenceDataDialog):
     # 'include_hidden' opens the dialog on the account types the user never picks by hand (a deposit or a staking
     # box). It exists for the one caller that assigns a transfer leg TO such a box, and is meant to be used together
-    # with 'filter_field' narrowing the list to the single type that caller means - see TransferAssignDialog.
-    def __init__(self, parent=None, include_hidden: bool = False):
+    # with 'filter_field'/'filter_value' narrowing the list to the single type that caller means - see
+    # TransferAssignDialog. The narrowing is given here, and not set on the dialog afterwards, because the dialog is
+    # built by the selector widget on the first click of its "..." button - there is no instance to configure before.
+    def __init__(self, parent=None, include_hidden: bool = False, filter_field: str = None, filter_value=None):
         super().__init__(parent=parent, window_title=self.tr("Accounts"))
         self.model = AccountListModel(self, include_hidden=include_hidden)
         self.ui.DataView.setModel(self.model)
         self.setup_ui()
+        if filter_field is not None:
+            self.filter_field = filter_field
+            self.setFilterValue(filter_value)
 
     def setup_ui(self):
         self.search_field = "accounts.name"
@@ -490,10 +496,9 @@ class PeerListDialog(ReferenceDataDialog):
     @Slot()
     def replacePeer(self):
         peer_model = PeerTreeModel(self)
-        peer_dialog = PeerListDialog(self)
         dialog = SelectReferenceDialog(self, self.tr("Please select peer"),
                                        self.tr("Replace peer '") + self._menu_peer_name + self.tr("' with: "),
-                                       peer_model, peer_dialog)
+                                       peer_model, PeerListDialog)
         if dialog.exec() != QDialog.Accepted:
             return
         reply = QMessageBox().warning(self, '', self.tr("Keep old name in notes?"), QMessageBox.Yes, QMessageBox.No)
@@ -544,10 +549,9 @@ class CategoryListDialog(ReferenceDataDialog):
     @Slot()
     def replaceCategory(self):
         category_model = CategoryTreeModel(self)
-        category_dialog = CategoryListDialog(self)
         dialog = SelectReferenceDialog(self, self.tr("Please select category"),
                                        self.tr("Replace category '") + self._menu_category_name + self.tr("' with: "),
-                                       category_model, category_dialog)
+                                       category_model, CategoryListDialog)
         if dialog.exec() != QDialog.Accepted:
             return
         JalCategory(self._menu_category_id).replace_with(dialog.selected_id)
@@ -593,10 +597,9 @@ class TagsListDialog(ReferenceDataDialog):
     @Slot()
     def replaceTag(self):
         tag_model = TagTreeModel(self)
-        tag_dialog = TagsListDialog(self)
         dialog = SelectReferenceDialog(self, self.tr("Please select tag"),
                                        self.tr("Replace tag '") + self._menu_tag_name + self.tr("' with: "),
-                                       tag_model, tag_dialog)
+                                       tag_model, TagsListDialog)
         if dialog.exec() != QDialog.Accepted:
             return
         JalTag(self._menu_tag_id).replace_with(dialog.selected_id)
