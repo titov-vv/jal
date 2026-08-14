@@ -183,6 +183,12 @@ DROP INDEX IF EXISTS ledger_by_operation;
 CREATE INDEX ledger_by_operation ON ledger (otype, oid, opart, book_account);
 DROP INDEX IF EXISTS ledger_by_time;
 CREATE INDEX ledger_by_time ON ledger (timestamp, asset_id, account_id);
+-- Serves the point-in-time balance queries of JalAccount: the equality columns come first and the 'timestamp'
+-- inequality last, so the balance sheet seeks per account instead of scanning the whole table at every start-up
+DROP INDEX IF EXISTS ledger_by_account_asset;
+CREATE INDEX ledger_by_account_asset ON ledger (account_id, asset_id, book_account, timestamp);
+DROP INDEX IF EXISTS ledger_by_peer;
+CREATE INDEX ledger_by_peer ON ledger (peer_id);
 
 -- Table: ledger_totals to keep last accumulated amount value for each transaction
 DROP TABLE IF EXISTS ledger_totals;
@@ -823,7 +829,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 62);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 63);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
