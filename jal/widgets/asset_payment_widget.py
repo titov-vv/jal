@@ -29,10 +29,8 @@ class AssetPaymentWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         super().__init__(parent=parent, ui_class=Ui_AssetPaymentOperation)
         self.operation_type = LedgerTransaction.AssetPayment
-        self._account_model = AccountListModel(self)
-        self.ui.account_widget.setup_selector(self._account_model, AccountListDialog, self)
-        self._symbols_model = SymbolsListModel(self)
-        self.ui.symbol_widget.setup_selector(self._symbols_model, SymbolListDialog, self)
+        self.ui.account_widget.setup_selector(AccountListModel, AccountListDialog, self)
+        self.ui.symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         super()._init_db("asset_payments")
         self.combo_model = QStringListModel([self.tr("N/A"),
                                              self.tr("Dividend"),

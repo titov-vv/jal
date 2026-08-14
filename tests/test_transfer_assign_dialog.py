@@ -188,7 +188,7 @@ def test_staking_mode_offers_boxes_and_nothing_else(funded):
     Ledger().rebuild(from_timestamp=0)
 
     dialog = TransferAssignDialog(transfer.id(), staking=True)
-    model = dialog._account_model
+    model = dialog._account.model()
     shown = [model.getId(model.index(row, 0)) for row in range(model.rowCount())]
     assert shown == [box.id()]           # the wallets are not offered, the box is
 
@@ -198,7 +198,7 @@ def test_staking_mode_offers_boxes_and_nothing_else(funded):
     assert _ok(dialog) is True
 
     # The ordinary mode is unchanged by any of this - it offers the accounts and not the box
-    plain = TransferAssignDialog(transfer.id())._account_model
+    plain = TransferAssignDialog(transfer.id())._account.model()
     shown = [plain.getId(plain.index(row, 0)) for row in range(plain.rowCount())]
     assert box.id() not in shown and WALLET_B in shown
 

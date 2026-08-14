@@ -52,8 +52,7 @@ class PeerReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_PeerReportWidget()
         self.ui.setupUi(self)
-        self._peer_model = PeerTreeModel(self)
-        self.ui.ReportPeerEdit.setup_selector(self._peer_model, PeerListDialog, self)
+        self.ui.ReportPeerEdit.setup_selector(PeerTreeModel, PeerListDialog, self)
         self._parent = parent
 
         self.peer_model = PeerOperationsModel(self.ui.ReportTableView)

@@ -277,20 +277,23 @@ class ConstantLookupDelegate(QStyledItemDelegate):
 # -----------------------------------------------------------------------------------------------------------------------
 # Class to allow lookup values selection from reference models
 # Parameters:
-#   model - data model to get values from (from common_models.py)
+#   model_class - class of the data model to get values from (from common_models.py). The delegate keeps an instance
+#                 of it to display the values of the column.
 #   dialog_class - class of the selection dialog to be used for selection (from reference_dialogs.py). It is passed
 #                  on to the selector widget, which builds it when the user first asks for it.
-#   dialog_parent, dialog_args - passed to dialog_class on construction
+#   selector_parent, model_args, dialog_args - passed on to ReferenceSelectorWidget.setup_selector()
 class LookupSelectorDelegate(QStyledItemDelegate):
-    def __init__(self, parent, model, dialog_class, dialog_parent=None, **dialog_args):
+    def __init__(self, parent, model_class, dialog_class, selector_parent=None, model_args=None, dialog_args=None):
         super().__init__(parent=parent)
         self._selector = None
-        assert model is not None
+        assert model_class is not None
         assert dialog_class is not None
-        self._selector_model = model
+        self._selector_model_class = model_class
         self._selector_dialog_class = dialog_class
-        self._selector_dialog_parent = dialog_parent
+        self._selector_parent = selector_parent
+        self._selector_model_args = model_args
         self._selector_dialog_args = dialog_args
+        self._selector_model = model_class(parent, **(model_args or {}))
 
     def displayText(self, value, locale):
         item_name = self._selector_model.getValue(value)
@@ -301,8 +304,8 @@ class LookupSelectorDelegate(QStyledItemDelegate):
 
     def createSelector(self, parent) -> None:
         self._selector = ReferenceSelectorWidget(parent, validate=False)
-        self._selector.setup_selector(self._selector_model, self._selector_dialog_class,
-                                      self._selector_dialog_parent, **self._selector_dialog_args)
+        self._selector.setup_selector(self._selector_model_class, self._selector_dialog_class,
+                                      self._selector_parent, self._selector_model_args, self._selector_dialog_args)
 
     def createEditor(self, aParent, option, index):
         self.createSelector(aParent)

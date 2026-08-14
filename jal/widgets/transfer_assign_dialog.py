@@ -70,15 +70,16 @@ class TransferAssignDialog(QDialog):
         # A staking box is hidden from every picker, so the chooser is asked for the hidden types and then narrowed
         # to that one: the box is what this mode assigns to, and a deposit box is not something a chain movement
         # ever ends in.
-        self._account_model = AccountListModel(self, include_hidden=staking)
         dialog_args = {'include_hidden': staking}
         if staking:
-            self._narrow_to_boxes()
             # The list the "..." button opens is a model of its own, and it rebuilds its filter from its own search
             # and grouping state on every open - so the narrowing has to go through the one condition that survives
             # that (see ReferenceDataDialog.setFilter), not through a filter set once on the model.
             dialog_args.update(filter_field="accounts.account_type", filter_value=PredefinedAccountType.Staking)
-        self._account.setup_selector(self._account_model, AccountListDialog, self, **dialog_args)
+        self._account.setup_selector(AccountListModel, AccountListDialog, self,
+                                     model_args={'include_hidden': staking}, dialog_args=dialog_args)
+        if staking:
+            self._narrow_to_boxes()
         form.addWidget(self._account, 0, 1)
         self._account_currency = QLabel()
         form.addWidget(self._account_currency, 0, 2)
@@ -188,8 +189,8 @@ class TransferAssignDialog(QDialog):
     # staking boxes alone
     def _narrow_to_boxes(self) -> None:
         box_only = f"accounts.account_type={PredefinedAccountType.Staking}"
-        self._account_model.setFilter(box_only)
-        self._account_model.completion_model.setFilter(box_only)
+        self._account.model().setFilter(box_only)
+        self._account.model().completion_model.setFilter(box_only)
 
     # The protocol a custody import named in the leg's description, or '' when it named none. The registry's own
     # names are matched rather than the sentence around them: that sentence is translated and differs between the

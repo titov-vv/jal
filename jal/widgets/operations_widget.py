@@ -278,10 +278,9 @@ class OperationsWidget(MdiWidget):
         rows = []
         for index in self.ui.OperationsTableView.selectionModel().selectedRows():
             rows.append(index.row())
-        tag_model = TagTreeModel(self)
         dialog = SelectReferenceDialog(self, self.tr("Please select tag"),
                                        self.tr("Choose tag to be assigned to selected operations:"),
-                                       tag_model, TagsListDialog)
+                                       TagTreeModel, TagsListDialog)
         if dialog.exec() != QDialog.Accepted:
             return
         self.operations_model.assign_tag_to_rows(rows, dialog.selected_id)

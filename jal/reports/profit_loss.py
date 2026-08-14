@@ -166,8 +166,7 @@ class ProfitLossReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_ProfitLossReportWidget()
         self.ui.setupUi(self)
-        self._account_model = AccountListModel(self)
-        self.ui.ReportAccountEdit.setup_selector(self._account_model, AccountListDialog, self)
+        self.ui.ReportAccountEdit.setup_selector(AccountListModel, AccountListDialog, self)
         self._parent = parent
         self.name = self.tr("P&L by account")
 

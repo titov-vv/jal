@@ -52,8 +52,7 @@ class CategoryReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_CategoryReportWidget()
         self.ui.setupUi(self)
-        self._category_model = CategoryTreeModel(self)
-        self.ui.ReportCategoryEdit.setup_selector(self._category_model, CategoryListDialog, self)
+        self.ui.ReportCategoryEdit.setup_selector(CategoryTreeModel, CategoryListDialog, self)
         self._parent = parent
 
         self.category_model = CategoryOperationsModel(self.ui.ReportTableView)

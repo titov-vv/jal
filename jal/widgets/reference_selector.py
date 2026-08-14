@@ -47,21 +47,28 @@ class ReferenceSelectorWidget(QWidget):
         self.clean_button.clicked.connect(self.on_clean_button_clicked)
 
     # Sets relations of the widget:
-    # model - data model to get values from, it fills the text field and its completer
+    # model_class - class of the data model to get values from. It fills the text field and its completer, and is
+    #               built right here: the completer has to be bound before the user may type into the field, and the
+    #               name of an already selected item is asked for as soon as an operation is displayed.
     # dialog_class - class of the dialog that the "..." button opens for selection. It must expose a
-    #                'dialog_requested' slot and emit 'selection_done' on completion.
-    # dialog_parent, dialog_args - passed to dialog_class when the dialog is constructed
-    #
-    # The dialog is a CLASS and not an instance because it is built on the first click of the "..." button and not
-    # here: every operation tab and every reference dialog owns several selectors, so otherwise the application
-    # will build several dozen fully populated modal dialogs at start-up that the user may never open.
-    # The text field self.name itself needs only 'model', which is why that one is still given ready-made.
-    def setup_selector(self, model, dialog_class, dialog_parent=None, **dialog_args):
-        self._model = model
+    #                'dialog_requested' slot and emit 'selection_done' on completion. Unlike the model it is NOT
+    #                built here but on the first click of that button - every operation tab and every reference
+    #                dialog owns several selectors, so otherwise the application will build several dozen fully
+    #                populated modal dialogs at start-up that the user may never open.
+    # parent - parent object of the dialog. The model is owned by this widget instead, so that it is released with
+    #          it: a selector created as a cell editor is transient, and a model outliving it would pile up unused
+    #          copies on the view for as long as the view is alive.
+    # model_args, dialog_args - extra keyword arguments for the respective constructor
+    def setup_selector(self, model_class, dialog_class, parent=None, model_args=None, dialog_args=None):
+        self._model = model_class(self, **(model_args or {}))
         self._model.bind_completer(self.name, self.on_completion)
         self._dialog_class = dialog_class
-        self._dialog_parent = dialog_parent
-        self._dialog_args = dialog_args
+        self._dialog_parent = parent
+        self._dialog_args = dialog_args or {}
+
+    # The data model the widget displays values from - for a caller that needs to narrow it down, see setup_selector()
+    def model(self):
+        return self._model
 
     # The selection dialog, built on first use. Kept afterwards, so it holds its geometry, filters and search text
     # between openings exactly as the eagerly created one did.

@@ -141,10 +141,9 @@ class PortfolioReportWindow(MdiWidget):
         model = index.model()
         account, asset_id, currency, asset_qty = model.get_data_for_tax(index)
         asset = JalAsset(asset_id)
-        tag_model = TagTreeModel(self)
         dialog = SelectReferenceDialog(self, self.tr("Please select tag"),
                                        self.tr("Select tag for {} ({}): ").format(asset.symbol(currency),asset.name()),
-                                       tag_model, TagsListDialog)
+                                       TagTreeModel, TagsListDialog)
         if dialog.exec() != QDialog.Accepted:
             return
         asset.set_tag(dialog.selected_id)

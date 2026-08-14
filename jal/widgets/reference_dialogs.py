@@ -55,8 +55,6 @@ class ReferenceDataDialog(QDialog):
         self.toolbar = None
         self.custom_context_menu = False
         self._delegates = []  # to keep references to delegates to avoid garbage collection
-                              # it also keeps the models a LookupSelectorDelegate looks values up in (the dialog of
-                              # such a delegate is built and owned by the selector widget, on first use)
 
         self.ui.AddChildBtn.setVisible(False)
         self.ui.EditBtn.setVisible(False)
@@ -210,22 +208,17 @@ class ReferenceDataDialog(QDialog):
             elif spec.delegate_type == CmDelegate.REFERENCE:
                 delegate_class = LookupSelectorDelegate
                 if spec.delegate_details == CmReference.TAG:
-                    model = TagTreeModel(self)
-                    dialog_class = TagsListDialog
+                    model_class, dialog_class = TagTreeModel, TagsListDialog
                 elif spec.delegate_details == CmReference.PEER:
-                    model = PeerTreeModel(self)
-                    dialog_class = PeerListDialog
+                    model_class, dialog_class = PeerTreeModel, PeerListDialog
                 elif spec.delegate_details == CmReference.SYMBOL:
-                    model = SymbolsListModel(self)
-                    dialog_class = SymbolListDialog
+                    model_class, dialog_class = SymbolsListModel, SymbolListDialog
                 elif spec.delegate_details == CmReference.ASSET_VIA_SYMBOL:
-                    model = SymbolsListModel(self)
-                    dialog_class = SymbolListDialog
+                    model_class, dialog_class = SymbolsListModel, SymbolListDialog
                     delegate_class = AssetSelectorDelegate
                 else:
                     raise NotImplementedError(f"Unsupported reference delegate type {spec.delegate_details}")
-                self._delegates.append(model)
-                delegate = delegate_class(self._view, model, dialog_class, self)
+                delegate = delegate_class(self._view, model_class, dialog_class, self)
             elif spec.delegate_type == CmDelegate.TIMESTAMP:
                 delegate = TimestampDelegate(display_format=spec.delegate_details, parent=self._view)
             else:
@@ -495,10 +488,9 @@ class PeerListDialog(ReferenceDataDialog):
 
     @Slot()
     def replacePeer(self):
-        peer_model = PeerTreeModel(self)
         dialog = SelectReferenceDialog(self, self.tr("Please select peer"),
                                        self.tr("Replace peer '") + self._menu_peer_name + self.tr("' with: "),
-                                       peer_model, PeerListDialog)
+                                       PeerTreeModel, PeerListDialog)
         if dialog.exec() != QDialog.Accepted:
             return
         reply = QMessageBox().warning(self, '', self.tr("Keep old name in notes?"), QMessageBox.Yes, QMessageBox.No)
@@ -548,10 +540,9 @@ class CategoryListDialog(ReferenceDataDialog):
 
     @Slot()
     def replaceCategory(self):
-        category_model = CategoryTreeModel(self)
         dialog = SelectReferenceDialog(self, self.tr("Please select category"),
                                        self.tr("Replace category '") + self._menu_category_name + self.tr("' with: "),
-                                       category_model, CategoryListDialog)
+                                       CategoryTreeModel, CategoryListDialog)
         if dialog.exec() != QDialog.Accepted:
             return
         JalCategory(self._menu_category_id).replace_with(dialog.selected_id)
@@ -596,10 +587,9 @@ class TagsListDialog(ReferenceDataDialog):
 
     @Slot()
     def replaceTag(self):
-        tag_model = TagTreeModel(self)
         dialog = SelectReferenceDialog(self, self.tr("Please select tag"),
                                        self.tr("Replace tag '") + self._menu_tag_name + self.tr("' with: "),
-                                       tag_model, TagsListDialog)
+                                       TagTreeModel, TagsListDialog)
         if dialog.exec() != QDialog.Accepted:
             return
         JalTag(self._menu_tag_id).replace_with(dialog.selected_id)

@@ -30,14 +30,10 @@ class ConversionWidget(AbstractOperationDetails):
         super().__init__(parent=parent, ui_class=Ui_ConversionOperation)
         self.name = self.tr("Conversion")
         self.operation_type = LedgerTransaction.Conversion
-        self._account_model = AccountListModel(self)
-        self.ui.account_widget.setup_selector(self._account_model, AccountListDialog, self)
-        self._out_symbols_model = SymbolsListModel(self)
-        self.ui.out_symbol_widget.setup_selector(self._out_symbols_model, SymbolListDialog, self)
-        self._in_symbols_model = SymbolsListModel(self)
-        self.ui.in_symbol_widget.setup_selector(self._in_symbols_model, SymbolListDialog, self)
-        self._fee_symbols_model = SymbolsListModel(self)
-        self.ui.fee_symbol_widget.setup_selector(self._fee_symbols_model, SymbolListDialog, self)
+        self.ui.account_widget.setup_selector(AccountListModel, AccountListDialog, self)
+        self.ui.out_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
+        self.ui.in_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
+        self.ui.fee_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
 
         self.ui.timestamp.setFixedWidth(self.ui.timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.fee_symbol_widget.setValidation(False)

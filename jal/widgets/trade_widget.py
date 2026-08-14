@@ -26,10 +26,8 @@ class TradeWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         super().__init__(parent=parent, ui_class=Ui_TradeOperation)
         self.operation_type = LedgerTransaction.Trade
-        self._account_model = AccountListModel(self)
-        self.ui.account_widget.setup_selector(self._account_model, AccountListDialog, self)
-        self._symbols_model = SymbolsListModel(self)
-        self.ui.symbol_widget.setup_selector(self._symbols_model, SymbolListDialog, self)
+        self.ui.account_widget.setup_selector(AccountListModel, AccountListDialog, self)
+        self.ui.symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         super()._init_db("trades")
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.settlement_editor.setFixedWidth(self.ui.settlement_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)

@@ -69,9 +69,7 @@ class SlipLinesDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self._category_selector = None  # Need to prevent object deletion in a middle
-        self._category_model = None
         self._tag_selector = None
-        self._tag_model = None
 
     def paint(self, painter, option, index):
         painter.save()
@@ -103,13 +101,11 @@ class SlipLinesDelegate(QStyledItemDelegate):
     def createEditor(self, aParent, option, index):
         if index.column() == 1:
             self._category_selector = ReferenceSelectorWidget(aParent, validate=False)
-            self._category_model = CategoryTreeModel(aParent)
-            self._category_selector.setup_selector(self._category_model, CategoryListDialog, aParent)
+            self._category_selector.setup_selector(CategoryTreeModel, CategoryListDialog, aParent)
             return self._category_selector
         if index.column() == 3:
             self._tag_selector = ReferenceSelectorWidget(aParent, validate=False)
-            self._tag_model = TagTreeModel(aParent)
-            self._tag_selector.setup_selector(self._tag_model, TagsListDialog, aParent)
+            self._tag_selector.setup_selector(TagTreeModel, TagsListDialog, aParent)
             return self._tag_selector
         return None
 
@@ -240,10 +236,8 @@ class ImportReceiptDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_ImportShopReceiptDlg()
         self.ui.setupUi(self)
-        self._account_model = AccountListModel(self)
-        self.ui.AccountEdit.setup_selector(self._account_model, AccountListDialog, self)
-        self._peer_model = PeerTreeModel(self)
-        self.ui.PeerEdit.setup_selector(self._peer_model, PeerListDialog, self)
+        self.ui.AccountEdit.setup_selector(AccountListModel, AccountListDialog, self)
+        self.ui.PeerEdit.setup_selector(PeerTreeModel, PeerListDialog, self)
         self.model = None
         self.delegate = []
         self.params_model = None

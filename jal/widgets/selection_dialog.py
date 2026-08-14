@@ -7,7 +7,7 @@ from jal.widgets.reference_selector import ReferenceSelectorWidget
 #-----------------------------------------------------------------------------------------------------------------------
 # Common base GUI dialog class for selector dialogs. Takes window title and label comment to describe selection
 class SelectReferenceDialog(QDialog):
-    def __init__(self, parent=None, title='', description='', model=None, dialog_class=None):
+    def __init__(self, parent=None, title='', description='', model_class=None, dialog_class=None):
         super().__init__(parent=parent)
         self.ui = Ui_SelectReferenceDlg()
         self.ui.setupUi(self)
@@ -15,9 +15,8 @@ class SelectReferenceDialog(QDialog):
         self.setWindowTitle(title)
         self.ui.DescriptionLabel.setText(description)
         center_window(self)
-        self._selection_widget_model = model
         self._selection_widget = ReferenceSelectorWidget(self.ui.SelectorFrame)
-        self._selection_widget.setup_selector(self._selection_widget_model, dialog_class, self)
+        self._selection_widget.setup_selector(model_class, dialog_class, self)
         self.ui.FrameLayout.addWidget(self._selection_widget)
         self._selection_widget.selected_id = self.selected_id = 0
 
