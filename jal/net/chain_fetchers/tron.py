@@ -47,7 +47,7 @@ class TronFetcher(ChainFetcher):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Tron")
+        self.name = self.tr("&Tron")
         self._new_cursor = ''
         self._unspent_gas = {}   # tx hash -> the part of its fee that hasn't been charged to anything yet
 

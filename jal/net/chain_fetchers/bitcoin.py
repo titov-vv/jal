@@ -80,7 +80,7 @@ class BitcoinFetcher(ChainFetcher):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Bitcoin")
+        self.name = self.tr("&Bitcoin")
         self._new_cursor = ''
         self._state = {}       # the sync cursor, parsed: see _load_state()
 

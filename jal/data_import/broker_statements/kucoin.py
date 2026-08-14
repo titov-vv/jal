@@ -91,7 +91,7 @@ class StatementKuCoin(StatementCSV):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("KuCoin")
+        self.name = self.tr("K&uCoin")
         self.icon_name = "kucoin.png"
         self.filename_filter = self.tr("KuCoin statement (*.zip)")
         self._account_id = 0

@@ -143,7 +143,7 @@ class StatementIBKR(StatementXML):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Interactive Brokers")
+        self.name = self.tr("&Interactive Brokers")
         self.icon_name = "ibkr.png"
         self.filename_filter = self.tr("IBKR flex-query (*.xml)")
 

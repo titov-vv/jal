@@ -39,7 +39,7 @@ class AvalancheFetcher(EVMFetcher):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Avalanche")
+        self.name = self.tr("A&valanche")
 
 
 SettingsRegistry.register(SettingDescriptor(

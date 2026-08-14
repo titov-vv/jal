@@ -1,5 +1,7 @@
 import logging
 from datetime import time, datetime, timedelta, timezone
+from functools import cmp_to_key
+from PySide6.QtCore import Qt, QCollator
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup
@@ -18,6 +20,41 @@ def dependency_present(module_list: list) -> bool:
         except ImportError:
             result = False
     return result
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Menu labels carry Qt mnemonic markup: a single '&' marks the letter after it as an access key, and '&&' stands for
+# a literal ampersand (as in 'Income && Spending'). Modules that are loaded dynamically - reports, broker statements,
+# blockchain fetchers - supply their own menu label, so the two helpers below are needed to read such a label back.
+#
+# Returns the label as the user sees it, with all mnemonic markup removed
+def menu_label(text: str) -> str:
+    return text.replace('&&', '\x00').replace('&', '').replace('\x00', '&')
+
+# Returns the upper-cased access key declared in the label, or an empty string if the label declares none
+def menu_mnemonic(text: str) -> str:
+    position = 0
+    while position < len(text) - 1:
+        if text[position] != '&':
+            position += 1
+        elif text[position + 1] == '&':
+            position += 2      # a literal ampersand, not a marker
+        else:
+            return text[position + 1].upper()
+    return ''
+
+# Orders menu items the way the current language orders them, ignoring the mnemonic markup in it so that marking
+# an access key can't move an item.
+# Where a menu has sections, 'group_of' names the section of an item and ungrouped items come first,
+# as their submenus are appended after all plain entries.
+def sort_menu_items(items: list, label_of, group_of=None) -> list:
+    collator = QCollator()
+    collator.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+    order = cmp_to_key(collator.compare)
+    if group_of is None:
+        return sorted(items, key=lambda item: order(menu_label(label_of(item))))
+    return sorted(items, key=lambda item: (bool(group_of(item)),
+                                           order(menu_label(group_of(item))),
+                                           order(menu_label(label_of(item)))))
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Check if given signal of an object is connected or not

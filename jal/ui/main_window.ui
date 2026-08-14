@@ -62,53 +62,33 @@
      <height>24</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuMain">
+   <widget class="QMenu" name="menuLedger">
     <property name="title">
-     <string>&amp;Main</string>
+     <string>&amp;Ledger</string>
     </property>
     <addaction name="actionOperations"/>
+    <addaction name="separator"/>
+    <addaction name="actionBackup"/>
+    <addaction name="actionRestore"/>
+    <addaction name="action_Re_build_Ledger"/>
+    <addaction name="separator"/>
+    <addaction name="actionDeleteAllData"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menu_Data">
     <property name="title">
      <string>&amp;Data</string>
     </property>
-    <addaction name="separator"/>
-    <addaction name="action_Re_build_Ledger"/>
-    <addaction name="separator"/>
     <addaction name="actionAccounts"/>
     <addaction name="actionAssets"/>
     <addaction name="actionPeers"/>
     <addaction name="actionCategories"/>
     <addaction name="actionTags"/>
-    <addaction name="actionQuotes"/>
-    <addaction name="actionTokenBlacklist"/>
     <addaction name="separator"/>
     <addaction name="actionBaseCurrency"/>
-    <addaction name="separator"/>
-    <addaction name="actionBackup"/>
-    <addaction name="actionRestore"/>
-    <addaction name="separator"/>
-    <addaction name="actionCleanAll"/>
-   </widget>
-   <widget class="QMenu" name="menu_Export">
-    <property name="title">
-     <string>&amp;Export</string>
-    </property>
-    <addaction name="PrepareTaxForms"/>
-    <addaction name="PrepareFlowReport"/>
-   </widget>
-   <widget class="QMenu" name="menuSettings">
-    <property name="title">
-     <string>&amp;Settings</string>
-    </property>
-    <widget class="QMenu" name="menuLanguage">
-     <property name="title">
-      <string>L&amp;anguage</string>
-     </property>
-    </widget>
-    <addaction name="actionPreferences"/>
-    <addaction name="menuLanguage"/>
+    <addaction name="actionQuoteHistory"/>
+    <addaction name="actionTokenBlacklist"/>
    </widget>
    <widget class="QMenu" name="menuImport">
     <property name="title">
@@ -124,53 +104,91 @@
       <string>&amp;Blockchain</string>
      </property>
     </widget>
-    <addaction name="action_LoadQuotes"/>
-    <addaction name="actionLoadTokenLists"/>
     <addaction name="menuStatement"/>
     <addaction name="menuBlockchain"/>
     <addaction name="actionImportShopReceipt"/>
+    <addaction name="separator"/>
+    <addaction name="action_LoadQuotes"/>
+    <addaction name="actionLoadTokenLists"/>
    </widget>
    <widget class="QMenu" name="menuReports">
     <property name="title">
      <string>&amp;Reports</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menu_Tools">
+   <widget class="QMenu" name="menuTax">
     <property name="title">
-     <string>&amp;Tools</string>
+     <string>&amp;Tax</string>
     </property>
+    <addaction name="PrepareTaxForms"/>
+    <addaction name="PrepareFlowReport"/>
+    <addaction name="separator"/>
     <addaction name="actionMergeRuTaxFiles"/>
    </widget>
-   <addaction name="menuMain"/>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>&amp;Settings</string>
+    </property>
+    <widget class="QMenu" name="menuLanguage">
+     <property name="title">
+      <string>L&amp;anguage</string>
+     </property>
+    </widget>
+    <addaction name="actionPreferences"/>
+    <addaction name="menuLanguage"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionDocumentation"/>
+    <addaction name="actionFAQ"/>
+    <addaction name="actionErrorMessages"/>
+    <addaction name="separator"/>
+    <addaction name="actionReportProblem"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuLedger"/>
    <addaction name="menu_Data"/>
-   <addaction name="menuReports"/>
    <addaction name="menuImport"/>
-   <addaction name="menu_Export"/>
-   <addaction name="menu_Tools"/>
+   <addaction name="menuReports"/>
+   <addaction name="menuTax"/>
    <addaction name="menuSettings"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="StatusBar"/>
+  <action name="actionOperations">
+   <property name="text">
+    <string>&amp;Operations</string>
+   </property>
+  </action>
+  <action name="actionBackup">
+   <property name="text">
+    <string>&amp;Backup...</string>
+   </property>
+  </action>
+  <action name="actionRestore">
+   <property name="text">
+    <string>&amp;Restore...</string>
+   </property>
+  </action>
+  <action name="action_Re_build_Ledger">
+   <property name="text">
+    <string>Re-build &amp;ledger...</string>
+   </property>
+  </action>
+  <action name="actionDeleteAllData">
+   <property name="text">
+    <string>&amp;Delete all data...</string>
+   </property>
+  </action>
   <action name="actionExit">
    <property name="text">
     <string>&amp;Exit</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::QuitRole</enum>
-   </property>
-  </action>
-  <action name="action_Re_build_Ledger">
-   <property name="text">
-    <string>Re-build &amp;Ledger...</string>
-   </property>
-  </action>
-  <action name="action_LoadQuotes">
-   <property name="text">
-    <string>&amp;Quotes...</string>
-   </property>
-  </action>
-  <action name="actionLoadTokenLists">
-   <property name="text">
-    <string>Token &amp;lists...</string>
    </property>
   </action>
   <action name="actionAccounts">
@@ -193,44 +211,19 @@
     <string>&amp;Categories</string>
    </property>
   </action>
-  <action name="actionBackup">
-   <property name="text">
-    <string>&amp;Backup...</string>
-   </property>
-  </action>
-  <action name="actionRestore">
-   <property name="text">
-    <string>&amp;Restore...</string>
-   </property>
-  </action>
-  <action name="PrepareTaxForms">
-   <property name="text">
-    <string>Investment &amp;tax report</string>
-   </property>
-  </action>
   <action name="actionTags">
    <property name="text">
     <string>&amp;Tags</string>
    </property>
   </action>
-  <action name="actionImportShopReceipt">
+  <action name="actionBaseCurrency">
    <property name="text">
-    <string>&amp;Receipt...</string>
+    <string>&amp;Base currency</string>
    </property>
   </action>
-  <action name="actionQuotes">
+  <action name="actionQuoteHistory">
    <property name="text">
-    <string>&amp;Quotes</string>
-   </property>
-  </action>
-  <action name="actionOperations">
-   <property name="text">
-    <string>&amp;Operations</string>
-   </property>
-  </action>
-  <action name="PrepareFlowReport">
-   <property name="text">
-    <string>Foreign accounts &amp;flow report</string>
+    <string>Quote &amp;history</string>
    </property>
   </action>
   <action name="actionTokenBlacklist">
@@ -238,9 +231,34 @@
     <string>To&amp;ken blacklist</string>
    </property>
   </action>
-  <action name="actionBaseCurrency">
+  <action name="actionImportShopReceipt">
    <property name="text">
-    <string>&amp;Base Currency</string>
+    <string>&amp;Receipt...</string>
+   </property>
+  </action>
+  <action name="action_LoadQuotes">
+   <property name="text">
+    <string>&amp;Download quotes...</string>
+   </property>
+  </action>
+  <action name="actionLoadTokenLists">
+   <property name="text">
+    <string>Download token &amp;lists</string>
+   </property>
+  </action>
+  <action name="PrepareTaxForms">
+   <property name="text">
+    <string>Investment &amp;tax report</string>
+   </property>
+  </action>
+  <action name="PrepareFlowReport">
+   <property name="text">
+    <string>Foreign accounts &amp;flow report</string>
+   </property>
+  </action>
+  <action name="actionMergeRuTaxFiles">
+   <property name="text">
+    <string>&amp;Merge Russian tax files (*.de5)...</string>
    </property>
   </action>
   <action name="actionPreferences">
@@ -251,14 +269,32 @@
     <enum>QAction::MenuRole::PreferencesRole</enum>
    </property>
   </action>
-  <action name="actionCleanAll">
+  <action name="actionDocumentation">
    <property name="text">
-    <string>Clean All</string>
+    <string>&amp;Documentation</string>
    </property>
   </action>
-  <action name="actionMergeRuTaxFiles">
+  <action name="actionFAQ">
    <property name="text">
-    <string>Merge Russian tax-files (*.de5)</string>
+    <string>&amp;FAQ</string>
+   </property>
+  </action>
+  <action name="actionErrorMessages">
+   <property name="text">
+    <string>Description of &amp;error messages</string>
+   </property>
+  </action>
+  <action name="actionReportProblem">
+   <property name="text">
+    <string>&amp;Report a problem</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>&amp;About JAL</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::AboutRole</enum>
    </property>
   </action>
  </widget>
@@ -271,8 +307,8 @@
   <customwidget>
    <class>TabbedMdiArea</class>
    <extends>QWidget</extends>
-   <header>jal/widgets/mdi.h</header>
    <container>1</container>
+   <header>jal/widgets/mdi.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

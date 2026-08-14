@@ -5,15 +5,15 @@ from math import log10
 from decimal import Decimal
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QDir, QLocale, QMetaObject
-from PySide6.QtGui import QActionGroup, QAction
+from PySide6.QtCore import Qt, Slot, QDir, QLocale, QMetaObject, QUrl
+from PySide6.QtGui import QActionGroup, QAction, QDesktopServices
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressBar, QMenu, QPushButton
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget, TaxMergeDialog
-from jal.widgets.helpers import dependency_present
+from jal.widgets.helpers import dependency_present, menu_label, menu_mnemonic
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog, TokenBlacklistDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
@@ -72,9 +72,6 @@ class MainWindow(QMainWindow):
 
         self.ui.actionImportShopReceipt.setEnabled(dependency_present(['PySide6.QtMultimedia']))
 
-        self.actionAbout = QAction(text=self.tr("About"), parent=self)
-        self.ui.MainMenu.addAction(self.actionAbout)
-
         self.langGroup = QActionGroup(self.ui.menuLanguage)
         self.createLanguageMenu()
 
@@ -95,8 +92,12 @@ class MainWindow(QMainWindow):
 
     def connect_signals_and_slots(self):
         self.ui.actionExit.triggered.connect(QApplication.instance().quit)
-        self.ui.actionOperations.triggered.connect(self.createOperationsWindow)
-        self.actionAbout.triggered.connect(self.showAboutWindow)
+        self.ui.actionOperations.triggered.connect(self.showOperationsWindow)
+        self.ui.actionAbout.triggered.connect(self.showAboutWindow)
+        self.ui.actionDocumentation.triggered.connect(partial(self.openHelpDocument, Setup.REPO_README))
+        self.ui.actionFAQ.triggered.connect(partial(self.openHelpDocument, Setup.REPO_FAQ))
+        self.ui.actionErrorMessages.triggered.connect(partial(self.openHelpDocument, Setup.REPO_ERRORS))
+        self.ui.actionReportProblem.triggered.connect(partial(QDesktopServices.openUrl, QUrl(Setup.REPO_URL + "/issues")))
         self.langGroup.triggered.connect(self.onLanguageChanged)
         self.statementGroup.triggered.connect(self.statements.load)
         self.blockchainGroup.triggered.connect(self.chain_fetchers.load)
@@ -108,13 +109,13 @@ class MainWindow(QMainWindow):
         self.ui.actionBackup.triggered.connect(self.backup.create)
         self.ui.actionRestore.triggered.connect(self.backup.restore)
         self.ui.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
-        self.ui.actionCleanAll.triggered.connect(self.onCleanDB)
+        self.ui.actionDeleteAllData.triggered.connect(self.onCleanDB)
         self.ui.actionAccounts.triggered.connect(partial(self.onDataDialog, AccountListDialog))
         self.ui.actionAssets.triggered.connect(partial(self.onDataDialog, SymbolListDialog))
         self.ui.actionPeers.triggered.connect(partial(self.onDataDialog, PeerListDialog))
         self.ui.actionCategories.triggered.connect(partial(self.onDataDialog, CategoryListDialog))
         self.ui.actionTags.triggered.connect(partial(self.onDataDialog, TagsListDialog))
-        self.ui.actionQuotes.triggered.connect(partial(self.onDataDialog, QuotesListDialog))
+        self.ui.actionQuoteHistory.triggered.connect(partial(self.onDataDialog, QuotesListDialog))
         self.ui.actionTokenBlacklist.triggered.connect(partial(self.onDataDialog, TokenBlacklistDialog))
         self.ui.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, BaseCurrencyDialog))
         self.ui.actionPreferences.triggered.connect(self.showPreferences)
@@ -174,11 +175,13 @@ class MainWindow(QMainWindow):
 
     def createLanguageMenu(self):
         langDirectory = QDir(JalSettings.path(JalSettings.PATH_LANG))
+        current_language = JalSettings().getLanguage()
         for language_file in langDirectory.entryList(['*.qm']):
             language_code = language_file.split('.')[0]
             language = QLocale.languageToString(QLocale(language_code).language())
             action = QAction(icon=JalIcon.country_flag(language_code), text=language, parent=self)
             action.setCheckable(True)
+            action.setChecked(language_code == current_language)   # the group shows which language is in use now
             action.setData(language_code)
             self.ui.menuLanguage.addAction(action)
             self.langGroup.addAction(action)
@@ -214,47 +217,84 @@ class MainWindow(QMainWindow):
                                   QMessageBox.Ok)
         self.close()
 
+    # Adds one menu item for a dynamically loaded module (a report, a broker statement or a blockchain fetcher).
+    # The label comes from the module itself and carries its own Qt mnemonic markup, so every module - and every
+    # translation of it - picks its own access key. 'asks_input' marks an action that requires something from the
+    # user (a file to read, a wallet to fetch) before it can do any work, which is what the ellipsis announces.
+    def addModuleAction(self, menu, group, label, index, icon_name='', asks_input=False):
+        if asks_input:
+            label += "..."
+        action = QAction(JalIcon.aux_icon(icon_name), label, self) if icon_name else QAction(label, self)
+        action.setData(index)
+        menu.addAction(action)
+        group.addAction(action)
+
+    # Reports two items of one menu that compete for the same access key. Qt keeps such a menu usable - the key
+    # cycles between the matching items instead of activating one - but it makes the menu harder to operate.
+    # Labels of dynamically built menus come from separately translated modules, so nothing else can catch this.
+    # The message is intentionally not translated: it is addressed to whoever maintains those translations.
+    @staticmethod
+    def checkMenuMnemonics(menu_name: str, labels: list):
+        used = {}
+        for label in labels:
+            key = menu_mnemonic(label)
+            if not key:
+                continue
+            if key in used:
+                logging.warning(f"Menu '{menu_name}': '{menu_label(label)}' and '{used[key]}' "
+                                f"both use access key '{key}'")
+            else:
+                used[key] = menu_label(label)
+
     # Create import menu for all known statements based on self.statements.items values
     def createStatementsImportMenu(self):
         for i, statement in enumerate(self.statements.items):
-            statement_name = statement['name'].replace('&', '&&')  # & -> && to prevent shortcut creation
-            if statement['icon']:
-                statement_icon = JalIcon.aux_icon(statement['icon'])
-                action = QAction(statement_icon, statement_name, self)
-            else:
-                action = QAction(statement_name, self)
-            action.setData(i)
-            self.ui.menuStatement.addAction(action)
-            self.statementGroup.addAction(action)
+            self.addModuleAction(self.ui.menuStatement, self.statementGroup, statement['name'], i, icon_name=statement['icon'], asks_input=True)
+        self.checkMenuMnemonics("Import->Statement", [x['name'] for x in self.statements.items])
 
     # Create import menu for all known blockchain fetchers based on self.chain_fetchers.items values
     def createBlockchainImportMenu(self):
         for i, fetcher in enumerate(self.chain_fetchers.items):
-            action = QAction(fetcher['name'].replace('&', '&&'), self)  # & -> && to prevent shortcut creation
-            action.setData(i)
-            self.ui.menuBlockchain.addAction(action)
-            self.blockchainGroup.addAction(action)
+            self.addModuleAction(self.ui.menuBlockchain, self.blockchainGroup, fetcher['name'], i, icon_name=fetcher['icon'], asks_input=True)
+        self.checkMenuMnemonics("Import->Blockchain", [x['name'] for x in self.chain_fetchers.items])
 
-    # Create menu entry for all known reports based on self.reports.sources values
+    # Create menu entry for all known reports based on self.reports.items values.
+    # Reports that declare a group get a submenu of their own.
     def createReportsMenu(self):
         groups = {}
         for i, report in enumerate(self.reports.items):
-            action = QAction(report['name'].replace('&', '&&'), self)  # & -> && to prevent shortcut creation
-            action.setData(i)
             if report['group']:
                 if report['group'] not in groups:
                     groups[report['group']] = QMenu(report['group'], self.ui.menuReports)
-                    self.ui.menuReports.addAction(groups[report['group']].menuAction())
-                submenu = groups[report['group']]
-                submenu.addAction(action)
+                self.addModuleAction(groups[report['group']], self.reportsGroup, report['name'], i)
             else:
-                self.ui.menuReports.addAction(action)
-            self.reportsGroup.addAction(action)
+                self.addModuleAction(self.ui.menuReports, self.reportsGroup, report['name'], i)
+        if groups:
+            self.ui.menuReports.addSeparator()
+        for group_name, submenu in groups.items():
+            self.ui.menuReports.addAction(submenu.menuAction())
+            self.checkMenuMnemonics(f"Reports->{menu_label(group_name)}",
+                                    [x['name'] for x in self.reports.items if x['group'] == group_name])
+        self.checkMenuMnemonics("Reports", [x['name'] for x in self.reports.items if not x['group']] + list(groups))
 
+    # The operations window is the main view of the application - there is no use for a second copy of it,
+    # so an already open one is brought to the front instead of being added again.
     @Slot()
-    def createOperationsWindow(self):
+    def showOperationsWindow(self):
+        for window in self.ui.mdiArea.subWindowList():
+            if isinstance(window.widget(), OperationsWidget):
+                self.ui.mdiArea.setActiveSubWindow(window)
+                return
         operations_window = self.ui.mdiArea.addSubWindow(OperationsWidget(self), maximized=True)
         operations_window.widget().dbUpdated.connect(self.ledger.rebuild)
+
+    # Opens a document from the project repository in a browser, in the language the application is set to
+    @Slot()
+    def openHelpDocument(self, document: str):
+        language = JalSettings().getLanguage()
+        suffix = '' if language == 'en' else f".{language}"
+        url = f"{Setup.REPO_URL}/blob/master/{Setup.HELP_DOCUMENTS[document]}{suffix}.md"
+        QDesktopServices.openUrl(QUrl(url))
 
     @Slot()
     def showAboutWindow(self):

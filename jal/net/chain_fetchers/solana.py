@@ -71,7 +71,7 @@ class SolanaFetcher(ChainFetcher):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Solana")
+        self.name = self.tr("&Solana")
         self._lists = TokenListProvider()
         self._new_cursor = ''
         self._stakes = None      # {stake account address: amount staked}, loaded by _fetch - see _process_stake

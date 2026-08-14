@@ -41,8 +41,8 @@ class TagOperationsModel(ReportOperationsModel):
 class TagReport(QObject):
     def __init__(self):
         super().__init__()
-        self.group = self.tr("Operations")
-        self.name = self.tr("by Tag")
+        self.group = self.tr("&Operations")
+        self.name = self.tr("by &tag")
         self.window_class = "TagReportWindow"
 
 

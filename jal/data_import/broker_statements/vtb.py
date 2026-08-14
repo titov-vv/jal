@@ -35,7 +35,7 @@ class StatementVTB(StatementXLS):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("VTB Investments")
+        self.name = self.tr("&VTB Investments")
         self.icon_name = "vtb.ico"
         self.filename_filter = self.tr("VTB statement (*.xlsx)")
         self.account_end_balance = {}

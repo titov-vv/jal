@@ -24,7 +24,7 @@ JAL_REPORT_CLASS = "AssetPortfolioReport"
 class AssetPortfolioReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Asset portfolio")
+        self.name = self.tr("Asset &portfolio")
         self.window_class = "PortfolioReportWindow"
 
 
@@ -35,7 +35,7 @@ class PortfolioReportWindow(MdiWidget):
         self.ui = Ui_PortfolioWidget()
         self.ui.setupUi(self)
         self._parent = parent
-        self.name = self.tr("Asset Portfolio")
+        self.name = self.tr("Asset portfolio")
 
         # Add available groupings
         self.ui.GroupCombo.addItem(self.tr("Currency - Account"), "currency_id;account_id")

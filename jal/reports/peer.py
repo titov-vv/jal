@@ -41,8 +41,8 @@ class PeerOperationsModel(ReportOperationsModel):
 class PeerReport(QObject):
     def __init__(self):
         super().__init__()
-        self.group = self.tr("Operations")
-        self.name = self.tr("by Peer")
+        self.group = self.tr("&Operations")
+        self.name = self.tr("by &peer")
         self.window_class = "PeerReportWindow"
 
 

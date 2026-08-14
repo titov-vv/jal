@@ -20,7 +20,7 @@ class StatementFreedomFinance(Statement):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Freedom Broker (XML Eng)")
+        self.name = self.tr("&Freedom Broker (XML Eng)")
         self.icon_name = "freedom.png"
         self.filename_filter = self.tr("Freedom Finance statement (*.xml)")
 

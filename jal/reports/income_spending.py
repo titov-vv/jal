@@ -375,7 +375,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
 class IncomeSpendingReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Income & Spending")
+        self.name = self.tr("&Income && spending")
         self.window_class = "IncomeSpendingReportWindow"
 
 
@@ -386,7 +386,7 @@ class IncomeSpendingReportWindow(MdiWidget):
         self.ui = Ui_IncomeSpendingReportWidget()
         self.ui.setupUi(self)
         self._parent = parent
-        self.name = self.tr("Income & Spending")
+        self.name = self.tr("Income & spending")
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
         self.income_spending_model = IncomeSpendingReportModel(self.ui.ReportTreeView)

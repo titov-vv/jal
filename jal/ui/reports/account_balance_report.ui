@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Account balance history chart</string>
+   <string>Account balance history</string>
   </property>
   <layout class="QVBoxLayout" name="reportLayout">
    <property name="spacing">

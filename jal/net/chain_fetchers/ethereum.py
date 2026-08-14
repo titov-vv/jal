@@ -15,4 +15,4 @@ class EthereumFetcher(EVMFetcher):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Ethereum")
+        self.name = self.tr("&Ethereum")

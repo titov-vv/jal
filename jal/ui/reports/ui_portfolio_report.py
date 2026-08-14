@@ -100,7 +100,7 @@ class Ui_PortfolioWidget(object):
     # setupUi
 
     def retranslateUi(self, PortfolioWidget):
-        PortfolioWidget.setWindowTitle(QCoreApplication.translate("PortfolioWidget", u"Asset Portfolio", None))
+        PortfolioWidget.setWindowTitle(QCoreApplication.translate("PortfolioWidget", u"Asset portfolio", None))
         self.PortfolioDate.setDisplayFormat(QCoreApplication.translate("PortfolioWidget", u"dd/MM/yyyy", None))
         self.GroupLbl.setText(QCoreApplication.translate("PortfolioWidget", u"Group by:", None))
         self.PortfolioCurrencyLbl.setText(QCoreApplication.translate("PortfolioWidget", u"Common currency:", None))

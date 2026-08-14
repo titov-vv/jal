@@ -156,7 +156,7 @@ class ProfitLossModel(QAbstractTableModel):
 class ProfitLossReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.tr("P&L by Account")
+        self.name = self.tr("P&&L &by account")
         self.window_class = "ProfitLossReportWindow"
 
 
@@ -170,7 +170,7 @@ class ProfitLossReportWindow(MdiWidget):
         self._account_dialog = AccountListDialog(self)
         self.ui.ReportAccountEdit.setup_selector(self._account_model, self._account_dialog)
         self._parent = parent
-        self.name = self.tr("P&L by Account")
+        self.name = self.tr("P&L by account")
 
         self.pl_model = ProfitLossModel(self.ui.ReportTableView)
         self.ui.ReportTableView.setModel(self.pl_model)

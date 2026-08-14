@@ -51,6 +51,15 @@ class Setup:
     REBASE_RESIDUE_TOLERANCE = '1E-9'                # of the quantity the operation converts
     REBASE_RESIDUE_MAX_VALUE = '0.01'                # in the account's currency
     ASSET_ICON_SIZE = 64
+    REPO_URL = "https://github.com/titov-vv/jal"
+    REPO_README = "docs"
+    REPO_FAQ = "faq"
+    REPO_ERRORS = "err"
+    HELP_DOCUMENTS = {                         # Documents that the Help menu opens in a browser. Each is kept in an English and a Russian version that differ
+        REPO_README: "docs/README",            # by a '.ru' suffix, so the language currently selected in the application picks the file to open.
+        REPO_FAQ: "docs/FAQ",
+        REPO_ERRORS: "docs/error_description"
+    }
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Constants to define presentation of database columns in UI views.

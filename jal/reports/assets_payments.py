@@ -124,7 +124,7 @@ class AssetsPaymentsModel(QAbstractTableModel):
 class AssetsPaymentsReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Assets' Payments")
+        self.name = self.tr("Assets' pay&ments")
         self.window_class = "AssetsPaymentsReportWindow"
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ class AssetsPaymentsReportWindow(MdiWidget):
         self.ui = Ui_AssetsPaymentsReportWidget()
         self.ui.setupUi(self)
         self._parent = parent
-        self.name = self.tr("Assets' Payments")
+        self.name = self.tr("Assets' payments")
 
         self.payments_model = AssetsPaymentsModel(self.ui.ReportTableView)
         self.ui.ReportTableView.setModel(self.payments_model)

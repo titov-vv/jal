@@ -41,8 +41,8 @@ class CategoryOperationsModel(ReportOperationsModel):
 class CategoryReport(QObject):
     def __init__(self):
         super().__init__()
-        self.group = self.tr("Operations")
-        self.name = self.tr("by Category")
+        self.group = self.tr("&Operations")
+        self.name = self.tr("by &category")
         self.window_class = "CategoryReportWindow"
 
 

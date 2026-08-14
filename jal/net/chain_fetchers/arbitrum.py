@@ -18,4 +18,4 @@ class ArbitrumFetcher(EVMFetcher):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Arbitrum")
+        self.name = self.tr("&Arbitrum")

@@ -76,7 +76,7 @@ class HyperliquidFetcher(ChainFetcher):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Hyperliquid")
+        self.name = self.tr("&Hyperliquid")
         self._new_cursor = ''
         self._tokens = []        # spotMeta 'tokens', indexed by their own 'index' field
         self._markets = {}       # spot pair name ('@107', 'PURR/USDC') -> (base token, quote token)

@@ -96,7 +96,7 @@ class Ui_IncomeSpendingReportWidget(object):
     # setupUi
 
     def retranslateUi(self, IncomeSpendingReportWidget):
-        IncomeSpendingReportWidget.setWindowTitle(QCoreApplication.translate("IncomeSpendingReportWidget", u"Income & Spending", None))
+        IncomeSpendingReportWidget.setWindowTitle(QCoreApplication.translate("IncomeSpendingReportWidget", u"Income & spending", None))
         self.PeriodLbl.setText(QCoreApplication.translate("IncomeSpendingReportWidget", u"Periodicity:", None))
         self.PeriodComboBox.setItemText(0, QCoreApplication.translate("IncomeSpendingReportWidget", u"Monthly", None))
         self.PeriodComboBox.setItemText(1, QCoreApplication.translate("IncomeSpendingReportWidget", u"Weekly", None))

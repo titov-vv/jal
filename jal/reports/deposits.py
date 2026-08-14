@@ -204,7 +204,7 @@ class DepositDetailsModel(QAbstractTableModel):
 class DepositsReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Deposits")
+        self.name = self.tr("D&eposits")
         self.window_class = "DepositsReportWindow"
 
 

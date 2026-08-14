@@ -94,7 +94,7 @@ class Ui_AssetsPaymentsReportWidget(object):
     # setupUi
 
     def retranslateUi(self, AssetsPaymentsReportWidget):
-        AssetsPaymentsReportWidget.setWindowTitle(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Assets' payments report for account", None))
+        AssetsPaymentsReportWidget.setWindowTitle(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Assets' payments", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Account:", None))
         self.ReportAccountButton.setText("")
         self.SaveButton.setText(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Save...", None))

@@ -93,7 +93,7 @@ class Ui_DealsReportWidget(object):
     # setupUi
 
     def retranslateUi(self, DealsReportWidget):
-        DealsReportWidget.setWindowTitle(QCoreApplication.translate("DealsReportWidget", u"Deals", None))
+        DealsReportWidget.setWindowTitle(QCoreApplication.translate("DealsReportWidget", u"Deals by account", None))
         self.GroupLbl.setText(QCoreApplication.translate("DealsReportWidget", u"Group by:", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("DealsReportWidget", u"Account:", None))
         self.SaveButton.setText(QCoreApplication.translate("DealsReportWidget", u"Save...", None))

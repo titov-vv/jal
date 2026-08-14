@@ -12,6 +12,7 @@ from jal.db.ledger import Ledger
 from jal.db.operations import LedgerAssetShortage, LedgerError
 from jal.db.rebase_residue import RebaseResidue
 from jal.db.settings import JalSettings
+from jal.widgets.helpers import sort_menu_items
 from jal.data_import.statement import Statement_ImportError
 from jal.net.arrival_reconciler import ArrivalReconciler, log_findings
 
@@ -140,7 +141,7 @@ class ChainFetchers(QObject):
             self.items.append({'name': fetcher.name, 'module': module, 'loader_class': class_name,
                                'location_id': fetcher.location_id, 'icon': fetcher.icon_name})
             logging.debug(f"Class '{class_name}' providing '{fetcher.name}' chain fetcher has been loaded")
-        self.items = sorted(self.items, key=lambda item: item['name'])
+        self.items = sort_menu_items(self.items, lambda item: item['name'])
 
     # Called from the menu, so it receives the QAction that was triggered
     def load(self, action):

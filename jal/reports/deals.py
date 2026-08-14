@@ -13,7 +13,7 @@ JAL_REPORT_CLASS = "DealsReport"
 class DealsReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.name = self.tr("Deals by Account")
+        self.name = self.tr("&Deals by account")
         self.window_class = "DealsReportWindow"
 
 
@@ -24,7 +24,7 @@ class DealsReportWindow(MdiWidget):
         self.ui = Ui_DealsReportWidget()
         self.ui.setupUi(self)
         self._parent = parent
-        self.name = self.tr("Deals")
+        self.name = self.tr("Deals by account")
 
         # Add available groupings
         self.ui.GroupCombo.addItem(self.tr("<None>"), "")

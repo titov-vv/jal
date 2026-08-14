@@ -90,7 +90,7 @@ class StatementBitget(StatementCSV):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Bitget")
+        self.name = self.tr("&Bitget")
         self.icon_name = "bitget.png"
         self.filename_filter = self.tr("Bitget statement (*.zip)")
         self._account_id = 0

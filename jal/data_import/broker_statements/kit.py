@@ -24,7 +24,7 @@ class StatementKIT(StatementXLS):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("KIT Finance")
+        self.name = self.tr("&KIT Finance")
         self.icon_name = "kit.png"
         self.filename_filter = self.tr("KIT Finance statement (*.xlsx)")
 

@@ -49,6 +49,10 @@ class TabbedMdiArea(QWidget):
     def subWindowList(self, order=QMdiArea.CreationOrder):
         return self.mdi.subWindowList(order)
 
+    # Brings an already open sub-window to the front - the tab bar follows via the subWindowActivated signal
+    def setActiveSubWindow(self, sub_window):
+        self.mdi.setActiveSubWindow(sub_window)
+
     def addSubWindow(self, widget, maximized=False, size=None):
         sub_window = self.mdi.addSubWindow(widget)
         widget.onClose.connect(self.subWindowClosed)

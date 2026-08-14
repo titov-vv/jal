@@ -25,7 +25,7 @@ JAL_REPORT_CLASS = "UnsettledTransfersReport"
 class UnsettledTransfersReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Unsettled transfers")
+        self.name = self.tr("&Unsettled transfers")
         self.window_class = "UnsettledTransfersReportWindow"
 
 

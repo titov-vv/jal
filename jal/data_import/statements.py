@@ -7,6 +7,7 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QFileDialog
 from jal.constants import Setup
 from jal.db.settings import JalSettings, FolderFor
+from jal.widgets.helpers import sort_menu_items
 from jal.data_import.statement import Statement_ImportError, Statement_Capabilities
 
 
@@ -50,7 +51,7 @@ class Statements(QObject):
                 'filename_filter': statement.filename_filter
             })
             logging.debug(f"Class '{statement_class_name}' providing '{statement.name}' statement has been loaded")
-        self.items = sorted(self.items, key=lambda item: item['name'])
+        self.items = sort_menu_items(self.items, lambda item: item['name'])
 
     # method is called directly from menu, so it contains QAction that was triggered
     def load(self, action):

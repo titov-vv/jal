@@ -102,7 +102,7 @@ class Ui_TaxEstimationDialog(object):
     # setupUi
 
     def retranslateUi(self, TaxEstimationDialog):
-        TaxEstimationDialog.setWindowTitle(QCoreApplication.translate("TaxEstimationDialog", u"Tax Estimation", None))
+        TaxEstimationDialog.setWindowTitle(QCoreApplication.translate("TaxEstimationDialog", u"Tax estimation", None))
         self.LastQuoteLbl.setText(QCoreApplication.translate("TaxEstimationDialog", u"Last quote:", None))
         self.QuoteLbl.setText(QCoreApplication.translate("TaxEstimationDialog", u"X.XX", None))
         self.CurrentRateLbl.setText(QCoreApplication.translate("TaxEstimationDialog", u"Current rate:", None))

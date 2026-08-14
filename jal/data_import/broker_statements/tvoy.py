@@ -46,7 +46,7 @@ class StatementTvoyBroker(StatementXLS):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Tvoy Broker")
+        self.name = self.tr("&Tvoy Broker")
         self.icon_name = "tvoy.png"
         self.filename_filter = self.tr("Tvoy Broker statement (*.zip)")
         self.asset_withdrawal = []

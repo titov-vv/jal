@@ -268,7 +268,7 @@ class StakingDetailsModel(QAbstractTableModel):
 class StakingReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Staked positions")
+        self.name = self.tr("&Staked positions")
         self.window_class = "StakingReportWindow"
 
 

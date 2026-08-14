@@ -30,7 +30,7 @@ class StatementPSB(StatementXLS):
 
     def __init__(self):
         super().__init__()
-        self.name = self.tr("PSB Broker")
+        self.name = self.tr("&PSB Broker")
         self.icon_name = "psb.ico"
         self.filename_filter = self.tr("PSB broker statement (*.xlsx *.xls)")
 

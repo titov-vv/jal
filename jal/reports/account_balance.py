@@ -65,7 +65,7 @@ class BalanceChartWidget(QWidget):
 class AccountBalanceHistoryReport(QObject):
     def __init__(self):
         super().__init__()
-        self.name = self.tr("Account balance history")
+        self.name = self.tr("&Account balance history")
         self.window_class = "AccountBalanceHistoryReportWindow"
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ class AccountBalanceHistoryReportWindow(MdiWidget):
         self.ui = Ui_AccountBalanceHistoryReportWidget()
         self.ui.setupUi(self)
         self._parent = parent
-        self.name = self.tr("Account balance")
+        self.name = self.tr("Account balance history")
 
         self.chart = BalanceChartWidget(self)
         self.ui.reportLayout.addWidget(self.chart)

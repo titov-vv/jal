@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QFileDialog
 from PySide6.QtCore import QObject
 from jal.constants import Setup
 from jal.db.settings import JalSettings, FolderFor
+from jal.widgets.helpers import sort_menu_items
 from jal.data_export.xlsx import XLSX
 
 
@@ -40,7 +41,7 @@ class Reports(QObject):
             self.items.append({'group': group, 'name': report.name,
                                'module': module, 'window_class': report.window_class})
             logging.debug(f"Report class '{report_class_name}' providing '{report.name}' report has been loaded")
-        self.items = sorted(self.items, key=lambda item: item['name'])
+        self.items = sort_menu_items(self.items, lambda item: item['name'], group_of=lambda item: item['group'])
 
     # method is called directly from menu, so it contains QAction that was triggered
     def show(self, action):
