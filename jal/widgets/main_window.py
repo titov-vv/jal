@@ -14,7 +14,7 @@ from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget, TaxMergeDialog
 from jal.widgets.helpers import dependency_present, menu_label, menu_mnemonic
-from jal.widgets.icons import JalIcon
+from jal.widgets.icons import JalIcon, AUX_PREFIX, CHAIN_PREFIX
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog, TokenBlacklistDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.widgets.preferences_dialog import PreferencesDialog
@@ -221,10 +221,11 @@ class MainWindow(QMainWindow):
     # The label comes from the module itself and carries its own Qt mnemonic markup, so every module - and every
     # translation of it - picks its own access key. 'asks_input' marks an action that requires something from the
     # user (a file to read, a wallet to fetch) before it can do any work, which is what the ellipsis announces.
-    def addModuleAction(self, menu, group, label, index, icon_name='', asks_input=False):
+    # 'icon_prefix' tells which set of module logos 'icon_name' is looked up in - see JalIcon.module_icon().
+    def addModuleAction(self, menu, group, label, index, icon_name='', icon_prefix=AUX_PREFIX, asks_input=False):
         if asks_input:
             label += "..."
-        action = QAction(JalIcon.aux_icon(icon_name), label, self) if icon_name else QAction(label, self)
+        action = QAction(JalIcon.module_icon(icon_prefix, icon_name), label, self) if icon_name else QAction(label, self)
         action.setData(index)
         menu.addAction(action)
         group.addAction(action)
@@ -255,7 +256,7 @@ class MainWindow(QMainWindow):
     # Create import menu for all known blockchain fetchers based on self.chain_fetchers.items values
     def createBlockchainImportMenu(self):
         for i, fetcher in enumerate(self.chain_fetchers.items):
-            self.addModuleAction(self.ui.menuBlockchain, self.blockchainGroup, fetcher['name'], i, icon_name=fetcher['icon'], asks_input=True)
+            self.addModuleAction(self.ui.menuBlockchain, self.blockchainGroup, fetcher['name'], i, icon_name=fetcher['icon'], icon_prefix=CHAIN_PREFIX, asks_input=True)
         self.checkMenuMnemonics("Import->Blockchain", [x['name'] for x in self.chain_fetchers.items])
 
     # Create menu entry for all known reports based on self.reports.items values.

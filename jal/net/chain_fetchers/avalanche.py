@@ -22,6 +22,7 @@ class AvalancheFetcher(EVMFetcher):
     native_symbol = 'AVAX'
     native_name = "Avalanche"
     display_symbol = 'AVAX'
+    icon_name = 'avalanche.png'
     api_root = "https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan/api"
     api_name = "Routescan"
     api_key_setting = "ApiKey_Routescan"

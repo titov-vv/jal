@@ -60,6 +60,8 @@ def local_timestamp(utc_seconds: int) -> int:
 class ChainFetcher(Statement):
     name = ''                       # Human readable name shown in the menu
     location_id = AssetLocation.UNDEFINED
+    # Chain logo shown next to the menu item - a file name inside jal/img/ without its 'chain_' prefix.
+    # An empty name leaves the menu item without an icon.
     icon_name = ''
     native_symbol = ''              # Ticker of the chain's native coin, e.g. 'ETH'
     native_name = ''                # Human name of the native coin, e.g. 'Ethereum'

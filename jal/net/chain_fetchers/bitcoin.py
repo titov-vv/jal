@@ -73,7 +73,7 @@ class BitcoinFetcher(ChainFetcher):
     native_symbol = 'BTC'
     native_name = "Bitcoin"
     display_symbol = 'BTC'
-    icon_name = ''
+    icon_name = 'bitcoin.png'
     # 1000 satoshi - just above the 546 satoshi "standard dust" output that dusting attacks are built from, and far
     # below any payment a person makes on a chain where the fee alone costs more.
     native_dust_threshold = '0.00001'

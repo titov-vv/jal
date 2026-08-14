@@ -9,8 +9,9 @@ from jal.db.tag import JalTag
 
 
 ICON_PREFIX = "ui_"
-FLAG_PREFIX = "flag_"
-AUX_PREFIX = "aux_"
+FLAG_PREFIX = "flag_"    # Country flags for languages and reports
+AUX_PREFIX = "aux_"      # Logos of broker statement modules
+CHAIN_PREFIX = "chain_"  # Logos of blockchain fetcher modules
 TAG_PREFIX = "tag_"
 
 class JalIcon(UserDict):
@@ -125,9 +126,10 @@ class JalIcon(UserDict):
             self._icons[icon_id] = self.add_disabled_state(self.load_icon(img_path + ICON_PREFIX + filename))
         for icon_id, filename in self._flag_files.items():
             self._icons[icon_id] = self.load_icon(img_path + FLAG_PREFIX + filename)
+        # Logos that dynamically loaded modules ask for by name - a broker statement (aux_*) or a blockchain
+        # fetcher (chain_*). They are keyed by filename as neither set is known before the modules are loaded.
         for filename in os.listdir(img_path):
-            match = re.match(f"^{AUX_PREFIX}.*", filename)
-            if match:
+            if re.match(f"^({AUX_PREFIX}|{CHAIN_PREFIX}).*", filename):
                 self._icons[filename] = self.load_icon(img_path + filename)
         # Account-type icons live as tag_*.ico files and are keyed by filename, independent of any 'tags' row
         # (e.g. tag_wallet.ico has no tag row) - so load them straight from disk.
@@ -154,10 +156,12 @@ class JalIcon(UserDict):
             return QIcon()
         return cls._icons[cls._flags[country_code]]
 
+    # Logo of a dynamically loaded module: the module names the image file it wants and the prefix says which
+    # kind of module asks (AUX_PREFIX for broker statements, CHAIN_PREFIX for blockchain fetchers), so two
+    # modules of different kinds may name their images alike. An unknown name gives an empty icon.
     @classmethod
-    def aux_icon(cls, icon_name) -> QIcon:
-        filename = AUX_PREFIX + icon_name
-        return cls._icons.get(filename, QIcon())
+    def module_icon(cls, prefix, icon_name) -> QIcon:
+        return cls._icons.get(prefix + icon_name, QIcon())
 
     # Iterates through all available images and creates a copy of images with adjusted alpha-channel (20% of initial value)
     # This new image is added to the icon as disabled state image

@@ -66,7 +66,7 @@ class SolanaFetcher(ChainFetcher):
     native_symbol = 'SOL'
     native_name = "Solana"
     display_symbol = 'SOL'
-    icon_name = ''
+    icon_name = 'solana.png'
     native_dust_threshold = '0.00001'
 
     def __init__(self):

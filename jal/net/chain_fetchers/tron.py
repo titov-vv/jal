@@ -42,7 +42,7 @@ class TronFetcher(ChainFetcher):
     native_symbol = 'TRX'
     native_name = "Tron"
     display_symbol = 'TRX'
-    icon_name = ''
+    icon_name = 'tron.png'
     native_dust_threshold = '0.001'
 
     def __init__(self):

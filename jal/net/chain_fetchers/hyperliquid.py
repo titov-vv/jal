@@ -72,7 +72,7 @@ class HyperliquidFetcher(ChainFetcher):
     native_symbol = ''
     native_name = ''
     display_symbol = 'HYPE'
-    icon_name = ''
+    icon_name = 'hyperliquid.png'
 
     def __init__(self):
         super().__init__()

@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 
 from tests.fixtures import project_root, data_path, prepare_db
 from jal.widgets.helpers import menu_label, menu_mnemonic, sort_menu_items
+from jal.widgets.icons import JalIcon, AUX_PREFIX, CHAIN_PREFIX
 from jal.reports.reports import Reports
 from jal.data_import.statements import Statements
 from jal.net.chain_fetchers.fetchers import ChainFetchers
@@ -83,6 +84,23 @@ def test_every_module_menu_item_declares_a_mnemonic(module_menus):
     for title, labels in module_menus.items():
         without = [menu_label(x) for x in labels if not menu_mnemonic(x)]
         assert without == [], f"in menu '{title}'"
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Every statement and every blockchain fetcher shows its logo next to its menu item. The name of the image is given
+# by the module while the file lives in jal/img/ under a prefix of its own, so a renamed or missing file leaves the
+# item silently without an icon - the menu is built without complaint and only looks wrong.
+@pytest.mark.parametrize("prefix, modules", [
+    (AUX_PREFIX, lambda: Statements(None).items),
+    (CHAIN_PREFIX, lambda: ChainFetchers(None).items)
+])
+def test_module_menus_display_module_icons(prepare_db, prefix, modules):
+    JalIcon()   # loads the icon cache the menu is built from
+    for module in modules():
+        assert module['icon'], f"no icon declared by '{menu_label(module['name'])}'"
+        icon = JalIcon.module_icon(prefix, module['icon'])
+        assert not icon.isNull(), f"image file '{prefix}{module['icon']}' of '{menu_label(module['name'])}' is missing"
+        assert icon.availableSizes(), f"image file '{prefix}{module['icon']}' of '{menu_label(module['name'])}' is empty"
 
 
 # A grouped report must never sort in between the ungrouped ones: the group submenus are appended to the menu after

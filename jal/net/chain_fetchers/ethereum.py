@@ -12,6 +12,7 @@ class EthereumFetcher(EVMFetcher):
     native_symbol = 'ETH'
     native_name = "Ethereum"
     display_symbol = 'ETH'
+    icon_name = 'ethereum.png'
 
     def __init__(self):
         super().__init__()
