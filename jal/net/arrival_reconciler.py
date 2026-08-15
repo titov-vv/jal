@@ -141,11 +141,16 @@ class ArrivalReconciler(QObject):
     # is an operation of its own that this may not silently create.
     #
     # 'progress' is called with (checked so far, total) before each leg, as one network request is made per leg.
-    def settle_pending_transfers(self, progress=None) -> tuple:
+    #
+    # 'interrupted' is asked before each leg as well, and a True from it ends the pass. What was settled up to that
+    # point is RETURNED rather than discarded.
+    def settle_pending_transfers(self, progress=None, interrupted=None) -> tuple:
         settlement = TransferSettlement()
         pending = settlement.pending_sending_legs()
         settled, findings = 0, []
         for i, leg in enumerate(pending):
+            if interrupted is not None and interrupted():
+                break
             if progress is not None:
                 progress(i, len(pending))
             route = self._resolvers.resolve(leg['number'])
@@ -173,7 +178,10 @@ class ArrivalReconciler(QObject):
     #
     # 'progress' is called with (checked so far, total) before each swap: one network request is made per swap, so the
     # first run - which goes through the whole history - takes long enough that it has to say what it is doing.
-    def audit_swaps(self, from_oid: int = 0, progress=None) -> tuple:
+    #
+    # 'interrupted' is asked before each swap and ends the run when it answers True. The returned 'last_oid' then
+    # covers exactly the swaps that WERE checked.
+    def audit_swaps(self, from_oid: int = 0, progress=None, interrupted=None) -> tuple:
         findings = []
         last_oid = from_oid
         # The whole list is read before anything is asked over the network: the checks below run queries of their own,
@@ -185,6 +193,8 @@ class ArrivalReconciler(QObject):
         while query.next():
             rows.append(JalDB._read_record(query, named=True))
         for i, row in enumerate(rows):
+            if interrupted is not None and interrupted():
+                break
             if progress is not None:
                 progress(i, len(rows))
             last_oid = max(last_oid, int(row['oid']))

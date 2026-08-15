@@ -156,3 +156,46 @@ def test_a_fetcher_nobody_stopped_waits_to_the_end(registry):
     request = _SlowRequest(slices=3)
     fetcher._wait_for(request)     # returns instead of raising
     assert request._left <= 0      # ... and only once the request was really over
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The checks that follow a run make one network request per leg or per swap, so they are stoppable too - each is
+# handed a predicate that reports whether 'Stop' has been pressed since the run began.
+def test_the_checks_that_follow_a_run_can_notice_a_stop(prepare_db, monkeypatch):
+    import jal.net.chain_fetchers.fetchers as fetchers_mod
+    asked = {}
+
+    class _Reconciler:
+        def settle_pending_transfers(self, progress=None, interrupted=None):
+            asked['settle'] = interrupted
+            return 0, []
+
+        def audit_swaps(self, from_oid=0, progress=None, interrupted=None):
+            asked['audit'] = interrupted
+            return from_oid, []
+
+    monkeypatch.setattr(fetchers_mod, 'ArrivalReconciler', _Reconciler)
+    fetchers = ChainFetchers(None)
+    fetchers._settle_transfers()
+    fetchers._audit_swaps()
+
+    assert asked['settle']() is False and asked['audit']() is False   # nothing was stopped ...
+    fetchers.on_cancel()
+    assert asked['settle']() is True and asked['audit']() is True     # ... until the button is pressed
+
+
+# Once one phase has been stopped the ones after it never start - and a phase that never started must not claim it
+# was interrupted, or a single 'Stop' reads as three separate things having been cut short.
+def test_the_phases_after_a_stopped_one_stay_silent(prepare_db, monkeypatch, caplog):
+    import jal.net.chain_fetchers.fetchers as fetchers_mod
+    monkeypatch.setattr(fetchers_mod, 'ArrivalReconciler',
+                        lambda: pytest.fail("a phase that was already stopped must not be started"))
+    fetchers = ChainFetchers(None)
+    fetchers.on_cancel()
+
+    with caplog.at_level('WARNING'):
+        fetchers._settle_transfers()
+        fetchers._absorb_rebase_residue()
+        fetchers._audit_swaps()
+
+    assert caplog.records == []

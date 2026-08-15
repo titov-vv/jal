@@ -229,14 +229,19 @@ class ChainFetchers(QObject):
     # that one commonly arrives with a LATER wallet of the same run. The ledger is rebuilt again for what it settled:
     # each account emitted its load_completed as it was imported, and those rebuilds happened before this.
     def _settle_transfers(self) -> None:
+        if self._cancelled:
+            return    # An earlier phase was stopped and then this one never starts
         self.show_progress.emit(True)
         try:
-            settled, findings = ArrivalReconciler().settle_pending_transfers(progress=self._on_leg_checked)
+            settled, findings = ArrivalReconciler().settle_pending_transfers(progress=self._on_leg_checked,
+                                                                             interrupted=lambda: self._cancelled)
         except Exception as error:   # like the audit below: a lookup that fails must not fail the import
             logging.warning(self.tr("Pending transfers could not be settled: ") + f"{error}")
             return
         finally:
             self.show_progress.emit(False)
+        if self._cancelled:
+            logging.warning(self.tr("Settling of transfers was interrupted by user"))
         log_findings(findings)
         if settled:
             logging.info(self.tr("Transfers settled from the route they were sent by: ") + f"{settled}")
@@ -253,6 +258,8 @@ class ChainFetchers(QObject):
     # closing, so this repeats until the ledger completes, refuses, or fails - never more times than there are
     # conversions to stop at.
     def _absorb_rebase_residue(self) -> None:
+        if self._cancelled:
+            return    # As above: a phase that never starts reports nothing
         ledger = Ledger()
         reconciler = RebaseResidue()
         for _ in range(self._MAX_ABSORBED_RESIDUES):
@@ -262,6 +269,10 @@ class ChainFetchers(QObject):
                 pass          # under pytest rebuild() re-raises what it stopped on; 'stopped_by' is set either way
             except Exception as error:   # like the checks around it, a failure here must not fail the import
                 logging.warning(self.tr("Rebase residue could not be checked: ") + f"{error}")
+                return
+            # 'Stop' is taken between the passes, each of which is a full ledger rebuild.
+            if self._cancelled:
+                logging.warning(self.tr("Absorption of rebase residues was interrupted by user"))
                 return
             if not isinstance(ledger.stopped_by, LedgerAssetShortage):
                 return        # the ledger is complete, or stopped on something this can't make good
@@ -281,16 +292,21 @@ class ChainFetchers(QObject):
     # therefore examines the whole history (which is what finds the misbookings already stored) and every run after it
     # only the swaps that were just imported.
     def _audit_swaps(self) -> None:
+        if self._cancelled:
+            return    # As above: a phase that never starts reports nothing
         settings = JalSettings()
         checked_upto = settings.getInt(_AUDITED_SWAP_SETTING, 0)
         self.show_progress.emit(True)
         try:
-            last_oid, findings = ArrivalReconciler().audit_swaps(checked_upto, progress=self._on_swap_checked)
+            last_oid, findings = ArrivalReconciler().audit_swaps(checked_upto, progress=self._on_swap_checked,
+                                                                 interrupted=lambda: self._cancelled)
         except Exception as error:   # a check that fails must never take a successful import down with it
             logging.warning(self.tr("Cross-chain check of swaps could not be completed: ") + f"{error}")
             return
         finally:
             self.show_progress.emit(False)
+        if self._cancelled:
+            logging.warning(self.tr("Check of swaps was interrupted by user"))
         settings.setValue(_AUDITED_SWAP_SETTING, last_oid)
         if not findings:
             return

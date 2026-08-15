@@ -492,3 +492,52 @@ def test_the_best_informed_source_that_has_an_answer_is_the_one_used(wallets, li
     assert proposal.is_placeable()
     assert proposal.route.source == 'LI.FI'
     assert proposal.leg['qty'] == Decimal('99.5')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# An audit the user stopped
+#
+# The first audit of a database goes through the whole swap history, one network request per swap, so it is the run
+# most likely to be stopped. It ends by RETURNING the oid it really reached rather than by raising: that oid is the
+# watermark the next run starts above, so a stopped run is paid for once instead of from the beginning again.
+
+SEND_HASH_2 = "0xf4" + "0" * 62      # a second cross-chain move booked as a same-chain swap
+
+
+def _second_gho_to_usdc_answer():
+    return _answer(_leg(1, SEND_HASH_2, GHO_ETH, "GHO", 18, "100000000000000000000", dt2t(2101041200)),
+                   _leg(42161, ARRIVE_HASH, USDC_ARB, "USDC", 6, "99500000", dt2t(2101041203)))
+
+
+@pytest.fixture
+def two_misbooked_swaps(wallets, lifi_answers):
+    create_swaps(ETH_WALLET, [(dt2t(2101031200), GHO, 100, USDC, Decimal('0.1')),
+                              (dt2t(2101041200), GHO, 100, USDC, Decimal('0.1'))])
+    JalDB._exec("UPDATE swaps SET tx_hash=:hash WHERE oid=1", [(":hash", SEND_HASH)], commit=True)
+    JalDB._exec("UPDATE swaps SET tx_hash=:hash WHERE oid=2", [(":hash", SEND_HASH_2)], commit=True)
+    lifi_answers[SEND_HASH] = _gho_to_usdc_answer()
+    lifi_answers[SEND_HASH_2] = _second_gho_to_usdc_answer()
+    yield lifi_answers
+
+
+# 'Stop' is answered from the moment the first swap is looked up, which is when the real one is pressed
+def _audit_stopping_after_the_first_swap(from_oid=0) -> tuple:
+    stopped = []
+    return ArrivalReconciler().audit_swaps(from_oid, progress=lambda checked, total: stopped.append(True),
+                                           interrupted=lambda: bool(stopped))
+
+
+def test_a_stopped_audit_reports_what_it_checked_and_a_watermark_covering_only_that(two_misbooked_swaps):
+    last_oid, findings = _audit_stopping_after_the_first_swap()
+
+    assert last_oid == 1            # the second swap was never looked at, so it is not counted as checked
+    assert len(findings) == 1
+
+
+def test_the_run_after_a_stopped_audit_carries_on_from_where_it_stopped(two_misbooked_swaps):
+    last_oid, _ = _audit_stopping_after_the_first_swap()
+
+    last_oid, findings = ArrivalReconciler().audit_swaps(last_oid)
+
+    assert last_oid == 2            # it starts above the watermark and finishes the history ...
+    assert len(findings) == 1       # ... finding the swap the stopped run had not reached

@@ -947,3 +947,55 @@ def test_an_unbuilt_ledger_refuses_nothing(funded):
     transfer = _transfer(None, WALLET_B, 400, d2t(210104))    # no rebuild: 'trades_opened' holds nothing at all
 
     assert TransferSettlement().assign_end(transfer.id(), WALLET_A, d2t(210103), Decimal('0')) == ''
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A settling pass the user stopped
+#
+# One network request is made per pending leg, so a wallet with a history of cross-chain moves keeps the pass busy
+# long enough to be worth stopping. What it settled before it was stopped is kept rather than thrown away: those legs
+# are settled in the database already, and its caller has a ledger to rebuild over them.
+
+SRC_HASH_2 = '0x' + 'd' * 64      # a second routed move, so that a stopped pass has something left to leave alone
+DST_HASH_2 = '0x' + 'e' * 64
+
+
+def _two_routed_moves() -> None:
+    _transfer(WALLET_A, None, 400, d2t(210103), number=SRC_HASH)
+    _transfer(None, WALLET_B, 400, d2t(210104), number=DST_HASH)
+    _transfer(WALLET_A, None, 300, d2t(210105), number=SRC_HASH_2)
+    _transfer(None, WALLET_B, 300, d2t(210106), number=DST_HASH_2)
+
+
+def _router_of_both() -> _Router:
+    return _Router({SRC_HASH: (DST_HASH, 'chain-2'), SRC_HASH_2: (DST_HASH_2, 'chain-2')})
+
+
+# Stops the pass the way the user does: 'Stop' is answered from the moment the first leg is looked up, which is where
+# the real one is pressed - during the network request that a leg costs.
+def _settle_stopping_after_the_first_leg(router) -> tuple:
+    stopped = []
+    return ArrivalReconciler(RouteResolvers([router])).settle_pending_transfers(
+        progress=lambda checked, total: stopped.append(True), interrupted=lambda: bool(stopped))
+
+
+def test_a_settling_pass_that_was_stopped_keeps_the_legs_it_had_already_settled(funded):
+    _two_routed_moves()
+    router = _router_of_both()
+
+    settled, findings = _settle_stopping_after_the_first_leg(router)
+
+    assert (settled, findings) == (1, [])
+    assert router.asked == 1                  # the second move was never asked about
+    assert len(_stored()) == 3                # the first pair became one transfer, the second is still two legs
+
+
+def test_the_moves_a_stopped_pass_did_not_reach_are_settled_by_the_next_one(funded):
+    _two_routed_moves()
+    _settle_stopping_after_the_first_leg(_router_of_both())
+
+    # The pass that follows is a new one, with a resolver of its own - as a later fetch builds it
+    settled, findings = ArrivalReconciler(RouteResolvers([_router_of_both()])).settle_pending_transfers()
+
+    assert (settled, findings) == (1, [])     # it finds the move the stopped one left behind ...
+    assert len(_stored()) == 2                # ... and both moves are now one transfer each
