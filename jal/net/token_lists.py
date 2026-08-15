@@ -173,10 +173,11 @@ class TokenListProvider(QObject, JalDB):
         return self._cancelled
 
     # Blocks until the requests abandoned by a cancelled refresh() are over. Must be called before the
-    # application quits - destroying a running QThread aborts the process.
+    # application quits - destroying a running QThread aborts the process. FOREVER is what makes it a block:
+    # a bare wait() gives up after one polling slice, which would leave exactly the running threads this drains.
     def wait_for_pending(self) -> None:
         for request in self._pending:
-            request.wait()
+            request.wait(WebRequest.FOREVER)
         self._pending = []
 
     # Waits for the download to complete, keeping the UI responsive. Raises KeyboardInterrupt if the user
@@ -189,7 +190,7 @@ class TokenListProvider(QObject, JalDB):
         self._pending = [x for x in self._pending if x.isRunning()]
         request = WebRequest(WebRequest.GET, url)
         self._pending.append(request)
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()
             if self._cancelled:
                 raise KeyboardInterrupt

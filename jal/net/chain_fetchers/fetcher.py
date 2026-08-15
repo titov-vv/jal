@@ -168,12 +168,13 @@ class ChainFetcher(Statement):
     # ------------------------------------------------------------------------------------------------------------------
     # Helpers shared by the chain implementations
 
-    # Waits for a WebRequest to finish while keeping the application responsive. QThread.wait() would block the GUI
-    # thread instead, and a wallet with a long history takes many requests - the window would look frozen for all
-    # of them. Mirrors QuoteDownloader._wait_for_event().
+    # Waits for a WebRequest to finish while keeping the application responsive. A plain QThread.wait() would block
+    # the GUI thread for the whole request, and a wallet with a long history takes many of them - the window would
+    # look frozen throughout. Waiting in short slices and processing events between them keeps it alive without
+    # spinning (see WebRequest.wait()). Mirrors QuoteDownloader._wait_for_event().
     @staticmethod
     def _wait_for(request) -> None:
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()
 
     # Counts one more page read from the API and reports it via page_fetched - called by each chain's paging helper

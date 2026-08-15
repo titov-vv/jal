@@ -75,10 +75,10 @@ class ChainBalanceReader(JalDB):
         return QApplication.translate("ChainBalanceReader", text)
 
     # Waits for a request while keeping the application responsive, exactly as the fetchers and the quote downloader
-    # do - QThread.wait() would freeze the window instead.
+    # do - waiting for the whole request in one go would freeze the window instead (see WebRequest.wait()).
     @staticmethod
     def _wait_for(request) -> None:
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()
 
     def _post(self, url: str, request: dict):

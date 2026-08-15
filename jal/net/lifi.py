@@ -109,7 +109,7 @@ class LiFiResolver(RouteResolver):
         # 404 is the answer "this transaction was not handled by LI.FI contracts", which most transactions asked about
         # will get - it is not a failure and must not be logged as one (see WebRequest.expected_errors).
         request = WebRequest(WebRequest.GET, _API_STATUS, params={"txHash": tx_hash}, expected_errors=(404,))
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()   # keeps the GUI alive, like ChainFetcher._wait_for()
         answer = request.data()
         if not answer:      # 404 for a transaction LI.FI never routed, or the request failed - both mean "no answer"

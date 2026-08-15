@@ -76,6 +76,11 @@ def _fake_api(monkeypatch, history: dict) -> list:
         def isRunning():
             return False
 
+        # The answer is ready before the caller ever asks, so the waiting loop ends at once - True is "it finished"
+        @staticmethod
+        def wait(_deadline=None):
+            return True
+
         def data(self):
             return json.dumps({"status": "1", "message": "OK", "result": self._result})
 

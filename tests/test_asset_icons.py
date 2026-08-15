@@ -46,6 +46,10 @@ def _fake_web_request(answers: dict, log: list):
         def isRunning(self):
             return False
 
+        # The answer is ready before the caller ever asks, so the waiting loop ends at once - True is "it finished"
+        def wait(self, _deadline=None):
+            return True
+
         def data(self):
             return self._data
 

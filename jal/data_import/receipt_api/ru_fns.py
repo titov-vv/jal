@@ -180,13 +180,13 @@ class ReceiptRuFNS(ReceiptAPI):
         params = {'vyp3CaptchaToken': '', 'page': '', 'query': inn, 'region': region_list,
                   'PreventChromeAutocomplete': ''}
         request = WebRequest(WebRequest.POST, "https://egrul.nalog.ru/", params=params)
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()
         token_data = json.loads(request.data())
         if 't' not in token_data:
             return inn
         request = WebRequest(WebRequest.GET, "https://egrul.nalog.ru/search-result/" + token_data['t'])
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()
         result = json.loads(request.data())
         try:

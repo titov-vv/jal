@@ -74,7 +74,7 @@ class RangoResolver(RouteResolver):
     # object in it - which is also what a changed page format looks like, and both mean the same thing here.
     def _request(self, tx_hash: str):
         request = WebRequest(WebRequest.GET, _EXPLORER_SEARCH, params={"query": tx_hash})
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()   # keeps the GUI alive, like ChainFetcher._wait_for()
         page = request.data()
         if not page:

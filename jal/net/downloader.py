@@ -258,16 +258,17 @@ class QuoteDownloader(QObject):
         self._cancelled = True
 
     # Blocks until the requests abandoned by a cancelled download are over. Must be called before the
-    # application quits - destroying a running QThread aborts the process.
+    # application quits - destroying a running QThread aborts the process. FOREVER is what makes it a block:
+    # a bare wait() gives up after one polling slice, which would leave exactly the running threads this drains.
     def wait_for_pending(self) -> None:
         for request in self._pending:
-            request.wait()
+            request.wait(WebRequest.FOREVER)
         self._pending = []
 
     # this method waits for completion of downloading process or for user interrupt (in this case exception is raised)
     def _wait_for_event(self):
         self._pending = [x for x in self._pending if x.isRunning()]
-        while self._request.isRunning():
+        while not self._request.wait():
             QApplication.processEvents()
             if self._cancelled:
                 # An interrupted request can't be stopped: WebRequest is a QThread with an overridden run() that
@@ -871,7 +872,7 @@ class QuoteDownloader(QObject):
     @staticmethod
     def Coinbase_GetCurrencyList() -> list:
         request = WebRequest(WebRequest.GET, "https://api.coinbase.com/v2/currencies/crypto")
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()
         result_data = json.loads(request.data())
         data = result_data['data']

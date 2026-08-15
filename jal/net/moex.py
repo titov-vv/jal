@@ -65,7 +65,7 @@ class MOEX:
             return {}
         request = WebRequest(WebRequest.GET, "https://iss.moex.com/iss/securities.json",
                              params={'q': search_value, 'iss.meta': 'off', 'limit': '10'})
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()
         moex_search_data = json.loads(request.data())
         securities = moex_search_data['securities']
@@ -82,7 +82,7 @@ class MOEX:
     def __lookup_futures(self, name, base_asset) -> dict:
         request = WebRequest(WebRequest.GET, "https://iss.moex.com/iss/statistics/engines/futures/markets/forts/series.json",
                              params={'asset_code': base_asset, 'show_expired': '1'})
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()
         moex_search_data = json.loads(request.data())
         futures = moex_search_data['series']
@@ -141,7 +141,7 @@ class MOEX:
         if not asset_code:
             return asset
         request = WebRequest(WebRequest.GET, f"http://iss.moex.com/iss/securities/{asset_code}.json")
-        while request.isRunning():
+        while not request.wait():
             QApplication.processEvents()
         moex_data = json.loads(request.data())
         boards = [dict(zip(moex_data['boards']['columns'], x)) for x in moex_data['boards']['data']]
