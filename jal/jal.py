@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt, QTranslator, qInstallMessageHandler, QtMsgType, q
 from PySide6.QtWidgets import QApplication, QMessageBox
 from jal.widgets.main_window import MainWindow
 from jal.db.db import JalDB, JalDBError
+from jal.net.web_request import WebRequest
 from jal.db.settings import JalSettings
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -66,6 +67,10 @@ def main():
     else:
         window = MainWindow(translator)
     window.show()
+    # The last line of defence for the web-requests that are still running: the main window waits for them when it
+    # is closed, but the event loop can also end without that happening (a session shutdown, an exit() from
+    # elsewhere), and a request outliving the interpreter aborts the process - see WebRequest.wait_for_all().
+    app.aboutToQuit.connect(WebRequest.wait_for_all)
     app.exec()
     if translator_installed:
         app.removeTranslator(translator)

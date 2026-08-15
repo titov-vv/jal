@@ -161,7 +161,6 @@ class TokenListProvider(QObject, JalDB):
     def __init__(self, fetcher=None):
         super().__init__()
         self._cancelled = False
-        self._pending = []   # Requests that are still running, see _http_get()
         self._fetch = fetcher if fetcher is not None else self._http_get
 
     @Slot()
@@ -172,29 +171,15 @@ class TokenListProvider(QObject, JalDB):
     def was_cancelled(self) -> bool:
         return self._cancelled
 
-    # Blocks until the requests abandoned by a cancelled refresh() are over. Must be called before the
-    # application quits - destroying a running QThread aborts the process. FOREVER is what makes it a block:
-    # a bare wait() gives up after one polling slice, which would leave exactly the running threads this drains.
-    def wait_for_pending(self) -> None:
-        for request in self._pending:
-            request.wait(WebRequest.FOREVER)
-        self._pending = []
-
     # Waits for the download to complete, keeping the UI responsive. Raises KeyboardInterrupt if the user
-    # pressed 'Stop' meanwhile.
-    # A cancelled request can't be stopped: WebRequest is a QThread with an overridden run() that blocks in
-    # 'requests', so it has no event loop for quit() to end. Abandoning it isn't an option either - destroying
-    # a running QThread aborts the application. Therefore an interrupted request is kept in self._pending
-    # until it finishes on its own and is only dropped later, when it is no longer running.
+    # pressed 'Stop' meanwhile - the request it gives up on is not stopped (it can't be) but simply let go of:
+    # WebRequest keeps every request that is still running - see WebRequest.wait_for_all().
     def _http_get(self, url: str) -> bytes:
-        self._pending = [x for x in self._pending if x.isRunning()]
         request = WebRequest(WebRequest.GET, url)
-        self._pending.append(request)
         while not request.wait():
             QApplication.processEvents()
             if self._cancelled:
                 raise KeyboardInterrupt
-        self._pending.remove(request)
         return request.data()
 
     # True if the address is present on any allow-list that covers the given chain

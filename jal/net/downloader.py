@@ -247,7 +247,6 @@ class QuoteDownloader(QObject):
     def __init__(self):
         super().__init__()
         self._request = None
-        self._pending = []   # Requests abandoned by a cancelled download, see _wait_for_event()
         self._cancelled = False
         self._cbr_codes = None
         self._victoria_quotes = []
@@ -257,25 +256,13 @@ class QuoteDownloader(QObject):
     def on_cancel(self):
         self._cancelled = True
 
-    # Blocks until the requests abandoned by a cancelled download are over. Must be called before the
-    # application quits - destroying a running QThread aborts the process. FOREVER is what makes it a block:
-    # a bare wait() gives up after one polling slice, which would leave exactly the running threads this drains.
-    def wait_for_pending(self) -> None:
-        for request in self._pending:
-            request.wait(WebRequest.FOREVER)
-        self._pending = []
-
     # this method waits for completion of downloading process or for user interrupt (in this case exception is raised)
     def _wait_for_event(self):
-        self._pending = [x for x in self._pending if x.isRunning()]
         while not self._request.wait():
             QApplication.processEvents()
             if self._cancelled:
-                # An interrupted request can't be stopped: WebRequest is a QThread with an overridden run() that
-                # blocks in 'requests', so it has no event loop for quit() to end. Dropping it isn't an option
-                # either - destroying a running QThread aborts the application. So it is kept aside until it
-                # completes on its own and is only released later, when it is no longer running.
-                self._pending.append(self._request)
+                # An interrupted request can't be stopped and is simply let go of: WebRequest keeps every request
+                # that is still running, so this one lives on until it ends by itself - see WebRequest.wait_for_all()
                 self._request = None
                 raise KeyboardInterrupt
 

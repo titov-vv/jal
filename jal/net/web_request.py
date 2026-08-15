@@ -29,6 +29,15 @@ class WebRequest(QThread):
     # Deadline for a caller that wants the actual end of the request and has nothing to do meanwhile - see wait()
     FOREVER = QDeadlineTimer.Forever
 
+    # Every request that has been started and hasn't been seen to finish yet.
+    # A request that its caller gave up on - a cancelled download, an import that failed, a wallet fetch the user
+    # stopped - can neither be stopped nor dropped: run() blocks inside 'requests' and has no event loop for quit()
+    # to end, and destroying a running QThread aborts the whole application. The only safe end for such a request is
+    # to let it finish by itself, which is what this list is for. It keeps the object alive meanwhile, and
+    # wait_for_all() lets the application wait for the last of them instead of aborting on the way out.
+    # Requests are created from the GUI thread only, so a plain list needs no protection of its own.
+    _running_requests = []
+
     # 'expected_errors' lists the HTTP status codes that are an ANSWER rather than a failure for this request, and are
     # therefore logged as debug instead of as an error. An API asked "do you know this transaction?" replies 404 for
     # every transaction it does not, and a caller that asks about many of them would otherwise fill the log the user
@@ -44,8 +53,23 @@ class WebRequest(QThread):
         self._headers = headers
         self._binary = binary
         self._expected_errors = expected_errors
+        # Requests that have ended are forgotten here rather than by the thread that ends them: run() executes in the
+        # request's own thread and must not touch a list the GUI thread reads. Nothing is lost by the delay - whoever
+        # asked for a request holds it by itself for as long as it needs the answer.
+        WebRequest._running_requests = [x for x in WebRequest._running_requests if x.isRunning()]
+        WebRequest._running_requests.append(self)
         if not self.isRunning():
             self.start()
+
+    # Waits for every request that is still running, and must be called before the application quits - a QThread
+    # destroyed while running aborts the process. It is idempotent and cheap when there is nothing to wait for,
+    # so it is called both on the way out of the main window and from QApplication.aboutToQuit, which also covers
+    # the ways out that never close a window.
+    @classmethod
+    def wait_for_all(cls) -> None:
+        for request in cls._running_requests:
+            request.wait(cls.FOREVER)
+        cls._running_requests = []
 
     def run(self):
         self._mutex.lock()

@@ -24,6 +24,7 @@ from jal.db.backup_restore import JalBackup
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
+from jal.net.web_request import WebRequest
 from jal.net.downloader import QuoteDownloader
 from jal.net.token_lists import TokenListProvider
 from jal.db.ledger import Ledger
@@ -184,8 +185,7 @@ class MainWindow(QMainWindow):
             return
         JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
         JalSettings().setValue('WindowState', base64.encodebytes(self.saveState().data()).decode('utf-8'))
-        self.downloader.wait_for_pending()
-        self.token_lists.wait_for_pending()
+        WebRequest.wait_for_all()    # Requests their callers gave up on are still running and may not be dropped
         self.ui.Logs.stopLogging()   # At the end, so that whatever is running still can report
         super().closeEvent(event)
 
