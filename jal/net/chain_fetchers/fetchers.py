@@ -3,7 +3,7 @@ import importlib
 import os
 from functools import partial
 
-from PySide6.QtCore import QObject, Signal, Qt
+from PySide6.QtCore import QObject, Signal, Slot, Qt
 from PySide6.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QLabel, QListWidget, QListWidgetItem, \
     QCheckBox, QDialogButtonBox
 
@@ -117,7 +117,16 @@ class ChainFetchers(QObject):
         super().__init__()
         self.parent = parent
         self.items = []
+        self._cancelled = False
+        self._fetcher = None    # The fetcher that is running now, so that on_cancel() can reach into it
         self.loadFetchersList()
+
+    # Stops the run between wallets and holds back the checks that follow it
+    @Slot()
+    def on_cancel(self):
+        self._cancelled = True
+        if self._fetcher is not None:
+            self._fetcher.cancel()
 
     def loadFetchersList(self):
         folder = os.path.dirname(os.path.realpath(__file__))
@@ -167,30 +176,45 @@ class ChainFetchers(QObject):
         failed = []
         imported_any = False
         label = fetcher_class.display_symbol or descriptor['name']
+        self._cancelled = False
         self.show_progress.emit(True)
         try:
             for i, account in enumerate(accounts):
+                if self._cancelled:   # 'Stop' pressed while the previous wallet was being imported
+                    logging.warning(self.tr("Interrupted by user"))
+                    break
                 fetcher = fetcher_class()
                 fetcher.page_fetched.connect(partial(self._on_page_fetched, label))
+                self._fetcher = fetcher
                 try:
                     fetcher.fetch(account)
+                    # From here to the end of import_fetched() the run may NOT be interrupted: it writes the
+                    # operations and then advances the wallet's sync cursor past them, and a stop in between would
+                    # either lose what was fetched or move the cursor over what was never stored.
                     totals = fetcher.import_fetched()
                 except Statement_ImportError as error:
                     logging.error(self.tr("Blockchain fetch failed: ") + f"{account.name()}: {error}")
                     failed.append((account.name(), str(error)))
                     continue
                 finally:
+                    self._fetcher = None
                     self.update_progress.emit(100.0 * (i + 1) / len(accounts))
                 imported_any = True
                 for reason, count in fetcher.skipped().items():
                     skipped[reason] = skipped.get(reason, 0) + count
                 logging.info(self.tr("Transactions were fetched from blockchain for account: ") + account.name())
                 self.load_completed.emit(fetcher.period()[1], totals)
+        except KeyboardInterrupt:   # the wallet being read was abandoned - see ChainFetcher._wait_for()
+            logging.warning(self.tr("Interrupted by user"))
         finally:
             self.show_progress.emit(False)
         self._report_skipped(skipped)
         self._report_failures(failed)
-        if imported_any:
+        # The three checks below refine what was just imported and each of them costs network requests of its own, so
+        # a run the user stopped does not go on to spend them. Nothing is lost by that: all three are idempotent and
+        # pick up whatever they skipped at the next fetch (the swap audit remembers how far it has looked, the other
+        # two find their own work in the database each time).
+        if imported_any and not self._cancelled:
             self._settle_transfers()
             self._absorb_rebase_residue()
             self._audit_swaps()

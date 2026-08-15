@@ -91,6 +91,7 @@ class ChainFetcher(Statement):
         self._skipped = {}           # {reason: count} of transactions that were recognized but not imported
         self._counterparty_accounts = {}   # db account id -> statement account id of counterparty wallets
         self._page_count = 0         # pages read from the API so far during the current fetch(), see _report_page()
+        self._cancelled = False      # Set by cancel() when the user presses 'Stop' - see _wait_for()
 
     # Wallet accounts of this fetcher's chain. The account carries the address to scan and the cursor of the
     # previous fetch, so a fetcher never asks the user where to look.
@@ -168,14 +169,25 @@ class ChainFetcher(Statement):
     # ------------------------------------------------------------------------------------------------------------------
     # Helpers shared by the chain implementations
 
+    # Asks a running fetch to stop. It is the only interruption point a fetch has, and deliberately so - see
+    # _wait_for() for where it takes effect and ChainFetchers.on_cancel() for who calls it.
+    def cancel(self) -> None:
+        self._cancelled = True
+
     # Waits for a WebRequest to finish while keeping the application responsive. A plain QThread.wait() would block
     # the GUI thread for the whole request, and a wallet with a long history takes many of them - the window would
     # look frozen throughout. Waiting in short slices and processing events between them keeps it alive without
     # spinning (see WebRequest.wait()). Mirrors QuoteDownloader._wait_for_event().
-    @staticmethod
-    def _wait_for(request) -> None:
+    #
+    # This is also where a fetch stopped by the user ends, and the reason it may only end here: everything _fetch()
+    # does is read the chain and build self._data in memory, so a fetch abandoned between two pages has written
+    # nothing anywhere and simply leaves the wallet as it was, to be fetched again from the same cursor next time.
+    # The request that was being waited for is not stopped - it can't be - and is left to WebRequest to see out.
+    def _wait_for(self, request) -> None:
         while not request.wait():
             QApplication.processEvents()
+            if self._cancelled:
+                raise KeyboardInterrupt
 
     # Counts one more page read from the API and reports it via page_fetched - called by each chain's paging helper
     # right after a page comes back, whichever of possibly several endpoints it came from (see the callers).

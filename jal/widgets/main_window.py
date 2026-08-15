@@ -127,6 +127,7 @@ class MainWindow(QMainWindow):
         self.CancelButton.clicked.connect(self.downloader.on_cancel)
         self.CancelButton.clicked.connect(self.ledger.on_cancel)
         self.CancelButton.clicked.connect(self.token_lists.on_cancel)
+        self.CancelButton.clicked.connect(self.chain_fetchers.on_cancel)
         self.token_lists.show_progress.connect(self.onToggleProgressDisplay)
         self.token_lists.update_progress.connect(self.onUpdatePorgressDisplay)
         self.downloader.download_completed.connect(self.updateWidgets)
