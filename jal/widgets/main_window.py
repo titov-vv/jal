@@ -43,6 +43,8 @@ class MainWindow(QMainWindow):
                                 # It is not used directly but icons are accessed via @classmethod of JalIcons class
                                 # Should be called before ui-initialization
         self.running = False
+        self._operations_running = 0   # Number of long operations in flight - see onToggleProgressDisplay()
+        self._close_requested = False  # The user asked to close the window while an operation was running
         self.ui = Ui_JAL_MainWindow()
         self.ui.setupUi(self)
         self.restoreGeometry(base64.decodebytes(JalSettings().getValue('WindowGeometry', '').encode('utf-8')))
@@ -164,13 +166,27 @@ class MainWindow(QMainWindow):
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
                 self.ledger.rebuild(from_timestamp=0)
 
+    # A close asked for while a long operation would hide the window and stop the log while the operation keeps running
+    # and writing to the database behind it, and would cut a blockchain fetch between import_into_db() and the commit of
+    # its sync cursor. So it is refused, cancellation is requested, and the close is re-issued by
+    # onToggleProgressDisplay() once the last operation is over.
     @Slot()
     def closeEvent(self, event):
+        if self._operations_running:
+            if not self._close_requested:   # Asked once only - further clicks on X just wait with the first one
+                if QMessageBox().question(self, self.tr("Operation in progress"),
+                                          self.tr("An operation is still running.\n"
+                                                  "Stop it and close the application when it has finished?"),
+                                          QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
+                    self._close_requested = True
+                    self.CancelButton.clicked.emit()   # The same request the Stop button makes
+            event.ignore()
+            return
         JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
         JalSettings().setValue('WindowState', base64.encodebytes(self.saveState().data()).decode('utf-8'))
-        self.ui.Logs.stopLogging()
         self.downloader.wait_for_pending()
         self.token_lists.wait_for_pending()
+        self.ui.Logs.stopLogging()   # At the end, so that whatever is running still can report
         super().closeEvent(event)
 
     def createLanguageMenu(self):
@@ -384,11 +400,17 @@ class MainWindow(QMainWindow):
                         logging.warning(self.tr("Statement ending balance doesn't match: ") +
                                         f"{account.name()} / {asset} / {amount} (act) <> {totals[account_id][asset_id]} (exp)")
 
+    # Counts the operations in flight instead of following each signal directly, because they can nest.
     @Slot(bool)
     def onToggleProgressDisplay(self, visible):
+        self._operations_running += 1 if visible else -1
         self.ProgressBar.setValue(0)
         self.ProgressBar.setFormat('%p%')   # clears any per-page label left by a blockchain fetch
-        self.showProgressBar(visible)
+        self.showProgressBar(self._operations_running > 0)
+        if not self._operations_running and self._close_requested:
+            # The close that was asked for while the operation was running - see closeEvent(). It is queued rather
+            # than called here because this runs inside the call stack of the operation, which still has to unwind.
+            QMetaObject().invokeMethod(self, "close", Qt.ConnectionType.QueuedConnection)
 
     def onUpdatePorgressDisplay(self, progress_percent: float):
         self.ProgressBar.setValue(int(progress_percent))
