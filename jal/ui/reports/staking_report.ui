@@ -32,10 +32,10 @@
    <item>
     <widget class="QFrame" name="ReportParamsFrame">
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::Shape::Panel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <property name="leftMargin">
@@ -62,7 +62,7 @@
          <bool>true</bool>
         </property>
         <property name="timeSpec">
-         <enum>Qt::UTC</enum>
+         <enum>Qt::TimeSpec::UTC</enum>
         </property>
        </widget>
       </item>
@@ -92,7 +92,7 @@
       <item row="0" column="4">
        <spacer name="ReportFrameSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -115,7 +115,7 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <widget class="TableViewWithFooter" name="ReportTableView">
       <property name="sizePolicy">
@@ -125,25 +125,25 @@
        </sizepolicy>
       </property>
       <property name="frameShape">
-       <enum>QFrame::Panel</enum>
+       <enum>QFrame::Shape::Panel</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Sunken</enum>
+       <enum>QFrame::Shadow::Sunken</enum>
       </property>
       <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
+       <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
       </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
-      </property>
       <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
+       <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
       </property>
       <property name="gridStyle">
-       <enum>Qt::DotLine</enum>
+       <enum>Qt::PenStyle::DotLine</enum>
       </property>
       <property name="wordWrap">
        <bool>false</bool>
@@ -163,19 +163,19 @@
        </sizepolicy>
       </property>
       <property name="frameShape">
-       <enum>QFrame::Panel</enum>
+       <enum>QFrame::Shape::Panel</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Sunken</enum>
+       <enum>QFrame::Shadow::Sunken</enum>
       </property>
       <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
+       <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
       </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
       <property name="gridStyle">
-       <enum>Qt::DotLine</enum>
+       <enum>Qt::PenStyle::DotLine</enum>
       </property>
       <property name="wordWrap">
        <bool>false</bool>

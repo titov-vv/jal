@@ -56,20 +56,20 @@ class Ui_SwapOperation(object):
 
         self.date_label = QLabel(SwapOperation)
         self.date_label.setObjectName(u"date_label")
-        self.date_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.date_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.date_label, 1, 0, 1, 1)
 
         self.timestamp = QDateTimeEdit(SwapOperation)
         self.timestamp.setObjectName(u"timestamp")
         self.timestamp.setCalendarPopup(True)
-        self.timestamp.setTimeSpec(Qt.UTC)
+        self.timestamp.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.layout.addWidget(self.timestamp, 1, 1, 1, 1)
 
         self.account_label = QLabel(SwapOperation)
         self.account_label.setObjectName(u"account_label")
-        self.account_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.account_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.account_label, 1, 2, 1, 1)
 
@@ -80,7 +80,7 @@ class Ui_SwapOperation(object):
 
         self.tx_hash_label = QLabel(SwapOperation)
         self.tx_hash_label.setObjectName(u"tx_hash_label")
-        self.tx_hash_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.tx_hash_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.tx_hash_label, 1, 4, 1, 1)
 
@@ -91,13 +91,13 @@ class Ui_SwapOperation(object):
 
         self.sold_label = QLabel(SwapOperation)
         self.sold_label.setObjectName(u"sold_label")
-        self.sold_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.sold_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.sold_label, 2, 0, 1, 1)
 
         self.out_qty = QLineEdit(SwapOperation)
         self.out_qty.setObjectName(u"out_qty")
-        self.out_qty.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.out_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.out_qty, 2, 1, 1, 1)
 
@@ -108,13 +108,13 @@ class Ui_SwapOperation(object):
 
         self.received_label = QLabel(SwapOperation)
         self.received_label.setObjectName(u"received_label")
-        self.received_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.received_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.received_label, 3, 0, 1, 1)
 
         self.in_qty = QLineEdit(SwapOperation)
         self.in_qty.setObjectName(u"in_qty")
-        self.in_qty.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.in_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.in_qty, 3, 1, 1, 1)
 
@@ -125,14 +125,14 @@ class Ui_SwapOperation(object):
 
         self.cross_chain_check = QCheckBox(SwapOperation)
         self.cross_chain_check.setObjectName(u"cross_chain_check")
-        self.cross_chain_check.setLayoutDirection(Qt.RightToLeft)
+        self.cross_chain_check.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
 
         self.layout.addWidget(self.cross_chain_check, 4, 0, 1, 1)
 
         self.in_timestamp = QDateTimeEdit(SwapOperation)
         self.in_timestamp.setObjectName(u"in_timestamp")
         self.in_timestamp.setCalendarPopup(True)
-        self.in_timestamp.setTimeSpec(Qt.UTC)
+        self.in_timestamp.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.layout.addWidget(self.in_timestamp, 4, 1, 1, 1)
 
@@ -143,7 +143,7 @@ class Ui_SwapOperation(object):
 
         self.in_tx_hash_label = QLabel(SwapOperation)
         self.in_tx_hash_label.setObjectName(u"in_tx_hash_label")
-        self.in_tx_hash_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.in_tx_hash_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.in_tx_hash_label, 4, 4, 1, 1)
 
@@ -154,13 +154,13 @@ class Ui_SwapOperation(object):
 
         self.fee_check = QCheckBox(SwapOperation)
         self.fee_check.setObjectName(u"fee_check")
-        self.fee_check.setLayoutDirection(Qt.RightToLeft)
+        self.fee_check.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
 
         self.layout.addWidget(self.fee_check, 5, 0, 1, 1)
 
         self.fee_qty = QLineEdit(SwapOperation)
         self.fee_qty.setObjectName(u"fee_qty")
-        self.fee_qty.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.fee_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.fee_qty, 5, 1, 1, 1)
 
@@ -171,7 +171,7 @@ class Ui_SwapOperation(object):
 
         self.note_label = QLabel(SwapOperation)
         self.note_label.setObjectName(u"note_label")
-        self.note_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.note_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.note_label, 6, 0, 1, 1)
 

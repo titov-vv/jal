@@ -33,8 +33,8 @@ class Ui_TaxEstimationDialog(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.RateFrame = QFrame(TaxEstimationDialog)
         self.RateFrame.setObjectName(u"RateFrame")
-        self.RateFrame.setFrameShape(QFrame.StyledPanel)
-        self.RateFrame.setFrameShadow(QFrame.Raised)
+        self.RateFrame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.RateFrame.setFrameShadow(QFrame.Shadow.Raised)
         self.horizontalLayout_2 = QHBoxLayout(self.RateFrame)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -60,8 +60,8 @@ class Ui_TaxEstimationDialog(object):
 
         self.QuoteFrame = QFrame(TaxEstimationDialog)
         self.QuoteFrame.setObjectName(u"QuoteFrame")
-        self.QuoteFrame.setFrameShape(QFrame.StyledPanel)
-        self.QuoteFrame.setFrameShadow(QFrame.Raised)
+        self.QuoteFrame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.QuoteFrame.setFrameShadow(QFrame.Shadow.Raised)
         self.horizontalLayout_3 = QHBoxLayout(self.QuoteFrame)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -88,7 +88,7 @@ class Ui_TaxEstimationDialog(object):
 
         self.DealsView = QTableView(TaxEstimationDialog)
         self.DealsView.setObjectName(u"DealsView")
-        self.DealsView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.DealsView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.DealsView.verticalHeader().setVisible(False)
         self.DealsView.verticalHeader().setMinimumSectionSize(20)
 

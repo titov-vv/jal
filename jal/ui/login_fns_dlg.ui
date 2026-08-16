@@ -57,10 +57,10 @@
        <item>
         <widget class="QFrame" name="PhoneNumberFrame">
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <layout class="QFormLayout" name="formLayout_2">
           <property name="leftMargin">
@@ -92,10 +92,10 @@
        <item>
         <widget class="QFrame" name="CodeButtonFrame">
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <property name="leftMargin">
@@ -110,7 +110,7 @@
           <property name="bottomMargin">
            <number>0</number>
           </property>
-          <item alignment="Qt::AlignHCenter">
+          <item alignment="Qt::AlignmentFlag::AlignHCenter">
            <widget class="QPushButton" name="GetCodeBtn">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -129,10 +129,10 @@
        <item>
         <widget class="QFrame" name="CodeFrame">
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <layout class="QFormLayout" name="formLayout_3">
           <property name="leftMargin">
@@ -166,10 +166,10 @@
           </sizepolicy>
          </property>
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_10">
           <property name="leftMargin">
@@ -193,13 +193,13 @@
              </sizepolicy>
             </property>
             <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
+             <enum>QFrame::Shape::NoFrame</enum>
             </property>
             <property name="frameShadow">
-             <enum>QFrame::Plain</enum>
+             <enum>QFrame::Shadow::Plain</enum>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_9">
-             <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+             <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
               <widget class="QPushButton" name="SMSLoginBtn">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -218,11 +218,11 @@
           <item>
            <widget class="Line" name="line">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
            </widget>
           </item>
-          <item alignment="Qt::AlignHCenter">
+          <item alignment="Qt::AlignmentFlag::AlignHCenter">
            <widget class="QPushButton" name="SMSCloseBtn">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -269,10 +269,10 @@
           </sizepolicy>
          </property>
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <layout class="QFormLayout" name="formLayout">
           <property name="horizontalSpacing">
@@ -307,7 +307,7 @@
           <item row="1" column="1">
            <widget class="QLineEdit" name="PasswordEdit">
             <property name="echoMode">
-             <enum>QLineEdit::Password</enum>
+             <enum>QLineEdit::EchoMode::Password</enum>
             </property>
            </widget>
           </item>
@@ -317,10 +317,10 @@
        <item>
         <widget class="QFrame" name="FNSButtonFrame">
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <property name="spacing">
@@ -347,13 +347,13 @@
              </sizepolicy>
             </property>
             <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
+             <enum>QFrame::Shape::NoFrame</enum>
             </property>
             <property name="frameShadow">
-             <enum>QFrame::Plain</enum>
+             <enum>QFrame::Shadow::Plain</enum>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_5">
-             <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+             <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
               <widget class="QPushButton" name="FNSLoginBtn">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -372,11 +372,11 @@
           <item>
            <widget class="Line" name="FNSSplitLine">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
            </widget>
           </item>
-          <item alignment="Qt::AlignHCenter">
+          <item alignment="Qt::AlignmentFlag::AlignHCenter">
            <widget class="QPushButton" name="FNSCloseBtn">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -432,10 +432,10 @@
        <item>
         <widget class="QFrame" name="ESIAButtonFrame">
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <property name="leftMargin">
@@ -453,11 +453,11 @@
           <item>
            <widget class="Line" name="ESIASplitLine">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
            </widget>
           </item>
-          <item alignment="Qt::AlignHCenter">
+          <item alignment="Qt::AlignmentFlag::AlignHCenter">
            <widget class="QPushButton" name="ESIACloseBtn">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">

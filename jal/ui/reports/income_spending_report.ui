@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>595</width>
+    <width>768</width>
     <height>347</height>
    </rect>
   </property>
@@ -32,10 +32,10 @@
    <item>
     <widget class="QFrame" name="ReportParamsFrame">
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::Shape::Panel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="spacing">
@@ -54,7 +54,7 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="DateRangeSelector" name="ReportRange" native="true">
+       <widget class="DateRangeSelector" name="ReportRange">
         <property name="ItemsList" stdset="0">
          <string notr="true">QTD;YTD;this_year;last_year</string>
         </property>
@@ -94,7 +94,7 @@
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -117,13 +117,13 @@
    <item>
     <widget class="QTreeView" name="ReportTreeView">
      <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
+      <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>
      <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectItems</enum>
+      <enum>QAbstractItemView::SelectionBehavior::SelectItems</enum>
      </property>
      <attribute name="headerStretchLastSection">
       <bool>false</bool>
@@ -134,15 +134,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CurrencyComboBox</class>
-   <extends>QComboBox</extends>
-   <header>jal/widgets/account_select.h</header>
-  </customwidget>
-  <customwidget>
    <class>DateRangeSelector</class>
    <extends>QWidget</extends>
    <header>jal/widgets/custom/date_range_selector.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CurrencyComboBox</class>
+   <extends>QComboBox</extends>
+   <header>jal/widgets/account_select.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

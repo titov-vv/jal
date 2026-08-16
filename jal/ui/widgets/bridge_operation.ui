@@ -131,7 +131,7 @@
    <item row="1" column="9">
     <spacer name="horizontal_spacer">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -147,7 +147,7 @@
       <string>From</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -160,22 +160,22 @@
       <bool>true</bool>
      </property>
      <property name="timeSpec">
-      <enum>Qt::UTC</enum>
+      <enum>Qt::TimeSpec::UTC</enum>
      </property>
     </widget>
    </item>
    <item row="2" column="3">
-    <widget class="ReferenceSelectorWidget" name="from_account_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="from_account_widget"/>
    </item>
    <item row="2" column="4" colspan="2">
     <widget class="QLineEdit" name="out_qty">
      <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
    </item>
    <item row="2" column="6">
-    <widget class="ReferenceSelectorWidget" name="out_symbol_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="out_symbol_widget"/>
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="to_account_label">
@@ -183,7 +183,7 @@
       <string>To</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -196,24 +196,24 @@
       <bool>true</bool>
      </property>
      <property name="timeSpec">
-      <enum>Qt::UTC</enum>
+      <enum>Qt::TimeSpec::UTC</enum>
      </property>
     </widget>
    </item>
    <item row="3" column="3">
-    <widget class="ReferenceSelectorWidget" name="to_account_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="to_account_widget"/>
    </item>
    <item row="3" column="4" colspan="2">
     <widget class="QLineEdit" name="in_qty">
      <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
    </item>
    <item row="3" column="6">
-    <widget class="ReferenceSelectorWidget" name="in_symbol_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="in_symbol_widget"/>
    </item>
-   <item row="4" column="1" colspan="2" alignment="Qt::AlignRight">
+   <item row="4" column="1" colspan="2" alignment="Qt::AlignmentFlag::AlignRight">
     <widget class="QCheckBox" name="fee_check">
      <property name="text">
       <string>Include &amp;fee</string>
@@ -223,12 +223,12 @@
    <item row="4" column="4" colspan="2">
     <widget class="QLineEdit" name="fee_qty">
      <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
    </item>
    <item row="4" column="6">
-    <widget class="ReferenceSelectorWidget" name="fee_symbol_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="fee_symbol_widget"/>
    </item>
    <item row="5" column="0">
     <widget class="QLabel" name="note_label">
@@ -236,7 +236,7 @@
       <string>Note</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -246,7 +246,7 @@
    <item row="6" column="0">
     <spacer name="vertical_spacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>

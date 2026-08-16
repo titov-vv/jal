@@ -82,7 +82,7 @@ class Ui_CorporateActionOperation(object):
         self.timestamp_editor = QDateTimeEdit(CorporateActionOperation)
         self.timestamp_editor.setObjectName(u"timestamp_editor")
         self.timestamp_editor.setCalendarPopup(True)
-        self.timestamp_editor.setTimeSpec(Qt.UTC)
+        self.timestamp_editor.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.layout.addWidget(self.timestamp_editor, 2, 2, 1, 1)
 

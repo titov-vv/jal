@@ -101,14 +101,14 @@ class Ui_BridgeOperation(object):
 
         self.from_account_label = QLabel(BridgeOperation)
         self.from_account_label.setObjectName(u"from_account_label")
-        self.from_account_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.from_account_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.from_account_label, 2, 0, 1, 1)
 
         self.out_timestamp = QDateTimeEdit(BridgeOperation)
         self.out_timestamp.setObjectName(u"out_timestamp")
         self.out_timestamp.setCalendarPopup(True)
-        self.out_timestamp.setTimeSpec(Qt.UTC)
+        self.out_timestamp.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.layout.addWidget(self.out_timestamp, 2, 1, 1, 2)
 
@@ -119,7 +119,7 @@ class Ui_BridgeOperation(object):
 
         self.out_qty = QLineEdit(BridgeOperation)
         self.out_qty.setObjectName(u"out_qty")
-        self.out_qty.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.out_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.out_qty, 2, 4, 1, 2)
 
@@ -130,14 +130,14 @@ class Ui_BridgeOperation(object):
 
         self.to_account_label = QLabel(BridgeOperation)
         self.to_account_label.setObjectName(u"to_account_label")
-        self.to_account_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.to_account_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.to_account_label, 3, 0, 1, 1)
 
         self.in_timestamp = QDateTimeEdit(BridgeOperation)
         self.in_timestamp.setObjectName(u"in_timestamp")
         self.in_timestamp.setCalendarPopup(True)
-        self.in_timestamp.setTimeSpec(Qt.UTC)
+        self.in_timestamp.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.layout.addWidget(self.in_timestamp, 3, 1, 1, 2)
 
@@ -148,7 +148,7 @@ class Ui_BridgeOperation(object):
 
         self.in_qty = QLineEdit(BridgeOperation)
         self.in_qty.setObjectName(u"in_qty")
-        self.in_qty.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.in_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.in_qty, 3, 4, 1, 2)
 
@@ -160,11 +160,11 @@ class Ui_BridgeOperation(object):
         self.fee_check = QCheckBox(BridgeOperation)
         self.fee_check.setObjectName(u"fee_check")
 
-        self.layout.addWidget(self.fee_check, 4, 1, 1, 2, Qt.AlignRight)
+        self.layout.addWidget(self.fee_check, 4, 1, 1, 2, Qt.AlignmentFlag.AlignRight)
 
         self.fee_qty = QLineEdit(BridgeOperation)
         self.fee_qty.setObjectName(u"fee_qty")
-        self.fee_qty.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.fee_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.fee_qty, 4, 4, 1, 2)
 
@@ -175,7 +175,7 @@ class Ui_BridgeOperation(object):
 
         self.note_label = QLabel(BridgeOperation)
         self.note_label.setObjectName(u"note_label")
-        self.note_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.note_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.note_label, 5, 0, 1, 1)
 

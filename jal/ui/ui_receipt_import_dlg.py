@@ -39,8 +39,8 @@ class Ui_ImportShopReceiptDlg(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.InputFrame.sizePolicy().hasHeightForWidth())
         self.InputFrame.setSizePolicy(sizePolicy)
-        self.InputFrame.setFrameShape(QFrame.NoFrame)
-        self.InputFrame.setFrameShadow(QFrame.Plain)
+        self.InputFrame.setFrameShape(QFrame.Shape.NoFrame)
+        self.InputFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.horizontalLayout_2 = QHBoxLayout(self.InputFrame)
         self.horizontalLayout_2.setSpacing(2)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -52,7 +52,7 @@ class Ui_ImportShopReceiptDlg(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.QRGroup.sizePolicy().hasHeightForWidth())
         self.QRGroup.setSizePolicy(sizePolicy1)
-        self.QRGroup.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+        self.QRGroup.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.horizontalLayout = QHBoxLayout(self.QRGroup)
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -126,7 +126,7 @@ class Ui_ImportShopReceiptDlg(object):
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.SlipDateTime = QDateTimeEdit(self.ReceiptGroup)
         self.SlipDateTime.setObjectName(u"SlipDateTime")
-        self.SlipDateTime.setTimeSpec(Qt.UTC)
+        self.SlipDateTime.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.gridLayout.addWidget(self.SlipDateTime, 2, 1, 1, 1)
 
@@ -158,7 +158,7 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.LinesLbl = QLabel(self.ReceiptGroup)
         self.LinesLbl.setObjectName(u"LinesLbl")
-        self.LinesLbl.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+        self.LinesLbl.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
 
         self.gridLayout.addWidget(self.LinesLbl, 4, 0, 1, 1)
 
@@ -194,8 +194,8 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.DialogButtonsFrame = QFrame(ImportShopReceiptDlg)
         self.DialogButtonsFrame.setObjectName(u"DialogButtonsFrame")
-        self.DialogButtonsFrame.setFrameShape(QFrame.NoFrame)
-        self.DialogButtonsFrame.setFrameShadow(QFrame.Plain)
+        self.DialogButtonsFrame.setFrameShape(QFrame.Shape.NoFrame)
+        self.DialogButtonsFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.horizontalLayout_4 = QHBoxLayout(self.DialogButtonsFrame)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.horizontalLayout_4.setContentsMargins(2, 2, 2, 2)

@@ -37,13 +37,13 @@ class Ui_AssetPaymentOperation(object):
 
         self.date_label = QLabel(AssetPaymentOperation)
         self.date_label.setObjectName(u"date_label")
-        self.date_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.date_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.date_label, 1, 0, 1, 1)
 
         self.number_label = QLabel(AssetPaymentOperation)
         self.number_label.setObjectName(u"number_label")
-        self.number_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.number_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.number_label, 1, 7, 1, 1)
 
@@ -55,20 +55,20 @@ class Ui_AssetPaymentOperation(object):
 
         self.price_edit = QLineEdit(AssetPaymentOperation)
         self.price_edit.setObjectName(u"price_edit")
-        self.price_edit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.price_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
         self.price_edit.setReadOnly(True)
 
         self.layout.addWidget(self.price_edit, 2, 8, 1, 1)
 
         self.type_label = QLabel(AssetPaymentOperation)
         self.type_label.setObjectName(u"type_label")
-        self.type_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.type_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.type_label, 1, 5, 1, 1)
 
         self.tax_label = QLabel(AssetPaymentOperation)
         self.tax_label.setObjectName(u"tax_label")
-        self.tax_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.tax_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.tax_label, 3, 5, 1, 1)
 
@@ -79,7 +79,7 @@ class Ui_AssetPaymentOperation(object):
 
         self.symbol_label = QLabel(AssetPaymentOperation)
         self.symbol_label.setObjectName(u"symbol_label")
-        self.symbol_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.symbol_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.symbol_label, 3, 0, 1, 1)
 
@@ -106,7 +106,7 @@ class Ui_AssetPaymentOperation(object):
 
         self.tax_edit = QLineEdit(AssetPaymentOperation)
         self.tax_edit.setObjectName(u"tax_edit")
-        self.tax_edit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.tax_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.tax_edit, 3, 6, 1, 1)
 
@@ -130,13 +130,13 @@ class Ui_AssetPaymentOperation(object):
 
         self.note_label = QLabel(AssetPaymentOperation)
         self.note_label.setObjectName(u"note_label")
-        self.note_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.note_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.note_label, 4, 0, 1, 1)
 
         self.account_label = QLabel(AssetPaymentOperation)
         self.account_label.setObjectName(u"account_label")
-        self.account_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.account_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.account_label, 2, 0, 1, 1)
 
@@ -154,13 +154,13 @@ class Ui_AssetPaymentOperation(object):
 
         self.amount_label = QLabel(AssetPaymentOperation)
         self.amount_label.setObjectName(u"amount_label")
-        self.amount_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.amount_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.amount_label, 2, 5, 1, 1)
 
         self.dividend_edit = QLineEdit(AssetPaymentOperation)
         self.dividend_edit.setObjectName(u"dividend_edit")
-        self.dividend_edit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.dividend_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.dividend_edit, 2, 6, 1, 1)
 
@@ -172,7 +172,7 @@ class Ui_AssetPaymentOperation(object):
         self.timestamp_editor = QDateTimeEdit(AssetPaymentOperation)
         self.timestamp_editor.setObjectName(u"timestamp_editor")
         self.timestamp_editor.setCalendarPopup(True)
-        self.timestamp_editor.setTimeSpec(Qt.UTC)
+        self.timestamp_editor.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.layout.addWidget(self.timestamp_editor, 1, 1, 1, 1)
 

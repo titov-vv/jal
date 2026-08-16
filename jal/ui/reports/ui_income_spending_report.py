@@ -27,15 +27,15 @@ class Ui_IncomeSpendingReportWidget(object):
     def setupUi(self, IncomeSpendingReportWidget):
         if not IncomeSpendingReportWidget.objectName():
             IncomeSpendingReportWidget.setObjectName(u"IncomeSpendingReportWidget")
-        IncomeSpendingReportWidget.resize(595, 347)
+        IncomeSpendingReportWidget.resize(768, 347)
         self.verticalLayout = QVBoxLayout(IncomeSpendingReportWidget)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(IncomeSpendingReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
-        self.ReportParamsFrame.setFrameShape(QFrame.Panel)
-        self.ReportParamsFrame.setFrameShadow(QFrame.Sunken)
+        self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
+        self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.horizontalLayout = QHBoxLayout(self.ReportParamsFrame)
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -82,9 +82,9 @@ class Ui_IncomeSpendingReportWidget(object):
 
         self.ReportTreeView = QTreeView(IncomeSpendingReportWidget)
         self.ReportTreeView.setObjectName(u"ReportTreeView")
-        self.ReportTreeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.ReportTreeView.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.ReportTreeView.setAlternatingRowColors(True)
-        self.ReportTreeView.setSelectionBehavior(QAbstractItemView.SelectItems)
+        self.ReportTreeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
         self.ReportTreeView.header().setStretchLastSection(False)
 
         self.verticalLayout.addWidget(self.ReportTreeView)

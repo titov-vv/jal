@@ -41,8 +41,8 @@ class Ui_LoginLidlPlusDialog(object):
 
         self.ButtonFrame = QFrame(LoginLidlPlusDialog)
         self.ButtonFrame.setObjectName(u"ButtonFrame")
-        self.ButtonFrame.setFrameShape(QFrame.NoFrame)
-        self.ButtonFrame.setFrameShadow(QFrame.Plain)
+        self.ButtonFrame.setFrameShape(QFrame.Shape.NoFrame)
+        self.ButtonFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.verticalLayout_6 = QVBoxLayout(self.ButtonFrame)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.verticalLayout_6.setContentsMargins(0, 0, 0, 6)
@@ -61,7 +61,7 @@ class Ui_LoginLidlPlusDialog(object):
         sizePolicy1.setHeightForWidth(self.CloseBtn.sizePolicy().hasHeightForWidth())
         self.CloseBtn.setSizePolicy(sizePolicy1)
 
-        self.verticalLayout_6.addWidget(self.CloseBtn, 0, Qt.AlignHCenter)
+        self.verticalLayout_6.addWidget(self.CloseBtn, 0, Qt.AlignmentFlag.AlignHCenter)
 
 
         self.verticalLayout_3.addWidget(self.ButtonFrame)

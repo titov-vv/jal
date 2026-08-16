@@ -56,20 +56,20 @@ class Ui_ConversionOperation(object):
 
         self.date_label = QLabel(ConversionOperation)
         self.date_label.setObjectName(u"date_label")
-        self.date_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.date_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.date_label, 1, 0, 1, 1)
 
         self.timestamp = QDateTimeEdit(ConversionOperation)
         self.timestamp.setObjectName(u"timestamp")
         self.timestamp.setCalendarPopup(True)
-        self.timestamp.setTimeSpec(Qt.UTC)
+        self.timestamp.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.layout.addWidget(self.timestamp, 1, 1, 1, 1)
 
         self.account_label = QLabel(ConversionOperation)
         self.account_label.setObjectName(u"account_label")
-        self.account_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.account_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.account_label, 1, 2, 1, 1)
 
@@ -80,7 +80,7 @@ class Ui_ConversionOperation(object):
 
         self.tx_hash_label = QLabel(ConversionOperation)
         self.tx_hash_label.setObjectName(u"tx_hash_label")
-        self.tx_hash_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.tx_hash_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.tx_hash_label, 1, 4, 1, 1)
 
@@ -91,13 +91,13 @@ class Ui_ConversionOperation(object):
 
         self.converted_label = QLabel(ConversionOperation)
         self.converted_label.setObjectName(u"converted_label")
-        self.converted_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.converted_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.converted_label, 2, 0, 1, 1)
 
         self.out_qty = QLineEdit(ConversionOperation)
         self.out_qty.setObjectName(u"out_qty")
-        self.out_qty.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.out_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.out_qty, 2, 1, 1, 1)
 
@@ -108,13 +108,13 @@ class Ui_ConversionOperation(object):
 
         self.received_label = QLabel(ConversionOperation)
         self.received_label.setObjectName(u"received_label")
-        self.received_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.received_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.received_label, 3, 0, 1, 1)
 
         self.in_qty = QLineEdit(ConversionOperation)
         self.in_qty.setObjectName(u"in_qty")
-        self.in_qty.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.in_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.in_qty, 3, 1, 1, 1)
 
@@ -125,19 +125,19 @@ class Ui_ConversionOperation(object):
 
         self.basis_hint = QLabel(ConversionOperation)
         self.basis_hint.setObjectName(u"basis_hint")
-        self.basis_hint.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
+        self.basis_hint.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.basis_hint, 3, 4, 1, 2)
 
         self.fee_check = QCheckBox(ConversionOperation)
         self.fee_check.setObjectName(u"fee_check")
-        self.fee_check.setLayoutDirection(Qt.RightToLeft)
+        self.fee_check.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
 
         self.layout.addWidget(self.fee_check, 4, 0, 1, 1)
 
         self.fee_qty = QLineEdit(ConversionOperation)
         self.fee_qty.setObjectName(u"fee_qty")
-        self.fee_qty.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.fee_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.fee_qty, 4, 1, 1, 1)
 
@@ -148,7 +148,7 @@ class Ui_ConversionOperation(object):
 
         self.note_label = QLabel(ConversionOperation)
         self.note_label.setObjectName(u"note_label")
-        self.note_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.note_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.note_label, 5, 0, 1, 1)
 

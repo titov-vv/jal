@@ -30,8 +30,8 @@ class Ui_LoginPingoDoceDialog(object):
         self.verticalLayout_3.setContentsMargins(2, 2, 2, 2)
         self.PhoneNumberFrame = QFrame(LoginPingoDoceDialog)
         self.PhoneNumberFrame.setObjectName(u"PhoneNumberFrame")
-        self.PhoneNumberFrame.setFrameShape(QFrame.NoFrame)
-        self.PhoneNumberFrame.setFrameShadow(QFrame.Plain)
+        self.PhoneNumberFrame.setFrameShape(QFrame.Shape.NoFrame)
+        self.PhoneNumberFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.formLayout_2 = QFormLayout(self.PhoneNumberFrame)
         self.formLayout_2.setObjectName(u"formLayout_2")
         self.formLayout_2.setContentsMargins(6, -1, 6, 0)
@@ -51,8 +51,8 @@ class Ui_LoginPingoDoceDialog(object):
 
         self.PasswordFrame = QFrame(LoginPingoDoceDialog)
         self.PasswordFrame.setObjectName(u"PasswordFrame")
-        self.PasswordFrame.setFrameShape(QFrame.NoFrame)
-        self.PasswordFrame.setFrameShadow(QFrame.Plain)
+        self.PasswordFrame.setFrameShape(QFrame.Shape.NoFrame)
+        self.PasswordFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.formLayout_3 = QFormLayout(self.PasswordFrame)
         self.formLayout_3.setObjectName(u"formLayout_3")
         self.formLayout_3.setContentsMargins(6, -1, 6, 0)
@@ -63,7 +63,7 @@ class Ui_LoginPingoDoceDialog(object):
 
         self.PasswordEdit = QLineEdit(self.PasswordFrame)
         self.PasswordEdit.setObjectName(u"PasswordEdit")
-        self.PasswordEdit.setEchoMode(QLineEdit.Password)
+        self.PasswordEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.formLayout_3.setWidget(0, QFormLayout.ItemRole.FieldRole, self.PasswordEdit)
 
@@ -77,8 +77,8 @@ class Ui_LoginPingoDoceDialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
         self.frame.setSizePolicy(sizePolicy)
-        self.frame.setFrameShape(QFrame.NoFrame)
-        self.frame.setFrameShadow(QFrame.Plain)
+        self.frame.setFrameShape(QFrame.Shape.NoFrame)
+        self.frame.setFrameShadow(QFrame.Shadow.Plain)
         self.verticalLayout_9 = QVBoxLayout(self.frame)
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
         self.LoginBtn = QPushButton(self.frame)
@@ -89,7 +89,7 @@ class Ui_LoginPingoDoceDialog(object):
         sizePolicy1.setHeightForWidth(self.LoginBtn.sizePolicy().hasHeightForWidth())
         self.LoginBtn.setSizePolicy(sizePolicy1)
 
-        self.verticalLayout_9.addWidget(self.LoginBtn, 0, Qt.AlignHCenter|Qt.AlignTop)
+        self.verticalLayout_9.addWidget(self.LoginBtn, 0, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignTop)
 
 
         self.verticalLayout_3.addWidget(self.frame)

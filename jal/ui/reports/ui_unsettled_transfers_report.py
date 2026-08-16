@@ -27,15 +27,15 @@ class Ui_UnsettledTransfersWidget(object):
     def setupUi(self, UnsettledTransfersWidget):
         if not UnsettledTransfersWidget.objectName():
             UnsettledTransfersWidget.setObjectName(u"UnsettledTransfersWidget")
-        UnsettledTransfersWidget.resize(900, 500)
+        UnsettledTransfersWidget.resize(1329, 500)
         self.verticalLayout = QVBoxLayout(UnsettledTransfersWidget)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(UnsettledTransfersWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
-        self.ReportParamsFrame.setFrameShape(QFrame.Panel)
-        self.ReportParamsFrame.setFrameShadow(QFrame.Sunken)
+        self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
+        self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.gridLayout = QGridLayout(self.ReportParamsFrame)
         self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
@@ -43,7 +43,7 @@ class Ui_UnsettledTransfersWidget(object):
         self.ReportDate = QDateEdit(self.ReportParamsFrame)
         self.ReportDate.setObjectName(u"ReportDate")
         self.ReportDate.setCalendarPopup(True)
-        self.ReportDate.setTimeSpec(Qt.UTC)
+        self.ReportDate.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.gridLayout.addWidget(self.ReportDate, 0, 0, 1, 1)
 
@@ -132,11 +132,11 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.ReportTreeView = TreeViewWithFooter(UnsettledTransfersWidget)
         self.ReportTreeView.setObjectName(u"ReportTreeView")
-        self.ReportTreeView.setFrameShape(QFrame.Panel)
-        self.ReportTreeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.ReportTreeView.setFrameShape(QFrame.Shape.Panel)
+        self.ReportTreeView.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.ReportTreeView.setAlternatingRowColors(True)
-        self.ReportTreeView.setAllColumnsShowFocus(True)
         self.ReportTreeView.setRootIsDecorated(False)
+        self.ReportTreeView.setAllColumnsShowFocus(True)
         self.ReportTreeView.header().setStretchLastSection(False)
 
         self.verticalLayout.addWidget(self.ReportTreeView)

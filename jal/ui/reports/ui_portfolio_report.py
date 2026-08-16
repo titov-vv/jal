@@ -33,8 +33,8 @@ class Ui_PortfolioWidget(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.PortfolioParamsFrame = QFrame(PortfolioWidget)
         self.PortfolioParamsFrame.setObjectName(u"PortfolioParamsFrame")
-        self.PortfolioParamsFrame.setFrameShape(QFrame.Panel)
-        self.PortfolioParamsFrame.setFrameShadow(QFrame.Sunken)
+        self.PortfolioParamsFrame.setFrameShape(QFrame.Shape.Panel)
+        self.PortfolioParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.horizontalLayout_8 = QHBoxLayout(self.PortfolioParamsFrame)
         self.horizontalLayout_8.setSpacing(6)
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
@@ -43,7 +43,7 @@ class Ui_PortfolioWidget(object):
         self.PortfolioDate.setObjectName(u"PortfolioDate")
         self.PortfolioDate.setDateTime(QDateTime(QDate(2020, 11, 24), QTime(0, 0, 0)))
         self.PortfolioDate.setCalendarPopup(True)
-        self.PortfolioDate.setTimeSpec(Qt.UTC)
+        self.PortfolioDate.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.horizontalLayout_8.addWidget(self.PortfolioDate)
 
@@ -86,7 +86,7 @@ class Ui_PortfolioWidget(object):
 
         self.PortfolioTreeView = QTreeView(PortfolioWidget)
         self.PortfolioTreeView.setObjectName(u"PortfolioTreeView")
-        self.PortfolioTreeView.setFrameShape(QFrame.Panel)
+        self.PortfolioTreeView.setFrameShape(QFrame.Shape.Panel)
         self.PortfolioTreeView.setAlternatingRowColors(True)
         self.PortfolioTreeView.setAnimated(True)
         self.PortfolioTreeView.setAllColumnsShowFocus(True)

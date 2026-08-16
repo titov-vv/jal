@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>648</width>
+    <width>692</width>
     <height>301</height>
    </rect>
   </property>
@@ -32,10 +32,10 @@
    <item>
     <widget class="QFrame" name="ReportParamsFrame">
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::Shape::Panel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="spacing">
@@ -54,7 +54,7 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="DateRangeSelector" name="ReportRange" native="true">
+       <widget class="DateRangeSelector" name="ReportRange">
         <property name="ItemsList" stdset="0">
          <string notr="true">QTD;YTD;this_year;last_year</string>
         </property>
@@ -68,7 +68,7 @@
        </widget>
       </item>
       <item>
-       <widget class="ReferenceSelectorWidget" name="ReportAccountEdit" native="true"/>
+       <widget class="ReferenceSelectorWidget" name="ReportAccountEdit"/>
       </item>
       <item>
        <widget class="QLabel" name="CurrencyLbl">
@@ -80,7 +80,7 @@
       <item>
        <spacer name="ReportFrameSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -103,19 +103,19 @@
    <item>
     <widget class="QTableView" name="ReportTableView">
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::Shape::Panel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
+      <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>
      <property name="gridStyle">
-      <enum>Qt::DotLine</enum>
+      <enum>Qt::PenStyle::DotLine</enum>
      </property>
      <property name="wordWrap">
       <bool>false</bool>

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>767</width>
-    <height>345</height>
+    <height>408</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,10 +38,10 @@
       </sizepolicy>
      </property>
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::Shape::Panel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <property name="leftMargin">
@@ -60,7 +60,7 @@
        <number>6</number>
       </property>
       <item row="0" column="2">
-       <widget class="ReferenceSelectorWidget" name="ReportTagEdit" native="true"/>
+       <widget class="ReferenceSelectorWidget" name="ReportTagEdit"/>
       </item>
       <item row="0" column="0">
        <widget class="DateRangeSelector" name="ReportRange">
@@ -75,7 +75,7 @@
       <item row="0" column="5">
        <spacer name="ReportFrameSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -105,7 +105,7 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <widget class="TableViewWithFooter" name="ReportTableView">
       <property name="sizePolicy">
@@ -115,19 +115,19 @@
        </sizepolicy>
       </property>
       <property name="frameShape">
-       <enum>QFrame::Panel</enum>
+       <enum>QFrame::Shape::Panel</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Sunken</enum>
+       <enum>QFrame::Shadow::Sunken</enum>
       </property>
       <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
+       <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
       </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
       <property name="gridStyle">
-       <enum>Qt::DotLine</enum>
+       <enum>Qt::PenStyle::DotLine</enum>
       </property>
       <property name="wordWrap">
        <bool>false</bool>
@@ -139,7 +139,7 @@
        <number>20</number>
       </attribute>
      </widget>
-     <widget class="JalOperationsTabs" name="OperationDetails" native="true">
+     <widget class="JalOperationsTabs" name="OperationDetails">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -164,20 +164,20 @@
    <header>jal/widgets/custom/tableview_with_footer.h</header>
   </customwidget>
   <customwidget>
+   <class>ReferenceSelectorWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/reference_selector.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>CurrencyComboBox</class>
    <extends>QComboBox</extends>
    <header>jal/widgets/account_select.h</header>
   </customwidget>
   <customwidget>
    <class>JalOperationsTabs</class>
-   <extends>QWidget</extends>
+   <extends>QStackedWidget</extends>
    <header>jal/widgets/operations_tabs.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ReferenceSelectorWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/reference_selector.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

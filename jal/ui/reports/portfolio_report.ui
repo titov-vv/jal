@@ -32,10 +32,10 @@
    <item>
     <widget class="QFrame" name="PortfolioParamsFrame">
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::Shape::Panel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_8">
       <property name="spacing">
@@ -72,7 +72,7 @@
          <bool>true</bool>
         </property>
         <property name="timeSpec">
-         <enum>Qt::UTC</enum>
+         <enum>Qt::TimeSpec::UTC</enum>
         </property>
        </widget>
       </item>
@@ -106,7 +106,7 @@
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -129,7 +129,7 @@
    <item>
     <widget class="QTreeView" name="PortfolioTreeView">
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::Shape::Panel</enum>
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>

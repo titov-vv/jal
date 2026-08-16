@@ -36,8 +36,8 @@ class Ui_ReferenceDataDialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.EditFrame.sizePolicy().hasHeightForWidth())
         self.EditFrame.setSizePolicy(sizePolicy)
-        self.EditFrame.setFrameShape(QFrame.Panel)
-        self.EditFrame.setFrameShadow(QFrame.Plain)
+        self.EditFrame.setFrameShape(QFrame.Shape.Panel)
+        self.EditFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.EditFrame.setLineWidth(0)
         self.edit_layout = QHBoxLayout(self.EditFrame)
         self.edit_layout.setObjectName(u"edit_layout")
@@ -99,8 +99,8 @@ class Ui_ReferenceDataDialog(object):
 
         self.SearchFrame = QFrame(ReferenceDataDialog)
         self.SearchFrame.setObjectName(u"SearchFrame")
-        self.SearchFrame.setFrameShape(QFrame.Panel)
-        self.SearchFrame.setFrameShadow(QFrame.Plain)
+        self.SearchFrame.setFrameShape(QFrame.Shape.Panel)
+        self.SearchFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.SearchFrame.setLineWidth(0)
         self.search_layout = QHBoxLayout(self.SearchFrame)
         self.search_layout.setObjectName(u"search_layout")
@@ -120,9 +120,9 @@ class Ui_ReferenceDataDialog(object):
 
         self.DataView = QTableView(ReferenceDataDialog)
         self.DataView.setObjectName(u"DataView")
-        self.DataView.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.DataView.setEditTriggers(QAbstractItemView.EditTrigger.AnyKeyPressed|QAbstractItemView.EditTrigger.EditKeyPressed|QAbstractItemView.EditTrigger.SelectedClicked)
         self.DataView.setAlternatingRowColors(True)
-        self.DataView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.DataView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.DataView.verticalHeader().setVisible(True)
         self.DataView.verticalHeader().setMinimumSectionSize(20)
 
@@ -130,10 +130,10 @@ class Ui_ReferenceDataDialog(object):
 
         self.TreeView = QTreeView(ReferenceDataDialog)
         self.TreeView.setObjectName(u"TreeView")
-        self.TreeView.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.TreeView.setEditTriggers(QAbstractItemView.EditTrigger.AnyKeyPressed|QAbstractItemView.EditTrigger.EditKeyPressed|QAbstractItemView.EditTrigger.SelectedClicked)
         self.TreeView.setTabKeyNavigation(True)
         self.TreeView.setAlternatingRowColors(True)
-        self.TreeView.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.TreeView.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.TreeView.setExpandsOnDoubleClick(False)
         self.TreeView.header().setStretchLastSection(False)
 

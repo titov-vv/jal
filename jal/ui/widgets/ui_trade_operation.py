@@ -32,13 +32,13 @@ class Ui_TradeOperation(object):
         self.layout.setContentsMargins(2, 2, 2, 2)
         self.price_label = QLabel(TradeOperation)
         self.price_label.setObjectName(u"price_label")
-        self.price_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.price_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.price_label, 2, 7, 1, 1)
 
         self.qty_edit = QLineEdit(TradeOperation)
         self.qty_edit.setObjectName(u"qty_edit")
-        self.qty_edit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.qty_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.qty_edit, 1, 8, 1, 1)
 
@@ -50,7 +50,7 @@ class Ui_TradeOperation(object):
 
         self.price_edit = QLineEdit(TradeOperation)
         self.price_edit.setObjectName(u"price_edit")
-        self.price_edit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.price_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.price_edit, 2, 8, 1, 1)
 
@@ -98,13 +98,13 @@ class Ui_TradeOperation(object):
 
         self.fee_label = QLabel(TradeOperation)
         self.fee_label.setObjectName(u"fee_label")
-        self.fee_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.fee_label, 3, 7, 1, 1)
 
         self.qty_label = QLabel(TradeOperation)
         self.qty_label.setObjectName(u"qty_label")
-        self.qty_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.qty_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.qty_label, 1, 7, 1, 1)
 
@@ -115,7 +115,7 @@ class Ui_TradeOperation(object):
 
         self.fee_edit = QLineEdit(TradeOperation)
         self.fee_edit.setObjectName(u"fee_edit")
-        self.fee_edit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.fee_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.fee_edit, 3, 8, 1, 1)
 
@@ -128,14 +128,14 @@ class Ui_TradeOperation(object):
 
         self.number_label = QLabel(TradeOperation)
         self.number_label.setObjectName(u"number_label")
-        self.number_label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.number_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.number_label, 1, 5, 1, 1)
 
         self.timestamp_editor = QDateTimeEdit(TradeOperation)
         self.timestamp_editor.setObjectName(u"timestamp_editor")
         self.timestamp_editor.setCalendarPopup(True)
-        self.timestamp_editor.setTimeSpec(Qt.UTC)
+        self.timestamp_editor.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.layout.addWidget(self.timestamp_editor, 1, 1, 1, 1)
 

@@ -40,8 +40,8 @@ class Ui_SelectReferenceDlg(object):
 
         self.SelectorFrame = QFrame(SelectReferenceDlg)
         self.SelectorFrame.setObjectName(u"SelectorFrame")
-        self.SelectorFrame.setFrameShape(QFrame.NoFrame)
-        self.SelectorFrame.setFrameShadow(QFrame.Plain)
+        self.SelectorFrame.setFrameShape(QFrame.Shape.NoFrame)
+        self.SelectorFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.SelectorFrame.setLineWidth(0)
         self.SelectorFrame.setMidLineWidth(0)
         self.FrameLayout = QVBoxLayout(self.SelectorFrame)
@@ -53,8 +53,8 @@ class Ui_SelectReferenceDlg(object):
 
         self.buttonBox = QDialogButtonBox(SelectReferenceDlg)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
         self.WindowLayout.addWidget(self.buttonBox)
 

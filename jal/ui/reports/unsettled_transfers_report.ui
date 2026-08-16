@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>900</width>
+    <width>1329</width>
     <height>500</height>
    </rect>
   </property>
@@ -32,10 +32,10 @@
    <item>
     <widget class="QFrame" name="ReportParamsFrame">
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::Shape::Panel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <property name="leftMargin">
@@ -65,7 +65,7 @@
          <bool>true</bool>
         </property>
         <property name="timeSpec">
-         <enum>Qt::UTC</enum>
+         <enum>Qt::TimeSpec::UTC</enum>
         </property>
        </widget>
       </item>
@@ -111,11 +111,11 @@
         <property name="toolTip">
          <string>Show only the legs whose asset, account, counterparty, reference or note contains this text</string>
         </property>
-        <property name="clearButtonEnabled">
-         <bool>true</bool>
-        </property>
         <property name="placeholderText">
          <string>asset, account, protocol...</string>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -136,7 +136,7 @@
       <item row="0" column="9">
        <spacer name="ReportFrameSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -219,19 +219,19 @@
    <item>
     <widget class="TreeViewWithFooter" name="ReportTreeView">
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::Shape::Panel</enum>
      </property>
      <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
+      <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>
-     <property name="allColumnsShowFocus">
-      <bool>true</bool>
-     </property>
      <property name="rootIsDecorated">
       <bool>false</bool>
+     </property>
+     <property name="allColumnsShowFocus">
+      <bool>true</bool>
      </property>
      <attribute name="headerStretchLastSection">
       <bool>false</bool>
@@ -242,14 +242,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CurrencyComboBox</class>
-   <extends>QComboBox</extends>
-   <header>jal/widgets/account_select.h</header>
-  </customwidget>
-  <customwidget>
    <class>TreeViewWithFooter</class>
    <extends>QTreeView</extends>
    <header>jal/widgets/custom/treeview_with_footer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CurrencyComboBox</class>
+   <extends>QComboBox</extends>
+   <header>jal/widgets/account_select.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -34,8 +34,8 @@ class Ui_DealsReportWidget(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(DealsReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
-        self.ReportParamsFrame.setFrameShape(QFrame.Panel)
-        self.ReportParamsFrame.setFrameShadow(QFrame.Sunken)
+        self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
+        self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.horizontalLayout = QHBoxLayout(self.ReportParamsFrame)
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -80,7 +80,7 @@ class Ui_DealsReportWidget(object):
 
         self.ReportTreeView = TreeViewWithFooter(DealsReportWidget)
         self.ReportTreeView.setObjectName(u"ReportTreeView")
-        self.ReportTreeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.ReportTreeView.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.ReportTreeView.setAlternatingRowColors(True)
         self.ReportTreeView.header().setStretchLastSection(False)
 

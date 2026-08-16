@@ -46,7 +46,7 @@
    <item row="4" column="0">
     <spacer name="vertical_spacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -87,7 +87,7 @@
     </widget>
    </item>
    <item row="1" column="5">
-    <widget class="ReferenceSelectorWidget" name="account_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="account_widget"/>
    </item>
    <item row="2" column="6">
     <widget class="QLabel" name="note_label">
@@ -125,7 +125,7 @@
       <bool>true</bool>
      </property>
      <property name="timeSpec">
-      <enum>Qt::UTC</enum>
+      <enum>Qt::TimeSpec::UTC</enum>
      </property>
     </widget>
    </item>
@@ -165,7 +165,7 @@
     </widget>
    </item>
    <item row="2" column="5">
-    <widget class="ReferenceSelectorWidget" name="peer_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="peer_widget"/>
    </item>
    <item row="3" column="0" colspan="11">
     <widget class="TableViewWithFooter" name="details_table">
@@ -183,7 +183,7 @@
    <item row="2" column="8">
     <spacer name="horizontal_spacer">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -194,7 +194,7 @@
     </spacer>
    </item>
    <item row="1" column="7">
-    <widget class="OptionalCurrencyComboBox" name="a_currency" native="true"/>
+    <widget class="OptionalCurrencyComboBox" name="a_currency"/>
    </item>
    <item row="1" column="6">
     <widget class="AccountCurrencyLabel" name="currency">
