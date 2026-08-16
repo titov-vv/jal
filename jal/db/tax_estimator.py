@@ -10,7 +10,7 @@ from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
 from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import ts2d
+from jal.widgets.helpers import ts2d, set_tables_row_height
 from jal.widgets.delegates import FloatDelegate
 
 
@@ -68,9 +68,6 @@ class TaxEstimatorModel(QAbstractTableModel):
                 self._view.setItemDelegateForColumn(i, self._float_delegate2)
             else:
                 self._view.setItemDelegateForColumn(i, self._float_delegate4)
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
 
 
 class TaxEstimator(MdiWidget):
@@ -87,6 +84,7 @@ class TaxEstimator(MdiWidget):
         super().__init__(parent)
         self.ui = Ui_TaxEstimationDialog()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
 
         self.country = JalCountry(data={'code': country_code}, search=True)
         self.account_id = account_id

@@ -83,7 +83,6 @@ class Ui_AssetsPaymentsReportWidget(object):
         self.ReportTableView.setWordWrap(False)
         self.ReportTableView.verticalHeader().setVisible(False)
         self.ReportTableView.verticalHeader().setMinimumSectionSize(20)
-        self.ReportTableView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.ReportTableView)
 

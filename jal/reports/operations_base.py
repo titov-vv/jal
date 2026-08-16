@@ -108,7 +108,6 @@ class ReportOperationsModel(QAbstractTableModel):
         self._view.setColumnWidth(3, 150)
         self._view.setColumnWidth(4, 150)
         self._view.horizontalHeader().setSectionResizeMode(5, QHeaderView.Stretch)
-        self._view.horizontalHeader().setFont(self._bold_font)
         self._amount_delegate = ColoredAmountsDelegate(self._view)
         self._view.setItemDelegateForColumn(6, self._amount_delegate)
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)  # row size is adjusted in data() method

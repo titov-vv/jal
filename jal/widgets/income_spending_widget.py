@@ -38,7 +38,6 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.a_currency.setText(self.tr("Paid in foreign currency:"))
-        self.ui.details_table.horizontalHeader().setFont(self.bold_font)
         self.ui.add_button.setIcon(JalIcon[JalIcon.ADD])
         self.ui.del_button.setIcon(JalIcon[JalIcon.REMOVE])
         self.ui.copy_button.setIcon(JalIcon[JalIcon.COPY])

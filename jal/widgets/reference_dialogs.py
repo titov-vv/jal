@@ -19,6 +19,7 @@ from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.widgets.account_dialog import AccountDialog
+from jal.widgets.helpers import set_tables_row_height
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -33,6 +34,7 @@ class ReferenceDataDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_ReferenceDataDialog()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
         self._parent = parent
         self.model = None
         self._view = None
@@ -95,7 +97,6 @@ class ReferenceDataDialog(QDialog):
         self._view.customContextMenuRequested.connect(self.onDataViewContextMenu)
         self._view_header.setContextMenuPolicy(Qt.CustomContextMenu)
         self._view_header.customContextMenuRequested.connect(self.onHeaderContextMenu)
-        self.setViewBoldHeader()
         self.configureColumns()
         self.configureDelegates()
         self.model.dataChanged.connect(self.OnDataChanged)
@@ -171,11 +172,6 @@ class ReferenceDataDialog(QDialog):
         if parent.isValid():
             self.expand_parent_items(parent)
         self._view.expand(index)
-
-    def setViewBoldHeader(self):
-        font = self._view_header.font()
-        font.setBold(True)
-        self._view_header.setFont(font)
 
     def configureColumns(self):
         specs = self.model.column_meta()

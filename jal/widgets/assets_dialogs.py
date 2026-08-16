@@ -11,6 +11,7 @@ from jal.db.symbol import JalSymbol
 from jal.constants import CmWidth, PredefinedAsset, AssetLocation
 from jal.widgets.delegates import ConstantLookupDelegate
 from jal.widgets.icons import JalIcon
+from jal.widgets.helpers import set_tables_row_height
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -21,6 +22,7 @@ class SymbolListDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_AssetsListDialog()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
         self._parent = parent
         self._type_id = None
         self._currency_id = None
@@ -49,7 +51,6 @@ class SymbolListDialog(QDialog):
         self.ui.DataView.setModel(self.model)
         self.ui.DataView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         PredefinedAsset().load2combo(self.ui.AssetTypeCombo)
-        self.setViewBoldHeader()
         self.configureColumns()
 
         PredefinedAsset().load2combo(self.ui.AssetTypeCombo, with_empty=True)
@@ -91,11 +92,6 @@ class SymbolListDialog(QDialog):
         if res:
             self.selection_done.emit(self.selected_id)
         return res
-
-    def setViewBoldHeader(self):
-        font = self.ui.DataView.horizontalHeader().font()
-        font.setBold(True)
-        self.ui.DataView.horizontalHeader().setFont(font)
 
     def configureColumns(self):
         specs = self.model.column_meta()

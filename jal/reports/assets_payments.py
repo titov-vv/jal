@@ -9,7 +9,7 @@ from jal.db.helpers import localize_decimal
 from jal.ui.reports.ui_assets_payments_report import Ui_AssetsPaymentsReportWidget
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import ts2dt
+from jal.widgets.helpers import ts2dt, set_tables_row_height
 
 JAL_REPORT_CLASS = "AssetsPaymentsReport"
 
@@ -109,9 +109,6 @@ class AssetsPaymentsModel(QAbstractTableModel):
         self.endResetModel()
 
     def configureView(self):
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._view.setItemDelegateForColumn(4, self._float_delegate)
         self._view.setItemDelegateForColumn(5, self._float_delegate)
@@ -133,6 +130,7 @@ class AssetsPaymentsReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_AssetsPaymentsReportWidget()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
         self._parent = parent
         self.name = self.tr("Assets' payments")
 

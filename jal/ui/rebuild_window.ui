@@ -19,11 +19,6 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="font">
-   <font>
-    <family>DejaVu Sans</family>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Re-Build Ledger</string>
   </property>

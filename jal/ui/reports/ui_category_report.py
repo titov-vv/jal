@@ -94,7 +94,6 @@ class Ui_CategoryReportWidget(object):
         self.splitter.addWidget(self.ReportTableView)
         self.ReportTableView.verticalHeader().setVisible(False)
         self.ReportTableView.verticalHeader().setMinimumSectionSize(20)
-        self.ReportTableView.verticalHeader().setDefaultSectionSize(20)
         self.OperationDetails = JalOperationsTabs(self.splitter)
         self.OperationDetails.setObjectName(u"OperationDetails")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)

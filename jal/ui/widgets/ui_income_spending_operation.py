@@ -123,7 +123,6 @@ class Ui_IncomeSpendingOperation(object):
         self.details_table.setAlternatingRowColors(True)
         self.details_table.verticalHeader().setVisible(False)
         self.details_table.verticalHeader().setMinimumSectionSize(20)
-        self.details_table.verticalHeader().setDefaultSectionSize(20)
 
         self.layout.addWidget(self.details_table, 3, 0, 1, 11)
 

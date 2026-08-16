@@ -154,9 +154,6 @@
       <attribute name="verticalHeaderMinimumSectionSize">
        <number>20</number>
       </attribute>
-      <attribute name="verticalHeaderDefaultSectionSize">
-       <number>20</number>
-      </attribute>
      </widget>
      <widget class="QTableView" name="DetailsTableView">
       <property name="sizePolicy">
@@ -187,9 +184,6 @@
        <bool>false</bool>
       </attribute>
       <attribute name="verticalHeaderMinimumSectionSize">
-       <number>20</number>
-      </attribute>
-      <attribute name="verticalHeaderDefaultSectionSize">
        <number>20</number>
       </attribute>
      </widget>

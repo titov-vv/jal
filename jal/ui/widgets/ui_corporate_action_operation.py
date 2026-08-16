@@ -147,7 +147,6 @@ class Ui_CorporateActionOperation(object):
         self.results_table.setAlternatingRowColors(True)
         self.results_table.verticalHeader().setVisible(False)
         self.results_table.verticalHeader().setMinimumSectionSize(20)
-        self.results_table.verticalHeader().setDefaultSectionSize(20)
 
         self.layout.addWidget(self.results_table, 3, 6, 3, 3)
 

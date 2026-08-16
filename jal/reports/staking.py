@@ -18,6 +18,7 @@ from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.icons import JalIcon
 from jal.widgets.accrual_chart import AccrualChartWindow
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.helpers import set_tables_row_height
 
 JAL_REPORT_CLASS = "StakingReport"
 
@@ -159,9 +160,6 @@ class StakingListModel(QAbstractTableModel):
         self.endResetModel()
 
     def configureView(self):
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
         # A staked quantity keeps its tail: coins are held to 18 decimals and rounding one to two would show a
         # position of 0.00 for anything small enough
         self._qty_delegate = FloatDelegate(2, allow_tail=True)
@@ -249,9 +247,6 @@ class StakingDetailsModel(QAbstractTableModel):
             return ''
 
     def configureView(self):
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
         self._qty_delegate = FloatDelegate(2, allow_tail=True)
         self._timestamp_delegate = TimestampDelegate()
         self._view.setItemDelegateForColumn(0, self._timestamp_delegate)
@@ -291,6 +286,7 @@ class StakingReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_StakingReportWidget()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
         self._parent = parent
         self.name = self.tr("Staked positions")
 

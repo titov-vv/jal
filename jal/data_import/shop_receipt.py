@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QDialog, QHeaderView, QStyledItemDelegate, QLineEd
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.delegates import DateTimeEditWithReset
 from jal.constants import CustomColor
-from jal.widgets.helpers import dependency_present
+from jal.widgets.helpers import dependency_present, set_tables_row_height
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
@@ -236,6 +236,7 @@ class ImportReceiptDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_ImportShopReceiptDlg()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
         self.ui.AccountEdit.setup_selector(AccountListModel, AccountListDialog, self)
         self.ui.PeerEdit.setup_selector(PeerTreeModel, PeerListDialog, self)
         self.model = None
@@ -334,9 +335,6 @@ class ImportReceiptDialog(QDialog):
             else:
                 self.ui.LinesTableView.setColumnWidth(column, 100)
             self.ui.LinesTableView.setItemDelegateForColumn(column, self.delegate)
-        font = self.ui.LinesTableView.horizontalHeader().font()
-        font.setBold(True)
-        self.ui.LinesTableView.horizontalHeader().setFont(font)
         self.ui.LinesTableView.show()
         self.recognizeCategories()
 

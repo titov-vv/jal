@@ -145,7 +145,6 @@ class Ui_SymbolDialog(object):
         self.DataTable.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.DataTable.verticalHeader().setVisible(False)
         self.DataTable.verticalHeader().setMinimumSectionSize(20)
-        self.DataTable.verticalHeader().setDefaultSectionSize(20)
 
         self.gridLayout_5.addWidget(self.DataTable, 4, 0, 1, 4)
 
@@ -218,7 +217,6 @@ class Ui_SymbolDialog(object):
         self.SymbolsTable.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.SymbolsTable.verticalHeader().setVisible(False)
         self.SymbolsTable.verticalHeader().setMinimumSectionSize(20)
-        self.SymbolsTable.verticalHeader().setDefaultSectionSize(20)
 
         self.gridLayout_3.addWidget(self.SymbolsTable, 1, 0, 1, 4)
 
@@ -263,7 +261,6 @@ class Ui_SymbolDialog(object):
         self.IdentifiersTable.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.IdentifiersTable.verticalHeader().setVisible(False)
         self.IdentifiersTable.verticalHeader().setMinimumSectionSize(20)
-        self.IdentifiersTable.verticalHeader().setDefaultSectionSize(20)
 
         self.gridLayout_2.addWidget(self.IdentifiersTable, 1, 0, 1, 4)
 

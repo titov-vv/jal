@@ -1,10 +1,10 @@
 import logging
 from PySide6.QtCore import Slot, Signal
-from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QDataWidgetMapper
 from PySide6.QtSql import QSqlTableModel
 from jal.db.db import JalModel
 from jal.widgets.icons import JalIcon
+from jal.widgets.helpers import set_tables_row_height
 
 
 class AbstractOperationDetails(QWidget):
@@ -17,6 +17,7 @@ class AbstractOperationDetails(QWidget):
         assert ui_class is not None, "Can't create operation class without UI provided"
         self.ui = ui_class()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
 
         self.model = None
         self.table_name = ''
@@ -24,9 +25,6 @@ class AbstractOperationDetails(QWidget):
         self.modified = False
         self.name = self.name = self.ui.main_label.text()
         self.operation_type = None
-
-        self.bold_font = QFont()
-        self.bold_font.setBold(True)
 
         self.ui.commit_button.setIcon(JalIcon[JalIcon.OK])
         self.ui.revert_button.setIcon(JalIcon[JalIcon.CANCEL])

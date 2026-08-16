@@ -9,7 +9,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.common_models import AccountListModel
 from jal.constants import BookAccount, PredefinedCategory
-from jal.widgets.helpers import month_list
+from jal.widgets.helpers import month_list, set_tables_row_height
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.reference_dialogs import AccountListDialog
@@ -133,9 +133,6 @@ class ProfitLossModel(QAbstractTableModel):
 
     def configureView(self):
         self._view.setModel(self)
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._color_delegate = FloatDelegate(2, allow_tail=False, colors=True)
         self._percent_delegate = FloatDelegate(2, allow_tail=False, colors=True, percent=True)
@@ -166,6 +163,7 @@ class ProfitLossReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_ProfitLossReportWidget()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
         self.ui.ReportAccountEdit.setup_selector(AccountListModel, AccountListDialog, self)
         self._parent = parent
         self.name = self.tr("P&L by account")

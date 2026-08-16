@@ -11,6 +11,7 @@ from jal.db.common_models import AccountRecordModel, AccountDataModel
 from jal.db.token_blacklist import normalize_address, is_valid_address
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
 from jal.widgets.icons import JalIcon
+from jal.widgets.helpers import set_tables_row_height
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -116,6 +117,7 @@ class AccountDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_AccountDialog()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
         self._account_id = 0
 
         self.ui.CurrencyCombo.setKeyField("id")

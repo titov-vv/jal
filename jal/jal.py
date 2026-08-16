@@ -4,6 +4,7 @@ import logging
 import traceback
 from PySide6.QtCore import Qt, QTranslator, qInstallMessageHandler, QtMsgType, qDebug
 from PySide6.QtWidgets import QApplication, QMessageBox
+from jal import __version__
 from jal.widgets.main_window import MainWindow
 from jal.db.db import JalDB, JalDBError
 from jal.net.web_request import WebRequest
@@ -53,7 +54,11 @@ def main():
     setup_root_logging()
     translator_installed = False
     sys.excepthook = exception_logger
-    app = QApplication([])
+    app = QApplication(sys.argv)   # sys.argv is passed to enable Qt built-in options: -style, -stylesheet, -platform, etc.
+    app.setApplicationName("JAL")          # Without it macOS shows the interpreter name in the application menu
+    app.setApplicationVersion(__version__)
+    app.setOrganizationName("jal")
+    app.setDesktopFileName("jal")          # Matches jal.desktop so Wayland can find the window icon
 
     error = JalDB().init_db()
     translator = QTranslator(app)

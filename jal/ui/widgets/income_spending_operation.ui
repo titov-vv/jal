@@ -178,9 +178,6 @@
      <attribute name="verticalHeaderMinimumSectionSize">
       <number>20</number>
      </attribute>
-     <attribute name="verticalHeaderDefaultSectionSize">
-      <number>20</number>
-     </attribute>
     </widget>
    </item>
    <item row="2" column="8">

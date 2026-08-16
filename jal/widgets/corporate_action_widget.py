@@ -43,7 +43,6 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.add_button.setIcon(JalIcon[JalIcon.ADD])
         self.ui.del_button.setIcon(JalIcon[JalIcon.REMOVE])
-        self.ui.results_table.horizontalHeader().setFont(self.bold_font)
         self.ui.arrow.setText(" 🡆 ")  # it crashes if added via Qt-Designer
 
         self.ui.add_button.clicked.connect(self.addResult)

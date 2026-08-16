@@ -3,7 +3,7 @@ from datetime import time, datetime, timedelta, timezone
 from functools import cmp_to_key
 from PySide6.QtCore import Qt, QCollator
 from PySide6.QtGui import QImage
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QTableView, QStyle
 from jal.constants import Setup
 try:
     from pyzbar import pyzbar
@@ -74,6 +74,14 @@ def center_window(window):
         x = main_window.x() + main_window.width() / 2 - window.width() / 2
         y = main_window.y() + main_window.height() / 2 - window.height() / 2
         window.setGeometry(x, y, window.width(), window.height())
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Sets the row height of every table inside the given widget (a form as a rule) from the font that the table
+# actually uses.
+def set_tables_row_height(widget):
+    for table in widget.findChildren(QTableView):
+        padding = 2 * table.style().pixelMetric(QStyle.PM_FocusFrameVMargin, None, table)
+        table.verticalHeader().setDefaultSectionSize(table.fontMetrics().height() + padding)
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Returns true if text does contain only English alphabet

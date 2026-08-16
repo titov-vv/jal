@@ -299,9 +299,6 @@ class IncomeSpendingReportModel(QAbstractItemModel):
             else:
                 self._view.setItemDelegateForColumn(column, self._float_delegate)
                 self._view.setColumnWidth(column, 100)
-        font = self._view.header().font()
-        font.setBold(True)
-        self._view.header().setFont(font)
 
         if not is_signal_connected(self._view.header(), "sectionDoubleClicked(int)"):
             self._view.header().sectionDoubleClicked.connect(self.toggeYearColumns)

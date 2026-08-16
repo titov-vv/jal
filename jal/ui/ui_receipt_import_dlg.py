@@ -108,7 +108,6 @@ class Ui_ImportShopReceiptDlg(object):
         self.ReceiptParametersList.horizontalHeader().setVisible(False)
         self.ReceiptParametersList.horizontalHeader().setStretchLastSection(True)
         self.ReceiptParametersList.verticalHeader().setMinimumSectionSize(20)
-        self.ReceiptParametersList.verticalHeader().setDefaultSectionSize(20)
 
         self.gridLayout_2.addWidget(self.ReceiptParametersList, 0, 2, 3, 1)
 
@@ -177,7 +176,6 @@ class Ui_ImportShopReceiptDlg(object):
         self.LinesTableView.setObjectName(u"LinesTableView")
         self.LinesTableView.verticalHeader().setVisible(False)
         self.LinesTableView.verticalHeader().setMinimumSectionSize(20)
-        self.LinesTableView.verticalHeader().setDefaultSectionSize(20)
 
         self.gridLayout.addWidget(self.LinesTableView, 4, 1, 1, 4)
 

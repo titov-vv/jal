@@ -160,7 +160,6 @@ class Ui_AccountDialog(object):
         self.DataTable.setFrameShadow(QFrame.Shadow.Plain)
         self.DataTable.verticalHeader().setVisible(False)
         self.DataTable.verticalHeader().setMinimumSectionSize(20)
-        self.DataTable.verticalHeader().setDefaultSectionSize(20)
 
         self.gridLayout_3.addWidget(self.DataTable, 2, 0, 1, 4)
 

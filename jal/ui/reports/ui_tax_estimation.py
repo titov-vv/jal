@@ -91,7 +91,6 @@ class Ui_TaxEstimationDialog(object):
         self.DealsView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.DealsView.verticalHeader().setVisible(False)
         self.DealsView.verticalHeader().setMinimumSectionSize(20)
-        self.DealsView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.DealsView)
 

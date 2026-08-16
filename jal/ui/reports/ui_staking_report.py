@@ -95,7 +95,6 @@ class Ui_StakingReportWidget(object):
         self.splitter.addWidget(self.ReportTableView)
         self.ReportTableView.verticalHeader().setVisible(False)
         self.ReportTableView.verticalHeader().setMinimumSectionSize(20)
-        self.ReportTableView.verticalHeader().setDefaultSectionSize(20)
         self.DetailsTableView = QTableView(self.splitter)
         self.DetailsTableView.setObjectName(u"DetailsTableView")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -112,7 +111,6 @@ class Ui_StakingReportWidget(object):
         self.splitter.addWidget(self.DetailsTableView)
         self.DetailsTableView.verticalHeader().setVisible(False)
         self.DetailsTableView.verticalHeader().setMinimumSectionSize(20)
-        self.DetailsTableView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.splitter)
 

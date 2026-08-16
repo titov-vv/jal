@@ -125,7 +125,6 @@ class Ui_ReferenceDataDialog(object):
         self.DataView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.DataView.verticalHeader().setVisible(True)
         self.DataView.verticalHeader().setMinimumSectionSize(20)
-        self.DataView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.DataView)
 

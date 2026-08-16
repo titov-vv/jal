@@ -132,9 +132,6 @@
       <attribute name="verticalHeaderMinimumSectionSize">
        <number>20</number>
       </attribute>
-      <attribute name="verticalHeaderDefaultSectionSize">
-       <number>20</number>
-      </attribute>
      </widget>
      <widget class="JalOperationsTabs" name="OperationDetails" native="true">
       <property name="sizePolicy">

@@ -1,5 +1,4 @@
 from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel, QModelIndex
-from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor
 from jal.db.ledger import Ledger
@@ -24,8 +23,6 @@ class OperationsModel(QAbstractTableModel):
         self._begin = 0
         self._end = 0
         self._account = 0
-        self._bold_font = QFontDatabase.systemFont(QFontDatabase.GeneralFont)
-        self._bold_font.setBold(True)
         self.prepareData()
 
     def rowCount(self, parent=None):
@@ -107,7 +104,6 @@ class OperationsModel(QAbstractTableModel):
         self._view.setColumnWidth(0, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.2)
         self._view.setColumnWidth(1, 300)
         self._view.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
-        self._view.horizontalHeader().setFont(self._bold_font)
         self._amount_delegate = ColoredAmountsDelegate(self._view)
         self._total_delegate = ColoredAmountsDelegate(self._view, colors=False, signs=False)
         self._view.setItemDelegateForColumn(3, self._amount_delegate)     # Amount

@@ -290,9 +290,6 @@
           <attribute name="verticalHeaderMinimumSectionSize">
            <number>20</number>
           </attribute>
-          <attribute name="verticalHeaderDefaultSectionSize">
-           <number>20</number>
-          </attribute>
          </widget>
          <widget class="QFrame" name="OperationDetails">
           <property name="sizePolicy">
@@ -305,12 +302,6 @@
            <size>
             <width>0</width>
             <height>100</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>300</height>
            </size>
           </property>
           <property name="frameShape">

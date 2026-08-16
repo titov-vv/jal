@@ -256,9 +256,6 @@
             <attribute name="verticalHeaderMinimumSectionSize">
              <number>20</number>
             </attribute>
-            <attribute name="verticalHeaderDefaultSectionSize">
-             <number>20</number>
-            </attribute>
            </widget>
           </item>
           <item row="1" column="1" colspan="3">
@@ -398,9 +395,6 @@
                 <attribute name="verticalHeaderMinimumSectionSize">
                  <number>20</number>
                 </attribute>
-                <attribute name="verticalHeaderDefaultSectionSize">
-                 <number>20</number>
-                </attribute>
                </widget>
               </item>
              </layout>
@@ -492,9 +486,6 @@
                  <bool>false</bool>
                 </attribute>
                 <attribute name="verticalHeaderMinimumSectionSize">
-                 <number>20</number>
-                </attribute>
-                <attribute name="verticalHeaderDefaultSectionSize">
                  <number>20</number>
                 </attribute>
                </widget>

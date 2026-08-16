@@ -12,6 +12,7 @@ from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantL
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.reference_dialogs import TagsListDialog
+from jal.widgets.helpers import set_tables_row_height
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -117,6 +118,7 @@ class SymbolDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_SymbolDialog()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
         self._asset_id = 0
         self._current_symbol_id = 0
 

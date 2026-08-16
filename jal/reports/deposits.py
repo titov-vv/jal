@@ -14,6 +14,7 @@ from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.deposit_dialogs import NewDepositDialog, DepositTransferDialog, DepositInterestDialog
 from jal.widgets.icons import JalIcon
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.helpers import set_tables_row_height
 
 JAL_REPORT_CLASS = "DepositsReport"
 
@@ -108,9 +109,6 @@ class DepositsListModel(QAbstractTableModel):
         self.endResetModel()
 
     def configureView(self):
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._rate_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True)
         self._timestamp_delegate = TimestampDelegate(display_format='%d/%m/%Y')
@@ -186,9 +184,6 @@ class DepositDetailsModel(QAbstractTableModel):
             return ''
 
     def configureView(self):
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._timestamp_delegate = TimestampDelegate()
         self._view.setItemDelegateForColumn(0, self._timestamp_delegate)
@@ -217,6 +212,7 @@ class DepositsReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_DepositsReportWidget()
         self.ui.setupUi(self)
+        set_tables_row_height(self)
         self._parent = parent
         self.name = self.tr("Deposits")
 
