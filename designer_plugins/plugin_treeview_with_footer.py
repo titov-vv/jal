@@ -7,14 +7,6 @@ from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
 DOM_XML = """
 <ui language='c++'>
     <widget class='TreeViewWithFooter' name='treeViewWithFooter'>
-        <property name='geometry'>
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>400</width>
-                <height>300</height>
-            </rect>
-        </property>
     </widget>
 </ui>
 """
@@ -33,7 +25,7 @@ class TreeViewWithFooterPlugin(QDesignerCustomWidgetInterface):
         return DOM_XML
 
     def group(self):
-        return ''
+        return 'JAL widgets'
 
     def icon(self):
         return QIcon()

@@ -1,42 +1,32 @@
-#!/usr/bin/bash
-/usr/lib/qt6/uic -g python -o ./ui/ui_main_window.py ./ui/main_window.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_operations_widget.py ./ui/operations_widget.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_rebuild_window.py ./ui/rebuild_window.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_update_quotes_window.py ./ui/quotes_update.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_reference_data_dlg.py ./ui/reference_data_dlg.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_tax_export_widget.py ./ui/tax_export_widget.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_merge_dialog.py ./ui/merge_dialog.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_flow_export_widget.py ./ui/flow_export_widget.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_symbol_edit_dlg.py ./ui/symbol_edit_dlg.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_asset_list_dlg.py ./ui/asset_list_dlg.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_account_edit_dlg.py ./ui/account_edit_dlg.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_select_reference_dlg.py ./ui/select_reference_dlg.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_receipt_import_dlg.py ./ui/receipt_import_dlg.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_login_fns_dlg.py ./ui/login_fns_dlg.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_login_lidl_plus_dlg.py ./ui/login_lidl_plus_dlg.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_login_pingo_doce_dlg.py ./ui/login_pingo_doce_dlg.ui
-/usr/lib/qt6/uic -g python -o ./ui/ui_preferences_dlg.py ./ui/preferences_dlg.ui
-/usr/lib/qt6/uic -g python -o ./ui/widgets/ui_income_spending_operation.py ./ui/widgets/income_spending_operation.ui
-/usr/lib/qt6/uic -g python -o ./ui/widgets/ui_asset_payment_operation.py ./ui/widgets/asset_payment_operation.ui
-/usr/lib/qt6/uic -g python -o ./ui/widgets/ui_trade_operation.py ./ui/widgets/trade_operation.ui
-/usr/lib/qt6/uic -g python -o ./ui/widgets/ui_transfer_operation.py ./ui/widgets/transfer_operation.ui
-/usr/lib/qt6/uic -g python -o ./ui/widgets/ui_corporate_action_operation.py ./ui/widgets/corporate_action_operation.ui
-/usr/lib/qt6/uic -g python -o ./ui/widgets/ui_conversion_operation.py ./ui/widgets/conversion_operation.ui
-/usr/lib/qt6/uic -g python -o ./ui/widgets/ui_swap_operation.py ./ui/widgets/swap_operation.ui
-/usr/lib/qt6/uic -g python -o ./ui/widgets/ui_bridge_operation.py ./ui/widgets/bridge_operation.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_portfolio_report.py ./ui/reports/portfolio_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_unsettled_transfers_report.py ./ui/reports/unsettled_transfers_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_staking_report.py ./ui/reports/staking_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_tax_estimation.py ./ui/reports/tax_estimation.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_income_spending_report.py ./ui/reports/income_spending_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_assets_payments_report.py ./ui/reports/assets_payments_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_deposits_report.py ./ui/reports/deposits_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_account_balance_report.py ./ui/reports/account_balance_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_category_report.py ./ui/reports/category_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_tag_report.py ./ui/reports/tag_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_peer_report.py ./ui/reports/peer_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_deals_report.py ./ui/reports/deals_report.ui
-/usr/lib/qt6/uic -g python -o ./ui/reports/ui_profit_loss_report.py ./ui/reports/profit_loss_report.ui
+#!/usr/bin/env python3
+"""Regenerate ui_*.py for every .ui file under jal/ui/ using Qt6's uic."""
+import subprocess
+import sys
+from pathlib import Path
 
-/usr/lib/qt6/bin/lupdate -no-obsolete jal.pro
-/usr/lib/qt6/bin/lrelease jal.pro
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _qt_build_tools import find_qt_tool
+
+UI_ROOT = Path(__file__).resolve().parent / "ui"
+
+
+def main():
+    uic_path = find_qt_tool("pyside6-uic", "uic")
+    needs_g_python = Path(uic_path).name != "pyside6-uic"  # pyside6-uic always emits Python
+
+    ui_files = sorted(UI_ROOT.rglob("*.ui"))
+    if not ui_files:
+        sys.exit(f"No .ui files found under {UI_ROOT}")
+
+    for ui_file in ui_files:
+        out_file = ui_file.with_name(f"ui_{ui_file.stem}.py")
+        cmd = [uic_path]
+        if needs_g_python:
+            cmd += ["-g", "python"]
+        cmd += ["-o", str(out_file), str(ui_file)]
+        print(" ".join(cmd))
+        subprocess.run(cmd, check=True)
+
+
+if __name__ == "__main__":
+    main()

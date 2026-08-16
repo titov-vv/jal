@@ -12,7 +12,7 @@ import json
 from PySide6.QtCore import Qt, QObject, Signal, Slot, QDate
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
-from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
+from jal.ui.ui_quotes_update_dlg import Ui_UpdateQuotesDlg
 from jal.constants import AssetLocation, PredefinedAsset, SymbolId
 from jal.db.asset import JalAsset
 from jal.db.helpers import day_begin

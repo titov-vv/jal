@@ -91,7 +91,10 @@ class CurrencyComboBox(QComboBox):
         self.model = None
         self.activated.connect(self.OnUserSelection)
 
-        self.model = JalModel(self, "currencies")
+        try:
+            self.model = JalModel(self, "currencies")
+        except RuntimeError:
+            return  # no live DB connection (e.g. Qt Designer) - leave the combo empty
         self.model.select()
         self.setModel(self.model)
         self.setModelColumn(self.model.fieldIndex("symbol"))
@@ -149,7 +152,7 @@ class OptionalCurrencyComboBox(QWidget):
         self.null_flag.setText(text)
 
     def get_id(self) -> int:
-        return self._id if self._id else None
+        return self._id
 
     def set_id(self, new_value: int):
         if self._id == new_value:
@@ -162,7 +165,7 @@ class OptionalCurrencyComboBox(QWidget):
     currency_id = Property(int, get_id, set_id, notify=changed, user=True)
     
     def get_str_id(self) -> str:
-        string_id = '' if self.get_id() is None else str(self.get_id())
+        string_id = str(self.get_id()) if self.get_id() else ''
         return string_id
 
     def set_str_id(self, string_id: str):

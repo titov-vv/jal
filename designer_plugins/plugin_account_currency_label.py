@@ -1,5 +1,5 @@
 # Here reference goes from PYSIDE_DESIGNER_PLUGINS directory
-from jal.widgets.custom.log_viewer import LogViewer
+from jal.widgets.account_select import AccountCurrencyLabel
 
 from PySide6.QtGui import QIcon
 from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
@@ -7,19 +7,19 @@ from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
 
 DOM_XML = """
 <ui language='c++'>
-    <widget class='LogViewer' name='logViewer'>
+    <widget class='AccountCurrencyLabel' name='accountCurrencyLabel'>
     </widget>
 </ui>
 """
 
 
-class LogViewerPlugin(QDesignerCustomWidgetInterface):
+class AccountCurrencyLabelPlugin(QDesignerCustomWidgetInterface):
     def __init__(self):
         super().__init__()
         self._initialized = False
 
     def createWidget(self, parent):
-        t = LogViewer(parent)
+        t = AccountCurrencyLabel(parent)
         return t
 
     def domXml(self):
@@ -32,7 +32,7 @@ class LogViewerPlugin(QDesignerCustomWidgetInterface):
         return QIcon()
 
     def includeFile(self):
-        return 'jal/widgets/custom/log_viewer.h'
+        return 'jal/widgets/account_select.h'
 
     def initialize(self, form_editor):
         if self._initialized:
@@ -46,10 +46,10 @@ class LogViewerPlugin(QDesignerCustomWidgetInterface):
         return self._initialized
 
     def name(self):
-        return 'LogViewer'
+        return 'AccountCurrencyLabel'
 
     def toolTip(self):
-        return 'Widget to display python logger messages in UI'
+        return "Label displaying the currency symbol of a selected account"
 
     def whatsThis(self):
         return self.toolTip()

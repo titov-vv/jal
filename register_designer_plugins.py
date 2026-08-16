@@ -5,6 +5,15 @@ from designer_plugins.plugin_db_lookup_combobox import DbLookupComboBoxPlugin
 from designer_plugins.plugin_log_viewer import LogViewerPlugin
 from designer_plugins.plugin_tableview_with_footer import TableViewWithFooterPlugin
 from designer_plugins.plugin_treeview_with_footer import TreeViewWithFooterPlugin
+from designer_plugins.plugin_reference_selector import ReferenceSelectorWidgetPlugin
+from designer_plugins.plugin_currency_combobox import CurrencyComboBoxPlugin
+from designer_plugins.plugin_optional_currency_combobox import OptionalCurrencyComboBoxPlugin
+from designer_plugins.plugin_account_currency_label import AccountCurrencyLabelPlugin
+from designer_plugins.plugin_account_button import AccountButtonPlugin
+from designer_plugins.plugin_jal_operations_tabs import JalOperationsTabsPlugin
+from designer_plugins.plugin_tabbed_mdi_area import TabbedMdiAreaPlugin
+from designer_plugins.plugin_account_type_combobox import AccountTypeComboBoxPlugin
+from designer_plugins.plugin_asset_type_combobox import AssetTypeComboBoxPlugin
 
 from PySide6.QtDesigner import QPyDesignerCustomWidgetCollection
 
@@ -14,3 +23,12 @@ if __name__ == '__main__':
     QPyDesignerCustomWidgetCollection.addCustomWidget(LogViewerPlugin())
     QPyDesignerCustomWidgetCollection.addCustomWidget(TableViewWithFooterPlugin())
     QPyDesignerCustomWidgetCollection.addCustomWidget(TreeViewWithFooterPlugin())
+    QPyDesignerCustomWidgetCollection.addCustomWidget(ReferenceSelectorWidgetPlugin())
+    QPyDesignerCustomWidgetCollection.addCustomWidget(CurrencyComboBoxPlugin())
+    QPyDesignerCustomWidgetCollection.addCustomWidget(OptionalCurrencyComboBoxPlugin())
+    QPyDesignerCustomWidgetCollection.addCustomWidget(AccountCurrencyLabelPlugin())
+    QPyDesignerCustomWidgetCollection.addCustomWidget(AccountButtonPlugin())
+    QPyDesignerCustomWidgetCollection.addCustomWidget(JalOperationsTabsPlugin())
+    QPyDesignerCustomWidgetCollection.addCustomWidget(TabbedMdiAreaPlugin())
+    QPyDesignerCustomWidgetCollection.addCustomWidget(AccountTypeComboBoxPlugin())
+    QPyDesignerCustomWidgetCollection.addCustomWidget(AssetTypeComboBoxPlugin())

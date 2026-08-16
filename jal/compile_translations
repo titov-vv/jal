@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+"""Update and compile translations (languages/*.ts -> *.qm) from jal.pro."""
+import subprocess
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _qt_build_tools import find_qt_tool
+
+JAL_DIR = Path(__file__).resolve().parent
+
+
+def main():
+    lupdate_path = find_qt_tool("pyside6-lupdate", "lupdate")
+    lrelease_path = find_qt_tool("pyside6-lrelease", "lrelease")
+    subprocess.run([lupdate_path, "-no-obsolete", "jal.pro"], cwd=JAL_DIR, check=True)
+    subprocess.run([lrelease_path, "jal.pro"], cwd=JAL_DIR, check=True)
+
+
+if __name__ == "__main__":
+    main()

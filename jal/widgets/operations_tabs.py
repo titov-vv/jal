@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal, Slot
+from PySide6.QtCore import Signal, Slot, QSize
 from PySide6.QtWidgets import QWidget, QStackedWidget, QMessageBox
 
 from jal.widgets.corporate_action_widget import CorporateActionWidget
@@ -17,20 +17,46 @@ class JalOperationsTabs(QStackedWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.widgets = {LedgerTransaction.NA: QWidget(self),
-                        LedgerTransaction.IncomeSpending: IncomeSpendingWidget(self),
-                        LedgerTransaction.AssetPayment: AssetPaymentWidget(self),
-                        LedgerTransaction.Trade: TradeWidget(self),
-                        LedgerTransaction.Transfer: TransferWidget(self),
-                        LedgerTransaction.CorporateAction: CorporateActionWidget(self),
-                        LedgerTransaction.Conversion: ConversionWidget(self),
-                        LedgerTransaction.Swap: SwapWidget(self),
-                        LedgerTransaction.Bridge: BridgeWidget(self)}
+        self.widgets = {LedgerTransaction.NA: QWidget(self)}
+        operation_widget_classes = ((LedgerTransaction.IncomeSpending, IncomeSpendingWidget),
+                                    (LedgerTransaction.AssetPayment, AssetPaymentWidget),
+                                    (LedgerTransaction.Trade, TradeWidget),
+                                    (LedgerTransaction.Transfer, TransferWidget),
+                                    (LedgerTransaction.CorporateAction, CorporateActionWidget),
+                                    (LedgerTransaction.Conversion, ConversionWidget),
+                                    (LedgerTransaction.Swap, SwapWidget),
+                                    (LedgerTransaction.Bridge, BridgeWidget))
+        for key, widget_class in operation_widget_classes:
+            try:
+                self.widgets[key] = widget_class(self)
+            except RuntimeError:
+                self.widgets[key] = QWidget(self)  # no live DB connection (e.g. Qt Designer)
         for key, widget in self.widgets.items():
-            if key != LedgerTransaction.NA:
+            if key != LedgerTransaction.NA and hasattr(widget, "dbUpdated"):
                 widget.dbUpdated.connect(self.dbUpdated)
             self.addWidget(widget)
         self.setCurrentIndex(0)
+
+    # QStackedWidget.sizeHint() by default follows only the *current* page, which here (index 0) is always the blank
+    # LedgerTransaction.NA placeholder - so without this override the widget reports a degenerate 0x0 hint
+    # (harmless in the real app, where the surrounding layout stretches it, but leaves it invisible in Qt Designer).
+    # Report the largest of its real pages instead, floored at a reasonable minimum for when none are available
+    # (e.g. no live DB connection, so every page is itself a blank placeholder - see JalOperationsTabs.__init__).
+    _MIN_SIZE_HINT = QSize(400, 300)
+
+    def sizeHint(self):
+        return self._largest_page_size(lambda w: w.sizeHint())
+
+    def minimumSizeHint(self):
+        return self._largest_page_size(lambda w: w.minimumSizeHint())
+
+    def _largest_page_size(self, size_of):
+        hint = self._MIN_SIZE_HINT
+        for widget in self.widgets.values():
+            size = size_of(widget)
+            if size.width() * size.height() > hint.width() * hint.height():
+                hint = size
+        return hint
 
     # Returns a dictionary of {type, name} of operations that widget is able to handle
     def get_operations_list(self) -> dict:
