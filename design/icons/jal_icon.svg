@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgA" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#23457F"/>
+      <stop offset="1" stop-color="#0A1428"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bgA)"/>
+  <!-- J: stem + hook, optically centred -->
+  <path d="M 344 116 L 344 254 A 88 88 0 0 1 168 254"
+        fill="none" stroke="#FFFFFF" stroke-width="52" stroke-linecap="round"/>
+  <!-- accounting double rule = "total" -->
+  <rect x="146" y="396" width="220" height="18" rx="9" fill="#FFB020"/>
+  <rect x="146" y="428" width="220" height="18" rx="9" fill="#FFB020"/>
+</svg>
