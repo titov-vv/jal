@@ -3,8 +3,14 @@
 <!-- Setup Google Analytics -->
 {% include head-custom-google-analytics.html %}
 
-<!-- You can set your favicon here -->
-<!-- link rel="shortcut icon" type="image/x-icon" href="{{ '/favicon.ico' | relative_url }}" -->
+<!-- Favicon (sources of the mark are in design/icons/) -->
+<link rel="icon" type="image/png" sizes="32x32" href="{{ '/img/favicon-32.png' | relative_url }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ '/img/favicon-180.png' | relative_url }}">
+
+<!-- Card shown when a link to the site is shared -->
+<meta property="og:image" content="{{ '/img/social_preview.png' | absolute_url }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{{ '/img/social_preview.png' | absolute_url }}">
 
 <!-- Privacy-friendly analytics: https://www.goatcounter.com -->
 <script data-goatcounter="https://jal.goatcounter.com/count"

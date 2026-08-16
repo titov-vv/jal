@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/titov-vv/jal/master/docs/img/jal_logo.png" alt="JAL" width="88">
+
 # JAL 
 Just Another Ledger is a project for personal finance tracking.
 

@@ -1,3 +1,5 @@
+<img src="img/jal_logo.png" alt="JAL" width="88">
+
 # JAL (Just Another Ledger)
 **Track and manage your personal finances seamlessly.**
 

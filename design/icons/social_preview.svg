@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <defs>
+    <linearGradient id="bgCard" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#141C2C"/>
+      <stop offset="1" stop-color="#070B12"/>
+    </linearGradient>
+    <linearGradient id="coinS" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#FFD866"/>
+      <stop offset="1" stop-color="#F09819"/>
+    </linearGradient>
+    <mask id="cutS">
+      <rect x="0" y="0" width="512" height="512" fill="#000"/>
+      <circle cx="256" cy="236" r="152" fill="#fff"/>
+      <path d="M 312 146 L 312 250 A 56 56 0 0 1 200 250"
+            fill="none" stroke="#000" stroke-width="46" stroke-linecap="round"/>
+    </mask>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bgCard)"/>
+  <!-- faint ledger rules across the ground -->
+  <g fill="#FFFFFF" opacity="0.045">
+    <rect x="0" y="118" width="1280" height="2"/>
+    <rect x="0" y="238" width="1280" height="2"/>
+    <rect x="0" y="358" width="1280" height="2"/>
+    <rect x="0" y="478" width="1280" height="2"/>
+  </g>
+
+  <!-- the coin mark -->
+  <g transform="translate(57,96) scale(0.95)">
+    <circle cx="256" cy="236" r="152" fill="url(#coinS)" mask="url(#cutS)"/>
+  </g>
+
+  <!-- wordmark, standing on the same double rule as the application icon -->
+  <text x="600" y="250" font-family="DejaVu Sans" font-weight="bold" font-size="132"
+        letter-spacing="-2" fill="#FFFFFF">JAL</text>
+  <rect x="602" y="306" width="248" height="10" rx="5" fill="#FFB020"/>
+  <rect x="602" y="332" width="248" height="10" rx="5" fill="#FFB020"/>
+  <text x="600" y="412" font-family="DejaVu Sans" font-size="46" fill="#E6EBF3">Just Another Ledger</text>
+  <text x="600" y="467" font-family="DejaVu Sans" font-size="27" fill="#93A0B4">Personal finance and investment tracking</text>
+  <text x="600" y="505" font-family="DejaVu Sans" font-size="27" fill="#93A0B4">Offline &#183; multi-currency &#183; open source</text>
+</svg>
