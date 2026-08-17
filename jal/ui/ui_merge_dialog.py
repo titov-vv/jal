@@ -33,7 +33,6 @@ class Ui_MergeFilesToolDialog(object):
         MergeFilesToolDialog.setSizePolicy(sizePolicy)
         self.gridLayout = QGridLayout(MergeFilesToolDialog)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.InputLabel = QLabel(MergeFilesToolDialog)
         self.InputLabel.setObjectName(u"InputLabel")
 
@@ -91,6 +90,15 @@ class Ui_MergeFilesToolDialog(object):
 
         self.gridLayout.addWidget(self.InputFilesList, 0, 1, 3, 1)
 
+#if QT_CONFIG(shortcut)
+        self.InputLabel.setBuddy(self.InputFilesList)
+        self.OutputLabel.setBuddy(self.OutputFileName)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.AddBtn, self.RemoveBtn)
+        QWidget.setTabOrder(self.RemoveBtn, self.OutputFileName)
+        QWidget.setTabOrder(self.OutputFileName, self.OutputSelectBtn)
+        QWidget.setTabOrder(self.OutputSelectBtn, self.DialogButtonBox)
+        QWidget.setTabOrder(self.DialogButtonBox, self.InputFilesList)
 
         self.retranslateUi(MergeFilesToolDialog)
         self.DialogButtonBox.accepted.connect(MergeFilesToolDialog.accept)

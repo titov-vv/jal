@@ -28,17 +28,13 @@ class Ui_DepositsReportWidget(object):
             DepositsReportWidget.setObjectName(u"DepositsReportWidget")
         DepositsReportWidget.resize(900, 500)
         self.verticalLayout = QVBoxLayout(DepositsReportWidget)
-        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(DepositsReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
         self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
         self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.gridLayout = QGridLayout(self.ReportParamsFrame)
-        self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.DepositsDate = QDateEdit(self.ReportParamsFrame)
         self.DepositsDate.setObjectName(u"DepositsDate")
         self.DepositsDate.setCalendarPopup(True)
@@ -123,6 +119,14 @@ class Ui_DepositsReportWidget(object):
 
         self.verticalLayout.addWidget(self.splitter)
 
+        QWidget.setTabOrder(self.DepositsDate, self.NewButton)
+        QWidget.setTabOrder(self.NewButton, self.PutButton)
+        QWidget.setTabOrder(self.PutButton, self.GetButton)
+        QWidget.setTabOrder(self.GetButton, self.InterestButton)
+        QWidget.setTabOrder(self.InterestButton, self.CloseButton)
+        QWidget.setTabOrder(self.CloseButton, self.SaveButton)
+        QWidget.setTabOrder(self.SaveButton, self.ReportTableView)
+        QWidget.setTabOrder(self.ReportTableView, self.DetailsTableView)
 
         self.retranslateUi(DepositsReportWidget)
 

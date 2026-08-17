@@ -28,17 +28,13 @@ class Ui_PortfolioWidget(object):
             PortfolioWidget.setObjectName(u"PortfolioWidget")
         PortfolioWidget.resize(1066, 589)
         self.verticalLayout = QVBoxLayout(PortfolioWidget)
-        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.PortfolioParamsFrame = QFrame(PortfolioWidget)
         self.PortfolioParamsFrame.setObjectName(u"PortfolioParamsFrame")
         self.PortfolioParamsFrame.setFrameShape(QFrame.Shape.Panel)
         self.PortfolioParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.horizontalLayout_8 = QHBoxLayout(self.PortfolioParamsFrame)
-        self.horizontalLayout_8.setSpacing(6)
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
-        self.horizontalLayout_8.setContentsMargins(2, 2, 2, 2)
         self.PortfolioDate = QDateEdit(self.PortfolioParamsFrame)
         self.PortfolioDate.setObjectName(u"PortfolioDate")
         self.PortfolioDate.setDateTime(QDateTime(QDate(2020, 11, 24), QTime(0, 0, 0)))
@@ -46,6 +42,10 @@ class Ui_PortfolioWidget(object):
         self.PortfolioDate.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.horizontalLayout_8.addWidget(self.PortfolioDate)
+
+        self.groupGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_8.addItem(self.groupGroupSpacer)
 
         self.GroupLbl = QLabel(self.PortfolioParamsFrame)
         self.GroupLbl.setObjectName(u"GroupLbl")
@@ -56,6 +56,10 @@ class Ui_PortfolioWidget(object):
         self.GroupCombo.setObjectName(u"GroupCombo")
 
         self.horizontalLayout_8.addWidget(self.GroupCombo)
+
+        self.currencyGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_8.addItem(self.currencyGroupSpacer)
 
         self.PortfolioCurrencyLbl = QLabel(self.PortfolioParamsFrame)
         self.PortfolioCurrencyLbl.setObjectName(u"PortfolioCurrencyLbl")
@@ -93,6 +97,15 @@ class Ui_PortfolioWidget(object):
 
         self.verticalLayout.addWidget(self.PortfolioTreeView)
 
+#if QT_CONFIG(shortcut)
+        self.GroupLbl.setBuddy(self.GroupCombo)
+        self.PortfolioCurrencyLbl.setBuddy(self.PortfolioCurrencyCombo)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.PortfolioDate, self.GroupCombo)
+        QWidget.setTabOrder(self.GroupCombo, self.PortfolioCurrencyCombo)
+        QWidget.setTabOrder(self.PortfolioCurrencyCombo, self.ShowInactiveAccounts)
+        QWidget.setTabOrder(self.ShowInactiveAccounts, self.SaveButton)
+        QWidget.setTabOrder(self.SaveButton, self.PortfolioTreeView)
 
         self.retranslateUi(PortfolioWidget)
 

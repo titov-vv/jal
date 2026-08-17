@@ -14,21 +14,6 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="layout">
-   <property name="leftMargin">
-    <number>2</number>
-   </property>
-   <property name="topMargin">
-    <number>2</number>
-   </property>
-   <property name="rightMargin">
-    <number>2</number>
-   </property>
-   <property name="bottomMargin">
-    <number>2</number>
-   </property>
-   <property name="spacing">
-    <number>2</number>
-   </property>
    <item row="7" column="2">
     <spacer name="vertical_spacer">
      <property name="orientation">
@@ -50,9 +35,12 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>deposit_timestamp</cstring>
+     </property>
     </widget>
    </item>
-   <item row="4" column="4">
+   <item row="4" column="5">
     <widget class="ReferenceSelectorWidget" name="to_account_widget" native="true"/>
    </item>
    <item row="1" column="2" colspan="2">
@@ -69,14 +57,14 @@
      </item>
     </widget>
    </item>
-   <item row="2" column="4">
+   <item row="2" column="5">
     <widget class="QLabel" name="account_label">
      <property name="text">
       <string>Account</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="9">
+   <item row="2" column="10">
     <spacer name="horizontal_spacer">
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>
@@ -89,7 +77,7 @@
      </property>
     </spacer>
    </item>
-   <item row="0" column="10">
+   <item row="0" column="11">
     <widget class="QPushButton" name="commit_button">
      <property name="enabled">
       <bool>false</bool>
@@ -110,6 +98,9 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>TransferTypeCombo</cstring>
+     </property>
     </widget>
    </item>
    <item row="2" column="2">
@@ -119,7 +110,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="4" colspan="5">
+   <item row="5" column="5" colspan="5">
     <widget class="QStackedWidget" name="FeeGasPages">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -148,25 +139,57 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <property name="spacing">
-        <number>2</number>
-       </property>
-       <item row="0" column="2">
-        <widget class="AccountCurrencyLabel" name="fee_currency">
-         <property name="text">
-          <string>CUR</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="fee">
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="0">
         <widget class="ReferenceSelectorWidget" name="fee_account_widget" native="true"/>
+       </item>
+       <item row="0" column="1">
+        <spacer name="feeGroupSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="2">
+        <layout class="QHBoxLayout" name="feeCurrencyBox">
+         <property name="spacing">
+          <number>3</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="fee">
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="AccountCurrencyLabel" name="fee_currency">
+           <property name="text">
+            <string>CUR</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -184,30 +207,49 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <property name="spacing">
-        <number>2</number>
-       </property>
        <item row="0" column="0">
-        <widget class="QLineEdit" name="gas">
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        <layout class="QHBoxLayout" name="gasSymbolBox">
+         <property name="spacing">
+          <number>3</number>
          </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="ReferenceSelectorWidget" name="gas_symbol_widget" native="true"/>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="gas">
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="ReferenceSelectorWidget" name="gas_symbol_widget" native="true"/>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
     </widget>
    </item>
-   <item row="1" column="4">
+   <item row="1" column="5">
     <widget class="QLabel" name="number_label">
      <property name="text">
       <string>#</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>number</cstring>
      </property>
     </widget>
    </item>
@@ -219,9 +261,12 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>note</cstring>
+     </property>
     </widget>
    </item>
-   <item row="2" column="5" rowspan="3" colspan="4">
+   <item row="2" column="6" rowspan="3" colspan="4">
     <widget class="QStackedWidget" name="MoneyAssetPages">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -250,7 +295,7 @@
         <number>0</number>
        </property>
        <property name="spacing">
-        <number>2</number>
+        <number>3</number>
        </property>
        <item row="2" column="2">
         <widget class="AccountCurrencyLabel" name="from_currency">
@@ -273,20 +318,20 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="2" column="0" colspan="2">
+        <widget class="QLineEdit" name="withdrawal">
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
         <widget class="QPushButton" name="copy_amount_btn">
          <property name="toolTip">
           <string>Copy value</string>
          </property>
          <property name="text">
           <string>↓</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="QLineEdit" name="withdrawal">
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -314,7 +359,7 @@
         <number>0</number>
        </property>
        <property name="spacing">
-        <number>2</number>
+        <number>3</number>
        </property>
        <item row="2" column="1">
         <widget class="QLineEdit" name="asset_cost_basis"/>
@@ -323,6 +368,9 @@
         <widget class="QLabel" name="value_label">
          <property name="text">
           <string>Cost basis</string>
+         </property>
+         <property name="buddy">
+          <cstring>asset_cost_basis</cstring>
          </property>
         </widget>
        </item>
@@ -333,6 +381,9 @@
         <widget class="QLabel" name="AssetLabel">
          <property name="text">
           <string>Asset</string>
+         </property>
+         <property name="buddy">
+          <cstring>asset_amount</cstring>
          </property>
         </widget>
        </item>
@@ -357,7 +408,7 @@
      </widget>
     </widget>
    </item>
-   <item row="1" column="5" colspan="4">
+   <item row="1" column="6" colspan="4">
     <widget class="QLineEdit" name="number"/>
    </item>
    <item row="3" column="2" colspan="2">
@@ -392,7 +443,7 @@
      </item>
     </widget>
    </item>
-   <item row="0" column="11">
+   <item row="0" column="12">
     <widget class="QPushButton" name="revert_button">
      <property name="enabled">
       <bool>false</bool>
@@ -421,7 +472,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="3">
+   <item row="3" column="4">
     <widget class="QPushButton" name="copy_date_btn">
      <property name="toolTip">
       <string>Copy value</string>
@@ -443,7 +494,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="4">
+   <item row="3" column="5">
     <widget class="ReferenceSelectorWidget" name="from_account_widget" native="true"/>
    </item>
    <item row="3" column="0">
@@ -454,9 +505,12 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>withdrawal_timestamp</cstring>
+     </property>
     </widget>
    </item>
-   <item row="6" column="2" colspan="7">
+   <item row="6" column="2" colspan="8">
     <widget class="QLineEdit" name="note"/>
    </item>
   </layout>
@@ -474,6 +528,29 @@
    <header>jal/widgets/account_select.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>TransferTypeCombo</tabstop>
+  <tabstop>number</tabstop>
+  <tabstop>withdrawal_timestamp</tabstop>
+  <tabstop>copy_date_btn</tabstop>
+  <tabstop>from_account_widget</tabstop>
+  <tabstop>copy_amount_btn</tabstop>
+  <tabstop>withdrawal</tabstop>
+  <tabstop>asset_amount</tabstop>
+  <tabstop>symbol_widget</tabstop>
+  <tabstop>deposit_timestamp</tabstop>
+  <tabstop>to_account_widget</tabstop>
+  <tabstop>deposit</tabstop>
+  <tabstop>asset_cost_basis</tabstop>
+  <tabstop>FeeGasCombo</tabstop>
+  <tabstop>fee_account_widget</tabstop>
+  <tabstop>fee</tabstop>
+  <tabstop>gas</tabstop>
+  <tabstop>gas_symbol_widget</tabstop>
+  <tabstop>note</tabstop>
+  <tabstop>commit_button</tabstop>
+  <tabstop>revert_button</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

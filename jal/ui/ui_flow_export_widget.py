@@ -69,6 +69,13 @@ class Ui_MoneyFlowWidget(object):
 
         self.gridLayout.addWidget(self.XlsFileName, 1, 1, 1, 1)
 
+#if QT_CONFIG(shortcut)
+        self.XlsFileLbl.setBuddy(self.XlsFileName)
+        self.YearLbl.setBuddy(self.Year)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.Year, self.XlsFileName)
+        QWidget.setTabOrder(self.XlsFileName, self.XlsSelectBtn)
+        QWidget.setTabOrder(self.XlsSelectBtn, self.SaveButton)
 
         self.retranslateUi(MoneyFlowWidget)
 

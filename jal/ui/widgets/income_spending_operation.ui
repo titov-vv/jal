@@ -14,25 +14,16 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="layout">
-   <property name="leftMargin">
-    <number>2</number>
-   </property>
-   <property name="topMargin">
-    <number>2</number>
-   </property>
-   <property name="rightMargin">
-    <number>2</number>
-   </property>
-   <property name="bottomMargin">
-    <number>2</number>
-   </property>
-   <item row="2" column="7">
+   <item row="2" column="10">
     <widget class="QLineEdit" name="note"/>
    </item>
-   <item row="1" column="4">
+   <item row="1" column="5">
     <widget class="QLabel" name="account_label">
      <property name="text">
       <string>Account</string>
+     </property>
+     <property name="buddy">
+      <cstring>account_widget</cstring>
      </property>
     </widget>
    </item>
@@ -40,6 +31,9 @@
     <widget class="QLabel" name="date_label">
      <property name="text">
       <string>Date/Time</string>
+     </property>
+     <property name="buddy">
+      <cstring>timestamp_editor</cstring>
      </property>
     </widget>
    </item>
@@ -86,17 +80,46 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="5">
-    <widget class="ReferenceSelectorWidget" name="account_widget"/>
+   <item row="1" column="6">
+    <layout class="QHBoxLayout" name="accountCurrencyBox">
+     <property name="spacing">
+      <number>3</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="ReferenceSelectorWidget" name="account_widget"/>
+     </item>
+     <item>
+      <widget class="AccountCurrencyLabel" name="currency">
+       <property name="text">
+        <string>CUR</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
-   <item row="2" column="6">
+   <item row="2" column="8">
     <widget class="QLabel" name="note_label">
      <property name="text">
       <string>Note</string>
      </property>
+     <property name="buddy">
+      <cstring>note</cstring>
+     </property>
     </widget>
    </item>
-   <item row="0" column="9">
+   <item row="0" column="12">
     <widget class="QPushButton" name="commit_button">
      <property name="enabled">
       <bool>false</bool>
@@ -109,10 +132,13 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="4">
+   <item row="2" column="5">
     <widget class="QLabel" name="peer_label">
      <property name="text">
       <string>Peer</string>
+     </property>
+     <property name="buddy">
+      <cstring>peer_widget</cstring>
      </property>
     </widget>
    </item>
@@ -148,7 +174,7 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="10">
+   <item row="0" column="13">
     <widget class="QPushButton" name="revert_button">
      <property name="enabled">
       <bool>false</bool>
@@ -164,10 +190,10 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="5">
+   <item row="2" column="6">
     <widget class="ReferenceSelectorWidget" name="peer_widget"/>
    </item>
-   <item row="3" column="0" colspan="11">
+   <item row="3" column="0" colspan="14">
     <widget class="TableViewWithFooter" name="details_table">
      <property name="alternatingRowColors">
       <bool>true</bool>
@@ -180,7 +206,7 @@
      </attribute>
     </widget>
    </item>
-   <item row="2" column="8">
+   <item row="2" column="11">
     <spacer name="horizontal_spacer">
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>
@@ -193,15 +219,56 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="7">
+   <item row="1" column="10">
     <widget class="OptionalCurrencyComboBox" name="a_currency"/>
    </item>
-   <item row="1" column="6">
-    <widget class="AccountCurrencyLabel" name="currency">
-     <property name="text">
-      <string>CUR</string>
+   <item row="1" column="4">
+    <spacer name="accountGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-    </widget>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="7">
+    <spacer name="noteGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="9">
+    <spacer name="currencyGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
@@ -229,6 +296,16 @@
    <header>jal/widgets/account_select.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>timestamp_editor</tabstop>
+  <tabstop>account_widget</tabstop>
+  <tabstop>a_currency</tabstop>
+  <tabstop>peer_widget</tabstop>
+  <tabstop>note</tabstop>
+  <tabstop>details_table</tabstop>
+  <tabstop>commit_button</tabstop>
+  <tabstop>revert_button</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

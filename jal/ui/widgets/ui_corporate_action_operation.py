@@ -29,26 +29,25 @@ class Ui_CorporateActionOperation(object):
         CorporateActionOperation.resize(969, 244)
         self.layout = QGridLayout(CorporateActionOperation)
         self.layout.setObjectName(u"layout")
-        self.layout.setContentsMargins(2, 2, 2, 2)
         self.add_button = QPushButton(CorporateActionOperation)
         self.add_button.setObjectName(u"add_button")
 
-        self.layout.addWidget(self.add_button, 2, 7, 1, 1)
+        self.layout.addWidget(self.add_button, 2, 9, 1, 1)
 
         self.asset_label = QLabel(CorporateActionOperation)
         self.asset_label.setObjectName(u"asset_label")
 
-        self.layout.addWidget(self.asset_label, 3, 3, 1, 1)
+        self.layout.addWidget(self.asset_label, 3, 4, 1, 1)
 
         self.qty_edit = QLineEdit(CorporateActionOperation)
         self.qty_edit.setObjectName(u"qty_edit")
 
-        self.layout.addWidget(self.qty_edit, 4, 4, 1, 1)
+        self.layout.addWidget(self.qty_edit, 4, 5, 1, 1)
 
         self.account_label = QLabel(CorporateActionOperation)
         self.account_label.setObjectName(u"account_label")
 
-        self.layout.addWidget(self.account_label, 2, 3, 1, 1)
+        self.layout.addWidget(self.account_label, 2, 4, 1, 1)
 
         self.note_label = QLabel(CorporateActionOperation)
         self.note_label.setObjectName(u"note_label")
@@ -59,12 +58,12 @@ class Ui_CorporateActionOperation(object):
         self.commit_button.setObjectName(u"commit_button")
         self.commit_button.setEnabled(False)
 
-        self.layout.addWidget(self.commit_button, 0, 7, 1, 1)
+        self.layout.addWidget(self.commit_button, 0, 9, 1, 1)
 
         self.qty_label = QLabel(CorporateActionOperation)
         self.qty_label.setObjectName(u"qty_label")
 
-        self.layout.addWidget(self.qty_label, 4, 3, 1, 1)
+        self.layout.addWidget(self.qty_label, 4, 4, 1, 1)
 
         self.main_label = QLabel(CorporateActionOperation)
         self.main_label.setObjectName(u"main_label")
@@ -89,7 +88,7 @@ class Ui_CorporateActionOperation(object):
         self.arrow = QLabel(CorporateActionOperation)
         self.arrow.setObjectName(u"arrow")
 
-        self.layout.addWidget(self.arrow, 3, 5, 2, 1)
+        self.layout.addWidget(self.arrow, 3, 7, 2, 1)
 
         self.type_label = QLabel(CorporateActionOperation)
         self.type_label.setObjectName(u"type_label")
@@ -99,12 +98,12 @@ class Ui_CorporateActionOperation(object):
         self.symbol_widget = ReferenceSelectorWidget(CorporateActionOperation)
         self.symbol_widget.setObjectName(u"symbol_widget")
 
-        self.layout.addWidget(self.symbol_widget, 3, 4, 1, 1)
+        self.layout.addWidget(self.symbol_widget, 3, 5, 1, 1)
 
         self.account_widget = ReferenceSelectorWidget(CorporateActionOperation)
         self.account_widget.setObjectName(u"account_widget")
 
-        self.layout.addWidget(self.account_widget, 2, 4, 1, 1)
+        self.layout.addWidget(self.account_widget, 2, 5, 1, 1)
 
         self.number = QLineEdit(CorporateActionOperation)
         self.number.setObjectName(u"number")
@@ -121,7 +120,7 @@ class Ui_CorporateActionOperation(object):
         self.revert_button.setEnabled(False)
         self.revert_button.setAcceptDrops(False)
 
-        self.layout.addWidget(self.revert_button, 0, 8, 1, 1)
+        self.layout.addWidget(self.revert_button, 0, 10, 1, 1)
 
         self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
@@ -130,12 +129,12 @@ class Ui_CorporateActionOperation(object):
         self.note = QLineEdit(CorporateActionOperation)
         self.note.setObjectName(u"note")
 
-        self.layout.addWidget(self.note, 5, 2, 1, 3)
+        self.layout.addWidget(self.note, 5, 2, 1, 4)
 
         self.del_button = QPushButton(CorporateActionOperation)
         self.del_button.setObjectName(u"del_button")
 
-        self.layout.addWidget(self.del_button, 2, 8, 1, 1)
+        self.layout.addWidget(self.del_button, 2, 10, 1, 1)
 
         self.number_label = QLabel(CorporateActionOperation)
         self.number_label.setObjectName(u"number_label")
@@ -148,12 +147,39 @@ class Ui_CorporateActionOperation(object):
         self.results_table.verticalHeader().setVisible(False)
         self.results_table.verticalHeader().setMinimumSectionSize(20)
 
-        self.layout.addWidget(self.results_table, 3, 6, 3, 3)
+        self.layout.addWidget(self.results_table, 3, 8, 3, 3)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.layout.addItem(self.horizontalSpacer, 2, 6, 1, 1)
+        self.layout.addItem(self.horizontalSpacer, 2, 8, 1, 1)
 
+        self.fieldGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.layout.addItem(self.fieldGroupSpacer, 2, 3, 1, 1)
+
+        self.arrowGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.layout.addItem(self.arrowGroupSpacer, 3, 6, 1, 1)
+
+#if QT_CONFIG(shortcut)
+        self.asset_label.setBuddy(self.symbol_widget)
+        self.account_label.setBuddy(self.account_widget)
+        self.note_label.setBuddy(self.note)
+        self.qty_label.setBuddy(self.qty_edit)
+        self.date_label.setBuddy(self.timestamp_editor)
+        self.type_label.setBuddy(self.type)
+        self.number_label.setBuddy(self.number)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.timestamp_editor, self.account_widget)
+        QWidget.setTabOrder(self.account_widget, self.type)
+        QWidget.setTabOrder(self.type, self.number)
+        QWidget.setTabOrder(self.number, self.note)
+        QWidget.setTabOrder(self.note, self.symbol_widget)
+        QWidget.setTabOrder(self.symbol_widget, self.qty_edit)
+        QWidget.setTabOrder(self.qty_edit, self.add_button)
+        QWidget.setTabOrder(self.add_button, self.results_table)
+        QWidget.setTabOrder(self.results_table, self.commit_button)
+        QWidget.setTabOrder(self.commit_button, self.revert_button)
 
         self.retranslateUi(CorporateActionOperation)
 

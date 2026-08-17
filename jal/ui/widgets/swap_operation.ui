@@ -14,57 +14,63 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="layout">
-   <property name="leftMargin">
-    <number>2</number>
-   </property>
-   <property name="topMargin">
-    <number>2</number>
-   </property>
-   <property name="rightMargin">
-    <number>2</number>
-   </property>
-   <property name="bottomMargin">
-    <number>2</number>
-   </property>
-   <item row="0" column="0">
-    <widget class="QLabel" name="main_label">
-     <property name="font">
-      <font>
-       <bold>true</bold>
-      </font>
-     </property>
+   <item row="7" column="0">
+    <widget class="QLabel" name="note_label">
      <property name="text">
-      <string>Swap</string>
+      <string>Note</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>note</cstring>
      </property>
     </widget>
    </item>
-   <item row="0" column="6">
-    <spacer name="horizontal_spacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
+   <item row="1" column="7">
+    <widget class="QLabel" name="amount_label">
+     <property name="text">
+      <string>Amount</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
+    </widget>
    </item>
-   <item row="0" column="7">
-    <widget class="QPushButton" name="commit_button">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
+   <item row="2" column="9">
+    <widget class="ReferenceSelectorWidget" name="out_symbol_widget"/>
+   </item>
+   <item row="0" column="2">
+    <widget class="QCheckBox" name="cross_chain_check">
      <property name="toolTip">
-      <string>Commit changes</string>
+      <string>The exchanged asset is received on another account (chain), in a separate transaction</string>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LayoutDirection::LeftToRight</enum>
      </property>
      <property name="text">
-      <string/>
+      <string>Cross &amp;chain</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="8">
+   <item row="4" column="7">
+    <widget class="QLineEdit" name="in_qty">
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2">
+    <widget class="QDateTimeEdit" name="in_timestamp">
+     <property name="displayFormat">
+      <string>dd/MM/yyyy hh:mm:ss</string>
+     </property>
+     <property name="calendarPopup">
+      <bool>true</bool>
+     </property>
+     <property name="timeSpec">
+      <enum>Qt::TimeSpec::UTC</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="14">
     <widget class="QPushButton" name="revert_button">
      <property name="enabled">
       <bool>false</bool>
@@ -80,17 +86,85 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item row="1" column="2">
     <widget class="QLabel" name="date_label">
      <property name="text">
       <string>Date/Time</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="1" column="5">
+    <widget class="QLabel" name="account_label">
+     <property name="text">
+      <string>Account</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="5">
+    <widget class="QCheckBox" name="fee_check">
+     <property name="layoutDirection">
+      <enum>Qt::LayoutDirection::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>Include &amp;fee</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="11">
+    <widget class="QLineEdit" name="in_tx_hash"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="to_label">
+     <property name="text">
+      <string>To</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>in_timestamp</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="12">
+    <spacer name="horizontal_spacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="8">
+    <spacer name="assetGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Policy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="4" column="5">
+    <widget class="ReferenceSelectorWidget" name="in_account_widget"/>
+   </item>
+   <item row="2" column="2">
     <widget class="QDateTimeEdit" name="timestamp">
      <property name="displayFormat">
       <string>dd/MM/yyyy hh:mm:ss</string>
@@ -103,148 +177,49 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="2">
-    <widget class="QLabel" name="account_label">
-     <property name="text">
-      <string>Account</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="3">
-    <widget class="ReferenceSelectorWidget" name="account_widget"/>
-   </item>
-   <item row="1" column="4">
-    <widget class="QLabel" name="tx_hash_label">
-     <property name="text">
-      <string>Tx hash</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="5">
+   <item row="2" column="11">
     <widget class="QLineEdit" name="tx_hash"/>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="sold_label">
-     <property name="text">
-      <string>Sold</string>
+   <item row="1" column="10">
+    <spacer name="txHashGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     <property name="sizeType">
+      <enum>QSizePolicy::Policy::Fixed</enum>
      </property>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
    </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="out_qty">
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2" colspan="2">
-    <widget class="ReferenceSelectorWidget" name="out_symbol_widget"/>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="received_label">
-     <property name="text">
-      <string>Received</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="in_qty">
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2" colspan="2">
-    <widget class="ReferenceSelectorWidget" name="in_symbol_widget"/>
-   </item>
-   <item row="4" column="0">
-    <widget class="QCheckBox" name="cross_chain_check">
-     <property name="toolTip">
-      <string>The exchanged asset is received on another account (chain), in a separate transaction</string>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LayoutDirection::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>On another &amp;chain</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="QDateTimeEdit" name="in_timestamp">
-     <property name="displayFormat">
-      <string>dd/MM/yyyy hh:mm:ss</string>
-     </property>
-     <property name="calendarPopup">
-      <bool>true</bool>
-     </property>
-     <property name="timeSpec">
-      <enum>Qt::TimeSpec::UTC</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="2" colspan="2">
-    <widget class="ReferenceSelectorWidget" name="in_account_widget"/>
-   </item>
-   <item row="4" column="4">
-    <widget class="QLabel" name="in_tx_hash_label">
-     <property name="text">
-      <string>Tx hash</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="5">
-    <widget class="QLineEdit" name="in_tx_hash"/>
-   </item>
-   <item row="5" column="0">
-    <widget class="QCheckBox" name="fee_check">
-     <property name="layoutDirection">
-      <enum>Qt::LayoutDirection::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>Include &amp;fee</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
+   <item row="6" column="7">
     <widget class="QLineEdit" name="fee_qty">
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="5" column="2" colspan="2">
-    <widget class="ReferenceSelectorWidget" name="fee_symbol_widget"/>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="note_label">
-     <property name="text">
-      <string>Note</string>
+   <item row="1" column="6">
+    <spacer name="amountGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     <property name="sizeType">
+      <enum>QSizePolicy::Policy::Fixed</enum>
      </property>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
    </item>
-   <item row="6" column="1" colspan="5">
-    <widget class="QLineEdit" name="note"/>
-   </item>
-   <item row="7" column="0">
+   <item row="8" column="0">
     <spacer name="vertical_spacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
@@ -257,6 +232,99 @@
      </property>
     </spacer>
    </item>
+   <item row="4" column="9">
+    <widget class="ReferenceSelectorWidget" name="in_symbol_widget"/>
+   </item>
+   <item row="1" column="11">
+    <widget class="QLabel" name="tx_hash_label">
+     <property name="text">
+      <string>Tx hash</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="5">
+    <widget class="ReferenceSelectorWidget" name="account_widget"/>
+   </item>
+   <item row="1" column="4">
+    <spacer name="accountGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Policy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="9">
+    <widget class="QLabel" name="asset_label">
+     <property name="text">
+      <string>Asset</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2" colspan="10">
+    <widget class="QLineEdit" name="note"/>
+   </item>
+   <item row="6" column="9">
+    <widget class="ReferenceSelectorWidget" name="fee_symbol_widget"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="main_label">
+     <property name="font">
+      <font>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Swap</string>
+     </property>
+     <property name="buddy">
+      <cstring>cross_chain_check</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="from_label">
+     <property name="text">
+      <string>From</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>timestamp</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="7">
+    <widget class="QLineEdit" name="out_qty">
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="13">
+    <widget class="QPushButton" name="commit_button">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Commit changes</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -267,6 +335,23 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>cross_chain_check</tabstop>
+  <tabstop>timestamp</tabstop>
+  <tabstop>account_widget</tabstop>
+  <tabstop>out_qty</tabstop>
+  <tabstop>out_symbol_widget</tabstop>
+  <tabstop>tx_hash</tabstop>
+  <tabstop>in_timestamp</tabstop>
+  <tabstop>in_account_widget</tabstop>
+  <tabstop>in_qty</tabstop>
+  <tabstop>in_symbol_widget</tabstop>
+  <tabstop>in_tx_hash</tabstop>
+  <tabstop>fee_check</tabstop>
+  <tabstop>fee_qty</tabstop>
+  <tabstop>fee_symbol_widget</tabstop>
+  <tabstop>note</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

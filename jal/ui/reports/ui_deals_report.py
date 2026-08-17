@@ -29,22 +29,22 @@ class Ui_DealsReportWidget(object):
             DealsReportWidget.setObjectName(u"DealsReportWidget")
         DealsReportWidget.resize(821, 280)
         self.verticalLayout = QVBoxLayout(DealsReportWidget)
-        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(DealsReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
         self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
         self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.horizontalLayout = QHBoxLayout(self.ReportParamsFrame)
-        self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
         self.ReportRange.setProperty(u"ItemsList", u"QTD;YTD;this_year;last_year")
 
         self.horizontalLayout.addWidget(self.ReportRange)
+
+        self.groupGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.groupGroupSpacer)
 
         self.GroupLbl = QLabel(self.ReportParamsFrame)
         self.GroupLbl.setObjectName(u"GroupLbl")
@@ -55,6 +55,10 @@ class Ui_DealsReportWidget(object):
         self.GroupCombo.setObjectName(u"GroupCombo")
 
         self.horizontalLayout.addWidget(self.GroupCombo)
+
+        self.accountGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.accountGroupSpacer)
 
         self.ReportAccountLbl = QLabel(self.ReportParamsFrame)
         self.ReportAccountLbl.setObjectName(u"ReportAccountLbl")
@@ -86,6 +90,14 @@ class Ui_DealsReportWidget(object):
 
         self.verticalLayout.addWidget(self.ReportTreeView)
 
+#if QT_CONFIG(shortcut)
+        self.GroupLbl.setBuddy(self.GroupCombo)
+        self.ReportAccountLbl.setBuddy(self.ReportAccountButton)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.ReportRange, self.GroupCombo)
+        QWidget.setTabOrder(self.GroupCombo, self.ReportAccountButton)
+        QWidget.setTabOrder(self.ReportAccountButton, self.SaveButton)
+        QWidget.setTabOrder(self.SaveButton, self.ReportTreeView)
 
         self.retranslateUi(DealsReportWidget)
 

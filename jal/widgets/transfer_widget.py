@@ -4,6 +4,7 @@ from PySide6.QtCore import Slot, QByteArray
 from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_transfer_operation import Ui_TransferOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
+from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
@@ -305,6 +306,6 @@ class TransferWidget(AbstractOperationDetails):
         if self.ui.TransferTypeCombo.currentIndex() == self.ASSET_TRANSFER:
             # The cost basis only has to be restated when the asset lands in an account of another currency
             visible = not JalAccount(self.ui.from_account_widget.selected_id).currency() == JalAccount(self.ui.to_account_widget.selected_id).currency()
-            self.ui.value_label.setVisible(visible)
-            self.ui.asset_cost_basis.setVisible(visible)
-            self.ui.CostBasisCurrencyLabel.setVisible(visible)
+            set_visible_retaining_size(self.ui.value_label, visible)
+            set_visible_retaining_size(self.ui.asset_cost_basis, visible)
+            set_visible_retaining_size(self.ui.CostBasisCurrencyLabel, visible)

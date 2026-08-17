@@ -31,9 +31,7 @@ class Ui_TagReportWidget(object):
             TagReportWidget.setObjectName(u"TagReportWidget")
         TagReportWidget.resize(767, 408)
         self.verticalLayout = QVBoxLayout(TagReportWidget)
-        self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(TagReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
@@ -44,13 +42,11 @@ class Ui_TagReportWidget(object):
         self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
         self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.gridLayout = QGridLayout(self.ReportParamsFrame)
-        self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.ReportTagEdit = ReferenceSelectorWidget(self.ReportParamsFrame)
         self.ReportTagEdit.setObjectName(u"ReportTagEdit")
 
-        self.gridLayout.addWidget(self.ReportTagEdit, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.ReportTagEdit, 0, 3, 1, 1)
 
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
@@ -61,21 +57,29 @@ class Ui_TagReportWidget(object):
         self.TotalCurrencyCombo = CurrencyComboBox(self.ReportParamsFrame)
         self.TotalCurrencyCombo.setObjectName(u"TotalCurrencyCombo")
 
-        self.gridLayout.addWidget(self.TotalCurrencyCombo, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.TotalCurrencyCombo, 0, 6, 1, 1)
 
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 5, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 7, 1, 1)
 
         self.ReportTagLbl = QLabel(self.ReportParamsFrame)
         self.ReportTagLbl.setObjectName(u"ReportTagLbl")
 
-        self.gridLayout.addWidget(self.ReportTagLbl, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.ReportTagLbl, 0, 2, 1, 1)
 
         self.TotalCurrencyLbl = QLabel(self.ReportParamsFrame)
         self.TotalCurrencyLbl.setObjectName(u"TotalCurrencyLbl")
 
-        self.gridLayout.addWidget(self.TotalCurrencyLbl, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.TotalCurrencyLbl, 0, 5, 1, 1)
+
+        self.tagGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.tagGroupSpacer, 0, 1, 1, 1)
+
+        self.currencyGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.currencyGroupSpacer, 0, 4, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -110,6 +114,14 @@ class Ui_TagReportWidget(object):
 
         self.verticalLayout.addWidget(self.splitter)
 
+#if QT_CONFIG(shortcut)
+        self.ReportTagLbl.setBuddy(self.ReportTagEdit)
+        self.TotalCurrencyLbl.setBuddy(self.TotalCurrencyCombo)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.ReportRange, self.ReportTagEdit)
+        QWidget.setTabOrder(self.ReportTagEdit, self.TotalCurrencyCombo)
+        QWidget.setTabOrder(self.TotalCurrencyCombo, self.ReportTableView)
+        QWidget.setTabOrder(self.ReportTableView, self.OperationDetails)
 
         self.retranslateUi(TagReportWidget)
 

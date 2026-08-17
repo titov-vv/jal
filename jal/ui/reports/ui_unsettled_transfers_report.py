@@ -29,17 +29,13 @@ class Ui_UnsettledTransfersWidget(object):
             UnsettledTransfersWidget.setObjectName(u"UnsettledTransfersWidget")
         UnsettledTransfersWidget.resize(1329, 500)
         self.verticalLayout = QVBoxLayout(UnsettledTransfersWidget)
-        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(UnsettledTransfersWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
         self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
         self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.gridLayout = QGridLayout(self.ReportParamsFrame)
-        self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.ReportDate = QDateEdit(self.ReportParamsFrame)
         self.ReportDate.setObjectName(u"ReportDate")
         self.ReportDate.setCalendarPopup(True)
@@ -50,82 +46,94 @@ class Ui_UnsettledTransfersWidget(object):
         self.ReportCurrencyLbl = QLabel(self.ReportParamsFrame)
         self.ReportCurrencyLbl.setObjectName(u"ReportCurrencyLbl")
 
-        self.gridLayout.addWidget(self.ReportCurrencyLbl, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.ReportCurrencyLbl, 0, 2, 1, 1)
 
         self.ReportCurrencyCombo = CurrencyComboBox(self.ReportParamsFrame)
         self.ReportCurrencyCombo.setObjectName(u"ReportCurrencyCombo")
 
-        self.gridLayout.addWidget(self.ReportCurrencyCombo, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.ReportCurrencyCombo, 0, 3, 1, 1)
 
         self.BasisGapsCheck = QCheckBox(self.ReportParamsFrame)
         self.BasisGapsCheck.setObjectName(u"BasisGapsCheck")
 
-        self.gridLayout.addWidget(self.BasisGapsCheck, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.BasisGapsCheck, 0, 4, 1, 1)
 
         self.UnsolicitedCheck = QCheckBox(self.ReportParamsFrame)
         self.UnsolicitedCheck.setObjectName(u"UnsolicitedCheck")
 
-        self.gridLayout.addWidget(self.UnsolicitedCheck, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.UnsolicitedCheck, 0, 5, 1, 1)
 
         self.FilterLbl = QLabel(self.ReportParamsFrame)
         self.FilterLbl.setObjectName(u"FilterLbl")
 
-        self.gridLayout.addWidget(self.FilterLbl, 0, 5, 1, 1)
+        self.gridLayout.addWidget(self.FilterLbl, 0, 7, 1, 1)
 
         self.FilterEdit = QLineEdit(self.ReportParamsFrame)
         self.FilterEdit.setObjectName(u"FilterEdit")
         self.FilterEdit.setClearButtonEnabled(True)
 
-        self.gridLayout.addWidget(self.FilterEdit, 0, 6, 1, 1)
+        self.gridLayout.addWidget(self.FilterEdit, 0, 8, 1, 1)
 
         self.GroupLbl = QLabel(self.ReportParamsFrame)
         self.GroupLbl.setObjectName(u"GroupLbl")
 
-        self.gridLayout.addWidget(self.GroupLbl, 0, 7, 1, 1)
+        self.gridLayout.addWidget(self.GroupLbl, 0, 10, 1, 1)
 
         self.GroupCombo = QComboBox(self.ReportParamsFrame)
         self.GroupCombo.setObjectName(u"GroupCombo")
 
-        self.gridLayout.addWidget(self.GroupCombo, 0, 8, 1, 1)
+        self.gridLayout.addWidget(self.GroupCombo, 0, 11, 1, 1)
 
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 9, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 12, 1, 1)
 
         self.SettleButton = QPushButton(self.ReportParamsFrame)
         self.SettleButton.setObjectName(u"SettleButton")
 
-        self.gridLayout.addWidget(self.SettleButton, 0, 10, 1, 1)
+        self.gridLayout.addWidget(self.SettleButton, 0, 13, 1, 1)
 
         self.AssignButton = QPushButton(self.ReportParamsFrame)
         self.AssignButton.setObjectName(u"AssignButton")
 
-        self.gridLayout.addWidget(self.AssignButton, 0, 11, 1, 1)
+        self.gridLayout.addWidget(self.AssignButton, 0, 14, 1, 1)
 
         self.MatchButton = QPushButton(self.ReportParamsFrame)
         self.MatchButton.setObjectName(u"MatchButton")
 
-        self.gridLayout.addWidget(self.MatchButton, 0, 12, 1, 1)
+        self.gridLayout.addWidget(self.MatchButton, 0, 15, 1, 1)
 
         self.SwapButton = QPushButton(self.ReportParamsFrame)
         self.SwapButton.setObjectName(u"SwapButton")
 
-        self.gridLayout.addWidget(self.SwapButton, 0, 13, 1, 1)
+        self.gridLayout.addWidget(self.SwapButton, 0, 16, 1, 1)
 
         self.BridgeButton = QPushButton(self.ReportParamsFrame)
         self.BridgeButton.setObjectName(u"BridgeButton")
 
-        self.gridLayout.addWidget(self.BridgeButton, 0, 14, 1, 1)
+        self.gridLayout.addWidget(self.BridgeButton, 0, 17, 1, 1)
 
         self.DustButton = QPushButton(self.ReportParamsFrame)
         self.DustButton.setObjectName(u"DustButton")
 
-        self.gridLayout.addWidget(self.DustButton, 0, 15, 1, 1)
+        self.gridLayout.addWidget(self.DustButton, 0, 18, 1, 1)
 
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 16, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 19, 1, 1)
+
+        self.currencyGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.currencyGroupSpacer, 0, 1, 1, 1)
+
+        self.filterGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.filterGroupSpacer, 0, 6, 1, 1)
+
+        self.groupGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.groupGroupSpacer, 0, 9, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -141,6 +149,24 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.verticalLayout.addWidget(self.ReportTreeView)
 
+#if QT_CONFIG(shortcut)
+        self.ReportCurrencyLbl.setBuddy(self.ReportCurrencyCombo)
+        self.FilterLbl.setBuddy(self.FilterEdit)
+        self.GroupLbl.setBuddy(self.GroupCombo)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.ReportDate, self.ReportCurrencyCombo)
+        QWidget.setTabOrder(self.ReportCurrencyCombo, self.BasisGapsCheck)
+        QWidget.setTabOrder(self.BasisGapsCheck, self.UnsolicitedCheck)
+        QWidget.setTabOrder(self.UnsolicitedCheck, self.FilterEdit)
+        QWidget.setTabOrder(self.FilterEdit, self.GroupCombo)
+        QWidget.setTabOrder(self.GroupCombo, self.SettleButton)
+        QWidget.setTabOrder(self.SettleButton, self.AssignButton)
+        QWidget.setTabOrder(self.AssignButton, self.MatchButton)
+        QWidget.setTabOrder(self.MatchButton, self.SwapButton)
+        QWidget.setTabOrder(self.SwapButton, self.BridgeButton)
+        QWidget.setTabOrder(self.BridgeButton, self.DustButton)
+        QWidget.setTabOrder(self.DustButton, self.SaveButton)
+        QWidget.setTabOrder(self.SaveButton, self.ReportTreeView)
 
         self.retranslateUi(UnsettledTransfersWidget)
 

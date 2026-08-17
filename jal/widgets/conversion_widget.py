@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt, Slot, QByteArray
 from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_conversion_operation import Ui_ConversionOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
+from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
@@ -122,8 +123,8 @@ class ConversionWidget(AbstractOperationDetails):
             self.set_fee_data_visible(False)
 
     def set_fee_data_visible(self, visible: bool):
-        self.ui.fee_symbol_widget.setVisible(visible)
-        self.ui.fee_qty.setVisible(visible)
+        set_visible_retaining_size(self.ui.fee_symbol_widget, visible)
+        set_visible_retaining_size(self.ui.fee_qty, visible)
 
     @Slot()
     def fee_toggled(self, _state):

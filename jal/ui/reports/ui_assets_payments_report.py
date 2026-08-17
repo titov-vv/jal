@@ -29,17 +29,13 @@ class Ui_AssetsPaymentsReportWidget(object):
             AssetsPaymentsReportWidget.setObjectName(u"AssetsPaymentsReportWidget")
         AssetsPaymentsReportWidget.resize(769, 338)
         self.verticalLayout = QVBoxLayout(AssetsPaymentsReportWidget)
-        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(AssetsPaymentsReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
         self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
         self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.gridLayout = QGridLayout(self.ReportParamsFrame)
-        self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
         self.ReportRange.setProperty(u"ItemsList", u"QTD;YTD;this_year;last_year")
@@ -48,22 +44,26 @@ class Ui_AssetsPaymentsReportWidget(object):
 
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 3, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 4, 1, 1)
+
+        self.accountGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.accountGroupSpacer, 0, 1, 1, 1)
 
         self.ReportAccountLbl = QLabel(self.ReportParamsFrame)
         self.ReportAccountLbl.setObjectName(u"ReportAccountLbl")
 
-        self.gridLayout.addWidget(self.ReportAccountLbl, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.ReportAccountLbl, 0, 2, 1, 1)
 
         self.ReportAccountButton = AccountButton(self.ReportParamsFrame)
         self.ReportAccountButton.setObjectName(u"ReportAccountButton")
 
-        self.gridLayout.addWidget(self.ReportAccountButton, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.ReportAccountButton, 0, 3, 1, 1)
 
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 5, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -86,6 +86,12 @@ class Ui_AssetsPaymentsReportWidget(object):
 
         self.verticalLayout.addWidget(self.ReportTableView)
 
+#if QT_CONFIG(shortcut)
+        self.ReportAccountLbl.setBuddy(self.ReportAccountButton)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.ReportRange, self.ReportAccountButton)
+        QWidget.setTabOrder(self.ReportAccountButton, self.SaveButton)
+        QWidget.setTabOrder(self.SaveButton, self.ReportTableView)
 
         self.retranslateUi(AssetsPaymentsReportWidget)
 

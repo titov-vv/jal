@@ -14,21 +14,6 @@
    <string>Deals by account</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>0</number>
-   </property>
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
    <item>
     <widget class="QFrame" name="ReportParamsFrame">
      <property name="frameShape">
@@ -38,21 +23,6 @@
       <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
-      <property name="spacing">
-       <number>6</number>
-      </property>
-      <property name="leftMargin">
-       <number>2</number>
-      </property>
-      <property name="topMargin">
-       <number>2</number>
-      </property>
-      <property name="rightMargin">
-       <number>2</number>
-      </property>
-      <property name="bottomMargin">
-       <number>2</number>
-      </property>
       <item>
        <widget class="DateRangeSelector" name="ReportRange">
         <property name="ItemsList" stdset="0">
@@ -61,9 +31,28 @@
        </widget>
       </item>
       <item>
+       <spacer name="groupGroupSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QLabel" name="GroupLbl">
         <property name="text">
          <string>Group by:</string>
+        </property>
+        <property name="buddy">
+         <cstring>GroupCombo</cstring>
         </property>
        </widget>
       </item>
@@ -71,9 +60,28 @@
        <widget class="QComboBox" name="GroupCombo"/>
       </item>
       <item>
+       <spacer name="accountGroupSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QLabel" name="ReportAccountLbl">
         <property name="text">
          <string>Account:</string>
+        </property>
+        <property name="buddy">
+         <cstring>ReportAccountButton</cstring>
         </property>
        </widget>
       </item>
@@ -118,6 +126,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>ReportRange</tabstop>
+  <tabstop>GroupCombo</tabstop>
+  <tabstop>ReportAccountButton</tabstop>
+  <tabstop>SaveButton</tabstop>
+  <tabstop>ReportTreeView</tabstop>
+ </tabstops>
  <customwidgets>
   <customwidget>
    <class>DateRangeSelector</class>

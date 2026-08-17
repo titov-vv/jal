@@ -23,22 +23,13 @@
    <string>Merge tax files</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
    <item row="0" column="0">
     <widget class="QLabel" name="InputLabel">
      <property name="text">
       <string>Input files:</string>
+     </property>
+     <property name="buddy">
+      <cstring>InputFilesList</cstring>
      </property>
     </widget>
    </item>
@@ -46,6 +37,9 @@
     <widget class="QLabel" name="OutputLabel">
      <property name="text">
       <string>Output file:</string>
+     </property>
+     <property name="buddy">
+      <cstring>OutputFileName</cstring>
      </property>
     </widget>
    </item>
@@ -133,6 +127,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>AddBtn</tabstop>
+  <tabstop>RemoveBtn</tabstop>
+  <tabstop>OutputFileName</tabstop>
+  <tabstop>OutputSelectBtn</tabstop>
+  <tabstop>DialogButtonBox</tabstop>
+  <tabstop>InputFilesList</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

@@ -14,9 +14,6 @@
    <string>Operations &amp; Balances</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
-   <property name="spacing">
-    <number>0</number>
-   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -57,9 +54,6 @@
        <string>Balances</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
-       <property name="spacing">
-        <number>2</number>
-       </property>
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -97,13 +91,13 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <property name="leftMargin">
-           <number>2</number>
+           <number>6</number>
           </property>
           <property name="topMargin">
-           <number>2</number>
+           <number>6</number>
           </property>
           <property name="rightMargin">
-           <number>2</number>
+           <number>6</number>
           </property>
           <property name="bottomMargin">
            <number>2</number>
@@ -169,9 +163,6 @@
        <string>Operations</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
-       <property name="spacing">
-        <number>2</number>
-       </property>
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -206,13 +197,13 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <property name="leftMargin">
-           <number>2</number>
+           <number>6</number>
           </property>
           <property name="topMargin">
-           <number>2</number>
+           <number>6</number>
           </property>
           <property name="rightMargin">
-           <number>2</number>
+           <number>6</number>
           </property>
           <property name="bottomMargin">
            <number>2</number>
@@ -225,9 +216,28 @@
            </widget>
           </item>
           <item>
+           <spacer name="accountGroupSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QLabel" name="AccountLbl">
             <property name="text">
              <string>Account:</string>
+            </property>
+            <property name="buddy">
+             <cstring>ChooseAccountBtn</cstring>
             </property>
            </widget>
           </item>
@@ -235,9 +245,28 @@
            <widget class="AccountButton" name="ChooseAccountBtn"/>
           </item>
           <item>
+           <spacer name="searchGroupSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QLabel" name="SearchLbl">
             <property name="text">
              <string>Search:</string>
+            </property>
+            <property name="buddy">
+             <cstring>SearchString</cstring>
             </property>
            </widget>
           </item>
@@ -314,18 +343,6 @@
            <number>1</number>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
            <item>
             <widget class="JalOperationsTabs" name="OperationsTabs" native="true">
              <property name="sizePolicy">
@@ -345,9 +362,6 @@
               </sizepolicy>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_3">
-              <property name="spacing">
-               <number>2</number>
-              </property>
               <property name="leftMargin">
                <number>2</number>
               </property>
@@ -416,6 +430,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>BalanceDate</tabstop>
+  <tabstop>BalancesCurrencyCombo</tabstop>
+  <tabstop>BalancesTreeView</tabstop>
+  <tabstop>DateRange</tabstop>
+  <tabstop>ChooseAccountBtn</tabstop>
+  <tabstop>SearchString</tabstop>
+  <tabstop>OperationsTableView</tabstop>
+  <tabstop>OperationsTabs</tabstop>
+  <tabstop>NewOperationBtn</tabstop>
+  <tabstop>CopyOperationBtn</tabstop>
+  <tabstop>DeleteOperationBtn</tabstop>
+ </tabstops>
  <customwidgets>
   <customwidget>
    <class>DateRangeSelector</class>

@@ -31,30 +31,26 @@ class Ui_CategoryReportWidget(object):
             CategoryReportWidget.setObjectName(u"CategoryReportWidget")
         CategoryReportWidget.resize(769, 408)
         self.verticalLayout = QVBoxLayout(CategoryReportWidget)
-        self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(CategoryReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
         self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
         self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.gridLayout = QGridLayout(self.ReportParamsFrame)
-        self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 5, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 7, 1, 1)
 
         self.ReportCategoryEdit = ReferenceSelectorWidget(self.ReportParamsFrame)
         self.ReportCategoryEdit.setObjectName(u"ReportCategoryEdit")
 
-        self.gridLayout.addWidget(self.ReportCategoryEdit, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.ReportCategoryEdit, 0, 3, 1, 1)
 
         self.ReportCategoryLbl = QLabel(self.ReportParamsFrame)
         self.ReportCategoryLbl.setObjectName(u"ReportCategoryLbl")
 
-        self.gridLayout.addWidget(self.ReportCategoryLbl, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.ReportCategoryLbl, 0, 2, 1, 1)
 
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
@@ -65,12 +61,20 @@ class Ui_CategoryReportWidget(object):
         self.TotalCurrencyLbl = QLabel(self.ReportParamsFrame)
         self.TotalCurrencyLbl.setObjectName(u"TotalCurrencyLbl")
 
-        self.gridLayout.addWidget(self.TotalCurrencyLbl, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.TotalCurrencyLbl, 0, 5, 1, 1)
 
         self.TotalCurrencyCombo = CurrencyComboBox(self.ReportParamsFrame)
         self.TotalCurrencyCombo.setObjectName(u"TotalCurrencyCombo")
 
-        self.gridLayout.addWidget(self.TotalCurrencyCombo, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.TotalCurrencyCombo, 0, 6, 1, 1)
+
+        self.categoryGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.categoryGroupSpacer, 0, 1, 1, 1)
+
+        self.currencyGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.currencyGroupSpacer, 0, 4, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -105,6 +109,14 @@ class Ui_CategoryReportWidget(object):
 
         self.verticalLayout.addWidget(self.splitter)
 
+#if QT_CONFIG(shortcut)
+        self.ReportCategoryLbl.setBuddy(self.ReportCategoryEdit)
+        self.TotalCurrencyLbl.setBuddy(self.TotalCurrencyCombo)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.ReportRange, self.ReportCategoryEdit)
+        QWidget.setTabOrder(self.ReportCategoryEdit, self.TotalCurrencyCombo)
+        QWidget.setTabOrder(self.TotalCurrencyCombo, self.ReportTableView)
+        QWidget.setTabOrder(self.ReportTableView, self.OperationDetails)
 
         self.retranslateUi(CategoryReportWidget)
 

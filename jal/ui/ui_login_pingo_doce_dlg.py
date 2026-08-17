@@ -25,9 +25,7 @@ class Ui_LoginPingoDoceDialog(object):
             LoginPingoDoceDialog.setObjectName(u"LoginPingoDoceDialog")
         LoginPingoDoceDialog.resize(296, 130)
         self.verticalLayout_3 = QVBoxLayout(LoginPingoDoceDialog)
-        self.verticalLayout_3.setSpacing(6)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setContentsMargins(2, 2, 2, 2)
         self.PhoneNumberFrame = QFrame(LoginPingoDoceDialog)
         self.PhoneNumberFrame.setObjectName(u"PhoneNumberFrame")
         self.PhoneNumberFrame.setFrameShape(QFrame.Shape.NoFrame)
@@ -94,6 +92,12 @@ class Ui_LoginPingoDoceDialog(object):
 
         self.verticalLayout_3.addWidget(self.frame)
 
+#if QT_CONFIG(shortcut)
+        self.PhoneLbl.setBuddy(self.PhoneNumberEdit)
+        self.PasswordLbl.setBuddy(self.PasswordEdit)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.PhoneNumberEdit, self.PasswordEdit)
+        QWidget.setTabOrder(self.PasswordEdit, self.LoginBtn)
 
         self.retranslateUi(LoginPingoDoceDialog)
 

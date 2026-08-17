@@ -29,22 +29,22 @@ class Ui_IncomeSpendingReportWidget(object):
             IncomeSpendingReportWidget.setObjectName(u"IncomeSpendingReportWidget")
         IncomeSpendingReportWidget.resize(768, 347)
         self.verticalLayout = QVBoxLayout(IncomeSpendingReportWidget)
-        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(IncomeSpendingReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
         self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
         self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.horizontalLayout = QHBoxLayout(self.ReportParamsFrame)
-        self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
         self.ReportRange.setProperty(u"ItemsList", u"QTD;YTD;this_year;last_year")
 
         self.horizontalLayout.addWidget(self.ReportRange)
+
+        self.periodGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.periodGroupSpacer)
 
         self.PeriodLbl = QLabel(self.ReportParamsFrame)
         self.PeriodLbl.setObjectName(u"PeriodLbl")
@@ -57,6 +57,10 @@ class Ui_IncomeSpendingReportWidget(object):
         self.PeriodComboBox.setObjectName(u"PeriodComboBox")
 
         self.horizontalLayout.addWidget(self.PeriodComboBox)
+
+        self.currencyGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.currencyGroupSpacer)
 
         self.CurrencyLbl = QLabel(self.ReportParamsFrame)
         self.CurrencyLbl.setObjectName(u"CurrencyLbl")
@@ -89,6 +93,14 @@ class Ui_IncomeSpendingReportWidget(object):
 
         self.verticalLayout.addWidget(self.ReportTreeView)
 
+#if QT_CONFIG(shortcut)
+        self.PeriodLbl.setBuddy(self.PeriodComboBox)
+        self.CurrencyLbl.setBuddy(self.CurrencyCombo)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.ReportRange, self.PeriodComboBox)
+        QWidget.setTabOrder(self.PeriodComboBox, self.CurrencyCombo)
+        QWidget.setTabOrder(self.CurrencyCombo, self.SaveButton)
+        QWidget.setTabOrder(self.SaveButton, self.ReportTreeView)
 
         self.retranslateUi(IncomeSpendingReportWidget)
 

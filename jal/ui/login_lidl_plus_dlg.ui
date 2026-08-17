@@ -14,21 +14,6 @@
    <string>Authorization Lidl Plus</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
-   <property name="spacing">
-    <number>6</number>
-   </property>
-   <property name="leftMargin">
-    <number>2</number>
-   </property>
-   <property name="topMargin">
-    <number>2</number>
-   </property>
-   <property name="rightMargin">
-    <number>2</number>
-   </property>
-   <property name="bottomMargin">
-    <number>2</number>
-   </property>
    <item>
     <widget class="QWebEngineView" name="LidlPlusWebView">
      <property name="sizePolicy">
@@ -90,6 +75,10 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>LidlPlusWebView</tabstop>
+  <tabstop>CloseBtn</tabstop>
+ </tabstops>
  <customwidgets>
   <customwidget>
    <class>QWebEngineView</class>

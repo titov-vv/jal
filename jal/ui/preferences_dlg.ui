@@ -48,6 +48,10 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>PagesList</tabstop>
+  <tabstop>ButtonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

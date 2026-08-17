@@ -14,19 +14,7 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="layout">
-   <property name="leftMargin">
-    <number>2</number>
-   </property>
-   <property name="topMargin">
-    <number>2</number>
-   </property>
-   <property name="rightMargin">
-    <number>2</number>
-   </property>
-   <property name="bottomMargin">
-    <number>2</number>
-   </property>
-   <item row="4" column="1" colspan="9">
+   <item row="4" column="1" colspan="12">
     <widget class="QLineEdit" name="note"/>
    </item>
    <item row="1" column="0">
@@ -37,9 +25,12 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>timestamp_editor</cstring>
+     </property>
     </widget>
    </item>
-   <item row="1" column="7">
+   <item row="1" column="10">
     <widget class="QLabel" name="number_label">
      <property name="text">
       <string>#</string>
@@ -47,9 +38,12 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>number</cstring>
+     </property>
     </widget>
    </item>
-   <item row="0" column="11">
+   <item row="0" column="14">
     <widget class="QPushButton" name="commit_button">
      <property name="enabled">
       <bool>false</bool>
@@ -62,7 +56,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="8">
+   <item row="2" column="11">
     <widget class="QLineEdit" name="price_edit">
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -72,7 +66,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="5">
+   <item row="1" column="7">
     <widget class="QLabel" name="type_label">
      <property name="text">
       <string>Type</string>
@@ -80,9 +74,12 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>type</cstring>
+     </property>
     </widget>
    </item>
-   <item row="3" column="5">
+   <item row="3" column="7">
     <widget class="QLabel" name="tax_label">
      <property name="text">
       <string>Tax</string>
@@ -90,9 +87,12 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>tax_edit</cstring>
+     </property>
     </widget>
    </item>
-   <item row="1" column="8">
+   <item row="1" column="11">
     <widget class="QLineEdit" name="number"/>
    </item>
    <item row="3" column="0">
@@ -102,6 +102,9 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>symbol_widget</cstring>
      </property>
     </widget>
    </item>
@@ -130,14 +133,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="7">
-    <widget class="AccountCurrencyLabel" name="currency">
-     <property name="text">
-      <string>CUR</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="10">
+   <item row="2" column="13">
     <spacer name="horizontal_spacer">
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>
@@ -150,14 +146,7 @@
      </property>
     </spacer>
    </item>
-   <item row="3" column="6">
-    <widget class="QLineEdit" name="tax_edit">
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="3">
+   <item row="1" column="4">
     <widget class="QDateEdit" name="ex_date_editor">
      <property name="specialValueText">
       <string>unknown</string>
@@ -184,10 +173,10 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1" colspan="4">
+   <item row="2" column="1" colspan="5">
     <widget class="ReferenceSelectorWidget" name="account_widget"/>
    </item>
-   <item row="3" column="1" colspan="4">
+   <item row="3" column="1" colspan="5">
     <widget class="ReferenceSelectorWidget" name="symbol_widget"/>
    </item>
    <item row="4" column="0">
@@ -197,6 +186,9 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>note</cstring>
      </property>
     </widget>
    </item>
@@ -208,16 +200,22 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>account_widget</cstring>
+     </property>
     </widget>
    </item>
-   <item row="1" column="2">
+   <item row="1" column="3">
     <widget class="QLabel" name="ex_date_label">
      <property name="text">
       <string>Ex-Date</string>
      </property>
+     <property name="buddy">
+      <cstring>ex_date_editor</cstring>
+     </property>
     </widget>
    </item>
-   <item row="0" column="12">
+   <item row="0" column="15">
     <widget class="QPushButton" name="revert_button">
      <property name="enabled">
       <bool>false</bool>
@@ -233,7 +231,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="5">
+   <item row="2" column="7">
     <widget class="QLabel" name="amount_label">
      <property name="text">
       <string>Dividend</string>
@@ -241,16 +239,19 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>dividend_edit</cstring>
+     </property>
     </widget>
    </item>
-   <item row="2" column="6">
+   <item row="2" column="8">
     <widget class="QLineEdit" name="dividend_edit">
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="1" column="6">
+   <item row="1" column="8">
     <widget class="QComboBox" name="type"/>
    </item>
    <item row="1" column="1">
@@ -266,12 +267,93 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="7">
+   <item row="2" column="10">
     <widget class="QLabel" name="price_label">
      <property name="text">
       <string>Price</string>
      </property>
     </widget>
+   </item>
+   <item row="1" column="2">
+    <spacer name="dateGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="6">
+    <spacer name="typeGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="9">
+    <spacer name="numberGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="3" column="8">
+    <layout class="QHBoxLayout" name="taxCurrencyBox">
+     <property name="spacing">
+      <number>3</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLineEdit" name="tax_edit">
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="AccountCurrencyLabel" name="currency">
+       <property name="text">
+        <string>CUR</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
@@ -288,6 +370,20 @@
    <header>jal/widgets/account_select.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>timestamp_editor</tabstop>
+  <tabstop>ex_date_editor</tabstop>
+  <tabstop>type</tabstop>
+  <tabstop>number</tabstop>
+  <tabstop>account_widget</tabstop>
+  <tabstop>symbol_widget</tabstop>
+  <tabstop>dividend_edit</tabstop>
+  <tabstop>price_edit</tabstop>
+  <tabstop>tax_edit</tabstop>
+  <tabstop>note</tabstop>
+  <tabstop>commit_button</tabstop>
+  <tabstop>revert_button</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

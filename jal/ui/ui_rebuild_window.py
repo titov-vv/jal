@@ -32,9 +32,7 @@ class Ui_ReBuildDialog(object):
         sizePolicy.setHeightForWidth(ReBuildDialog.sizePolicy().hasHeightForWidth())
         ReBuildDialog.setSizePolicy(sizePolicy)
         self.verticalLayout = QVBoxLayout(ReBuildDialog)
-        self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.TypeGroup = QGroupBox(ReBuildDialog)
         self.TypeGroup.setObjectName(u"TypeGroup")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -48,7 +46,6 @@ class Ui_ReBuildDialog(object):
         self.formLayout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.FieldsStayAtSizeHint)
         self.formLayout.setHorizontalSpacing(15)
         self.formLayout.setVerticalSpacing(0)
-        self.formLayout.setContentsMargins(2, 0, 2, 0)
         self.AllRadioButton = QRadioButton(self.TypeGroup)
         self.AllRadioButton.setObjectName(u"AllRadioButton")
 
@@ -88,6 +85,10 @@ class Ui_ReBuildDialog(object):
 
         self.verticalLayout.addWidget(self.DialogButtonBox)
 
+        QWidget.setTabOrder(self.AllRadioButton, self.LastRadioButton)
+        QWidget.setTabOrder(self.LastRadioButton, self.DateRadionButton)
+        QWidget.setTabOrder(self.DateRadionButton, self.CustomDateEdit)
+        QWidget.setTabOrder(self.CustomDateEdit, self.DialogButtonBox)
 
         self.retranslateUi(ReBuildDialog)
         self.DialogButtonBox.accepted.connect(ReBuildDialog.accept)

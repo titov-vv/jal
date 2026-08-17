@@ -28,7 +28,6 @@ class Ui_ReferenceDataDialog(object):
         ReferenceDataDialog.resize(869, 300)
         self.verticalLayout = QVBoxLayout(ReferenceDataDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(2, 2, 2, 2)
         self.EditFrame = QFrame(ReferenceDataDialog)
         self.EditFrame.setObjectName(u"EditFrame")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
@@ -139,6 +138,20 @@ class Ui_ReferenceDataDialog(object):
 
         self.verticalLayout.addWidget(self.TreeView)
 
+#if QT_CONFIG(shortcut)
+        self.GroupLbl.setBuddy(self.GroupCombo)
+        self.SearchLbl.setBuddy(self.SearchString)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.GroupCombo, self.Toggle)
+        QWidget.setTabOrder(self.Toggle, self.AddBtn)
+        QWidget.setTabOrder(self.AddBtn, self.AddChildBtn)
+        QWidget.setTabOrder(self.AddChildBtn, self.EditBtn)
+        QWidget.setTabOrder(self.EditBtn, self.RemoveBtn)
+        QWidget.setTabOrder(self.RemoveBtn, self.CommitBtn)
+        QWidget.setTabOrder(self.CommitBtn, self.RevertBtn)
+        QWidget.setTabOrder(self.RevertBtn, self.SearchString)
+        QWidget.setTabOrder(self.SearchString, self.DataView)
+        QWidget.setTabOrder(self.DataView, self.TreeView)
 
         self.retranslateUi(ReferenceDataDialog)
 

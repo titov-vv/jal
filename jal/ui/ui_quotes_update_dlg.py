@@ -78,6 +78,15 @@ class Ui_UpdateQuotesDlg(object):
 
         self.gridLayout.addWidget(self.SourcesLbl, 3, 0, 1, 1)
 
+#if QT_CONFIG(shortcut)
+        self.EndDateLbl.setBuddy(self.EndDateEdit)
+        self.StartDateLbl.setBuddy(self.StartDateEdit)
+        self.SourcesLbl.setBuddy(self.SourcesList)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.StartDateEdit, self.EndDateEdit)
+        QWidget.setTabOrder(self.EndDateEdit, self.AllSourcesCheck)
+        QWidget.setTabOrder(self.AllSourcesCheck, self.SourcesList)
+        QWidget.setTabOrder(self.SourcesList, self.buttonBox)
 
         self.retranslateUi(UpdateQuotesDlg)
         self.buttonBox.accepted.connect(UpdateQuotesDlg.accept)

@@ -27,7 +27,6 @@ class Ui_AssetsListDialog(object):
         AssetsListDialog.resize(869, 300)
         self.verticalLayout = QVBoxLayout(AssetsListDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(2, 2, 2, 2)
         self.DisplayFrame = QFrame(AssetsListDialog)
         self.DisplayFrame.setObjectName(u"DisplayFrame")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
@@ -51,6 +50,10 @@ class Ui_AssetsListDialog(object):
 
         self.edit_layout.addWidget(self.AssetTypeCombo)
 
+        self.currencyGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.edit_layout.addItem(self.currencyGroupSpacer)
+
         self.CurrencyLbl = QLabel(self.DisplayFrame)
         self.CurrencyLbl.setObjectName(u"CurrencyLbl")
 
@@ -60,6 +63,10 @@ class Ui_AssetsListDialog(object):
         self.CurrencyCombo.setObjectName(u"CurrencyCombo")
 
         self.edit_layout.addWidget(self.CurrencyCombo)
+
+        self.locationGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.edit_layout.addItem(self.locationGroupSpacer)
 
         self.LocationLbl = QLabel(self.DisplayFrame)
         self.LocationLbl.setObjectName(u"LocationLbl")
@@ -128,6 +135,19 @@ class Ui_AssetsListDialog(object):
 
         self.verticalLayout.addWidget(self.DataView)
 
+#if QT_CONFIG(shortcut)
+        self.AssetTypeLbl.setBuddy(self.AssetTypeCombo)
+        self.CurrencyLbl.setBuddy(self.CurrencyCombo)
+        self.LocationLbl.setBuddy(self.LocationCombo)
+        self.SearchLbl.setBuddy(self.SearchString)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.AssetTypeCombo, self.CurrencyCombo)
+        QWidget.setTabOrder(self.CurrencyCombo, self.LocationCombo)
+        QWidget.setTabOrder(self.LocationCombo, self.AddBtn)
+        QWidget.setTabOrder(self.AddBtn, self.EditBtn)
+        QWidget.setTabOrder(self.EditBtn, self.RemoveBtn)
+        QWidget.setTabOrder(self.RemoveBtn, self.SearchString)
+        QWidget.setTabOrder(self.SearchString, self.DataView)
 
         self.retranslateUi(AssetsListDialog)
 

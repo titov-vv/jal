@@ -25,9 +25,7 @@ class Ui_LoginLidlPlusDialog(object):
             LoginLidlPlusDialog.setObjectName(u"LoginLidlPlusDialog")
         LoginLidlPlusDialog.resize(400, 500)
         self.verticalLayout_3 = QVBoxLayout(LoginLidlPlusDialog)
-        self.verticalLayout_3.setSpacing(6)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setContentsMargins(2, 2, 2, 2)
         self.LidlPlusWebView = QWebEngineView(LoginLidlPlusDialog)
         self.LidlPlusWebView.setObjectName(u"LidlPlusWebView")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
@@ -66,6 +64,7 @@ class Ui_LoginLidlPlusDialog(object):
 
         self.verticalLayout_3.addWidget(self.ButtonFrame)
 
+        QWidget.setTabOrder(self.LidlPlusWebView, self.CloseBtn)
 
         self.retranslateUi(LoginLidlPlusDialog)
         self.CloseBtn.clicked.connect(LoginLidlPlusDialog.close)

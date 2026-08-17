@@ -42,9 +42,6 @@
       <number>0</number>
      </property>
      <layout class="QVBoxLayout" name="FrameLayout">
-      <property name="spacing">
-       <number>0</number>
-      </property>
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -85,6 +82,9 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

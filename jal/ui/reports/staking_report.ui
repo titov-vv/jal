@@ -14,21 +14,6 @@
    <string>Staked positions</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>0</number>
-   </property>
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
    <item>
     <widget class="QFrame" name="ReportParamsFrame">
      <property name="frameShape">
@@ -38,21 +23,6 @@
       <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <property name="leftMargin">
-       <number>2</number>
-      </property>
-      <property name="topMargin">
-       <number>2</number>
-      </property>
-      <property name="rightMargin">
-       <number>2</number>
-      </property>
-      <property name="bottomMargin">
-       <number>2</number>
-      </property>
-      <property name="spacing">
-       <number>6</number>
-      </property>
       <item row="0" column="0">
        <widget class="QDateEdit" name="ReportDate">
         <property name="displayFormat">
@@ -191,6 +161,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>ReportDate</tabstop>
+  <tabstop>ReportCurrencyCombo</tabstop>
+  <tabstop>ClosedCheck</tabstop>
+  <tabstop>CloseButton</tabstop>
+  <tabstop>SaveButton</tabstop>
+  <tabstop>ReportTableView</tabstop>
+  <tabstop>DetailsTableView</tabstop>
+ </tabstops>
  <customwidgets>
   <customwidget>
    <class>TableViewWithFooter</class>

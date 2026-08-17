@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDateEdit, QDateTimeEdit, QGridLayout,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QWidget)
+    QHBoxLayout, QLabel, QLineEdit, QPushButton,
+    QSizePolicy, QSpacerItem, QWidget)
 
 from jal.widgets.account_select import AccountCurrencyLabel
 from jal.widgets.reference_selector import ReferenceSelectorWidget
@@ -29,35 +29,59 @@ class Ui_TradeOperation(object):
         TradeOperation.resize(968, 210)
         self.layout = QGridLayout(TradeOperation)
         self.layout.setObjectName(u"layout")
-        self.layout.setContentsMargins(2, 2, 2, 2)
         self.price_label = QLabel(TradeOperation)
         self.price_label.setObjectName(u"price_label")
         self.price_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.price_label, 2, 7, 1, 1)
+        self.layout.addWidget(self.price_label, 2, 9, 1, 1)
 
         self.qty_edit = QLineEdit(TradeOperation)
         self.qty_edit.setObjectName(u"qty_edit")
         self.qty_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.qty_edit, 1, 8, 1, 1)
+        self.layout.addWidget(self.qty_edit, 1, 10, 1, 1)
 
         self.commit_button = QPushButton(TradeOperation)
         self.commit_button.setObjectName(u"commit_button")
         self.commit_button.setEnabled(False)
 
-        self.layout.addWidget(self.commit_button, 0, 11, 1, 1)
+        self.layout.addWidget(self.commit_button, 0, 13, 1, 1)
 
+        self.priceCurrencyBox = QHBoxLayout()
+        self.priceCurrencyBox.setSpacing(3)
+        self.priceCurrencyBox.setObjectName(u"priceCurrencyBox")
+        self.priceCurrencyBox.setContentsMargins(0, 0, 0, 0)
         self.price_edit = QLineEdit(TradeOperation)
         self.price_edit.setObjectName(u"price_edit")
         self.price_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.price_edit, 2, 8, 1, 1)
+        self.priceCurrencyBox.addWidget(self.price_edit)
+
+        self.currency_price = AccountCurrencyLabel(TradeOperation)
+        self.currency_price.setObjectName(u"currency_price")
+
+        self.priceCurrencyBox.addWidget(self.currency_price)
+
+
+        self.layout.addLayout(self.priceCurrencyBox, 2, 10, 1, 1)
+
+        self.feeCurrencyBox = QHBoxLayout()
+        self.feeCurrencyBox.setSpacing(3)
+        self.feeCurrencyBox.setObjectName(u"feeCurrencyBox")
+        self.feeCurrencyBox.setContentsMargins(0, 0, 0, 0)
+        self.fee_edit = QLineEdit(TradeOperation)
+        self.fee_edit.setObjectName(u"fee_edit")
+        self.fee_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.feeCurrencyBox.addWidget(self.fee_edit)
 
         self.currency_fee = AccountCurrencyLabel(TradeOperation)
         self.currency_fee.setObjectName(u"currency_fee")
 
-        self.layout.addWidget(self.currency_fee, 3, 9, 1, 1)
+        self.feeCurrencyBox.addWidget(self.currency_fee)
+
+
+        self.layout.addLayout(self.feeCurrencyBox, 3, 10, 1, 1)
 
         self.date_label = QLabel(TradeOperation)
         self.date_label.setObjectName(u"date_label")
@@ -80,11 +104,11 @@ class Ui_TradeOperation(object):
         self.settlement_label = QLabel(TradeOperation)
         self.settlement_label.setObjectName(u"settlement_label")
 
-        self.layout.addWidget(self.settlement_label, 1, 2, 1, 1)
+        self.layout.addWidget(self.settlement_label, 1, 3, 1, 1)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.layout.addItem(self.horizontalSpacer, 2, 10, 1, 1)
+        self.layout.addItem(self.horizontalSpacer, 2, 12, 1, 1)
 
         self.comment_label = QLabel(TradeOperation)
         self.comment_label.setObjectName(u"comment_label")
@@ -100,37 +124,26 @@ class Ui_TradeOperation(object):
         self.fee_label.setObjectName(u"fee_label")
         self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.fee_label, 3, 7, 1, 1)
+        self.layout.addWidget(self.fee_label, 3, 9, 1, 1)
 
         self.qty_label = QLabel(TradeOperation)
         self.qty_label.setObjectName(u"qty_label")
         self.qty_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.qty_label, 1, 7, 1, 1)
-
-        self.currency_price = AccountCurrencyLabel(TradeOperation)
-        self.currency_price.setObjectName(u"currency_price")
-
-        self.layout.addWidget(self.currency_price, 2, 9, 1, 1)
-
-        self.fee_edit = QLineEdit(TradeOperation)
-        self.fee_edit.setObjectName(u"fee_edit")
-        self.fee_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
-
-        self.layout.addWidget(self.fee_edit, 3, 8, 1, 1)
+        self.layout.addWidget(self.qty_label, 1, 9, 1, 1)
 
         self.revert_button = QPushButton(TradeOperation)
         self.revert_button.setObjectName(u"revert_button")
         self.revert_button.setEnabled(False)
         self.revert_button.setAcceptDrops(False)
 
-        self.layout.addWidget(self.revert_button, 0, 12, 1, 1)
+        self.layout.addWidget(self.revert_button, 0, 14, 1, 1)
 
         self.number_label = QLabel(TradeOperation)
         self.number_label.setObjectName(u"number_label")
         self.number_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.number_label, 1, 5, 1, 1)
+        self.layout.addWidget(self.number_label, 1, 6, 1, 1)
 
         self.timestamp_editor = QDateTimeEdit(TradeOperation)
         self.timestamp_editor.setObjectName(u"timestamp_editor")
@@ -143,22 +156,22 @@ class Ui_TradeOperation(object):
         self.settlement_editor.setObjectName(u"settlement_editor")
         self.settlement_editor.setCalendarPopup(True)
 
-        self.layout.addWidget(self.settlement_editor, 1, 3, 1, 1)
+        self.layout.addWidget(self.settlement_editor, 1, 4, 1, 1)
 
         self.account_widget = ReferenceSelectorWidget(TradeOperation)
         self.account_widget.setObjectName(u"account_widget")
 
-        self.layout.addWidget(self.account_widget, 2, 1, 1, 6)
+        self.layout.addWidget(self.account_widget, 2, 1, 1, 7)
 
         self.note = QLineEdit(TradeOperation)
         self.note.setObjectName(u"note")
 
-        self.layout.addWidget(self.note, 4, 1, 1, 9)
+        self.layout.addWidget(self.note, 4, 1, 1, 11)
 
         self.symbol_widget = ReferenceSelectorWidget(TradeOperation)
         self.symbol_widget.setObjectName(u"symbol_widget")
 
-        self.layout.addWidget(self.symbol_widget, 3, 1, 1, 6)
+        self.layout.addWidget(self.symbol_widget, 3, 1, 1, 7)
 
         self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
@@ -167,12 +180,40 @@ class Ui_TradeOperation(object):
         self.number = QLineEdit(TradeOperation)
         self.number.setObjectName(u"number")
 
-        self.layout.addWidget(self.number, 1, 6, 1, 1)
+        self.layout.addWidget(self.number, 1, 7, 1, 1)
 
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.layout.addItem(self.horizontalSpacer_2, 1, 4, 1, 1)
+        self.layout.addItem(self.horizontalSpacer_2, 1, 5, 1, 1)
 
+        self.groupSpacer1 = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.layout.addItem(self.groupSpacer1, 1, 2, 1, 1)
+
+        self.groupSpacer2 = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.layout.addItem(self.groupSpacer2, 1, 8, 1, 1)
+
+#if QT_CONFIG(shortcut)
+        self.date_label.setBuddy(self.timestamp_editor)
+        self.symbol_label.setBuddy(self.symbol_widget)
+        self.settlement_label.setBuddy(self.settlement_editor)
+        self.comment_label.setBuddy(self.note)
+        self.account_label.setBuddy(self.account_widget)
+        self.fee_label.setBuddy(self.fee_edit)
+        self.qty_label.setBuddy(self.qty_edit)
+        self.number_label.setBuddy(self.number)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.timestamp_editor, self.settlement_editor)
+        QWidget.setTabOrder(self.settlement_editor, self.number)
+        QWidget.setTabOrder(self.number, self.account_widget)
+        QWidget.setTabOrder(self.account_widget, self.symbol_widget)
+        QWidget.setTabOrder(self.symbol_widget, self.qty_edit)
+        QWidget.setTabOrder(self.qty_edit, self.price_edit)
+        QWidget.setTabOrder(self.price_edit, self.fee_edit)
+        QWidget.setTabOrder(self.fee_edit, self.note)
+        QWidget.setTabOrder(self.note, self.commit_button)
+        QWidget.setTabOrder(self.commit_button, self.revert_button)
 
         self.retranslateUi(TradeOperation)
 
@@ -186,6 +227,7 @@ class Ui_TradeOperation(object):
         self.commit_button.setToolTip(QCoreApplication.translate("TradeOperation", u"Commit changes", None))
 #endif // QT_CONFIG(tooltip)
         self.commit_button.setText("")
+        self.currency_price.setText(QCoreApplication.translate("TradeOperation", u"CUR", None))
         self.currency_fee.setText(QCoreApplication.translate("TradeOperation", u"CUR", None))
         self.date_label.setText(QCoreApplication.translate("TradeOperation", u"Date/Time", None))
         self.symbol_label.setText(QCoreApplication.translate("TradeOperation", u"Asset", None))
@@ -195,7 +237,6 @@ class Ui_TradeOperation(object):
         self.account_label.setText(QCoreApplication.translate("TradeOperation", u"Account", None))
         self.fee_label.setText(QCoreApplication.translate("TradeOperation", u"Fee", None))
         self.qty_label.setText(QCoreApplication.translate("TradeOperation", u"Qty", None))
-        self.currency_price.setText(QCoreApplication.translate("TradeOperation", u"CUR", None))
 #if QT_CONFIG(tooltip)
         self.revert_button.setToolTip(QCoreApplication.translate("TradeOperation", u"Cancel changes", None))
 #endif // QT_CONFIG(tooltip)

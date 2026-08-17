@@ -88,7 +88,6 @@ class Ui_JAL_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
         self.verticalLayout = QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.splitter = QSplitter(self.centralwidget)
@@ -131,6 +130,7 @@ class Ui_JAL_MainWindow(object):
         self.StatusBar = QStatusBar(JAL_MainWindow)
         self.StatusBar.setObjectName(u"StatusBar")
         JAL_MainWindow.setStatusBar(self.StatusBar)
+        QWidget.setTabOrder(self.mdiArea, self.Logs)
 
         self.MainMenu.addAction(self.menuLedger.menuAction())
         self.MainMenu.addAction(self.menu_Data.menuAction())

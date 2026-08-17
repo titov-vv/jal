@@ -29,17 +29,13 @@ class Ui_StakingReportWidget(object):
             StakingReportWidget.setObjectName(u"StakingReportWidget")
         StakingReportWidget.resize(900, 500)
         self.verticalLayout = QVBoxLayout(StakingReportWidget)
-        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(StakingReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
         self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
         self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.gridLayout = QGridLayout(self.ReportParamsFrame)
-        self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.ReportDate = QDateEdit(self.ReportParamsFrame)
         self.ReportDate.setObjectName(u"ReportDate")
         self.ReportDate.setCalendarPopup(True)
@@ -114,6 +110,12 @@ class Ui_StakingReportWidget(object):
 
         self.verticalLayout.addWidget(self.splitter)
 
+        QWidget.setTabOrder(self.ReportDate, self.ReportCurrencyCombo)
+        QWidget.setTabOrder(self.ReportCurrencyCombo, self.ClosedCheck)
+        QWidget.setTabOrder(self.ClosedCheck, self.CloseButton)
+        QWidget.setTabOrder(self.CloseButton, self.SaveButton)
+        QWidget.setTabOrder(self.SaveButton, self.ReportTableView)
+        QWidget.setTabOrder(self.ReportTableView, self.DetailsTableView)
 
         self.retranslateUi(StakingReportWidget)
 

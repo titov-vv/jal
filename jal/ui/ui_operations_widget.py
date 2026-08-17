@@ -31,7 +31,6 @@ class Ui_OperationsWidget(object):
             OperationsWidget.setObjectName(u"OperationsWidget")
         OperationsWidget.resize(1232, 552)
         self.verticalLayout_4 = QVBoxLayout(OperationsWidget)
-        self.verticalLayout_4.setSpacing(0)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.BalanceOperationsSplitter = QSplitter(OperationsWidget)
@@ -51,7 +50,6 @@ class Ui_OperationsWidget(object):
         self.BalanceBox.setSizePolicy(sizePolicy1)
         self.BalanceBox.setMaximumSize(QSize(16777215, 16777215))
         self.verticalLayout = QVBoxLayout(self.BalanceBox)
-        self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.BalanceFrameTop = QFrame(self.BalanceBox)
@@ -63,7 +61,7 @@ class Ui_OperationsWidget(object):
         self.BalanceFrameTop.setLineWidth(0)
         self.horizontalLayout_2 = QHBoxLayout(self.BalanceFrameTop)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
+        self.horizontalLayout_2.setContentsMargins(6, 6, 6, 2)
         self.BalanceDate = QDateEdit(self.BalanceFrameTop)
         self.BalanceDate.setObjectName(u"BalanceDate")
         self.BalanceDate.setDateTime(QDateTime(QDate(2020, 11, 19), QTime(0, 0, 0)))
@@ -99,7 +97,6 @@ class Ui_OperationsWidget(object):
         self.OperationsBox.setSizePolicy(sizePolicy2)
         self.OperationsBox.setContextMenuPolicy(Qt.ContextMenuPolicy.DefaultContextMenu)
         self.verticalLayout_2 = QVBoxLayout(self.OperationsBox)
-        self.verticalLayout_2.setSpacing(2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.OperationConfigFrame = QFrame(self.OperationsBox)
@@ -111,12 +108,16 @@ class Ui_OperationsWidget(object):
         self.OperationConfigFrame.setLineWidth(0)
         self.horizontalLayout_3 = QHBoxLayout(self.OperationConfigFrame)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalLayout_3.setContentsMargins(2, 2, 2, 2)
+        self.horizontalLayout_3.setContentsMargins(6, 6, 6, 2)
         self.DateRange = DateRangeSelector(self.OperationConfigFrame)
         self.DateRange.setObjectName(u"DateRange")
         self.DateRange.setProperty(u"ItemsList", u"week;month;quarter;year;all")
 
         self.horizontalLayout_3.addWidget(self.DateRange)
+
+        self.accountGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.accountGroupSpacer)
 
         self.AccountLbl = QLabel(self.OperationConfigFrame)
         self.AccountLbl.setObjectName(u"AccountLbl")
@@ -127,6 +128,10 @@ class Ui_OperationsWidget(object):
         self.ChooseAccountBtn.setObjectName(u"ChooseAccountBtn")
 
         self.horizontalLayout_3.addWidget(self.ChooseAccountBtn)
+
+        self.searchGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.searchGroupSpacer)
 
         self.SearchLbl = QLabel(self.OperationConfigFrame)
         self.SearchLbl.setObjectName(u"SearchLbl")
@@ -175,7 +180,6 @@ class Ui_OperationsWidget(object):
         self.OperationDetails.setLineWidth(1)
         self.horizontalLayout_4 = QHBoxLayout(self.OperationDetails)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.OperationsTabs = JalOperationsTabs(self.OperationDetails)
         self.OperationsTabs.setObjectName(u"OperationsTabs")
         sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
@@ -194,7 +198,6 @@ class Ui_OperationsWidget(object):
         sizePolicy6.setHeightForWidth(self.OperationsButtons.sizePolicy().hasHeightForWidth())
         self.OperationsButtons.setSizePolicy(sizePolicy6)
         self.verticalLayout_3 = QVBoxLayout(self.OperationsButtons)
-        self.verticalLayout_3.setSpacing(2)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(2, 2, 2, 2)
         self.NewOperationBtn = QPushButton(self.OperationsButtons)
@@ -227,6 +230,20 @@ class Ui_OperationsWidget(object):
 
         self.verticalLayout_4.addWidget(self.BalanceOperationsSplitter)
 
+#if QT_CONFIG(shortcut)
+        self.AccountLbl.setBuddy(self.ChooseAccountBtn)
+        self.SearchLbl.setBuddy(self.SearchString)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.BalanceDate, self.BalancesCurrencyCombo)
+        QWidget.setTabOrder(self.BalancesCurrencyCombo, self.BalancesTreeView)
+        QWidget.setTabOrder(self.BalancesTreeView, self.DateRange)
+        QWidget.setTabOrder(self.DateRange, self.ChooseAccountBtn)
+        QWidget.setTabOrder(self.ChooseAccountBtn, self.SearchString)
+        QWidget.setTabOrder(self.SearchString, self.OperationsTableView)
+        QWidget.setTabOrder(self.OperationsTableView, self.OperationsTabs)
+        QWidget.setTabOrder(self.OperationsTabs, self.NewOperationBtn)
+        QWidget.setTabOrder(self.NewOperationBtn, self.CopyOperationBtn)
+        QWidget.setTabOrder(self.CopyOperationBtn, self.DeleteOperationBtn)
 
         self.retranslateUi(OperationsWidget)
 

@@ -14,18 +14,6 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="layout">
-   <property name="leftMargin">
-    <number>2</number>
-   </property>
-   <property name="topMargin">
-    <number>2</number>
-   </property>
-   <property name="rightMargin">
-    <number>2</number>
-   </property>
-   <property name="bottomMargin">
-    <number>2</number>
-   </property>
    <item row="0" column="0">
     <widget class="QLabel" name="main_label">
      <property name="font">
@@ -38,7 +26,7 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="6">
+   <item row="0" column="7">
     <spacer name="horizontal_spacer">
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>
@@ -51,7 +39,7 @@
      </property>
     </spacer>
    </item>
-   <item row="0" column="7">
+   <item row="0" column="8">
     <widget class="QPushButton" name="commit_button">
      <property name="enabled">
       <bool>false</bool>
@@ -64,7 +52,7 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="8">
+   <item row="0" column="9">
     <widget class="QPushButton" name="revert_button">
      <property name="enabled">
       <bool>false</bool>
@@ -87,6 +75,9 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>timestamp</cstring>
      </property>
     </widget>
    </item>
@@ -111,12 +102,15 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>account_widget</cstring>
+     </property>
     </widget>
    </item>
    <item row="1" column="3">
     <widget class="ReferenceSelectorWidget" name="account_widget"/>
    </item>
-   <item row="1" column="4">
+   <item row="1" column="5">
     <widget class="QLabel" name="tx_hash_label">
      <property name="text">
       <string>Tx hash</string>
@@ -124,9 +118,12 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>tx_hash</cstring>
+     </property>
     </widget>
    </item>
-   <item row="1" column="5">
+   <item row="1" column="6">
     <widget class="QLineEdit" name="tx_hash"/>
    </item>
    <item row="2" column="0">
@@ -137,17 +134,39 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="out_qty">
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     <property name="buddy">
+      <cstring>out_qty</cstring>
      </property>
     </widget>
    </item>
-   <item row="2" column="2" colspan="2">
-    <widget class="ReferenceSelectorWidget" name="out_symbol_widget"/>
+   <item row="2" column="1" colspan="3">
+    <layout class="QHBoxLayout" name="outQtyBox">
+     <property name="spacing">
+      <number>3</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLineEdit" name="out_qty">
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="ReferenceSelectorWidget" name="out_symbol_widget"/>
+     </item>
+    </layout>
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="received_label">
@@ -157,19 +176,41 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="in_qty">
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     <property name="buddy">
+      <cstring>in_qty</cstring>
      </property>
     </widget>
    </item>
-   <item row="3" column="2" colspan="2">
-    <widget class="ReferenceSelectorWidget" name="in_symbol_widget"/>
+   <item row="3" column="1" colspan="3">
+    <layout class="QHBoxLayout" name="inQtyBox">
+     <property name="spacing">
+      <number>3</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLineEdit" name="in_qty">
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="ReferenceSelectorWidget" name="in_symbol_widget"/>
+     </item>
+    </layout>
    </item>
-   <item row="3" column="4" colspan="2">
+   <item row="3" column="5" colspan="2">
     <widget class="QLabel" name="basis_hint">
      <property name="text">
       <string>Cost basis is carried over - no profit or loss is realized</string>
@@ -189,15 +230,34 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QLineEdit" name="fee_qty">
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+   <item row="4" column="1" colspan="3">
+    <layout class="QHBoxLayout" name="feeQtyBox">
+     <property name="spacing">
+      <number>3</number>
      </property>
-    </widget>
-   </item>
-   <item row="4" column="2" colspan="2">
-    <widget class="ReferenceSelectorWidget" name="fee_symbol_widget"/>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLineEdit" name="fee_qty">
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="ReferenceSelectorWidget" name="fee_symbol_widget"/>
+     </item>
+    </layout>
    </item>
    <item row="5" column="0">
     <widget class="QLabel" name="note_label">
@@ -207,9 +267,12 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
      </property>
+     <property name="buddy">
+      <cstring>note</cstring>
+     </property>
     </widget>
    </item>
-   <item row="5" column="1" colspan="5">
+   <item row="5" column="1" colspan="6">
     <widget class="QLineEdit" name="note"/>
    </item>
    <item row="6" column="0">
@@ -225,6 +288,22 @@
      </property>
     </spacer>
    </item>
+   <item row="1" column="4">
+    <spacer name="txHashGroupSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -235,6 +314,21 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>timestamp</tabstop>
+  <tabstop>account_widget</tabstop>
+  <tabstop>tx_hash</tabstop>
+  <tabstop>out_qty</tabstop>
+  <tabstop>out_symbol_widget</tabstop>
+  <tabstop>in_qty</tabstop>
+  <tabstop>in_symbol_widget</tabstop>
+  <tabstop>fee_check</tabstop>
+  <tabstop>fee_qty</tabstop>
+  <tabstop>fee_symbol_widget</tabstop>
+  <tabstop>note</tabstop>
+  <tabstop>commit_button</tabstop>
+  <tabstop>revert_button</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

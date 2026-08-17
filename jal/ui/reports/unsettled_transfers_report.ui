@@ -14,21 +14,6 @@
    <string>Unsettled transfers</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>0</number>
-   </property>
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
    <item>
     <widget class="QFrame" name="ReportParamsFrame">
      <property name="frameShape">
@@ -38,21 +23,6 @@
       <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <property name="leftMargin">
-       <number>2</number>
-      </property>
-      <property name="topMargin">
-       <number>2</number>
-      </property>
-      <property name="rightMargin">
-       <number>2</number>
-      </property>
-      <property name="bottomMargin">
-       <number>2</number>
-      </property>
-      <property name="spacing">
-       <number>6</number>
-      </property>
       <item row="0" column="0">
        <widget class="QDateEdit" name="ReportDate">
         <property name="toolTip">
@@ -69,17 +39,20 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="0" column="2">
        <widget class="QLabel" name="ReportCurrencyLbl">
         <property name="text">
          <string>Currency:</string>
         </property>
+        <property name="buddy">
+         <cstring>ReportCurrencyCombo</cstring>
+        </property>
        </widget>
       </item>
-      <item row="0" column="2">
+      <item row="0" column="3">
        <widget class="CurrencyComboBox" name="ReportCurrencyCombo"/>
       </item>
-      <item row="0" column="3">
+      <item row="0" column="4">
        <widget class="QCheckBox" name="BasisGapsCheck">
         <property name="toolTip">
          <string>Also list settled transfers whose asset arrived with no cost basis</string>
@@ -89,7 +62,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="4">
+      <item row="0" column="5">
        <widget class="QCheckBox" name="UnsolicitedCheck">
         <property name="toolTip">
          <string>Hide the arrivals nobody sent - poisoning attacks and suspected airdrops, which no settlement will ever pair</string>
@@ -99,14 +72,17 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="5">
+      <item row="0" column="7">
        <widget class="QLabel" name="FilterLbl">
         <property name="text">
          <string>Filter:</string>
         </property>
+        <property name="buddy">
+         <cstring>FilterEdit</cstring>
+        </property>
        </widget>
       </item>
-      <item row="0" column="6">
+      <item row="0" column="8">
        <widget class="QLineEdit" name="FilterEdit">
         <property name="toolTip">
          <string>Show only the legs whose asset, account, counterparty, reference or note contains this text</string>
@@ -119,21 +95,24 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="7">
+      <item row="0" column="10">
        <widget class="QLabel" name="GroupLbl">
         <property name="text">
          <string>Group by:</string>
         </property>
+        <property name="buddy">
+         <cstring>GroupCombo</cstring>
+        </property>
        </widget>
       </item>
-      <item row="0" column="8">
+      <item row="0" column="11">
        <widget class="QComboBox" name="GroupCombo">
         <property name="toolTip">
          <string>File the legs under a common heading, with the money in transit totalled for each</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="9">
+      <item row="0" column="12">
        <spacer name="ReportFrameSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
@@ -146,7 +125,7 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="10">
+      <item row="0" column="13">
        <widget class="QPushButton" name="SettleButton">
         <property name="toolTip">
          <string>Settle every leg that its transaction hash or the address it names pairs unambiguously</string>
@@ -156,7 +135,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="11">
+      <item row="0" column="14">
        <widget class="QPushButton" name="AssignButton">
         <property name="toolTip">
          <string>Name the account at the end a leg doesn't know</string>
@@ -166,7 +145,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="12">
+      <item row="0" column="15">
        <widget class="QPushButton" name="MatchButton">
         <property name="toolTip">
          <string>Pair a leg that was sent with the arrival it belongs to</string>
@@ -176,7 +155,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="13">
+      <item row="0" column="16">
        <widget class="QPushButton" name="SwapButton">
         <property name="toolTip">
          <string>Replace a leg and the one it was exchanged with by the swap they are</string>
@@ -186,7 +165,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="14">
+      <item row="0" column="17">
        <widget class="QPushButton" name="BridgeButton">
         <property name="toolTip">
          <string>Replace a leg and the arrival it crossed chains as by the bridge they are</string>
@@ -196,7 +175,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="15">
+      <item row="0" column="18">
        <widget class="QPushButton" name="DustButton">
         <property name="toolTip">
          <string>Write off a leg nobody sent as the dust attack it is</string>
@@ -206,12 +185,60 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="16">
+      <item row="0" column="19">
        <widget class="QPushButton" name="SaveButton">
         <property name="text">
          <string>Save...</string>
         </property>
        </widget>
+      </item>
+      <item row="0" column="1">
+       <spacer name="currencyGroupSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="6">
+       <spacer name="filterGroupSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="9">
+       <spacer name="groupGroupSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </widget>
@@ -240,6 +267,22 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>ReportDate</tabstop>
+  <tabstop>ReportCurrencyCombo</tabstop>
+  <tabstop>BasisGapsCheck</tabstop>
+  <tabstop>UnsolicitedCheck</tabstop>
+  <tabstop>FilterEdit</tabstop>
+  <tabstop>GroupCombo</tabstop>
+  <tabstop>SettleButton</tabstop>
+  <tabstop>AssignButton</tabstop>
+  <tabstop>MatchButton</tabstop>
+  <tabstop>SwapButton</tabstop>
+  <tabstop>BridgeButton</tabstop>
+  <tabstop>DustButton</tabstop>
+  <tabstop>SaveButton</tabstop>
+  <tabstop>ReportTreeView</tabstop>
+ </tabstops>
  <customwidgets>
   <customwidget>
    <class>TreeViewWithFooter</class>

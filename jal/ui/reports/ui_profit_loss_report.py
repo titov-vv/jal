@@ -28,22 +28,22 @@ class Ui_ProfitLossReportWidget(object):
             ProfitLossReportWidget.setObjectName(u"ProfitLossReportWidget")
         ProfitLossReportWidget.resize(692, 301)
         self.verticalLayout = QVBoxLayout(ProfitLossReportWidget)
-        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.ReportParamsFrame = QFrame(ProfitLossReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
         self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
         self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
         self.horizontalLayout = QHBoxLayout(self.ReportParamsFrame)
-        self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
         self.ReportRange.setProperty(u"ItemsList", u"QTD;YTD;this_year;last_year")
 
         self.horizontalLayout.addWidget(self.ReportRange)
+
+        self.accountGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.accountGroupSpacer)
 
         self.ReportAccountLbl = QLabel(self.ReportParamsFrame)
         self.ReportAccountLbl.setObjectName(u"ReportAccountLbl")
@@ -54,6 +54,10 @@ class Ui_ProfitLossReportWidget(object):
         self.ReportAccountEdit.setObjectName(u"ReportAccountEdit")
 
         self.horizontalLayout.addWidget(self.ReportAccountEdit)
+
+        self.currencyGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.currencyGroupSpacer)
 
         self.CurrencyLbl = QLabel(self.ReportParamsFrame)
         self.CurrencyLbl.setObjectName(u"CurrencyLbl")
@@ -85,6 +89,12 @@ class Ui_ProfitLossReportWidget(object):
 
         self.verticalLayout.addWidget(self.ReportTableView)
 
+#if QT_CONFIG(shortcut)
+        self.ReportAccountLbl.setBuddy(self.ReportAccountEdit)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.ReportRange, self.ReportAccountEdit)
+        QWidget.setTabOrder(self.ReportAccountEdit, self.SaveButton)
+        QWidget.setTabOrder(self.SaveButton, self.ReportTableView)
 
         self.retranslateUi(ProfitLossReportWidget)
 

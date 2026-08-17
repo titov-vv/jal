@@ -2,6 +2,7 @@ from PySide6.QtCore import Slot, QStringListModel, QByteArray
 from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_asset_payment_operation import Ui_AssetPaymentOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
+from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -49,8 +50,8 @@ class AssetPaymentWidget(AbstractOperationDetails):
         self.ui.type.setModel(self.combo_model)
         self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.ex_date_editor.setFixedWidth(self.ui.ex_date_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
-        self.ui.price_label.setVisible(False)
-        self.ui.price_edit.setVisible(False)
+        set_visible_retaining_size(self.ui.price_label, False)
+        set_visible_retaining_size(self.ui.price_edit, False)
 
         self.mapper.setItemDelegate(AssetPaymentWidgetDelegate(self.mapper))
 
@@ -97,10 +98,9 @@ class AssetPaymentWidget(AbstractOperationDetails):
             self.ui.amount_label.setText(self.tr("Rent returned"))
         else:
             self.ui.amount_label.setText(self.tr("Dividend"))
-        self.ui.price_label.setVisible(
-            dividend_type_id == AssetPayment.StockDividend or dividend_type_id == AssetPayment.StockVesting)
-        self.ui.price_edit.setVisible(
-            dividend_type_id == AssetPayment.StockDividend or dividend_type_id == AssetPayment.StockVesting)
+        price_visible = dividend_type_id == AssetPayment.StockDividend or dividend_type_id == AssetPayment.StockVesting
+        set_visible_retaining_size(self.ui.price_label, price_visible)
+        set_visible_retaining_size(self.ui.price_edit, price_visible)
         self.refreshAssetPrice()
 
     def refreshAssetPrice(self):

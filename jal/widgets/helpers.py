@@ -84,6 +84,29 @@ def set_tables_row_height(widget):
         table.verticalHeader().setDefaultSectionSize(table.fontMetrics().height() + padding)
 
 # -----------------------------------------------------------------------------------------------------------------------
+# The single spacing step JAL's layouts are built from - the style's own idea of "related controls" spacing.
+# Layouts loaded from .ui files get it from Qt itself, as they simply don't set a spacing of their own; this
+# helper is for the few widgets that build their layout in code and need the same value there.
+def layout_step(widget) -> int:
+    style = widget.style()
+    step = style.pixelMetric(QStyle.PM_LayoutHorizontalSpacing, None, widget)
+    if step <= 0:
+        step = style.pixelMetric(QStyle.PM_DefaultLayoutSpacing, None, widget)
+    return step if step > 0 else 6
+
+# -----------------------------------------------------------------------------------------------------------------------
+# A form that shows/hides a few fields based on a checkbox (fee_check, cross_chain_check, etc...) normally does so with
+# a plain widget.setVisible() - but a hidden widget's row still resizes to whatever's left visible in it, so the row
+# (and everything below it) shifts by a few pixels up/down each time the checkbox is toggled.
+# Setting retainSizeWhenHidden keeps the widget's normal size reserved even while hidden, so the row height - and the
+# layout below it - stays put.
+def set_visible_retaining_size(widget, visible):
+    policy = widget.sizePolicy()
+    if not policy.retainSizeWhenHidden():
+        policy.setRetainSizeWhenHidden(True)
+        widget.setSizePolicy(policy)
+    widget.setVisible(visible)
+# -----------------------------------------------------------------------------------------------------------------------
 # Returns true if text does contain only English alphabet
 def is_english(text):
     try:

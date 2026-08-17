@@ -50,6 +50,7 @@ class Ui_PreferencesDlg(object):
 
         self.gridLayout.addWidget(self.ButtonBox, 1, 0, 1, 2)
 
+        QWidget.setTabOrder(self.PagesList, self.ButtonBox)
 
         self.retranslateUi(PreferencesDlg)
         self.ButtonBox.accepted.connect(PreferencesDlg.accept)

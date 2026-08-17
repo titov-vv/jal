@@ -20,21 +20,6 @@
    <string>Select parameters of investment tax report</string>
   </property>
   <layout class="QGridLayout" name="MainLayout">
-   <property name="leftMargin">
-    <number>2</number>
-   </property>
-   <property name="topMargin">
-    <number>2</number>
-   </property>
-   <property name="rightMargin">
-    <number>2</number>
-   </property>
-   <property name="bottomMargin">
-    <number>2</number>
-   </property>
-   <property name="spacing">
-    <number>2</number>
-   </property>
    <item row="3" column="2">
     <widget class="QPushButton" name="XlsSelectBtn">
      <property name="sizePolicy">
@@ -89,21 +74,6 @@
       <string>Additional parameters (Portugal)</string>
      </property>
      <layout class="QVBoxLayout" name="PtLayout">
-      <property name="spacing">
-       <number>2</number>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
       <item>
        <widget class="QCheckBox" name="Pt_OneCurrencyRate">
         <property name="text">
@@ -136,25 +106,13 @@
          <bool>false</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <property name="leftMargin">
-          <number>6</number>
-         </property>
-         <property name="topMargin">
-          <number>6</number>
-         </property>
-         <property name="rightMargin">
-          <number>6</number>
-         </property>
-         <property name="bottomMargin">
-          <number>6</number>
-         </property>
-         <property name="spacing">
-          <number>2</number>
-         </property>
          <item row="0" column="0">
           <widget class="QLabel" name="IRS_Modelo3FileLbl">
            <property name="text">
             <string>Output file:</string>
+           </property>
+           <property name="buddy">
+            <cstring>IRS_Modelo3Filename</cstring>
            </property>
           </widget>
          </item>
@@ -186,12 +144,18 @@
      <property name="text">
       <string>Account:</string>
      </property>
+     <property name="buddy">
+      <cstring>Account</cstring>
+     </property>
     </widget>
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="XlsFileLbl">
      <property name="text">
       <string>Excel file:</string>
+     </property>
+     <property name="buddy">
+      <cstring>XlsFileName</cstring>
      </property>
     </widget>
    </item>
@@ -201,21 +165,6 @@
       <string>Additional parameters (Russia)</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="spacing">
-       <number>2</number>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
       <item>
        <widget class="QCheckBox" name="Ru_NoSettlement">
         <property name="text">
@@ -264,25 +213,13 @@
          <bool>false</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
-         <property name="leftMargin">
-          <number>6</number>
-         </property>
-         <property name="topMargin">
-          <number>6</number>
-         </property>
-         <property name="rightMargin">
-          <number>6</number>
-         </property>
-         <property name="bottomMargin">
-          <number>6</number>
-         </property>
-         <property name="spacing">
-          <number>2</number>
-         </property>
          <item row="1" column="0">
           <widget class="QLabel" name="Ndfl3FileLbl">
            <property name="text">
             <string>Output file:</string>
+           </property>
+           <property name="buddy">
+            <cstring>Ndfl3FileName</cstring>
            </property>
           </widget>
          </item>
@@ -317,12 +254,18 @@
      <property name="text">
       <string>Country:</string>
      </property>
+     <property name="buddy">
+      <cstring>Country</cstring>
+     </property>
     </widget>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="YearLbl">
      <property name="text">
       <string>Year:</string>
+     </property>
+     <property name="buddy">
+      <cstring>Year</cstring>
      </property>
     </widget>
    </item>
@@ -338,6 +281,24 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>Country</tabstop>
+  <tabstop>Year</tabstop>
+  <tabstop>Account</tabstop>
+  <tabstop>XlsFileName</tabstop>
+  <tabstop>XlsSelectBtn</tabstop>
+  <tabstop>Pt_OneCurrencyRate</tabstop>
+  <tabstop>IRS_Modelo3Group</tabstop>
+  <tabstop>IRS_Modelo3Filename</tabstop>
+  <tabstop>IRS_Modelo3SelectBtn</tabstop>
+  <tabstop>Ru_NoSettlement</tabstop>
+  <tabstop>Ru_DividendsOnly</tabstop>
+  <tabstop>Ru_IncomeSourceBroker</tabstop>
+  <tabstop>Ndfl3Group</tabstop>
+  <tabstop>Ndfl3FileName</tabstop>
+  <tabstop>Ndfl3SelectBtn</tabstop>
+  <tabstop>SaveButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

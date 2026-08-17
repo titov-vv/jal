@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QToolButt
 from PySide6.QtGui import QPalette
 from jal.widgets.icons import JalIcon
 from jal.constants import CustomColor
+from jal.widgets.helpers import layout_step
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -24,7 +25,8 @@ class ReferenceSelectorWidget(QWidget):
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(1)
+        # A tight, style-derived gap for this in-field cluster
+        self.layout.setSpacing(max(1, layout_step(self) // 2))
         self.name = QLineEdit()
         self.name.setText("")
         self.layout.addWidget(self.name)
@@ -34,9 +36,11 @@ class ReferenceSelectorWidget(QWidget):
         self.layout.addWidget(self.details)
         self.button = QToolButton()
         self.button.setIcon(JalIcon[JalIcon.DETAILS])
+        self.button.setAutoRaise(True)  # flat until hovered
         self.layout.addWidget(self.button)
         self.clean_button = QToolButton()
         self.clean_button.setIcon(JalIcon[JalIcon.CLEAN])
+        self.clean_button.setAutoRaise(True)
         self.layout.addWidget(self.clean_button)
         self.setLayout(self.layout)
 

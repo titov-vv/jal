@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDateTimeEdit, QGridLayout, QHeaderView,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QWidget)
+from PySide6.QtWidgets import (QApplication, QDateTimeEdit, QGridLayout, QHBoxLayout,
+    QHeaderView, QLabel, QLineEdit, QPushButton,
+    QSizePolicy, QSpacerItem, QWidget)
 
 from jal.widgets.account_select import (AccountCurrencyLabel, OptionalCurrencyComboBox)
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
@@ -30,16 +30,15 @@ class Ui_IncomeSpendingOperation(object):
         IncomeSpendingOperation.resize(968, 231)
         self.layout = QGridLayout(IncomeSpendingOperation)
         self.layout.setObjectName(u"layout")
-        self.layout.setContentsMargins(2, 2, 2, 2)
         self.note = QLineEdit(IncomeSpendingOperation)
         self.note.setObjectName(u"note")
 
-        self.layout.addWidget(self.note, 2, 7, 1, 1)
+        self.layout.addWidget(self.note, 2, 10, 1, 1)
 
         self.account_label = QLabel(IncomeSpendingOperation)
         self.account_label.setObjectName(u"account_label")
 
-        self.layout.addWidget(self.account_label, 1, 4, 1, 1)
+        self.layout.addWidget(self.account_label, 1, 5, 1, 1)
 
         self.date_label = QLabel(IncomeSpendingOperation)
         self.date_label.setObjectName(u"date_label")
@@ -65,26 +64,38 @@ class Ui_IncomeSpendingOperation(object):
 
         self.layout.addWidget(self.copy_button, 2, 2, 1, 1)
 
+        self.accountCurrencyBox = QHBoxLayout()
+        self.accountCurrencyBox.setSpacing(3)
+        self.accountCurrencyBox.setObjectName(u"accountCurrencyBox")
+        self.accountCurrencyBox.setContentsMargins(0, 0, 0, 0)
         self.account_widget = ReferenceSelectorWidget(IncomeSpendingOperation)
         self.account_widget.setObjectName(u"account_widget")
 
-        self.layout.addWidget(self.account_widget, 1, 5, 1, 1)
+        self.accountCurrencyBox.addWidget(self.account_widget)
+
+        self.currency = AccountCurrencyLabel(IncomeSpendingOperation)
+        self.currency.setObjectName(u"currency")
+
+        self.accountCurrencyBox.addWidget(self.currency)
+
+
+        self.layout.addLayout(self.accountCurrencyBox, 1, 6, 1, 1)
 
         self.note_label = QLabel(IncomeSpendingOperation)
         self.note_label.setObjectName(u"note_label")
 
-        self.layout.addWidget(self.note_label, 2, 6, 1, 1)
+        self.layout.addWidget(self.note_label, 2, 8, 1, 1)
 
         self.commit_button = QPushButton(IncomeSpendingOperation)
         self.commit_button.setObjectName(u"commit_button")
         self.commit_button.setEnabled(False)
 
-        self.layout.addWidget(self.commit_button, 0, 9, 1, 1)
+        self.layout.addWidget(self.commit_button, 0, 12, 1, 1)
 
         self.peer_label = QLabel(IncomeSpendingOperation)
         self.peer_label.setObjectName(u"peer_label")
 
-        self.layout.addWidget(self.peer_label, 2, 4, 1, 1)
+        self.layout.addWidget(self.peer_label, 2, 5, 1, 1)
 
         self.timestamp_editor = QDateTimeEdit(IncomeSpendingOperation)
         self.timestamp_editor.setObjectName(u"timestamp_editor")
@@ -111,12 +122,12 @@ class Ui_IncomeSpendingOperation(object):
         self.revert_button.setEnabled(False)
         self.revert_button.setAcceptDrops(False)
 
-        self.layout.addWidget(self.revert_button, 0, 10, 1, 1)
+        self.layout.addWidget(self.revert_button, 0, 13, 1, 1)
 
         self.peer_widget = ReferenceSelectorWidget(IncomeSpendingOperation)
         self.peer_widget.setObjectName(u"peer_widget")
 
-        self.layout.addWidget(self.peer_widget, 2, 5, 1, 1)
+        self.layout.addWidget(self.peer_widget, 2, 6, 1, 1)
 
         self.details_table = TableViewWithFooter(IncomeSpendingOperation)
         self.details_table.setObjectName(u"details_table")
@@ -124,22 +135,42 @@ class Ui_IncomeSpendingOperation(object):
         self.details_table.verticalHeader().setVisible(False)
         self.details_table.verticalHeader().setMinimumSectionSize(20)
 
-        self.layout.addWidget(self.details_table, 3, 0, 1, 11)
+        self.layout.addWidget(self.details_table, 3, 0, 1, 14)
 
         self.horizontal_spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.layout.addItem(self.horizontal_spacer, 2, 8, 1, 1)
+        self.layout.addItem(self.horizontal_spacer, 2, 11, 1, 1)
 
         self.a_currency = OptionalCurrencyComboBox(IncomeSpendingOperation)
         self.a_currency.setObjectName(u"a_currency")
 
-        self.layout.addWidget(self.a_currency, 1, 7, 1, 1)
+        self.layout.addWidget(self.a_currency, 1, 10, 1, 1)
 
-        self.currency = AccountCurrencyLabel(IncomeSpendingOperation)
-        self.currency.setObjectName(u"currency")
+        self.accountGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
-        self.layout.addWidget(self.currency, 1, 6, 1, 1)
+        self.layout.addItem(self.accountGroupSpacer, 1, 4, 1, 1)
 
+        self.noteGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.layout.addItem(self.noteGroupSpacer, 2, 7, 1, 1)
+
+        self.currencyGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.layout.addItem(self.currencyGroupSpacer, 1, 9, 1, 1)
+
+#if QT_CONFIG(shortcut)
+        self.account_label.setBuddy(self.account_widget)
+        self.date_label.setBuddy(self.timestamp_editor)
+        self.note_label.setBuddy(self.note)
+        self.peer_label.setBuddy(self.peer_widget)
+#endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.timestamp_editor, self.account_widget)
+        QWidget.setTabOrder(self.account_widget, self.a_currency)
+        QWidget.setTabOrder(self.a_currency, self.peer_widget)
+        QWidget.setTabOrder(self.peer_widget, self.note)
+        QWidget.setTabOrder(self.note, self.details_table)
+        QWidget.setTabOrder(self.details_table, self.commit_button)
+        QWidget.setTabOrder(self.commit_button, self.revert_button)
 
         self.retranslateUi(IncomeSpendingOperation)
 
@@ -162,6 +193,7 @@ class Ui_IncomeSpendingOperation(object):
         self.copy_button.setToolTip(QCoreApplication.translate("IncomeSpendingOperation", u"Copy detail", None))
 #endif // QT_CONFIG(tooltip)
         self.copy_button.setText("")
+        self.currency.setText(QCoreApplication.translate("IncomeSpendingOperation", u"CUR", None))
         self.note_label.setText(QCoreApplication.translate("IncomeSpendingOperation", u"Note", None))
 #if QT_CONFIG(tooltip)
         self.commit_button.setToolTip(QCoreApplication.translate("IncomeSpendingOperation", u"Commit changes", None))
@@ -175,6 +207,5 @@ class Ui_IncomeSpendingOperation(object):
         self.revert_button.setToolTip(QCoreApplication.translate("IncomeSpendingOperation", u"Cancel changes", None))
 #endif // QT_CONFIG(tooltip)
         self.revert_button.setText("")
-        self.currency.setText(QCoreApplication.translate("IncomeSpendingOperation", u"CUR", None))
     # retranslateUi
 

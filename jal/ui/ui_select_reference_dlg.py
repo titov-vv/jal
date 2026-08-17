@@ -45,7 +45,6 @@ class Ui_SelectReferenceDlg(object):
         self.SelectorFrame.setLineWidth(0)
         self.SelectorFrame.setMidLineWidth(0)
         self.FrameLayout = QVBoxLayout(self.SelectorFrame)
-        self.FrameLayout.setSpacing(0)
         self.FrameLayout.setObjectName(u"FrameLayout")
         self.FrameLayout.setContentsMargins(0, 0, 0, 0)
 
