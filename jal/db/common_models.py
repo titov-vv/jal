@@ -241,7 +241,7 @@ class BaseCurrencyListModel(AbstractReferenceListModel):
     def __init__(self, parent=None):
         columns = [
             CmColumn("id", '', hide=True),
-            CmColumn("since_timestamp", self.tr("Date"), sort=True, width=CmWidth.WIDTH_DATETIME, delegate_type=CmDelegate.TIMESTAMP, delegate_details='%d/%m/%Y'),
+            CmColumn("since_timestamp", self.tr("Date"), sort=True, width=CmWidth.WIDTH_DATETIME, delegate_type=CmDelegate.DATE),
             CmColumn("currency_id", self.tr("Currency"), width=CmWidth.WIDTH_STRETCH, default=True, delegate_type=CmDelegate.LOOKUP)
         ]
         super().__init__("base_currency", columns, parent)

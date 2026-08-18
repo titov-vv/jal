@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from PySide6.QtCore import QCoreApplication, QT_TRANSLATE_NOOP
 from jal.db.settings import JalSettings
+from jal.widgets.helpers import DateFormat
 
 # Context that every translatable string of the settings registry belongs to.
 # Mind that the registration sites below spell it out as the literal "Preferences" instead of using this
@@ -17,6 +18,7 @@ class SettingType:
     String = 1
     Integer = 2
     Boolean = 3
+    Choice = 4     # one of a fixed set of values, listed in the 'options' of the descriptor
 
 
 # Describes one setting that the user may edit in the preferences dialog. The 'settings' table also holds values
@@ -36,6 +38,7 @@ class SettingDescriptor:
     type: int = SettingType.String
     default: object = ''
     tooltip: str = ''
+    options: tuple = ()                  # Choice settings only: the values the user may pick from, as (stored value, untranslated label) pairs
 
     def translated_page(self) -> str:
         return QCoreApplication.translate(TR_CONTEXT, self.page)
@@ -46,12 +49,16 @@ class SettingDescriptor:
     def translated_tooltip(self) -> str:
         return QCoreApplication.translate(TR_CONTEXT, self.tooltip) if self.tooltip else ''
 
+    # The options of a Choice setting, with their labels translated, in the order they were declared
+    def translated_options(self) -> list:
+        return [(value, QCoreApplication.translate(TR_CONTEXT, label)) for value, label in self.options]
+
     # Current value of the setting, typed according to the descriptor
     def value(self):
         settings = JalSettings()
         if self.type == SettingType.Boolean:
             return settings.getBool(self.key, bool(self.default))
-        if self.type == SettingType.Integer:
+        if self.type in (SettingType.Integer, SettingType.Choice):
             return settings.getInt(self.key, int(self.default))
         return settings.getStr(self.key, str(self.default))
 
@@ -97,6 +104,18 @@ def _register_builtin_settings() -> None:
     # Every displayed string goes through QT_TRANSLATE_NOOP so that 'lupdate' collects it: the strings are
     # translated later, at display time, and a bare literal here would never reach the translation files.
     # The context must stay a literal here - see the note at TR_CONTEXT above.
+    SettingsRegistry.register(SettingDescriptor(
+        key=DateFormat.SETTINGS_KEY,
+        page=QT_TRANSLATE_NOOP("Preferences", "Interface"),
+        label=QT_TRANSLATE_NOOP("Preferences", "Date format"),
+        type=SettingType.Choice, default=DateFormat.DEFAULT,
+        options=((DateFormat.EU, QT_TRANSLATE_NOOP("Preferences", "EU (dd/mm/yyyy)")),
+                 (DateFormat.EU_SHORT, QT_TRANSLATE_NOOP("Preferences", "EU short (dd/mm/yy)")),
+                 (DateFormat.US, QT_TRANSLATE_NOOP("Preferences", "US (mm/dd/yyyy)")),
+                 (DateFormat.US_SHORT, QT_TRANSLATE_NOOP("Preferences", "US short (mm/dd)")),
+                 (DateFormat.ISO, QT_TRANSLATE_NOOP("Preferences", "ISO (yyyy-mm-dd)"))),
+        tooltip=QT_TRANSLATE_NOOP("Preferences",
+                                  "The layout every date in the application is shown in.")))
     SettingsRegistry.register(SettingDescriptor(
         key="ApiKey_TronGrid",
         page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),

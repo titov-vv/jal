@@ -11,7 +11,7 @@ from jal.db.common_models import AccountRecordModel, AccountDataModel
 from jal.db.token_blacklist import normalize_address, is_valid_address
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
 from jal.widgets.icons import JalIcon
-from jal.widgets.helpers import set_tables_row_height
+from jal.widgets.helpers import set_tables_row_height, DateFormat
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -175,7 +175,7 @@ class AccountDialog(QDialog):
             timestamp = int(raw)
         except (TypeError, ValueError):
             timestamp = 0
-        text = self.tr("Reconciled @") + QDateTime.fromSecsSinceEpoch(timestamp, QTimeZone(0)).toString("dd/MM/yyyy HH:mm:ss") if timestamp else ''
+        text = self.tr("Reconciled @") + QDateTime.fromSecsSinceEpoch(timestamp, QTimeZone(0)).toString(DateFormat.datetime(qt=True)) if timestamp else ''
         self.ui.ReconciledValue.setText(text)
 
     # Opens the dialog to edit an existing account. Starts a database transaction committed on OK / rolled back on

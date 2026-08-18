@@ -1,10 +1,13 @@
 import json
 import logging
 import xlsxwriter
+from datetime import datetime, timezone
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtWidgets import QApplication
 from jal.db.settings import JalSettings
-from jal.widgets.helpers import ts2d
+
+# Date layout of the tax report templates - see apply_format() below for why it isn't the user's preference
+TAX_REPORT_DATE_FORMAT = '%d/%m/%Y'
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -156,7 +159,10 @@ class XLSX:
             else:
                 return value, self.formats.Text(even_odd)
         elif format_string[0] == 'D':
-            value = ts2d(value)
+            # Deliberately not the date layout the user has chosen for the interface: the 'D' format is used by the
+            # tax report templates alone, and the form a tax authority reads is a property of the jurisdiction the
+            # report is filed in (day-first in both Russia and Portugal), not of the reader's preference.
+            value = datetime.fromtimestamp(value, tz=timezone.utc).strftime(TAX_REPORT_DATE_FORMAT)
             return value, self.formats.Text(even_odd)
         elif format_string[0] == 'N':
             return value, self.formats.Number(even_odd, tolerance=int(format_string[2:]))

@@ -4,13 +4,13 @@ from decimal import Decimal
 import pandas as pd
 from PySide6.QtCore import Qt, QAbstractTableModel, QDate
 from PySide6.QtGui import QFont
-from jal.constants import PredefinedAsset
+from jal.constants import PredefinedAsset, Setup
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
 from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import ts2d, set_tables_row_height
+from jal.widgets.helpers import ts2d, set_tables_row_height, restore_columns
 from jal.widgets.delegates import FloatDelegate
 
 
@@ -68,6 +68,7 @@ class TaxEstimatorModel(QAbstractTableModel):
                 self._view.setItemDelegateForColumn(i, self._float_delegate2)
             else:
                 self._view.setItemDelegateForColumn(i, self._float_delegate4)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
 
 class TaxEstimator(MdiWidget):

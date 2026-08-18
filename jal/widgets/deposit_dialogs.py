@@ -9,6 +9,7 @@ from jal.db.account import JalAccount
 from jal.db.common_models import AccountListModel, PeerTreeModel
 from jal.db.deposit import JalDepositBox
 from jal.db.helpers import now_ts
+from jal.widgets.helpers import DateFormat
 from jal.db.operations import LedgerTransaction
 from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog
 from jal.widgets.reference_selector import ReferenceSelectorWidget
@@ -37,13 +38,13 @@ class NewDepositDialog(QDialog):
         layout.addRow(self.tr("Amount"), self._amount)
         self._opened = QDateTimeEdit(self)
         self._opened.setTimeSpec(Qt.UTC)
-        self._opened.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
+        self._opened.setDisplayFormat(DateFormat.datetime(qt=True))
         self._opened.setCalendarPopup(True)
         self._opened.setDateTime(QDateTime.currentDateTimeUtc())
         layout.addRow(self.tr("Opened"), self._opened)
         self._ends = QDateTimeEdit(self)
         self._ends.setTimeSpec(Qt.UTC)
-        self._ends.setDisplayFormat("dd/MM/yyyy")
+        self._ends.setDisplayFormat(DateFormat.date(qt=True))
         self._ends.setCalendarPopup(True)
         self._ends.setDateTime(QDateTime.currentDateTimeUtc())
         layout.addRow(self.tr("Ends"), self._ends)
@@ -94,7 +95,7 @@ class DepositTransferDialog(QDialog):
         layout.addRow(self.tr("From account") if mode == self.PUT else self.tr("To account"), self._account)
         self._timestamp = QDateTimeEdit(self)
         self._timestamp.setTimeSpec(Qt.UTC)
-        self._timestamp.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
+        self._timestamp.setDisplayFormat(DateFormat.datetime(qt=True))
         self._timestamp.setCalendarPopup(True)
         self._timestamp.setDateTime(QDateTime.currentDateTimeUtc())
         layout.addRow(self.tr("Date/Time"), self._timestamp)
@@ -142,7 +143,7 @@ class DepositInterestDialog(QDialog):
 
         self._timestamp = QDateTimeEdit(self)
         self._timestamp.setTimeSpec(Qt.UTC)
-        self._timestamp.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
+        self._timestamp.setDisplayFormat(DateFormat.datetime(qt=True))
         self._timestamp.setCalendarPopup(True)
         self._timestamp.setDateTime(QDateTime.currentDateTimeUtc())
         layout.addRow(self.tr("Date/Time"), self._timestamp)

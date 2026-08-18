@@ -4,6 +4,7 @@ from functools import partial
 from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QAbstractTableModel
 from PySide6.QtGui import QFont
 
+from jal.constants import Setup
 from jal.db.deposit import JalDepositBox
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
@@ -14,7 +15,7 @@ from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.deposit_dialogs import NewDepositDialog, DepositTransferDialog, DepositInterestDialog
 from jal.widgets.icons import JalIcon
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import set_tables_row_height
+from jal.widgets.helpers import set_tables_row_height, restore_columns
 
 JAL_REPORT_CLASS = "DepositsReport"
 
@@ -111,7 +112,7 @@ class DepositsListModel(QAbstractTableModel):
     def configureView(self):
         self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._rate_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True)
-        self._timestamp_delegate = TimestampDelegate(display_format='%d/%m/%Y')
+        self._timestamp_delegate = TimestampDelegate(date_only=True)
         self._view.setItemDelegateForColumn(3, self._timestamp_delegate)
         self._view.setItemDelegateForColumn(4, self._timestamp_delegate)
         self._view.setItemDelegateForColumn(5, self._rate_delegate)
@@ -124,6 +125,7 @@ class DepositsListModel(QAbstractTableModel):
             self._view.setColumnWidth(column, self._view.fontMetrics().horizontalAdvance("00/00/0000") * 1.1)
         for column in (5, 6, 7):
             self._view.setColumnWidth(column, 120)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -193,6 +195,7 @@ class DepositDetailsModel(QAbstractTableModel):
         self._view.setColumnWidth(1, 200)
         self._view.setColumnWidth(2, 120)
         self._view.setColumnWidth(3, 120)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

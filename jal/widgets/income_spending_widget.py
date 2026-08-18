@@ -7,6 +7,8 @@ from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
 from jal.ui.widgets.ui_income_spending_operation import Ui_IncomeSpendingOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
+from jal.constants import Setup
+from jal.widgets.helpers import restore_columns
 from jal.widgets.icons import JalIcon
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import localize_decimal, db_row2dict, now_ts
@@ -246,6 +248,7 @@ class DetailsModel(JalViewModel):
         self._view.setColumnWidth(5, 100)
         self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
         self._view.horizontalHeader().moveSection(6, 0)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
     def set_alternative_currency(self, currency_name):
         if currency_name:

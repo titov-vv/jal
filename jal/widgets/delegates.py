@@ -11,6 +11,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.widgets.icons import JalIcon
+from jal.widgets.helpers import DateFormat
 from jal.widgets.theme import Theme, Meaning
 
 
@@ -103,12 +104,14 @@ class GridLinesDelegate(QStyledItemDelegate):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Delegate to convert timestamp from unix-time to QDateTime and display it according to the given format
+# Delegate to convert timestamp from unix-time to QDateTime and display it in the date layout the user has chosen.
+# 'date_only' drops the time part - a settlement date, a quote date and the like carry no meaningful time of day.
+# The layout is read for every cell rather than kept here, so that a change of the preference shows at once.
 class TimestampDelegate(GridLinesDelegate):
-    def __init__(self, display_format=None, parent=None):
+    def __init__(self, date_only: bool = False, parent=None):
         super().__init__(parent=parent)
         self._parent = parent
-        self._format = '%d/%m/%Y %H:%M:%S' if display_format is None else display_format
+        self._date_only = date_only
 
     def displayText(self, value, locale):
         if isinstance(value, str):  # int value comes here in form of string in case of SQL aggregate function results
@@ -116,16 +119,15 @@ class TimestampDelegate(GridLinesDelegate):
                 value = int(value)
             except ValueError:
                 return self.tr("<invalid>")
-        text = datetime.fromtimestamp(value, tz=timezone.utc).strftime(self._format) if value else ''
+        text_format = DateFormat.date() if self._date_only else DateFormat.datetime()
+        text = datetime.fromtimestamp(value, tz=timezone.utc).strftime(text_format) if value else ''
         return text
 
     def createEditor(self, aParent, option, index):
         editor = DateTimeEditWithReset(aParent)
         editor.setTimeSpec(Qt.UTC)
-        if 'H' in self._format:  # we have hours and need DataTime editor to edit it
-            editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
-        else:
-            editor.setDisplayFormat("dd/MM/yyyy")
+        editor.setDisplayFormat(DateFormat.date(qt=True) if self._date_only
+                                else DateFormat.datetime(qt=True))
         return editor
 
     def setEditorData(self, editor, index):

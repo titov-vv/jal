@@ -1,9 +1,10 @@
 from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel, QModelIndex
 from PySide6.QtWidgets import QHeaderView
+from jal.constants import Setup
 from jal.db.ledger import Ledger
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
-from jal.widgets.helpers import ts2dt
+from jal.widgets.helpers import ts2dt, restore_columns
 from jal.widgets.delegates import ColoredAmountsDelegate, long_fraction
 from jal.widgets.theme import Theme, Meaning
 from jal.universal_cache import UniversalCache
@@ -109,6 +110,7 @@ class OperationsModel(QAbstractTableModel):
         self._view.setItemDelegateForColumn(3, self._amount_delegate)     # Amount
         self._view.setItemDelegateForColumn(4, self._total_delegate)      # Balance
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)  # row size is adjusted in data() method
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
     @Slot()
     def setAccount(self, account_id):

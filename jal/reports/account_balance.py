@@ -7,7 +7,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.ui.reports.ui_account_balance_report import Ui_AccountBalanceHistoryReportWidget
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import timestamp_range
+from jal.widgets.helpers import timestamp_range, DateFormat
 
 JAL_REPORT_CLASS = "AccountBalanceHistoryReport"
 
@@ -38,7 +38,7 @@ class BalanceChartWidget(QWidget):
 
         # Create new X-axis
         self.axisX = QDateTimeAxis()
-        self.axisX.setFormat("yyyy/MM/dd")
+        self.axisX.setFormat(DateFormat.date(qt=True))
         self.axisX.setLabelsAngle(-90)
         self.axisX.setTitleText("Date")
         min_ts = int(min([x['timestamp'] for x in balances]) / 1000)

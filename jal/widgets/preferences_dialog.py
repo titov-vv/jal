@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import (QDialog, QWidget, QFormLayout, QLineEdit, QSpinBox, QCheckBox, QListWidgetItem,
-                               QStyle)
+from PySide6.QtWidgets import (QDialog, QWidget, QFormLayout, QLineEdit, QSpinBox, QCheckBox, QComboBox,
+                               QListWidgetItem, QStyle)
 from jal.ui.ui_preferences_dlg import Ui_PreferencesDlg
 from jal.db.settings_registry import SettingsRegistry, SettingType
 
@@ -56,6 +56,12 @@ class PreferencesDialog(QDialog):
             # A setting that needs another range should carry it in its descriptor rather than widen this default.
             editor.setRange(0, 2147483647)
             editor.setValue(value)
+        elif setting.type == SettingType.Choice:
+            editor = QComboBox(self)
+            for option_value, option_label in setting.translated_options():
+                editor.addItem(option_label, userData=option_value)
+            # A stored value that is not on the list any more leaves the choice at the first option rather than empty
+            editor.setCurrentIndex(max(editor.findData(value), 0))
         else:
             editor = QLineEdit(self)
             editor.setText(value)
@@ -74,4 +80,6 @@ class PreferencesDialog(QDialog):
             return editor.isChecked()
         if setting.type == SettingType.Integer:
             return editor.value()
+        if setting.type == SettingType.Choice:
+            return editor.currentData()
         return editor.text().strip()

@@ -1,5 +1,7 @@
 from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtWidgets import QWidget, QTabWidget
+from jal.constants import Setup
+from jal.widgets.helpers import save_columns, set_date_formats
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -10,9 +12,22 @@ class MdiWidget(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._dates_localized = False
 
+    # The date layout is a user preference, while a .ui file can only carry one layout as its design-time value.
+    # It is applied here, and not in __init__(), because a descendant builds its widgets from the .ui file after
+    # this constructor has already returned - by the first show they all exist.
+    def showEvent(self, event):
+        if not self._dates_localized:
+            set_date_formats(self)
+            self._dates_localized = True
+        super().showEvent(event)
+
+    # Column widths a user has dragged are stored here, for every table the window holds, the same way the
+    # operations window stores its splitters - the window is gone as a widget after this, but its layout isn't.
     @Slot()
     def closeEvent(self, event):
+        save_columns(self, Setup.COLUMNS_STATE_PREFIX)
         self.onClose.emit(self)
         super().closeEvent(event)
 

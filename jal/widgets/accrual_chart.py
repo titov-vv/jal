@@ -7,7 +7,7 @@ from PySide6.QtCharts import QChart, QChartView, QLineSeries, QScatterSeries, QD
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
-from jal.widgets.helpers import ts2d
+from jal.widgets.helpers import ts2d, DateFormat
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.theme import Theme, Meaning, is_dark_theme
 
@@ -44,7 +44,7 @@ class AccrualChartWidget(QWidget):
         self.axisX.setTickCount(11)
         self.axisX.setRange(QDateTime().fromSecsSinceEpoch(data_range[0]),
                             QDateTime().fromSecsSinceEpoch(data_range[1]))
-        self.axisX.setFormat("yyyy/MM/dd")
+        self.axisX.setFormat(DateFormat.date(qt=True))
         self.axisX.setLabelsAngle(-90)
         self.axisX.setTitleText(self.tr("Date"))
 

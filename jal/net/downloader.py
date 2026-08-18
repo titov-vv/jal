@@ -1,7 +1,7 @@
 import logging
 import xml.etree.ElementTree as xml_tree
 from datetime import datetime, timedelta, timezone
-from jal.widgets.helpers import timestamp_range, dependency_present
+from jal.widgets.helpers import timestamp_range, dependency_present, set_date_formats
 from decimal import Decimal
 from io import StringIO, BytesIO
 
@@ -158,6 +158,7 @@ class QuotesUpdateDialog(QDialog):
         super().__init__(parent=parent)
         self.ui = Ui_UpdateQuotesDlg()
         self.ui.setupUi(self)
+        set_date_formats(self)
         self._updating_all_sources = False
         self._all_sources_state_before_click = Qt.Unchecked
         self.ui.StartDateEdit.setDate(QDate.currentDate().addMonths(-1))

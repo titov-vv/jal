@@ -6,7 +6,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMessageBox, QMenu
 
-from jal.constants import AssetLocation
+from jal.constants import AssetLocation, Setup
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.db.helpers import localize_decimal
@@ -18,7 +18,7 @@ from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.icons import JalIcon
 from jal.widgets.accrual_chart import AccrualChartWindow
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import set_tables_row_height
+from jal.widgets.helpers import set_tables_row_height, restore_columns
 
 JAL_REPORT_CLASS = "StakingReport"
 
@@ -164,7 +164,7 @@ class StakingListModel(QAbstractTableModel):
         # position of 0.00 for anything small enough
         self._qty_delegate = FloatDelegate(2, allow_tail=True)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
-        self._timestamp_delegate = TimestampDelegate(display_format='%d/%m/%Y')
+        self._timestamp_delegate = TimestampDelegate(date_only=True)
         self._view.setItemDelegateForColumn(4, self._qty_delegate)
         # The accrual keeps its tail for the same reason the quantity does, and more so: it is a small fraction of
         # the position (0.07 HYPE on 11.9, 0.15 SOL on 5.9), so two decimals would round most of it out of sight.
@@ -180,6 +180,7 @@ class StakingListModel(QAbstractTableModel):
         self._view.setColumnWidth(6, 120)
         self._view.setColumnWidth(7, self._view.fontMetrics().horizontalAdvance("00/00/0000") * 1.1)
         self._view.setColumnWidth(8, 300)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -257,6 +258,7 @@ class StakingDetailsModel(QAbstractTableModel):
         self._view.setColumnWidth(2, 80)
         self._view.setColumnWidth(3, 140)
         self._view.setColumnWidth(4, 140)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

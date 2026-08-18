@@ -8,8 +8,8 @@ from jal.reports.reports import Reports
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.common_models import AccountListModel
-from jal.constants import BookAccount, PredefinedCategory
-from jal.widgets.helpers import month_list, set_tables_row_height
+from jal.constants import BookAccount, PredefinedCategory, Setup
+from jal.widgets.helpers import month_list, set_tables_row_height, restore_columns
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.reference_dialogs import AccountListDialog
@@ -147,6 +147,7 @@ class ProfitLossModel(QAbstractTableModel):
         self._view.setItemDelegateForColumn(9, self._float_delegate)
         self._view.setItemDelegateForColumn(10, self._color_delegate)
         self._view.setItemDelegateForColumn(11, self._percent_delegate)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

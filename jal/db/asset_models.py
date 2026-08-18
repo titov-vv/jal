@@ -9,6 +9,7 @@ from jal.db.common_models_abstract import AbstractReferenceListModel
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.db.tag import JalTag
+from jal.widgets.helpers import DateFormat
 from jal.constants import CmColumn, CmWidth, AssetData, SymbolId, Setup
 
 
@@ -265,7 +266,7 @@ class AssetDataModel(AbstractReferenceListModel):
             if datatype_of == "str" or datatype_of == "int":
                 return value
             elif datatype_of == "date":
-                return datetime.fromtimestamp(int(value), tz=timezone.utc).strftime("%d/%m/%Y")
+                return datetime.fromtimestamp(int(value), tz=timezone.utc).strftime(DateFormat.date())
             elif datatype_of == "float":
                 return f"{Decimal(value):.2f}"
             elif datatype_of == "tag":

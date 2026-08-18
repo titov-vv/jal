@@ -171,7 +171,7 @@ class HoldingsModel(ReportTreeModel):
             else:
                 self._view.header().setSectionResizeMode(self.fieldIndex(field), QHeaderView.ResizeToContents)
         self._grid_delegate = GridLinesDelegate(self._view)
-        self._date_delegate = TimestampDelegate(display_format='%d/%m/%Y', parent=self._view)
+        self._date_delegate = TimestampDelegate(date_only=True, parent=self._view)
         self._float_delegate = FloatDelegate(0, allow_tail=True, parent=self._view)
         self._float2_delegate = FloatDelegate(2, allow_tail=False, parent=self._view)
         self._float4_delegate = FloatDelegate(4, allow_tail=False, parent=self._view)

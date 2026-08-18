@@ -3,13 +3,14 @@ from functools import partial
 from PySide6.QtCore import Qt, Slot, QObject, QAbstractTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
+from jal.constants import Setup
 from jal.reports.reports import Reports
 from jal.db.operations import AssetPayment
 from jal.db.helpers import localize_decimal
 from jal.ui.reports.ui_assets_payments_report import Ui_AssetsPaymentsReportWidget
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import ts2dt, set_tables_row_height
+from jal.widgets.helpers import ts2dt, set_tables_row_height, restore_columns
 
 JAL_REPORT_CLASS = "AssetsPaymentsReport"
 
@@ -116,6 +117,7 @@ class AssetsPaymentsModel(QAbstractTableModel):
         self._view.setColumnWidth(2, 200)
         if self._view.horizontalHeader().count():  # Next line crashes if there are no columns (count==0)
             self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AssetsPaymentsReport(QObject):

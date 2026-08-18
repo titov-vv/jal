@@ -13,6 +13,7 @@ class Setup:
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     SPLITTER_STATE_PREFIX = "SplitterState_"
+    COLUMNS_STATE_PREFIX = "ColumnsState_"
     INIT_SCRIPT_PATH = 'jal_init.sql'
     UPDATES_PATH = 'updates'
     ICONS_PATH = "img"
@@ -82,7 +83,8 @@ class CmDelegate:
     GRID = 'grid'
     LOOKUP = 'lookup'
     REFERENCE = 'reference'
-    TIMESTAMP = 'timestamp'
+    TIMESTAMP = 'timestamp'  # a full timestamp shown as a date and the time of day
+    DATE = 'date'            # a timestamp shown as a date alone, without the time of day
 
 @dataclass
 class CmColumn:    # column metadata for custom models

@@ -7,6 +7,8 @@ from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
 from jal.ui.widgets.ui_corporate_action_operation import Ui_CorporateActionOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
+from jal.constants import Setup
+from jal.widgets.helpers import restore_columns
 from jal.widgets.icons import JalIcon
 from jal.widgets.delegates import WidgetMapperDelegateBase, LookupSelectorDelegate, FloatDelegate
 from jal.db.view_model import JalViewModel
@@ -229,3 +231,4 @@ class ResultsModel(JalViewModel):
         self._view.setColumnWidth(3, 100)
         self._view.setColumnWidth(4, 100)
         self._view.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)

@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Signal, Slot, Property, QDateTime, QTimeZone
 from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QLabel, QDateEdit
-from jal.widgets.helpers import ManipulateDate
+from jal.widgets.helpers import ManipulateDate, DateFormat
 
 
 ITEM_NAME = 0
@@ -38,7 +38,7 @@ class DateRangeSelector(QWidget):
         self.layout.addWidget(self.from_label)
 
         self.from_date = QDateEdit()
-        self.from_date.setDisplayFormat("dd/MM/yyyy")
+        self.from_date.setDisplayFormat(DateFormat.date(qt=True))
         self.from_date.setCalendarPopup(True)
         self.from_date.setTimeSpec(Qt.UTC)
         self.layout.addWidget(self.from_date)
@@ -47,7 +47,7 @@ class DateRangeSelector(QWidget):
         self.layout.addWidget(self.from_label)
 
         self.to_date = QDateEdit()
-        self.to_date.setDisplayFormat("dd/MM/yyyy")
+        self.to_date.setDisplayFormat(DateFormat.date(qt=True))
         self.to_date.setCalendarPopup(True)
         self.to_date.setTimeSpec(Qt.UTC)
         self.layout.addWidget(self.to_date)

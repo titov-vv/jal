@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Optional
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
+from jal.constants import Setup
+from jal.widgets.helpers import restore_columns
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Base class to provide a common functionality of a tree element
@@ -164,3 +166,4 @@ class ReportTreeModel(QAbstractItemModel):
     def configureView(self):
         self._view.header().setStretchLastSection(False)
         self._view_configured = True
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)

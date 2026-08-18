@@ -1,10 +1,11 @@
 import base64
 import logging
 from datetime import time, datetime, timedelta, timezone
-from functools import cmp_to_key
-from PySide6.QtCore import Qt, QCollator, QItemSelectionModel
+from functools import cmp_to_key, partial
+from PySide6.QtCore import Qt, QCollator, QItemSelectionModel, QTimer
 from PySide6.QtGui import QImage, QKeySequence, QShortcut
-from PySide6.QtWidgets import QApplication, QTableView, QStyle, QSplitter
+from PySide6.QtWidgets import (QApplication, QAbstractItemView, QDialog, QTableView, QDateTimeEdit, QStyle,
+                               QSplitter)
 from jal.constants import Setup
 from jal.db.settings import JalSettings
 try:
@@ -105,6 +106,106 @@ def save_splitters(widget, prefix: str):
                                base64.encodebytes(splitter.saveState().data()).decode('utf-8'))
 
 # -----------------------------------------------------------------------------------------------------------------------
+# Column widths of a table are set in code (see configureView() of the models) to values that suit the data it shows,
+# and the user is free to drag them elsewhere. These helpers keep such a choice between sessions, the way
+# save/restore_splitters() above keeps a splitter position: the layout of a header - widths, order, hidden sections
+# and the sort indicator - is stored in the database configuration when the window closes and is put back when the
+# table is configured again.
+#
+# The key of a table is built from its own objectName and from the class of the form it belongs to, because the
+# name alone is not unique.
+def _columns_owner(view):
+    owner = view.parentWidget()
+    while owner is not None:
+        if not type(owner).__module__.startswith('PySide6') or owner.isWindow():
+            return owner
+        owner = owner.parentWidget()
+    return view    # a table with no form around it is keyed by its own class
+
+
+def columns_state_key(view, prefix: str) -> str:
+    return prefix + type(_columns_owner(view)).__name__ + '_' + view.objectName()
+
+
+# The layout of every table that is open, as the user has it right now. Several reports re-configure their view on
+# every change of the report parameters, which re-applies the default widths, so the layout in use has to be held
+# somewhere the next configureView() can find it - the database holds the layout of the previous session only.
+_live_columns = {}
+_pending_capture = set()
+_COLUMNS_TRACKED = "jal_columns_key"    # dynamic property that marks a header whose resizes are already followed
+
+
+# Restores the column layout of a single view: the one in use if the table is already open, the one stored by the
+# previous session otherwise. Called at the end of configureView(), so that a width the user has set survives a
+# re-configuration of the report as well as it survives a restart.
+def restore_columns(view, prefix: str):
+    if not view.objectName():
+        return
+    header = _view_header(view)
+    if header is None:
+        return
+    key = columns_state_key(view, prefix)
+    state = _live_columns.get(key)
+    if state is None:
+        stored = JalSettings().getStr(key)
+        state = base64.decodebytes(stored.encode('utf-8')) if stored else None
+    if state is not None:
+        header.restoreState(state)
+    if header.property(_COLUMNS_TRACKED) is None:   # from now on the table reports what the user does to it
+        header.setProperty(_COLUMNS_TRACKED, key)
+        header.sectionResized.connect(partial(_columns_resized, header, key))
+
+
+# Stores the column layout of every named table/tree inside the given widget (a window as a rule)
+def save_columns(widget, prefix: str):
+    for view in widget.findChildren(QAbstractItemView):
+        if not view.objectName():
+            continue
+        if isinstance(view.window(), QDialog) and view.window() is not widget.window():
+            continue    # a dialog this window merely owns stores its own columns, under its own key
+        header = _view_header(view)
+        if header is None:
+            continue
+        key = columns_state_key(view, prefix)
+        state = header.saveState()
+        _live_columns[key] = state
+        JalSettings().setValue(key, base64.encodebytes(state.data()).decode('utf-8'))
+
+
+# Drops the layouts of the tables that were open. Only a change of the database needs this - the layout of one
+# ledger has no meaning in another.
+def forget_columns():
+    _live_columns.clear()
+    _pending_capture.clear()
+
+
+# A resize is reported per pixel of a drag, and configureView() emits a burst of them while it applies the default
+# widths - so the layout is not read here but in the next turn of the event loop, once the table has settled.
+# That deferral is what makes the capture correct during a re-configuration: by the time it runs, restore_columns()
+# has already put the layout in use back, and it is that layout which is captured rather than the defaults.
+def _columns_resized(header, key, *_args):
+    if key in _pending_capture:
+        return
+    _pending_capture.add(key)
+    QTimer.singleShot(0, partial(_capture_columns, header, key))
+
+
+def _capture_columns(header, key):
+    _pending_capture.discard(key)
+    try:
+        _live_columns[key] = header.saveState()
+    except RuntimeError:
+        pass      # the table was closed before the capture ran, and its layout was stored by that close
+
+
+# A tree carries its columns in header(), a table in horizontalHeader(); any other view has no columns to store
+def _view_header(view):
+    for accessor in ('header', 'horizontalHeader'):
+        if hasattr(view, accessor):
+            return getattr(view, accessor)()
+    return None
+
+# -----------------------------------------------------------------------------------------------------------------------
 # The single spacing step JAL's layouts are built from - the style's own idea of "related controls" spacing.
 # Layouts loaded from .ui files get it from Qt itself, as they simply don't set a spacing of their own; this
 # helper is for the few widgets that build their layout in code and need the same value there.
@@ -186,14 +287,93 @@ def str2int(value: str) -> int:
         return 0
 
 # -----------------------------------------------------------------------------------------------------------------------
+# The date layout is an explicit preference (Preferences -> Interface) and every date the application shows
+# is built from the layout chosen here.
+class DateFormat:
+    EU = 0            # 31/12/2026
+    EU_SHORT = 1      # 31/12/26
+    US = 2            # 12/31/2026
+    US_SHORT = 3      # 12/31/26
+    ISO = 4           # 2026-12-31
+    DEFAULT = EU
+    SETTINGS_KEY = "DateFormat"
+    # Format is a tuple of 2 formats (<for Qt display, e.g. QDateEdit>, <for python text rendering>)
+    TIME = ("hh:mm:ss", "%H:%M:%S")    # the time part is the same in every layout
+    LAYOUTS = {
+        EU:       ("dd/MM/yyyy", "%d/%m/%Y"),
+        EU_SHORT: ("dd/MM/yy",   "%d/%m/%y"),
+        US:       ("MM/dd/yyyy", "%m/%d/%Y"),
+        US_SHORT: ("MM/dd/yyyy", "%m/%d"),
+        ISO:      ("yyyy-MM-dd", "%Y-%m-%d")
+    }
+    _current = None   # A date is formatted per table cell, so the setting is read once and cached here
+
+    # Identifier of the layout the user has chosen, or of the default one when nothing valid is stored
+    @classmethod
+    def current(cls) -> int:
+        if cls._current is None:
+            try:
+                stored = JalSettings().getInt(cls.SETTINGS_KEY, cls.DEFAULT)
+            except RuntimeError:
+                return cls.DEFAULT   # No database open yet - a date may be rendered before it is (an early log record)
+            cls._current = stored if stored in cls.LAYOUTS else cls.DEFAULT
+        return cls._current
+
+    # Drops the cached value, so that the next date rendered picks the layout up from the database again
+    @classmethod
+    def invalidate(cls) -> None:
+        cls._current = None
+
+    # Date part of the current layout: 'qt' picks between a QDateEdit display format and a strftime() one
+    @classmethod
+    def date(cls, qt: bool = False) -> str:
+        layout = cls.current()
+        return cls.LAYOUTS[layout][0 if qt else 1]
+
+    # Date and time of the current layout, with the arguments of date() above
+    @classmethod
+    def datetime(cls, qt: bool = False) -> str:
+        return cls.date(qt=qt) + ' ' + cls.TIME[0 if qt else 1]
+
+    # Takes a Qt display format that carries any of the known date layouts - the day-first one that the .ui files
+    # declare at design time, or one this method has written before - and returns it with the date part replaced
+    # by the layout in use now. The time part, and anything else in the format, is left untouched.
+    @classmethod
+    def localized(cls, display_format: str) -> str:
+        for qt_format, _ in sorted(cls.LAYOUTS.values(), key=lambda layout: -len(layout[0])):
+            if qt_format in display_format:
+                return display_format.replace(qt_format, cls.date(qt=True))
+        return display_format
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Applies the date layout the user has chosen to every date/time editor inside the given widget (a form as a rule).
+# The .ui files keep declaring the day-first layout as their design-time value - a designer has to show something -
+# and this call rewrites it into the layout in use, right after setupUi().
+def set_date_formats(widget):
+    for editor in widget.findChildren(QDateTimeEdit):
+        editor.setDisplayFormat(DateFormat.localized(editor.displayFormat()))
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Puts the date layout that was just chosen in the preferences dialog into use without a restart: every editor that
+# is open takes the new format and every view that is open repaints the dates it renders through a delegate.
+def refresh_date_formats():
+    DateFormat.invalidate()
+    for widget in QApplication.allWidgets():
+        if isinstance(widget, QDateTimeEdit):
+            widget.setDisplayFormat(DateFormat.localized(widget.displayFormat()))
+        elif isinstance(widget, QAbstractItemView):
+            widget.viewport().update()
+
+# -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date and time
 def ts2dt(timestamp: int) -> str:
-    return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%d/%m/%Y %H:%M:%S')
+    return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime(DateFormat.datetime())
 
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date
 def ts2d(timestamp: int) -> str:
-    return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%d/%m/%Y')
+    return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime(DateFormat.date())
 
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given datetime value into unix-timestamp

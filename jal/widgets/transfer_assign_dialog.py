@@ -13,7 +13,7 @@ from jal.db.helpers import localize_decimal, delocalize_decimal, remove_exponent
 from jal.db.operations import Transfer
 from jal.db.transfer_settlement import TransferSettlement
 from jal.net.chain_fetchers.protocols import protocol_names
-from jal.widgets.helpers import ts2d, ts2dt
+from jal.widgets.helpers import ts2d, ts2dt, DateFormat
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.staking_dialogs import NewStakingBoxDialog
@@ -92,7 +92,7 @@ class TransferAssignDialog(QDialog):
         form.addWidget(QLabel(self.tr("on:")), 1, 0)
         self._timestamp = QDateTimeEdit(self)
         self._timestamp.setTimeSpec(Qt.UTC)
-        self._timestamp.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
+        self._timestamp.setDisplayFormat(DateFormat.datetime(qt=True))
         self._timestamp.setCalendarPopup(True)
         form.addWidget(self._timestamp, 1, 1)
         form.setColumnStretch(1, 1)

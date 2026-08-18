@@ -256,7 +256,9 @@ class ReferenceDataDialog(QDialog):
                     raise NotImplementedError(f"Unsupported reference delegate type {spec.delegate_details}")
                 delegate = delegate_class(self._view, model_class, dialog_class, self)
             elif spec.delegate_type == CmDelegate.TIMESTAMP:
-                delegate = TimestampDelegate(display_format=spec.delegate_details, parent=self._view)
+                delegate = TimestampDelegate(parent=self._view)
+            elif spec.delegate_type == CmDelegate.DATE:
+                delegate = TimestampDelegate(date_only=True, parent=self._view)
             else:
                 continue
             self._view.setItemDelegateForColumn(col, delegate)

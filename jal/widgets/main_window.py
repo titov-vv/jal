@@ -14,7 +14,7 @@ from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget, TaxMergeDialog
 from jal.widgets.helpers import (dependency_present, menu_label, menu_mnemonic,
-                                restore_splitters, save_splitters)
+                                restore_splitters, save_splitters, save_columns, refresh_date_formats)
 from jal.widgets.icons import JalIcon, AUX_PREFIX, CHAIN_PREFIX
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog, TokenBlacklistDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
@@ -188,6 +188,7 @@ class MainWindow(QMainWindow):
         JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
         JalSettings().setValue('WindowState', base64.encodebytes(self.saveState().data()).decode('utf-8'))
         save_splitters(self, Setup.SPLITTER_STATE_PREFIX)   # ... and save splitter position of every window still open inside it
+        save_columns(self, Setup.COLUMNS_STATE_PREFIX)      # ... same for the column widths of every table in them
         WebRequest.wait_for_all()    # Requests their callers gave up on are still running and may not be dropped
         self.ui.Logs.stopLogging()   # At the end, so that whatever is running still can report
         super().closeEvent(event)
@@ -373,10 +374,13 @@ class MainWindow(QMainWindow):
         dialog_class().exec()
         self.ledger.rebuild()
 
-    # Preferences change application settings only and never any operation, so no ledger rebuild is needed here
+    # Preferences change application settings only and never any operation, so no ledger rebuild is needed here.
+    # The date layout is the one setting that is visible everywhere at once, so it is put into use immediately
+    # instead of asking for a restart the way a change of language has to.
     @Slot()
     def showPreferences(self):
-        PreferencesDialog(parent=self).exec()
+        if PreferencesDialog(parent=self).exec():
+            refresh_date_formats()
 
     @Slot()
     def updateWidgets(self):

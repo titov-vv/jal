@@ -11,7 +11,7 @@ from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction, LedgerError
-from jal.widgets.helpers import ts2dt, ts2d
+from jal.widgets.helpers import ts2dt, ts2d, set_date_formats
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -22,6 +22,7 @@ class RebuildDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_ReBuildDialog()
         self.ui.setupUi(self)
+        set_date_formats(self)
 
         self.ui.LastRadioButton.toggle()   # Set default option selection
         self.frontier = frontier

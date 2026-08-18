@@ -3,9 +3,11 @@ import pandas as pd
 from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDateTime, QDate, QTime, QLocale
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QHeaderView, QStyle, QStyledItemDelegate, QLineEdit, QComboBox
+from jal.constants import Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.delegates import DateTimeEditWithReset, draw_item_panel
-from jal.widgets.helpers import dependency_present, set_tables_row_height
+from jal.widgets.helpers import (dependency_present, set_tables_row_height, set_date_formats,
+                                 restore_columns, save_columns, DateFormat)
 from jal.widgets.theme import Theme, Meaning
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.peer import JalPeer
@@ -139,9 +141,9 @@ class ParameterDelegate(QStyledItemDelegate):    # Code doubles with pieces from
             editor = DateTimeEditWithReset(aParent)
             editor.setTimeSpec(Qt.UTC)
             if data_type == QDate:
-                editor.setDisplayFormat("dd/MM/yyyy")
+                editor.setDisplayFormat(DateFormat.date(qt=True))
             else:
-                editor.setDisplayFormat("dd/MM/yyyy hh:mm")
+                editor.setDisplayFormat(DateFormat.date(qt=True) + " hh:mm")
         elif data_type == dict:
             editor = QComboBox(aParent)
             for idx in default_data:
@@ -245,6 +247,7 @@ class ImportReceiptDialog(QDialog):
         self.ui = Ui_ImportShopReceiptDlg()
         self.ui.setupUi(self)
         set_tables_row_height(self)
+        set_date_formats(self)
         self.ui.AccountEdit.setup_selector(AccountListModel, AccountListDialog, self)
         self.ui.PeerEdit.setup_selector(PeerTreeModel, PeerListDialog, self)
         self.model = None
@@ -274,6 +277,12 @@ class ImportReceiptDialog(QDialog):
             self.ui.ReceiptAPICombo.addItem(name, idx)
 
         self.ui.AssignCategoryBtn.setEnabled(self.tensor_flow_present)
+
+    # Column widths of the receipt lines are the user's to set, and they are kept for the next receipt
+    @Slot()
+    def closeEvent(self, event):
+        save_columns(self, Setup.COLUMNS_STATE_PREFIX)
+        super().closeEvent(event)
 
     # -----------------------------------------------------------------------------------------------
     @Slot()
@@ -350,6 +359,7 @@ class ImportReceiptDialog(QDialog):
             else:
                 self.ui.LinesTableView.setColumnWidth(column, 100)
             self.ui.LinesTableView.setItemDelegateForColumn(column, self.delegate)
+        restore_columns(self.ui.LinesTableView, Setup.COLUMNS_STATE_PREFIX)   # a width the user has set outlives the next receipt
         self.ui.LinesTableView.show()
         self.recognizeCategories()
 

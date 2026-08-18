@@ -3,6 +3,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, QAbstractTableModel
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QHeaderView
+from jal.constants import Setup
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
 from jal.db.category import JalCategory
@@ -10,7 +11,7 @@ from jal.db.tag import JalTag
 from jal.db.peer import JalPeer
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
-from jal.widgets.helpers import ts2dt
+from jal.widgets.helpers import ts2dt, restore_columns
 from jal.widgets.delegates import ColoredAmountsDelegate
 
 
@@ -113,6 +114,7 @@ class ReportOperationsModel(QAbstractTableModel):
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)  # row size is adjusted in data() method
         if self._hidden is not None:
             self._view.setColumnHidden(self._hidden, True)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
     # Triggers view update if display parameters were changed
     def updateView(self, update: bool, dates_range: tuple, total_currency_id: int):

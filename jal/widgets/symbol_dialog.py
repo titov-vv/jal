@@ -12,7 +12,7 @@ from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantL
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.reference_dialogs import TagsListDialog
-from jal.widgets.helpers import set_tables_row_height
+from jal.widgets.helpers import set_tables_row_height, DateFormat
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ class AssetAttributeDelegate(QStyledItemDelegate):
         elif datatype_of == "date":
             editor = DateTimeEditWithReset(aParent)
             editor.setTimeSpec(Qt.UTC)
-            editor.setDisplayFormat("dd/MM/yyyy")
+            editor.setDisplayFormat(DateFormat.date(qt=True))
             return editor
         elif datatype_of == "tag":
             editor = ReferenceSelectorWidget(aParent, validate=False)

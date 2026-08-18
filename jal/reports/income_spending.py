@@ -7,8 +7,9 @@ from jal.reports.reports import Reports
 from jal.db.asset import JalAsset
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.db.category import JalCategory
+from jal.constants import Setup
 from jal.widgets.helpers import is_signal_connected, month_list, month_start_ts, month_end_ts, \
-    week_list, week_start_ts, week_end_ts, str2int
+    week_list, week_start_ts, week_end_ts, str2int, restore_columns
 from jal.widgets.icons import JalIcon
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 from jal.widgets.mdi import MdiWidget
@@ -302,6 +303,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
 
         if not is_signal_connected(self._view.header(), "sectionDoubleClicked(int)"):
             self._view.header().sectionDoubleClicked.connect(self.toggeYearColumns)
+        restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
     def toggeYearColumns(self, section):
         year, period = self._root.column2calendar(section)
