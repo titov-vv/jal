@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QFormLayout, QFrame,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
+    QFormLayout, QFrame, QLabel, QLineEdit,
+    QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_LoginPingoDoceDialog(object):
     def setupUi(self, LoginPingoDoceDialog):
@@ -79,15 +79,12 @@ class Ui_LoginPingoDoceDialog(object):
         self.frame.setFrameShadow(QFrame.Shadow.Plain)
         self.verticalLayout_9 = QVBoxLayout(self.frame)
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
-        self.LoginBtn = QPushButton(self.frame)
-        self.LoginBtn.setObjectName(u"LoginBtn")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.LoginBtn.sizePolicy().hasHeightForWidth())
-        self.LoginBtn.setSizePolicy(sizePolicy1)
+        self.DialogButtonBox = QDialogButtonBox(self.frame)
+        self.DialogButtonBox.setObjectName(u"DialogButtonBox")
+        self.DialogButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel)
 
-        self.verticalLayout_9.addWidget(self.LoginBtn, 0, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignTop)
+        self.verticalLayout_9.addWidget(self.DialogButtonBox, 0, Qt.AlignmentFlag.AlignTop)
 
 
         self.verticalLayout_3.addWidget(self.frame)
@@ -97,9 +94,10 @@ class Ui_LoginPingoDoceDialog(object):
         self.PasswordLbl.setBuddy(self.PasswordEdit)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.PhoneNumberEdit, self.PasswordEdit)
-        QWidget.setTabOrder(self.PasswordEdit, self.LoginBtn)
+        QWidget.setTabOrder(self.PasswordEdit, self.DialogButtonBox)
 
         self.retranslateUi(LoginPingoDoceDialog)
+        self.DialogButtonBox.rejected.connect(LoginPingoDoceDialog.reject)
 
         QMetaObject.connectSlotsByName(LoginPingoDoceDialog)
     # setupUi
@@ -111,6 +109,5 @@ class Ui_LoginPingoDoceDialog(object):
         self.PasswordLbl.setText(QCoreApplication.translate("LoginPingoDoceDialog", u"Password:", None))
         self.PasswordEdit.setInputMask("")
         self.PasswordEdit.setText("")
-        self.LoginBtn.setText(QCoreApplication.translate("LoginPingoDoceDialog", u"Login", None))
     # retranslateUi
 

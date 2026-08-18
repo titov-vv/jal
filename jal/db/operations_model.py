@@ -1,11 +1,11 @@
 from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel, QModelIndex
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import CustomColor
 from jal.db.ledger import Ledger
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2dt
 from jal.widgets.delegates import ColoredAmountsDelegate, long_fraction
+from jal.widgets.theme import Theme, Meaning
 from jal.universal_cache import UniversalCache
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class OperationsModel(QAbstractTableModel):
             return self._view.font()
         if role == Qt.ForegroundRole and self._view.isEnabled():
             if index.column() == 4 and operation.reconciled():
-                return CustomColor.Blue
+                return Theme.text(Meaning.INFO)
         if role == Qt.ToolTipRole:
             if index.column() == 0:
                 return operation.name()

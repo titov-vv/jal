@@ -57,16 +57,13 @@
         </property>
        </widget>
       </item>
-      <item alignment="Qt::AlignmentFlag::AlignHCenter">
-       <widget class="QPushButton" name="CloseBtn">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <item>
+       <widget class="QDialogButtonBox" name="DialogButtonBox">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
-        <property name="text">
-         <string>Close</string>
+        <property name="standardButtons">
+         <set>QDialogButtonBox::StandardButton::Close</set>
         </property>
        </widget>
       </item>
@@ -77,7 +74,7 @@
  </widget>
  <tabstops>
   <tabstop>LidlPlusWebView</tabstop>
-  <tabstop>CloseBtn</tabstop>
+  <tabstop>DialogButtonBox</tabstop>
  </tabstops>
  <customwidgets>
   <customwidget>
@@ -89,18 +86,18 @@
  <resources/>
  <connections>
   <connection>
-   <sender>CloseBtn</sender>
-   <signal>clicked()</signal>
+   <sender>DialogButtonBox</sender>
+   <signal>rejected()</signal>
    <receiver>LoginLidlPlusDialog</receiver>
-   <slot>close()</slot>
+   <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>199</x>
-     <y>477</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
     <hint type="destinationlabel">
-     <x>199</x>
-     <y>249</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
    </hints>
   </connection>

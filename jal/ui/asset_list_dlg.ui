@@ -233,6 +233,16 @@
      </attribute>
     </widget>
    </item>
+   <item>
+    <widget class="QDialogButtonBox" name="DialogButtonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Close</set>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <tabstops>
@@ -244,6 +254,7 @@
   <tabstop>RemoveBtn</tabstop>
   <tabstop>SearchString</tabstop>
   <tabstop>DataView</tabstop>
+  <tabstop>DialogButtonBox</tabstop>
  </tabstops>
  <resources/>
  <connections/>

@@ -15,10 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QDialog,
-    QFrame, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QTableView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QComboBox,
+    QDialog, QDialogButtonBox, QFrame, QHBoxLayout,
+    QHeaderView, QLabel, QLineEdit, QPushButton,
+    QSizePolicy, QSpacerItem, QTableView, QVBoxLayout,
+    QWidget)
 
 class Ui_AssetsListDialog(object):
     def setupUi(self, AssetsListDialog):
@@ -135,6 +136,13 @@ class Ui_AssetsListDialog(object):
 
         self.verticalLayout.addWidget(self.DataView)
 
+        self.DialogButtonBox = QDialogButtonBox(AssetsListDialog)
+        self.DialogButtonBox.setObjectName(u"DialogButtonBox")
+        self.DialogButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
+
+        self.verticalLayout.addWidget(self.DialogButtonBox)
+
 #if QT_CONFIG(shortcut)
         self.AssetTypeLbl.setBuddy(self.AssetTypeCombo)
         self.CurrencyLbl.setBuddy(self.CurrencyCombo)
@@ -148,6 +156,7 @@ class Ui_AssetsListDialog(object):
         QWidget.setTabOrder(self.EditBtn, self.RemoveBtn)
         QWidget.setTabOrder(self.RemoveBtn, self.SearchString)
         QWidget.setTabOrder(self.SearchString, self.DataView)
+        QWidget.setTabOrder(self.DataView, self.DialogButtonBox)
 
         self.retranslateUi(AssetsListDialog)
 

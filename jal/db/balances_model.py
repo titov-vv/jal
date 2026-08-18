@@ -4,7 +4,6 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import CustomColor
 from jal.db.helpers import localize_decimal
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.settings import JalSettings
@@ -12,6 +11,7 @@ from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 from jal.widgets.icons import JalIcon
+from jal.widgets.theme import Theme, Meaning
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -141,11 +141,11 @@ class BalancesModel(ReportTreeModel):
         return None
 
     def data_background(self, unreconciled, enabled=True):
-        factor = 100 if enabled else 125
+        shade = Theme.fill if enabled else Theme.tint
         if unreconciled > 15:
-            return QBrush(CustomColor.LightRed.lighter(factor))
+            return QBrush(shade(Meaning.NEGATIVE))
         if unreconciled > 7:
-            return QBrush(CustomColor.LightYellow.lighter(factor))
+            return QBrush(shade(Meaning.WARNING))
         return None
 
     def configureView(self):

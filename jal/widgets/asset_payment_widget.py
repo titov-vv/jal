@@ -1,9 +1,11 @@
-from PySide6.QtCore import Slot, QStringListModel, QByteArray
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtCore import Slot, QEvent, QStringListModel, QByteArray
+from PySide6.QtGui import QPalette
+from PySide6.QtWidgets import QApplication, QMessageBox
 from jal.ui.widgets.ui_asset_payment_operation import Ui_AssetPaymentOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
+from jal.widgets.theme import Theme, Meaning
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.helpers import db_row2dict, now_ts
@@ -108,15 +110,22 @@ class AssetPaymentWidget(AbstractOperationDetails):
             dividend_timestamp = self.ui.timestamp_editor.dateTime().toSecsSinceEpoch()
             timestamp, price = JalAsset.from_symbol(self.ui.symbol_widget.selected_id).quote(dividend_timestamp,
                                                                              JalAccount(self.ui.account_widget.selected_id).currency())
+            palette = QPalette(QApplication.palette(self.ui.price_edit))
             if timestamp == dividend_timestamp:
                 self.ui.price_edit.setText(str(price))
-                self.ui.price_edit.setStyleSheet('')
                 self.ui.price_edit.setToolTip("")
             else:
                 self.ui.price_edit.setText(self.tr("No quote"))
-                self.ui.price_edit.setStyleSheet("color: red")
+                palette.setColor(QPalette.Text, Theme.text(Meaning.NEGATIVE, palette.base().color()))
                 self.ui.price_edit.setToolTip(
                     self.tr("You should set quote via Data->Quotes menu for Date/Time of the dividend"))
+            self.ui.price_edit.setPalette(palette)
+
+    # The "no quote" warning above is a palette color derived from the theme, so a theme switch has to redo it
+    def changeEvent(self, event):
+        if event.type() == QEvent.ApplicationPaletteChange:
+            self.refreshAssetPrice()
+        super().changeEvent(event)
 
     def _validated(self):
         fields = db_row2dict(self.model, 0)

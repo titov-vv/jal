@@ -1,7 +1,7 @@
 import logging
 from datetime import time, datetime, timedelta, timezone
 from functools import cmp_to_key
-from PySide6.QtCore import Qt, QCollator
+from PySide6.QtCore import Qt, QCollator, QItemSelectionModel
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QApplication, QTableView, QStyle
 from jal.constants import Setup
@@ -106,6 +106,32 @@ def set_visible_retaining_size(widget, visible):
         policy.setRetainSizeWhenHidden(True)
         widget.setSizePolicy(policy)
     widget.setVisible(visible)
+# -----------------------------------------------------------------------------------------------------------------------
+# Puts a table's selection back where it was.
+#
+# Needed where picking a row opens the row in an editor and the editor may refuse to let go - an operation with
+# unsaved changes asks the user first, and the user may answer "stay here". By then the table has already moved its
+# highlight to the row that was clicked, so without this the highlighted row and the form below it would be two
+# different operations. The busy flag is what keeps the restore from being read as yet another selection and asking
+# the same question again.
+class TableSelectionRestorer:
+    def __init__(self, view: QTableView):
+        self._view = view
+        self._busy = False
+
+    def busy(self) -> bool:
+        return self._busy
+
+    def restore(self, selection):
+        self._busy = True
+        try:
+            selection_model = self._view.selectionModel()
+            selection_model.select(selection, QItemSelectionModel.ClearAndSelect | QItemSelectionModel.Rows)
+            indexes = selection.indexes()
+            if indexes:
+                selection_model.setCurrentIndex(indexes[0], QItemSelectionModel.NoUpdate)
+        finally:
+            self._busy = False
 # -----------------------------------------------------------------------------------------------------------------------
 # Returns true if text does contain only English alphabet
 def is_english(text):

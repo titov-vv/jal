@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QDialog, QFrame,
-    QGridLayout, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QTableView, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
+    QDialogButtonBox, QFrame, QGridLayout, QHeaderView,
+    QLabel, QLineEdit, QPushButton, QSizePolicy,
+    QSpacerItem, QTableView, QWidget)
 
 from jal.constants import AccountTypeComboBox
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
@@ -100,29 +100,12 @@ class Ui_AccountDialog(object):
 
         self.gridLayout.addWidget(self.MainFrame, 0, 0, 1, 1)
 
-        self.ButtonsFrame = QFrame(AccountDialog)
-        self.ButtonsFrame.setObjectName(u"ButtonsFrame")
-        self.ButtonsFrame.setFrameShape(QFrame.Shape.NoFrame)
-        self.ButtonsFrame.setFrameShadow(QFrame.Shadow.Raised)
-        self.horizontalLayout = QHBoxLayout(self.ButtonsFrame)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.buttonsSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.DialogButtonBox = QDialogButtonBox(AccountDialog)
+        self.DialogButtonBox.setObjectName(u"DialogButtonBox")
+        self.DialogButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
-        self.horizontalLayout.addItem(self.buttonsSpacer)
-
-        self.OkButton = QPushButton(self.ButtonsFrame)
-        self.OkButton.setObjectName(u"OkButton")
-
-        self.horizontalLayout.addWidget(self.OkButton)
-
-        self.CancelButton = QPushButton(self.ButtonsFrame)
-        self.CancelButton.setObjectName(u"CancelButton")
-
-        self.horizontalLayout.addWidget(self.CancelButton)
-
-
-        self.gridLayout.addWidget(self.ButtonsFrame, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.DialogButtonBox, 2, 0, 1, 1)
 
         self.DetailsFrame = QFrame(AccountDialog)
         self.DetailsFrame.setObjectName(u"DetailsFrame")
@@ -176,12 +159,11 @@ class Ui_AccountDialog(object):
         QWidget.setTabOrder(self.InvestingCheck, self.AddDataButton)
         QWidget.setTabOrder(self.AddDataButton, self.RemoveDataButton)
         QWidget.setTabOrder(self.RemoveDataButton, self.DataTable)
-        QWidget.setTabOrder(self.DataTable, self.OkButton)
-        QWidget.setTabOrder(self.OkButton, self.CancelButton)
+        QWidget.setTabOrder(self.DataTable, self.DialogButtonBox)
 
         self.retranslateUi(AccountDialog)
-        self.OkButton.clicked.connect(AccountDialog.accept)
-        self.CancelButton.clicked.connect(AccountDialog.reject)
+        self.DialogButtonBox.accepted.connect(AccountDialog.accept)
+        self.DialogButtonBox.rejected.connect(AccountDialog.reject)
 
         QMetaObject.connectSlotsByName(AccountDialog)
     # setupUi
@@ -198,8 +180,6 @@ class Ui_AccountDialog(object):
         self.ReconciledValue.setToolTip(QCoreApplication.translate("AccountDialog", u"Set automatically when this account is reconciled by an operation", None))
 #endif // QT_CONFIG(tooltip)
         self.ReconciledValue.setText("")
-        self.OkButton.setText(QCoreApplication.translate("AccountDialog", u"OK", None))
-        self.CancelButton.setText(QCoreApplication.translate("AccountDialog", u"Cancel", None))
         self.DataLbl.setText(QCoreApplication.translate("AccountDialog", u"Account details:", None))
 #if QT_CONFIG(tooltip)
         self.AddDataButton.setToolTip(QCoreApplication.translate("AccountDialog", u"Add new", None))

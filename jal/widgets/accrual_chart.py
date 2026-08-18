@@ -2,14 +2,14 @@ from math import floor, ceil
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, QMargins, QDateTime
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
-from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis
-from jal.constants import CustomColor
+from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout, QLabel
+from PySide6.QtCharts import QChart, QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.widgets.helpers import ts2d
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.theme import Theme, Meaning, is_dark_theme
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -37,10 +37,7 @@ class AccrualChartWidget(QWidget):
         for point in series:      # Conversion to 'float' in order not to get 'int' overflow on some platforms
             self.accrued_series.append(float(point['timestamp'] * 1000), float(point['accrued']))
             self.points_series.append(float(point['timestamp'] * 1000), float(point['accrued']))
-        self.accrued_series.setColor(CustomColor.DarkGreen)
         self.points_series.setMarkerSize(7)
-        self.points_series.setColor(CustomColor.DarkGreen)
-        self.points_series.setBorderColor(CustomColor.Grey)
         self.points_series.hovered.connect(self.MouseOverPoint)
 
         self.axisX = QDateTimeAxis()
@@ -70,6 +67,17 @@ class AccrualChartWidget(QWidget):
         self.chartView.chart().layout().setContentsMargins(0, 0, 0, 0)   # To remove extra spacing around chart
         self.chartView.chart().setBackgroundRoundness(0)                 # To remove corner rounding
         self.chartView.chart().setMargins(QMargins(0, 0, 0, 0))          # Allow chart to fill all space
+
+        # A QChart paints its own background and takes its axis and label colours from a chart theme of its own,
+        # which knows nothing about QPalette. So it is pointed at the chart theme that matches the application's
+        # ground and then given that ground itself - after which the series can be derived like anything else.
+        # This has to come after the theme is set: setTheme() overwrites every colour a series already had.
+        chart = self.chartView.chart()
+        chart.setTheme(QChart.ChartTheme.ChartThemeDark if is_dark_theme() else QChart.ChartTheme.ChartThemeLight)
+        chart.setBackgroundBrush(QApplication.palette().base())
+        self.accrued_series.setColor(Theme.text(Meaning.POSITIVE))
+        self.points_series.setColor(Theme.text(Meaning.POSITIVE))
+        self.points_series.setBorderColor(Theme.text(Meaning.MUTED))
 
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)

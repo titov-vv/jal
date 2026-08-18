@@ -1,15 +1,27 @@
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
-from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView, QComboBox
+from PySide6.QtWidgets import (QApplication, QWidget, QStyle, QStyledItemDelegate, QLineEdit, QDateTimeEdit,
+                               QTreeView, QComboBox)
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime, QTimeZone
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
-from jal.constants import CustomColor, Setup
+from jal.constants import Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.widgets.icons import JalIcon
+from jal.widgets.theme import Theme, Meaning
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Draws the background a view item stands on - the selection highlight, the alternating row colour, the hover state -
+# through the style that owns them. A delegate that overrides paint() completely has to do this itself: nothing else
+# will, and a cell that skips it simply doesn't look selected while the rest of its row does.
+def draw_item_panel(painter, option):
+    widget = option.widget
+    style = widget.style() if widget is not None else QApplication.style()
+    style.drawPrimitive(QStyle.PE_PanelItemViewItem, option, painter, widget)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -80,7 +92,7 @@ class GridLinesDelegate(QStyledItemDelegate):
             pen = painter.pen()
             pen.setWidth(1)
             pen.setStyle(Qt.DotLine)
-            pen.setColor(Qt.GlobalColor.lightGray)
+            pen.setColor(Theme.separator())
             painter.setPen(pen)
             painter.drawRect(option.rect)
             painter.restore()
@@ -164,9 +176,9 @@ class FloatDelegate(GridLinesDelegate):
         if self._percent:
             amount *= Decimal('100')
         if amount > Decimal('0'):
-            self._color = CustomColor.LightGreen
+            self._color = Theme.fill(Meaning.POSITIVE)
         elif amount < Decimal('0'):
-            self._color = CustomColor.LightRed
+            self._color = Theme.fill(Meaning.NEGATIVE)
         else:
             self._color = None
             if self._empty_zero:
@@ -227,6 +239,7 @@ class BoolDelegate(GridLinesDelegate):
 
     def paint(self, painter, option, index):
         value = index.model().data(index, Qt.DisplayRole)
+        draw_item_panel(painter, option)   # otherwise a selected row loses its highlight in this column
         painter.save()
         if value:
             icon = JalIcon[JalIcon.OK]
@@ -366,33 +379,37 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
         super().__init__(parent=parent)
 
     def paint(self, painter, option, index):
+        draw_item_panel(painter, option)  # otherwise a selected row loses its highlight in this column
         data = index.model().data(index)
         if not data:
             return
         painter.save()
-        color = index.model().data(index, role=Qt.ForegroundRole)
+        # While a row is selected the style's own pairing wins: the semantic green and red are derived to be
+        # readable on the table's ground, not on the highlight color, so they would be the wrong ink for it.
+        selected = bool(option.state & QStyle.State_Selected)
+        color = option.palette.highlightedText().color() if selected else index.model().data(index, role=Qt.ForegroundRole)
         rect = option.rect
         H = rect.height()
         Y = rect.top()
         rect.setHeight(H / len(data))
         for i, item in enumerate(data):
             rect.moveTop(Y + i * (H / len(data)))
-            self.draw_value(option.rect, painter, item, color)
+            self.draw_value(option.rect, painter, item, color, colored=self._colors and not selected)
         painter.restore()
 
-    # Displays given value as formatted number with required color (or Green/Red if self._colors is True)
+    # Displays given value as formatted number with required color (or Green/Red if colored is True)
     # If value is None - do nothing, If value is Decimal.NaN - displays Setup.NULL_VALUE
-    def draw_value(self, rect, painter, value, color=None):
+    def draw_value(self, rect, painter, value, color=None, colored=True):
         text = localize_decimal(value, precision=2, sign=self._signs)
         pen = painter.pen()
         try:
             if self._view.isEnabled():
-                if self._colors:
+                if colored:
                     if value is not None and not value.is_nan():
                         if value >= 0:
-                            pen.setColor(CustomColor.DarkGreen)
+                            pen.setColor(Theme.text(Meaning.POSITIVE))
                         else:
-                            pen.setColor(CustomColor.DarkRed)
+                            pen.setColor(Theme.text(Meaning.NEGATIVE))
                 else:
                     if color is not None:
                         pen.setColor(color)

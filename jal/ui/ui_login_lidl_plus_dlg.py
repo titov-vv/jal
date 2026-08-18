@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QPushButton,
-    QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
+    QFrame, QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_LoginLidlPlusDialog(object):
     def setupUi(self, LoginLidlPlusDialog):
@@ -51,29 +51,25 @@ class Ui_LoginLidlPlusDialog(object):
 
         self.verticalLayout_6.addWidget(self.SplitLine)
 
-        self.CloseBtn = QPushButton(self.ButtonFrame)
-        self.CloseBtn.setObjectName(u"CloseBtn")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.CloseBtn.sizePolicy().hasHeightForWidth())
-        self.CloseBtn.setSizePolicy(sizePolicy1)
+        self.DialogButtonBox = QDialogButtonBox(self.ButtonFrame)
+        self.DialogButtonBox.setObjectName(u"DialogButtonBox")
+        self.DialogButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
 
-        self.verticalLayout_6.addWidget(self.CloseBtn, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.verticalLayout_6.addWidget(self.DialogButtonBox)
 
 
         self.verticalLayout_3.addWidget(self.ButtonFrame)
 
-        QWidget.setTabOrder(self.LidlPlusWebView, self.CloseBtn)
+        QWidget.setTabOrder(self.LidlPlusWebView, self.DialogButtonBox)
 
         self.retranslateUi(LoginLidlPlusDialog)
-        self.CloseBtn.clicked.connect(LoginLidlPlusDialog.close)
+        self.DialogButtonBox.rejected.connect(LoginLidlPlusDialog.reject)
 
         QMetaObject.connectSlotsByName(LoginLidlPlusDialog)
     # setupUi
 
     def retranslateUi(self, LoginLidlPlusDialog):
         LoginLidlPlusDialog.setWindowTitle(QCoreApplication.translate("LoginLidlPlusDialog", u"Authorization Lidl Plus", None))
-        self.CloseBtn.setText(QCoreApplication.translate("LoginLidlPlusDialog", u"Close", None))
     # retranslateUi
 

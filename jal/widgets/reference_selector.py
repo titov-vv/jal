@@ -1,9 +1,9 @@
-from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QToolButton
+from PySide6.QtCore import Qt, Signal, Property, Slot, QEvent, QModelIndex
+from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout, QLineEdit, QLabel, QToolButton
 from PySide6.QtGui import QPalette
 from jal.widgets.icons import JalIcon
-from jal.constants import CustomColor
 from jal.widgets.helpers import layout_step
+from jal.widgets.theme import Theme, Meaning
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -141,11 +141,15 @@ class ReferenceSelectorWidget(QWidget):
         self.selected_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
         self.changed.emit()
 
-    # Highlights input field with red color if widget has invalid value
+    # Highlights input field with red color if widget has invalid value.
     def _update_view(self):
+        palette = QPalette(QApplication.palette(self.name))
         if self._validate and not self.p_selected_id:
-            p = QPalette()
-            p.setColor(QPalette.Base, CustomColor.LightRed)
-        else:
-            p = self.style().standardPalette()
-        self.name.setPalette(p)
+            palette.setColor(QPalette.Base, Theme.fill(Meaning.NEGATIVE))
+        self.name.setPalette(palette)
+
+    # A theme switch replaces the palette this widget derived its own from, so the derivation has to be redone
+    def changeEvent(self, event):
+        if event.type() == QEvent.ApplicationPaletteChange:
+            self._update_view()
+        super().changeEvent(event)

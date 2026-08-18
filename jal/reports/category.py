@@ -9,7 +9,7 @@ from jal.db.common_models import CategoryTreeModel
 from jal.ui.reports.ui_category_report import Ui_CategoryReportWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.reference_dialogs import CategoryListDialog
-from jal.widgets.helpers import set_tables_row_height
+from jal.widgets.helpers import TableSelectionRestorer, set_tables_row_height
 
 JAL_REPORT_CLASS = "CategoryReport"
 
@@ -72,6 +72,7 @@ class CategoryReportWindow(MdiWidget):
         self.ui.ReportRange.changed.connect(self.updateReport)
         self.ui.ReportCategoryEdit.changed.connect(self.updateReport)
         self.ui.TotalCurrencyCombo.changed.connect(self.updateReport)
+        self._selection_restorer = TableSelectionRestorer(self.ui.ReportTableView)
         self.ui.ReportTableView.selectionModel().selectionChanged.connect(self.onOperationSelect)
 
     @Slot()
@@ -81,11 +82,15 @@ class CategoryReportWindow(MdiWidget):
             total_currency_id=self.ui.TotalCurrencyCombo.selected_id)
 
     @Slot()
-    def onOperationSelect(self, selected, _deselected):
+    def onOperationSelect(self, selected, deselected):
+        if self._selection_restorer.busy():
+            return
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
             operation_type, oid = self.ui.ReportTableView.model().get_operation(selected_row)
-            self.ui.OperationDetails.show_operation(operation_type, oid)
+            shown = self.ui.OperationDetails.show_operation(operation_type, oid)
         else:
-            self.ui.OperationDetails.show_operation(LedgerTransaction.NA, 0)
+            shown = self.ui.OperationDetails.show_operation(LedgerTransaction.NA, 0)
+        if not shown:
+            self._selection_restorer.restore(deselected)   # the user chose to stay with the unsaved operation

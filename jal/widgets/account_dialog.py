@@ -150,8 +150,6 @@ class AccountDialog(QDialog):
 
         self.ui.AddDataButton.setIcon(JalIcon[JalIcon.ADD])
         self.ui.RemoveDataButton.setIcon(JalIcon[JalIcon.REMOVE])
-        self.ui.OkButton.setIcon(JalIcon[JalIcon.OK])
-        self.ui.CancelButton.setIcon(JalIcon[JalIcon.CANCEL])
 
         self.ui.AddDataButton.clicked.connect(self.onAddData)
         self.ui.RemoveDataButton.clicked.connect(self.onRemoveData)

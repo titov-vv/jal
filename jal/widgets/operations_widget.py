@@ -7,7 +7,7 @@ from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import TagsListDialog
-from jal.widgets.helpers import ManipulateDate, set_tables_row_height
+from jal.widgets.helpers import ManipulateDate, TableSelectionRestorer, set_tables_row_height
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
@@ -53,6 +53,7 @@ class OperationsWidget(MdiWidget):
         self.ui.OperationsTableView.setModel(self.operations_filtered_model)
         self.operations_model.configureView()
         self.ui.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self._selection_restorer = TableSelectionRestorer(self.ui.OperationsTableView)
 
         self.connect_signals_and_slots()
 
@@ -112,7 +113,9 @@ class OperationsWidget(MdiWidget):
         self.ui.ChooseAccountBtn.account_id = index.model().getAccountId(index)
 
     @Slot()
-    def operation_selection_change(self, selected, _deselected):
+    def operation_selection_change(self, selected, deselected):
+        if self._selection_restorer.busy():
+            return
         otype = LedgerTransaction.NA
         oid = 0
         if len(self.ui.OperationsTableView.selectionModel().selectedRows()) == 1:
@@ -120,7 +123,8 @@ class OperationsWidget(MdiWidget):
             if idx:
                 selected_row = self.operations_filtered_model.mapToSource(idx[0]).row()
                 otype, oid = self.operations_model.get_operation(selected_row)
-        self.ui.OperationsTabs.show_operation(otype, oid)
+        if not self.ui.OperationsTabs.show_operation(otype, oid):
+            self._selection_restorer.restore(deselected)   # the user chose to stay with the unsaved operation
 
     @Slot()
     def operation_context_menu(self, pos):

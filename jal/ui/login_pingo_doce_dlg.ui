@@ -114,16 +114,13 @@
       <enum>QFrame::Shadow::Plain</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_9">
-      <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
-       <widget class="QPushButton" name="LoginBtn">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <item alignment="Qt::AlignmentFlag::AlignTop">
+       <widget class="QDialogButtonBox" name="DialogButtonBox">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
-        <property name="text">
-         <string>Login</string>
+        <property name="standardButtons">
+         <set>QDialogButtonBox::StandardButton::Cancel</set>
         </property>
        </widget>
       </item>
@@ -135,8 +132,25 @@
  <tabstops>
   <tabstop>PhoneNumberEdit</tabstop>
   <tabstop>PasswordEdit</tabstop>
-  <tabstop>LoginBtn</tabstop>
+  <tabstop>DialogButtonBox</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>DialogButtonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>LoginPingoDoceDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

@@ -66,35 +66,53 @@ class JalOperationsTabs(QStackedWidget):
                 operations[key] = widget.name
         return operations
 
-    def _check_for_changes(self):
+    # Asks what to do with any operation that still has unsaved changes before the view moves off it.
+    # Returns False when it must not move: either the user asked to stay, or a save was asked for and refused
+    # (saveChanges() runs the widget's own validation, which reports its complaint and leaves the edits pending).
+    def _check_for_changes(self) -> bool:
         for key, widget in self.widgets.items():
             if key == LedgerTransaction.NA:
                 continue
-            if widget.modified:
-                reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
-                                              widget.name +
-                                              self.tr(" has uncommitted changes,\ndo you want to save it?"),
-                                              QMessageBox.Yes, QMessageBox.No)
-                if reply == QMessageBox.Yes:
-                    widget.saveChanges()
-                else:
-                    widget.revertChanges()
+            if not widget.modified:
+                continue
+            answer = QMessageBox().warning(self, self.tr("You have unsaved changes"),
+                                           widget.name +
+                                           self.tr(" has unsaved changes,\ndo you want to save them?"),
+                                           QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+                                           QMessageBox.Save)
+            if answer == QMessageBox.Cancel:
+                return False
+            if answer == QMessageBox.Save:
+                widget.saveChanges()
+                if widget.modified:   # the widget refused to save, so the edits are still there to lose
+                    return False
+            else:
+                widget.revertChanges()
+        return True
 
-    def show_operation(self, otype, oid):
-        self._check_for_changes()
+    # The three navigation entry points below return False when the move was called off, so that whatever drove
+    # them - a table selection, a toolbar button - can put itself back the way it was.
+    def show_operation(self, otype, oid) -> bool:
+        if not self._check_for_changes():
+            return False
         self.setCurrentIndex(otype)
         if otype != LedgerTransaction.NA:
             self.widgets[otype].set_id(oid)
+        return True
 
-    def new_operation(self, otype, account_id):
-        self._check_for_changes()
+    def new_operation(self, otype, account_id) -> bool:
+        if not self._check_for_changes():
+            return False
         self.widgets[otype].createNew(account_id=account_id)
         self.setCurrentIndex(otype)
+        return True
 
     @Slot()
-    def copy_operation(self):
+    def copy_operation(self) -> bool:
         otype = self.currentIndex()
         if otype == LedgerTransaction.NA:
-            return
-        self._check_for_changes()
+            return False
+        if not self._check_for_changes():
+            return False
         self.widgets[otype].copyNew()
+        return True

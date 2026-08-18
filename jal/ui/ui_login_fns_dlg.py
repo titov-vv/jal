@@ -16,9 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import (QApplication, QDialog, QFormLayout, QFrame,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QTabWidget, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
+    QFormLayout, QFrame, QLabel, QLineEdit,
+    QPushButton, QSizePolicy, QSpacerItem, QTabWidget,
+    QVBoxLayout, QWidget)
 
 class Ui_LoginFNSDialog(object):
     def setupUi(self, LoginFNSDialog):
@@ -107,23 +108,9 @@ class Ui_LoginFNSDialog(object):
         self.verticalLayout_10 = QVBoxLayout(self.SMSButtonFrame)
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
         self.verticalLayout_10.setContentsMargins(0, 0, 0, 6)
-        self.frame = QFrame(self.SMSButtonFrame)
-        self.frame.setObjectName(u"frame")
-        sizePolicy1.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
-        self.frame.setSizePolicy(sizePolicy1)
-        self.frame.setFrameShape(QFrame.Shape.NoFrame)
-        self.frame.setFrameShadow(QFrame.Shadow.Plain)
-        self.verticalLayout_9 = QVBoxLayout(self.frame)
-        self.verticalLayout_9.setObjectName(u"verticalLayout_9")
-        self.SMSLoginBtn = QPushButton(self.frame)
-        self.SMSLoginBtn.setObjectName(u"SMSLoginBtn")
-        sizePolicy.setHeightForWidth(self.SMSLoginBtn.sizePolicy().hasHeightForWidth())
-        self.SMSLoginBtn.setSizePolicy(sizePolicy)
+        self.SMSButtonSpacer = QSpacerItem(20, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.verticalLayout_9.addWidget(self.SMSLoginBtn, 0, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignTop)
-
-
-        self.verticalLayout_10.addWidget(self.frame)
+        self.verticalLayout_10.addItem(self.SMSButtonSpacer)
 
         self.line = QFrame(self.SMSButtonFrame)
         self.line.setObjectName(u"line")
@@ -132,12 +119,12 @@ class Ui_LoginFNSDialog(object):
 
         self.verticalLayout_10.addWidget(self.line)
 
-        self.SMSCloseBtn = QPushButton(self.SMSButtonFrame)
-        self.SMSCloseBtn.setObjectName(u"SMSCloseBtn")
-        sizePolicy.setHeightForWidth(self.SMSCloseBtn.sizePolicy().hasHeightForWidth())
-        self.SMSCloseBtn.setSizePolicy(sizePolicy)
+        self.SMSButtonBox = QDialogButtonBox(self.SMSButtonFrame)
+        self.SMSButtonBox.setObjectName(u"SMSButtonBox")
+        self.SMSButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.SMSButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
 
-        self.verticalLayout_10.addWidget(self.SMSCloseBtn, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.verticalLayout_10.addWidget(self.SMSButtonBox)
 
 
         self.verticalLayout_7.addWidget(self.SMSButtonFrame)
@@ -192,23 +179,9 @@ class Ui_LoginFNSDialog(object):
         self.verticalLayout_4 = QVBoxLayout(self.FNSButtonFrame)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 6)
-        self.FNSLoginFrame = QFrame(self.FNSButtonFrame)
-        self.FNSLoginFrame.setObjectName(u"FNSLoginFrame")
-        sizePolicy1.setHeightForWidth(self.FNSLoginFrame.sizePolicy().hasHeightForWidth())
-        self.FNSLoginFrame.setSizePolicy(sizePolicy1)
-        self.FNSLoginFrame.setFrameShape(QFrame.Shape.NoFrame)
-        self.FNSLoginFrame.setFrameShadow(QFrame.Shadow.Plain)
-        self.verticalLayout_5 = QVBoxLayout(self.FNSLoginFrame)
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.FNSLoginBtn = QPushButton(self.FNSLoginFrame)
-        self.FNSLoginBtn.setObjectName(u"FNSLoginBtn")
-        sizePolicy.setHeightForWidth(self.FNSLoginBtn.sizePolicy().hasHeightForWidth())
-        self.FNSLoginBtn.setSizePolicy(sizePolicy)
+        self.FNSButtonSpacer = QSpacerItem(20, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.verticalLayout_5.addWidget(self.FNSLoginBtn, 0, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignTop)
-
-
-        self.verticalLayout_4.addWidget(self.FNSLoginFrame)
+        self.verticalLayout_4.addItem(self.FNSButtonSpacer)
 
         self.FNSSplitLine = QFrame(self.FNSButtonFrame)
         self.FNSSplitLine.setObjectName(u"FNSSplitLine")
@@ -217,12 +190,12 @@ class Ui_LoginFNSDialog(object):
 
         self.verticalLayout_4.addWidget(self.FNSSplitLine)
 
-        self.FNSCloseBtn = QPushButton(self.FNSButtonFrame)
-        self.FNSCloseBtn.setObjectName(u"FNSCloseBtn")
-        sizePolicy.setHeightForWidth(self.FNSCloseBtn.sizePolicy().hasHeightForWidth())
-        self.FNSCloseBtn.setSizePolicy(sizePolicy)
+        self.FNSButtonBox = QDialogButtonBox(self.FNSButtonFrame)
+        self.FNSButtonBox.setObjectName(u"FNSButtonBox")
+        self.FNSButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.FNSButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
 
-        self.verticalLayout_4.addWidget(self.FNSCloseBtn, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.verticalLayout_4.addWidget(self.FNSButtonBox)
 
 
         self.verticalLayout.addWidget(self.FNSButtonFrame)
@@ -255,12 +228,12 @@ class Ui_LoginFNSDialog(object):
 
         self.verticalLayout_6.addWidget(self.ESIASplitLine)
 
-        self.ESIACloseBtn = QPushButton(self.ESIAButtonFrame)
-        self.ESIACloseBtn.setObjectName(u"ESIACloseBtn")
-        sizePolicy.setHeightForWidth(self.ESIACloseBtn.sizePolicy().hasHeightForWidth())
-        self.ESIACloseBtn.setSizePolicy(sizePolicy)
+        self.ESIAButtonBox = QDialogButtonBox(self.ESIAButtonFrame)
+        self.ESIAButtonBox.setObjectName(u"ESIAButtonBox")
+        self.ESIAButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.ESIAButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
 
-        self.verticalLayout_6.addWidget(self.ESIACloseBtn, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.verticalLayout_6.addWidget(self.ESIAButtonBox)
 
 
         self.verticalLayout_2.addWidget(self.ESIAButtonFrame)
@@ -277,19 +250,17 @@ class Ui_LoginFNSDialog(object):
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.PhoneNumberEdit, self.GetCodeBtn)
         QWidget.setTabOrder(self.GetCodeBtn, self.CodeEdit)
-        QWidget.setTabOrder(self.CodeEdit, self.SMSLoginBtn)
-        QWidget.setTabOrder(self.SMSLoginBtn, self.SMSCloseBtn)
-        QWidget.setTabOrder(self.SMSCloseBtn, self.InnEdit)
+        QWidget.setTabOrder(self.CodeEdit, self.SMSButtonBox)
+        QWidget.setTabOrder(self.SMSButtonBox, self.InnEdit)
         QWidget.setTabOrder(self.InnEdit, self.PasswordEdit)
-        QWidget.setTabOrder(self.PasswordEdit, self.FNSLoginBtn)
-        QWidget.setTabOrder(self.FNSLoginBtn, self.FNSCloseBtn)
-        QWidget.setTabOrder(self.FNSCloseBtn, self.ESIAWebView)
-        QWidget.setTabOrder(self.ESIAWebView, self.ESIACloseBtn)
+        QWidget.setTabOrder(self.PasswordEdit, self.FNSButtonBox)
+        QWidget.setTabOrder(self.FNSButtonBox, self.ESIAWebView)
+        QWidget.setTabOrder(self.ESIAWebView, self.ESIAButtonBox)
 
         self.retranslateUi(LoginFNSDialog)
-        self.FNSCloseBtn.clicked.connect(LoginFNSDialog.close)
-        self.ESIACloseBtn.clicked.connect(LoginFNSDialog.close)
-        self.SMSCloseBtn.clicked.connect(LoginFNSDialog.close)
+        self.FNSButtonBox.rejected.connect(LoginFNSDialog.reject)
+        self.SMSButtonBox.rejected.connect(LoginFNSDialog.reject)
+        self.ESIAButtonBox.rejected.connect(LoginFNSDialog.reject)
 
         self.LoginMethodTabs.setCurrentIndex(0)
 
@@ -302,15 +273,10 @@ class Ui_LoginFNSDialog(object):
         self.PhoneLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"Phone number:", None))
         self.GetCodeBtn.setText(QCoreApplication.translate("LoginFNSDialog", u"Send SMS with code", None))
         self.CodeLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"Code from SMS:", None))
-        self.SMSLoginBtn.setText(QCoreApplication.translate("LoginFNSDialog", u"Login", None))
-        self.SMSCloseBtn.setText(QCoreApplication.translate("LoginFNSDialog", u"Close", None))
         self.LoginMethodTabs.setTabText(self.LoginMethodTabs.indexOf(self.LoginSMSTab), QCoreApplication.translate("LoginFNSDialog", u"SMS Login", None))
         self.InnLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"INN:", None))
         self.PasswordLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"Password:", None))
-        self.FNSLoginBtn.setText(QCoreApplication.translate("LoginFNSDialog", u"Login", None))
-        self.FNSCloseBtn.setText(QCoreApplication.translate("LoginFNSDialog", u"Close", None))
         self.LoginMethodTabs.setTabText(self.LoginMethodTabs.indexOf(self.LoginPasswordTab), QCoreApplication.translate("LoginFNSDialog", u"FNS Login", None))
-        self.ESIACloseBtn.setText(QCoreApplication.translate("LoginFNSDialog", u"Close", None))
         self.LoginMethodTabs.setTabText(self.LoginMethodTabs.indexOf(self.ESIATab), QCoreApplication.translate("LoginFNSDialog", u"ESIA Login", None))
     # retranslateUi
 

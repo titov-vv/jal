@@ -15,11 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QDateTimeEdit, QDialog,
-    QFrame, QGridLayout, QGroupBox, QHBoxLayout,
-    QHeaderView, QLabel, QLineEdit, QPushButton,
-    QSizePolicy, QSpacerItem, QTableView, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QComboBox, QDateTimeEdit,
+    QDialog, QDialogButtonBox, QFrame, QGridLayout,
+    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
@@ -189,32 +189,12 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.verticalLayout.addWidget(self.ReceiptGroup)
 
-        self.DialogButtonsFrame = QFrame(ImportShopReceiptDlg)
-        self.DialogButtonsFrame.setObjectName(u"DialogButtonsFrame")
-        self.DialogButtonsFrame.setFrameShape(QFrame.Shape.NoFrame)
-        self.DialogButtonsFrame.setFrameShadow(QFrame.Shadow.Plain)
-        self.horizontalLayout_4 = QHBoxLayout(self.DialogButtonsFrame)
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.horizontalLayout_4.setContentsMargins(2, 2, 2, 2)
-        self.ClearBtn = QPushButton(self.DialogButtonsFrame)
-        self.ClearBtn.setObjectName(u"ClearBtn")
-        self.ClearBtn.setEnabled(True)
+        self.DialogButtonBox = QDialogButtonBox(ImportShopReceiptDlg)
+        self.DialogButtonBox.setObjectName(u"DialogButtonBox")
+        self.DialogButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
 
-        self.horizontalLayout_4.addWidget(self.ClearBtn)
-
-        self.AddOperationBtn = QPushButton(self.DialogButtonsFrame)
-        self.AddOperationBtn.setObjectName(u"AddOperationBtn")
-        self.AddOperationBtn.setEnabled(True)
-
-        self.horizontalLayout_4.addWidget(self.AddOperationBtn)
-
-        self.CloseBtn = QPushButton(self.DialogButtonsFrame)
-        self.CloseBtn.setObjectName(u"CloseBtn")
-
-        self.horizontalLayout_4.addWidget(self.CloseBtn)
-
-
-        self.verticalLayout.addWidget(self.DialogButtonsFrame)
+        self.verticalLayout.addWidget(self.DialogButtonBox)
 
 #if QT_CONFIG(shortcut)
         self.ReceiptAPILabel.setBuddy(self.ReceiptAPICombo)
@@ -231,12 +211,9 @@ class Ui_ImportShopReceiptDlg(object):
         QWidget.setTabOrder(self.AccountEdit, self.LinesTableView)
         QWidget.setTabOrder(self.LinesTableView, self.AssignCategoryBtn)
         QWidget.setTabOrder(self.AssignCategoryBtn, self.AssignTagBtn)
-        QWidget.setTabOrder(self.AssignTagBtn, self.ClearBtn)
-        QWidget.setTabOrder(self.ClearBtn, self.AddOperationBtn)
-        QWidget.setTabOrder(self.AddOperationBtn, self.CloseBtn)
+        QWidget.setTabOrder(self.AssignTagBtn, self.DialogButtonBox)
 
         self.retranslateUi(ImportShopReceiptDlg)
-        self.CloseBtn.clicked.connect(ImportShopReceiptDlg.close)
 
         QMetaObject.connectSlotsByName(ImportShopReceiptDlg)
     # setupUi
@@ -257,8 +234,5 @@ class Ui_ImportShopReceiptDlg(object):
         self.AccountLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Account:", None))
         self.AssignCategoryBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Auto-assign categories", None))
         self.AssignTagBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Set Tag for all lines", None))
-        self.ClearBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Clear", None))
-        self.AddOperationBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Add", None))
-        self.CloseBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Close", None))
     # retranslateUi
 

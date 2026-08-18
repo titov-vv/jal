@@ -1,7 +1,7 @@
 import base64
 import logging
 from PySide6.QtCore import Qt, Signal, Slot, QPoint
-from PySide6.QtWidgets import QAbstractItemView, QDialog, QHeaderView, QMenu, QMessageBox
+from PySide6.QtWidgets import QAbstractItemView, QDialog, QDialogButtonBox, QHeaderView, QMenu, QMessageBox
 from jal.ui.ui_asset_list_dlg import Ui_AssetsListDialog
 from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
@@ -41,6 +41,9 @@ class SymbolListDialog(QDialog):
         self.ui.LocationCombo.currentIndexChanged.connect(self.subset_changed)
         self.ui.SearchString.textChanged.connect(self.search_changed)
         self.ui.DataView.doubleClicked.connect(self.OnDoubleClicked)
+        self.ui.DataView.selectionModel().selectionChanged.connect(self.onRowSelected)
+        self.ui.DialogButtonBox.accepted.connect(self.onDialogAccept)
+        self.ui.DialogButtonBox.rejected.connect(self.onDialogReject)
         self.ui.AddBtn.clicked.connect(self.onAdd)
         self.ui.EditBtn.clicked.connect(self.onEdit)
         self.ui.RemoveBtn.clicked.connect(self.onRemove)
@@ -70,6 +73,41 @@ class SymbolListDialog(QDialog):
             if current_index.isValid():
                 self.ui.DataView.scrollTo(current_index, QAbstractItemView.PositionAtCenter)
 
+    # The dialog does two jobs: it manages the symbol list, where the only thing left to do is close it, and it
+    # picks a symbol for someone else, where it has an answer to return. The button box says which one is running.
+    def _setup_dialog_buttons(self):
+        if self.selection_enabled:
+            self.ui.DialogButtonBox.setStandardButtons(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        else:
+            self.ui.DialogButtonBox.setStandardButtons(QDialogButtonBox.Close)
+        self._update_accept_button()
+
+    # There is nothing to return until a row is picked, so OK stays unavailable rather than accepting an empty answer
+    def _update_accept_button(self):
+        accept_button = self.ui.DialogButtonBox.button(QDialogButtonBox.Ok)
+        if accept_button is not None:
+            accept_button.setEnabled(self.ui.DataView.currentIndex().isValid())
+
+    @Slot()
+    def onRowSelected(self, selected, _deselected):
+        idx = selected.indexes()
+        if idx:
+            self.selected_id = self.model.getId(idx[0])
+            self.p_selected_name = self.model.getName(idx[0])
+        self._update_accept_button()
+
+    # Both exits go through close() rather than accept()/reject(): closeEvent() is what stores the window geometry
+    # and the column layout, and QDialog.accept() would hide the dialog without ever sending a close event.
+    @Slot()
+    def onDialogAccept(self):
+        self.setResult(QDialog.Accepted)
+        self.close()
+
+    @Slot()
+    def onDialogReject(self):
+        self.setResult(QDialog.Rejected)
+        self.close()
+
     @Slot()
     def closeEvent(self, event):
         JalSettings().setValue('DlgGeometry_' + self.windowTitle(), base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
@@ -85,6 +123,7 @@ class SymbolListDialog(QDialog):
 
     def exec(self, enable_selection=False, selected=0):
         self.selection_enabled = enable_selection
+        self._setup_dialog_buttons()
         if enable_selection:
             item_index = self.model.locateItem(selected)
             self.ui.DataView.setCurrentIndex(item_index)

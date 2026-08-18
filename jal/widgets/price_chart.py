@@ -2,14 +2,14 @@ from math import floor, ceil
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, QMargins, QDateTime
-from PySide6.QtWidgets import QWidget, QHBoxLayout
-from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis, QXYSeries
+from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout
+from PySide6.QtCharts import QChart, QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis, QXYSeries
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction
-from jal.constants import CustomColor
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d
+from jal.widgets.theme import Theme, Meaning, is_dark_theme
 
 
 class ChartWidget(QWidget):
@@ -21,17 +21,12 @@ class ChartWidget(QWidget):
         self.quotes_series = QLineSeries()
         for point in quotes:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
             self.quotes_series.append(float(point['timestamp']), point['quote'])
-        self.quotes_series.setColor(CustomColor.DarkBlue)
 
         self._trades = trades
         self.trade_series = QScatterSeries()
-        points_config = {}
-        for i, point in enumerate(trades):            # Conversion to 'float' in order not to get 'int' overflow on some platforms
+        for point in trades:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
             self.trade_series.append(float(point['timestamp']), point['price'])
-            points_config[i] = {QXYSeries.PointConfiguration.Color: point['color']}
         self.trade_series.setMarkerSize(7)
-        self.trade_series.setBorderColor(CustomColor.Grey)
-        self.trade_series.setPointsConfiguration(points_config)
         self.trade_series.hovered.connect(self.MouseOverTrade)
 
         self.axisX = QDateTimeAxis()
@@ -60,6 +55,18 @@ class ChartWidget(QWidget):
         self.chartView.chart().layout().setContentsMargins(0, 0, 0, 0)  # To remove extra spacing around chart
         self.chartView.chart().setBackgroundRoundness(0)  # To remove corner rounding
         self.chartView.chart().setMargins(QMargins(0, 0, 0, 0))  # Allow chart to fill all space
+
+        # A QChart paints its own background and takes its axis and label colors from a chart theme of its own,
+        # which knows nothing about QPalette. So it is pointed at the chart theme that matches the application's
+        # ground and then given that ground itself - after which the series can be derived like anything else.
+        # This has to come after the theme is set: setTheme() overwrites every color a series already had.
+        chart = self.chartView.chart()
+        chart.setTheme(QChart.ChartTheme.ChartThemeDark if is_dark_theme() else QChart.ChartTheme.ChartThemeLight)
+        chart.setBackgroundBrush(QApplication.palette().base())
+        self.quotes_series.setColor(Theme.text(Meaning.INFO))
+        self.trade_series.setBorderColor(Theme.text(Meaning.MUTED))
+        self.trade_series.setPointsConfiguration(
+            {i: {QXYSeries.PointConfiguration.Color: Theme.text(point['meaning'])} for i, point in enumerate(trades)})
 
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)  # Remove extra space around layout
@@ -111,10 +118,10 @@ class ChartWindow(MdiWidget):
         for trade in positions:
             operation = trade.open_operation()
             if trade.open_qty() >= 0:
-                marker_color = CustomColor.LightGreen
+                meaning = Meaning.POSITIVE
                 text = self.tr("Buy")
             else:
-                marker_color = CustomColor.LightRed
+                meaning = Meaning.NEGATIVE
                 text = self.tr("Sell")
             if operation.type() == LedgerTransaction.AssetPayment:
                 text = operation.name() + "\n" + operation.description().split('\n')[0]
@@ -122,7 +129,7 @@ class ChartWindow(MdiWidget):
                 'timestamp': operation.timestamp() * 1000,  # timestamp to ms
                 'price': trade.open_price(adjusted=True),
                 'qty': trade.open_qty(),
-                'color': marker_color,
+                'meaning': meaning,   # what the marker means - its colour depends on the ground and is picked later
                 'text': text
             })
         return trades

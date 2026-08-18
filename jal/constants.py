@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from PySide6.QtCore import Property, QObject, QLocale
-from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QComboBox
 
 
@@ -602,29 +601,6 @@ class TokenList(PredefinedList, QObject):
 class TokenVerdict:
     Import = 1
     Blacklist = 2
-
-
-class CustomColor:
-    Black = QColor(0, 0, 0)
-    DarkGreen = QColor(0, 100, 0)
-    DarkRed = QColor(139, 0, 0)
-    DarkBlue = QColor(0, 0, 139)
-    DarkYellow = QColor(170, 120, 0)
-    Blue = QColor(0, 0, 255)
-    Grey = QColor(127, 127, 127)
-    LightBlue = QColor(150, 200, 255)
-    LightPurple = QColor(200, 150, 255)
-    LightGreen = QColor(127, 255, 127)
-    LightRed = QColor(255, 127, 127)
-    LightYellow = QColor(255, 255, 200)
-    # Row backgrounds that tell apart the kinds of row a list holds. They are pale on purpose: they group a list at
-    # a glance without competing with the text on top of them or with the selection highlight.
-    PaleYellow = QColor(255, 250, 220)
-    PaleBlue = QColor(225, 240, 255)
-    PaleViolet = QColor(240, 232, 250)
-    PaleGreen = QColor(232, 248, 232)
-    PaleRed = QColor(255, 226, 226)      # something is wrong with this row
-    PaleOrange = QColor(255, 240, 220)   # ... and the paler one: something MIGHT be
 
 
 class AssetTypeComboBox(QComboBox):

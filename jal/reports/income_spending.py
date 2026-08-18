@@ -6,13 +6,13 @@ from PySide6.QtWidgets import QMenu
 from jal.reports.reports import Reports
 from jal.db.asset import JalAsset
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
-from jal.constants import CustomColor
 from jal.db.category import JalCategory
 from jal.widgets.helpers import is_signal_connected, month_list, month_start_ts, month_end_ts, \
     week_list, week_start_ts, week_end_ts, str2int
 from jal.widgets.icons import JalIcon
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.theme import Theme, Meaning
 
 JAL_REPORT_CLASS = "IncomeSpendingReport"
 
@@ -273,11 +273,11 @@ class IncomeSpendingReportModel(QAbstractItemModel):
             if index.column() != 0:
                 year, period = self._root.column2calendar(index.column())
                 if item.getAmount(year, period) > 0:
-                    return QBrush(CustomColor.DarkGreen)
+                    return QBrush(Theme.text(Meaning.POSITIVE))
                 elif item.getAmount(year, period) < 0:
-                    return QBrush(CustomColor.DarkRed)
+                    return QBrush(Theme.text(Meaning.NEGATIVE))
                 else:
-                    return QBrush(CustomColor.Grey)
+                    return QBrush(Theme.text(Meaning.MUTED))
         if role == Qt.TextAlignmentRole:
             if index.column() == 0:
                 return int(Qt.AlignLeft)

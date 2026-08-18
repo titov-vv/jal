@@ -3,7 +3,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QBrush
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import AssetLocation, CustomColor
+from jal.constants import AssetLocation
 from jal.db import address_match
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
@@ -13,6 +13,7 @@ from jal.db.operations import Bridge, Transfer
 from jal.db.transfer_settlement import TransferSettlement
 from jal.net.chain_fetchers.protocols import protocol_names
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate
+from jal.widgets.theme import Theme, Meaning
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -106,8 +107,8 @@ class PendingTransfersModel(ReportTreeModel):
     BASIS = 'basis'
     POISONING = 'poisoning'
     AIRDROP = 'airdrop'
-    _BACKGROUND = {SENT: CustomColor.PaleYellow, ARRIVED: CustomColor.PaleBlue, BRIDGE: CustomColor.PaleGreen,
-                   BASIS: CustomColor.PaleViolet, POISONING: CustomColor.PaleRed, AIRDROP: CustomColor.PaleOrange}
+    _BACKGROUND = {SENT: Meaning.SENT, ARRIVED: Meaning.ARRIVED, BRIDGE: Meaning.BRIDGE,
+                   BASIS: Meaning.BASIS, POISONING: Meaning.POISONING, AIRDROP: Meaning.AIRDROP}
     # The kinds an arriving leg may turn out to be instead of a plain arrival - what the report colours differently
     UNSOLICITED = {TransferSettlement.POISONING: POISONING, TransferSettlement.AIRDROP: AIRDROP}
 
@@ -206,7 +207,7 @@ class PendingTransfersModel(ReportTreeModel):
                 return self._fonts['bold']
             return self._fonts.get(details.get('font', 'normal'), None)
         if role == Qt.BackgroundRole:
-            return QBrush(self._BACKGROUND[details['kind']]) if details.get('kind') else None
+            return QBrush(Theme.tint(self._BACKGROUND[details['kind']])) if details.get('kind') else None
         if role == Qt.ToolTipRole:
             return details.get('tooltip', None)
         return None

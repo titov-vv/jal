@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QFrame,
-    QHBoxLayout, QHeaderView, QLabel, QSizePolicy,
-    QSpacerItem, QTableView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHBoxLayout,
+    QHeaderView, QLabel, QSizePolicy, QSpacerItem,
+    QTableView, QVBoxLayout, QWidget)
 
 class Ui_TaxEstimationDialog(object):
     def setupUi(self, TaxEstimationDialog):

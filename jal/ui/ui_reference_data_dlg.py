@@ -15,11 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
-    QDialog, QFrame, QHBoxLayout, QHeaderView,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QTableView, QTreeView, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QCheckBox,
+    QComboBox, QDialog, QDialogButtonBox, QFrame,
+    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+    QPushButton, QSizePolicy, QSpacerItem, QTableView,
+    QTreeView, QVBoxLayout, QWidget)
 
 class Ui_ReferenceDataDialog(object):
     def setupUi(self, ReferenceDataDialog):
@@ -138,6 +138,13 @@ class Ui_ReferenceDataDialog(object):
 
         self.verticalLayout.addWidget(self.TreeView)
 
+        self.DialogButtonBox = QDialogButtonBox(ReferenceDataDialog)
+        self.DialogButtonBox.setObjectName(u"DialogButtonBox")
+        self.DialogButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
+
+        self.verticalLayout.addWidget(self.DialogButtonBox)
+
 #if QT_CONFIG(shortcut)
         self.GroupLbl.setBuddy(self.GroupCombo)
         self.SearchLbl.setBuddy(self.SearchString)
@@ -152,6 +159,7 @@ class Ui_ReferenceDataDialog(object):
         QWidget.setTabOrder(self.RevertBtn, self.SearchString)
         QWidget.setTabOrder(self.SearchString, self.DataView)
         QWidget.setTabOrder(self.DataView, self.TreeView)
+        QWidget.setTabOrder(self.TreeView, self.DialogButtonBox)
 
         self.retranslateUi(ReferenceDataDialog)
 

@@ -158,8 +158,6 @@ class SymbolDialog(QDialog):
         self.ui.RemoveIdButton.setIcon(JalIcon[JalIcon.REMOVE])
         self.ui.AddDataButton.setIcon(JalIcon[JalIcon.ADD])
         self.ui.RemoveDataButton.setIcon(JalIcon[JalIcon.REMOVE])
-        self.ui.OkButton.setIcon(JalIcon[JalIcon.OK])
-        self.ui.CancelButton.setIcon(JalIcon[JalIcon.CANCEL])
 
         self.ui.SymbolsTable.selectionModel().selectionChanged.connect(self.onSymbolSelected)
         self.ui.AddSymbolButton.clicked.connect(self.onAddSymbol)

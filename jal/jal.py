@@ -2,7 +2,7 @@ import sys
 import os
 import logging
 import traceback
-from PySide6.QtCore import Qt, QTranslator, qInstallMessageHandler, QtMsgType, qDebug
+from PySide6.QtCore import Qt, QLibraryInfo, QTranslator, qInstallMessageHandler, QtMsgType, qDebug
 from PySide6.QtWidgets import QApplication, QMessageBox
 from jal import __version__
 from jal.widgets.main_window import MainWindow
@@ -61,6 +61,12 @@ def main():
     app.setDesktopFileName("jal")          # Matches jal.desktop so Wayland can find the window icon
 
     error = JalDB().init_db()
+    # Qt's own translation has to be loaded separately: it carries the text of the standard buttons that
+    # QDialogButtonBox and QMessageBox create themselves ("Cancel", "Save", "Discard", ...), which never pass
+    # through jal's .qm file. It may be absent from a given Qt installation - the buttons then stay English.
+    qt_translator = QTranslator(app)
+    if qt_translator.load("qtbase_" + JalSettings().getLanguage(), QLibraryInfo.path(QLibraryInfo.TranslationsPath)):
+        app.installTranslator(qt_translator)
     translator = QTranslator(app)
     if translator.load(JalSettings.path(JalDB.PATH_LANG_FILE)):
         if app.installTranslator(translator):

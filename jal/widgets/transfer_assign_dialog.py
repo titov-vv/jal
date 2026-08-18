@@ -1,9 +1,9 @@
 from decimal import Decimal
-from PySide6.QtCore import Qt, QDateTime, QTimeZone
+from PySide6.QtCore import Qt, QDateTime, QEvent, QTimeZone
 from PySide6.QtGui import QPalette
-from PySide6.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QDateTimeEdit, QGroupBox,
-                               QDialogButtonBox, QMessageBox, QPushButton)
-from jal.constants import CustomColor, PredefinedAccountType, AssetLocation
+from PySide6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QDateTimeEdit,
+                               QGroupBox, QDialogButtonBox, QMessageBox, QPushButton)
+from jal.constants import PredefinedAccountType, AssetLocation
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
@@ -17,6 +17,7 @@ from jal.widgets.helpers import ts2d, ts2dt
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.staking_dialogs import NewStakingBoxDialog
+from jal.widgets.theme import Theme, Meaning
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -213,6 +214,12 @@ class TransferAssignDialog(QDialog):
         self._user_typed = True
         self._update_ok_button()
 
+    # The rate line paints itself with a color derived from the palette, so a theme switch has to redo that
+    def changeEvent(self, event):
+        if event.type() == QEvent.ApplicationPaletteChange:
+            self._choice_changed()
+        super().changeEvent(event)
+
     # Re-reads the choice, says what it would do and offers the value it would record
     def _choice_changed(self) -> None:
         if self._leg is None:
@@ -329,9 +336,9 @@ class TransferAssignDialog(QDialog):
             text = self.tr("Rate {}: {}, as of {}").format(pair, localize_decimal(rate), ts2d(rate_timestamp))
             if doubtful:
                 text += self.tr(" - the newest one stored, and it is not of that date")
-        palette = QPalette()
+        palette = QPalette(QApplication.palette(self._rate_label))
         if doubtful:
-            palette.setColor(QPalette.WindowText, CustomColor.DarkRed)
+            palette.setColor(QPalette.WindowText, Theme.text(Meaning.NEGATIVE, palette.window().color()))
         self._rate_label.setPalette(palette)
         self._rate_label.setText(text)
 

@@ -2,11 +2,11 @@ import logging
 import pandas as pd
 from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDateTime, QDate, QTime, QLocale
-from PySide6.QtWidgets import QDialog, QHeaderView, QStyledItemDelegate, QLineEdit, QComboBox
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QHeaderView, QStyle, QStyledItemDelegate, QLineEdit, QComboBox
 from jal.widgets.reference_selector import ReferenceSelectorWidget
-from jal.widgets.delegates import DateTimeEditWithReset
-from jal.constants import CustomColor
+from jal.widgets.delegates import DateTimeEditWithReset, draw_item_panel
 from jal.widgets.helpers import dependency_present, set_tables_row_height
+from jal.widgets.theme import Theme, Meaning
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
@@ -72,8 +72,15 @@ class SlipLinesDelegate(QStyledItemDelegate):
         self._tag_selector = None
 
     def paint(self, painter, option, index):
+        # The style paints the row first - selection, alternating colour, hover - and the confidence tint only
+        # goes on top of it while the row is NOT selected, exactly as an ordinary BackgroundRole would behave.
+        draw_item_panel(painter, option)
+        selected = bool(option.state & QStyle.State_Selected)
         painter.save()
         pen = painter.pen()
+        if selected:
+            pen.setColor(option.palette.highlightedText().color())
+            painter.setPen(pen)
         model = index.model()
         if index.column() == 0:
             text = model.data(index, Qt.DisplayRole)
@@ -81,17 +88,18 @@ class SlipLinesDelegate(QStyledItemDelegate):
         if index.column() == 1:
             text = JalCategory(int(model.data(index, Qt.DisplayRole))).name()
             confidence = model.data(index.siblingAtColumn(2), Qt.DisplayRole)
-            if confidence > 0.75:
-                painter.fillRect(option.rect, CustomColor.LightGreen)
-            elif confidence > 0.5:
-                painter.fillRect(option.rect, CustomColor.LightYellow)
-            else:
-                painter.fillRect(option.rect, CustomColor.LightRed)
+            if not selected:
+                if confidence > 0.75:
+                    painter.fillRect(option.rect, Theme.fill(Meaning.POSITIVE))
+                elif confidence > 0.5:
+                    painter.fillRect(option.rect, Theme.fill(Meaning.WARNING))
+                else:
+                    painter.fillRect(option.rect, Theme.fill(Meaning.NEGATIVE))
             painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         elif index.column() == 4:
             amount = model.data(index, Qt.DisplayRole)
-            if amount == 2:
-                pen.setColor(CustomColor.Grey)
+            if amount == 2 and not selected:
+                pen.setColor(Theme.text(Meaning.MUTED))
                 painter.setPen(pen)
             text = f"{amount:,.2f}"
             painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
@@ -247,10 +255,17 @@ class ImportReceiptDialog(QDialog):
         self.receipt_api = None
         self.tensor_flow_present = dependency_present(['tensorflow'])
 
+        # 'Clear' and 'Add' join the button box rather than sit next to it: neither ends the dialog - one throws the
+        # loaded receipt away, the other writes an operation and leaves the window open for the next receipt - so
+        # they are declared with the roles that say so and the style decides where they go relative to Close.
+        self.add_operation_button = self.ui.DialogButtonBox.addButton(self.tr("Add"), QDialogButtonBox.ActionRole)
+        self.clear_button = self.ui.DialogButtonBox.addButton(self.tr("Clear"), QDialogButtonBox.ResetRole)
+
         self.ui.ScanReceiptQR.clicked.connect(self.processReceiptQR)
         self.ui.DownloadReceiptBtn.clicked.connect(self.processReceiptParams)
-        self.ui.AddOperationBtn.clicked.connect(self.addOperation)
-        self.ui.ClearBtn.clicked.connect(self.clearSlipData)
+        self.add_operation_button.clicked.connect(self.addOperation)
+        self.clear_button.clicked.connect(self.clearSlipData)
+        self.ui.DialogButtonBox.rejected.connect(self.close)
         self.ui.AssignCategoryBtn.clicked.connect(self.recognizeCategories)
         self.ui.ReceiptAPICombo.currentIndexChanged.connect(self.change_api)
 

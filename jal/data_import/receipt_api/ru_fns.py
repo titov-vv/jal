@@ -6,7 +6,7 @@ import time
 from urllib import parse
 from decimal import Decimal
 from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime, QTimeZone
-from PySide6.QtWidgets import QApplication, QDialog
+from PySide6.QtWidgets import QApplication, QDialog, QDialogButtonBox
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.db.settings import JalSettings
@@ -247,10 +247,17 @@ class LoginFNS(QDialog):
         self.web_profile.setUrlRequestInterceptor(self.web_interceptor)
         self.ui.ESIAWebView.setPage(QWebEnginePage(self.web_profile, self))
 
+        # Each login method owns its own button row, so each tab gets its own box. 'Login' is the affirmative
+        # action but not an unconditional accept - it has to reach the tax service first, so accepted() runs the
+        # login and only a successful one calls accept(). 'Send SMS with code' stays in the form above: it is a
+        # step inside the SMS method, not one of the dialog's exits.
+        self.sms_login_button = self.ui.SMSButtonBox.addButton(self.tr("Login"), QDialogButtonBox.AcceptRole)
+        self.fns_login_button = self.ui.FNSButtonBox.addButton(self.tr("Login"), QDialogButtonBox.AcceptRole)
+
         self.ui.LoginMethodTabs.currentChanged.connect(self.on_tab_changed)
         self.ui.GetCodeBtn.clicked.connect(self.send_sms)
-        self.ui.SMSLoginBtn.clicked.connect(self.login_sms)
-        self.ui.FNSLoginBtn.clicked.connect(self.login_fns)
+        self.ui.SMSButtonBox.accepted.connect(self.login_sms)
+        self.ui.FNSButtonBox.accepted.connect(self.login_fns)
 
     def on_tab_changed(self, index):
         if index == 2:  # ESIA login selected

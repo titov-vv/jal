@@ -4,7 +4,7 @@ import logging
 import requests
 from decimal import Decimal
 from PySide6.QtCore import Qt, QDateTime, QTimeZone
-from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialog, QDialogButtonBox
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.db.settings import JalSettings
 from jal.ui.ui_login_pingo_doce_dlg import Ui_LoginPingoDoceDialog
@@ -180,7 +180,11 @@ class LoginPingoDoce(QDialog):
         super().__init__(parent)
         self.ui = Ui_LoginPingoDoceDialog()
         self.ui.setupUi(self)
-        self.ui.LoginBtn.pressed.connect(self.do_login)
+        # 'Login' is the dialog's affirmative action but not an unconditional accept: it has to reach the server
+        # first, so the box's accepted() runs the login and only a successful one calls accept(). Cancel comes from
+        # the box's standard buttons, so the dialog can now be abandoned by something other than the window's cross.
+        self.login_button = self.ui.DialogButtonBox.addButton(self.tr("Login"), QDialogButtonBox.AcceptRole)
+        self.ui.DialogButtonBox.accepted.connect(self.do_login)
         self.phone_number = ''
         self.web_session = requests.Session()
         self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'

@@ -173,35 +173,17 @@
            <number>6</number>
           </property>
           <item>
-           <widget class="QFrame" name="frame">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <spacer name="SMSButtonSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
             </property>
-            <property name="frameShape">
-             <enum>QFrame::Shape::NoFrame</enum>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
             </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Plain</enum>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_9">
-             <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
-              <widget class="QPushButton" name="SMSLoginBtn">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Login</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
+           </spacer>
           </item>
           <item>
            <widget class="Line" name="line">
@@ -210,16 +192,13 @@
             </property>
            </widget>
           </item>
-          <item alignment="Qt::AlignmentFlag::AlignHCenter">
-           <widget class="QPushButton" name="SMSCloseBtn">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+          <item>
+           <widget class="QDialogButtonBox" name="SMSButtonBox">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
-            <property name="text">
-             <string>Close</string>
+            <property name="standardButtons">
+             <set>QDialogButtonBox::StandardButton::Close</set>
             </property>
            </widget>
           </item>
@@ -327,35 +306,17 @@
            <number>6</number>
           </property>
           <item>
-           <widget class="QFrame" name="FNSLoginFrame">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <spacer name="FNSButtonSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
             </property>
-            <property name="frameShape">
-             <enum>QFrame::Shape::NoFrame</enum>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
             </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Plain</enum>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_5">
-             <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
-              <widget class="QPushButton" name="FNSLoginBtn">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Login</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
+           </spacer>
           </item>
           <item>
            <widget class="Line" name="FNSSplitLine">
@@ -364,16 +325,13 @@
             </property>
            </widget>
           </item>
-          <item alignment="Qt::AlignmentFlag::AlignHCenter">
-           <widget class="QPushButton" name="FNSCloseBtn">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+          <item>
+           <widget class="QDialogButtonBox" name="FNSButtonBox">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
-            <property name="text">
-             <string>Close</string>
+            <property name="standardButtons">
+             <set>QDialogButtonBox::StandardButton::Close</set>
             </property>
            </widget>
           </item>
@@ -442,16 +400,13 @@
             </property>
            </widget>
           </item>
-          <item alignment="Qt::AlignmentFlag::AlignHCenter">
-           <widget class="QPushButton" name="ESIACloseBtn">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+          <item>
+           <widget class="QDialogButtonBox" name="ESIAButtonBox">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
-            <property name="text">
-             <string>Close</string>
+            <property name="standardButtons">
+             <set>QDialogButtonBox::StandardButton::Close</set>
             </property>
            </widget>
           </item>
@@ -468,14 +423,12 @@
   <tabstop>PhoneNumberEdit</tabstop>
   <tabstop>GetCodeBtn</tabstop>
   <tabstop>CodeEdit</tabstop>
-  <tabstop>SMSLoginBtn</tabstop>
-  <tabstop>SMSCloseBtn</tabstop>
+  <tabstop>SMSButtonBox</tabstop>
   <tabstop>InnEdit</tabstop>
   <tabstop>PasswordEdit</tabstop>
-  <tabstop>FNSLoginBtn</tabstop>
-  <tabstop>FNSCloseBtn</tabstop>
+  <tabstop>FNSButtonBox</tabstop>
   <tabstop>ESIAWebView</tabstop>
-  <tabstop>ESIACloseBtn</tabstop>
+  <tabstop>ESIAButtonBox</tabstop>
  </tabstops>
  <customwidgets>
   <customwidget>
@@ -487,50 +440,50 @@
  <resources/>
  <connections>
   <connection>
-   <sender>FNSCloseBtn</sender>
-   <signal>clicked()</signal>
+   <sender>FNSButtonBox</sender>
+   <signal>rejected()</signal>
    <receiver>LoginFNSDialog</receiver>
-   <slot>close()</slot>
+   <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>199</x>
-     <y>477</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
     <hint type="destinationlabel">
-     <x>199</x>
-     <y>249</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>ESIACloseBtn</sender>
-   <signal>clicked()</signal>
+   <sender>SMSButtonBox</sender>
+   <signal>rejected()</signal>
    <receiver>LoginFNSDialog</receiver>
-   <slot>close()</slot>
+   <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>199</x>
-     <y>477</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
     <hint type="destinationlabel">
-     <x>199</x>
-     <y>249</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>SMSCloseBtn</sender>
-   <signal>clicked()</signal>
+   <sender>ESIAButtonBox</sender>
+   <signal>rejected()</signal>
    <receiver>LoginFNSDialog</receiver>
-   <slot>close()</slot>
+   <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>215</x>
-     <y>464</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
     <hint type="destinationlabel">
-     <x>199</x>
-     <y>249</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
    </hints>
   </connection>

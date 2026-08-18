@@ -15,10 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QFrame,
-    QGridLayout, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QSplitter, QTableView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QDialog,
+    QDialogButtonBox, QFrame, QGridLayout, QHBoxLayout,
+    QHeaderView, QLabel, QLineEdit, QPushButton,
+    QSizePolicy, QSpacerItem, QSplitter, QTableView,
+    QVBoxLayout, QWidget)
 
 from jal.constants import AssetTypeComboBox
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
@@ -33,29 +34,12 @@ class Ui_SymbolDialog(object):
         SymbolDialog.setModal(False)
         self.gridLayout = QGridLayout(SymbolDialog)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.ButtonsFrame = QFrame(SymbolDialog)
-        self.ButtonsFrame.setObjectName(u"ButtonsFrame")
-        self.ButtonsFrame.setFrameShape(QFrame.Shape.NoFrame)
-        self.ButtonsFrame.setFrameShadow(QFrame.Shadow.Raised)
-        self.horizontalLayout = QHBoxLayout(self.ButtonsFrame)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.DialogButtonBox = QDialogButtonBox(SymbolDialog)
+        self.DialogButtonBox.setObjectName(u"DialogButtonBox")
+        self.DialogButtonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
-        self.horizontalLayout.addItem(self.horizontalSpacer)
-
-        self.CancelButton = QPushButton(self.ButtonsFrame)
-        self.CancelButton.setObjectName(u"CancelButton")
-
-        self.horizontalLayout.addWidget(self.CancelButton)
-
-        self.OkButton = QPushButton(self.ButtonsFrame)
-        self.OkButton.setObjectName(u"OkButton")
-
-        self.horizontalLayout.addWidget(self.OkButton)
-
-
-        self.gridLayout.addWidget(self.ButtonsFrame, 1, 0, 1, 5)
+        self.gridLayout.addWidget(self.DialogButtonBox, 1, 0, 1, 5)
 
         self.MainFrame = QFrame(SymbolDialog)
         self.MainFrame.setObjectName(u"MainFrame")
@@ -284,20 +268,17 @@ class Ui_SymbolDialog(object):
         QWidget.setTabOrder(self.SymbolsTable, self.AddIdButton)
         QWidget.setTabOrder(self.AddIdButton, self.RemoveIdButton)
         QWidget.setTabOrder(self.RemoveIdButton, self.IdentifiersTable)
-        QWidget.setTabOrder(self.IdentifiersTable, self.OkButton)
-        QWidget.setTabOrder(self.OkButton, self.CancelButton)
+        QWidget.setTabOrder(self.IdentifiersTable, self.DialogButtonBox)
 
         self.retranslateUi(SymbolDialog)
-        self.OkButton.clicked.connect(SymbolDialog.accept)
-        self.CancelButton.clicked.connect(SymbolDialog.reject)
+        self.DialogButtonBox.accepted.connect(SymbolDialog.accept)
+        self.DialogButtonBox.rejected.connect(SymbolDialog.reject)
 
         QMetaObject.connectSlotsByName(SymbolDialog)
     # setupUi
 
     def retranslateUi(self, SymbolDialog):
         SymbolDialog.setWindowTitle(QCoreApplication.translate("SymbolDialog", u"Asset", None))
-        self.CancelButton.setText(QCoreApplication.translate("SymbolDialog", u"Cancel", None))
-        self.OkButton.setText(QCoreApplication.translate("SymbolDialog", u"OK", None))
 #if QT_CONFIG(tooltip)
         self.AddDataButton.setToolTip(QCoreApplication.translate("SymbolDialog", u"Add new attribute", None))
 #endif // QT_CONFIG(tooltip)
