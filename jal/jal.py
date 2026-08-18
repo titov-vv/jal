@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt, QLibraryInfo, QTranslator, qInstallMessageHandler
 from PySide6.QtWidgets import QApplication, QMessageBox
 from jal import __version__
 from jal.widgets.main_window import MainWindow
+from jal.widgets.desktop_theme import follow_desktop_color_scheme
 from jal.db.db import JalDB, JalDBError
 from jal.net.web_request import WebRequest
 from jal.db.settings import JalSettings
@@ -60,6 +61,7 @@ def main():
     app.setApplicationVersion(__version__)
     app.setOrganizationName("jal")
     app.setDesktopFileName("jal")          # Matches jal.desktop so Wayland can find the window icon
+    follow_desktop_color_scheme(app)       # Qt alone may miss the light/dark preference of Linux desktop
 
     error = JalDB().init_db()
     # Qt's own translation has to be loaded separately: it carries the text of the standard buttons that
