@@ -1,6 +1,6 @@
 from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
 
-from PySide6.QtGui import QIcon
+from designer_plugins.plugin_icon import jal_widget_icon
 from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
 
 
@@ -28,7 +28,7 @@ class TreeViewWithFooterPlugin(QDesignerCustomWidgetInterface):
         return 'JAL widgets'
 
     def icon(self):
-        return QIcon()
+        return jal_widget_icon()
 
     def includeFile(self):
         return 'jal/widgets/custom/treeview_with_footer.h'

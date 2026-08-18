@@ -1,7 +1,7 @@
 # Here reference goes from PYSIDE_DESIGNER_PLUGINS directory
 from jal.widgets.account_select import AccountButton
 
-from PySide6.QtGui import QIcon
+from designer_plugins.plugin_icon import jal_widget_icon
 from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
 
 
@@ -29,7 +29,7 @@ class AccountButtonPlugin(QDesignerCustomWidgetInterface):
         return 'JAL widgets'
 
     def icon(self):
-        return QIcon()
+        return jal_widget_icon()
 
     def includeFile(self):
         return 'jal/widgets/account_select.h'

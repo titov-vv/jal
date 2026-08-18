@@ -98,7 +98,7 @@ class OperationsWidget(MdiWidget):
 
     @Slot()
     def delete_operation(self):
-        if QMessageBox().warning(None, self.tr("Confirmation"),
+        if QMessageBox().warning(self, self.tr("Confirmation"),
                                  self.tr("Are you sure to delete selected transaction(s)?"),
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return

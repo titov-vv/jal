@@ -56,6 +56,7 @@ def main():
     sys.excepthook = exception_logger
     app = QApplication(sys.argv)   # sys.argv is passed to enable Qt built-in options: -style, -stylesheet, -platform, etc.
     app.setApplicationName("JAL")          # Without it macOS shows the interpreter name in the application menu
+    app.setApplicationDisplayName("JAL")   # The user-visible name: the macOS application menu and window titles use it
     app.setApplicationVersion(__version__)
     app.setOrganizationName("jal")
     app.setDesktopFileName("jal")          # Matches jal.desktop so Wayland can find the window icon

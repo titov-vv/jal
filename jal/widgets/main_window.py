@@ -225,7 +225,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def onCleanDB(self, action):
-        if QMessageBox().warning(None, self.tr("Full clean-up"),
+        if QMessageBox().warning(self, self.tr("Full clean-up"),
                                  self.tr("All data will be deleted. The actions can't be undone.\nAre you sure?"),
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return
