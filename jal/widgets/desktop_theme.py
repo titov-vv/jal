@@ -33,17 +33,25 @@ class DesktopColorScheme(QObject):
     # sorts, but not one to read as "force this application light" - other desktops mean it literally.
     PORTAL_SCHEMES = {1: Qt.ColorScheme.Dark, 2: Qt.ColorScheme.Light}
 
+    # The portal is asked over a D-Bus connection of its own, not over the application-wide session bus, because
+    # xdg-desktop-portal ties an application identity to a connection as soon as that connection makes its first
+    # portal call. Qt registers jal's identity ('jal.desktop') with the portal later, when it first needs desktop
+    # services, and that registration is refused if the connection is already spoken for - leaving the portal to
+    # guess who is calling in its file dialogs and permission prompts.
+    CONNECTION = "jal_color_scheme"
+
     def __init__(self, application: QApplication):
         super().__init__(application)
-        self._portal = QDBusInterface(self.SERVICE, self.PATH, self.INTERFACE, QDBusConnection.sessionBus(), self)
+        self._bus = QDBusConnection.connectToBus(QDBusConnection.BusType.SessionBus, self.CONNECTION)
+        self._portal = QDBusInterface(self.SERVICE, self.PATH, self.INTERFACE, self._bus, self)
         self._imposed = False   # True while the scheme in effect is the one this class has set
 
     # Applies the current preference and starts watching for changes of it. False if this desktop has no portal to ask.
     def start(self) -> bool:
         if not self._portal.isValid():
             return False
-        QDBusConnection.sessionBus().connect(self.SERVICE, self.PATH, self.INTERFACE, "SettingChanged",
-                                             self, SLOT("onSettingChanged(QString,QString,QDBusVariant)"))
+        self._bus.connect(self.SERVICE, self.PATH, self.INTERFACE, "SettingChanged",
+                          self, SLOT("onSettingChanged(QString,QString,QDBusVariant)"))
         self.apply()
         return True
 
