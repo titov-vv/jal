@@ -162,7 +162,7 @@ class Ui_ReferenceDataDialog(object):
 
     def retranslateUi(self, ReferenceDataDialog):
         ReferenceDataDialog.setWindowTitle(QCoreApplication.translate("ReferenceDataDialog", u"Reference Data", None))
-        self.GroupLbl.setText(QCoreApplication.translate("ReferenceDataDialog", u"Account Type:", None))
+        self.GroupLbl.setText(QCoreApplication.translate("ReferenceDataDialog", u"&Account Type:", None))
         self.Toggle.setText(QCoreApplication.translate("ReferenceDataDialog", u"Show inactive", None))
 #if QT_CONFIG(tooltip)
         self.AddBtn.setToolTip(QCoreApplication.translate("ReferenceDataDialog", u"Add new", None))
@@ -188,6 +188,6 @@ class Ui_ReferenceDataDialog(object):
         self.RevertBtn.setToolTip(QCoreApplication.translate("ReferenceDataDialog", u"Revert changes", None))
 #endif // QT_CONFIG(tooltip)
         self.RevertBtn.setText("")
-        self.SearchLbl.setText(QCoreApplication.translate("ReferenceDataDialog", u"Search:", None))
+        self.SearchLbl.setText(QCoreApplication.translate("ReferenceDataDialog", u"&Search:", None))
     # retranslateUi
 

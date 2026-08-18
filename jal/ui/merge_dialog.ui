@@ -26,7 +26,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="InputLabel">
      <property name="text">
-      <string>Input files:</string>
+      <string>&amp;Input files:</string>
      </property>
      <property name="buddy">
       <cstring>InputFilesList</cstring>
@@ -36,7 +36,7 @@
    <item row="3" column="0">
     <widget class="QLabel" name="OutputLabel">
      <property name="text">
-      <string>Output file:</string>
+      <string>&amp;Output file:</string>
      </property>
      <property name="buddy">
       <cstring>OutputFileName</cstring>

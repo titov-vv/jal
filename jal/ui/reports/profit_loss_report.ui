@@ -46,7 +46,7 @@
       <item>
        <widget class="QLabel" name="ReportAccountLbl">
         <property name="text">
-         <string>Account:</string>
+         <string>&amp;Account:</string>
         </property>
         <property name="buddy">
          <cstring>ReportAccountEdit</cstring>

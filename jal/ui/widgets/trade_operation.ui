@@ -113,7 +113,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="date_label">
      <property name="text">
-      <string>Date/Time</string>
+      <string>D&amp;ate/Time</string>
      </property>
      <property name="buddy">
       <cstring>timestamp_editor</cstring>
@@ -123,7 +123,7 @@
    <item row="3" column="0">
     <widget class="QLabel" name="symbol_label">
      <property name="text">
-      <string>Asset</string>
+      <string>Ass&amp;et</string>
      </property>
      <property name="buddy">
       <cstring>symbol_widget</cstring>
@@ -145,7 +145,7 @@
    <item row="1" column="3">
     <widget class="QLabel" name="settlement_label">
      <property name="text">
-      <string>Settlement</string>
+      <string>Settle&amp;ment</string>
      </property>
      <property name="buddy">
       <cstring>settlement_editor</cstring>
@@ -168,7 +168,7 @@
    <item row="4" column="0">
     <widget class="QLabel" name="comment_label">
      <property name="text">
-      <string>Note</string>
+      <string>&amp;Note</string>
      </property>
      <property name="buddy">
       <cstring>note</cstring>
@@ -178,7 +178,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="account_label">
      <property name="text">
-      <string>Account</string>
+      <string>A&amp;ccount</string>
      </property>
      <property name="buddy">
       <cstring>account_widget</cstring>
@@ -188,7 +188,7 @@
    <item row="3" column="9">
     <widget class="QLabel" name="fee_label">
      <property name="text">
-      <string>Fee</string>
+      <string>&amp;Fee</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -201,7 +201,7 @@
    <item row="1" column="9">
     <widget class="QLabel" name="qty_label">
      <property name="text">
-      <string>Qty</string>
+      <string>&amp;Qty</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>

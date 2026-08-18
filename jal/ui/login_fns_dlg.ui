@@ -54,7 +54,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="PhoneLbl">
             <property name="text">
-             <string>Phone number:</string>
+             <string>&amp;Phone number:</string>
             </property>
             <property name="buddy">
              <cstring>PhoneNumberEdit</cstring>
@@ -123,7 +123,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="CodeLbl">
             <property name="text">
-             <string>Code from SMS:</string>
+             <string>&amp;Code from SMS:</string>
             </property>
             <property name="buddy">
              <cstring>CodeEdit</cstring>
@@ -239,7 +239,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="InnLbl">
             <property name="text">
-             <string>INN:</string>
+             <string>&amp;INN:</string>
             </property>
             <property name="buddy">
              <cstring>InnEdit</cstring>
@@ -252,7 +252,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="PasswordLbl">
             <property name="text">
-             <string>Password:</string>
+             <string>P&amp;assword:</string>
             </property>
             <property name="buddy">
              <cstring>PasswordEdit</cstring>
@@ -399,6 +399,7 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>LoginMethodTabs</tabstop>
   <tabstop>PhoneNumberEdit</tabstop>
   <tabstop>GetCodeBtn</tabstop>
   <tabstop>CodeEdit</tabstop>

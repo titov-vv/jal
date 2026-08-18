@@ -79,7 +79,7 @@ class Ui_AccountBalanceHistoryReportWidget(object):
 
     def retranslateUi(self, AccountBalanceHistoryReportWidget):
         AccountBalanceHistoryReportWidget.setWindowTitle(QCoreApplication.translate("AccountBalanceHistoryReportWidget", u"Account balance history", None))
-        self.ReportAccountLbl.setText(QCoreApplication.translate("AccountBalanceHistoryReportWidget", u"Account:", None))
+        self.ReportAccountLbl.setText(QCoreApplication.translate("AccountBalanceHistoryReportWidget", u"&Account:", None))
         self.ReportAccountButton.setText("")
         self.SaveButton.setText(QCoreApplication.translate("AccountBalanceHistoryReportWidget", u"Save...", None))
     # retranslateUi

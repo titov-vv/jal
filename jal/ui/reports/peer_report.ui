@@ -52,7 +52,7 @@
       <item row="0" column="2">
        <widget class="QLabel" name="ReportPeerLbl">
         <property name="text">
-         <string>Peer:</string>
+         <string>&amp;Peer:</string>
         </property>
         <property name="buddy">
          <cstring>ReportPeerEdit</cstring>
@@ -62,7 +62,7 @@
       <item row="0" column="5">
        <widget class="QLabel" name="TotalCurrencyLbl">
         <property name="text">
-         <string>Common currency:</string>
+         <string>&amp;Common currency:</string>
         </property>
         <property name="buddy">
          <cstring>TotalCurrencyCombo</cstring>

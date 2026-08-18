@@ -35,7 +35,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="NameLbl">
         <property name="text">
-         <string>Name:</string>
+         <string>&amp;Name:</string>
         </property>
         <property name="buddy">
          <cstring>NameEdit</cstring>
@@ -52,7 +52,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="CurrencyLbl">
         <property name="text">
-         <string>Currency:</string>
+         <string>&amp;Currency:</string>
         </property>
         <property name="buddy">
          <cstring>CurrencyCombo</cstring>
@@ -62,7 +62,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="TypeLbl">
         <property name="text">
-         <string>Type:</string>
+         <string>&amp;Type:</string>
         </property>
         <property name="buddy">
          <cstring>TypeCombo</cstring>
@@ -79,7 +79,7 @@
       <item row="3" column="0">
        <widget class="QLabel" name="OrganizationLbl">
         <property name="text">
-         <string>Bank/Broker:</string>
+         <string>&amp;Bank/Broker:</string>
         </property>
         <property name="buddy">
          <cstring>OrganizationCombo</cstring>
@@ -171,7 +171,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="DataLbl">
         <property name="text">
-         <string>Account details:</string>
+         <string>&amp;Account details:</string>
         </property>
         <property name="buddy">
          <cstring>AddDataButton</cstring>

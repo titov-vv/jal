@@ -109,8 +109,8 @@ class Ui_MergeFilesToolDialog(object):
 
     def retranslateUi(self, MergeFilesToolDialog):
         MergeFilesToolDialog.setWindowTitle(QCoreApplication.translate("MergeFilesToolDialog", u"Merge tax files", None))
-        self.InputLabel.setText(QCoreApplication.translate("MergeFilesToolDialog", u"Input files:", None))
-        self.OutputLabel.setText(QCoreApplication.translate("MergeFilesToolDialog", u"Output file:", None))
+        self.InputLabel.setText(QCoreApplication.translate("MergeFilesToolDialog", u"&Input files:", None))
+        self.OutputLabel.setText(QCoreApplication.translate("MergeFilesToolDialog", u"&Output file:", None))
 #if QT_CONFIG(tooltip)
         self.AddBtn.setToolTip(QCoreApplication.translate("MergeFilesToolDialog", u"Add file", None))
 #endif // QT_CONFIG(tooltip)

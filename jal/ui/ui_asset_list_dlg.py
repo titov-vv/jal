@@ -158,9 +158,9 @@ class Ui_AssetsListDialog(object):
 
     def retranslateUi(self, AssetsListDialog):
         AssetsListDialog.setWindowTitle(QCoreApplication.translate("AssetsListDialog", u"Assets", None))
-        self.AssetTypeLbl.setText(QCoreApplication.translate("AssetsListDialog", u"Type:", None))
-        self.CurrencyLbl.setText(QCoreApplication.translate("AssetsListDialog", u"Currency:", None))
-        self.LocationLbl.setText(QCoreApplication.translate("AssetsListDialog", u"Location:", None))
+        self.AssetTypeLbl.setText(QCoreApplication.translate("AssetsListDialog", u"&Type:", None))
+        self.CurrencyLbl.setText(QCoreApplication.translate("AssetsListDialog", u"&Currency:", None))
+        self.LocationLbl.setText(QCoreApplication.translate("AssetsListDialog", u"&Location:", None))
 #if QT_CONFIG(tooltip)
         self.AddBtn.setToolTip(QCoreApplication.translate("AssetsListDialog", u"Add new", None))
 #endif // QT_CONFIG(tooltip)
@@ -173,6 +173,6 @@ class Ui_AssetsListDialog(object):
         self.RemoveBtn.setToolTip(QCoreApplication.translate("AssetsListDialog", u"Delete", None))
 #endif // QT_CONFIG(tooltip)
         self.RemoveBtn.setText("")
-        self.SearchLbl.setText(QCoreApplication.translate("AssetsListDialog", u"Search:", None))
+        self.SearchLbl.setText(QCoreApplication.translate("AssetsListDialog", u"&Search:", None))
     # retranslateUi
 

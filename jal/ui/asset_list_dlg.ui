@@ -38,7 +38,7 @@
       <item>
        <widget class="QLabel" name="AssetTypeLbl">
         <property name="text">
-         <string>Type:</string>
+         <string>&amp;Type:</string>
         </property>
         <property name="buddy">
          <cstring>AssetTypeCombo</cstring>
@@ -67,7 +67,7 @@
       <item>
        <widget class="QLabel" name="CurrencyLbl">
         <property name="text">
-         <string>Currency:</string>
+         <string>&amp;Currency:</string>
         </property>
         <property name="buddy">
          <cstring>CurrencyCombo</cstring>
@@ -96,7 +96,7 @@
       <item>
        <widget class="QLabel" name="LocationLbl">
         <property name="text">
-         <string>Location:</string>
+         <string>&amp;Location:</string>
         </property>
         <property name="buddy">
          <cstring>LocationCombo</cstring>
@@ -170,7 +170,7 @@
       <item>
        <widget class="QLabel" name="SearchLbl">
         <property name="text">
-         <string>Search:</string>
+         <string>&amp;Search:</string>
         </property>
         <property name="buddy">
          <cstring>SearchString</cstring>

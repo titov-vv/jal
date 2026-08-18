@@ -4,12 +4,12 @@
 <context>
     <name>AbstractOperationDetails</name>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="65"/>
+        <location filename="../widgets/abstract_operation_details.py" line="72"/>
         <source>Operation submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="82"/>
+        <location filename="../widgets/abstract_operation_details.py" line="89"/>
         <source>Unsaved changes were reverted to create new operation</source>
         <translation></translation>
     </message>
@@ -49,8 +49,8 @@
     </message>
     <message>
         <location filename="../ui/reports/account_balance_report.ui" line="62"/>
-        <source>Account:</source>
-        <translation></translation>
+        <source>&amp;Account:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/account_balance_report.ui" line="79"/>
@@ -174,26 +174,6 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/account_edit_dlg.ui" line="38"/>
-        <source>Name:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/account_edit_dlg.ui" line="55"/>
-        <source>Currency:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/account_edit_dlg.ui" line="65"/>
-        <source>Type:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/account_edit_dlg.ui" line="82"/>
-        <source>Bank/Broker:</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/account_edit_dlg.ui" line="75"/>
         <source>Active</source>
         <translation></translation>
@@ -204,14 +184,34 @@
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/account_edit_dlg.ui" line="38"/>
+        <source>&amp;Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/account_edit_dlg.ui" line="55"/>
+        <source>&amp;Currency:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/account_edit_dlg.ui" line="65"/>
+        <source>&amp;Type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/account_edit_dlg.ui" line="82"/>
+        <source>&amp;Bank/Broker:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/account_edit_dlg.ui" line="92"/>
         <source>Set automatically when this account is reconciled by an operation</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../ui/account_edit_dlg.ui" line="174"/>
-        <source>Account details:</source>
-        <translation></translation>
+        <source>&amp;Account details:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/account_edit_dlg.ui" line="184"/>
@@ -831,11 +831,6 @@ Do you want to delete the account anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="23"/>
-        <source>Date/Time</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/widgets/asset_payment_operation.ui" line="36"/>
         <source>#</source>
         <translation></translation>
@@ -846,24 +841,24 @@ Do you want to delete the account anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="72"/>
-        <source>Type</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="85"/>
-        <source>Tax</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="101"/>
-        <source>Asset</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/widgets/asset_payment_operation.ui" line="132"/>
         <source>Asset Payment</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="185"/>
+        <source>&amp;Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="198"/>
+        <source>A&amp;ccount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="237"/>
+        <source>Di&amp;vidend</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/widgets/asset_payment_operation.ui" line="352"/>
@@ -876,18 +871,28 @@ Do you want to delete the account anyway?</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="23"/>
+        <source>D&amp;ate/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="72"/>
+        <source>T&amp;ype</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="85"/>
+        <source>Ta&amp;x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="101"/>
+        <source>Ass&amp;et</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/asset_payment_operation.ui" line="169"/>
         <source>dd/MM/yyyy</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="185"/>
-        <source>Note</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="198"/>
-        <source>Account</source>
         <translation></translation>
     </message>
     <message>
@@ -898,11 +903,6 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../ui/widgets/asset_payment_operation.ui" line="227"/>
         <source>Cancel changes</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="237"/>
-        <source>Dividend</source>
         <translation></translation>
     </message>
     <message>
@@ -1114,18 +1114,18 @@ Do you want to delete the account anyway?</source>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="41"/>
-        <source>Type:</source>
-        <translation></translation>
+        <source>&amp;Type:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="70"/>
-        <source>Currency:</source>
-        <translation></translation>
+        <source>&amp;Currency:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="99"/>
-        <source>Location:</source>
-        <translation></translation>
+        <source>&amp;Location:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="125"/>
@@ -1144,8 +1144,8 @@ Do you want to delete the account anyway?</source>
     </message>
     <message>
         <location filename="../ui/asset_list_dlg.ui" line="173"/>
-        <source>Search:</source>
-        <translation></translation>
+        <source>&amp;Search:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1253,8 +1253,8 @@ Do you want to delete the account anyway?</source>
     </message>
     <message>
         <location filename="../ui/reports/assets_payments_report.ui" line="62"/>
-        <source>Account:</source>
-        <translation></translation>
+        <source>&amp;Account:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/assets_payments_report.ui" line="79"/>
@@ -1714,6 +1714,11 @@ Do you want to delete the account anyway?</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/widgets/bridge_operation.ui" line="115"/>
+        <source>Fr&amp;om</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/bridge_operation.ui" line="141"/>
         <location filename="../ui/widgets/bridge_operation.ui" line="167"/>
         <source>Copy value</source>
@@ -1724,6 +1729,11 @@ Do you want to delete the account anyway?</source>
         <location filename="../ui/widgets/bridge_operation.ui" line="170"/>
         <source>↓</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/bridge_operation.ui" line="236"/>
+        <source>&amp;Note</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/widgets/bridge_operation.ui" line="68"/>
@@ -1746,11 +1756,6 @@ Do you want to delete the account anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/bridge_operation.ui" line="115"/>
-        <source>From</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/widgets/bridge_operation.ui" line="128"/>
         <location filename="../ui/widgets/bridge_operation.ui" line="193"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
@@ -1764,11 +1769,6 @@ Do you want to delete the account anyway?</source>
     <message>
         <location filename="../ui/widgets/bridge_operation.ui" line="219"/>
         <source>Include &amp;fee</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/bridge_operation.ui" line="236"/>
-        <source>Note</source>
         <translation></translation>
     </message>
 </context>
@@ -1913,13 +1913,13 @@ Do you want to delete the account anyway?</source>
     </message>
     <message>
         <location filename="../ui/reports/category_report.ui" line="42"/>
-        <source>Category:</source>
-        <translation></translation>
+        <source>&amp;Category:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/category_report.ui" line="59"/>
-        <source>Common currency:</source>
-        <translation></translation>
+        <source>C&amp;ommon currency:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2372,32 +2372,37 @@ Do you want to delete the category anyway?</source>
     </message>
     <message>
         <location filename="../ui/widgets/conversion_operation.ui" line="74"/>
-        <source>Date/Time</source>
-        <translation></translation>
+        <source>D&amp;ate/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/conversion_operation.ui" line="100"/>
+        <source>A&amp;ccount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/conversion_operation.ui" line="116"/>
+        <source>T&amp;x hash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/conversion_operation.ui" line="132"/>
+        <source>C&amp;onverted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/conversion_operation.ui" line="174"/>
+        <source>R&amp;eceived</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/conversion_operation.ui" line="265"/>
+        <source>&amp;Note</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/widgets/conversion_operation.ui" line="87"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/conversion_operation.ui" line="100"/>
-        <source>Account</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/conversion_operation.ui" line="116"/>
-        <source>Tx hash</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/conversion_operation.ui" line="132"/>
-        <source>Converted</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/conversion_operation.ui" line="174"/>
-        <source>Received</source>
         <translation></translation>
     </message>
     <message>
@@ -2408,11 +2413,6 @@ Do you want to delete the category anyway?</source>
     <message>
         <location filename="../ui/widgets/conversion_operation.ui" line="229"/>
         <source>Include &amp;fee</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/conversion_operation.ui" line="265"/>
-        <source>Note</source>
         <translation></translation>
     </message>
 </context>
@@ -2529,31 +2529,6 @@ Do you want to delete the category anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/corporate_action_operation.ui" line="30"/>
-        <source>Asset</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/corporate_action_operation.ui" line="43"/>
-        <source>Account</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/corporate_action_operation.ui" line="53"/>
-        <source>Note</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/corporate_action_operation.ui" line="76"/>
-        <source>Qty</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/corporate_action_operation.ui" line="98"/>
-        <source>Date/Time</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="108"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation></translation>
@@ -2561,11 +2536,6 @@ Do you want to delete the category anyway?</source>
     <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="121"/>
         <source> - </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/corporate_action_operation.ui" line="128"/>
-        <source>Type</source>
         <translation></translation>
     </message>
     <message>
@@ -2589,9 +2559,39 @@ Do you want to delete the category anyway?</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="30"/>
+        <source>&amp;Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="43"/>
+        <source>A&amp;ccount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="53"/>
+        <source>&amp;Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="76"/>
+        <source>&amp;Qty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/corporate_action_operation.ui" line="91"/>
         <source>Corporate Action</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="98"/>
+        <source>Dat&amp;e/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/corporate_action_operation.ui" line="128"/>
+        <source>T&amp;ype</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2778,13 +2778,13 @@ one for ParentCo and second for Subsidiary</source>
     </message>
     <message>
         <location filename="../ui/reports/deals_report.ui" line="49"/>
-        <source>Group by:</source>
-        <translation></translation>
+        <source>&amp;Group by:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/deals_report.ui" line="78"/>
-        <source>Account:</source>
-        <translation></translation>
+        <source>&amp;Account:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/deals_report.ui" line="104"/>
@@ -3639,6 +3639,11 @@ one for ParentCo and second for Subsidiary</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/receipt_import_dlg.ui" line="103"/>
+        <source>&amp;Receipt type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/receipt_import_dlg.ui" line="168"/>
         <source>Operation data</source>
         <translation></translation>
@@ -3647,6 +3652,16 @@ one for ParentCo and second for Subsidiary</source>
         <location filename="../ui/receipt_import_dlg.ui" line="174"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/receipt_import_dlg.ui" line="201"/>
+        <source>&amp;Peer:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/receipt_import_dlg.ui" line="218"/>
+        <source>&amp;Lines:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="113"/>
@@ -3669,11 +3684,6 @@ one for ParentCo and second for Subsidiary</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="103"/>
-        <source>Receipt type:</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/receipt_import_dlg.ui" line="184"/>
         <source>Date / Time:</source>
         <translation></translation>
@@ -3681,16 +3691,6 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="191"/>
         <source> ➜ </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="201"/>
-        <source>Peer:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="218"/>
-        <source>Lines:</source>
         <translation></translation>
     </message>
     <message>
@@ -3740,16 +3740,6 @@ one for ParentCo and second for Subsidiary</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="23"/>
-        <source>Account</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="33"/>
-        <source>Date/Time</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="56"/>
         <source>Add detail</source>
         <translation></translation>
@@ -3757,16 +3747,6 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="66"/>
         <source>Remove detail</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="115"/>
-        <source>Note</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="138"/>
-        <source>Peer</source>
         <translation></translation>
     </message>
     <message>
@@ -3785,9 +3765,29 @@ one for ParentCo and second for Subsidiary</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="23"/>
+        <source>&amp;Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="33"/>
+        <source>Dat&amp;e/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="76"/>
         <source>Copy detail</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="115"/>
+        <source>&amp;Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="138"/>
+        <source>&amp;Peer</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="148"/>
@@ -3831,8 +3831,8 @@ one for ParentCo and second for Subsidiary</source>
     </message>
     <message>
         <location filename="../ui/reports/income_spending_report.ui" line="49"/>
-        <source>Periodicity:</source>
-        <translation></translation>
+        <source>&amp;Periodicity:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/income_spending_report.ui" line="60"/>
@@ -3846,8 +3846,8 @@ one for ParentCo and second for Subsidiary</source>
     </message>
     <message>
         <location filename="../ui/reports/income_spending_report.ui" line="89"/>
-        <source>Currency:</source>
-        <translation></translation>
+        <source>&amp;Currency:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/income_spending_report.ui" line="115"/>
@@ -4501,18 +4501,8 @@ do you want to save them?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/login_fns_dlg.ui" line="57"/>
-        <source>Phone number:</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/login_fns_dlg.ui" line="101"/>
         <source>Send SMS with code</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/login_fns_dlg.ui" line="126"/>
-        <source>Code from SMS:</source>
         <translation></translation>
     </message>
     <message>
@@ -4526,19 +4516,29 @@ do you want to save them?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/login_fns_dlg.ui" line="242"/>
-        <source>INN:</source>
-        <translation></translation>
+        <location filename="../ui/login_fns_dlg.ui" line="57"/>
+        <source>&amp;Phone number:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/login_fns_dlg.ui" line="255"/>
-        <source>Password:</source>
-        <translation></translation>
+        <location filename="../ui/login_fns_dlg.ui" line="126"/>
+        <source>&amp;Code from SMS:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/login_fns_dlg.ui" line="200"/>
         <source>FNS Login</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/login_fns_dlg.ui" line="242"/>
+        <source>&amp;INN:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/login_fns_dlg.ui" line="255"/>
+        <source>P&amp;assword:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/login_fns_dlg.ui" line="327"/>
@@ -4624,17 +4624,17 @@ do you want to save them?</source>
     </message>
     <message>
         <location filename="../ui/login_pingo_doce_dlg.ui" line="35"/>
-        <source>Phone number:</source>
-        <translation></translation>
+        <source>&amp;Phone number:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/login_pingo_doce_dlg.ui" line="73"/>
+        <source>P&amp;assword:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/login_pingo_doce_dlg.ui" line="48"/>
         <source>+351---</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/login_pingo_doce_dlg.ui" line="73"/>
-        <source>Password:</source>
         <translation></translation>
     </message>
 </context>
@@ -4795,13 +4795,13 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="29"/>
-        <source>Input files:</source>
-        <translation></translation>
+        <source>&amp;Input files:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="39"/>
-        <source>Output file:</source>
-        <translation></translation>
+        <source>&amp;Output file:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/merge_dialog.ui" line="49"/>
@@ -4832,11 +4832,6 @@ Application will be terminated now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/flow_export_widget.ui" line="53"/>
-        <source>Year:</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/flow_export_widget.ui" line="26"/>
         <source>Select file</source>
         <translation></translation>
@@ -4847,13 +4842,18 @@ Application will be terminated now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/flow_export_widget.ui" line="88"/>
-        <source>File where to store tax report in Excel format</source>
-        <translation></translation>
+        <location filename="../ui/flow_export_widget.ui" line="43"/>
+        <source>&amp;Excel file:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/flow_export_widget.ui" line="43"/>
-        <source>Excel file:</source>
+        <location filename="../ui/flow_export_widget.ui" line="53"/>
+        <source>&amp;Year:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/flow_export_widget.ui" line="88"/>
+        <source>File where to store tax report in Excel format</source>
         <translation></translation>
     </message>
     <message>
@@ -5034,92 +5034,92 @@ Application will be terminated now.</source>
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="141"/>
+        <location filename="../widgets/operations_widget.py" line="150"/>
         <source>Reconcile</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="143"/>
+        <location filename="../widgets/operations_widget.py" line="152"/>
         <source>Assign tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="145"/>
+        <location filename="../widgets/operations_widget.py" line="154"/>
         <source>Copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="147"/>
+        <location filename="../widgets/operations_widget.py" line="156"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="101"/>
+        <location filename="../widgets/operations_widget.py" line="110"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="102"/>
+        <location filename="../widgets/operations_widget.py" line="111"/>
         <source>Are you sure to delete selected transaction(s)?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="149"/>
+        <location filename="../widgets/operations_widget.py" line="158"/>
         <source>Match cross-chain legs…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="180"/>
+        <location filename="../widgets/operations_widget.py" line="189"/>
         <source>Assign an account…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="181"/>
+        <location filename="../widgets/operations_widget.py" line="190"/>
         <source>Match with another leg…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="182"/>
+        <location filename="../widgets/operations_widget.py" line="191"/>
         <source>Convert into a swap…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="183"/>
+        <location filename="../widgets/operations_widget.py" line="192"/>
         <source>Convert into a bridge…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="251"/>
+        <location filename="../widgets/operations_widget.py" line="260"/>
         <source>Show inactive</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="257"/>
+        <location filename="../widgets/operations_widget.py" line="266"/>
         <source>Use credit limits</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="263"/>
+        <location filename="../widgets/operations_widget.py" line="272"/>
         <source>Balance history chart</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="271"/>
+        <location filename="../widgets/operations_widget.py" line="280"/>
         <source>Expand all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="274"/>
+        <location filename="../widgets/operations_widget.py" line="283"/>
         <source>Collapse all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="295"/>
+        <location filename="../widgets/operations_widget.py" line="304"/>
         <source>Please select tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="296"/>
+        <location filename="../widgets/operations_widget.py" line="305"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation></translation>
     </message>
@@ -5145,26 +5145,26 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../ui/operations_widget.ui" line="195"/>
-        <source>Account:</source>
-        <translation></translation>
+        <source>&amp;Account:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/operations_widget.ui" line="224"/>
-        <source>Search:</source>
-        <translation></translation>
+        <source>S&amp;earch:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="332"/>
+        <location filename="../ui/operations_widget.ui" line="320"/>
         <source>New operation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="342"/>
+        <location filename="../ui/operations_widget.ui" line="330"/>
         <source>Copy operation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="352"/>
+        <location filename="../ui/operations_widget.ui" line="340"/>
         <source>Delete operation</source>
         <translation></translation>
     </message>
@@ -5278,13 +5278,13 @@ Application will be terminated now.</source>
     </message>
     <message>
         <location filename="../ui/reports/peer_report.ui" line="55"/>
-        <source>Peer:</source>
-        <translation></translation>
+        <source>&amp;Peer:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/peer_report.ui" line="65"/>
-        <source>Common currency:</source>
-        <translation></translation>
+        <source>&amp;Common currency:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5664,13 +5664,13 @@ One transaction moved this exact quantity as </source>
     </message>
     <message>
         <location filename="../ui/reports/portfolio_report.ui" line="65"/>
-        <source>Group by:</source>
-        <translation></translation>
+        <source>&amp;Group by:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/portfolio_report.ui" line="94"/>
-        <source>Common currency:</source>
-        <translation></translation>
+        <source>&amp;Common currency:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/portfolio_report.ui" line="107"/>
@@ -6133,8 +6133,8 @@ One transaction moved this exact quantity as </source>
     </message>
     <message>
         <location filename="../ui/reports/profit_loss_report.ui" line="49"/>
-        <source>Account:</source>
-        <translation></translation>
+        <source>&amp;Account:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/profit_loss_report.ui" line="78"/>
@@ -6769,8 +6769,8 @@ One transaction moved this exact quantity as </source>
     </message>
     <message>
         <location filename="../ui/reference_data_dlg.ui" line="41"/>
-        <source>Account Type:</source>
-        <translation></translation>
+        <source>&amp;Account Type:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reference_data_dlg.ui" line="54"/>
@@ -6809,8 +6809,8 @@ One transaction moved this exact quantity as </source>
     </message>
     <message>
         <location filename="../ui/reference_data_dlg.ui" line="161"/>
-        <source>Search:</source>
-        <translation></translation>
+        <source>&amp;Search:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9050,6 +9050,11 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/widgets/swap_operation.ui" line="20"/>
+        <source>&amp;Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/swap_operation.ui" line="33"/>
         <source>Amount</source>
         <translation type="unfinished"></translation>
@@ -9060,23 +9065,18 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/swap_operation.ui" line="125"/>
-        <source>To</source>
+        <location filename="../ui/widgets/swap_operation.ui" line="288"/>
+        <source>S&amp;wap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/swap_operation.ui" line="298"/>
+        <source>Fro&amp;m</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/widgets/swap_operation.ui" line="270"/>
         <source>Asset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/swap_operation.ui" line="288"/>
-        <source>Swap</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/swap_operation.ui" line="298"/>
-        <source>From</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9106,6 +9106,11 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/widgets/swap_operation.ui" line="125"/>
+        <source>T&amp;o</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/swap_operation.ui" line="241"/>
         <source>Tx hash</source>
         <translation></translation>
@@ -9118,11 +9123,6 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
     <message>
         <location filename="../ui/widgets/swap_operation.ui" line="115"/>
         <source>Include &amp;fee</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/swap_operation.ui" line="20"/>
-        <source>Note</source>
         <translation></translation>
     </message>
 </context>
@@ -9200,23 +9200,23 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="107"/>
-        <source>Country: </source>
-        <translation></translation>
+        <source>&amp;Country: </source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="130"/>
-        <source>Asset name:</source>
-        <translation></translation>
+        <source>&amp;Asset name:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="153"/>
-        <source>Asset attributes</source>
-        <translation></translation>
+        <source>A&amp;sset attributes</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="163"/>
-        <source>Type: </source>
-        <translation></translation>
+        <source>&amp;Type: </source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/symbol_edit_dlg.ui" line="173"/>
@@ -9496,13 +9496,13 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
     </message>
     <message>
         <location filename="../ui/reports/tag_report.ui" line="58"/>
-        <source>Tag:</source>
-        <translation></translation>
+        <source>T&amp;ag:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/tag_report.ui" line="68"/>
-        <source>Common currency:</source>
-        <translation></translation>
+        <source>&amp;Common currency:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9712,21 +9712,6 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TaxWidget</name>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="262"/>
-        <source>Year:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/tax_export_widget.ui" line="145"/>
-        <source>Account:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/tax_export_widget.ui" line="155"/>
-        <source>Excel file:</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/tax_export_widget.ui" line="67"/>
         <source>File where to store tax report in Excel format</source>
         <translation></translation>
@@ -9745,6 +9730,36 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <location filename="../ui/tax_export_widget.ui" line="100"/>
         <source>Create XML records to introduce in Modelo-3 form</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="112"/>
+        <source>&amp;Output file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="145"/>
+        <source>&amp;Account:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="155"/>
+        <source>&amp;Excel file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="216"/>
+        <source>Output &amp;file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="252"/>
+        <source>&amp;Country:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="262"/>
+        <source>&amp;Year:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="272"/>
@@ -9769,11 +9784,6 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="252"/>
-        <source>Country:</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/tax_export_widget.ui" line="122"/>
         <location filename="../ui/tax_export_widget.ui" line="236"/>
         <source>File where to store russian tax form</source>
@@ -9792,12 +9802,6 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
     <message>
         <location filename="../ui/tax_export_widget.ui" line="165"/>
         <source>Additional parameters (Russia)</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/tax_export_widget.ui" line="112"/>
-        <location filename="../ui/tax_export_widget.ui" line="216"/>
-        <source>Output file:</source>
         <translation></translation>
     </message>
     <message>
@@ -10026,18 +10030,43 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="223"/>
-        <source>Cancel changes</source>
-        <translation></translation>
+        <location filename="../ui/widgets/trade_operation.ui" line="116"/>
+        <source>D&amp;ate/Time</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/widgets/trade_operation.ui" line="126"/>
-        <source>Asset</source>
-        <translation></translation>
+        <source>Ass&amp;et</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="116"/>
-        <source>Date/Time</source>
+        <location filename="../ui/widgets/trade_operation.ui" line="148"/>
+        <source>Settle&amp;ment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="171"/>
+        <source>&amp;Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="181"/>
+        <source>A&amp;ccount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="191"/>
+        <source>&amp;Fee</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="204"/>
+        <source>&amp;Qty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/trade_operation.ui" line="223"/>
+        <source>Cancel changes</source>
         <translation></translation>
     </message>
     <message>
@@ -10051,24 +10080,9 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="171"/>
-        <source>Note</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="148"/>
-        <source>Settlement</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/widgets/trade_operation.ui" line="74"/>
         <location filename="../ui/widgets/trade_operation.ui" line="107"/>
         <source>CUR</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="181"/>
-        <source>Account</source>
         <translation></translation>
     </message>
     <message>
@@ -10082,18 +10096,8 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="204"/>
-        <source>Qty</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/widgets/trade_operation.ui" line="20"/>
         <source>Price</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/trade_operation.ui" line="191"/>
-        <source>Fee</source>
         <translation></translation>
     </message>
 </context>
@@ -10466,20 +10470,30 @@ Match them anyway and stamp both ends with </source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="33"/>
+        <source>T&amp;o</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="96"/>
+        <source>T&amp;ype</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="259"/>
+        <source>&amp;Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="314"/>
         <location filename="../ui/widgets/transfer_operation.ui" line="403"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="370"/>
-        <source>Cost basis</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="383"/>
-        <source>Asset</source>
-        <translation></translation>
+        <location filename="../ui/widgets/transfer_operation.ui" line="506"/>
+        <source>&amp;From</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="431"/>
@@ -10494,11 +10508,6 @@ Match them anyway and stamp both ends with </source>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="441"/>
         <source>Gas</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="506"/>
-        <source>From</source>
         <translation></translation>
     </message>
     <message>
@@ -10524,6 +10533,16 @@ Match them anyway and stamp both ends with </source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="370"/>
+        <source>&amp;Cost basis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/transfer_operation.ui" line="383"/>
+        <source>&amp;Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="417"/>
         <location filename="../ui/widgets/transfer_operation.ui" line="465"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
@@ -10540,11 +10559,6 @@ Match them anyway and stamp both ends with </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="96"/>
-        <source>Type</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="188"/>
         <location filename="../ui/widgets/transfer_operation.ui" line="300"/>
         <location filename="../ui/widgets/transfer_operation.ui" line="307"/>
@@ -10555,16 +10569,6 @@ Match them anyway and stamp both ends with </source>
     <message>
         <location filename="../ui/widgets/transfer_operation.ui" line="246"/>
         <source>#</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="259"/>
-        <source>Note</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/transfer_operation.ui" line="33"/>
-        <source>To</source>
         <translation></translation>
     </message>
     <message>
@@ -11060,11 +11064,6 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/reports/unsettled_transfers_report.ui" line="42"/>
-        <source>Currency:</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/reports/unsettled_transfers_report.ui" line="55"/>
         <source>Also list settled transfers whose asset arrived with no cost basis</source>
         <translation></translation>
@@ -11085,11 +11084,6 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/reports/unsettled_transfers_report.ui" line="75"/>
-        <source>Filter:</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/reports/unsettled_transfers_report.ui" line="85"/>
         <source>Show only the legs whose asset, account, counterparty, reference or note contains this text</source>
         <translation></translation>
@@ -11100,9 +11094,19 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/reports/unsettled_transfers_report.ui" line="42"/>
+        <source>&amp;Currency:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/unsettled_transfers_report.ui" line="75"/>
+        <source>&amp;Filter:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/reports/unsettled_transfers_report.ui" line="98"/>
-        <source>Group by:</source>
-        <translation></translation>
+        <source>&amp;Group by:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/reports/unsettled_transfers_report.ui" line="108"/>
@@ -11183,9 +11187,19 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
         <translation></translation>
     </message>
     <message>
+        <location filename="../ui/quotes_update_dlg.ui" line="59"/>
+        <source>&amp;End date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/quotes_update_dlg.ui" line="69"/>
-        <source>Start date</source>
-        <translation></translation>
+        <source>&amp;Start date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/quotes_update_dlg.ui" line="102"/>
+        <source>S&amp;ources</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/quotes_update_dlg.ui" line="79"/>
@@ -11193,19 +11207,9 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/quotes_update_dlg.ui" line="102"/>
-        <source>Sources</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ui/quotes_update_dlg.ui" line="23"/>
         <location filename="../ui/quotes_update_dlg.ui" line="46"/>
         <source>dd/MM/yyyy</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/quotes_update_dlg.ui" line="59"/>
-        <source>End date</source>
         <translation></translation>
     </message>
 </context>

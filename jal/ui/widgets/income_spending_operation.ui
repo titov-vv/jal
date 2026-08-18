@@ -20,7 +20,7 @@
    <item row="1" column="5">
     <widget class="QLabel" name="account_label">
      <property name="text">
-      <string>Account</string>
+      <string>&amp;Account</string>
      </property>
      <property name="buddy">
       <cstring>account_widget</cstring>
@@ -30,7 +30,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="date_label">
      <property name="text">
-      <string>Date/Time</string>
+      <string>Dat&amp;e/Time</string>
      </property>
      <property name="buddy">
       <cstring>timestamp_editor</cstring>
@@ -112,7 +112,7 @@
    <item row="2" column="8">
     <widget class="QLabel" name="note_label">
      <property name="text">
-      <string>Note</string>
+      <string>&amp;Note</string>
      </property>
      <property name="buddy">
       <cstring>note</cstring>
@@ -135,7 +135,7 @@
    <item row="2" column="5">
     <widget class="QLabel" name="peer_label">
      <property name="text">
-      <string>Peer</string>
+      <string>&amp;Peer</string>
      </property>
      <property name="buddy">
       <cstring>peer_widget</cstring>
@@ -302,6 +302,9 @@
   <tabstop>a_currency</tabstop>
   <tabstop>peer_widget</tabstop>
   <tabstop>note</tabstop>
+  <tabstop>add_button</tabstop>
+  <tabstop>copy_button</tabstop>
+  <tabstop>del_button</tabstop>
   <tabstop>details_table</tabstop>
   <tabstop>commit_button</tabstop>
   <tabstop>revert_button</tabstop>

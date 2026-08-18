@@ -109,7 +109,7 @@
          <item row="0" column="0">
           <widget class="QLabel" name="IRS_Modelo3FileLbl">
            <property name="text">
-            <string>Output file:</string>
+            <string>&amp;Output file:</string>
            </property>
            <property name="buddy">
             <cstring>IRS_Modelo3Filename</cstring>
@@ -142,7 +142,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="AccountLbl">
      <property name="text">
-      <string>Account:</string>
+      <string>&amp;Account:</string>
      </property>
      <property name="buddy">
       <cstring>Account</cstring>
@@ -152,7 +152,7 @@
    <item row="3" column="0">
     <widget class="QLabel" name="XlsFileLbl">
      <property name="text">
-      <string>Excel file:</string>
+      <string>&amp;Excel file:</string>
      </property>
      <property name="buddy">
       <cstring>XlsFileName</cstring>
@@ -213,7 +213,7 @@
          <item row="1" column="0">
           <widget class="QLabel" name="Ndfl3FileLbl">
            <property name="text">
-            <string>Output file:</string>
+            <string>Output &amp;file:</string>
            </property>
            <property name="buddy">
             <cstring>Ndfl3FileName</cstring>
@@ -249,7 +249,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="CountryLbl">
      <property name="text">
-      <string>Country:</string>
+      <string>&amp;Country:</string>
      </property>
      <property name="buddy">
       <cstring>Country</cstring>
@@ -259,7 +259,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="YearLbl">
      <property name="text">
-      <string>Year:</string>
+      <string>&amp;Year:</string>
      </property>
      <property name="buddy">
       <cstring>Year</cstring>

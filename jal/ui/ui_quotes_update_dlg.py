@@ -99,9 +99,9 @@ class Ui_UpdateQuotesDlg(object):
         UpdateQuotesDlg.setWindowTitle(QCoreApplication.translate("UpdateQuotesDlg", u"Update asset's quotes", None))
         self.StartDateEdit.setDisplayFormat(QCoreApplication.translate("UpdateQuotesDlg", u"dd/MM/yyyy", None))
         self.EndDateEdit.setDisplayFormat(QCoreApplication.translate("UpdateQuotesDlg", u"dd/MM/yyyy", None))
-        self.EndDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"End date", None))
-        self.StartDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"Start date", None))
+        self.EndDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"&End date", None))
+        self.StartDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"&Start date", None))
         self.AllSourcesCheck.setText(QCoreApplication.translate("UpdateQuotesDlg", u"All", None))
-        self.SourcesLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"Sources", None))
+        self.SourcesLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"S&ources", None))
     # retranslateUi
 

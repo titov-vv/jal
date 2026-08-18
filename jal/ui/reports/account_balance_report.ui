@@ -59,7 +59,7 @@
       <item row="0" column="2">
        <widget class="QLabel" name="ReportAccountLbl">
         <property name="text">
-         <string>Account:</string>
+         <string>&amp;Account:</string>
         </property>
         <property name="buddy">
          <cstring>ReportAccountButton</cstring>

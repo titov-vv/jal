@@ -112,7 +112,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="from_account_label">
      <property name="text">
-      <string>From</string>
+      <string>Fr&amp;om</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -233,7 +233,7 @@
    <item row="5" column="0">
     <widget class="QLabel" name="note_label">
      <property name="text">
-      <string>Note</string>
+      <string>&amp;Note</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>

@@ -1,7 +1,7 @@
 from functools import partial
 
 from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QSortFilterProxyModel
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import QMenu, QMessageBox, QDialog
 from jal.constants import Setup
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
@@ -9,7 +9,7 @@ from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import TagsListDialog
 from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_tables_row_height,
-                                restore_splitters, save_splitters)
+                                restore_splitters, save_splitters, assign_shortcut)
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
@@ -43,6 +43,11 @@ class OperationsWidget(MdiWidget):
         self.ui.NewOperationBtn.setIcon(JalIcon[JalIcon.ADD])
         self.ui.CopyOperationBtn.setIcon(JalIcon[JalIcon.COPY])
         self.ui.DeleteOperationBtn.setIcon(JalIcon[JalIcon.REMOVE])
+
+        assign_shortcut(self.ui.NewOperationBtn, QKeySequence.New, self)
+        assign_shortcut(self.ui.CopyOperationBtn, QKeySequence("Ctrl+D"), self)
+        assign_shortcut(self.ui.DeleteOperationBtn, QKeySequence.Delete, self.ui.OperationsTableView,
+                        Qt.WidgetShortcut)
 
         # Customize UI configuration
         self.balances_model = BalancesModel(self.ui.BalancesTreeView)

@@ -20,7 +20,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="date_label">
      <property name="text">
-      <string>Date/Time</string>
+      <string>D&amp;ate/Time</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -69,7 +69,7 @@
    <item row="1" column="7">
     <widget class="QLabel" name="type_label">
      <property name="text">
-      <string>Type</string>
+      <string>T&amp;ype</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -82,7 +82,7 @@
    <item row="3" column="7">
     <widget class="QLabel" name="tax_label">
      <property name="text">
-      <string>Tax</string>
+      <string>Ta&amp;x</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -98,7 +98,7 @@
    <item row="3" column="0">
     <widget class="QLabel" name="symbol_label">
      <property name="text">
-      <string>Asset</string>
+      <string>Ass&amp;et</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -182,7 +182,7 @@
    <item row="4" column="0">
     <widget class="QLabel" name="note_label">
      <property name="text">
-      <string>Note</string>
+      <string>&amp;Note</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -195,7 +195,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="account_label">
      <property name="text">
-      <string>Account</string>
+      <string>A&amp;ccount</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -234,7 +234,7 @@
    <item row="2" column="7">
     <widget class="QLabel" name="amount_label">
      <property name="text">
-      <string>Dividend</string>
+      <string>Di&amp;vidend</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>

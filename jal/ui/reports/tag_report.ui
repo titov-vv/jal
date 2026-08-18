@@ -55,7 +55,7 @@
       <item row="0" column="2">
        <widget class="QLabel" name="ReportTagLbl">
         <property name="text">
-         <string>Tag:</string>
+         <string>T&amp;ag:</string>
         </property>
         <property name="buddy">
          <cstring>ReportTagEdit</cstring>
@@ -65,7 +65,7 @@
       <item row="0" column="5">
        <widget class="QLabel" name="TotalCurrencyLbl">
         <property name="text">
-         <string>Common currency:</string>
+         <string>&amp;Common currency:</string>
         </property>
         <property name="buddy">
          <cstring>TotalCurrencyCombo</cstring>

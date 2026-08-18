@@ -100,7 +100,7 @@ class Ui_ProfitLossReportWidget(object):
 
     def retranslateUi(self, ProfitLossReportWidget):
         ProfitLossReportWidget.setWindowTitle(QCoreApplication.translate("ProfitLossReportWidget", u"P&L by account", None))
-        self.ReportAccountLbl.setText(QCoreApplication.translate("ProfitLossReportWidget", u"Account:", None))
+        self.ReportAccountLbl.setText(QCoreApplication.translate("ProfitLossReportWidget", u"&Account:", None))
         self.CurrencyLbl.setText(QCoreApplication.translate("ProfitLossReportWidget", u"Currency: ", None))
         self.SaveButton.setText(QCoreApplication.translate("ProfitLossReportWidget", u"Save...", None))
     # retranslateUi

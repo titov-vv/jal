@@ -32,7 +32,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="PhoneLbl">
         <property name="text">
-         <string>Phone number:</string>
+         <string>&amp;Phone number:</string>
         </property>
         <property name="buddy">
          <cstring>PhoneNumberEdit</cstring>
@@ -70,7 +70,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="PasswordLbl">
         <property name="text">
-         <string>Password:</string>
+         <string>P&amp;assword:</string>
         </property>
         <property name="buddy">
          <cstring>PasswordEdit</cstring>

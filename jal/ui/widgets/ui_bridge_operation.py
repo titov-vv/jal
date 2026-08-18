@@ -237,7 +237,7 @@ class Ui_BridgeOperation(object):
         self.amount_label.setText(QCoreApplication.translate("BridgeOperation", u"Amount", None))
         self.symbol_label.setText(QCoreApplication.translate("BridgeOperation", u"Symbol", None))
         self.tx_hash_label.setText(QCoreApplication.translate("BridgeOperation", u"Tx hash", None))
-        self.from_account_label.setText(QCoreApplication.translate("BridgeOperation", u"From", None))
+        self.from_account_label.setText(QCoreApplication.translate("BridgeOperation", u"Fr&om", None))
         self.out_timestamp.setDisplayFormat(QCoreApplication.translate("BridgeOperation", u"dd/MM/yyyy hh:mm:ss", None))
 #if QT_CONFIG(tooltip)
         self.copy_date_btn.setToolTip(QCoreApplication.translate("BridgeOperation", u"Copy value", None))
@@ -250,6 +250,6 @@ class Ui_BridgeOperation(object):
         self.to_account_label.setText(QCoreApplication.translate("BridgeOperation", u"To", None))
         self.in_timestamp.setDisplayFormat(QCoreApplication.translate("BridgeOperation", u"dd/MM/yyyy hh:mm:ss", None))
         self.fee_check.setText(QCoreApplication.translate("BridgeOperation", u"Include &fee", None))
-        self.note_label.setText(QCoreApplication.translate("BridgeOperation", u"Note", None))
+        self.note_label.setText(QCoreApplication.translate("BridgeOperation", u"&Note", None))
     # retranslateUi
 

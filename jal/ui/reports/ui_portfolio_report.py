@@ -113,8 +113,8 @@ class Ui_PortfolioWidget(object):
     def retranslateUi(self, PortfolioWidget):
         PortfolioWidget.setWindowTitle(QCoreApplication.translate("PortfolioWidget", u"Asset portfolio", None))
         self.PortfolioDate.setDisplayFormat(QCoreApplication.translate("PortfolioWidget", u"dd/MM/yyyy", None))
-        self.GroupLbl.setText(QCoreApplication.translate("PortfolioWidget", u"Group by:", None))
-        self.PortfolioCurrencyLbl.setText(QCoreApplication.translate("PortfolioWidget", u"Common currency:", None))
+        self.GroupLbl.setText(QCoreApplication.translate("PortfolioWidget", u"&Group by:", None))
+        self.PortfolioCurrencyLbl.setText(QCoreApplication.translate("PortfolioWidget", u"&Common currency:", None))
         self.ShowInactiveAccounts.setText(QCoreApplication.translate("PortfolioWidget", u"Show &Inactive accounts", None))
         self.SaveButton.setText(QCoreApplication.translate("PortfolioWidget", u"Save...", None))
     # retranslateUi

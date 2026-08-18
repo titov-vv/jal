@@ -127,7 +127,7 @@ class Ui_TagReportWidget(object):
 
     def retranslateUi(self, TagReportWidget):
         TagReportWidget.setWindowTitle(QCoreApplication.translate("TagReportWidget", u"Report by tag", None))
-        self.ReportTagLbl.setText(QCoreApplication.translate("TagReportWidget", u"Tag:", None))
-        self.TotalCurrencyLbl.setText(QCoreApplication.translate("TagReportWidget", u"Common currency:", None))
+        self.ReportTagLbl.setText(QCoreApplication.translate("TagReportWidget", u"T&ag:", None))
+        self.TotalCurrencyLbl.setText(QCoreApplication.translate("TagReportWidget", u"&Common currency:", None))
     # retranslateUi
 

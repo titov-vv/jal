@@ -241,6 +241,7 @@ class Ui_LoginFNSDialog(object):
         self.InnLbl.setBuddy(self.InnEdit)
         self.PasswordLbl.setBuddy(self.PasswordEdit)
 #endif // QT_CONFIG(shortcut)
+        QWidget.setTabOrder(self.LoginMethodTabs, self.PhoneNumberEdit)
         QWidget.setTabOrder(self.PhoneNumberEdit, self.GetCodeBtn)
         QWidget.setTabOrder(self.GetCodeBtn, self.CodeEdit)
         QWidget.setTabOrder(self.CodeEdit, self.SMSButtonBox)
@@ -263,12 +264,12 @@ class Ui_LoginFNSDialog(object):
 
     def retranslateUi(self, LoginFNSDialog):
         LoginFNSDialog.setWindowTitle(QCoreApplication.translate("LoginFNSDialog", u"Authorization FNS", None))
-        self.PhoneLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"Phone number:", None))
+        self.PhoneLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"&Phone number:", None))
         self.GetCodeBtn.setText(QCoreApplication.translate("LoginFNSDialog", u"Send SMS with code", None))
-        self.CodeLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"Code from SMS:", None))
+        self.CodeLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"&Code from SMS:", None))
         self.LoginMethodTabs.setTabText(self.LoginMethodTabs.indexOf(self.LoginSMSTab), QCoreApplication.translate("LoginFNSDialog", u"SMS Login", None))
-        self.InnLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"INN:", None))
-        self.PasswordLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"Password:", None))
+        self.InnLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"&INN:", None))
+        self.PasswordLbl.setText(QCoreApplication.translate("LoginFNSDialog", u"P&assword:", None))
         self.LoginMethodTabs.setTabText(self.LoginMethodTabs.indexOf(self.LoginPasswordTab), QCoreApplication.translate("LoginFNSDialog", u"FNS Login", None))
         self.LoginMethodTabs.setTabText(self.LoginMethodTabs.indexOf(self.ESIATab), QCoreApplication.translate("LoginFNSDialog", u"ESIA Login", None))
     # retranslateUi

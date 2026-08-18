@@ -127,7 +127,7 @@ class Ui_PeerReportWidget(object):
 
     def retranslateUi(self, PeerReportWidget):
         PeerReportWidget.setWindowTitle(QCoreApplication.translate("PeerReportWidget", u"Report by peer", None))
-        self.ReportPeerLbl.setText(QCoreApplication.translate("PeerReportWidget", u"Peer:", None))
-        self.TotalCurrencyLbl.setText(QCoreApplication.translate("PeerReportWidget", u"Common currency:", None))
+        self.ReportPeerLbl.setText(QCoreApplication.translate("PeerReportWidget", u"&Peer:", None))
+        self.TotalCurrencyLbl.setText(QCoreApplication.translate("PeerReportWidget", u"&Common currency:", None))
     # retranslateUi
 

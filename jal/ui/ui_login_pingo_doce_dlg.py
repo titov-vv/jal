@@ -101,9 +101,9 @@ class Ui_LoginPingoDoceDialog(object):
 
     def retranslateUi(self, LoginPingoDoceDialog):
         LoginPingoDoceDialog.setWindowTitle(QCoreApplication.translate("LoginPingoDoceDialog", u"Authorization Pingo Doce", None))
-        self.PhoneLbl.setText(QCoreApplication.translate("LoginPingoDoceDialog", u"Phone number:", None))
+        self.PhoneLbl.setText(QCoreApplication.translate("LoginPingoDoceDialog", u"&Phone number:", None))
         self.PhoneNumberEdit.setText(QCoreApplication.translate("LoginPingoDoceDialog", u"+351---", None))
-        self.PasswordLbl.setText(QCoreApplication.translate("LoginPingoDoceDialog", u"Password:", None))
+        self.PasswordLbl.setText(QCoreApplication.translate("LoginPingoDoceDialog", u"P&assword:", None))
         self.PasswordEdit.setInputMask("")
         self.PasswordEdit.setText("")
     # retranslateUi

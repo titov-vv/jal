@@ -122,7 +122,7 @@ class Ui_CategoryReportWidget(object):
 
     def retranslateUi(self, CategoryReportWidget):
         CategoryReportWidget.setWindowTitle(QCoreApplication.translate("CategoryReportWidget", u"Report by category", None))
-        self.ReportCategoryLbl.setText(QCoreApplication.translate("CategoryReportWidget", u"Category:", None))
-        self.TotalCurrencyLbl.setText(QCoreApplication.translate("CategoryReportWidget", u"Common currency:", None))
+        self.ReportCategoryLbl.setText(QCoreApplication.translate("CategoryReportWidget", u"&Category:", None))
+        self.TotalCurrencyLbl.setText(QCoreApplication.translate("CategoryReportWidget", u"C&ommon currency:", None))
     # retranslateUi
 

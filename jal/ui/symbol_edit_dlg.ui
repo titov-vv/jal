@@ -104,7 +104,7 @@
           <item row="2" column="0">
            <widget class="QLabel" name="CountryLbl">
             <property name="text">
-             <string>Country: </string>
+             <string>&amp;Country: </string>
             </property>
             <property name="buddy">
              <cstring>CountryCombo</cstring>
@@ -127,7 +127,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="NameLbl">
             <property name="text">
-             <string>Asset name:</string>
+             <string>&amp;Asset name:</string>
             </property>
             <property name="buddy">
              <cstring>NameEdit</cstring>
@@ -150,7 +150,7 @@
           <item row="3" column="0">
            <widget class="QLabel" name="DataLbl">
             <property name="text">
-             <string>Asset attributes</string>
+             <string>A&amp;sset attributes</string>
             </property>
             <property name="buddy">
              <cstring>AddDataButton</cstring>
@@ -160,7 +160,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="TypeLbl">
             <property name="text">
-             <string>Type: </string>
+             <string>&amp;Type: </string>
             </property>
             <property name="buddy">
              <cstring>TypeCombo</cstring>

@@ -192,7 +192,7 @@
           <item>
            <widget class="QLabel" name="AccountLbl">
             <property name="text">
-             <string>Account:</string>
+             <string>&amp;Account:</string>
             </property>
             <property name="buddy">
              <cstring>ChooseAccountBtn</cstring>
@@ -221,7 +221,7 @@
           <item>
            <widget class="QLabel" name="SearchLbl">
             <property name="text">
-             <string>Search:</string>
+             <string>S&amp;earch:</string>
             </property>
             <property name="buddy">
              <cstring>SearchString</cstring>

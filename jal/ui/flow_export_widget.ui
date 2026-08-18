@@ -40,7 +40,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="XlsFileLbl">
      <property name="text">
-      <string>Excel file:</string>
+      <string>&amp;Excel file:</string>
      </property>
      <property name="buddy">
       <cstring>XlsFileName</cstring>
@@ -50,7 +50,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="YearLbl">
      <property name="text">
-      <string>Year:</string>
+      <string>&amp;Year:</string>
      </property>
      <property name="buddy">
       <cstring>Year</cstring>

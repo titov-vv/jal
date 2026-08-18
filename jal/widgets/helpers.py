@@ -3,7 +3,7 @@ import logging
 from datetime import time, datetime, timedelta, timezone
 from functools import cmp_to_key
 from PySide6.QtCore import Qt, QCollator, QItemSelectionModel
-from PySide6.QtGui import QImage
+from PySide6.QtGui import QImage, QKeySequence, QShortcut
 from PySide6.QtWidgets import QApplication, QTableView, QStyle, QSplitter
 from jal.constants import Setup
 from jal.db.settings import JalSettings
@@ -114,6 +114,19 @@ def layout_step(widget) -> int:
     if step <= 0:
         step = style.pixelMetric(QStyle.PM_DefaultLayoutSpacing, None, widget)
     return step if step > 0 else 6
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Gives an icon-only button a keyboard shortcut and names that shortcut in its tooltip.
+def assign_shortcut(button, key, scope, context=Qt.WidgetWithChildrenShortcut):
+    sequence = QKeySequence(key)
+    if sequence.isEmpty():
+        return None
+    shortcut = QShortcut(sequence, scope)
+    shortcut.setContext(context)
+    shortcut.activated.connect(button.click)
+    if button.toolTip():
+        button.setToolTip(f"{button.toolTip()} ({sequence.toString(QKeySequence.NativeText)})")
+    return shortcut
 
 # -----------------------------------------------------------------------------------------------------------------------
 # A form that shows/hides a few fields based on a checkbox (fee_check, cross_chain_check, etc...) normally does so with

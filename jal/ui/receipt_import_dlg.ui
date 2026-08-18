@@ -100,7 +100,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="ReceiptAPILabel">
         <property name="text">
-         <string>Receipt type:</string>
+         <string>&amp;Receipt type:</string>
         </property>
         <property name="buddy">
          <cstring>ReceiptAPICombo</cstring>
@@ -198,7 +198,7 @@
       <item row="3" column="0">
        <widget class="QLabel" name="PeerLbl">
         <property name="text">
-         <string>Peer:</string>
+         <string>&amp;Peer:</string>
         </property>
         <property name="buddy">
          <cstring>SlipShopName</cstring>
@@ -215,7 +215,7 @@
       <item row="4" column="0">
        <widget class="QLabel" name="LinesLbl">
         <property name="text">
-         <string>Lines:</string>
+         <string>&amp;Lines:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>

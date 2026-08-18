@@ -1,10 +1,11 @@
 import logging
-from PySide6.QtCore import Slot, Signal
+from PySide6.QtCore import Qt, Slot, Signal
+from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import QWidget, QDataWidgetMapper
 from PySide6.QtSql import QSqlTableModel
 from jal.db.db import JalModel
 from jal.widgets.icons import JalIcon
-from jal.widgets.helpers import set_tables_row_height
+from jal.widgets.helpers import set_tables_row_height, assign_shortcut
 
 
 class AbstractOperationDetails(QWidget):
@@ -28,6 +29,9 @@ class AbstractOperationDetails(QWidget):
 
         self.ui.commit_button.setIcon(JalIcon[JalIcon.OK])
         self.ui.revert_button.setIcon(JalIcon[JalIcon.CANCEL])
+
+        assign_shortcut(self.ui.commit_button, QKeySequence.Save, self)
+        assign_shortcut(self.ui.revert_button, QKeySequence.Cancel, self)
 
     def _init_db(self, table_name):
         self.table_name = table_name

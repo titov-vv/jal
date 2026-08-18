@@ -355,7 +355,7 @@ class Ui_TransferOperation(object):
 
     def retranslateUi(self, TransferOperation):
         TransferOperation.setWindowTitle(QCoreApplication.translate("TransferOperation", u"Form", None))
-        self.to_account_label.setText(QCoreApplication.translate("TransferOperation", u"To", None))
+        self.to_account_label.setText(QCoreApplication.translate("TransferOperation", u"T&o", None))
         self.TransferTypeCombo.setItemText(0, QCoreApplication.translate("TransferOperation", u"Money transfer", None))
         self.TransferTypeCombo.setItemText(1, QCoreApplication.translate("TransferOperation", u"Asset transfer", None))
 
@@ -364,11 +364,11 @@ class Ui_TransferOperation(object):
         self.commit_button.setToolTip(QCoreApplication.translate("TransferOperation", u"Commit changes", None))
 #endif // QT_CONFIG(tooltip)
         self.commit_button.setText("")
-        self.TransferTypeLabel.setText(QCoreApplication.translate("TransferOperation", u"Type", None))
+        self.TransferTypeLabel.setText(QCoreApplication.translate("TransferOperation", u"T&ype", None))
         self.date_label.setText(QCoreApplication.translate("TransferOperation", u"Date/Time", None))
         self.fee_currency.setText(QCoreApplication.translate("TransferOperation", u"CUR", None))
         self.number_label.setText(QCoreApplication.translate("TransferOperation", u"#", None))
-        self.note_label.setText(QCoreApplication.translate("TransferOperation", u"Note", None))
+        self.note_label.setText(QCoreApplication.translate("TransferOperation", u"&Note", None))
         self.from_currency.setText(QCoreApplication.translate("TransferOperation", u"CUR", None))
         self.to_currency.setText(QCoreApplication.translate("TransferOperation", u"CUR", None))
         self.amount_label.setText(QCoreApplication.translate("TransferOperation", u"Amount", None))
@@ -376,8 +376,8 @@ class Ui_TransferOperation(object):
         self.copy_amount_btn.setToolTip(QCoreApplication.translate("TransferOperation", u"Copy value", None))
 #endif // QT_CONFIG(tooltip)
         self.copy_amount_btn.setText(QCoreApplication.translate("TransferOperation", u"\u2193", None))
-        self.value_label.setText(QCoreApplication.translate("TransferOperation", u"Cost basis", None))
-        self.AssetLabel.setText(QCoreApplication.translate("TransferOperation", u"Asset", None))
+        self.value_label.setText(QCoreApplication.translate("TransferOperation", u"&Cost basis", None))
+        self.AssetLabel.setText(QCoreApplication.translate("TransferOperation", u"&Asset", None))
         self.CostBasisCurrencyLabel.setText(QCoreApplication.translate("TransferOperation", u"CUR", None))
         self.AmountLabel.setText(QCoreApplication.translate("TransferOperation", u"Amount", None))
         self.withdrawal_timestamp.setDisplayFormat(QCoreApplication.translate("TransferOperation", u"dd/MM/yyyy hh:mm:ss", None))
@@ -395,6 +395,6 @@ class Ui_TransferOperation(object):
 #endif // QT_CONFIG(tooltip)
         self.copy_date_btn.setText(QCoreApplication.translate("TransferOperation", u"\u2193", None))
         self.main_label.setText(QCoreApplication.translate("TransferOperation", u"Transfer", None))
-        self.from_account_label.setText(QCoreApplication.translate("TransferOperation", u"From", None))
+        self.from_account_label.setText(QCoreApplication.translate("TransferOperation", u"&From", None))
     # retranslateUi
 

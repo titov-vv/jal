@@ -223,6 +223,8 @@ class Ui_SwapOperation(object):
         QWidget.setTabOrder(self.fee_check, self.fee_qty)
         QWidget.setTabOrder(self.fee_qty, self.fee_symbol_widget)
         QWidget.setTabOrder(self.fee_symbol_widget, self.note)
+        QWidget.setTabOrder(self.note, self.commit_button)
+        QWidget.setTabOrder(self.commit_button, self.revert_button)
 
         self.retranslateUi(SwapOperation)
 
@@ -231,7 +233,7 @@ class Ui_SwapOperation(object):
 
     def retranslateUi(self, SwapOperation):
         SwapOperation.setWindowTitle(QCoreApplication.translate("SwapOperation", u"Form", None))
-        self.note_label.setText(QCoreApplication.translate("SwapOperation", u"Note", None))
+        self.note_label.setText(QCoreApplication.translate("SwapOperation", u"&Note", None))
         self.amount_label.setText(QCoreApplication.translate("SwapOperation", u"Amount", None))
 #if QT_CONFIG(tooltip)
         self.cross_chain_check.setToolTip(QCoreApplication.translate("SwapOperation", u"The exchanged asset is received on another account (chain), in a separate transaction", None))
@@ -245,12 +247,12 @@ class Ui_SwapOperation(object):
         self.date_label.setText(QCoreApplication.translate("SwapOperation", u"Date/Time", None))
         self.account_label.setText(QCoreApplication.translate("SwapOperation", u"Account", None))
         self.fee_check.setText(QCoreApplication.translate("SwapOperation", u"Include &fee", None))
-        self.to_label.setText(QCoreApplication.translate("SwapOperation", u"To", None))
+        self.to_label.setText(QCoreApplication.translate("SwapOperation", u"T&o", None))
         self.timestamp.setDisplayFormat(QCoreApplication.translate("SwapOperation", u"dd/MM/yyyy hh:mm:ss", None))
         self.tx_hash_label.setText(QCoreApplication.translate("SwapOperation", u"Tx hash", None))
         self.asset_label.setText(QCoreApplication.translate("SwapOperation", u"Asset", None))
-        self.main_label.setText(QCoreApplication.translate("SwapOperation", u"Swap", None))
-        self.from_label.setText(QCoreApplication.translate("SwapOperation", u"From", None))
+        self.main_label.setText(QCoreApplication.translate("SwapOperation", u"S&wap", None))
+        self.from_label.setText(QCoreApplication.translate("SwapOperation", u"Fro&m", None))
 #if QT_CONFIG(tooltip)
         self.commit_button.setToolTip(QCoreApplication.translate("SwapOperation", u"Commit changes", None))
 #endif // QT_CONFIG(tooltip)

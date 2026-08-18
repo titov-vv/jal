@@ -17,7 +17,7 @@
    <item row="7" column="0">
     <widget class="QLabel" name="note_label">
      <property name="text">
-      <string>Note</string>
+      <string>&amp;Note</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -122,7 +122,7 @@
    <item row="4" column="0">
     <widget class="QLabel" name="to_label">
      <property name="text">
-      <string>To</string>
+      <string>T&amp;o</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -285,7 +285,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Swap</string>
+      <string>S&amp;wap</string>
      </property>
      <property name="buddy">
       <cstring>cross_chain_check</cstring>
@@ -295,7 +295,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="from_label">
      <property name="text">
-      <string>From</string>
+      <string>Fro&amp;m</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -351,6 +351,8 @@
   <tabstop>fee_qty</tabstop>
   <tabstop>fee_symbol_widget</tabstop>
   <tabstop>note</tabstop>
+  <tabstop>commit_button</tabstop>
+  <tabstop>revert_button</tabstop>
  </tabstops>
  <resources/>
  <connections/>

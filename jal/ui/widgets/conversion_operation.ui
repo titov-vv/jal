@@ -71,7 +71,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="date_label">
      <property name="text">
-      <string>Date/Time</string>
+      <string>D&amp;ate/Time</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -97,7 +97,7 @@
    <item row="1" column="2">
     <widget class="QLabel" name="account_label">
      <property name="text">
-      <string>Account</string>
+      <string>A&amp;ccount</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -113,7 +113,7 @@
    <item row="1" column="5">
     <widget class="QLabel" name="tx_hash_label">
      <property name="text">
-      <string>Tx hash</string>
+      <string>T&amp;x hash</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -129,7 +129,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="converted_label">
      <property name="text">
-      <string>Converted</string>
+      <string>C&amp;onverted</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -171,7 +171,7 @@
    <item row="3" column="0">
     <widget class="QLabel" name="received_label">
      <property name="text">
-      <string>Received</string>
+      <string>R&amp;eceived</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -262,7 +262,7 @@
    <item row="5" column="0">
     <widget class="QLabel" name="note_label">
      <property name="text">
-      <string>Note</string>
+      <string>&amp;Note</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>

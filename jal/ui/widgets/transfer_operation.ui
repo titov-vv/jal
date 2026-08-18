@@ -30,7 +30,7 @@
    <item row="4" column="0">
     <widget class="QLabel" name="to_account_label">
      <property name="text">
-      <string>To</string>
+      <string>T&amp;o</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -93,7 +93,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="TransferTypeLabel">
      <property name="text">
-      <string>Type</string>
+      <string>T&amp;ype</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -256,7 +256,7 @@
    <item row="6" column="0">
     <widget class="QLabel" name="note_label">
      <property name="text">
-      <string>Note</string>
+      <string>&amp;Note</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -367,7 +367,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="value_label">
          <property name="text">
-          <string>Cost basis</string>
+          <string>&amp;Cost basis</string>
          </property>
          <property name="buddy">
           <cstring>asset_cost_basis</cstring>
@@ -380,7 +380,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="AssetLabel">
          <property name="text">
-          <string>Asset</string>
+          <string>&amp;Asset</string>
          </property>
          <property name="buddy">
           <cstring>asset_amount</cstring>
@@ -503,7 +503,7 @@
    <item row="3" column="0">
     <widget class="QLabel" name="from_account_label">
      <property name="text">
-      <string>From</string>
+      <string>&amp;From</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>

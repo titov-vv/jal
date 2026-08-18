@@ -46,7 +46,7 @@
       <item>
        <widget class="QLabel" name="PeriodLbl">
         <property name="text">
-         <string>Periodicity:</string>
+         <string>&amp;Periodicity:</string>
         </property>
         <property name="buddy">
          <cstring>PeriodComboBox</cstring>
@@ -86,7 +86,7 @@
       <item>
        <widget class="QLabel" name="CurrencyLbl">
         <property name="text">
-         <string>Currency:</string>
+         <string>&amp;Currency:</string>
         </property>
         <property name="buddy">
          <cstring>CurrencyCombo</cstring>
