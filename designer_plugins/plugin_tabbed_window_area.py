@@ -1,5 +1,5 @@
 # Here reference goes from PYSIDE_DESIGNER_PLUGINS directory
-from jal.widgets.mdi import TabbedMdiArea
+from jal.widgets.mdi import TabbedWindowArea
 
 from designer_plugins.plugin_icon import jal_widget_icon
 from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
@@ -7,19 +7,19 @@ from PySide6.QtDesigner import (QDesignerCustomWidgetInterface)
 
 DOM_XML = """
 <ui language='c++'>
-    <widget class='TabbedMdiArea' name='tabbedMdiArea'>
+    <widget class='TabbedWindowArea' name='tabbedWindowArea'>
     </widget>
 </ui>
 """
 
 
-class TabbedMdiAreaPlugin(QDesignerCustomWidgetInterface):
+class TabbedWindowAreaPlugin(QDesignerCustomWidgetInterface):
     def __init__(self):
         super().__init__()
         self._initialized = False
 
     def createWidget(self, parent):
-        t = TabbedMdiArea(parent)
+        t = TabbedWindowArea(parent)
         return t
 
     def domXml(self):
@@ -46,10 +46,10 @@ class TabbedMdiAreaPlugin(QDesignerCustomWidgetInterface):
         return self._initialized
 
     def name(self):
-        return 'TabbedMdiArea'
+        return 'TabbedWindowArea'
 
     def toolTip(self):
-        return 'MDI area with a bottom tab bar for switching between maximized sub-windows'
+        return 'Tabbed area that holds application windows of JAL main window'
 
     def whatsThis(self):
         return self.toolTip()

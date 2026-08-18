@@ -521,7 +521,7 @@ class PeerListDialog(ReferenceDataDialog):
     def showUsageReport(self):
         settings = {'begin_ts': 0, 'end_ts': QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
                     'peer_id': self._menu_peer_id}
-        self._parent.reports.show_report("PeerReportWindow", settings, maximized=True)
+        self._parent.reports.show_report("PeerReportWindow", settings, floating=False)
 
     @Slot()
     def replacePeer(self):
@@ -573,7 +573,7 @@ class CategoryListDialog(ReferenceDataDialog):
     def showUsageReport(self):
         settings = {'begin_ts': 0, 'end_ts': QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
                     'category_id': self._menu_category_id}
-        self._parent.reports.show_report("CategoryReportWindow", settings, maximized=True)
+        self._parent.reports.show_report("CategoryReportWindow", settings, floating=False)
 
     @Slot()
     def replaceCategory(self):
@@ -620,7 +620,7 @@ class TagsListDialog(ReferenceDataDialog):
     def showUsageReport(self):
         settings = {'begin_ts': 0, 'end_ts': QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
                     'tag_id': self._menu_tag_id}
-        self._parent.reports.show_report("TagReportWindow", settings, maximized=True)
+        self._parent.reports.show_report("TagReportWindow", settings, floating=False)
 
     @Slot()
     def replaceTag(self):

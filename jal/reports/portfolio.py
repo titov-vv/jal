@@ -115,7 +115,7 @@ class PortfolioReportWindow(MdiWidget):
     def showPriceChart(self, index):
         model = index.model()
         account, asset, currency, asset_qty = model.get_data_for_tax(index)
-        self._parent.mdi_area().addSubWindow(ChartWindow(account, asset, currency, self.ui.PortfolioDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch()))
+        self._parent.mdi_area().addWindow(ChartWindow(account, asset, currency, self.ui.PortfolioDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch()), floating=True)
 
     # True when this row's position has been measured on chain more than once - anything less has no line to draw
     def _has_accrual_history(self, index) -> bool:
@@ -125,7 +125,7 @@ class PortfolioReportWindow(MdiWidget):
     @Slot()
     def showAccrualChart(self, index):
         account, asset, _currency, _qty = index.model().get_data_for_tax(index)
-        self._parent.mdi_area().addSubWindow(AccrualChartWindow(account, asset))
+        self._parent.mdi_area().addWindow(AccrualChartWindow(account, asset), floating=True)
 
     @Slot()
     def estimateSaleTax(self, index, country_code):
@@ -134,7 +134,7 @@ class PortfolioReportWindow(MdiWidget):
             return
         model = index.model()
         account, asset, currency, asset_qty = model.get_data_for_tax(index)
-        self._parent.mdi_area().addSubWindow(TaxEstimator(country_code, account, asset, asset_qty), size=(1000, 300))
+        self._parent.mdi_area().addWindow(TaxEstimator(country_code, account, asset, asset_qty), floating=True, size=(1000, 300))
 
     @Slot()
     def setTag(self, index):

@@ -354,7 +354,7 @@ class StakingReportWindow(MdiWidget):
 
     @Slot()
     def showAccrualChart(self, account_id, asset_id):
-        self._parent.mdi_area().addSubWindow(AccrualChartWindow(account_id, asset_id))
+        self._parent.mdi_area().addWindow(AccrualChartWindow(account_id, asset_id), floating=True)
 
     @Slot()
     def onBoxSelected(self, _selected=None, _deselected=None):

@@ -32,7 +32,7 @@
       <property name="orientation">
        <enum>Qt::Orientation::Vertical</enum>
       </property>
-      <widget class="TabbedMdiArea" name="mdiArea" native="true"/>
+      <widget class="TabbedWindowArea" name="windowArea"/>
       <widget class="LogViewer" name="Logs"/>
      </widget>
     </item>
@@ -284,7 +284,7 @@
   </action>
  </widget>
  <tabstops>
-  <tabstop>mdiArea</tabstop>
+  <tabstop>windowArea</tabstop>
   <tabstop>Logs</tabstop>
  </tabstops>
  <customwidgets>
@@ -294,9 +294,8 @@
    <header>jal/widgets/custom/log_viewer.h</header>
   </customwidget>
   <customwidget>
-   <class>TabbedMdiArea</class>
-   <extends>QWidget</extends>
-   <container>1</container>
+   <class>TabbedWindowArea</class>
+   <extends>QTabWidget</extends>
    <header>jal/widgets/mdi.h</header>
   </customwidget>
  </customwidgets>

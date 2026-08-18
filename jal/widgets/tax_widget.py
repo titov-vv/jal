@@ -56,15 +56,7 @@ class TaxWidget(MdiWidget):
         self.OnYearChange(self.ui.Year.value())
         self._close_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
         self._close_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
-        self._close_shortcut.activated.connect(self.closeMdiWindow)
-
-    @Slot()
-    def closeMdiWindow(self):
-        mdi_window = self.parent()
-        if mdi_window is not None:
-            mdi_window.close()
-        else:
-            self.close()
+        self._close_shortcut.activated.connect(self.close)
 
     def OnCountryChange(self, item_id):
         if item_id == TaxReport.PORTUGAL:
@@ -75,12 +67,11 @@ class TaxWidget(MdiWidget):
             self.ui.PtBox.setVisible(False)
         else:
             raise ValueError("Selected item has no country handler in code")
-        # Refresh and adjust MDI-window size
-        if not self.parent() is None:
-            self.parent().update()
+        # A window of its own may follow the size of the country block it shows, a tab may not
+        if self.isWindow():
+            self.update()
             QApplication.processEvents()
-            if not self.parent().isMaximized():  # Prevent size-change of maximized MDI
-                self.parent().adjustSize()
+            self.adjustSize()
 
     # Load account combobox with account names relevant for the given year
     def OnYearChange(self, year):
@@ -89,11 +80,11 @@ class TaxWidget(MdiWidget):
         for account in accounts:
             self.ui.Account.addItem(account.name(), account.id())
 
-    # Displays tax widget in a given MDI area.
+    # Displays tax widget in a given window area.
     # It is implemented as a separate static method in order to prevent unexpected object deletion
     @staticmethod
-    def showInMDI(parent_mdi):
-        parent_mdi.addSubWindow(TaxWidget(), maximized=False)
+    def showInWindowArea(parent_area):
+        parent_area.addWindow(TaxWidget(), floating=True)
 
     @Slot()
     def OnFileBtn(self, type):
@@ -197,11 +188,11 @@ class MoneyFlowWidget(MdiWidget):
         self.ui.XlsSelectBtn.pressed.connect(self.OnFileBtn)
         self.ui.SaveButton.pressed.connect(self.SaveReport)
 
-    # Displays tax widget in a given MDI area.
+    # Displays money flow widget in a given window area.
     # It is implemented as a separate static method in order to prevent unexpected object deletion
     @staticmethod
-    def showInMDI(parent_mdi):
-        parent_mdi.addSubWindow(MoneyFlowWidget(parent_mdi), maximized=False)
+    def showInWindowArea(parent_area):
+        parent_area.addWindow(MoneyFlowWidget(parent_area), floating=True)
 
     @Slot()
     def OnFileBtn(self):

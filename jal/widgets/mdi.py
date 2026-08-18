@@ -1,19 +1,19 @@
-from PySide6.QtCore import Slot, Signal
-from PySide6.QtWidgets import QWidget, QMdiArea, QTabBar, QVBoxLayout
+from PySide6.QtCore import Qt, Slot, Signal
+from PySide6.QtWidgets import QWidget, QTabWidget
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Base class that is used for any other widget which should be displayed inside JAL MainWindow MDI
-# implemented as TabbedMdiArea() class (below)
+# Base class that is used for any other widget which should be displayed inside JAL MainWindow window area
+# implemented as TabbedWindowArea() class (below)
 class MdiWidget(QWidget):
-    onClose = Signal(QWidget)
+    onClose = Signal(QWidget)   # Reports the widget itself, so that the area it belongs to may drop it
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
     @Slot()
     def closeEvent(self, event):
-        self.onClose.emit(self.parent())
+        self.onClose.emit(self)
         super().closeEvent(event)
 
     def refresh(self):
@@ -21,80 +21,53 @@ class MdiWidget(QWidget):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Class that acts as QMdiArea in SubWindowView mode but has Tabs at the same time
+# Area that keeps all application windows. Document-like ones (operations, reports) are shown as tabs, while
+# small auxiliary ones (charts, tax forms) are shown as separate top-level windows still owned by the main
+# window - a tab would leave no way to look at the data the window was opened from.
 # Child windows should be derived from MdiWidget class for correct operation
-class TabbedMdiArea(QWidget):
+class TabbedWindowArea(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        self.setDocumentMode(True)
+        self.setTabsClosable(True)
+        self.setMovable(True)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
-        self.setLayout(self.layout)
+        self._windows = []   # Free-floating windows - they have no tab of their own
 
-        self.mdi = QMdiArea(self)
-        self.mdi.setOption(QMdiArea.DontMaximizeSubWindowOnActivation)
-        self.layout.addWidget(self.mdi)
+        self.tabCloseRequested.connect(self.onTabCloseRequested)
 
-        self.tabs = QTabBar(self)
-        self.tabs.setShape(QTabBar.RoundedSouth)
-        self.tabs.setExpanding(False)
-        self.tabs.setTabsClosable(True)
-        self.layout.addWidget(self.tabs)
+    # Every window that is currently open in the area: tabs in tab order first, free-floating ones after them
+    def windows(self) -> list:
+        return [self.widget(i) for i in range(self.count())] + list(self._windows)
 
-        self.mdi.subWindowActivated.connect(self.subWindowActivated)
-        self.tabs.currentChanged.connect(self.tabClicked)
-        self.tabs.tabCloseRequested.connect(self.tabClose)
+    # Shows the given widget as a tab or, if floating is True, as a window of its own of the given size
+    def addWindow(self, widget, floating=False, size=None):
+        widget.onClose.connect(self.onWindowClosed)
+        if floating:
+            self._windows.append(widget)
+            widget.setParent(self.window(), Qt.Window)   # A real window that the main window still owns
+            if size is not None:
+                widget.resize(size[0], size[1])
+            geometry = widget.frameGeometry()
+            geometry.moveCenter(self.window().frameGeometry().center())
+            widget.move(geometry.topLeft())
+            widget.show()
+        else:
+            self.addTab(widget, widget.windowTitle().replace('&', '&&'))  # & -> && to prevent shortcut creation
+            self.setCurrentWidget(widget)
+        return widget
 
-    def subWindowList(self, order=QMdiArea.CreationOrder):
-        return self.mdi.subWindowList(order)
+    @Slot(int)
+    def onTabCloseRequested(self, index):
+        widget = self.widget(index)
+        if widget is not None:
+            widget.close()   # A closed widget removes itself from the area via its onClose signal
 
-    # Brings an already open sub-window to the front - the tab bar follows via the subWindowActivated signal
-    def setActiveSubWindow(self, sub_window):
-        self.mdi.setActiveSubWindow(sub_window)
-
-    def addSubWindow(self, widget, maximized=False, size=None):
-        sub_window = self.mdi.addSubWindow(widget)
-        widget.onClose.connect(self.subWindowClosed)
-        self.tabs.addTab(sub_window.windowTitle().replace('&', '&&'))  # & -> && to prevent shortcut creation
-        if maximized:
-            sub_window.showMaximized()
-        else:   # show centered otherwise
-            if size is None:
-                w = sub_window.width()
-                h = sub_window.height()
-            else:
-                w = size[0]
-                h = size[1]
-            x = self.mdi.x() + self.mdi.width() / 2 - w / 2
-            y = self.mdi.y() + self.mdi.height() / 2 - h / 2
-            sub_window.setGeometry(x, y, w, h)
-            sub_window.show()
-        return sub_window
-
-    @Slot()
-    def subWindowActivated(self, window):
-        if window is not None:
-            self.tabs.setCurrentIndex(self.mdi.subWindowList().index(window))
-
-    @Slot()
-    def subWindowClosed(self, window):
-        index = self.subWindowList().index(window)
-        self.tabs.removeTab(index)
-
-    @Slot()
-    def tabClicked(self, index):
-        try:
-            sub_window = self.subWindowList()[index]
-        except IndexError:
-            return
-        self.mdi.setActiveSubWindow(sub_window)
-
-    @Slot()
-    def tabClose(self, index):
-        try:
-            sub_window = self.subWindowList()[index]
-        except KeyError:
-            return
-        self.mdi.removeSubWindow(sub_window)
-        self.tabs.removeTab(index)
+    @Slot(QWidget)
+    def onWindowClosed(self, widget):
+        index = self.indexOf(widget)
+        if index >= 0:
+            self.removeTab(index)    # Removal from the tab bar doesn't drop the widget itself, hence deleteLater()
+        if widget in self._windows:
+            self._windows.remove(widget)
+        widget.deleteLater()

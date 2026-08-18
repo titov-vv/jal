@@ -69,7 +69,7 @@ class MainWindow(QMainWindow):
         self.token_lists = TokenListProvider()
         self.statements = Statements(self)
         self.chain_fetchers = ChainFetchers(self)
-        self.reports = Reports(self, self.ui.mdiArea)
+        self.reports = Reports(self, self.ui.windowArea)
         self.backup = JalBackup(self)
         self.estimator = None
         self.price_chart = None
@@ -123,8 +123,8 @@ class MainWindow(QMainWindow):
         self.ui.actionTokenBlacklist.triggered.connect(partial(self.onDataDialog, TokenBlacklistDialog))
         self.ui.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, BaseCurrencyDialog))
         self.ui.actionPreferences.triggered.connect(self.showPreferences)
-        self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInMDI, self.ui.mdiArea))
-        self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInMDI, self.ui.mdiArea))
+        self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInWindowArea, self.ui.windowArea))
+        self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInWindowArea, self.ui.windowArea))
         self.CancelButton.clicked.connect(self.downloader.on_cancel)
         self.CancelButton.clicked.connect(self.ledger.on_cancel)
         self.CancelButton.clicked.connect(self.token_lists.on_cancel)
@@ -187,7 +187,7 @@ class MainWindow(QMainWindow):
             return
         JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
         JalSettings().setValue('WindowState', base64.encodebytes(self.saveState().data()).decode('utf-8'))
-        save_splitters(self, Setup.SPLITTER_STATE_PREFIX)   # ... and save splitter position of every MDI child still open inside it
+        save_splitters(self, Setup.SPLITTER_STATE_PREFIX)   # ... and save splitter position of every window still open inside it
         WebRequest.wait_for_all()    # Requests their callers gave up on are still running and may not be dropped
         self.ui.Logs.stopLogging()   # At the end, so that whatever is running still can report
         super().closeEvent(event)
@@ -301,12 +301,12 @@ class MainWindow(QMainWindow):
     # so an already open one is brought to the front instead of being added again.
     @Slot()
     def showOperationsWindow(self):
-        for window in self.ui.mdiArea.subWindowList():
-            if isinstance(window.widget(), OperationsWidget):
-                self.ui.mdiArea.setActiveSubWindow(window)
+        for window in self.ui.windowArea.windows():
+            if isinstance(window, OperationsWidget):
+                self.ui.windowArea.setCurrentWidget(window)
                 return
-        operations_window = self.ui.mdiArea.addSubWindow(OperationsWidget(self), maximized=True)
-        operations_window.widget().dbUpdated.connect(self.ledger.rebuild)
+        operations_window = self.ui.windowArea.addWindow(OperationsWidget(self))
+        operations_window.dbUpdated.connect(self.ledger.rebuild)
 
     # Opens a document from the project repository in a browser, in the language the application is set to
     @Slot()
@@ -380,8 +380,8 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def updateWidgets(self):
-        for window in self.ui.mdiArea.subWindowList():
-            window.widget().refresh()
+        for window in self.ui.windowArea.windows():
+            window.refresh()
 
     @Slot()
     def onStatementImport(self, timestamp, totals):

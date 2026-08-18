@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
     QWidget)
 
 from jal.widgets.custom.log_viewer import LogViewer
-from jal.widgets.mdi import TabbedMdiArea
+from jal.widgets.mdi import TabbedWindowArea
 
 class Ui_JAL_MainWindow(object):
     def setupUi(self, JAL_MainWindow):
@@ -91,9 +91,9 @@ class Ui_JAL_MainWindow(object):
         self.splitter = QSplitter(self.centralwidget)
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Orientation.Vertical)
-        self.mdiArea = TabbedMdiArea(self.splitter)
-        self.mdiArea.setObjectName(u"mdiArea")
-        self.splitter.addWidget(self.mdiArea)
+        self.windowArea = TabbedWindowArea(self.splitter)
+        self.windowArea.setObjectName(u"windowArea")
+        self.splitter.addWidget(self.windowArea)
         self.Logs = LogViewer(self.splitter)
         self.Logs.setObjectName(u"Logs")
         self.splitter.addWidget(self.Logs)
@@ -128,7 +128,7 @@ class Ui_JAL_MainWindow(object):
         self.StatusBar = QStatusBar(JAL_MainWindow)
         self.StatusBar.setObjectName(u"StatusBar")
         JAL_MainWindow.setStatusBar(self.StatusBar)
-        QWidget.setTabOrder(self.mdiArea, self.Logs)
+        QWidget.setTabOrder(self.windowArea, self.Logs)
 
         self.MainMenu.addAction(self.menuLedger.menuAction())
         self.MainMenu.addAction(self.menu_Data.menuAction())
