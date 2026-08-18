@@ -34,7 +34,6 @@ class Ui_PreferencesDlg(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.PagesList.sizePolicy().hasHeightForWidth())
         self.PagesList.setSizePolicy(sizePolicy)
-        self.PagesList.setMaximumSize(QSize(180, 16777215))
 
         self.gridLayout.addWidget(self.PagesList, 0, 0, 1, 1)
 

@@ -13,7 +13,8 @@ from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget, TaxMergeDialog
-from jal.widgets.helpers import dependency_present, menu_label, menu_mnemonic
+from jal.widgets.helpers import (dependency_present, menu_label, menu_mnemonic,
+                                restore_splitters, save_splitters)
 from jal.widgets.icons import JalIcon, AUX_PREFIX, CHAIN_PREFIX
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog, TokenBlacklistDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
@@ -50,6 +51,7 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         self.restoreGeometry(base64.decodebytes(JalSettings().getValue('WindowGeometry', '').encode('utf-8')))
         self.restoreState(base64.decodebytes(JalSettings().getValue('WindowState', '').encode('utf-8')))
+        restore_splitters(self, Setup.SPLITTER_STATE_PREFIX)
 
         self.ledger = Ledger()
 
@@ -57,7 +59,6 @@ class MainWindow(QMainWindow):
         self.ProgressBar = QProgressBar(self)  # Use default range 0 - 100
         self.ui.StatusBar.addPermanentWidget(self.ProgressBar, stretch=1)
         self.CancelButton = QPushButton(self.tr("Stop"), parent=self)
-        self.CancelButton.setFixedWidth(int(self.CancelButton.fontMetrics().horizontalAdvance(self.CancelButton.text()) * 1.5))
         self.ui.StatusBar.addPermanentWidget(self.CancelButton)
         self.ProgressBar.setVisible(False)
         self.CancelButton.setVisible(False)
@@ -186,6 +187,7 @@ class MainWindow(QMainWindow):
             return
         JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
         JalSettings().setValue('WindowState', base64.encodebytes(self.saveState().data()).decode('utf-8'))
+        save_splitters(self, Setup.SPLITTER_STATE_PREFIX)   # ... and save splitter position of every MDI child still open inside it
         WebRequest.wait_for_all()    # Requests their callers gave up on are still running and may not be dropped
         self.ui.Logs.stopLogging()   # At the end, so that whatever is running still can report
         super().closeEvent(event)

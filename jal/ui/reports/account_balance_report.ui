@@ -17,10 +17,7 @@
    <item>
     <widget class="QFrame" name="ReportParamsFrame">
      <property name="frameShape">
-      <enum>QFrame::Shape::Panel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Sunken</enum>
+      <enum>QFrame::Shape::StyledPanel</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">

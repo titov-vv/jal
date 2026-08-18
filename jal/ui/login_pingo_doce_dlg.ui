@@ -19,9 +19,6 @@
      <property name="frameShape">
       <enum>QFrame::Shape::NoFrame</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Plain</enum>
-     </property>
      <layout class="QFormLayout" name="formLayout_2">
       <property name="leftMargin">
        <number>6</number>
@@ -59,9 +56,6 @@
     <widget class="QFrame" name="PasswordFrame">
      <property name="frameShape">
       <enum>QFrame::Shape::NoFrame</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Plain</enum>
      </property>
      <layout class="QFormLayout" name="formLayout_3">
       <property name="leftMargin">
@@ -109,9 +103,6 @@
      </property>
      <property name="frameShape">
       <enum>QFrame::Shape::NoFrame</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Plain</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_9">
       <item alignment="Qt::AlignmentFlag::AlignTop">

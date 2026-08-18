@@ -50,10 +50,6 @@ class TransferWidget(AbstractOperationDetails):
         self.ui.symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         self.ui.gas_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
 
-        self.ui.copy_date_btn.setFixedWidth(self.ui.copy_date_btn.fontMetrics().horizontalAdvance("XXXX"))
-        self.ui.copy_amount_btn.setFixedWidth(self.ui.copy_amount_btn.fontMetrics().horizontalAdvance("XXXX"))
-        self.ui.withdrawal_timestamp.setFixedWidth(self.ui.withdrawal_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.ui.deposit_timestamp.setFixedWidth(self.ui.deposit_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.fee_account_widget.setValidation(False)
         self.ui.symbol_widget.setValidation(False)
         self.ui.gas_symbol_widget.setValidation(False)

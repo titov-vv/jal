@@ -32,15 +32,6 @@
      <property name="frameShape">
       <enum>QFrame::Shape::NoFrame</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Plain</enum>
-     </property>
-     <property name="lineWidth">
-      <number>0</number>
-     </property>
-     <property name="midLineWidth">
-      <number>0</number>
-     </property>
      <layout class="QVBoxLayout" name="FrameLayout">
       <property name="leftMargin">
        <number>0</number>

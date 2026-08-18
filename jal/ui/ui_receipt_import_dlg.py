@@ -38,7 +38,6 @@ class Ui_ImportShopReceiptDlg(object):
         sizePolicy.setHeightForWidth(self.InputFrame.sizePolicy().hasHeightForWidth())
         self.InputFrame.setSizePolicy(sizePolicy)
         self.InputFrame.setFrameShape(QFrame.Shape.NoFrame)
-        self.InputFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.horizontalLayout_2 = QHBoxLayout(self.InputFrame)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)

@@ -32,8 +32,7 @@ class Ui_UnsettledTransfersWidget(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.ReportParamsFrame = QFrame(UnsettledTransfersWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
-        self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
-        self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
+        self.ReportParamsFrame.setFrameShape(QFrame.Shape.StyledPanel)
         self.gridLayout = QGridLayout(self.ReportParamsFrame)
         self.gridLayout.setObjectName(u"gridLayout")
         self.ReportDate = QDateEdit(self.ReportParamsFrame)
@@ -140,7 +139,6 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.ReportTreeView = TreeViewWithFooter(UnsettledTransfersWidget)
         self.ReportTreeView.setObjectName(u"ReportTreeView")
-        self.ReportTreeView.setFrameShape(QFrame.Shape.Panel)
         self.ReportTreeView.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.ReportTreeView.setAlternatingRowColors(True)
         self.ReportTreeView.setRootIsDecorated(False)

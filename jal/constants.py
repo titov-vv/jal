@@ -12,6 +12,7 @@ class Setup:
     DB_REQUIRED_VERSION = 63
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
+    SPLITTER_STATE_PREFIX = "SplitterState_"
     INIT_SCRIPT_PATH = 'jal_init.sql'
     UPDATES_PATH = 'updates'
     ICONS_PATH = "img"

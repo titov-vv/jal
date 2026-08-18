@@ -38,10 +38,6 @@ class BridgeWidget(AbstractOperationDetails):
         self.ui.in_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         self.ui.fee_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
 
-        self.ui.copy_date_btn.setFixedWidth(self.ui.copy_date_btn.fontMetrics().horizontalAdvance("XXXX"))
-        self.ui.copy_amount_btn.setFixedWidth(self.ui.copy_amount_btn.fontMetrics().horizontalAdvance("XXXX"))
-        self.ui.out_timestamp.setFixedWidth(self.ui.out_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.ui.in_timestamp.setFixedWidth(self.ui.in_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.fee_symbol_widget.setValidation(False)
         # The arriving leg is empty while the bridge is a pending half, so neither of its selectors may demand a value
         self.ui.to_account_widget.setValidation(False)

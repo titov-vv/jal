@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QDialog, QWidget, QFormLayout, QLineEdit, QSpinBox, QCheckBox, QListWidgetItem
+from PySide6.QtWidgets import (QDialog, QWidget, QFormLayout, QLineEdit, QSpinBox, QCheckBox, QListWidgetItem,
+                               QStyle)
 from jal.ui.ui_preferences_dlg import Ui_PreferencesDlg
 from jal.db.settings_registry import SettingsRegistry, SettingType
 
@@ -19,9 +20,17 @@ class PreferencesDialog(QDialog):
             settings = SettingsRegistry.settings_of_page(page)
             self.ui.PagesStack.addWidget(self._build_page(settings))
             QListWidgetItem(settings[0].translated_page(), self.ui.PagesList)
+        self._fit_pages_list()
         self.ui.PagesList.currentRowChanged.connect(self.ui.PagesStack.setCurrentIndex)
         if self.ui.PagesList.count():
             self.ui.PagesList.setCurrentRow(0)
+
+    # The page list is exactly as wide as its widest page name.
+    # The scroll bar's own width is added because the list is likely to need one.
+    def _fit_pages_list(self):
+        pages = self.ui.PagesList
+        scrollbar = pages.style().pixelMetric(QStyle.PM_ScrollBarExtent, None, pages)
+        pages.setFixedWidth(pages.sizeHintForColumn(0) + 2 * pages.frameWidth() + scrollbar)
 
     # Builds one page of the dialog as a form of 'label: editor' rows
     def _build_page(self, settings: list) -> QWidget:

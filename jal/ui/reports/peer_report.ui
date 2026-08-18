@@ -23,10 +23,7 @@
       </sizepolicy>
      </property>
      <property name="frameShape">
-      <enum>QFrame::Shape::Panel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Sunken</enum>
+      <enum>QFrame::Shape::StyledPanel</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="3">
@@ -121,12 +118,6 @@
         <horstretch>0</horstretch>
         <verstretch>4</verstretch>
        </sizepolicy>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Shape::Panel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Shadow::Sunken</enum>
       </property>
       <property name="editTriggers">
        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>

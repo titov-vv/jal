@@ -16,10 +16,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QComboBox,
-    QDialog, QDialogButtonBox, QFrame, QHBoxLayout,
-    QHeaderView, QLabel, QLineEdit, QPushButton,
-    QSizePolicy, QSpacerItem, QTableView, QVBoxLayout,
-    QWidget)
+    QDialog, QDialogButtonBox, QHBoxLayout, QHeaderView,
+    QLabel, QLineEdit, QPushButton, QSizePolicy,
+    QSpacerItem, QTableView, QVBoxLayout, QWidget)
 
 class Ui_AssetsListDialog(object):
     def setupUi(self, AssetsListDialog):
@@ -28,16 +27,13 @@ class Ui_AssetsListDialog(object):
         AssetsListDialog.resize(869, 300)
         self.verticalLayout = QVBoxLayout(AssetsListDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.DisplayFrame = QFrame(AssetsListDialog)
+        self.DisplayFrame = QWidget(AssetsListDialog)
         self.DisplayFrame.setObjectName(u"DisplayFrame")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.DisplayFrame.sizePolicy().hasHeightForWidth())
         self.DisplayFrame.setSizePolicy(sizePolicy)
-        self.DisplayFrame.setFrameShape(QFrame.Shape.Panel)
-        self.DisplayFrame.setFrameShadow(QFrame.Shadow.Plain)
-        self.DisplayFrame.setLineWidth(0)
         self.edit_layout = QHBoxLayout(self.DisplayFrame)
         self.edit_layout.setObjectName(u"edit_layout")
         self.edit_layout.setContentsMargins(0, 0, 0, 0)
@@ -101,11 +97,8 @@ class Ui_AssetsListDialog(object):
 
         self.verticalLayout.addWidget(self.DisplayFrame)
 
-        self.SearchFrame = QFrame(AssetsListDialog)
+        self.SearchFrame = QWidget(AssetsListDialog)
         self.SearchFrame.setObjectName(u"SearchFrame")
-        self.SearchFrame.setFrameShape(QFrame.Shape.Panel)
-        self.SearchFrame.setFrameShadow(QFrame.Shadow.Plain)
-        self.SearchFrame.setLineWidth(0)
         self.search_layout = QHBoxLayout(self.SearchFrame)
         self.search_layout.setObjectName(u"search_layout")
         self.search_layout.setContentsMargins(0, 0, 0, 0)

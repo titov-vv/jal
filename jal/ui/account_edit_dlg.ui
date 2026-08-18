@@ -19,9 +19,6 @@
      <property name="frameShape">
       <enum>QFrame::Shape::NoFrame</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Raised</enum>
-     </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <property name="leftMargin">
        <number>0</number>
@@ -145,9 +142,6 @@
      <property name="frameShape">
       <enum>QFrame::Shape::NoFrame</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Raised</enum>
-     </property>
      <layout class="QGridLayout" name="gridLayout_3">
       <property name="leftMargin">
        <number>0</number>
@@ -206,9 +200,6 @@
       </item>
       <item row="2" column="0" colspan="4">
        <widget class="QTableView" name="DataTable">
-        <property name="frameShadow">
-         <enum>QFrame::Shadow::Plain</enum>
-        </property>
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
         </attribute>

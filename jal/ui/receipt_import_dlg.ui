@@ -25,9 +25,6 @@
      <property name="frameShape">
       <enum>QFrame::Shape::NoFrame</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Plain</enum>
-     </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="leftMargin">
        <number>0</number>

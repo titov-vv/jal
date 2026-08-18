@@ -36,7 +36,6 @@ class ConversionWidget(AbstractOperationDetails):
         self.ui.in_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         self.ui.fee_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
 
-        self.ui.timestamp.setFixedWidth(self.ui.timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.fee_symbol_widget.setValidation(False)
 
         self.ui.fee_check.clicked.connect(self.fee_toggled)

@@ -130,7 +130,6 @@ class LogViewer(QPlainTextEdit):
         self.status_bar = status_bar
 
         self.expandButton = QPushButton(self.collapsed_text, parent=self)
-        self.expandButton.setFixedWidth(int(self.expandButton.fontMetrics().horizontalAdvance(self.collapsed_text) * 1.5))
         self.expandButton.setCheckable(True)
         self.expandButton.clicked.connect(self.showLogs)
         self.status_bar.addWidget(self.expandButton)

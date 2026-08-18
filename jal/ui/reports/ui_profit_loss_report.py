@@ -31,8 +31,7 @@ class Ui_ProfitLossReportWidget(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.ReportParamsFrame = QFrame(ProfitLossReportWidget)
         self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
-        self.ReportParamsFrame.setFrameShape(QFrame.Shape.Panel)
-        self.ReportParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
+        self.ReportParamsFrame.setFrameShape(QFrame.Shape.StyledPanel)
         self.horizontalLayout = QHBoxLayout(self.ReportParamsFrame)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
@@ -78,8 +77,6 @@ class Ui_ProfitLossReportWidget(object):
 
         self.ReportTableView = QTableView(ProfitLossReportWidget)
         self.ReportTableView.setObjectName(u"ReportTableView")
-        self.ReportTableView.setFrameShape(QFrame.Shape.Panel)
-        self.ReportTableView.setFrameShadow(QFrame.Shadow.Sunken)
         self.ReportTableView.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.ReportTableView.setAlternatingRowColors(True)
         self.ReportTableView.setGridStyle(Qt.PenStyle.DotLine)

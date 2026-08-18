@@ -25,12 +25,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>180</width>
-       <height>16777215</height>
-      </size>
-     </property>
     </widget>
    </item>
    <item row="0" column="1">

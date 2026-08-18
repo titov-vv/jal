@@ -16,10 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QCheckBox,
-    QComboBox, QDialog, QDialogButtonBox, QFrame,
-    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QSpacerItem, QTableView,
-    QTreeView, QVBoxLayout, QWidget)
+    QComboBox, QDialog, QDialogButtonBox, QHBoxLayout,
+    QHeaderView, QLabel, QLineEdit, QPushButton,
+    QSizePolicy, QSpacerItem, QTableView, QTreeView,
+    QVBoxLayout, QWidget)
 
 class Ui_ReferenceDataDialog(object):
     def setupUi(self, ReferenceDataDialog):
@@ -28,16 +28,13 @@ class Ui_ReferenceDataDialog(object):
         ReferenceDataDialog.resize(869, 300)
         self.verticalLayout = QVBoxLayout(ReferenceDataDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.EditFrame = QFrame(ReferenceDataDialog)
+        self.EditFrame = QWidget(ReferenceDataDialog)
         self.EditFrame.setObjectName(u"EditFrame")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.EditFrame.sizePolicy().hasHeightForWidth())
         self.EditFrame.setSizePolicy(sizePolicy)
-        self.EditFrame.setFrameShape(QFrame.Shape.Panel)
-        self.EditFrame.setFrameShadow(QFrame.Shadow.Plain)
-        self.EditFrame.setLineWidth(0)
         self.edit_layout = QHBoxLayout(self.EditFrame)
         self.edit_layout.setObjectName(u"edit_layout")
         self.edit_layout.setContentsMargins(0, 0, 0, 0)
@@ -96,11 +93,8 @@ class Ui_ReferenceDataDialog(object):
 
         self.verticalLayout.addWidget(self.EditFrame)
 
-        self.SearchFrame = QFrame(ReferenceDataDialog)
+        self.SearchFrame = QWidget(ReferenceDataDialog)
         self.SearchFrame.setObjectName(u"SearchFrame")
-        self.SearchFrame.setFrameShape(QFrame.Shape.Panel)
-        self.SearchFrame.setFrameShadow(QFrame.Shadow.Plain)
-        self.SearchFrame.setLineWidth(0)
         self.search_layout = QHBoxLayout(self.SearchFrame)
         self.search_layout.setObjectName(u"search_layout")
         self.search_layout.setContentsMargins(0, 0, 0, 0)

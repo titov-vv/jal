@@ -29,8 +29,6 @@ class TradeWidget(AbstractOperationDetails):
         self.ui.account_widget.setup_selector(AccountListModel, AccountListDialog, self)
         self.ui.symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         super()._init_db("trades")
-        self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.ui.settlement_editor.setFixedWidth(self.ui.settlement_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
 
         self.mapper.setItemDelegate(TradeWidgetDelegate(self.mapper))
 

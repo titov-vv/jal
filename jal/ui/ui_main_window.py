@@ -28,7 +28,6 @@ class Ui_JAL_MainWindow(object):
         if not JAL_MainWindow.objectName():
             JAL_MainWindow.setObjectName(u"JAL_MainWindow")
         JAL_MainWindow.resize(835, 436)
-        JAL_MainWindow.setMinimumSize(QSize(0, 0))
         self.actionOperations = QAction(JAL_MainWindow)
         self.actionOperations.setObjectName(u"actionOperations")
         self.actionBackup = QAction(JAL_MainWindow)
@@ -86,7 +85,6 @@ class Ui_JAL_MainWindow(object):
         self.actionAbout.setMenuRole(QAction.MenuRole.AboutRole)
         self.centralwidget = QWidget(JAL_MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)

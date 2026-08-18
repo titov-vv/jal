@@ -3,9 +3,11 @@ import os
 import re
 from enum import auto
 from collections import UserDict
-from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor
+from PySide6.QtGui import QIcon, QIconEngine, QPixmap, QImage, QPainter, QPalette
+from PySide6.QtWidgets import QApplication
 from jal.db.settings import JalSettings
 from jal.db.tag import JalTag
+from jal.widgets.theme import Meaning, Theme
 
 
 ICON_PREFIX = "ui_"
@@ -13,6 +15,66 @@ FLAG_PREFIX = "flag_"    # Country flags for languages and reports
 AUX_PREFIX = "aux_"      # Logos of broker statement modules
 CHAIN_PREFIX = "chain_"  # Logos of blockchain fetcher modules
 TAG_PREFIX = "tag_"
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Every ui_*.ico and tag_*.ico in jal/img is a black glyph on transparency - the files carry a shape and no color
+# at all. This engine keeps the shape and supplies the color, asking the live palette for it at paint time.
+class JalIconEngine(QIconEngine):
+    def __init__(self, source, meaning=None):
+        super().__init__()
+        self._source = QIcon(source) if isinstance(source, str) else source
+        self._meaning = meaning
+        self._cache = {}
+        self._cache_palette = None
+
+    # The color this glyph is drawn in, against the ground it is drawn on.
+    # A meaningful glyph keeps its hue and takes whatever lightness makes it readable, derived against Window
+    # rather than Base. A glyph with no meaning is simply the palette's own text colour, which is what every other
+    # glyph on a toolbar is drawn in anyway.
+    def _ink(self, mode: QIcon.Mode):
+        palette = QApplication.palette()
+        if mode == QIcon.Mode.Disabled:
+            return palette.color(QPalette.Disabled, QPalette.WindowText)
+        if mode == QIcon.Mode.Selected:
+            ground = palette.color(QPalette.Highlight)
+            return Theme.text(self._meaning, ground) if self._meaning is not None \
+                else palette.color(QPalette.HighlightedText)
+        if self._meaning is not None:
+            return Theme.text(self._meaning, palette.color(QPalette.Active, QPalette.Window))
+        return palette.color(QPalette.Active, QPalette.WindowText)
+
+    def pixmap(self, size, mode, state) -> QPixmap:
+        palette_key = QApplication.palette().cacheKey()
+        if self._cache_palette != palette_key:
+            self._cache.clear()
+            self._cache_palette = palette_key
+        key = (size.width(), size.height(), mode, state)
+        if key not in self._cache:
+            # Painting an opaque colour in 'SourceIn' mode keeps the glyph's alpha and replaces its colour.
+            # Conversion to a format with an alpha channel is required as some files may not have one.
+            image = self._source.pixmap(size, QIcon.Mode.Normal, state).toImage()
+            image = image.convertToFormat(QImage.Format.Format_ARGB32_Premultiplied)
+            painter = QPainter(image)
+            painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
+            painter.fillRect(image.rect(), self._ink(mode))
+            painter.end()
+            self._cache[key] = QPixmap.fromImage(image)
+        return self._cache[key]
+
+    def paint(self, painter, rect, mode, state):
+        painter.drawPixmap(rect, self.pixmap(rect.size(), mode, state))
+
+    def availableSizes(self, mode=QIcon.Mode.Normal, state=QIcon.State.Off) -> list:
+        return self._source.availableSizes(QIcon.Mode.Normal, state)
+
+    def actualSize(self, size, mode, state):
+        return self._source.actualSize(size, QIcon.Mode.Normal, state)
+
+    # QIcon takes ownership of the engine it is built from, so a clone has to be a new object - handing back
+    # self would let two icons free the same engine.
+    def clone(self) -> QIconEngine:
+        return JalIconEngine(self._source, self._meaning)
+
 
 class JalIcon(UserDict):
     NONE = auto()
@@ -115,6 +177,32 @@ class JalIcon(UserDict):
         'en': FLAG_US
     }
 
+    # What an icon means, for the few that mean anything. A glyph listed here is drawn in its meaning's colour
+    # instead of the palette's plain text colour; theme.py keeps that colour readable on whatever ground the
+    # application is running against, so this table holds an intent and never a value.
+    _icon_meanings = {
+        BUY: Meaning.POSITIVE,
+        PLUS: Meaning.POSITIVE,
+        DIVIDEND: Meaning.POSITIVE,
+        STOCK_DIVIDEND: Meaning.POSITIVE,
+        STOCK_VESTING: Meaning.POSITIVE,
+        BOND_INTEREST: Meaning.POSITIVE,
+        BOND_AMORTIZATION: Meaning.POSITIVE,
+        INTEREST: Meaning.POSITIVE,
+        TRANSFER_IN: Meaning.POSITIVE,
+        TRANSFER_ASSET_IN: Meaning.POSITIVE,
+        OK: Meaning.POSITIVE,
+        SELL: Meaning.NEGATIVE,
+        MINUS: Meaning.NEGATIVE,
+        FEE: Meaning.NEGATIVE,
+        TAX: Meaning.NEGATIVE,
+        TRANSFER_OUT: Meaning.NEGATIVE,
+        TRANSFER_ASSET_OUT: Meaning.NEGATIVE,
+        CANCEL: Meaning.NEGATIVE,
+        REMOVE: Meaning.NEGATIVE,
+        WITH_CREDIT: Meaning.WARNING
+    }
+
     # initiates class loading all icons listed in self._icon_files from given directory img_path (should and
     # with a system directory separator)
     def __init__(self):
@@ -123,7 +211,8 @@ class JalIcon(UserDict):
             return
         img_path = JalSettings.path(JalSettings.PATH_ICONS)
         for icon_id, filename in self._icon_files.items():
-            self._icons[icon_id] = self.add_disabled_state(self.load_icon(img_path + ICON_PREFIX + filename))
+            self._icons[icon_id] = self.load_glyph(img_path + ICON_PREFIX + filename,
+                                                   self._icon_meanings.get(icon_id))
         for icon_id, filename in self._flag_files.items():
             self._icons[icon_id] = self.load_icon(img_path + FLAG_PREFIX + filename)
         # Logos that dynamically loaded modules ask for by name - a broker statement (aux_*) or a blockchain
@@ -135,9 +224,9 @@ class JalIcon(UserDict):
         # (e.g. tag_wallet.ico has no tag row) - so load them straight from disk.
         for filename in os.listdir(img_path):
             if re.match(f"^{TAG_PREFIX}.*\\.ico$", filename):
-                self._icons[filename] = self.add_disabled_state(self.load_icon(img_path + filename))
+                self._icons[filename] = self.load_glyph(img_path + filename)
         for tag_id, filename in JalTag.icon_files().items():
-            self._icons[filename] = self.add_disabled_state(self.load_icon(img_path + filename))
+            self._icons[filename] = self.load_glyph(img_path + filename)
 
     @staticmethod
     def load_icon(path) -> QIcon:
@@ -145,6 +234,16 @@ class JalIcon(UserDict):
         if icon.isNull():
             logging.warning(f"Image file {path} not found")  # This error won't come to GUI as LogViewer is initialized later
         return icon
+
+    # A glyph is an .ico file: a black shape on transparency, which carries no color of its own and takes the
+    # palette's. The application's own logo is a .png and is a picture, not a glyph, so it is loaded untouched -
+    # that is the whole difference between the two extensions in jal/img.
+    @classmethod
+    def load_glyph(cls, path, meaning=None) -> QIcon:
+        icon = cls.load_icon(path)
+        if icon.isNull() or not path.lower().endswith('.ico'):
+            return icon
+        return QIcon(JalIconEngine(icon, meaning))
 
     @classmethod
     def __class_getitem__(cls, key) -> QIcon:
@@ -162,21 +261,3 @@ class JalIcon(UserDict):
     @classmethod
     def module_icon(cls, prefix, icon_name) -> QIcon:
         return cls._icons.get(prefix + icon_name, QIcon())
-
-    # Iterates through all available images and creates a copy of images with adjusted alpha-channel (20% of initial value)
-    # This new image is added to the icon as disabled state image
-    # The alpha is scaled by Qt itself: painting an opaque rectangle of 20% alpha in 'DestinationIn' mode keeps the
-    # destination and multiplies its alpha by the source alpha.
-    # Conversion to a format with an alpha channel is required as some files may not have alpha-channel.
-    def add_disabled_state(self, icon: QIcon) -> QIcon:
-        disabled_icons = []
-        for size in icon.availableSizes():
-            icon_image = icon.pixmap(size).toImage().convertToFormat(QImage.Format.Format_ARGB32_Premultiplied)
-            painter = QPainter(icon_image)
-            painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
-            painter.fillRect(icon_image.rect(), QColor(0, 0, 0, 255 // 5))
-            painter.end()
-            disabled_icons.append(QPixmap.fromImage(icon_image))
-        for disabled_image in disabled_icons:
-            icon.addPixmap(disabled_image, mode=QIcon.Mode.Disabled)
-        return icon

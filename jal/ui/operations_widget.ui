@@ -44,12 +44,6 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>16777215</height>
-       </size>
-      </property>
       <property name="title">
        <string>Balances</string>
       </property>
@@ -67,28 +61,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QFrame" name="BalanceFrameTop">
-         <property name="minimumSize">
-          <size>
-           <width>408</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>44</height>
-          </size>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::Shape::Panel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Shadow::Plain</enum>
-         </property>
-         <property name="lineWidth">
-          <number>0</number>
-         </property>
+        <widget class="QWidget" name="BalanceFrameTop">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <property name="leftMargin">
            <number>6</number>
@@ -176,24 +149,9 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QFrame" name="OperationConfigFrame">
+        <widget class="QWidget" name="OperationConfigFrame">
          <property name="enabled">
           <bool>true</bool>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::Shape::Panel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Shadow::Plain</enum>
-         </property>
-         <property name="lineWidth">
-          <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <property name="leftMargin">
@@ -334,13 +292,7 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Shape::Panel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Shadow::Sunken</enum>
-          </property>
-          <property name="lineWidth">
-           <number>1</number>
+           <enum>QFrame::Shape::StyledPanel</enum>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>

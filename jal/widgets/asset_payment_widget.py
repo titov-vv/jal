@@ -50,8 +50,6 @@ class AssetPaymentWidget(AbstractOperationDetails):
                                              self.tr("Token account rent"),
                                              self.tr("Token account rent returned")])   # index == AssetPayment subtype
         self.ui.type.setModel(self.combo_model)
-        self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.ui.ex_date_editor.setFixedWidth(self.ui.ex_date_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
         set_visible_retaining_size(self.ui.price_label, False)
         set_visible_retaining_size(self.ui.price_edit, False)
 

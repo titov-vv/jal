@@ -3,11 +3,13 @@ from functools import partial
 from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QSortFilterProxyModel
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QMessageBox, QDialog
+from jal.constants import Setup
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import TagsListDialog
-from jal.widgets.helpers import ManipulateDate, TableSelectionRestorer, set_tables_row_height
+from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_tables_row_height,
+                                restore_splitters, save_splitters)
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
@@ -32,6 +34,7 @@ class OperationsWidget(MdiWidget):
         self.ui = Ui_OperationsWidget()
         self.ui.setupUi(self)
         set_tables_row_height(self)
+        restore_splitters(self, Setup.SPLITTER_STATE_PREFIX)
         self._parent = parent  # Main window
 
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
@@ -72,6 +75,12 @@ class OperationsWidget(MdiWidget):
 
         self.ui.OperationsTableView.selectRow(0)
         self.ui.DateRange.setCurrentIndex(0)
+
+    # The main window saves every splitter it can still see when the application closes, but this window may be
+    # closed on its own long before that - so it saves its own two splits on the way out.
+    def closeEvent(self, event):
+        save_splitters(self, Setup.SPLITTER_STATE_PREFIX)
+        super().closeEvent(event)
 
     def connect_signals_and_slots(self):
         self.ui.BalanceDate.dateChanged.connect(self.ui.BalancesTreeView.model().setDate)

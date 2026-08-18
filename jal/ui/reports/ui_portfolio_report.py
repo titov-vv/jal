@@ -31,8 +31,7 @@ class Ui_PortfolioWidget(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.PortfolioParamsFrame = QFrame(PortfolioWidget)
         self.PortfolioParamsFrame.setObjectName(u"PortfolioParamsFrame")
-        self.PortfolioParamsFrame.setFrameShape(QFrame.Shape.Panel)
-        self.PortfolioParamsFrame.setFrameShadow(QFrame.Shadow.Sunken)
+        self.PortfolioParamsFrame.setFrameShape(QFrame.Shape.StyledPanel)
         self.horizontalLayout_8 = QHBoxLayout(self.PortfolioParamsFrame)
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.PortfolioDate = QDateEdit(self.PortfolioParamsFrame)
@@ -90,7 +89,6 @@ class Ui_PortfolioWidget(object):
 
         self.PortfolioTreeView = QTreeView(PortfolioWidget)
         self.PortfolioTreeView.setObjectName(u"PortfolioTreeView")
-        self.PortfolioTreeView.setFrameShape(QFrame.Shape.Panel)
         self.PortfolioTreeView.setAlternatingRowColors(True)
         self.PortfolioTreeView.setAnimated(True)
         self.PortfolioTreeView.setAllColumnsShowFocus(True)

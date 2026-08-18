@@ -141,7 +141,6 @@ class Ui_TaxWidget(object):
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.Ndfl3Group.sizePolicy().hasHeightForWidth())
         self.Ndfl3Group.setSizePolicy(sizePolicy3)
-        self.Ndfl3Group.setFlat(False)
         self.Ndfl3Group.setCheckable(True)
         self.Ndfl3Group.setChecked(False)
         self.gridLayout_2 = QGridLayout(self.Ndfl3Group)

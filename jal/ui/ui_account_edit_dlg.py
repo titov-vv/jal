@@ -33,7 +33,6 @@ class Ui_AccountDialog(object):
         self.MainFrame = QFrame(AccountDialog)
         self.MainFrame.setObjectName(u"MainFrame")
         self.MainFrame.setFrameShape(QFrame.Shape.NoFrame)
-        self.MainFrame.setFrameShadow(QFrame.Shadow.Raised)
         self.gridLayout_2 = QGridLayout(self.MainFrame)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -110,7 +109,6 @@ class Ui_AccountDialog(object):
         self.DetailsFrame = QFrame(AccountDialog)
         self.DetailsFrame.setObjectName(u"DetailsFrame")
         self.DetailsFrame.setFrameShape(QFrame.Shape.NoFrame)
-        self.DetailsFrame.setFrameShadow(QFrame.Shadow.Raised)
         self.gridLayout_3 = QGridLayout(self.DetailsFrame)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -135,7 +133,6 @@ class Ui_AccountDialog(object):
 
         self.DataTable = QTableView(self.DetailsFrame)
         self.DataTable.setObjectName(u"DataTable")
-        self.DataTable.setFrameShadow(QFrame.Shadow.Plain)
         self.DataTable.verticalHeader().setVisible(False)
         self.DataTable.verticalHeader().setMinimumSectionSize(20)
 

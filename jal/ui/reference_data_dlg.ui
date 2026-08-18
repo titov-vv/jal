@@ -15,21 +15,12 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QFrame" name="EditFrame">
+    <widget class="QWidget" name="EditFrame">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Shape::Panel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Plain</enum>
-     </property>
-     <property name="lineWidth">
-      <number>0</number>
      </property>
      <layout class="QHBoxLayout" name="edit_layout">
       <property name="leftMargin">
@@ -150,16 +141,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="SearchFrame">
-     <property name="frameShape">
-      <enum>QFrame::Shape::Panel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Plain</enum>
-     </property>
-     <property name="lineWidth">
-      <number>0</number>
-     </property>
+    <widget class="QWidget" name="SearchFrame">
      <layout class="QHBoxLayout" name="search_layout">
       <property name="leftMargin">
        <number>0</number>

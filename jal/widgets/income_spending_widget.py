@@ -36,7 +36,6 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.tag_delegate = LookupSelectorDelegate(self, TagTreeModel, TagsListDialog, self)
         self.float_delegate = FloatDelegate(2)
 
-        self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.a_currency.setText(self.tr("Paid in foreign currency:"))
         self.ui.add_button.setIcon(JalIcon[JalIcon.ADD])
         self.ui.del_button.setIcon(JalIcon[JalIcon.REMOVE])

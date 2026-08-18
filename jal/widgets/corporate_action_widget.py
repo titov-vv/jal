@@ -40,7 +40,6 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.float_delegate = FloatDelegate(2)
         self.percent_delegate = FloatDelegate(2, percent=True)
 
-        self.ui.timestamp_editor.setFixedWidth(self.ui.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.add_button.setIcon(JalIcon[JalIcon.ADD])
         self.ui.del_button.setIcon(JalIcon[JalIcon.REMOVE])
         self.ui.arrow.setText(" 🡆 ")  # it crashes if added via Qt-Designer

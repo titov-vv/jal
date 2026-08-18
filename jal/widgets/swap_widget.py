@@ -38,8 +38,6 @@ class SwapWidget(AbstractOperationDetails):
         self.ui.in_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         self.ui.fee_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
 
-        self.ui.timestamp.setFixedWidth(self.ui.timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
-        self.ui.in_timestamp.setFixedWidth(self.ui.in_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.ui.fee_symbol_widget.setValidation(False)
         self.ui.in_account_widget.setValidation(False)
 

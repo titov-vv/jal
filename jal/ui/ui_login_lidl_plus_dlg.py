@@ -40,7 +40,6 @@ class Ui_LoginLidlPlusDialog(object):
         self.ButtonFrame = QFrame(LoginLidlPlusDialog)
         self.ButtonFrame.setObjectName(u"ButtonFrame")
         self.ButtonFrame.setFrameShape(QFrame.Shape.NoFrame)
-        self.ButtonFrame.setFrameShadow(QFrame.Shadow.Plain)
         self.verticalLayout_6 = QVBoxLayout(self.ButtonFrame)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.verticalLayout_6.setContentsMargins(0, 0, 0, 6)

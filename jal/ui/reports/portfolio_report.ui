@@ -17,10 +17,7 @@
    <item>
     <widget class="QFrame" name="PortfolioParamsFrame">
      <property name="frameShape">
-      <enum>QFrame::Shape::Panel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Sunken</enum>
+      <enum>QFrame::Shape::StyledPanel</enum>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_8">
       <item>
@@ -136,9 +133,6 @@
    </item>
    <item>
     <widget class="QTreeView" name="PortfolioTreeView">
-     <property name="frameShape">
-      <enum>QFrame::Shape::Panel</enum>
-     </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>

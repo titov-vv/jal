@@ -18,7 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QComboBox, QDateTimeEdit, QFrame,
     QGridLayout, QHBoxLayout, QLabel, QLineEdit,
     QPushButton, QSizePolicy, QSpacerItem, QStackedWidget,
-    QWidget)
+    QToolButton, QWidget)
 
 from jal.widgets.account_select import AccountCurrencyLabel
 from jal.widgets.reference_selector import ReferenceSelectorWidget
@@ -165,7 +165,6 @@ class Ui_TransferOperation(object):
         self.MoneyAssetPages.setObjectName(u"MoneyAssetPages")
         sizePolicy.setHeightForWidth(self.MoneyAssetPages.sizePolicy().hasHeightForWidth())
         self.MoneyAssetPages.setSizePolicy(sizePolicy)
-        self.MoneyAssetPages.setLineWidth(1)
         self.MoneyTransferPage = QWidget()
         self.MoneyTransferPage.setObjectName(u"MoneyTransferPage")
         self.gridLayout_3 = QGridLayout(self.MoneyTransferPage)
@@ -193,8 +192,9 @@ class Ui_TransferOperation(object):
 
         self.gridLayout_3.addWidget(self.withdrawal, 2, 0, 1, 2)
 
-        self.copy_amount_btn = QPushButton(self.MoneyTransferPage)
+        self.copy_amount_btn = QToolButton(self.MoneyTransferPage)
         self.copy_amount_btn.setObjectName(u"copy_amount_btn")
+        self.copy_amount_btn.setAutoRaise(True)
 
         self.gridLayout_3.addWidget(self.copy_amount_btn, 2, 3, 1, 1)
 
@@ -284,8 +284,9 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.deposit_timestamp, 4, 2, 1, 2)
 
-        self.copy_date_btn = QPushButton(TransferOperation)
+        self.copy_date_btn = QToolButton(TransferOperation)
         self.copy_date_btn.setObjectName(u"copy_date_btn")
+        self.copy_date_btn.setAutoRaise(True)
 
         self.layout.addWidget(self.copy_date_btn, 3, 4, 1, 1)
 

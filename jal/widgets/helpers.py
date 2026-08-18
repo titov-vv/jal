@@ -1,10 +1,12 @@
+import base64
 import logging
 from datetime import time, datetime, timedelta, timezone
 from functools import cmp_to_key
 from PySide6.QtCore import Qt, QCollator, QItemSelectionModel
 from PySide6.QtGui import QImage
-from PySide6.QtWidgets import QApplication, QTableView, QStyle
+from PySide6.QtWidgets import QApplication, QTableView, QStyle, QSplitter
 from jal.constants import Setup
+from jal.db.settings import JalSettings
 try:
     from pyzbar import pyzbar
 except ImportError:
@@ -82,6 +84,25 @@ def set_tables_row_height(widget):
     for table in widget.findChildren(QTableView):
         padding = 2 * table.style().pixelMetric(QStyle.PM_FocusFrameVMargin, None, table)
         table.verticalHeader().setDefaultSectionSize(table.fontMetrics().height() + padding)
+
+# -----------------------------------------------------------------------------------------------------------------------
+# QMainWindow.saveState() covers toolbars and dock widgets, but not a QSplitter inside the central widget, so here are
+# two helpers that do the job of saving/restoring splitter state.
+def restore_splitters(widget, prefix: str):
+    for splitter in widget.findChildren(QSplitter):
+        if not splitter.objectName():
+            continue
+        state = JalSettings().getValue(prefix + splitter.objectName(), '')
+        if state:
+            splitter.restoreState(base64.decodebytes(state.encode('utf-8')))
+
+
+def save_splitters(widget, prefix: str):
+    for splitter in widget.findChildren(QSplitter):
+        if not splitter.objectName():
+            continue
+        JalSettings().setValue(prefix + splitter.objectName(),
+                               base64.encodebytes(splitter.saveState().data()).decode('utf-8'))
 
 # -----------------------------------------------------------------------------------------------------------------------
 # The single spacing step JAL's layouts are built from - the style's own idea of "related controls" spacing.

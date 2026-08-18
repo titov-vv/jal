@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDateTimeEdit, QGridLayout,
     QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QWidget)
+    QSpacerItem, QToolButton, QWidget)
 
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
@@ -101,8 +101,9 @@ class Ui_BridgeOperation(object):
 
         self.layout.addWidget(self.out_timestamp, 2, 1, 1, 2)
 
-        self.copy_date_btn = QPushButton(BridgeOperation)
+        self.copy_date_btn = QToolButton(BridgeOperation)
         self.copy_date_btn.setObjectName(u"copy_date_btn")
+        self.copy_date_btn.setAutoRaise(True)
 
         self.layout.addWidget(self.copy_date_btn, 2, 3, 1, 1)
 
@@ -122,8 +123,9 @@ class Ui_BridgeOperation(object):
 
         self.layout.addWidget(self.out_symbol_widget, 2, 8, 1, 1)
 
-        self.copy_amount_btn = QPushButton(BridgeOperation)
+        self.copy_amount_btn = QToolButton(BridgeOperation)
         self.copy_amount_btn.setObjectName(u"copy_amount_btn")
+        self.copy_amount_btn.setAutoRaise(True)
 
         self.layout.addWidget(self.copy_amount_btn, 2, 9, 1, 1)
 
