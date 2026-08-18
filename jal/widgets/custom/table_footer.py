@@ -84,6 +84,33 @@ class FooterView(QHeaderView):
             size += new_size if i == section else self._linked_header.sectionSize(i)
         self.resizeSection(self._span[section], size)
 
+    # Width the footer section should have: the width of the column it stands under, or the sum of the widths of
+    # all columns a spanned section covers.
+    def _section_size(self, section: int) -> int:
+        if section not in self._span:
+            return self._linked_header.sectionSize(section)
+        return sum(self._linked_header.sectionSize(i) for i, owner in self._span.items() if owner == section)
+
+    # Copies the whole layout of the table header - order, widths and hidden sections - into the footer.
+    # The signals above report what the user does to the header one change at a time, but a layout put in place by
+    # QHeaderView.restoreState() is reported by none of them - it emits neither sectionResized nor sectionMoved -
+    # so a footer that only listens to them keeps the widths of the previous layout and stands under the wrong
+    # columns. Whoever restores a header state calls this afterwards to bring the footer back in line.
+    def sync_sections(self) -> None:
+        count = min(self.count(), self._linked_header.count())
+        for logical in range(count):   # Order first, as it doesn't depend on the sizes set below
+            visual = self._linked_header.visualIndex(logical)
+            if visual >= 0 and self.visualIndex(logical) != visual:
+                self.moveSection(self.visualIndex(logical), visual)
+        for logical in range(count):
+            hidden = self._linked_header.isSectionHidden(logical)
+            if logical in self._span and self._span[logical] != logical:
+                hidden = True   # this column gives its place to the section that is spanned over it
+            self.setSectionHidden(logical, hidden)
+            if not hidden:
+                self.resizeSection(logical, self._section_size(logical))
+        self.setOffset(self._linked_header.offset())
+
     def on_header_move(self, _section: int, old: int, new: int) -> None:
         self.moveSection(old, new)
 

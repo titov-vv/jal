@@ -2,13 +2,15 @@ import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
-from PySide6.QtCore import Qt, QStringListModel
+from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, QStringListModel
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QTableView, QTreeView
 
 from tests.fixtures import project_root, data_path, prepare_db
 from jal.constants import Setup
 from jal.db.settings import JalSettings
 from jal.widgets.helpers import restore_columns, save_columns, columns_state_key, forget_columns
+from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
+from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
 
 
 # Every widget built here gets a parent: a parentless one is collected by the cyclic collector at a moment
@@ -148,3 +150,79 @@ def test_operations_window_remembers_its_columns(parent):
     reopened.show()
     QApplication.processEvents()
     assert reopened.ui.OperationsTableView.columnWidth(1) == 333
+
+
+# A table with a footer keeps the totals in a header of its own, which follows the columns through the signals the
+# table header emits while the user drags them. QHeaderView.restoreState() puts a whole layout in place without
+# emitting any of them, so the footer has to be told separately - otherwise every total stands under the wrong
+# column as soon as a stored layout is restored.
+class FooterModel(QAbstractTableModel):
+    def rowCount(self, parent=QModelIndex()):
+        return 2
+
+    def columnCount(self, parent=QModelIndex()):
+        return 4
+
+    def data(self, index, role=Qt.DisplayRole):
+        return f"{index.row()}:{index.column()}" if role == Qt.DisplayRole else None
+
+    def footerData(self, section, role=Qt.DisplayRole):
+        return f"total {section}" if role == Qt.DisplayRole else None
+
+
+class FooterWindow(QWidget):
+    def __init__(self, parent=None, tree=False):
+        super().__init__(parent)
+        layout = QVBoxLayout(self)
+        self.view = TreeViewWithFooter(self) if tree else TableViewWithFooter(self)
+        self.view.setObjectName('FooterTreeView' if tree else 'FooterTableView')
+        self.view.setModel(FooterModel(self.view))
+        layout.addWidget(self.view)
+        self.resize(700, 250)
+
+    def header(self):
+        return self.view.header() if isinstance(self.view, TreeViewWithFooter) else self.view.horizontalHeader()
+
+
+@pytest.mark.parametrize("tree", [False, True])
+def test_footer_columns_follow_a_restored_layout(parent, tree):
+    window = FooterWindow(parent, tree=tree)
+    window.show()
+    for i, width in enumerate((60, 110, 160, 210)):
+        window.header().resizeSection(i, width)
+    save_columns(window, Setup.COLUMNS_STATE_PREFIX)
+    window.close()
+    forget_columns()
+
+    reopened = FooterWindow(parent, tree=tree)
+    reopened.show()
+    for i, width in enumerate((210, 160, 110, 60)):   # the defaults a configureView() applies
+        reopened.header().resizeSection(i, width)
+    restore_columns(reopened.view, Setup.COLUMNS_STATE_PREFIX)
+    footer = reopened.view.footer()
+    assert [reopened.header().sectionSize(i) for i in range(4)] == [60, 110, 160, 210]
+    assert [footer.sectionSize(i) for i in range(4)] == [60, 110, 160, 210]
+
+
+# A footer section may be spanned over several columns (a 'Total' label under the first two, for instance) - after a
+# restored layout it has to be as wide as the columns it covers, and the columns it takes the place of stay hidden
+def test_a_spanned_footer_section_follows_a_restored_layout(parent):
+    window = FooterWindow(parent)
+    window.view.footer().set_span(0, [0, 1])
+    window.show()
+    for i, width in enumerate((60, 110, 160, 210)):
+        window.header().resizeSection(i, width)
+    save_columns(window, Setup.COLUMNS_STATE_PREFIX)
+    window.close()
+    forget_columns()
+
+    reopened = FooterWindow(parent)
+    reopened.view.footer().set_span(0, [0, 1])
+    reopened.show()
+    for i, width in enumerate((210, 160, 110, 60)):
+        reopened.header().resizeSection(i, width)
+    restore_columns(reopened.view, Setup.COLUMNS_STATE_PREFIX)
+    footer = reopened.view.footer()
+    assert footer.sectionSize(0) == 60 + 110
+    assert footer.isSectionHidden(1)
+    assert [footer.sectionSize(i) for i in (2, 3)] == [160, 210]

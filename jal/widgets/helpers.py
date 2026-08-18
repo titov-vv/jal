@@ -151,6 +151,8 @@ def restore_columns(view, prefix: str):
         state = base64.decodebytes(stored.encode('utf-8')) if stored else None
     if state is not None:
         header.restoreState(state)
+        if hasattr(view, 'footer'):
+            view.footer().sync_sections()           # restoreState() is silent, so the footer has to be told about it
     if header.property(_COLUMNS_TRACKED) is None:   # from now on the table reports what the user does to it
         header.setProperty(_COLUMNS_TRACKED, key)
         header.sectionResized.connect(partial(_columns_resized, header, key))
