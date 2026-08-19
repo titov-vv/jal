@@ -404,19 +404,24 @@ class JalAccount(JalDB):
             amount = Decimal(value) if value is not None else Decimal('0')
             return amount
 
+    # Adds up a single decimal column of the given query. Amounts are kept as TEXT, so SQL SUM() would coerce them
+    # to float and drop the digits an 18-decimal token needs; a NULL column is skipped by the query, as SUM() does.
+    def _sum_column(self, sql, params) -> Decimal:
+        total = Decimal('0')
+        query = self._exec(sql, params)
+        while query.next():
+            total += self._read_record(query, cast=[Decimal])
+        return total
+
     def get_book_turnover(self, book, begin, end) -> Decimal:
-        value = self._read("SELECT SUM(amount) FROM ledger WHERE account_id=:account_id AND book_account=:book "
-                           "AND timestamp>=:begin AND timestamp<=:end",
-                           [(":account_id", self._id), (":book", book), (":begin", begin), (":end", end)])
-        value = Decimal(value) if value else Decimal('0')
-        return value
+        return self._sum_column("SELECT amount FROM ledger WHERE account_id=:account_id AND book_account=:book "
+                                "AND timestamp>=:begin AND timestamp<=:end AND amount IS NOT NULL",
+                                [(":account_id", self._id), (":book", book), (":begin", begin), (":end", end)])
 
     def get_category_turnover(self, category_id, begin, end) -> Decimal:
-        value = self._read("SELECT SUM(amount) FROM ledger WHERE account_id=:account_id AND category_id=:category "
-                           "AND timestamp>=:begin AND timestamp<=:end",
-                           [(":account_id", self._id), (":category", category_id), (":begin", begin), (":end", end)])
-        value = Decimal(value) if value else Decimal('0')
-        return value
+        return self._sum_column("SELECT amount FROM ledger WHERE account_id=:account_id AND category_id=:category "
+                                "AND timestamp>=:begin AND timestamp<=:end AND amount IS NOT NULL",
+                                [(":account_id", self._id), (":category", category_id), (":begin", begin), (":end", end)])
 
     # Returns a list of JalClosedTrade objects recorded for the account which represents normally closed trades
     # 'close_otypes' selects which kinds of closing operation to include; it defaults to Trade only, so tax reports
@@ -516,16 +521,20 @@ class JalAccount(JalDB):
     def get_flow(self, begin, end, flow_type, direction):
         signs = {'in': +1, 'out': -1}
         sign = signs[direction]
+        # Postings are selected without their sign and both summed and filtered as Decimal below - the column is TEXT
+        # and any arithmetic left to SQL, the sign test included, would go through float.
         sql = {
-            self.MONEY_FLOW: f"SELECT SUM(:sign*amount) FROM ledger WHERE (:sign*amount)>0 AND (book_account={BookAccount.Money} OR book_account={BookAccount.Liabilities})",
-            self.ASSETS_FLOW: f"SELECT SUM(:sign*value) FROM ledger WHERE (:sign*value)>0 AND book_account={BookAccount.Assets} AND otype!={jal.db.operations.LedgerTransaction.CorporateAction}"
+            self.MONEY_FLOW: f"SELECT amount FROM ledger WHERE amount IS NOT NULL AND (book_account={BookAccount.Money} OR book_account={BookAccount.Liabilities})",
+            self.ASSETS_FLOW: f"SELECT value FROM ledger WHERE value IS NOT NULL AND book_account={BookAccount.Assets} AND otype!={jal.db.operations.LedgerTransaction.CorporateAction}"
         }
-        value = self._read(sql[flow_type] + " AND account_id=:account_id AND timestamp>=:begin AND timestamp<=:end",
-                           [(":sign", sign), (":account_id", self._id), (":begin", begin), (":end", end)])
-        if value:
-            return Decimal(value)
-        else:
-            return Decimal('0')
+        total = Decimal('0')
+        query = self._exec(sql[flow_type] + " AND account_id=:account_id AND timestamp>=:begin AND timestamp<=:end",
+                           [(":account_id", self._id), (":begin", begin), (":end", end)])
+        while query.next():
+            amount = sign * self._read_record(query, cast=[Decimal])
+            if amount > 0:   # Only what moves in the asked direction makes the flow
+                total += amount
+        return total
 
     # Returns account balance at given timestamp
     #
