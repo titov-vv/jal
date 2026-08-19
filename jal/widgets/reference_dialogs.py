@@ -164,8 +164,6 @@ class ReferenceDataDialog(QDialog):
 
     @Slot()
     def closeEvent(self, event):
-        JalSettings().setValue('DlgGeometry_' + self.dialog_window_name, base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
-        JalSettings().setValue('DlgViewState_' + self.dialog_window_name, base64.encodebytes(self._view_header.saveState().data()).decode('utf-8'))
         if self.ui.CommitBtn.isEnabled():    # There are uncommitted changes in the table
             answer = QMessageBox().warning(self, self.tr("Confirmation"),
                                            self.tr("You have unsaved changes. Do you want to save them?"),
@@ -183,6 +181,8 @@ class ReferenceDataDialog(QDialog):
                     return
             else:
                 self.model.revertAll()
+        JalSettings().setValue('DlgGeometry_' + self.dialog_window_name, base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
+        JalSettings().setValue('DlgViewState_' + self.dialog_window_name, base64.encodebytes(self._view_header.saveState().data()).decode('utf-8'))
         event.accept()
 
     @Slot(int, QPoint)

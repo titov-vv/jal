@@ -3,7 +3,7 @@ from jal.widgets.icons import JalIcon
 from jal.widgets.theme import Theme, Meaning
 from PySide6.QtCore import Qt, Slot, Signal, QEvent, QObject, QMetaObject, Q_ARG
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
-from PySide6.QtGui import QBrush, QFont
+from PySide6.QtGui import QBrush, QFont, QTextCharFormat, QTextCursor
 
 # Code is based on example from https://docs.python.org/3/howto/logging-cookbook.html#a-qt-gui-for-logging
 
@@ -78,12 +78,20 @@ class LogViewer(QPlainTextEdit):
         }
         meaning = meanings[log_level]
 
-        # Store message in log window
-        text_format = self.currentCharFormat()
+        # Store message in log window. The line is written through a cursor of its own: setting the format on the
+        # widget's own cursor would repaint the user's selection (Qt applies it to a selection if there is one),
+        # recoloring lines that were logged earlier.
+        text_format = QTextCharFormat()
         text_format.setForeground(QBrush(self._ink(meaning, self)))
         text_format.setFontWeight(QFont.Bold if log_level >= logging.CRITICAL else QFont.Normal)
-        self.setCurrentCharFormat(text_format)
-        self.appendPlainText(message)
+        at_bottom = self.verticalScrollBar().value() == self.verticalScrollBar().maximum()
+        cursor = QTextCursor(self.document())
+        cursor.movePosition(QTextCursor.End)
+        if not self.document().isEmpty():
+            cursor.insertBlock()
+        cursor.insertText(message, text_format)
+        if at_bottom:   # keep following the log unless the user has scrolled away from its end
+            self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
 
         # Show in status bar
         if self.notification:

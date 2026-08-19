@@ -285,13 +285,41 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
         if not index.isValid():
             return False
         item_id = index.internalId()
-        col = index.column()
+        column = self._columns[index.column()].name
+        if column == self._default_name and not self._name_is_free(value, item_id):
+            return False
         self.connection().transaction()
-        _ = self._exec(f"UPDATE {self._table} SET {self._columns[col][0]}=:value WHERE id=:id",
-                       [(":id", item_id), (":value", value)])
+        if self._exec(f"UPDATE {self._table} SET {column}=:value WHERE id=:id",
+                      [(":id", item_id), (":value", value)]) is None:
+            return False
         self.dataChanged.emit(index, index, Qt.DisplayRole | Qt.EditRole)
         self.layoutChanged.emit()   # Emit unconditionally as item order may be changed after editing
         return True
+
+    # Names are unique across the whole tree, not within a branch, so a name may be taken by an item that is
+    # out of sight in another branch - the message tells where it is instead of leaving a db constraint failure
+    # in the log.
+    def _name_is_free(self, name, item_id: int) -> bool:
+        twin_id = self._read(f"SELECT id FROM {self._table} WHERE {self._default_name}=:name AND id<>:id",
+                             [(":name", name), (":id", item_id)])
+        if twin_id is None:
+            return True
+        if twin_id == self.ROOT_PID:   # the hidden root of the tree holds an empty name, an empty input lands here
+            title, message = self.tr("Name is empty"), self.tr("An item can't be left without a name.")
+        else:
+            title = self.tr("Name is not unique")
+            message = self.tr("This name is already given to: ") + self._item_path(twin_id)
+        QMessageBox().warning(None, title, message, QMessageBox.Ok)
+        return False
+
+    # Full path of the item down from the root of the tree, e.g. "Spending / Housing / Rent"
+    def _item_path(self, item_id: int) -> str:
+        path = []
+        while item_id != self.ROOT_PID and item_id not in path:
+            path.append(item_id)
+            item_id = self._read(f"SELECT pid FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        names = [self.getFieldValue(x, self._default_name) for x in reversed(path)]
+        return " / ".join(names)
 
     def supportedDragActions(self) -> Qt.DropAction:
         return Qt.DropAction.MoveAction
