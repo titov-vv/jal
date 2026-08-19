@@ -149,15 +149,15 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
     def remove_symbol(self, symbol_id) -> bool:
         asset_id = JalSymbol(symbol_id).asset().id()
         drop_asset = self.is_last_symbol(symbol_id)
-        self.connection().transaction()
+        self.start_transaction()
         if self._exec("DELETE FROM asset_symbol WHERE id=:id", [(":id", symbol_id)]) is None:
-            self.connection().rollback()
+            self.rollback_transaction()
             return False
         if drop_asset:
             if self._exec("DELETE FROM assets WHERE id=:id", [(":id", asset_id)]) is None:
-                self.connection().rollback()
+                self.rollback_transaction()
                 return False
-        self.connection().commit()
+        self.commit_transaction()
         JalDB().invalidate_cache()  # Removed symbol (and possibly its asset) is cached by JalSymbol/JalAsset
         return True
 

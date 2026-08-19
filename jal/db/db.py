@@ -160,6 +160,7 @@ class JalDB:
         if Version(sqlite_version) < Version(Setup.SQLITE_MIN_VERSION):
             db.close()
             return JalDBError(JalDBError.OutdatedSqlite)
+        JalDB._in_transaction = False   # a freshly opened database has nothing pending, whatever was left behind
         JalDB._tables = db.tables(QSql.Tables) + db.tables(QSql.Views)  # Bitwise 'OR' somehow doesn't work here :(
         if not JalDB._tables:
             logging.info("Loading DB initialization script")
@@ -405,17 +406,22 @@ class JalDB:
     # Opens an explicit db transaction. While it is active, commit requests coming from regular
     # queries (commit() method or _exec(commit=True)) are suppressed so the whole transaction is
     # decided by commit_transaction()/rollback_transaction() only.
+    # A caller that edits step by step (a model that keeps the edits pending until the user commits them)
+    # may call it before every step - the transaction is opened once and stays open until it is decided.
     def start_transaction(self):
-        self.connection().transaction()
+        if not JalDB._in_transaction:
+            self.connection().transaction()
         JalDB._in_transaction = True
 
     def commit_transaction(self):
         JalDB._in_transaction = False
-        self.connection().commit()
+        if not self.connection().commit():
+            logging.warning(f"Failed to commit transaction: '{self.connection().lastError().text()}'")
 
     def rollback_transaction(self):
         JalDB._in_transaction = False
-        self.connection().rollback()
+        if not self.connection().rollback():
+            logging.warning(f"Failed to rollback transaction: '{self.connection().lastError().text()}'")
 
     def commit(self):
         if not JalDB._in_transaction:

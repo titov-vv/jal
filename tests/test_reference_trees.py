@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QMessageBox, QWidget
 from tests.fixtures import project_root, data_path, prepare_db
 from constants import PredefinedCategory
 from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 from jal.db.common_models import CategoryTreeModel, TagTreeModel
 from jal.widgets.reference_dialogs import CategoryListDialog
 
@@ -63,3 +64,14 @@ def test_tree_item_cant_be_left_without_name(prepare_db, monkeypatch):
     taxes = model.locateItem(PredefinedCategory.Taxes)
     assert not model.setData(taxes, '')
     assert model.data(taxes) == "Taxes"
+
+
+# An edit stays pending until the user commits or reverts it - a write that commits on its own (any settings
+# write does) must not decide it on his behalf
+def test_pending_edit_is_not_committed_by_others(prepare_db):
+    model = CategoryTreeModel()
+    model.addChildElement(model.locateItem(PredefinedCategory.Income))
+    added_id = JalDB()._read("SELECT MAX(id) FROM categories")
+    JalSettings().setValue('DlgGeometry_Categories', 'a window geometry')
+    model.revertAll()
+    assert JalDB()._read("SELECT name FROM categories WHERE id=:id", [(":id", added_id)]) is None

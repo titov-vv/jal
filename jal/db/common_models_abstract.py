@@ -288,7 +288,7 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
         column = self._columns[index.column()].name
         if column == self._default_name and not self._name_is_free(value, item_id):
             return False
-        self.connection().transaction()
+        self.start_transaction()
         if self._exec(f"UPDATE {self._table} SET {column}=:value WHERE id=:id",
                       [(":id", item_id), (":value", value)]) is None:
             return False
@@ -351,7 +351,7 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
         encoded_data = data.data(self.DRAG_DROP_MIME_TYPE)
         stream = QDataStream(encoded_data, QIODevice.ReadOnly)
         item_id = stream.readUInt64()
-        self.connection().transaction()
+        self.start_transaction()
         if parent.isValid():
             self._exec(f"UPDATE {self._table} SET pid=:pid WHERE id=:id",
                        [(":id", item_id), (":pid", parent.internalId())])
@@ -400,7 +400,7 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
         else:
             parent_id = parent.internalId()
         self.beginInsertRows(parent, row, row + count - 1)
-        self.connection().transaction()
+        self.start_transaction()
         _ = self._exec(f"INSERT INTO {self._table}(pid, {self._default_name}) VALUES (:pid, :default_value)",
                        [(":pid", parent_id), (":default_value", self.valid_new_name())])
         self.endInsertRows()
@@ -421,7 +421,7 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
             parent_id = parent.internalId()
 
         self.beginRemoveRows(parent, row, row + count - 1)
-        self.connection().transaction()
+        self.start_transaction()
         order_by = f"ORDER BY {self._sort_by}" if self._sort_by is not None else ''  # FIXME - this line repeats several times over the class - refactor
         query = self._exec(f"SELECT id FROM {self._table} WHERE pid=:pid {order_by} LIMIT :row_c OFFSET :row_n",
                            [(":pid", parent_id), (":row_c", count), (":row_n", row)])
@@ -445,12 +445,12 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
         return True
 
     def submitAll(self):
-        _ = self._exec("COMMIT")
+        self.commit_transaction()
         self.layoutChanged.emit()
         return True
 
     def revertAll(self):
-        _ = self._exec("ROLLBACK")
+        self.rollback_transaction()
         self.layoutChanged.emit()
 
     # find item by ID and return its index (caller is responsible for view operations, e.g. expanding parents)
