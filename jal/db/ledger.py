@@ -1,14 +1,16 @@
 import sys
 import logging
 import traceback
+from collections import defaultdict
 from datetime import datetime
 from decimal import Decimal
 from PySide6.QtCore import Signal, Slot, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox, QApplication
-from jal.constants import BookAccount
+from jal.constants import BookAccount, Setup
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage
 from jal.db.rebase_residue import RebaseResidue
@@ -311,8 +313,42 @@ class Ledger(QObject, JalDB):
         else:
             logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
                          self.tr(", new frontier: ") + f"{ts2dt(last_timestamp)}")
+            self.report_position_mismatches()
 
         self.updated.emit()
+
+    # Every ledger posting is rounded to the precision of its account (see appendTransaction) while an open lot keeps
+    # all the digits it has, so a position held on an account whose precision is smaller than its asset really uses
+    # ends up described by two different numbers. Nothing shows it while the position is held - it surfaces on the
+    # disposal that closes it, which either comes up short and stops the whole rebuild or leaves a dust lot that no
+    # future operation can consume. It is reported here, where every position is up to date, and only when the gap is
+    # bigger than what the FIFO matching absorbs (Setup.LOT_QTY_TOLERANCE): that is exactly the gap a future disposal
+    # would NOT pass over silently.
+    def report_position_mismatches(self):
+        lots = defaultdict(Decimal)
+        # The latest state of every slice, the way JalAccount.open_trades_list() takes it, for all positions at once.
+        # Summed in Python because the amounts are decimals kept as TEXT and SQL SUM() would coerce them to float.
+        query = self._exec("WITH open_trades_numbered AS "
+                           "(SELECT account_id, asset_id, remaining_qty, "
+                           "ROW_NUMBER() OVER (PARTITION BY slice_id ORDER BY timestamp DESC, id DESC) AS row_no "
+                           "FROM trades_opened) "
+                           "SELECT account_id, asset_id, remaining_qty FROM open_trades_numbered "
+                           "WHERE row_no=1 AND remaining_qty!=:zero", [(":zero", format_decimal(Decimal('0')))])
+        while query.next():
+            account_id, asset_id, qty = self._read_record(query, cast=[int, int, Decimal])
+            lots[(account_id, asset_id)] += qty
+        query = self._exec("SELECT account_id, asset_id, amount_acc FROM ledger WHERE book_account=:assets "
+                           "AND id IN (SELECT MAX(id) FROM ledger WHERE book_account=:assets "
+                           "GROUP BY account_id, asset_id)", [(":assets", BookAccount.Assets)])
+        while query.next():
+            account_id, asset_id, amount = self._read_record(query, cast=[int, int, Decimal])
+            held = lots[(account_id, asset_id)]
+            if abs(held - amount) <= abs(amount) * Decimal(Setup.LOT_QTY_TOLERANCE):
+                continue
+            account = JalAccount(account_id)
+            logging.warning(self.tr("Open lots don't add up to the position, check the account precision: ")
+                            + f"{account.name()} - {JalAsset(asset_id).symbol()}: "
+                            + f"{held} vs {amount}, precision {account.precision()}")
 
     # Finishes a ledger that halted one crumb short of the withdrawal that closes a rebasing position - see
     # RebaseResidue for what is and isn't booked here. The pass drives the rebuild itself because the halt is the

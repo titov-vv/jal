@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal
 
 import pytest
@@ -105,3 +106,33 @@ def test_partial_consumption_subtracts_what_was_taken(prepare_db_fifo):
 
     assert _lots(1, 5) == [(Decimal('2000'), Decimal('1.001449703169971084948814349'))]
     assert _book_amount(1, 5) == Decimal('2000')      # 2999.321832 - 999.321832, exact in the books
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A position whose account cannot represent the quantity it holds is described by two different numbers: the books
+# round every posting to the account precision, the lot keeps all of its digits. It shows up on the disposal that
+# closes the position - which either comes up short and stops the rebuild or leaves a dust lot nothing can consume -
+# so a completed rebuild says so while the position is still just sitting there.
+def test_rebuild_reports_a_position_its_account_cannot_hold(prepare_db_fifo, caplog):
+    create_stocks([('NEAR', 'Near Protocol')], currency_id=2)   # bought on an account left at the default precision
+    create_trades(1, [(d2t(220101), d2t(220101), 4, Decimal('29.0187'), Decimal('5'), Decimal('0'))])
+    with caplog.at_level(logging.WARNING):
+        Ledger().rebuild(from_timestamp=0)
+
+    assert _lots_total(1, 4) == Decimal('29.0187')      # what was actually bought
+    assert _book_amount(1, 4) == Decimal('29.02')       # what the books could hold of it
+    warnings = [x.message for x in caplog.records if x.levelno == logging.WARNING]
+    assert len(warnings) == 1
+    assert "NEAR" in warnings[0] and "29.0187 vs 29.02" in warnings[0] and "precision 2" in warnings[0]
+
+
+# ...and it stays quiet when the two agree, which is every position on an account that can hold what it bought.
+def test_rebuild_is_quiet_when_lots_match_the_books(prepare_db_fifo, caplog):
+    JalAccount(1).set_data(AccountData.Precision, 18)
+    create_stocks([('NEAR', 'Near Protocol')], currency_id=2)
+    create_trades(1, [(d2t(220101), d2t(220101), 4, Decimal('29.0187'), Decimal('5'), Decimal('0'))])
+    with caplog.at_level(logging.WARNING):
+        Ledger().rebuild(from_timestamp=0)
+
+    assert _lots_total(1, 4) == _book_amount(1, 4)
+    assert [x.message for x in caplog.records if x.levelno == logging.WARNING] == []
