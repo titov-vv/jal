@@ -157,7 +157,7 @@ def test_pending_incoming_asset_transfer_opens_a_zero_basis_lot(wallets):
     assert JalAccount(WALLET_B).get_asset_amount(d2t(210201), USDT) == Decimal('400')
     lots = JalAccount(WALLET_B).open_trades_list(JalAsset(USDT))
     assert len(lots) == 1
-    assert lots[0].open_qty(adjusted=True) == Decimal('400')
+    assert lots[0].open_qty() == Decimal('400')
     assert lots[0].open_price(adjusted=True) == Decimal('0')
     assert _in_transit(USDT) == Decimal('-400')   # negative: arrived from an unknown source
 

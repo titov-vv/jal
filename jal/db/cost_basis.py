@@ -85,7 +85,7 @@ def carried_basis(account, asset, qty: Decimal, timestamp: int, target_currency:
     lots = 0
     if qty > Decimal('0'):
         for trade in account.open_trades_list(asset, timestamp):
-            available = trade.open_qty(adjusted=True)
+            available = trade.open_qty()
             taken = available if available < (qty - matched) else (qty - matched)
             matched += taken
             basis += taken * trade.open_price(adjusted=True)

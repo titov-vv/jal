@@ -440,10 +440,19 @@ class JalAccount(JalDB):
     # trade - JalOpenTrade that should be stored as open trade (may represent existing position or be a new object)
     # asset - JalAsset for which trade is recorded
     # modified_by - indicate operation that modifies the original position
-    # adjustment = (price_adj, qty_adj) - coefficients for price and quantity adjustments for operation
-    def open_trade(self, trade, asset, modified_by=None, adjustment=(Decimal('1'), Decimal('1'))):
+    # qty - the quantity the stored lot holds - it can be explicitly adjusted by some conversion operation.
+    #       None keeps what 'trade' holds, which is what an open position being re-written after partial consumption.
+    # price_adjustment - coefficient applied to the price of the original operation (a resulf of FX rate, size change)
+    def open_trade(self, trade, asset, modified_by=None, qty=None, price_adjustment=Decimal('1')):
         operation = trade.open_operation()
         modified_by = operation if modified_by is None else modified_by
+        if qty is None:
+            remaining_qty, q_adjustment = trade.open_qty(), trade.q_adjustment()
+        else:
+            # 'c_qty' relates the stored quantity to the quantity of the operation that opened the lot, which for a
+            # closed deal is its 'open_qty'. It is written for reporting only and never multiplies a quantity again.
+            remaining_qty = qty
+            q_adjustment = qty / trade.open_qty() if trade.open_qty() else Decimal('1')
         # slice_id carries the slice's stable identity: a trade taken from open_trades_list() (a state change of an
         # existing slice after partial consumption) keeps it; a freshly opened or carried-over slice has None here and
         # the trades_opened_set_slice trigger assigns the new row's own id as its slice identity.
@@ -455,9 +464,9 @@ class JalAccount(JalDB):
             [(":timestamp", modified_by.timestamp()), (":otype", operation.type()), (":oid", operation.id()),
              (":m_otype", modified_by.type()), (":m_oid", modified_by.id()), (":account_id", self._id),
              (":asset_id", asset.id()), (":price", format_decimal(trade.open_price())),
-             (":remaining_qty", format_decimal(trade.open_qty())),
-             (":c_price", format_decimal(trade.p_adjustment() * adjustment[0])),
-             (":c_qty", format_decimal(trade.q_adjustment() * adjustment[1])),
+             (":remaining_qty", format_decimal(remaining_qty)),
+             (":c_price", format_decimal(trade.p_adjustment() * price_adjustment)),
+             (":c_qty", format_decimal(q_adjustment)),
              (":slice_id", trade.slice_id())])
 
     # Returns a list of JalOpenTrades that represents all trades that were opened for given asset at given timestamp

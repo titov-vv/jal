@@ -359,6 +359,6 @@ def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):
 
     assert JalAccount(1).get_asset_amount(d2t(210301), 4) == Decimal('10')   # the coins are on the account
     lots = JalAccount(1).open_trades_list(JalAsset(4))
-    assert sum((lot.open_qty(adjusted=True) for lot in lots), Decimal('0')) == Decimal('10')
+    assert sum((lot.open_qty() for lot in lots), Decimal('0')) == Decimal('10')
     # valued at the last known quote rather than at one stamped at its own second
     assert AssetPayment(1).price() == Decimal('0.98')

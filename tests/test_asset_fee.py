@@ -58,7 +58,7 @@ def _amount(account_id, asset_id, timestamp=None) -> Decimal:
 # for every later operation without changing any visible balance.
 def _open_lots(account_id: int, asset_id: int) -> Decimal:
     lots = JalAccount(account_id).open_trades_list(JalAsset(asset_id))
-    return sum((lot.open_qty(adjusted=True) for lot in lots), Decimal('0'))
+    return sum((lot.open_qty() for lot in lots), Decimal('0'))
 
 
 def _closed_deals_of(asset_id: int) -> list:

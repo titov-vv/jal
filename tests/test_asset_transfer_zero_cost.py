@@ -54,5 +54,5 @@ def test_cross_currency_transfer_of_zero_cost_asset_rebuilds(accounts):
     assert _amount(DEST, USDT) == Decimal('490')
     # The zero-cost lot arrives still zero-cost - nothing was conjured out of the empty cost basis
     lots = JalAccount(DEST).open_trades_list(JalAsset(USDT))
-    total_value = sum((lot.open_qty(adjusted=True) * lot.open_price(adjusted=True) for lot in lots), Decimal('0'))
+    total_value = sum((lot.open_qty() * lot.open_price(adjusted=True) for lot in lots), Decimal('0'))
     assert total_value == Decimal('0')

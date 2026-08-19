@@ -49,7 +49,7 @@ def test_conversion_carries_lots_over(prepare_db_fifo):
 
     lots = JalAccount(1).open_trades_list(JalAsset(5))
     assert len(lots) == 2                                                # two lots, not one merged position
-    assert [x.open_qty(adjusted=True) for x in lots] == [Decimal('1'), Decimal('1')]
+    assert [x.open_qty() for x in lots] == [Decimal('1'), Decimal('1')]
     assert [x.open_price(adjusted=True) for x in lots] == [Decimal('100'), Decimal('300')]
     # Both still point at the trades that acquired them, in acquisition order
     assert [x.open_operation().timestamp() for x in lots] == [t_first, t_second]
@@ -81,7 +81,7 @@ def test_conversion_round_trip_restores_basis(prepare_db_fifo):
     assert JalAccount(1).get_asset_amount(t_unwrap, 5) == Decimal('0')
     lots = JalAccount(1).open_trades_list(JalAsset(4))
     assert len(lots) == 1
-    assert lots[0].open_qty(adjusted=True) == Decimal('2')
+    assert lots[0].open_qty() == Decimal('2')
     assert lots[0].open_price(adjusted=True) == Decimal('150')
     assert JalAccount(1).closed_trades_list(close_otypes=_WITH_SWAP) == []
 

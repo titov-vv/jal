@@ -38,7 +38,7 @@ def _amount(asset_id=TRX, timestamp=None):
 
 def _open_lots(asset_id=TRX) -> Decimal:
     lots = JalAccount(WALLET).open_trades_list(JalAsset(asset_id))
-    return sum((lot.open_qty(adjusted=True) for lot in lots), Decimal('0'))
+    return sum((lot.open_qty() for lot in lots), Decimal('0'))
 
 
 def _closed_deals(asset_id=TRX) -> list:

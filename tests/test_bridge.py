@@ -35,12 +35,12 @@ def _amount(account_id) -> Decimal:
 
 def _open_qty(account_id) -> Decimal:
     lots = JalAccount(account_id).open_trades_list(JalAsset(ETH))
-    return sum((lot.open_qty(adjusted=True) for lot in lots), Decimal('0'))
+    return sum((lot.open_qty() for lot in lots), Decimal('0'))
 
 
 def _open_basis(account_id) -> Decimal:
     lots = JalAccount(account_id).open_trades_list(JalAsset(ETH))
-    return sum((lot.open_qty(adjusted=True) * lot.open_price(adjusted=True) for lot in lots), Decimal('0'))
+    return sum((lot.open_qty() * lot.open_price(adjusted=True) for lot in lots), Decimal('0'))
 
 
 def _closed_trade_count(account_id) -> int:

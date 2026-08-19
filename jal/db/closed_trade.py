@@ -7,13 +7,28 @@ from jal.db.asset import JalAsset
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Splits 'total' over 'lots' in proportion to what each of them holds, giving the LAST lot the remainder instead of
+# its own scaled share. A share is a ratio of two arbitrary amounts and is almost never representable, so scaling
+# every lot independently leaves the parts summing to something that isn't 'total' - taking the remainder makes them
+# sum to it by construction. Used where an operation CHANGES the quantity of a position it carries over (a conversion,
+# a corporate action).
+def allocate_qty(lots: list, total: Decimal) -> list:
+    if not lots:
+        return []
+    quantities = [x.qty() for x in lots]
+    source_total = sum(quantities, Decimal('0'))
+    shares = [total * x / source_total for x in quantities[:-1]]
+    return shares + [total - sum(shares, Decimal('0'))]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Class that represents open trade and provides some methods equal to JalClosedTrades to make compatible calls
 class JalOpenTrade(JalDB):
     def __init__(self, operation, price, qty, adjustments=(Decimal('1'), Decimal('1')), slice_id=None) -> None:
         super().__init__()
         self._op = operation
         self._price = price
-        self._qty = qty
+        self._qty = qty                    # The EFFECTIVE quantity the lot holds (trades_opened.remaining_qty)
         self._adj_price = adjustments[0]   # Historical adjustments of price and quantity that happened
         self._adj_qty = adjustments[1]     # during holding of this position
         self._slice_id = slice_id          # Stable identity of the held slice; None until the slice is stored
@@ -32,11 +47,9 @@ class JalOpenTrade(JalDB):
         else:
             return self._price
 
-    def open_qty(self, adjusted=False) -> Decimal:
-        if adjusted:
-            return self._qty * self._adj_qty
-        else:
-            return self._qty
+    # The quantity the lot holds. It takes no 'adjusted' flag as JalClosedTrade.open_qty() does: a lot stores what it effectively holds.
+    def open_qty(self) -> Decimal:
+        return self._qty
 
     # Method to adjust price of open position
     def set_price(self, new_price: Decimal):
@@ -49,6 +62,8 @@ class JalOpenTrade(JalDB):
     def p_adjustment(self) -> Decimal:
         return self._adj_price
 
+    # Relates what the lot holds to the quantity of the operation that opened it (qty = c_qty * original_qty).
+    # Reporting only - JalClosedTrade.create_from_trades() needs it to express a closed deal in original units.
     def q_adjustment(self) -> Decimal:
         return self._adj_qty
 

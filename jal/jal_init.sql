@@ -238,9 +238,12 @@ CREATE TABLE trades_opened (
     account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     asset_id      INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
     price         TEXT    NOT NULL,    -- Accounting price of current position (may be different from original operation)
-    remaining_qty TEXT    NOT NULL,    -- Quantity of asset that still remains held (may be different from original operation quantity)
+    remaining_qty TEXT    NOT NULL,    -- Quantity of asset that still remains held. It is what the lot EFFECTIVELY holds:
+                                       -- an operation that changes the quantity of a position it carries over allocates
+                                       -- the new quantity over the lots, so they always add up to the position exactly.
     c_price       TEXT    NOT NULL DEFAULT ('1'),  -- Coefficient that was used to adjust price of initial operation (price = c_price * original_price)
-    c_qty         TEXT    NOT NULL DEFAULT ('1'),   -- Coefficient that was used to adjust qty of initial operation (qty = c_qty * original_qty)
+    c_qty         TEXT    NOT NULL DEFAULT ('1'),   -- Relates 'remaining_qty' to the quantity of the operation that opened the
+                                       -- lot (qty = c_qty * original_qty). REPORTING ONLY - no quantity is scaled by it.
     slice_id      INTEGER             -- Stable identity of the held slice/lot: assigned when a slice is opened or carried
                                       -- over and preserved through every later state change; open_trades_list() groups by it.
                                       -- A NULL on insert means "new slice" and is auto-filled with the row's own id by a trigger.
@@ -829,7 +832,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 63);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 64);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

@@ -31,12 +31,12 @@ def accounts(prepare_db):
 
 def _open_qty(account_id, asset=ETH) -> Decimal:
     lots = JalAccount(account_id).open_trades_list(JalAsset(asset))
-    return sum((lot.open_qty(adjusted=True) for lot in lots), Decimal('0'))
+    return sum((lot.open_qty() for lot in lots), Decimal('0'))
 
 
 def _open_basis(account_id, asset=ETH) -> Decimal:
     lots = JalAccount(account_id).open_trades_list(JalAsset(asset))
-    return sum((lot.open_qty(adjusted=True) * lot.open_price(adjusted=True) for lot in lots), Decimal('0'))
+    return sum((lot.open_qty() * lot.open_price(adjusted=True) for lot in lots), Decimal('0'))
 
 
 # The matching path (#47): a bridge arrival can't be recognized by the fetcher, so it lands as a plain incoming

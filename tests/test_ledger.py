@@ -397,11 +397,14 @@ def test_fifo(prepare_db_fifo):
     assert trades[0].profit() == Decimal('75')
     trades = JalAccount(1).closed_trades_list(asset=JalAsset(15))
     assert len(trades) == 3
-    # The last deal takes what is left of the sold quantity, not what the rounded quantity adjustments of the merger
-    # and the splits add up to (see LedgerTransaction._close_deals_fifo) - hence the crumb in the last digits.
-    assert [x.qty() for x in trades] == [Decimal('1'), Decimal('4') / 3, Decimal('8') / 3]
+    # The merger of 30 L into 20 M and the split of 25 M into 5 both allocate what they produce over the lots they
+    # carry, so the lots hold the position exactly and the crumb of the 2/3 ratio sits in the lot the allocation gave
+    # the remainder to - the second one here, rather than in whatever the last deal had to make up.
+    assert [x.qty() for x in trades] == [Decimal('1'), Decimal('1.333333333333333333333333334'),
+                                         Decimal('2.666666666666666666666666666')]
     assert sum([x.qty() for x in trades]) == Decimal('5')   # the whole position was sold, all of it is in the deals
-    assert [x.profit() for x in trades] == [Decimal('99.80'), Decimal('141.3999999999999999999999999'), Decimal('32.80000000000000000000000017')]
+    assert [x.profit() for x in trades] == [Decimal('99.80'), Decimal('141.4000000000000000000000000'),
+                                            Decimal('32.79999999999999999999999997')]
     assert JalAccount(1).open_trades_list(JalAsset(15)) == []   # and no dust position is left behind
 
     # Stock dividend
@@ -473,19 +476,21 @@ def test_open_price(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    values = lambda x: (x.open_qty(adjusted=True), x.open_price(adjusted=True), x.open_qty(), x.open_price())
+    # A lot holds the quantity it really has, while its price is still the price of the operation that opened it
+    # scaled by an adjustment coefficient - so quantity is read as it is and price both ways.
+    values = lambda x: (x.open_qty(), x.open_price(adjusted=True), x.open_price())
     positions = [values(x) for x in JalAccount(1).open_trades_list(asset=JalAsset(4))]
     assert positions == [
-        (Decimal('10'), Decimal('100'), Decimal('10'), Decimal('100')),
-        (Decimal('20'), Decimal('120'), Decimal('20'), Decimal('120')),
-        (Decimal('10'), Decimal('110'), Decimal('10'), Decimal('110'))
+        (Decimal('10'), Decimal('100'), Decimal('100')),
+        (Decimal('20'), Decimal('120'), Decimal('120')),
+        (Decimal('10'), Decimal('110'), Decimal('110'))
     ]
     positions = [values(x) for x in JalAccount(1).open_trades_list(asset=JalAsset(5))]
-    assert positions == [(Decimal('3'), Decimal('150'), Decimal('12'), Decimal('100'))]
+    assert positions == [(Decimal('3'), Decimal('150'), Decimal('100'))]
     positions = [values(x) for x in JalAccount(1).open_trades_list(asset=JalAsset(6))]
-    assert positions == [(Decimal('1'), Decimal('400'), Decimal('16'), Decimal('100'))]
+    assert positions == [(Decimal('1'), Decimal('400'), Decimal('100'))]
     positions = [values(x) for x in JalAccount(1).open_trades_list(asset=JalAsset(7))]
-    assert positions == [(Decimal('2'), Decimal('225'), Decimal('12'), Decimal('100'))]
+    assert positions == [(Decimal('2'), Decimal('225'), Decimal('100'))]
 
 
 def test_asset_transfer(prepare_db):

@@ -8,7 +8,7 @@ from jal.db.db import JalDB
 import jal.db.account
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
-from jal.db.closed_trade import JalClosedTrade, JalOpenTrade
+from jal.db.closed_trade import JalClosedTrade, JalOpenTrade, allocate_qty
 from jal.widgets.helpers import ts2d, ts2dt
 from jal.widgets.icons import JalIcon
 
@@ -229,27 +229,26 @@ class LedgerTransaction(JalDB):
         processed_qty = Decimal('0')
         processed_value = Decimal('0')
         open_trades = account.open_trades_list(asset)
-        # The quantity a lot holds is 'remaining_qty' scaled by 'c_qty', and 'c_qty' is a ratio of two arbitrary
-        # amounts (in_qty/out_qty of a conversion, the size change of a corporate action, ...), so it is almost never
-        # exact. The scaled quantities therefore drift from the amount the ledger books hold - by ~1E-28 of the amount,
-        # the precision of the decimal context - and their sum no longer matches the position exactly. That drift is
-        # not removable by asking for more digits: it is the ratio itself that isn't representable. So a difference
-        # this small between what a lot holds and what is still required is read as "the same number" below.
+        # A lot holds its own quantity and a carry-over allocates rather than scales, so the lots of a position add up
+        # to it exactly - but the two representations can still differ. Every ledger posting is rounded to the account
+        # precision (see Ledger.appendTransaction) while a lot is not, and an FX-adjusted price is still a ratio of two
+        # arbitrary amounts. A difference this small between what a lot holds and what is still required is therefore
+        # read as "the same number" below, so that a rounding crumb can never abort a whole ledger rebuild.
         tolerance = abs(qty) * Decimal(Setup.LOT_QTY_TOLERANCE)
         for trade in open_trades:
-            remaining_qty = trade.open_qty(adjusted=True)
+            remaining_qty = trade.open_qty()
             required_qty = qty - processed_qty         # Quantity that is still to be taken from the open positions
             if abs(remaining_qty - required_qty) <= tolerance:
-                # The lot holds exactly what is still required, up to the adjustment rounding described above. Take
-                # the required quantity and close the lot: this leaves neither a shortage that would abort the whole
-                # ledger nor a dust position of ~1E-25 that no future operation would ever be able to consume.
+                # The lot holds exactly what is still required, up to the rounding described above. Take the required
+                # quantity and close the lot: this leaves neither a shortage that would abort the whole ledger nor a
+                # dust position of ~1E-25 that no future operation would ever be able to consume.
                 next_deal_qty = required_qty
                 trade.set_qty(Decimal('0'))
             else:
                 next_deal_qty = remaining_qty
                 if next_deal_qty > required_qty:       # We can't close full quantity with current operation
                     next_deal_qty = required_qty       # If it happens - just process the remainder of the trade
-                trade.set_qty((remaining_qty - next_deal_qty)/trade.q_adjustment())
+                trade.set_qty(remaining_qty - next_deal_qty)
             account.open_trade(trade, asset, modified_by=self)
             if record_deals:
                 JalClosedTrade.create_from_trades(trade, self, (-deal_sign) * next_deal_qty)
@@ -1851,15 +1850,17 @@ class Transfer(LedgerTransaction):
             # and without this guard a single unfilled cost basis divides by zero and aborts the whole ledger rebuild.
             if self._withdrawal_account.currency() == self._deposit_account.currency() or Decimal(value) == 0:
                 transfer_value = Decimal(value)
-                # Move open trades from previous account to new account
+                # Move open trades from previous account to new account. A transfer moves a quantity without changing
+                # it, so each lot arrives holding exactly what left the source and nothing is allocated or scaled.
                 for trade in transfer_trades:
-                    self._deposit_account.open_trade(trade, self._asset, modified_by=self)
+                    self._deposit_account.open_trade(trade, self._asset, modified_by=self, qty=trade.qty())
             else:
                 transfer_value = self._deposit
                 rate = transfer_value/Decimal(value)
                 # Move open trades from previous account to new and adjust price
                 for trade in transfer_trades:
-                    self._deposit_account.open_trade(trade, self._asset, modified_by=self, adjustment=(rate, Decimal('1')))
+                    self._deposit_account.open_trade(trade, self._asset, modified_by=self, qty=trade.qty(),
+                                                     price_adjustment=rate)
             ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=-transfer_value)
             ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=transfer_value)
         else:
@@ -2084,9 +2085,11 @@ class CorporateAction(LedgerTransaction):
                 ledger.appendTransaction(self, BookAccount.Money, qty)
                 ledger.appendTransaction(self, BookAccount.Incomes, -qty, category=PredefinedCategory.Interest, peer=self._broker)
             else:
-                for trade in closed_trades:
-                    cost_size_adjustment = (share * self._qty / qty, qty / self._qty)
-                    self._account.open_trade(trade, asset, modified_by=self, adjustment=cost_size_adjustment)
+                # The quantity the action produced is allocated over the lots it carries over, so they add up to it
+                # exactly; their price keeps the coefficient that preserves the value of each lot.
+                for trade, lot_qty in zip(closed_trades, allocate_qty(closed_trades, qty)):
+                    self._account.open_trade(trade, asset, modified_by=self, qty=lot_qty,
+                                             price_adjustment=share * self._qty / qty)
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -2221,9 +2224,10 @@ class Conversion(LedgerTransaction):
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                  asset_id=self._out_asset.id(), value=-processed_value)
-        adjustment = (self._out_qty / self._in_qty, self._in_qty / self._out_qty)
-        for trade in self._deals_closed_by_operation():
-            self._account.open_trade(trade, self._in_asset, modified_by=self, adjustment=adjustment)
+        closed_trades = self._deals_closed_by_operation()
+        for trade, lot_qty in zip(closed_trades, allocate_qty(closed_trades, self._in_qty)):
+            self._account.open_trade(trade, self._in_asset, modified_by=self, qty=lot_qty,
+                                     price_adjustment=self._out_qty / self._in_qty)
         ledger.appendTransaction(self, BookAccount.Assets, self._in_qty,
                                  asset_id=self._in_asset.id(), value=processed_value)
         if self._fee_asset.id():
@@ -2524,7 +2528,7 @@ class Bridge(LedgerTransaction):
                                   + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
         transfer_value = rate * value
         for trade in transfer_trades:   # Move open trades from source to destination (adjust cost basis by FX rate)
-            self._in_account.open_trade(trade, self._asset, modified_by=self, adjustment=(rate, Decimal('1')))
+            self._in_account.open_trade(trade, self._asset, modified_by=self, qty=trade.qty(), price_adjustment=rate)
         ledger.appendTransaction(self, BookAccount.Transfers, -self._out_qty, asset_id=self._asset.id(), value=-transfer_value)
         ledger.appendTransaction(self, BookAccount.Assets, self._out_qty, asset_id=self._asset.id(), value=transfer_value)
         if self._in_qty < self._out_qty:   # In-kind bridge fee: dispose the difference from the destination at basis
