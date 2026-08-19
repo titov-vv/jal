@@ -136,8 +136,11 @@ class TaxEstimator(MdiWidget):
         profit_rub = Decimal('0')
         value_rub = Decimal('0')
         for position in positions:
+            # What the position holds now and what it cost per unit now: a corporate action or a conversion may have
+            # changed both since it was opened, and an estimate made of the original numbers would be of a position
+            # that no longer exists.
             qty = position.open_qty()
-            price = position.open_price()
+            price = position.open_price(adjusted=True)
             o_rate = account_currency.quote(position.open_operation().settlement(), tax_currency)[1]
             position_profit = qty * (self.quote - price)
             position_profit_rub = qty * (self.quote * self.rate - price * o_rate)
