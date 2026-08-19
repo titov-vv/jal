@@ -72,6 +72,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.SwapButton.pressed.connect(self.convertToSwap)
         self.ui.BridgeButton.pressed.connect(self.convertToBridge)
         self.ui.DustButton.pressed.connect(self.writeOffAsDust)
+        self.ui.LegendButton.pressed.connect(self.showLegend)
         self.ui.ReportTreeView.doubleClicked.connect(self.matchLegAt)
         self.ui.ReportTreeView.customContextMenuRequested.connect(self.onContextMenu)
         # Assigning and converting into a swap act on the row that is selected, so without one there is nothing for
@@ -301,6 +302,12 @@ class UnsettledTransfersReportWindow(MdiWidget):
                                           "would be taxed as gain.\n\nA zero may well be right. If it isn't, open "
                                           "this transfer in the operations list and state the amount it arrived "
                                           "for, in the currency of the receiving account."))
+
+    @Slot()
+    def showLegend(self):
+        rows = "".join(f"<tr><td style='background-color:{color.name()};width:24px;'>&nbsp;</td>"
+                       f"<td>&nbsp;{caption}</td></tr>" for color, caption in self.transfers_model.legend())
+        QMessageBox().information(self, self.name, f"<table cellspacing='4'>{rows}</table>")
 
     # oid of the row, but only while it is a TRANSFER leg waiting for its counterpart - which is what every action on
     # this page acts on. Two kinds of row are not that and must never reach one:

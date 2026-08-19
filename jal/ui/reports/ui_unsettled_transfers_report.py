@@ -18,7 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
     QDateEdit, QFrame, QGridLayout, QHeaderView,
     QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QVBoxLayout, QWidget)
+    QSpacerItem, QToolButton, QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
@@ -122,6 +122,12 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.gridLayout.addWidget(self.SaveButton, 0, 19, 1, 1)
 
+        self.LegendButton = QToolButton(self.ReportParamsFrame)
+        self.LegendButton.setObjectName(u"LegendButton")
+        self.LegendButton.setAutoRaise(True)
+
+        self.gridLayout.addWidget(self.LegendButton, 0, 20, 1, 1)
+
         self.currencyGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.gridLayout.addItem(self.currencyGroupSpacer, 0, 1, 1, 1)
@@ -164,7 +170,8 @@ class Ui_UnsettledTransfersWidget(object):
         QWidget.setTabOrder(self.SwapButton, self.BridgeButton)
         QWidget.setTabOrder(self.BridgeButton, self.DustButton)
         QWidget.setTabOrder(self.DustButton, self.SaveButton)
-        QWidget.setTabOrder(self.SaveButton, self.ReportTreeView)
+        QWidget.setTabOrder(self.SaveButton, self.LegendButton)
+        QWidget.setTabOrder(self.LegendButton, self.ReportTreeView)
 
         self.retranslateUi(UnsettledTransfersWidget)
 
@@ -220,5 +227,9 @@ class Ui_UnsettledTransfersWidget(object):
 #endif // QT_CONFIG(tooltip)
         self.DustButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Dust", None))
         self.SaveButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Save...", None))
+#if QT_CONFIG(tooltip)
+        self.LegendButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"What the row colors mean", None))
+#endif // QT_CONFIG(tooltip)
+        self.LegendButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"?", None))
     # retranslateUi
 

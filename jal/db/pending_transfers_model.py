@@ -359,6 +359,19 @@ class PendingTransfersModel(ReportTreeModel):
             return True
         return any(self._filter in str(record[field]).lower() for field in self._FILTERED)
 
+    # What each row color means, as (color, caption) pairs in the same order the kinds are defined above - what the
+    # report's legend is built from.
+    def legend(self) -> list:
+        captions = {
+            self.SENT: self.tr("Sent - left the account, destination not yet known"),
+            self.ARRIVED: self.tr("Arrived - already counted, source not yet known"),
+            self.BRIDGE: self.tr("Bridge - crossed chains, arrival not yet matched"),
+            self.BASIS: self.tr("Settled, but opened at a cost basis of zero"),
+            self.POISONING: self.tr("Address poisoning - write off as dust"),
+            self.AIRDROP: self.tr("Suspected airdrop - unsolicited arrival"),
+        }
+        return [(Theme.tint(self._BACKGROUND[kind]), captions[kind]) for kind in self._BACKGROUND]
+
     # The legs an address-poisoning attack left behind, oldest first. Written off in one go from the report: the
     # attack is identified by an address minted to imitate one of the user's own accounts, which is a fact about the
     # address rather than a resemblance between two amounts - and it arrives in bulk, which is the point of it.
