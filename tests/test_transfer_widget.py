@@ -293,3 +293,52 @@ def test_unknown_leg_is_shown_empty(prepare_db):
     assert widget.ui.to_account_widget.selected_id == 0, "unknown leg kept the account of the previous record"
     assert widget.ui.to_account_widget.name.text() == ''
     assert widget.ui.to_currency.text() == widget.ui.to_currency.EMPTY
+
+
+# The address a pending leg carries names the end that had no account. Choosing that account by hand settles the
+# transfer, so the address describes an account the record now names and must go - as TransferSettlement._fill_end()
+# and Statement._import_transfers() drop it for the ends they complete themselves.
+def test_filling_unknown_leg_by_hand_clears_counterparty_address(prepare_db):
+    wallet, other = _make_accounts()
+    LedgerTransaction.create_new(LedgerTransaction.Transfer,
+                                 {"withdrawal_timestamp": 1641081600, "withdrawal_account": wallet.id(),
+                                  "withdrawal": Decimal('700'), "deposit_timestamp": 1641081600,
+                                  "deposit_account": None, "deposit": Decimal('700'),
+                                  "counterparty_address": '0x' + '9' * 40})
+    oid = JalDB()._read("SELECT oid FROM transfers WHERE deposit_account IS NULL")
+
+    widget = TransferWidget()
+    widget.set_id(oid)
+    widget.ui.to_account_widget.selected_id = other.id()
+    widget.mapper.submit()
+
+    assert widget._validated()
+    widget._save()
+
+    stored = JalDB()._read("SELECT deposit_account, counterparty_address FROM transfers WHERE oid=:oid",
+                           [(":oid", oid)], named=True)
+    assert int(stored['deposit_account']) == other.id()
+    assert stored['counterparty_address'] in (None, '')
+
+
+# ... while a leg that is still waiting keeps it: the address is the only exact statement about the end that is
+# missing, and it is what settles the leg when the counterpart is met.
+def test_still_pending_leg_keeps_counterparty_address(prepare_db):
+    wallet, _other = _make_accounts()
+    address = '0x' + '9' * 40
+    LedgerTransaction.create_new(LedgerTransaction.Transfer,
+                                 {"withdrawal_timestamp": 1641081600, "withdrawal_account": wallet.id(),
+                                  "withdrawal": Decimal('700'), "deposit_timestamp": 1641081600,
+                                  "deposit_account": None, "deposit": Decimal('700'),
+                                  "counterparty_address": address})
+    oid = JalDB()._read("SELECT oid FROM transfers WHERE deposit_account IS NULL")
+
+    widget = TransferWidget()
+    widget.set_id(oid)
+    widget.ui.note.setText("still waiting for the other half")
+    widget.mapper.submit()
+
+    assert widget._validated()
+    widget._save()
+
+    assert JalDB()._read("SELECT counterparty_address FROM transfers WHERE oid=:oid", [(":oid", oid)]) == address

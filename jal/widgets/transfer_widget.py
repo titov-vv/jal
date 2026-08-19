@@ -146,6 +146,9 @@ class TransferWidget(AbstractOperationDetails):
             QMessageBox().warning(self, self.tr("Incomplete data"),
                                   self.tr("At least one account of the transfer must be chosen"), QMessageBox.Ok)
             return False
+        if not empty:
+            # An address stands for the end that has no account, so a transfer naming both of them has no such end left to describe.
+            self.model.setData(self.model.index(0, self.model.fieldIndex("counterparty_address")), None)
         return True
 
     # An asset transfer is told apart from a money one by 'symbol_id' being set, so the field has to be NULL - not
