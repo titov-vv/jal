@@ -2067,144 +2067,129 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>ChainFetchers</name>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="138"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="133"/>
         <source>Chain fetcher module can&apos;t be imported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="147"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="142"/>
         <source>Chain fetcher class can&apos;t be loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="161"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="156"/>
         <source>No wallets</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="162"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="157"/>
         <source>There is no active wallet account for this blockchain. Create one with its Blockchain and Address attributes filled.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="184"/>
-        <location filename="../net/chain_fetchers/fetchers.py" line="208"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="179"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="203"/>
         <source>Interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="196"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="191"/>
         <source>Blockchain fetch failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="205"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="200"/>
         <source>Transactions were fetched from blockchain for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="239"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="234"/>
         <source>Pending transfers could not be settled: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="244"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="239"/>
         <source>Settling of transfers was interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="247"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="242"/>
         <source>Transfers settled from the route they were sent by: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="271"/>
-        <source>Rebase residue could not be checked: </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="275"/>
-        <source>Absorption of rebase residues was interrupted by user</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="281"/>
-        <source>Too many rebase residues in a row - the ledger was left incomplete</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="304"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="280"/>
         <source>Cross-chain check of swaps could not be completed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="309"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="285"/>
         <source>Check of swaps was interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="314"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="290"/>
         <source>Check these swaps</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="315"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="291"/>
         <source>The aggregator that routed these operations describes them differently than they are booked. Each one has to be corrected by hand - what the ledger says about them is wrong:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="322"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="298"/>
         <source>fetching page</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="327"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="303"/>
         <source>checking swaps</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="332"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="308"/>
         <source>settling transfers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="356"/>
-        <location filename="../net/chain_fetchers/fetchers.py" line="362"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="332"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="338"/>
         <source>Token lists</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="357"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="333"/>
         <source>Token allow/block lists are not loaded yet. They are needed to tell real tokens from unsolicited spam airdrops during import, and will be downloaded now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="363"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="339"/>
         <source>Token lists could not be loaded (see log for details). Fetching now could hide real tokens as spam, so the import was stopped. Try again later, or load the lists manually from the Import menu.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="398"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="374"/>
         <source>Some wallets could not be fetched</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="399"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="375"/>
         <source>Fetching failed for these wallets:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="387"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="363"/>
         <source>Some transactions were not imported:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="388"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="364"/>
         <source>Not everything was imported</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="389"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="365"/>
         <source>These transactions were recognized but not imported:</source>
         <translation></translation>
     </message>
@@ -4287,62 +4272,77 @@ do you want to save them?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="164"/>
+        <location filename="../db/ledger.py" line="166"/>
         <source>No asset defined for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="168"/>
+        <location filename="../db/ledger.py" line="170"/>
         <source>No category set for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="170"/>
+        <location filename="../db/ledger.py" line="172"/>
         <source>No peer set for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="247"/>
+        <location filename="../db/ledger.py" line="249"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="248"/>
+        <location filename="../db/ledger.py" line="250"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="274"/>
+        <location filename="../db/ledger.py" line="276"/>
         <source>Interrupted by user</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="303"/>
+        <location filename="../db/ledger.py" line="305"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="307"/>
+        <location filename="../db/ledger.py" line="309"/>
         <source>Ledger is incomplete, it stopped at </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="310"/>
+        <location filename="../db/ledger.py" line="312"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="311"/>
+        <location filename="../db/ledger.py" line="313"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="253"/>
+        <location filename="../db/ledger.py" line="334"/>
+        <source>Rebase residue could not be checked: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/ledger.py" line="337"/>
+        <source>Absorption of rebase residues was interrupted by user</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/ledger.py" line="344"/>
+        <source>Too many rebase residues in a row - the ledger was left incomplete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/ledger.py" line="255"/>
         <source>Leger is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="256"/>
+        <location filename="../db/ledger.py" line="258"/>
         <source>Re-building ledger since: </source>
         <translation></translation>
     </message>
@@ -4664,124 +4664,136 @@ do you want to save them?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="219"/>
-        <location filename="../widgets/main_window.py" line="234"/>
+        <location filename="../widgets/main_window.py" line="225"/>
+        <location filename="../widgets/main_window.py" line="240"/>
         <source>Restart required</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="220"/>
+        <location filename="../widgets/main_window.py" line="226"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="164"/>
+        <location filename="../widgets/main_window.py" line="170"/>
         <source>Info</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="168"/>
+        <location filename="../widgets/main_window.py" line="174"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="324"/>
+        <location filename="../widgets/main_window.py" line="330"/>
         <source>About</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="61"/>
+        <location filename="../widgets/main_window.py" line="66"/>
         <source>Stop</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="168"/>
+        <location filename="../widgets/main_window.py" line="174"/>
         <source>Database data may be inconsistent after recent update. Rebuild it now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="180"/>
+        <location filename="../widgets/main_window.py" line="186"/>
         <source>Operation in progress</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="181"/>
+        <location filename="../widgets/main_window.py" line="187"/>
         <source>An operation is still running.
 Stop it and close the application when it has finished?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="215"/>
+        <location filename="../widgets/main_window.py" line="221"/>
         <source>Translation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="216"/>
+        <location filename="../widgets/main_window.py" line="222"/>
         <source>Translate predefined names in the database?
 (Default answer is &apos;yes&apos;, if haven&apos;t renamed manually before)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="222"/>
+        <location filename="../widgets/main_window.py" line="228"/>
         <source>You should restart application to apply changes.
 Application will be terminated now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="229"/>
+        <location filename="../widgets/main_window.py" line="235"/>
         <source>Full clean-up</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="230"/>
+        <location filename="../widgets/main_window.py" line="236"/>
         <source>All data will be deleted. The actions can&apos;t be undone.
 Are you sure?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="235"/>
+        <location filename="../widgets/main_window.py" line="241"/>
         <source>Database will be removed at next JAL start.
 Application will be terminated now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="326"/>
+        <location filename="../widgets/main_window.py" line="332"/>
         <source>version</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="330"/>
+        <location filename="../widgets/main_window.py" line="336"/>
         <source>github home page</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="329"/>
+        <location filename="../widgets/main_window.py" line="335"/>
         <source>More information, manuals and problem reports are at </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="331"/>
+        <location filename="../widgets/main_window.py" line="337"/>
         <source>Questions, comments, help or donations:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="351"/>
-        <location filename="../widgets/main_window.py" line="355"/>
+        <location filename="../widgets/main_window.py" line="357"/>
+        <location filename="../widgets/main_window.py" line="361"/>
         <source>Token lists</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="352"/>
+        <location filename="../widgets/main_window.py" line="358"/>
         <source>Token lists were updated, entries loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="356"/>
+        <location filename="../widgets/main_window.py" line="362"/>
         <source>Failed to download token lists, see log for details</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="407"/>
+        <location filename="../widgets/main_window.py" line="406"/>
+        <source>Ledger stopped at {} on account &apos;{}&apos;: {} {} is missing.
+
+This looks like the quantity a rebasing position gained without reporting it, which JAL can book to complete the ledger. Book it and continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="411"/>
+        <source>Ledger is incomplete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="442"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation></translation>
     </message>
@@ -5434,120 +5446,150 @@ Do you want to delete the peer anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="373"/>
-        <location filename="../db/pending_transfers_model.py" line="509"/>
+        <location filename="../db/pending_transfers_model.py" line="366"/>
+        <source>Sent - left the account, destination not yet known</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/pending_transfers_model.py" line="367"/>
+        <source>Arrived - already counted, source not yet known</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/pending_transfers_model.py" line="368"/>
+        <source>Bridge - crossed chains, arrival not yet matched</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/pending_transfers_model.py" line="369"/>
+        <source>Settled, but opened at a cost basis of zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/pending_transfers_model.py" line="370"/>
+        <source>Address poisoning - write off as dust</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/pending_transfers_model.py" line="371"/>
+        <source>Suspected airdrop - unsolicited arrival</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/pending_transfers_model.py" line="386"/>
+        <location filename="../db/pending_transfers_model.py" line="522"/>
         <source>(unknown)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="376"/>
+        <location filename="../db/pending_transfers_model.py" line="389"/>
         <source>Sent, but the account it arrived at isn&apos;t known yet</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="379"/>
+        <location filename="../db/pending_transfers_model.py" line="392"/>
         <source>Arrived, but the account it was sent from isn&apos;t known yet. It is already counted in </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="380"/>
+        <location filename="../db/pending_transfers_model.py" line="393"/>
         <source>, at a cost basis of zero until the transfer is settled.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="385"/>
+        <location filename="../db/pending_transfers_model.py" line="398"/>
         <source>
 The address it names belongs to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="386"/>
+        <location filename="../db/pending_transfers_model.py" line="399"/>
         <source> - assign that account to settle the transfer.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="391"/>
+        <location filename="../db/pending_transfers_model.py" line="404"/>
         <source>
 One transaction moved this exact quantity as </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="392"/>
+        <location filename="../db/pending_transfers_model.py" line="405"/>
         <source> and as </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="393"/>
+        <location filename="../db/pending_transfers_model.py" line="406"/>
         <source>, which is one movement recorded under two assets. If they are the same coin, merge them in the Assets dialog and the two legs settle by themselves.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="470"/>
+        <location filename="../db/pending_transfers_model.py" line="483"/>
         <source>Dust</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="472"/>
+        <location filename="../db/pending_transfers_model.py" line="485"/>
         <source>Assign...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="474"/>
+        <location filename="../db/pending_transfers_model.py" line="487"/>
         <source>Merge the assets</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="475"/>
+        <location filename="../db/pending_transfers_model.py" line="488"/>
         <source>Match...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="487"/>
+        <location filename="../db/pending_transfers_model.py" line="500"/>
         <source>ADDRESS POISONING. It came from an address built to be mistaken for the one of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="490"/>
+        <location filename="../db/pending_transfers_model.py" line="503"/>
         <source>ADDRESS POISONING. It came from an address built to be mistaken for the contract of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="493"/>
+        <location filename="../db/pending_transfers_model.py" line="506"/>
         <source> - the two match at both ends, which is what you see when an address is abbreviated. Never copy this address out of your history: money sent to it is gone. Nobody is waiting to be paired with this, so write it off with Dust.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="496"/>
+        <location filename="../db/pending_transfers_model.py" line="509"/>
         <source>Nothing else in this wallet has ever dealt in </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="497"/>
+        <location filename="../db/pending_transfers_model.py" line="510"/>
         <source> - this arrival is the only operation in it, which is what an unsolicited airdrop looks like. If it is one, write it off with Dust; if you really acquired it, settle it as usual.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="516"/>
+        <location filename="../db/pending_transfers_model.py" line="529"/>
         <source>Match cross-chain legs...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="524"/>
+        <location filename="../db/pending_transfers_model.py" line="537"/>
         <source>Sent across chains, and what arrived for it isn&apos;t known yet. This one is already recorded as a bridge, so it is completed from the Operations list: right-click it there and choose &apos;Match cross-chain legs...&apos;.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="545"/>
+        <location filename="../db/pending_transfers_model.py" line="558"/>
         <source>Check the cost basis</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="555"/>
+        <location filename="../db/pending_transfers_model.py" line="568"/>
         <source>Settled, but the asset opened at a cost basis of zero in </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/pending_transfers_model.py" line="557"/>
+        <location filename="../db/pending_transfers_model.py" line="570"/>
         <source>: the two accounts are kept in different currencies and nothing stated what the asset had cost. A zero may be right - if it isn&apos;t, it is taxed as a gain when the asset is sold.</source>
         <translation></translation>
     </message>
@@ -10822,52 +10864,52 @@ Match them anyway and stamp both ends with </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="143"/>
-        <location filename="../widgets/transfer_widget.py" line="153"/>
-        <location filename="../widgets/transfer_widget.py" line="176"/>
-        <location filename="../widgets/transfer_widget.py" line="181"/>
-        <location filename="../widgets/transfer_widget.py" line="192"/>
+        <location filename="../widgets/transfer_widget.py" line="146"/>
+        <location filename="../widgets/transfer_widget.py" line="156"/>
+        <location filename="../widgets/transfer_widget.py" line="179"/>
+        <location filename="../widgets/transfer_widget.py" line="184"/>
         <location filename="../widgets/transfer_widget.py" line="195"/>
+        <location filename="../widgets/transfer_widget.py" line="198"/>
         <source>Incomplete data</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="144"/>
+        <location filename="../widgets/transfer_widget.py" line="147"/>
         <source>At least one account of the transfer must be chosen</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="154"/>
+        <location filename="../widgets/transfer_widget.py" line="157"/>
         <source>An asset isn&apos;t chosen for the asset transfer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="177"/>
+        <location filename="../widgets/transfer_widget.py" line="180"/>
         <source>A fee is chosen for the transfer, but the fee amount is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="182"/>
+        <location filename="../widgets/transfer_widget.py" line="185"/>
         <source>An asset isn&apos;t chosen to pay the gas in</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="192"/>
+        <location filename="../widgets/transfer_widget.py" line="195"/>
         <source>An account isn&apos;t chosen for fee collection from</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="195"/>
+        <location filename="../widgets/transfer_widget.py" line="198"/>
         <source>Can&apos;t collect fee from an account without organization assigned</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="185"/>
+        <location filename="../widgets/transfer_widget.py" line="188"/>
         <source>Wrong data</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="186"/>
+        <location filename="../widgets/transfer_widget.py" line="189"/>
         <source>A fee may be paid in a crypto asset only</source>
         <translation></translation>
     </message>
@@ -10996,90 +11038,90 @@ Match them anyway and stamp both ends with </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="121"/>
+        <location filename="../reports/unsettled_transfers.py" line="122"/>
         <source>Transfers settled: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="123"/>
+        <location filename="../reports/unsettled_transfers.py" line="124"/>
         <source>Nothing could be settled on its own - what is left needs Match or Assign.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="203"/>
-        <location filename="../reports/unsettled_transfers.py" line="211"/>
+        <location filename="../reports/unsettled_transfers.py" line="204"/>
+        <location filename="../reports/unsettled_transfers.py" line="212"/>
         <source>This leg can&apos;t be written off: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="205"/>
+        <location filename="../reports/unsettled_transfers.py" line="206"/>
         <source>Record this as a dust attack?
 
 The asset stays in the account it arrived on, at a cost basis of zero, and the leg stops waiting for a sender it never had.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="228"/>
+        <location filename="../reports/unsettled_transfers.py" line="229"/>
         <source>Write off every arrival from a poisoned address?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="229"/>
+        <location filename="../reports/unsettled_transfers.py" line="230"/>
         <source>legs are recorded as dust attacks. Each asset stays in the account it arrived on, at a cost basis of zero, and none of them waits for a sender again.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="237"/>
+        <location filename="../reports/unsettled_transfers.py" line="238"/>
         <source>Some legs could not be written off: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="267"/>
+        <location filename="../reports/unsettled_transfers.py" line="268"/>
         <source>Match cross-chain legs...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="269"/>
+        <location filename="../reports/unsettled_transfers.py" line="270"/>
         <source>Assign an account...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="270"/>
+        <location filename="../reports/unsettled_transfers.py" line="271"/>
         <source>Assign a staked position...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="271"/>
+        <location filename="../reports/unsettled_transfers.py" line="272"/>
         <source>Match with another leg...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="272"/>
+        <location filename="../reports/unsettled_transfers.py" line="273"/>
         <source>Convert into a swap...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="273"/>
+        <location filename="../reports/unsettled_transfers.py" line="274"/>
         <source>Convert into a bridge...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="276"/>
+        <location filename="../reports/unsettled_transfers.py" line="277"/>
         <source>Write off as dust...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="280"/>
+        <location filename="../reports/unsettled_transfers.py" line="281"/>
         <source>Why is this listed?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="288"/>
+        <location filename="../reports/unsettled_transfers.py" line="289"/>
         <source>Write off all poisoning arrivals</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/unsettled_transfers.py" line="297"/>
+        <location filename="../reports/unsettled_transfers.py" line="298"/>
         <source>This transfer is settled - both of its ends are known - so nothing here can pair it. What is missing is what the asset COST: the two accounts are kept in different currencies, and nothing stated the value the asset arrived at, so its lots opened at zero and the whole of a later sale would be taxed as gain.
 
 A zero may well be right. If it isn&apos;t, open this transfer in the operations list and state the amount it arrived for, in the currency of the receiving account.</source>
@@ -11218,6 +11260,16 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
         <source>Save...</source>
         <translation></translation>
     </message>
+    <message>
+        <location filename="../ui/reports/unsettled_transfers_report.ui" line="195"/>
+        <source>What the row colors mean</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/unsettled_transfers_report.ui" line="198"/>
+        <source>?</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>UpdateQuotesDlg</name>
@@ -11256,17 +11308,17 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
 <context>
     <name>WalletSelectDialog</name>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="33"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="31"/>
         <source>Fetch blockchain transactions</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="37"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="35"/>
         <source>Select wallets to fetch:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="38"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="36"/>
         <source>All wallets</source>
         <translation></translation>
     </message>
