@@ -266,3 +266,30 @@ def test_transfer_without_any_account_is_refused(prepare_db, monkeypatch):
 
     assert not widget._validated()
     assert len(warnings) == 1
+
+
+# An unsettled transfer has one of its ends NULL. The selector of that end must come up empty, not keep the account
+# of the record shown before it: a QDataWidgetMapper writes a null value into the widget's user property, and an
+# 'int' property simply refuses it, leaving the previous selection on screen - see the string-property workaround
+# for QTBUG-115144 the other selectors of this form already use.
+def test_unknown_leg_is_shown_empty(prepare_db):
+    wallet, other = _make_accounts()
+    create_transfers([
+        (1640995200, wallet.id(), Decimal('50000'), other.id(), Decimal('50000'), None),   # both ends known
+    ])
+    LedgerTransaction.create_new(LedgerTransaction.Transfer,
+                                 {"withdrawal_timestamp": 1641081600, "withdrawal_account": wallet.id(),
+                                  "withdrawal": Decimal('700'), "deposit_timestamp": 1641081600,
+                                  "deposit_account": None, "deposit": Decimal('700')})        # deposit end unknown
+    settled_oid = JalDB()._read("SELECT oid FROM transfers WHERE deposit_account IS NOT NULL")
+    pending_oid = JalDB()._read("SELECT oid FROM transfers WHERE deposit_account IS NULL")
+
+    widget = TransferWidget()
+
+    widget.set_id(settled_oid)
+    assert widget.ui.to_account_widget.selected_id == other.id()
+
+    widget.set_id(pending_oid)
+    assert widget.ui.to_account_widget.selected_id == 0, "unknown leg kept the account of the previous record"
+    assert widget.ui.to_account_widget.name.text() == ''
+    assert widget.ui.to_currency.text() == widget.ui.to_currency.EMPTY

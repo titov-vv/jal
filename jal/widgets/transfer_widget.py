@@ -83,10 +83,13 @@ class TransferWidget(AbstractOperationDetails):
         self.mapper.currentIndexChanged.connect(self.record_changed)
 
         self.mapper.addMapping(self.ui.withdrawal_timestamp, self.model.fieldIndex("withdrawal_timestamp"))
-        self.mapper.addMapping(self.ui.from_account_widget, self.model.fieldIndex("withdrawal_account"))
+        # An unsettled transfer keeps one of its ends NULL, and a NULL is refused by the 'int' user property of the
+        # selector - which leaves the account of the record shown before it on screen. The string property takes it
+        # (empty text = nothing chosen), so both ends are mapped through it, as the other selectors below are.
+        self.mapper.addMapping(self.ui.from_account_widget, self.model.fieldIndex("withdrawal_account"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.from_currency, self.model.fieldIndex("withdrawal_account"))
         self.mapper.addMapping(self.ui.deposit_timestamp, self.model.fieldIndex("deposit_timestamp"))
-        self.mapper.addMapping(self.ui.to_account_widget, self.model.fieldIndex("deposit_account"))
+        self.mapper.addMapping(self.ui.to_account_widget, self.model.fieldIndex("deposit_account"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.to_currency, self.model.fieldIndex("deposit_account"))
         self.mapper.addMapping(self.ui.CostBasisCurrencyLabel, self.model.fieldIndex("deposit_account"))
         self.mapper.addMapping(self.ui.fee_account_widget, self.model.fieldIndex("fee_account"), QByteArray("selected_id_str"))
