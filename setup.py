@@ -25,7 +25,7 @@ setup(
     long_description=read('jal/pypi_description.md'),
     packages=find_packages(),
     package_dir={'jal': 'jal'},
-    python_requires=">=3.8.1",
+    python_requires=">=3.9",
     url="https://github.com/titov-vv/jal",
     classifiers=[
         "Development Status :: 3 - Alpha",

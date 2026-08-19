@@ -46,7 +46,7 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 JAL offers cross-platform compatibility and portability. Here's how to get started:
 1. **From GitHub Repository**:
    - Clone repository locally with `git https://github.com/titov-vv/jal.git`
-   - Ensure you have Python 3.8.1 or later and meet all dependencies in `requirements.txt`.
+   - Ensure you have Python 3.9 or later and meet all dependencies in `requirements.txt`.
    - Tips Windows users: Ensure Python installation from ![the official site](https://www.python.org/) and turn on options `pip installation` and `add Python to environment variables` during the installation. Reboot to apply changes.
    - Use `run.py` to launch the application.
 2. **Using pip**:
