@@ -257,6 +257,58 @@ def test_rebase_residue_finer_than_account_precision_is_refused(prepare_db_fifo)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# COMPLETING A HALTED LEDGER. Booking the residue is only half of it: the halt is where the numbers are, so the pass
+# rebuilds, reads what it stopped on, books it and rebuilds again - which is what turns a stopped ledger back into a
+# complete one, whatever route stopped it.
+def test_a_halted_ledger_is_completed_by_absorbing_its_residues(prepare_db_fifo):
+    JalAccount(1).set_data(AccountData.Precision, 18)   # every ledger posting is rounded to it
+    create_stocks([('USDG', 'Stablecoin'), ('aEthUSDG', 'Lending receipt')], currency_id=2)
+    t_buy, t_supply, t_exit = d2t(220101), d2t(220201), d2t(220301)
+    create_trades(1, [(t_buy, t_buy, 4, Decimal('50246.880296'), Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(t_supply, 4, '50246.880296', 5, '50246.880296')])
+    create_conversions(1, [(t_exit, 5, '50246.880299', 4, '50251.319007')])
+    ledger = Ledger()
+    with pytest.raises(LedgerAssetShortage):
+        ledger.rebuild(from_timestamp=0)
+
+    assert ledger.absorb_residues() == 1
+    assert ledger.stopped_by is None                                    # the rebuild after it ran to the end
+    assert JalAccount(1).get_asset_amount(t_exit, 5) == Decimal('0')    # the whole position was converted
+    assert JalAccount(1).get_asset_amount(t_exit, 4) == Decimal('50251.319007')
+
+
+# A shortage the reconciler refuses ends the pass instead of being worked around: the ledger stays exactly where it
+# stopped and nothing is written, which is what a missed transaction has to look like.
+def test_a_shortage_that_is_no_residue_leaves_the_ledger_stopped(prepare_db_fifo):
+    JalAccount(1).set_data(AccountData.Precision, 18)   # every ledger posting is rounded to it
+    create_stocks([('USDG', 'Stablecoin'), ('aEthUSDG', 'Lending receipt')], currency_id=2)
+    t_buy, t_supply, t_exit = d2t(220101), d2t(220201), d2t(220301)
+    create_trades(1, [(t_buy, t_buy, 4, Decimal('50246.880296'), Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(t_supply, 4, '50246.880296', 5, '50246.880296')])
+    create_conversions(1, [(t_exit, 5, '50247', 4, '50251.319007')])    # 0.119704 missing - a supply never imported
+    ledger = Ledger()
+    with pytest.raises(LedgerAssetShortage):
+        ledger.rebuild(from_timestamp=0)
+
+    assert ledger.absorb_residues() == 0
+    assert isinstance(ledger.stopped_by, LedgerAssetShortage)
+    assert JalDB._read("SELECT COUNT(*) FROM asset_payments") == 0
+
+
+# A stop is taken between the passes, each of which is a full rebuild, and leaves the books as they were
+def test_a_stop_ends_the_absorption_before_anything_is_booked(prepare_db_fifo):
+    JalAccount(1).set_data(AccountData.Precision, 18)   # every ledger posting is rounded to it
+    create_stocks([('USDG', 'Stablecoin'), ('aEthUSDG', 'Lending receipt')], currency_id=2)
+    t_buy, t_supply, t_exit = d2t(220101), d2t(220201), d2t(220301)
+    create_trades(1, [(t_buy, t_buy, 4, Decimal('50246.880296'), Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(t_supply, 4, '50246.880296', 5, '50246.880296')])
+    create_conversions(1, [(t_exit, 5, '50246.880299', 4, '50251.319007')])
+
+    assert Ledger().absorb_residues(interrupted=lambda: True) == 0
+    assert JalDB._read("SELECT COUNT(*) FROM asset_payments") == 0
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # REALIZING ACCRUED INTEREST. A rebasing position also earns real interest, and unlike the truncation crumb above it
 # is a quantity of real value: the position these figures come from had booked 7637.22561 aEthUSDG against 7810.33702
 # really held on chain - 2.27%, and $173. Nothing about its SIZE distinguishes that from a transaction that was

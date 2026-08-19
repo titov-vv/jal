@@ -10,7 +10,8 @@ from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
-from jal.db.operations import LedgerTransaction, LedgerError
+from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage
+from jal.db.rebase_residue import RebaseResidue
 from jal.widgets.helpers import ts2dt, ts2d, set_date_formats
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
@@ -84,6 +85,7 @@ class Ledger(QObject, JalDB):
     show_progress = Signal(bool)     # Signal is emitted when ledger wants to start or stop display progress
     update_progress = Signal(float)  # Signal is emitted to report current % of execution
     SILENT_REBUILD_THRESHOLD = 1000
+    MAX_ABSORBED_RESIDUES = 32       # Loop protection. A rebase residue is booked one per closing of a position, so a ledger may legitimately hold several.
 
     def __init__(self):
         super().__init__()
@@ -92,7 +94,7 @@ class Ledger(QObject, JalDB):
         self.values = LedgerAmounts("value_acc")      # together with corresponding value
         # The LedgerError that ended the last rebuild, or None when it ran to the end. The message of it is logged
         # for the user either way; the exception itself is kept so that a caller who knows how to make the stop good
-        # can act on what it carries (ChainFetchers._absorb_rebase_residue) instead of parsing the text back out.
+        # can act on what it carries (absorb_residues() below) instead of parsing the text back out.
         self.stopped_by = None
 
     # Returns timestamp of last operations that were calculated into ledger
@@ -311,6 +313,36 @@ class Ledger(QObject, JalDB):
                          self.tr(", new frontier: ") + f"{ts2dt(last_timestamp)}")
 
         self.updated.emit()
+
+    # Finishes a ledger that halted one crumb short of the withdrawal that closes a rebasing position - see
+    # RebaseResidue for what is and isn't booked here. The pass drives the rebuild itself because the halt is the
+    # only place the numbers exist: the ledger reports where it stopped and by how much, the residue is booked, and
+    # the next rebuild resumes past it. A position opened and closed several times leaves one residue per closing,
+    # so this repeats until the ledger completes, refuses or fails - never more times than there are conversions to
+    # stop at. Returns how many residues were booked.
+    # 'interrupted' is asked between the passes, each of which is a full rebuild, and tells that the caller was
+    # stopped; a Stop pressed on the ledger itself is taken through on_cancel() and needs no callback.
+    def absorb_residues(self, interrupted=None) -> int:
+        absorbed = 0
+        reconciler = RebaseResidue()
+        for _ in range(self.MAX_ABSORBED_RESIDUES):
+            try:
+                self.rebuild()
+            except LedgerError:
+                pass          # under pytest rebuild() re-raises what it stopped on; 'stopped_by' is set either way
+            except Exception as error:   # a failure here must not fail whatever asked for the rebuild
+                logging.warning(self.tr("Rebase residue could not be checked: ") + f"{error}")
+                return absorbed
+            if self._cancelled or (interrupted is not None and interrupted()):
+                logging.warning(self.tr("Absorption of rebase residues was interrupted by user"))
+                return absorbed
+            if not isinstance(self.stopped_by, LedgerAssetShortage):
+                return absorbed   # the ledger is complete, or stopped on something this can't make good
+            if not reconciler.absorb(self.stopped_by):
+                return absorbed
+            absorbed += 1
+        logging.warning(self.tr("Too many rebase residues in a row - the ledger was left incomplete"))
+        return absorbed
 
     def showRebuildDialog(self, parent):
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())

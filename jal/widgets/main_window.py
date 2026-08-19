@@ -13,7 +13,7 @@ from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget, TaxMergeDialog
-from jal.widgets.helpers import (dependency_present, menu_label, menu_mnemonic,
+from jal.widgets.helpers import (dependency_present, menu_label, menu_mnemonic, ts2dt,
                                 restore_splitters, save_splitters, save_columns, refresh_date_formats)
 from jal.widgets.icons import JalIcon, AUX_PREFIX, CHAIN_PREFIX
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog, TokenBlacklistDialog
@@ -24,6 +24,10 @@ from jal.db.db import JalDB
 from jal.db.backup_restore import JalBackup
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.symbol import JalSymbol
+from jal.db.helpers import remove_exponent
+from jal.db.operations import LedgerAssetShortage
+from jal.db.rebase_residue import RebaseResidue
 from jal.db.settings import JalSettings
 from jal.net.web_request import WebRequest
 from jal.net.downloader import QuoteDownloader
@@ -47,6 +51,7 @@ class MainWindow(QMainWindow):
         self.running = False
         self._operations_running = 0   # Number of long operations in flight - see onToggleProgressDisplay()
         self._close_requested = False  # The user asked to close the window while an operation was running
+        self._repairing = False        # A rebase residue is being absorbed - see offerLedgerRepair()
         self.ui = Ui_JAL_MainWindow()
         self.ui.setupUi(self)
         self.restoreGeometry(base64.decodebytes(JalSettings().getValue('WindowGeometry', '').encode('utf-8')))
@@ -135,6 +140,7 @@ class MainWindow(QMainWindow):
         self.downloader.show_progress.connect(self.onToggleProgressDisplay)
         self.downloader.update_progress.connect(self.onUpdatePorgressDisplay)
         self.ledger.updated.connect(self.updateWidgets)
+        self.ledger.updated.connect(self.offerLedgerRepair, Qt.ConnectionType.QueuedConnection)
         self.ledger.show_progress.connect(self.onToggleProgressDisplay)
         self.ledger.update_progress.connect(self.onUpdatePorgressDisplay)
         self.statements.load_completed.connect(self.onStatementImport)
@@ -381,6 +387,35 @@ class MainWindow(QMainWindow):
     def showPreferences(self):
         if PreferencesDialog(parent=self).exec():
             refresh_date_formats()
+
+    # A ledger that halted on a rebasing residue can be finished, and the halt carries the numbers to do it with - so
+    # it is offered here instead of being left in the log as a dead end. Asked and not done silently, because it
+    # books an operation and a rebuild is not an import: the fetch path absorbs without asking because importing is
+    # the consent, a rebuild has none.
+    # The connection is queued, so this runs after the rebuild that raised it has returned rather than inside it.
+    @Slot()
+    def offerLedgerRepair(self):
+        if self._repairing or self._operations_running:
+            return    # the rebuilds this drives raise it again, and a fetch in flight absorbs residues on its own
+        shortage = self.ledger.stopped_by
+        if not isinstance(shortage, LedgerAssetShortage):
+            return
+        reconciler = RebaseResidue()
+        if reconciler.refusal_to_absorb(shortage) and reconciler.refusal_to_realize(shortage):
+            return    # a shortage of another kind - the ledger stays stopped and the log says where
+        question = self.tr("Ledger stopped at {} on account '{}': {} {} is missing.\n\n"
+                           "This looks like the quantity a rebasing position gained without reporting it, which JAL "
+                           "can book to complete the ledger. Book it and continue?").format(
+            ts2dt(shortage.operation.timestamp()), JalAccount(shortage.account_id).name(),
+            remove_exponent(shortage.shortage()), JalSymbol(shortage.symbol_id).symbol())
+        if QMessageBox().warning(self, self.tr("Ledger is incomplete"), question,
+                                 QMessageBox.Yes, QMessageBox.No) != QMessageBox.Yes:
+            return
+        self._repairing = True
+        try:
+            self.ledger.absorb_residues()
+        finally:
+            self._repairing = False
 
     @Slot()
     def updateWidgets(self):
