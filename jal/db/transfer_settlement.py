@@ -36,7 +36,7 @@ from jal.widgets.helpers import ts2dt
 # The other shape of the same problem - a record that knows BOTH ends meeting a stored pending leg - cannot be settled
 # here, because within one import "A -> ?" and "A -> B" of the same transaction and amount is exactly what a multisend
 # to two addresses looks like. It is handled at import time instead, bounded to legs stored by an EARLIER import:
-# Transfer.find_pending_counterpart() and Statement._transfer_completes_pending().
+# Transfer.find_pending_counterpart() and Statement._complete_pending_transfer().
 class TransferSettlement(JalDB):
     def __init__(self):
         super().__init__()

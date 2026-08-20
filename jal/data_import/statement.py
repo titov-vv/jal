@@ -171,6 +171,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         # The interactive cross-chain token prompt can't run under pytest; tests set the desired outcome here as a
         # (action, target_asset_id) tuple. The default never merges or discards silently - it creates a new asset.
         self._token_action_for_tests = (Statement.TOKEN_CREATE_NEW, 0)
+        self._skipped = {}           # {reason: count} of records that were recognized but not imported
         self._section_loaders = {
             JSF.PERIOD: self._check_period,
             JSF.ASSETS: self._import_assets,
@@ -219,6 +220,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 logging.warning(self.tr("Debug information is saved in ") + dump_name)
             except Exception as e:
                 logging.error(self.tr("Failed to write statement dump into: ") + dump_name + ": " + str(e))
+
+    # Records that something was recognized but produced no operation. Nothing is dropped silently: the counts are
+    # reported back to the user, so a record the import could not place is visible instead of just missing.
+    def _skip(self, reason: str, identifier: str = '') -> None:
+        self._skipped[reason] = self._skipped.get(reason, 0) + 1
+        logging.debug(f"Record is not imported ({reason}): {identifier}")
+
+    def skipped(self) -> dict:
+        return dict(self._skipped)
 
     # Returns a specific capabilities that is supported by some statement modules
     @staticmethod
@@ -765,7 +775,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 operation.pop('fee_symbol_id', None)   # A zero fee has no asset to be paid in either
             if stored_before and self._transfer_already_imported(operation, stored_before):
                 continue
-            if stored_before and self._transfer_completes_pending(operation, stored_before):
+            if stored_before and self._complete_pending_transfer(operation, stored_before) != self.NOT_PENDING:
                 continue
             LedgerTransaction.create_new(LedgerTransaction.Transfer, operation, duplicate_before=duplicate_before)
 
@@ -806,21 +816,35 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             stored.update_fee(operation['fee'], operation.get('fee_account', 0), operation.get('fee_symbol_id'))
         return True
 
-    # True if this record completes a transfer that an earlier import stored knowing only ONE of its ends - the
-    # movement is then already in the database and the end it was missing has just been filled in, so there is
-    # nothing left to store.
+    # What happened when this record met a transfer that an earlier import stored knowing only ONE of its ends: the
+    # movement was not stored that way at all, or it was and is now complete, or it was and could not be completed.
     #
+    # The third outcome is the reason these are three answers rather than two. The stored leg is found by the
+    # transaction the movement happened in, so meeting it is an identification and not a resemblance - and if the
+    # completion is then refused, storing this record as a new transfer would put the very same movement into the
+    # ledger twice, on top of the leg that is still sitting there pending. Whatever the refusal was about, a second
+    # copy is never the answer to it.
+    NOT_PENDING, SETTLED, REFUSED = 0, 1, 2
+
     # This is where a record that names both ends settles a pending leg; two records that each name only one end are
     # paired after the import instead, by TransferSettlement. The two can't be one mechanism: what tells this case
     # apart from a multisend paying two addresses is that the pending leg was stored EARLIER, which only holds while
     # the import that writes the completing record is running - see Transfer.find_pending_counterpart().
-    @staticmethod
-    def _transfer_completes_pending(operation: dict, stored_before: int) -> bool:
+    def _complete_pending_transfer(self, operation: dict, stored_before: int) -> int:
         oid = Transfer.find_pending_counterpart(operation, stored_before)
         if not oid:
-            return False
+            return self.NOT_PENDING
         stored = LedgerTransaction.get_operation(LedgerTransaction.Transfer, oid, Transfer.Outgoing)
-        return stored.settle_with(operation)
+        if stored.settle_with(operation):
+            return self.SETTLED
+        # settle_with() has already said in the log what it objected to, so only the leg is named here. It stays
+        # pending and visible in the worklist of unsettled movements, which is where it can be dealt with - and this
+        # record is deliberately left out of the ledger rather than added beside it.
+        self._skip(self.tr("transfers that could not be settled with the leg already stored"),
+                   operation.get('number', ''))
+        logging.error(self.tr("Transfer was not settled and was not stored, its leg stays pending: ")
+                      + f"#{oid} {operation.get('number', '')}")
+        return self.REFUSED
 
     def _import_trades(self, trades):
         # A trade oder can be filled in several identical trades (depending on exchange), so the duplicate check

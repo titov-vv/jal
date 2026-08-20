@@ -71,7 +71,6 @@ class ChainFetcher(Statement):
         super().__init__()
         self._account = JalAccount(0)
         self._filter = TokenFilter()
-        self._skipped = {}           # {reason: count} of transactions that were recognized but not imported
         self._counterparty_accounts = {}   # db account id -> statement account id of counterparty wallets
         self._page_count = 0         # pages read from the API so far during the current fetch(), see _report_page()
         self._cancelled = False      # Set by cancel() when the user presses 'Stop' - see _wait_for()
@@ -91,15 +90,6 @@ class ChainFetcher(Statement):
 
     def _store_cursor(self, cursor: str) -> None:
         self._account.set_data(AccountData.SyncCursor, str(cursor))
-
-    # Records that a transaction was recognized but produced no operation. Nothing is dropped silently: the counts
-    # are reported back to the user, so an unsupported kind of transaction is visible instead of just missing.
-    def _skip(self, reason: str, tx_hash: str = '') -> None:
-        self._skipped[reason] = self._skipped.get(reason, 0) + 1
-        logging.debug(f"Transaction is not imported ({reason}): {tx_hash}")
-
-    def skipped(self) -> dict:
-        return dict(self._skipped)
 
     # Fetches everything that happened on the account since its stored cursor and builds the JSF structure.
     # Implemented by each chain; must return the new cursor value (or '' to leave the old one untouched).

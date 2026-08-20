@@ -453,6 +453,28 @@ def test_a_record_of_both_ends_completes_a_leg_stored_earlier(wallets, monkeypat
     assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
 
 
+# ... but completing it can be refused, and then the movement must not be stored a second time instead. The leg was
+# found by the transaction it happened in, so it IS this movement - and putting a fresh transfer beside a pending leg
+# of the same transaction credits the asset twice while leaving the leg pending for a counterpart it already met.
+# An arrival dated before its own departure is how this happens in practice, two clocks disagreeing by a few hours.
+@pytest.mark.parametrize("pending, complete, stored_day, record_day", [
+    ([0, 2, 2], [1, 2, 1], 210103, 210104),      # a leg that only knows where it arrived, departing later
+    ([1, 0, 1], [1, 2, 1], 210104, 210103),      # ... and one that only knows where it left, arriving earlier
+])
+def test_a_refused_settlement_does_not_store_the_movement_twice(wallets, monkeypatch, pending, complete,
+                                                                stored_day, record_day):
+    _import(monkeypatch, [_record(pending) | {"timestamp": d2t(stored_day)}])
+    assert len(_stored()) == 1
+
+    statement = _statement(monkeypatch)
+    statement._import_transfers([_record(complete) | {"timestamp": d2t(record_day)}])
+
+    rows = _stored()
+    assert len(rows) == 1                                    # nothing was added beside the leg
+    assert Transfer(int(rows[0]['oid']), Transfer.Outgoing).is_pending()   # which is still waiting for its other end
+    assert sum(statement.skipped().values()) == 1            # and the import says so rather than passing it over
+
+
 # ... and the record that completes it may name another LISTING of the asset than the leg it completes: the wallet on
 # the other side is fetched on another chain, or the exchange keeps its books in another currency. What makes the two
 # one movement is the ASSET, exactly as it is for the pairing above.
