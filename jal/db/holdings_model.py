@@ -1,6 +1,5 @@
 from __future__ import annotations
 import logging
-from datetime import datetime, timezone
 from decimal import Decimal
 
 from PySide6.QtCore import Qt
@@ -255,7 +254,7 @@ class HoldingsModel(ReportTreeModel):
             for asset_data in assets:
                 asset = asset_data['asset']
                 quote_ts, quote = asset.quote(self._date, account.currency())
-                quote_age = int((datetime.now(tz=timezone.utc) - datetime.fromtimestamp(quote_ts, tz=timezone.utc)).total_seconds() / 86400)
+                quote_age = int((now_ts() - quote_ts) / 86400)
                 since, payments_amount = self.get_asset_history_payments(account, asset, self._date)
                 # What the chain holds beyond what the books do - see JalChainBalance.accrual(). Only 'qty' moves:
                 # 'value_i' is what the position COST and no part of that cost belongs to the accrued quantity, so

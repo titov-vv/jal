@@ -1,11 +1,10 @@
 import logging
 import math
-from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QDate
 from jal.constants import AssetLocation, AssetData, BookAccount, PredefinedAsset, SymbolId
 from jal.db.db import JalDB
-from jal.db.helpers import format_decimal, year_begin, year_end, day_begin
+from jal.db.helpers import format_decimal, year_begin, year_end, day_begin, now_ts
 from jal.db.country import JalCountry
 from jal.db.tag import JalTag
 from jal.widgets.helpers import ts2d
@@ -392,9 +391,7 @@ class JalAsset(JalDB):
     def days2expiration(self) -> int:
         if self._expiry == 0:
             return 0
-        expiry_date = datetime.fromtimestamp(self._expiry, tz=timezone.utc)
-        days_remaining = int((expiry_date - datetime.now(tz=timezone.utc)).total_seconds() / 86400)
-        return days_remaining
+        return int((self._expiry - now_ts()) / 86400)
 
     def principal(self) -> Decimal:
         return self._principal

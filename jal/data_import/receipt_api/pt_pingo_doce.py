@@ -3,9 +3,10 @@ import json
 import logging
 import requests
 from decimal import Decimal
-from PySide6.QtCore import Qt, QDateTime, QTimeZone
+from PySide6.QtCore import Qt, QDateTime
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
+from jal.db.helpers import now_dt
 from jal.db.settings import JalSettings
 from jal.ui.ui_login_pingo_doce_dlg import Ui_LoginPingoDoceDialog
 
@@ -44,7 +45,7 @@ class ReceiptPtPingoDoce(ReceiptAPI):
     @staticmethod
     def parameters_list() -> dict:
         parameters = {
-            "Date/Time": QDateTime.currentDateTime(QTimeZone.UTC),
+            "Date/Time": now_dt(),
             "Shop #": 0,
             "Total": Decimal('0')
         }

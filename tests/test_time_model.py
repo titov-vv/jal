@@ -12,8 +12,12 @@ import pytest
 from PySide6.QtCore import QDate, QDateTime, QTimeZone
 from PySide6.QtWidgets import QWidget
 
+from constants import PredefinedAsset
+from jal.db.asset import JalAsset
+from jal.db.helpers import now_ts, now_dt
 from jal.widgets.helpers import ts2axis, axis2ts, ts2d
 from tests.fixtures import project_root, data_path, prepare_db
+from tests.helpers import create_assets
 
 
 # A test here pins the machine to a fixed zone, because what is under test is precisely the difference between the
@@ -117,3 +121,29 @@ def test_a_date_editor_keeps_the_day_it_was_given(path, owner):
             assert editor.date().toString('yyyy-MM-dd') == '2025-09-25', element.get("name")
             editor.setDate(QDate(2025, 9, 26))                              # ... and the user moves it a day on
             assert editor.dateTime().toSecsSinceEpoch() == stored + 86400, element.get("name")  # setModelData() reads
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# 'Now' has one spelling in the application - now_ts() - and it is the wall clock, because that is the clock every
+# stored timestamp is written on. Anything that measures a stored value against the true UTC instant instead is out
+# by the local offset: a quote goes stale hours early, a bond expires on the wrong side of midnight, and a chain
+# balance read this evening lands beyond the end of today.
+def test_now_is_the_wall_clock_and_not_the_instant(fixed_tz):
+    assert now_ts() - int(datetime.now(tz=timezone.utc).timestamp()) == pytest.approx(fixed_tz, abs=1)
+
+
+# An editor is pre-filled with the same moment that would be stored for it, or an operation entered without touching
+# the date field is dated an offset away from when the user entered it.
+def test_now_dt_is_the_moment_now_ts_would_store(fixed_tz):
+    assert now_dt().toSecsSinceEpoch() == pytest.approx(now_ts(), abs=1)
+
+
+# The days left to an expiry are counted between two moments on the same clock. Ten days less a minute is nine days
+# left, whatever the machine's offset - mixing the clocks turns it back into ten.
+def test_days_to_expiration_counts_on_the_stored_clock(prepare_db, fixed_tz):
+    create_assets([('XYZ', 'Test bond', '', 2, PredefinedAsset.Bond, 0)])   # asset id 4
+    asset = JalAsset(4)
+    asset.update_data({'expiry': now_ts() + 10 * 86400 - 60})
+    assert asset.days2expiration() == 9
+    asset.update_data({'expiry': now_ts() - 2 * 86400 - 60})
+    assert asset.days2expiration() == -2

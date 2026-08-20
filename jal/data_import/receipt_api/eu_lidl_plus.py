@@ -5,11 +5,12 @@ import requests
 import requests_oauthlib
 from urllib import parse
 from oauthlib.oauth2 import MobileApplicationClient
-from PySide6.QtCore import Qt, Slot, Signal, QMetaObject, QDateTime, QTimeZone, QUrl
+from PySide6.QtCore import Qt, Slot, Signal, QMetaObject, QDateTime, QUrl
 from PySide6.QtWidgets import QDialog, QInputDialog, QMessageBox
 from PySide6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage, QWebEngineUrlScheme, \
     QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
+from jal.db.helpers import now_dt
 from jal.db.settings import JalSettings
 from jal.ui.ui_login_lidl_plus_dlg import Ui_LoginLidlPlusDialog
 
@@ -54,7 +55,7 @@ class ReceiptEuLidlPlus(ReceiptAPI):
     @staticmethod
     def parameters_list() -> dict:
         parameters = {
-            "Date": QDateTime.currentDateTime(QTimeZone.UTC).date(),
+            "Date": now_dt().date(),
             "Shop #": 0,
             "Register #": 0,
             "Sequence #": 0

@@ -5,10 +5,11 @@ import requests
 import time
 from urllib import parse
 from decimal import Decimal
-from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime, QTimeZone
+from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime
 from PySide6.QtWidgets import QApplication, QDialog, QDialogButtonBox
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
+from jal.db.helpers import now_dt
 from jal.db.settings import JalSettings
 from jal.net.web_request import WebRequest
 from jal.ui.ui_login_fns_dlg import Ui_LoginFNSDialog
@@ -59,7 +60,7 @@ class ReceiptRuFNS(ReceiptAPI):
     @staticmethod
     def parameters_list() -> dict:
         parameters = {
-            "Дата/время": QDateTime.currentDateTime(QTimeZone.UTC),
+            "Дата/время": now_dt(),
             "ФН": '',
             "ФД": '',
             "ФП": '',

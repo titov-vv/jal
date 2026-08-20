@@ -1,6 +1,6 @@
 from decimal import Decimal, InvalidOperation
 
-from PySide6.QtCore import Qt, QDateTime
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFormLayout, QLineEdit, QDateTimeEdit, QMessageBox)
 
 from jal.constants import PredefinedAgents, PredefinedCategory
@@ -8,7 +8,7 @@ from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.common_models import AccountListModel, PeerTreeModel
 from jal.db.deposit import JalDepositBox
-from jal.db.helpers import now_ts
+from jal.db.helpers import now_ts, now_dt
 from jal.widgets.helpers import DateFormat
 from jal.db.operations import LedgerTransaction
 from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog
@@ -40,13 +40,13 @@ class NewDepositDialog(QDialog):
         self._opened.setTimeSpec(Qt.UTC)
         self._opened.setDisplayFormat(DateFormat.datetime(qt=True))
         self._opened.setCalendarPopup(True)
-        self._opened.setDateTime(QDateTime.currentDateTimeUtc())
+        self._opened.setDateTime(now_dt())
         layout.addRow(self.tr("Opened"), self._opened)
         self._ends = QDateTimeEdit(self)
         self._ends.setTimeSpec(Qt.UTC)
         self._ends.setDisplayFormat(DateFormat.date(qt=True))
         self._ends.setCalendarPopup(True)
-        self._ends.setDateTime(QDateTime.currentDateTimeUtc())
+        self._ends.setDateTime(now_dt())
         layout.addRow(self.tr("Ends"), self._ends)
         self._rate = QLineEdit(self)
         layout.addRow(self.tr("Interest rate, %"), self._rate)
@@ -97,7 +97,7 @@ class DepositTransferDialog(QDialog):
         self._timestamp.setTimeSpec(Qt.UTC)
         self._timestamp.setDisplayFormat(DateFormat.datetime(qt=True))
         self._timestamp.setCalendarPopup(True)
-        self._timestamp.setDateTime(QDateTime.currentDateTimeUtc())
+        self._timestamp.setDateTime(now_dt())
         layout.addRow(self.tr("Date/Time"), self._timestamp)
         self._amount = QLineEdit(self)
         # Closing returns whatever the deposit holds; the amount is shown but stays editable, because the balance
@@ -145,7 +145,7 @@ class DepositInterestDialog(QDialog):
         self._timestamp.setTimeSpec(Qt.UTC)
         self._timestamp.setDisplayFormat(DateFormat.datetime(qt=True))
         self._timestamp.setCalendarPopup(True)
-        self._timestamp.setDateTime(QDateTime.currentDateTimeUtc())
+        self._timestamp.setDateTime(now_dt())
         layout.addRow(self.tr("Date/Time"), self._timestamp)
         self._interest = QLineEdit(self)
         layout.addRow(self.tr("Interest"), self._interest)

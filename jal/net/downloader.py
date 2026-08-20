@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 from jal.ui.ui_quotes_update_dlg import Ui_UpdateQuotesDlg
 from jal.constants import AssetLocation, PredefinedAsset, SymbolId
 from jal.db.asset import JalAsset
-from jal.db.helpers import day_begin
+from jal.db.helpers import day_begin, now_ts
 from jal.db.symbol import JalSymbol
 from jal.net.asset_icons import icon_url, coingecko_icons_urls, parse_coingecko_icons
 from jal.net.chain_balances import ChainBalanceReader
@@ -297,7 +297,7 @@ class QuoteDownloader(QObject):
     # date, so there is no history to request and a date range would only suggest one exists. Nothing is back-dated:
     # the reading is stored under the moment it was taken and the reports decide what to do with it.
     def download_chain_balances(self, sources_list) -> None:
-        timestamp = int(datetime.now(tz=timezone.utc).timestamp())
+        timestamp = now_ts()
         try:
             reader = ChainBalanceReader()
             count = reader.read_staking_boxes(timestamp, locations=sources_list)

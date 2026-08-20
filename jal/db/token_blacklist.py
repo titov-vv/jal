@@ -1,8 +1,8 @@
 import logging
 from hashlib import sha256
-from datetime import datetime, timezone
 from jal.constants import AssetLocation
 from jal.db.db import JalDB
+from jal.db.helpers import now_ts
 from jal.universal_cache import UniversalCache
 
 
@@ -286,7 +286,7 @@ class JalTokenBlacklist(JalDB):
         address = normalize_address(location_id, address)
         if not address:
             raise ValueError("Can't blacklist a token without an address")
-        timestamp = int(datetime.now(tz=timezone.utc).timestamp())
+        timestamp = now_ts()
         cls._exec("INSERT OR REPLACE INTO token_blacklist(location_id, address, name_hint, added_ts, auto) "
                   "VALUES(:location_id, :address, :name_hint, :added_ts, :auto)",
                   [(":location_id", location_id), (":address", address), (":name_hint", name_hint),

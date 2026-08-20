@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal, InvalidOperation, localcontext
-from PySide6.QtCore import QLocale
+from PySide6.QtCore import QDateTime, QLocale, QTimeZone
 from jal.constants import Setup, JalGlobals
 
 
@@ -121,6 +121,11 @@ def year_end(timestamp: int) -> int:
 # Returns current timestamp
 def now_ts() -> int:
     return int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
+
+# The same moment as now_ts(), for a QDateTimeEdit that is kept on UTC - i.e. what an editor has to be pre-filled
+# with so that it opens showing the time the wall clock shows.
+def now_dt() -> QDateTime:
+    return QDateTime.fromSecsSinceEpoch(now_ts(), QTimeZone(0))
 
 # Returns timestamp of the first second of the day of given timestamp
 def day_begin(timestamp: int) -> int:
