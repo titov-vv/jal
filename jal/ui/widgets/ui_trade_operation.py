@@ -155,6 +155,7 @@ class Ui_TradeOperation(object):
         self.settlement_editor = QDateEdit(TradeOperation)
         self.settlement_editor.setObjectName(u"settlement_editor")
         self.settlement_editor.setCalendarPopup(True)
+        self.settlement_editor.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.layout.addWidget(self.settlement_editor, 1, 4, 1, 1)
 

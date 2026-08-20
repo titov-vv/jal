@@ -103,6 +103,7 @@ class Ui_AssetPaymentOperation(object):
         self.ex_date_editor.setMinimumDate(QDate(1970, 1, 1))
         self.ex_date_editor.setMaximumTime(QTime(23, 59, 59))
         self.ex_date_editor.setCalendarPopup(True)
+        self.ex_date_editor.setTimeSpec(Qt.TimeSpec.UTC)
 
         self.layout.addWidget(self.ex_date_editor, 1, 4, 1, 1)
 
