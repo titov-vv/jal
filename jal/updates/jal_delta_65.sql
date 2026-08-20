@@ -26,6 +26,10 @@ INSERT INTO residence (id, since_timestamp, currency_id)
     SELECT id, since_timestamp, currency_id FROM base_currency;
 DROP TABLE base_currency;
 --------------------------------------------------------------------------------
+DELETE FROM settings WHERE name IN ('DlgGeometry_Base currency', 'DlgViewState_Base currency');
+INSERT OR REPLACE INTO settings(name, value) VALUES('DlgGeometry_Residence', '');
+INSERT OR REPLACE INTO settings(name, value) VALUES('DlgViewState_Residence', '');
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=65 WHERE name='SchemaVersion';
 COMMIT;

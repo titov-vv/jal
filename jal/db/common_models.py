@@ -10,6 +10,7 @@ from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
 from jal.db.common_models_abstract import AbstractReferenceListModel, SqlTreeModel
 from jal.db.peer import JalPeer
+from jal.db.residence import JalResidence
 from jal.db.token_blacklist import JalTokenBlacklist
 from jal.widgets.helpers import ts2d
 from jal.widgets.icons import JalIcon
@@ -237,18 +238,31 @@ class QuotesListModel(AbstractReferenceListModel):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class BaseCurrencyListModel(AbstractReferenceListModel):
+# User location data - the reporting currency, the country and the wall clock in force from the date on.
+# A row may leave the country as 'N/A' and the timezone empty, which means it doesn't state that fact
+# and the last row that did still holds (see JalResidence).
+class ResidenceListModel(AbstractReferenceListModel):
     def __init__(self, parent=None):
         columns = [
             CmColumn("id", '', hide=True),
             CmColumn("since_timestamp", self.tr("Date"), sort=True, width=CmWidth.WIDTH_DATETIME, delegate_type=CmDelegate.DATE),
-            CmColumn("currency_id", self.tr("Currency"), width=CmWidth.WIDTH_STRETCH, default=True, delegate_type=CmDelegate.LOOKUP),
-            CmColumn("country_id", '', hide=True),
-            CmColumn("timezone", '', hide=True)
+            CmColumn("currency_id", self.tr("Currency"), default=True, delegate_type=CmDelegate.LOOKUP),
+            CmColumn("country_id", self.tr("Country"), width=CmWidth.WIDTH_STRETCH, delegate_type=CmDelegate.LOOKUP),
+            CmColumn("timezone", self.tr("Timezone"), width=CmWidth.WIDTH_STRETCH, delegate_type=CmDelegate.TIMEZONE)
         ]
         super().__init__("residence", columns, parent)
         self.set_default_values({'country_id': 0, 'timezone': ''})
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
+        # 'countries_ext' rather than 'countries' - it is the view that carries the name in the interface language
+        self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries_ext", "id", "name"))
+
+    # This dialog is the only writer of the table the residence timeline is built from, so the timeline that is kept
+    # in memory has to be dropped after any change made here.
+    def submitAll(self):
+        result = super().submitAll()
+        if result:
+            JalResidence.invalidate_cache()
+        return result
 
 
 # ----------------------------------------------------------------------------------------------------------------------

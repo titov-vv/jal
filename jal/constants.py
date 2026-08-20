@@ -85,6 +85,7 @@ class CmDelegate:
     REFERENCE = 'reference'
     TIMESTAMP = 'timestamp'  # a full timestamp shown as a date and the time of day
     DATE = 'date'            # a timestamp shown as a date alone, without the time of day
+    TIMEZONE = 'timezone'    # an IANA time zone name, picked from the ones the system knows
 
 @dataclass
 class CmColumn:    # column metadata for custom models

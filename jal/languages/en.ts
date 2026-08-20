@@ -1312,27 +1312,6 @@ Do you want to delete the account anyway?</source>
     </message>
 </context>
 <context>
-    <name>BaseCurrencyDialog</name>
-    <message>
-        <location filename="../widgets/reference_dialogs.py" line="657"/>
-        <source>Base currency</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
-    <name>BaseCurrencyListModel</name>
-    <message>
-        <location filename="../db/common_models.py" line="244"/>
-        <source>Date</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../db/common_models.py" line="245"/>
-        <source>Currency</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
     <name>BitcoinFetcher</name>
     <message>
         <location filename="../net/chain_fetchers/bitcoin.py" line="83"/>
@@ -3972,7 +3951,7 @@ one for ParentCo and second for Subsidiary</source>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="206"/>
-        <source>&amp;Base currency</source>
+        <source>&amp;Residence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7047,6 +7026,37 @@ One transaction moved this exact quantity as </source>
     <message>
         <location filename="../data_import/receipt_api/ru_fns.py" line="362"/>
         <source>ESIA login completed</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>ResidenceDialog</name>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="659"/>
+        <source>Residence</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>ResidenceListModel</name>
+    <message>
+        <location filename="../db/common_models.py" line="248"/>
+        <source>Date</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/common_models.py" line="249"/>
+        <source>Currency</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/common_models.py" line="250"/>
+        <source>Country</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/common_models.py" line="251"/>
+        <source>Timezone</source>
         <translation></translation>
     </message>
 </context>

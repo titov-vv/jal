@@ -1313,27 +1313,6 @@ Do you want to delete the account anyway?</source>
     </message>
 </context>
 <context>
-    <name>BaseCurrencyDialog</name>
-    <message>
-        <location filename="../widgets/reference_dialogs.py" line="657"/>
-        <source>Base currency</source>
-        <translation>Базовая валюта</translation>
-    </message>
-</context>
-<context>
-    <name>BaseCurrencyListModel</name>
-    <message>
-        <location filename="../db/common_models.py" line="244"/>
-        <source>Date</source>
-        <translation>Дата</translation>
-    </message>
-    <message>
-        <location filename="../db/common_models.py" line="245"/>
-        <source>Currency</source>
-        <translation>Валюта</translation>
-    </message>
-</context>
-<context>
     <name>BitcoinFetcher</name>
     <message>
         <location filename="../net/chain_fetchers/bitcoin.py" line="83"/>
@@ -3976,8 +3955,8 @@ one for ParentCo and second for Subsidiary</source>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="206"/>
-        <source>&amp;Base currency</source>
-        <translation>&amp;Базовая валюта</translation>
+        <source>&amp;Residence</source>
+        <translation>&amp;Место жительства</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="211"/>
@@ -7066,6 +7045,37 @@ One transaction moved this exact quantity as </source>
         <location filename="../data_import/receipt_api/ru_fns.py" line="362"/>
         <source>ESIA login completed</source>
         <translation>ЕСИА логин успешен</translation>
+    </message>
+</context>
+<context>
+    <name>ResidenceDialog</name>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="659"/>
+        <source>Residence</source>
+        <translation>Место жительства</translation>
+    </message>
+</context>
+<context>
+    <name>ResidenceListModel</name>
+    <message>
+        <location filename="../db/common_models.py" line="248"/>
+        <source>Date</source>
+        <translation>Дата</translation>
+    </message>
+    <message>
+        <location filename="../db/common_models.py" line="249"/>
+        <source>Currency</source>
+        <translation>Валюта</translation>
+    </message>
+    <message>
+        <location filename="../db/common_models.py" line="250"/>
+        <source>Country</source>
+        <translation>Страна</translation>
+    </message>
+    <message>
+        <location filename="../db/common_models.py" line="251"/>
+        <source>Timezone</source>
+        <translation>Часовой пояс</translation>
     </message>
 </context>
 <context>

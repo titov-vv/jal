@@ -71,7 +71,7 @@
     <addaction name="actionCategories"/>
     <addaction name="actionTags"/>
     <addaction name="separator"/>
-    <addaction name="actionBaseCurrency"/>
+    <addaction name="actionResidence"/>
     <addaction name="actionQuoteHistory"/>
     <addaction name="actionTokenBlacklist"/>
    </widget>
@@ -201,9 +201,9 @@
     <string>&amp;Tags</string>
    </property>
   </action>
-  <action name="actionBaseCurrency">
+  <action name="actionResidence">
    <property name="text">
-    <string>&amp;Base currency</string>
+    <string>&amp;Residence</string>
    </property>
   </action>
   <action name="actionQuoteHistory">

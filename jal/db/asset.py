@@ -1,11 +1,11 @@
 import logging
 import math
 from decimal import Decimal, InvalidOperation
-from PySide6.QtCore import Qt, QDate
 from jal.constants import AssetLocation, AssetData, BookAccount, PredefinedAsset, SymbolId
 from jal.db.db import JalDB
-from jal.db.helpers import format_decimal, year_begin, year_end, day_begin, now_ts
+from jal.db.helpers import format_decimal, day_begin, now_ts
 from jal.db.country import JalCountry
+from jal.db.residence import JalResidence
 from jal.db.tag import JalTag
 from jal.widgets.helpers import ts2d
 from jal.universal_cache import UniversalCache
@@ -694,31 +694,18 @@ class JalAsset(JalDB):
         return currencies
 
     # Returns id of the base currency that was in effect for given timestamp or current base currency (for now) if
-    # timestamp isn't given
+    # timestamp isn't given. The currency reports are made in is one of the facts a residence states, so the answer
+    # comes from the residence timeline - see JalResidence.
     @classmethod
     def get_base_currency(cls, timestamp: int=None) -> int:
-        if timestamp is None:
-            timestamp = QDate.currentDate().startOfDay(Qt.UTC).toSecsSinceEpoch()
-        base_id = cls._read("SELECT currency_id FROM residence WHERE since_timestamp<=:timestamp "
-                            "ORDER BY since_timestamp DESC LIMIT 1", [(":timestamp", timestamp)])
-        try:
-            base_id = int(base_id)
-        except TypeError:
-            base_id = 0
-        return base_id
+        return JalResidence.currency(timestamp)
 
     # Return a list of (timestamp, currency_id) tuples that represent currency valid currency IDs that were in force
     # after between beginning_of_the_year(begin) and end_of_the_year(end) timestamps.
     # Begin and end of year it required to cover full tax year.
     @classmethod
     def get_base_currency_history(cls, begin: int, end: int) -> list:
-        history = [(year_begin(begin), cls.get_base_currency(year_begin(begin)))]
-        query = cls._exec("SELECT since_timestamp, currency_id FROM residence "
-                          "WHERE since_timestamp>:begin AND since_timestamp<=:end ORDER BY since_timestamp",
-                          [(":begin", year_begin(begin)), (":end", year_end(end))])
-        while query.next():
-            history.append(cls._read_record(query, cast=[int, int]))
-        return history
+        return JalResidence.currency_history(begin, end)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

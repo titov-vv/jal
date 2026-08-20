@@ -11,6 +11,7 @@ from tests.helpers import create_stocks, create_trades
 from constants import PredefinedAccountType
 from jal.db.account import JalAccountCreator
 from jal.db.db import JalDB
+from jal.db.residence import JalResidence
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
 from jal.widgets.operations_widget import OperationsWidget
@@ -34,6 +35,7 @@ def three_trades(prepare_db):
                       (_ts(3), _ts(3), 4, Decimal('-4'), Decimal('130'), Decimal('1')),
                       (_ts(2), _ts(2), 4, Decimal('-3'), Decimal('80'), Decimal('1'))])
     JalDB()._exec("UPDATE residence SET currency_id=:usd", [(":usd", USD)])
+    JalResidence.invalidate_cache()   # the timeline is cached and this went around the dialog that maintains it
     Ledger().rebuild(from_timestamp=0)
     yield
 

@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QMenu, QDialog, QDialogButtonBox, QMessageBox, QHe
 from PySide6.QtSql import QSqlRelationalDelegate
 from jal.constants import CmWidth, CmDelegate, CmReference
 from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, QuotesListModel, \
-    BaseCurrencyListModel, TokenBlacklistModel
+    ResidenceListModel, TokenBlacklistModel
 from jal.db.asset_models import SymbolsListModel
 from jal.db.account import JalAccount
 from jal.db.peer import JalPeer
@@ -14,7 +14,7 @@ from jal.db.category import JalCategory
 from jal.db.tag import JalTag
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from jal.widgets.delegates import BoolDelegate, FloatDelegate, GridLinesDelegate, TimestampDelegate, LookupSelectorDelegate, AssetSelectorDelegate, ConstantLookupDelegate
+from jal.widgets.delegates import BoolDelegate, FloatDelegate, GridLinesDelegate, TimestampDelegate, LookupSelectorDelegate, AssetSelectorDelegate, ConstantLookupDelegate, TimezoneDelegate
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.widgets.assets_dialogs import SymbolListDialog
@@ -259,6 +259,8 @@ class ReferenceDataDialog(QDialog):
                 delegate = TimestampDelegate(parent=self._view)
             elif spec.delegate_type == CmDelegate.DATE:
                 delegate = TimestampDelegate(date_only=True, parent=self._view)
+            elif spec.delegate_type == CmDelegate.TIMEZONE:
+                delegate = TimezoneDelegate(self._view)
             else:
                 continue
             self._view.setItemDelegateForColumn(col, delegate)
@@ -652,10 +654,10 @@ class QuotesListDialog(ReferenceDataDialog):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class BaseCurrencyDialog(ReferenceDataDialog):
+class ResidenceDialog(ReferenceDataDialog):
     def __init__(self, parent=None):
-        super().__init__(parent, window_title=self.tr("Base currency"))
-        self.model = BaseCurrencyListModel(self)
+        super().__init__(parent, window_title=self.tr("Residence"))
+        self.model = ResidenceListModel(self)
         self.ui.DataView.setModel(self.model)
         self.setup_ui()
 

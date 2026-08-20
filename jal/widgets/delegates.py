@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from zoneinfo import available_timezones
 from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import (QApplication, QWidget, QStyle, QStyledItemDelegate, QLineEdit, QDateTimeEdit,
                                QTreeView, QComboBox)
@@ -260,6 +261,23 @@ class BoolDelegate(GridLinesDelegate):
             else:
                 model.setData(index, 1)
         return True
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Picks an IANA time zone name (e.g. 'Europe/Berlin'). The names offered are the ones the zone database installed on
+# this machine knows, i.e. exactly those that ZoneInfo() will accept afterwards - a name typed by hand couldn't promise
+# that. The empty name comes first and means "not stated" (see the 'residence' table).
+class TimezoneDelegate(GridLinesDelegate):
+    def createEditor(self, aParent, option, index):
+        combobox = QComboBox(aParent)
+        combobox.addItems([''] + sorted(available_timezones()))
+        return combobox
+
+    def setEditorData(self, editor, index):
+        editor.setCurrentIndex(editor.findText(index.model().data(index, Qt.EditRole) or ''))
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.currentText())
 
 
 # -----------------------------------------------------------------------------------------------------------------------

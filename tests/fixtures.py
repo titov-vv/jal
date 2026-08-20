@@ -11,6 +11,7 @@ from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.db.settings import JalSettings
 from jal.db.token_blacklist import JalTokenBlacklist
+from jal.db.residence import JalResidence
 from jal.widgets.helpers import DateFormat, forget_columns
 from tests.helpers import d2t, dt2t, create_assets, create_actions, create_dividends
 
@@ -49,6 +50,7 @@ def prepare_db(project_root, tmp_path, data_path):
     JalAsset.db_cache.clear_cache()
     JalSymbol.db_cache.clear_cache()
     JalTokenBlacklist.db_cache.clear_cache()
+    JalResidence.invalidate_cache()
     DateFormat.invalidate()   # the date layout is cached from the settings of the database that was open before
     forget_columns()          # ... and so are the column widths of the tables that were open
     error = JalDB().init_db()

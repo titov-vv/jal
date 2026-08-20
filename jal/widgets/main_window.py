@@ -16,7 +16,7 @@ from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget, TaxMergeDialog
 from jal.widgets.helpers import (dependency_present, menu_label, menu_mnemonic, ts2dt,
                                 restore_splitters, save_splitters, save_columns, refresh_date_formats)
 from jal.widgets.icons import JalIcon, AUX_PREFIX, CHAIN_PREFIX
-from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, BaseCurrencyDialog, TokenBlacklistDialog
+from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, ResidenceDialog, TokenBlacklistDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.widgets.preferences_dialog import PreferencesDialog
 from jal.constants import Setup, JalGlobals
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
         self.ui.actionTags.triggered.connect(partial(self.onDataDialog, TagsListDialog))
         self.ui.actionQuoteHistory.triggered.connect(partial(self.onDataDialog, QuotesListDialog))
         self.ui.actionTokenBlacklist.triggered.connect(partial(self.onDataDialog, TokenBlacklistDialog))
-        self.ui.actionBaseCurrency.triggered.connect(partial(self.onDataDialog, BaseCurrencyDialog))
+        self.ui.actionResidence.triggered.connect(partial(self.onDataDialog, ResidenceDialog))
         self.ui.actionPreferences.triggered.connect(self.showPreferences)
         self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInWindowArea, self.ui.windowArea))
         self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInWindowArea, self.ui.windowArea))

@@ -13,6 +13,7 @@ from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_stocks, create_trades
 from constants import PredefinedAccountType, AssetLocation
 from jal.db.db import JalDB
+from jal.db.residence import JalResidence
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.helpers import now_ts
 from jal.db.ledger import Ledger
@@ -79,6 +80,7 @@ def ledger(prepare_db):
                              (DAY_3, DAY_3, STOCK, Decimal('-3'), Decimal('80'), Decimal('1'))])
     JalAccount(WALLET_A).reconcile(DAY_2)   # ... and the reconciled ones are marked, which is the INFO colour
     JalDB()._exec("UPDATE residence SET currency_id=:usd", [(":usd", USD)])
+    JalResidence.invalidate_cache()   # the timeline is cached and this went around the dialog that maintains it
     Ledger().rebuild(from_timestamp=0)
     # Three unsettled legs, so the pending-transfers report has rows of more than one kind to tint
     _transfer(WALLET_A, None, 400, DAY_1, number='0xsent')
