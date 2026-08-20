@@ -8,10 +8,16 @@ from jal.constants import Setup, PredefinedAsset
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.category import JalCategory
+from jal.db.helpers import day_begin
 from jal.db.operations import AssetPayment
+from jal.db.residence import wall_clock_reading
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
+# Wider than any gap between two wall clocks (the farthest apart are 26 hours), so a window widened by it can't miss
+# an operation that belongs to the year on the clock of the report - see TaxReport.category_operations()
+ZONE_SPAN = 2 * 24 * 60 * 60
 
 class TaxReport:
     PORTUGAL = 0
@@ -22,6 +28,10 @@ class TaxReport:
     }
     currency_name = ''  # The name of the currency for tax values calculation
     country_name = ''   # The name of the country for tax preparation
+    # The zone whose wall clock this report counts its days and years on - the one of the jurisdiction the report is
+    # filed in. Symmetric to Statement.source_timezone: a report names its own zone the way a statement names its
+    # source's. An empty name leaves every stored timestamp read as it is.
+    report_timezone = ''
 
     def __init__(self):
         self._currency_id = JalAsset.find({'symbol': self.currency_name, 'type_id': PredefinedAsset.Money}).id()
@@ -39,6 +49,24 @@ class TaxReport:
 
     def tr(self, text):
         return QApplication.translate("TaxReport", text)
+
+    # A moment of an operation as the jurisdiction of this report saw it - the single place where a stored timestamp
+    # becomes a date of the report. Everything that is a moment goes through here, both what is printed and what
+    # decides which year an operation belongs to. An exchange rate is deliberately not asked for on this clock: the
+    # amounts it explains are converted in the ledger, on the stored moment, and a rate taken from a different day
+    # would stop being the one those amounts were made of.
+    def _moment(self, timestamp: int) -> int:
+        if timestamp == day_begin(timestamp):
+            return self._date(timestamp)   # a reading of exactly midnight carries no time of day - it is a date
+        return wall_clock_reading(timestamp, self.report_timezone)
+
+    # A calendar date of an operation - a settlement day, an ex-date, or a payment whose source gave the day without
+    # saying when in it the payment happened, stored as the midnight it was given. Such a date carries no time of day
+    # to re-read on another clock, and moving it could only turn it into a different date, so it is the same date in
+    # every jurisdiction. Named for what it is, so that a date is never mistaken for a moment left unconverted.
+    @staticmethod
+    def _date(day: int) -> int:
+        return day
 
     @staticmethod
     def create_report(country: int):
@@ -120,12 +148,19 @@ class TaxReport:
         dividends = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
         dividends += AssetPayment.get_list(self.account.id(), subtype=AssetPayment.StockDividend)
         dividends += AssetPayment.get_list(self.account.id(), subtype=AssetPayment.StockVesting)
-        dividends = [x for x in dividends if self.year_begin <= x.timestamp() < self.year_end]
+        dividends = [x for x in dividends if self.year_begin <= self._moment(x.timestamp()) < self.year_end]
         return dividends
+
+    # Returns operations of the given category that belong to the report's year. The database is asked for a wider
+    # window than the year, because an operation stamped just outside it may well be inside it on the report's clock;
+    # what is inside is then decided on that clock alone.
+    def category_operations(self, category_id: int) -> list:
+        operations = JalCategory(category_id).get_operations(self.year_begin - ZONE_SPAN, self.year_end + ZONE_SPAN)
+        return [x for x in operations if self.year_begin <= self._moment(x.timestamp()) < self.year_end]
 
     # Returns a list of closed stock/ETF trades that should be included into the report for given year
     def trades_list(self, asset_type) -> list:
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() in asset_type]
-        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() < self.year_end]
+        trades = [x for x in trades if self.year_begin <= self._date(x.close_operation().settlement()) < self.year_end]
         return trades

@@ -2,7 +2,6 @@ from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
 from jal.db.asset import JalAsset
-from jal.db.category import JalCategory
 from jal.data_export.taxes import TaxReport
 
 
@@ -10,6 +9,7 @@ from jal.data_export.taxes import TaxReport
 class TaxesRussia(TaxReport):
     currency_name = 'RUB'
     country_name = "russia"
+    report_timezone = 'Europe/Moscow'
 
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
@@ -54,7 +54,7 @@ class TaxesRussia(TaxReport):
                     tax2pay = Decimal('0.0')
             line = {
                 'report_template': "dividend",
-                'payment_date': dividend.timestamp(),
+                'payment_date': self._moment(dividend.timestamp()),
                 'symbol': dividend.asset().symbol(self.account_currency.id()),
                 'full_name': dividend.asset().name(),
                 'isin': dividend.asset().symbol_id(SymbolId.ISIN),
@@ -79,7 +79,7 @@ class TaxesRussia(TaxReport):
         ns = not self.use_settlement
         # Prepare list of dividends withdrawn from account (due to short trades)
         dividends_withdrawn = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
-        dividends_withdrawn = [x for x in dividends_withdrawn if self.year_begin <= x.timestamp() < self.year_end]
+        dividends_withdrawn = [x for x in dividends_withdrawn if self.year_begin <= self._moment(x.timestamp()) < self.year_end]
         dividends_withdrawn = [x for x in dividends_withdrawn if x.amount() < Decimal('0')]
         for trade in trades_list:
             corporate_actions = trade.modified_by()
@@ -124,9 +124,9 @@ class TaxesRussia(TaxReport):
                 'country_iso': self.account.country().iso_code(),  # this field is required for DLSG
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
                 'o_number': trade.open_operation().number(),
-                'o_date': trade.open_operation().timestamp(),
+                'o_date': self._moment(trade.open_operation().timestamp()),
                 'o_rate': self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1],
-                'os_date': trade.open_operation().settlement(),
+                'os_date': self._date(trade.open_operation().settlement()),
                 'os_rate': os_rate,
                 'o_price': trade.open_price(),
                 'cost_basis': Decimal('100') * trade.cost_basis(),
@@ -136,9 +136,9 @@ class TaxesRussia(TaxReport):
                 'o_fee_rub': round(trade.open_fee(self._currency_id, full=True), 2),
                 'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
                 'c_number': trade.close_operation().number(),
-                'c_date': trade.close_operation().timestamp(),
+                'c_date': self._moment(trade.close_operation().timestamp()),
                 'c_rate': self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1],
-                'cs_date': trade.close_operation().settlement(),
+                'cs_date': self._date(trade.close_operation().settlement()),
                 'cs_rate': cs_rate,
                 'c_price': trade.close_operation().price(),
                 'c_amount': round(trade.close_amount(no_settlement=ns), 2),
@@ -196,9 +196,9 @@ class TaxesRussia(TaxReport):
                 'country_iso': country.iso_code(),
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
                 'o_number': trade.open_operation().number(),
-                'o_date': trade.open_operation().timestamp(),
+                'o_date': self._moment(trade.open_operation().timestamp()),
                 'o_rate': self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1],
-                'os_date': trade.open_operation().settlement(),
+                'os_date': self._date(trade.open_operation().settlement()),
                 'os_rate': os_rate,
                 'o_price': Decimal('100') * trade.open_price() / trade.asset().principal(),
                 'o_int': -trade.open_operation().accrued_interest(),
@@ -209,9 +209,9 @@ class TaxesRussia(TaxReport):
                 'o_fee_rub': round(trade.open_fee(self._currency_id), 2),
                 'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
                 'c_number': trade.close_operation().number(),
-                'c_date': trade.close_operation().timestamp(),
+                'c_date': self._moment(trade.close_operation().timestamp()),
                 'c_rate': self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1],
-                'cs_date': trade.close_operation().settlement(),
+                'cs_date': self._date(trade.close_operation().settlement()),
                 'cs_rate': cs_rate,
                 'c_price': Decimal('100') * trade.close_operation().price() / trade.asset().principal(),
                 'c_int': trade.close_operation().accrued_interest(),
@@ -231,7 +231,7 @@ class TaxesRussia(TaxReport):
         currency = JalAsset(self.account.currency())
         country = self.account.country()
         interests = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.BondInterest, skip_accrued=True)
-        interests = [x for x in interests if self.year_begin <= x.timestamp() < self.year_end]  # Only in given range
+        interests = [x for x in interests if self.year_begin <= self._moment(x.timestamp()) < self.year_end]  # Only in given range
         for interest in interests:
             amount = interest.amount()
             rate = currency.quote(interest.timestamp(), self._currency_id)[1]
@@ -240,7 +240,7 @@ class TaxesRussia(TaxReport):
                 'report_template': "bond_interest",
                 'type': "Купон",
                 'empty': '',  # to keep cell borders drawn
-                'o_date': interest.timestamp(),
+                'o_date': self._moment(interest.timestamp()),
                 'symbol': interest.asset().symbol(currency.id()),
                 'isin': interest.asset().symbol_id(SymbolId.ISIN),
                 'number': interest.number(),
@@ -268,7 +268,7 @@ class TaxesRussia(TaxReport):
         crypto_report = []
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() == PredefinedAsset.Crypto]
-        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() < self.year_end]
+        trades = [x for x in trades if self.year_begin <= self._date(x.close_operation().settlement()) < self.year_end]
         for trade in trades:
             o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
             c_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
@@ -297,9 +297,9 @@ class TaxesRussia(TaxReport):
                 'country_iso': country.iso_code(),
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
                 'o_number': trade.open_operation().number(),
-                'o_date': trade.open_operation().timestamp(),
+                'o_date': self._moment(trade.open_operation().timestamp()),
                 'o_rate': o_rate,
-                'os_date': trade.open_operation().settlement(),
+                'os_date': self._date(trade.open_operation().settlement()),
                 'os_rate': os_rate,
                 'o_price': trade.open_price(),
                 'o_amount': o_amount,
@@ -308,9 +308,9 @@ class TaxesRussia(TaxReport):
                 'o_fee_rub': round(o_fee * o_rate, 2),
                 'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
                 'c_number': trade.close_operation().number(),
-                'c_date': trade.close_operation().timestamp(),
+                'c_date': self._moment(trade.close_operation().timestamp()),
                 'c_rate': c_rate,
-                'cs_date': trade.close_operation().settlement(),
+                'cs_date': self._date(trade.close_operation().settlement()),
                 'cs_rate': cs_rate,
                 'c_price': trade.close_operation().price(),
                 'c_amount': c_amount,
@@ -330,7 +330,7 @@ class TaxesRussia(TaxReport):
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self):
         fees_report = []
-        fee_operations = JalCategory(PredefinedCategory.Fees).get_operations(self.year_begin, self.year_end)
+        fee_operations = self.category_operations(PredefinedCategory.Fees)
         fee_operations = [x for x in fee_operations if x.account_id() == self.account.id()]
         for operation in fee_operations:
             rate = self.account_currency.quote(operation.timestamp(), self._currency_id)[1]
@@ -339,7 +339,7 @@ class TaxesRussia(TaxReport):
                 amount = -Decimal(fee['amount'])
                 line = {
                     'report_template': "fee",
-                    'payment_date': operation.timestamp(),
+                    'payment_date': self._moment(operation.timestamp()),
                     'rate': rate,
                     'amount': amount,
                     'amount_rub': round(amount * rate, 2),
@@ -352,7 +352,7 @@ class TaxesRussia(TaxReport):
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_interest(self):
         interests_report = []
-        interest_operations = JalCategory(PredefinedCategory.Interest).get_operations(self.year_begin, self.year_end)
+        interest_operations = self.category_operations(PredefinedCategory.Interest)
         interest_operations = [x for x in interest_operations if x.account_id() == self.account.id()]
         for operation in interest_operations:
             rate = self.account_currency.quote(operation.timestamp(), self._currency_id)[1]
@@ -361,7 +361,7 @@ class TaxesRussia(TaxReport):
                 amount = Decimal(interest['amount'])
                 line = {
                     'report_template': "interest",
-                    'payment_date': operation.timestamp(),
+                    'payment_date': self._moment(operation.timestamp()),
                     'rate': rate,
                     'amount': amount,
                     'amount_rub': round(amount * rate, 2),
@@ -371,12 +371,12 @@ class TaxesRussia(TaxReport):
                 interests_report.append(line)
         # Process cash payments out of corporate actions
         payments = CorporateAction.get_payments(self.account)
-        payments = [x for x in payments if self.year_begin <= x['timestamp'] < self.year_end]
+        payments = [x for x in payments if self.year_begin <= self._moment(x['timestamp']) < self.year_end]
         for payment in payments:
             rate = self.account_currency.quote(payment['timestamp'], self._currency_id)[1]
             line = {
                 'report_template': "interest",
-                'payment_date': payment['timestamp'],
+                'payment_date': self._moment(payment['timestamp']),
                 'rate': rate,
                 'amount': payment['amount'],
                 'amount_rub': round(payment['amount'] * rate, 2),

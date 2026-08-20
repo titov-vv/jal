@@ -161,7 +161,8 @@ class XLSX:
         elif format_string[0] == 'D':
             # Deliberately not the date layout the user has chosen for the interface: the 'D' format is used by the
             # tax report templates alone, and the form a tax authority reads is a property of the jurisdiction the
-            # report is filed in (day-first in both Russia and Portugal), not of the reader's preference.
+            # report is filed in (day-first in both Russia and Portugal), not of the reader's preference. The value
+            # itself reaches here already read on that jurisdiction's clock - see TaxReport._moment().
             value = datetime.fromtimestamp(value, tz=timezone.utc).strftime(TAX_REPORT_DATE_FORMAT)
             return value, self.formats.Text(even_odd)
         elif format_string[0] == 'N':

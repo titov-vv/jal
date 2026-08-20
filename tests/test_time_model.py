@@ -12,9 +12,12 @@ from PySide6.QtCore import QDate, QDateTime, QTimeZone
 from PySide6.QtWidgets import QWidget
 
 from constants import PredefinedAsset, PredefinedCategory
+from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
+from jal.db.db import JalDB
+from jal.db.residence import JalResidence, wall_clock_reading
 from lxml import etree
 
 from jal.data_import.broker_statements.ibkr import StatementIBKR
@@ -23,7 +26,7 @@ from jal.db.helpers import local_timestamp, now_ts, now_dt
 from jal.db.ledger import Ledger
 from jal.widgets.helpers import ts2axis, axis2ts, ts2d
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from tests.helpers import create_assets, create_actions, create_dividends, d2t, pinned_tz
+from tests.helpers import create_assets, create_actions, create_dividends, create_trades, d2t, pinned_tz
 
 
 # The offset is handed out so a test can state the shift it expects in terms of it instead of repeating the number.
@@ -250,3 +253,85 @@ def test_ibkr_readings_are_stored_as_the_source_wrote_them():
             assert ts2d(stored) == ts2d(d2t(241227)), zone
             assert datetime.fromtimestamp(stored, tz=timezone.utc).strftime('%H:%M') == '20:20', zone
             assert statement.attr_timestamp(element, 'settleDate', None) == d2t(241227), zone
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The other end of the same boundary. A tax report is filed in a country, and the days and years it counts are that
+# country's - a stored reading is the user's own wall clock and has to be re-read on the clock of the jurisdiction
+# before it is printed as a date or bucketed into a year.
+
+# Puts the whole timeline on one zone: as far as these tests are concerned the user lived there from the beginning
+def _resident_in(zone: str):
+    JalDB._exec("UPDATE residence SET timezone=:zone", [(":zone", zone)])
+    JalResidence.invalidate_cache()
+
+
+# Gives a report the account and the year window that prepare_tax_report() would set up for it
+def _report_for(report, year: int):
+    report.account = JalAccount(1)
+    report.account_currency = JalAsset(report.account.currency())
+    report.year_begin = d2t(year % 100 * 10000 + 101)
+    report.year_end = d2t((year + 1) % 100 * 10000 + 101)
+    return report
+
+
+def test_a_report_dates_a_moment_on_the_clock_of_the_country_it_is_filed_in(prepare_db_taxes):
+    _resident_in('Europe/Lisbon')
+    evening = _stamp(2025, 6, 10, 23, 30)                                # a summer evening in Lisbon, where...
+    assert ts2d(TaxesPortugal()._moment(evening)) == ts2d(_stamp(2025, 6, 10))     # ... the report is filed at home
+    assert ts2d(TaxesRussia()._moment(evening)) == ts2d(_stamp(2025, 6, 11))       # ... but Moscow is already asleep
+
+
+# The year an operation is declared in follows that same clock: half past eleven on 31 December in Lisbon is the new
+# year in Moscow, so the dividend belongs to the next Russian declaration and to no other.
+def test_a_moment_late_at_night_belongs_to_the_next_tax_year_of_another_jurisdiction(prepare_db_taxes):
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    new_year_eve = _stamp(2024, 12, 31, 23, 30)
+    create_dividends([(new_year_eve, 1, 4, 10.0, 1.0, "Dividend paid late on New Year's eve")])
+    _resident_in('Europe/Lisbon')
+
+    assert [x.timestamp() for x in _report_for(TaxesRussia(), 2024).dividends_list()] == []
+    assert [x.timestamp() for x in _report_for(TaxesRussia(), 2025).dividends_list()] == [new_year_eve]
+    assert [x.timestamp() for x in _report_for(TaxesPortugal(), 2024).dividends_list()] == [new_year_eve]
+
+
+# A day is not a moment. A settlement day, and a payment whose source stated the day without the hour, are both
+# stored as the midnight they were given - and midnight has no time of day to re-read on another clock, so a report
+# of another country must leave it alone. Read as a moment it would land on the day before, and here in the year
+# before: a Portuguese report of a life lived in Moscow.
+def test_a_day_stored_without_a_time_of_day_is_never_read_on_another_clock(prepare_db_taxes):
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    create_trades(1, [(d2t(241220), d2t(241224), 4, Decimal('10'), Decimal('100'), Decimal('1')),
+                      (d2t(241230), d2t(250101), 4, Decimal('-10'), Decimal('130'), Decimal('1'))])
+    create_dividends([(d2t(250101), 1, 4, 10.0, 1.0, "Dividend dated by its day alone")])
+    Ledger().rebuild(from_timestamp=0)
+    _resident_in('Europe/Moscow')
+    report = TaxesPortugal()
+
+    assert report._moment(d2t(250101)) == d2t(250101)
+    assert report._date(d2t(250101)) == d2t(250101)
+    assert _report_for(report, 2024).trades_list([PredefinedAsset.Stock]) == []
+    assert len(_report_for(report, 2025).trades_list([PredefinedAsset.Stock])) == 1
+    assert [x.timestamp() for x in _report_for(report, 2025).dividends_list()] == [d2t(250101)]
+
+
+# The operations of a category are picked by the database, by timestamp, so the window has to be widened before the
+# question is put to it - a fee that belongs to the report's year on the report's clock would otherwise never be
+# fetched to be considered at all.
+def test_a_fee_late_on_new_years_eve_reaches_the_report_of_the_year_it_falls_in(prepare_db_taxes):
+    create_actions([(_stamp(2024, 12, 31, 23, 30), 1, 1, [(PredefinedCategory.Fees, Decimal('-10'))])])
+    _resident_in('Europe/Lisbon')
+
+    assert _report_for(TaxesRussia(), 2024).category_operations(PredefinedCategory.Fees) == []
+    assert len(_report_for(TaxesRussia(), 2025).category_operations(PredefinedCategory.Fees)) == 1
+
+
+# None of this happens until the user states where they lived, and a report that names no jurisdiction never asks:
+# an unknown clock leaves every reading exactly as it is, which is what keeps today's reports what they were.
+def test_nothing_moves_while_a_zone_is_unknown(prepare_db_taxes):
+    evening = _stamp(2024, 12, 31, 23, 30)
+    assert JalResidence.timezone(evening) == ''
+    assert TaxesRussia()._moment(evening) == evening
+
+    _resident_in('Europe/Lisbon')
+    assert wall_clock_reading(evening, '') == evening

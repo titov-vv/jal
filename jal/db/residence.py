@@ -1,4 +1,6 @@
 from bisect import bisect_right
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from jal.db.db import JalDB
 from jal.db.helpers import day_begin, now_ts, year_begin, year_end
 from jal.universal_cache import UniversalCache
@@ -80,3 +82,20 @@ class JalResidence(JalDB):
         dates, rows = cls._timeline()
         history += [(date, rows[i][0]) for i, date in enumerate(dates) if begin < date <= end]
         return history
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The reading that the wall clock of 'zone' showed at the moment JAL stores as 'timestamp'. A stored timestamp is the
+# reading of the user's own clock (see stored_timestamp), so the digits are turned back into an instant with the zone
+# the user was on then, and that instant is read again on the zone asked for. The answer keeps the same shape it was
+# given - the digits of a reading, spelled as a UTC epoch.
+#
+# A report filed in another country needs exactly this: a trade made at 23:30 in Lisbon happened at 01:30 of the next
+# day in Moscow, and the day is what it is taxed in. The reading is returned untouched while either zone is unknown,
+# so nothing moves until the user states where they lived.
+def wall_clock_reading(timestamp: int, zone: str) -> int:
+    home = JalResidence.timezone(timestamp)
+    if not zone or not home or zone == home:
+        return timestamp
+    instant = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(tzinfo=ZoneInfo(home))
+    return int(instant.astimezone(ZoneInfo(zone)).replace(tzinfo=timezone.utc).timestamp())
