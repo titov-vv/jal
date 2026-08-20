@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal, InvalidOperation, localcontext
+from zoneinfo import ZoneInfo
 from PySide6.QtCore import QDateTime, QLocale, QTimeZone
 from jal.constants import Setup, JalGlobals
 
@@ -126,6 +127,22 @@ def now_ts() -> int:
 # with so that it opens showing the time the wall clock shows.
 def now_dt() -> QDateTime:
     return QDateTime.fromSecsSinceEpoch(now_ts(), QTimeZone(0))
+
+# The timestamp under which a given instant is stored. JAL keeps every timestamp as the LOCAL WALL-CLOCK reading of
+# the moment, spelled as a UTC epoch of those digits - now_ts() records manual entry exactly that way and every
+# display reads it back as UTC (see TimestampDelegate). An absolute instant therefore has to be re-expressed on that
+# clock before it is stored, or it lands an offset away from everything entered by hand. The offset in force at the
+# instant itself is used, so it stays right across DST boundaries.
+def stored_timestamp(instant: int) -> int:
+    return int(datetime.fromtimestamp(instant).replace(tzinfo=timezone.utc).timestamp())
+
+def local_timestamp(utc_seconds: int) -> int:
+    return stored_timestamp(utc_seconds) if utc_seconds > 0 else 0
+
+def wall_clock_timestamp(moment: datetime, zone: str = '') -> int:
+    if not zone:
+        return int(moment.replace(tzinfo=timezone.utc).timestamp())
+    return stored_timestamp(int(moment.replace(tzinfo=ZoneInfo(zone)).timestamp()))
 
 # Returns timestamp of the first second of the day of given timestamp
 def day_begin(timestamp: int) -> int:

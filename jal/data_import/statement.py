@@ -11,6 +11,7 @@ from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedAgents, SymbolId
 from jal.db.db import JalDB
+from jal.db.helpers import wall_clock_timestamp
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
@@ -106,6 +107,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     RU_PRICE_TOLERANCE = 1e-4   # TODO Probably need to switch imports to Decimal and remove it
 
     currency_substitutions = {}
+    # The zone whose wall clock this source's timestamps are readings of. It is a property of the SOURCE rather than of
+    # the file, so every module states its own here and the reading is converted once, at the boundary, into the clock
+    # JAL stores - see _moment() below.
+    # An empty name means the source's zone isn't known and its readings are taken as they are.
+    source_timezone = ''
     # True when a transfer of this statement is uniquely identified by the transaction it happened in, i.e. its
     # 'number' is a transaction hash. Only then may a transfer that is already in the database be recognized as the
     # same movement and skipped instead of stored again (see _transfer_already_imported).
@@ -225,6 +231,18 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             return self._data[JSF.PERIOD][0], self._data[JSF.PERIOD][1]
         else:
             return 0, 0
+
+    # A moment this source reported, on the clock JAL stores - the single place a statement's wall-clock reading
+    # becomes a timestamp.
+    def _moment(self, moment: datetime) -> int:
+        return wall_clock_timestamp(moment, self.source_timezone)
+
+    # A calendar date this source reported - a settlement day, an ex-date, the bounds of the reporting period. Unlike
+    # a moment it carries no time of day to convert, and shifting it can only turn it into a different date, so it is
+    # stored as the midnight it already is whatever zone the source keeps.
+    @staticmethod
+    def _date(day: datetime) -> int:
+        return int(day.replace(tzinfo=timezone.utc).timestamp())
 
     # returns timestamp that is equal to the last second of initial timestamp
     def _end_of_date(self, timestamp) -> int:   #FIXME - something similar is in helpers.py -> refactor

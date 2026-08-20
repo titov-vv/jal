@@ -8,10 +8,9 @@ from jal.constants import AssetLocation
 from jal.db.account import JalAccount
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.db import JalDB
-from jal.db.helpers import remove_exponent
+from jal.db.helpers import local_timestamp, remove_exponent
 from jal.db.symbol import JalSymbol
 from jal.db.transfer_settlement import TransferSettlement
-from jal.net.chain_fetchers.fetcher import local_timestamp
 from jal.net.route import Confidence
 from jal.net.route_resolvers import RouteResolvers
 

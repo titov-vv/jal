@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_assets, create_actions, create_quotes, symbol_id_for
+from tests.helpers import d2t, create_assets, create_actions, create_quotes, pinned_tz, symbol_id_for
 from constants import AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedCategory
 from jal.data_import.statement import JSF, Statement, Statement_ImportError
 from jal.data_import.broker_statements.kucoin import StatementKuCoin
@@ -21,6 +21,17 @@ from jal.net.downloader import llama_coin_key
 # real export: the same file set (18 files for KuCoin, 40 for Bitget), the same encodings and the same traps in the
 # names. Every expected value below is computed by hand from the fixture in tests/test_data; the parsers additionally
 # check themselves against the balances the fixtures report, so a wrong reading fails the load rather than a compare.
+
+
+# Both exchanges report in UTC and the importer converts that into the local wall clock, so the timestamps below
+# would otherwise be those of whoever runs the suite. Pinning the machine to UTC makes the conversion an identity
+# and lets every expected value stay the moment the fixture actually names. That the conversion IS an identity when
+# the two clocks agree is itself a property worth resting the whole file on; the shift it applies when they differ
+# is checked in tests/test_time_model.py.
+@pytest.fixture(autouse=True)
+def utc_machine():
+    with pinned_tz('UTC'):
+        yield
 
 
 def _one(records, **match):

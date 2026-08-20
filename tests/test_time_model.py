@@ -3,9 +3,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import importlib
 import pathlib
-import time
 import xml.etree.ElementTree as ET
-from contextlib import contextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
 
@@ -17,28 +15,12 @@ from constants import PredefinedAsset, PredefinedCategory
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
-from jal.db.helpers import now_ts, now_dt
+from jal.data_import.broker_statements.kucoin import StatementKuCoin
+from jal.db.helpers import local_timestamp, now_ts, now_dt
 from jal.db.ledger import Ledger
 from jal.widgets.helpers import ts2axis, axis2ts, ts2d
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from tests.helpers import create_assets, create_actions, create_dividends, d2t
-
-
-# A test here pins the machine to a fixed zone, because what is under test is precisely the difference between the
-# clock a timestamp is stored on and the clock the machine runs on.
-@contextmanager
-def pinned_tz(zone: str):
-    saved = os.environ.get('TZ')
-    os.environ['TZ'] = zone
-    time.tzset()
-    try:
-        yield
-    finally:
-        if saved is None:
-            os.environ.pop('TZ', None)
-        else:
-            os.environ['TZ'] = saved
-        time.tzset()
+from tests.helpers import create_assets, create_actions, create_dividends, d2t, pinned_tz
 
 
 # The offset is handed out so a test can state the shift it expects in terms of it instead of repeating the number.
@@ -178,3 +160,61 @@ def test_a_movement_at_new_year_midnight_flows_in_one_year_only(prepare_db):
     Ledger().rebuild(from_timestamp=0)
     assert account.get_flow(d2t(240101), d2t(250101), JalAccount.MONEY_FLOW, 'in') == Decimal('0')
     assert account.get_flow(d2t(250101), d2t(260101), JalAccount.MONEY_FLOW, 'in') == Decimal('100')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The moment a fixture names, as a stored timestamp - spelled out here because the shifts under test are hours and
+# minutes, which the YYMMDD helpers of tests/helpers.py cannot express.
+def _stamp(year, month, day, hour=0, minute=0, second=0) -> int:
+    return int(datetime(year, month, day, hour, minute, second, tzinfo=timezone.utc).timestamp())
+
+
+# A statement reports a wall-clock reading and never says which clock. Stamping those digits as they are puts an
+# operation an offset away from everything entered by hand, so each module names the zone its source keeps its books
+# in and the reading is converted once, at the boundary.
+def test_a_source_reading_is_converted_from_the_zone_the_source_names(fixed_tz):
+    statement = StatementKuCoin()                       # KuCoin writes UTC ("Time(UTC)" is its column label)
+    assert statement.source_timezone == 'UTC'
+    assert statement._timestamp('2025-09-25 12:28:12') - _stamp(2025, 9, 25, 12, 28, 12) == fixed_tz
+
+
+# ... and a source that names no zone keeps its digits, which is what every module did before any of them declared one.
+def test_an_undeclared_source_keeps_its_reading(fixed_tz):
+    statement = StatementKuCoin()
+    statement.source_timezone = ''
+    assert statement._timestamp('2025-09-25 12:28:12') == _stamp(2025, 9, 25, 12, 28, 12)
+
+
+# The conversion is an identity exactly when the machine runs on the zone the source reports in - which is what lets
+# the golden fixtures of tests/test_statements_cex.py be pinned to UTC and stay the moments they name.
+def test_a_source_reading_is_untouched_when_the_clocks_agree():
+    with pinned_tz('UTC'):
+        assert StatementKuCoin()._timestamp('2025-09-25 12:28:12') == _stamp(2025, 9, 25, 12, 28, 12)
+
+
+# Every source that reports an absolute instant instead of a wall clock reaches the very same stored clock, or a
+# chain operation and the exchange withdrawal that funded it are ordered by their offsets rather than by what
+# happened first.
+def test_an_instant_and_a_utc_reading_land_on_the_same_stored_clock(fixed_tz):
+    instant = _stamp(2025, 9, 25, 12, 28, 12)           # what a chain reports for that moment: absolute UTC seconds
+    assert local_timestamp(instant) == StatementKuCoin()._timestamp('2025-09-25 12:28:12')
+    assert local_timestamp(instant) - instant == fixed_tz
+
+
+# A date has no time of day to convert and shifting it can only turn it into a different date - a settlement day, an
+# ex-date or the bounds of a reporting period must read the same whatever zone the source or the machine keeps.
+def test_a_reported_date_is_never_shifted(fixed_tz):
+    statement = StatementKuCoin()
+    assert statement._date(datetime(2025, 9, 25)) == d2t(250925)
+    statement.source_timezone = 'America/New_York'
+    assert statement._date(datetime(2025, 9, 25)) == d2t(250925)
+
+
+# The offset in force at the operation's own instant is used, not today's - Moscow kept DST until 2011, so the same
+# wall-clock reading is a different moment in summer and in winter.
+def test_the_offset_of_the_operation_is_used_and_not_the_current_one():
+    statement = StatementKuCoin()
+    statement.source_timezone = 'Europe/Moscow'
+    with pinned_tz('UTC'):
+        assert statement._timestamp('2010-07-01 12:00:00') == _stamp(2010, 7, 1, 8)    # UTC+4, Moscow summer time
+        assert statement._timestamp('2010-12-01 12:00:00') == _stamp(2010, 12, 1, 9)   # UTC+3, Moscow winter time

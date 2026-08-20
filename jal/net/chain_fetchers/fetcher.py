@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime, timezone
 from decimal import Decimal, DecimalException
 
 from PySide6.QtCore import QObject, Signal
@@ -11,6 +10,7 @@ from jal.data_import.token_filter import TokenFilter
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.helpers import local_timestamp
 from jal.db.settings import JalSettings
 from jal.db.token_blacklist import normalize_address
 
@@ -30,24 +30,6 @@ class TransferMark:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Converts a true-UTC epoch (in seconds - every blockchain reports absolute UTC time) into the timestamp convention
-# JAL stores everywhere else: the local wall-clock reading of that instant, kept as a UTC epoch of those digits. JAL
-# displays every timestamp in UTC (see TimestampDelegate), and every other source stores the source's local wall clock
-# this same way - manual entry through now_ts(), and every broker importer, which takes a local time string and stamps
-# it as UTC. A raw UTC epoch would place chain operations an offset away from all of them and from what a block
-# explorer shows in the user's local time. The offset in force at the event's own instant is used, so it stays correct
-# across DST boundaries.
-#
-# It is a function of the module rather than of the fetcher class because chain time reaches JAL from more than the
-# fetchers: what a routing aggregator reports about a transaction (jal/net/lifi.py) is stamped in the same UTC and has
-# to land on the same clock as the operations it completes.
-def local_timestamp(utc_seconds: int) -> int:
-    if utc_seconds <= 0:
-        return 0
-    return int(datetime.fromtimestamp(utc_seconds).replace(tzinfo=timezone.utc).timestamp())
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 # Base class of a blockchain transaction fetcher.
 #
 # A fetcher is a Statement that is filled from an HTTP API instead of a file: it builds the very same JSF structure
@@ -59,6 +41,7 @@ def local_timestamp(utc_seconds: int) -> int:
 # listed in FETCHERS below and reached through Import -> Blockchain.
 class ChainFetcher(Statement):
     name = ''                       # Human readable name shown in the menu
+    source_timezone = 'UTC'
     location_id = AssetLocation.UNDEFINED
     # Chain logo shown next to the menu item - a file name inside jal/img/ without its 'chain_' prefix.
     # An empty name leaves the menu item without an icon.
@@ -195,7 +178,7 @@ class ChainFetcher(Statement):
         self._page_count += 1
         self.page_fetched.emit(self._page_count)
 
-    # See local_timestamp() above - kept as a method so that every fetcher reaches it the way it always has.
+    # See local_timestamp() in jal/db/helpers.py - kept as a method so every fetcher reaches it as it always has.
     @staticmethod
     def _local_timestamp(utc_seconds: int) -> int:
         return local_timestamp(utc_seconds)

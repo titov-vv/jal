@@ -22,6 +22,7 @@ JAL_STATEMENT_CLASS = "StatementKuCoin"
 # Earn subscribe/redeem pair, which crosses buckets like any other internal move.
 class StatementKuCoin(StatementCSV):
     StatementName = "KuCoin"
+    source_timezone = 'UTC'
     Files = {
         'Account History_Funding Account': 'funding',
         'Account History_Trading Account': 'trading',

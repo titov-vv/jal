@@ -22,6 +22,7 @@ JAL_STATEMENT_CLASS = "StatementBitget"
 # the amount) understates every fee-bearing movement by exactly the fee.
 class StatementBitget(StatementCSV):
     StatementName = "Bitget"
+    source_timezone = 'UTC'
     # Bitget writes "<label> <UID>-<export timestamp>.csv", so only the label is stable and files are matched by it.
     # Note the prefix is 'Export ' everywhere except the futures files, which say 'Exported ', and that the Earn
     # labels are joined by an en-dash (U+2013) rather than a hyphen.

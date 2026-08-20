@@ -1,6 +1,6 @@
 import csv
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from io import StringIO
 from zipfile import ZipFile, BadZipFile
@@ -163,7 +163,7 @@ class StatementCSV(Statement):
 
     def _timestamp(self, value: str) -> int:
         try:
-            return int(datetime.strptime(value, self.DateFormat).replace(tzinfo=timezone.utc).timestamp())
+            return self._moment(datetime.strptime(value, self.DateFormat))
         except ValueError:
             raise Statement_ImportError(self.tr("Can't read timestamp: ") + f"'{value}'")
 

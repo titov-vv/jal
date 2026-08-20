@@ -1,4 +1,6 @@
 import os
+import time
+from contextlib import contextmanager
 from decimal import Decimal
 from datetime import datetime, timezone
 from jal.db.db import JalDB
@@ -8,6 +10,26 @@ from jal.db.account import JalAccount
 from jal.db.operations import LedgerTransaction, AssetPayment
 from constants import PredefinedAsset, AssetLocation, SymbolId
 from jal.data_export.xlsx import XLSX
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Pins the machine to a fixed zone for the duration of the block. A test needs this whenever what it checks is the
+# difference between the clock a timestamp is stored on and the clock the machine runs on - a statement importer
+# converts into the local wall clock, so its expected values are otherwise those of whoever runs the suite.
+# time.tzset() mutates process-global state, so the previous setting is put back on the way out.
+@contextmanager
+def pinned_tz(zone: str):
+    saved = os.environ.get('TZ')
+    os.environ['TZ'] = zone
+    time.tzset()
+    try:
+        yield
+    finally:
+        if saved is None:
+            os.environ.pop('TZ', None)
+        else:
+            os.environ['TZ'] = saved
+        time.tzset()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
