@@ -7,7 +7,7 @@ from PySide6.QtCharts import QChart, QChartView, QLineSeries, QScatterSeries, QD
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
-from jal.widgets.helpers import ts2d, DateFormat
+from jal.widgets.helpers import ts2d, DateFormat, ts2axis, axis2ts
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.theme import Theme, Meaning, is_dark_theme
 
@@ -35,15 +35,15 @@ class AccrualChartWidget(QWidget):
         self.accrued_series = QLineSeries()
         self.points_series = QScatterSeries()
         for point in series:      # Conversion to 'float' in order not to get 'int' overflow on some platforms
-            self.accrued_series.append(float(point['timestamp'] * 1000), float(point['accrued']))
-            self.points_series.append(float(point['timestamp'] * 1000), float(point['accrued']))
+            self.accrued_series.append(float(ts2axis(point['timestamp']) * 1000), float(point['accrued']))
+            self.points_series.append(float(ts2axis(point['timestamp']) * 1000), float(point['accrued']))
         self.points_series.setMarkerSize(7)
         self.points_series.hovered.connect(self.MouseOverPoint)
 
         self.axisX = QDateTimeAxis()
         self.axisX.setTickCount(11)
-        self.axisX.setRange(QDateTime().fromSecsSinceEpoch(data_range[0]),
-                            QDateTime().fromSecsSinceEpoch(data_range[1]))
+        self.axisX.setRange(QDateTime().fromSecsSinceEpoch(ts2axis(data_range[0])),
+                            QDateTime().fromSecsSinceEpoch(ts2axis(data_range[1])))
         self.axisX.setFormat(DateFormat.date(qt=True))
         self.axisX.setLabelsAngle(-90)
         self.axisX.setTitleText(self.tr("Date"))
@@ -90,7 +90,8 @@ class AccrualChartWidget(QWidget):
         if not state:
             self.setToolTip("")
             return
-        measured = [x for x in self._series if float(x['timestamp'] * 1000) == point.x()]
+        hovered = axis2ts(int(point.x() / 1000))
+        measured = [x for x in self._series if x['timestamp'] == hovered]
         if not measured:
             self.setToolTip("")
             return

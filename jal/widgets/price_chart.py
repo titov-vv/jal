@@ -8,7 +8,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import ts2d, DateFormat
+from jal.widgets.helpers import ts2d, DateFormat, ts2axis, axis2ts
 from jal.widgets.theme import Theme, Meaning, is_dark_theme
 
 
@@ -20,18 +20,19 @@ class ChartWidget(QWidget):
 
         self.quotes_series = QLineSeries()
         for point in quotes:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
-            self.quotes_series.append(float(point['timestamp']), point['quote'])
+            self.quotes_series.append(float(ts2axis(point['timestamp']) * 1000), point['quote'])
 
         self._trades = trades
         self.trade_series = QScatterSeries()
         for point in trades:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
-            self.trade_series.append(float(point['timestamp']), point['price'])
+            self.trade_series.append(float(ts2axis(point['timestamp']) * 1000), point['price'])
         self.trade_series.setMarkerSize(7)
         self.trade_series.hovered.connect(self.MouseOverTrade)
 
         self.axisX = QDateTimeAxis()
         self.axisX.setTickCount(11)
-        self.axisX.setRange(QDateTime().fromSecsSinceEpoch(data_range[0]), QDateTime().fromSecsSinceEpoch(data_range[1]))
+        self.axisX.setRange(QDateTime().fromSecsSinceEpoch(ts2axis(data_range[0])),
+                            QDateTime().fromSecsSinceEpoch(ts2axis(data_range[1])))
         self.axisX.setFormat(DateFormat.date(qt=True))
         self.axisX.setLabelsAngle(-90)
         self.axisX.setTitleText("Date")
@@ -75,10 +76,11 @@ class ChartWidget(QWidget):
 
     def MouseOverTrade(self, point, state):
         if state:
-            trade = [x for x in self._trades if float(x['timestamp']) == point.x() and float(x['price']) == point.y()]
+            hovered = axis2ts(int(point.x() / 1000))
+            trade = [x for x in self._trades if x['timestamp'] == hovered and float(x['price']) == point.y()]
             qty = sum([x['qty'] for x in trade])
             avg_price = sum([x['price']*x['qty'] for x in trade]) / qty
-            tip_text = ts2d(int(point.x()/1000)) + ": "
+            tip_text = ts2d(hovered) + ": "
             tip_text += f"+{qty}@{avg_price}" if qty > 0 else f"{qty}@{avg_price}"
             if len(trade) and trade[0]['text']:
                 tip_text += "\n" + trade[0]['text']
@@ -126,7 +128,7 @@ class ChartWindow(MdiWidget):
             if operation.type() == LedgerTransaction.AssetPayment:
                 text = operation.name() + "\n" + operation.description().split('\n')[0]
             trades.append({
-                'timestamp': operation.timestamp() * 1000,  # timestamp to ms
+                'timestamp': operation.timestamp(),
                 'price': trade.open_price(adjusted=True),
                 'qty': trade.open_qty(),
                 'meaning': meaning,   # what the marker means - its colour depends on the ground and is picked later
@@ -139,15 +141,15 @@ class ChartWindow(MdiWidget):
         asset = JalAsset(self.asset_id)
         self.currency_name = JalAsset(account.currency()).symbol()
         self.trades = self.load_open_trades(account, asset, end_time)
-        start_time = 0 if not self.trades else min([x['timestamp'] for x in self.trades])/1000 - 2592000  # Shift back by 30 days
+        start_time = 0 if not self.trades else min([x['timestamp'] for x in self.trades]) - 2592000  # Shift back by 30 days
         quotes = asset.quotes(start_time, end_time, self.currency_id, adjust_splits=True)
         for quote in quotes:
-            self.quotes.append({'timestamp': quote[0] * 1000, 'quote': quote[1]})  # timestamp to ms
+            self.quotes.append({'timestamp': quote[0], 'quote': quote[1]})
         if self.quotes or self.trades:
             min_price = min([x['quote'] for x in self.quotes] + [x['price'] for x in self.trades])
             max_price = max([x['quote'] for x in self.quotes] + [x['price'] for x in self.trades])
-            min_ts = min([x['timestamp'] for x in self.quotes] + [x['timestamp'] for x in self.trades]) / 1000
-            max_ts = max([x['timestamp'] for x in self.quotes] + [x['timestamp'] for x in self.trades]) / 1000
+            min_ts = min([x['timestamp'] for x in self.quotes] + [x['timestamp'] for x in self.trades])
+            max_ts = max([x['timestamp'] for x in self.quotes] + [x['timestamp'] for x in self.trades])
         else:
             self.range = [0, 0, 0, 0]
             return

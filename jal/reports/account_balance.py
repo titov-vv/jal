@@ -7,7 +7,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.ui.reports.ui_account_balance_report import Ui_AccountBalanceHistoryReportWidget
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import timestamp_range, DateFormat
+from jal.widgets.helpers import timestamp_range, DateFormat, ts2axis
 
 JAL_REPORT_CLASS = "AccountBalanceHistoryReport"
 
@@ -28,7 +28,7 @@ class BalanceChartWidget(QWidget):
     def updateView(self, balances, currency_name):
         self.balances_series = QLineSeries()
         for point in balances:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
-            self.balances_series.append(float(point['timestamp']), point['balance'])
+            self.balances_series.append(float(ts2axis(point['timestamp']) * 1000), point['balance'])
 
         # Cleanup if anything already drawn in the chart
         self.chartView.chart().removeAllSeries()
@@ -41,8 +41,8 @@ class BalanceChartWidget(QWidget):
         self.axisX.setFormat(DateFormat.date(qt=True))
         self.axisX.setLabelsAngle(-90)
         self.axisX.setTitleText("Date")
-        min_ts = int(min([x['timestamp'] for x in balances]) / 1000)
-        max_ts = int(max([x['timestamp'] for x in balances]) / 1000)
+        min_ts = ts2axis(min([x['timestamp'] for x in balances]))
+        max_ts = ts2axis(max([x['timestamp'] for x in balances]))
         self.axisX.setRange(QDateTime().fromSecsSinceEpoch(min_ts), QDateTime().fromSecsSinceEpoch(max_ts))
 
         # Create new Y-axis
@@ -99,5 +99,5 @@ class AccountBalanceHistoryReportWindow(MdiWidget):
         balances = []
         date_range = self.ui.ReportRange.getRange()
         for ts in timestamp_range(date_range[0], date_range[1]):
-            balances.append({'timestamp': ts*1000, 'balance': account.balance(ts)})
+            balances.append({'timestamp': ts, 'balance': account.balance(ts)})
         self.chart.updateView(balances, JalAsset(account.currency()).symbol())

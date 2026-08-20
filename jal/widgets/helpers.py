@@ -378,6 +378,18 @@ def ts2d(timestamp: int) -> str:
     return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime(DateFormat.date())
 
 # -----------------------------------------------------------------------------------------------------------------------
+# QDateTimeAxis renders every value it is given through the machine's local time and has no timezone of its own, while
+# every date the application shows elsewhere is rendered by ts2dt() on the clock the timestamps are kept in. An axis
+# label would therefore sit an offset away from the very cell it labels. These two convert between the two clocks:
+# ts2axis() prepares a timestamp for a chart (series point or axis range) and axis2ts() reads back what a chart
+# reports (the coordinate of a hovered point). The offset in force at that instant is used, so DST is handled.
+def ts2axis(timestamp: int) -> int:
+    return int(datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(tzinfo=None).timestamp())
+
+def axis2ts(value: int) -> int:
+    return int(datetime.fromtimestamp(value).replace(tzinfo=timezone.utc).timestamp())
+
+# -----------------------------------------------------------------------------------------------------------------------
 # converts given datetime value into unix-timestamp
 def dt2ts(value: datetime) -> int:
     return int(value.replace(tzinfo=timezone.utc).timestamp())
