@@ -15,6 +15,9 @@ from constants import PredefinedAsset, PredefinedCategory
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
+from lxml import etree
+
+from jal.data_import.broker_statements.ibkr import StatementIBKR
 from jal.data_import.broker_statements.kucoin import StatementKuCoin
 from jal.db.helpers import local_timestamp, now_ts, now_dt
 from jal.db.ledger import Ledger
@@ -218,3 +221,32 @@ def test_the_offset_of_the_operation_is_used_and_not_the_current_one():
     with pinned_tz('UTC'):
         assert statement._timestamp('2010-07-01 12:00:00') == _stamp(2010, 7, 1, 8)    # UTC+4, Moscow summer time
         assert statement._timestamp('2010-12-01 12:00:00') == _stamp(2010, 12, 1, 9)   # UTC+3, Moscow winter time
+
+
+# An XML statement writes both kinds of fact into attributes that look alike, and only the written form tells them
+# apart: "20250925;122812" is a moment and "20250925" is a calendar day. Reading the second as the first would
+# convert a settlement day or an ex-date out of its own date. The zone is declared here rather than taken from
+# StatementIBKR, which deliberately declares none - see the comment on it.
+def test_an_xml_attribute_is_a_moment_or_a_day_by_the_form_it_is_written_in(fixed_tz):
+    class ZonedStatement(StatementIBKR):
+        source_timezone = 'America/New_York'
+    statement = ZonedStatement()
+    element = etree.fromstring('<Trade dateTime="20250925;122812" settleDateTarget="20250929"/>')
+    assert statement.attr_timestamp(element, 'dateTime', None) == _stamp(2025, 9, 25, 16, 28, 12) + fixed_tz
+    assert statement.attr_timestamp(element, 'settleDateTarget', None) == d2t(250929)
+
+
+# IBKR itself is left on no zone at all, so what it reports is stored as the digits it wrote. Its end-of-day marker
+# is the reason: 20:20 is not a time the payment happened, it is the day it belongs to - and a converted marker
+# lands on the next one. The tax corrections that arrive months later are matched to their dividend against what is
+# already stored, so the reading has to keep meaning what it meant when that row was written.
+def test_ibkr_readings_are_stored_as_the_source_wrote_them():
+    statement = StatementIBKR()
+    assert statement.source_timezone == ''
+    element = etree.fromstring('<CashTransaction dateTime="20241227;202000" settleDate="20241227"/>')
+    for zone in ('Europe/Lisbon', 'Etc/GMT+5', 'UTC'):
+        with pinned_tz(zone):
+            stored = statement.attr_timestamp(element, 'dateTime', None)
+            assert ts2d(stored) == ts2d(d2t(241227)), zone
+            assert datetime.fromtimestamp(stored, tz=timezone.utc).strftime('%H:%M') == '20:20', zone
+            assert statement.attr_timestamp(element, 'settleDate', None) == d2t(241227), zone

@@ -132,6 +132,19 @@ class IBKR_Account:
 # -----------------------------------------------------------------------------------------------------------------------
 # Class for Loading Interactive Brokers XML Flex report
 class StatementIBKR(StatementXML):
+    # A flex query reports its times in the zone the query is configured with, which the file never states. For this
+    # broker that zone is US exchange time: a Milan or Euronext trade of the 09:00-17:30 CET session is stamped
+    # 03:00-11:30, and the end-of-day marker IBKR puts on payments reads 20:20.
+    #
+    # It is deliberately NOT declared as the source zone, because these readings must not be converted yet:
+    #  - on a payment or a corporate action 'dateTime' is not an instant at all. It is an accounting day carrying
+    #    that fixed marker, and a converted marker lands on a different day - which is the day the operation is
+    #    taxed in.
+    #  - a withholding tax is matched to the dividend it belongs to against payments ALREADY in the database
+    #    (find_dividend4tax), and a re-imported trade is recognised as stored by its timestamp. A reading converted
+    #    now no longer equals the one stored then, so a correction loses its dividend and a trade is stored twice.
+    # Both end when the stored rows move to the same clock, at which point this becomes 'America/New_York'.
+    source_timezone = ''
     statements_path = './*/FlexStatement'
     statement_tag = 'FlexStatement'
     level_tag = 'levelOfDetail'

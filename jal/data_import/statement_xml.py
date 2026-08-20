@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from lxml import etree
 from PySide6.QtWidgets import QApplication
 from jal.data_import.statement import Statement, JSF, Statement_ImportError
@@ -57,20 +57,23 @@ class StatementXML(Statement):
             return None
         return value
 
-    # Convert attribute 'attr_name' value from strings "YYYYMMDD:hhmmss' or "YYYYMMDD" to datetime object
-    # or return default value if attribute not found / has wrong format
-    @staticmethod
-    def attr_timestamp(xml_element, attr_name, default_value):
+    # Convert attribute 'attr_name' value from strings "YYYYMMDD;hhmmss" or "YYYYMMDD" to a timestamp
+    # or return default value if attribute not found / has wrong format.
+    #
+    # The written form is what says which kind of fact the value is, and the two kinds are stored differently: a
+    # string carrying a time of day is a moment and is converted out of the source's zone, while a bare date is a
+    # calendar day and is kept as it stands - see Statement._moment() and Statement._date().
+    def attr_timestamp(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
         time_str = xml_element.attrib[attr_name]
         try:
             if len(time_str) == 19:  # YYYY-MM-DDTHH:MM:SS
-                return int(datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
+                return self._moment(datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S"))
             if len(time_str) == 15:  # YYYYMMDD;HHMMSS
-                return int(datetime.strptime(time_str, "%Y%m%d;%H%M%S").replace(tzinfo=timezone.utc).timestamp())
+                return self._moment(datetime.strptime(time_str, "%Y%m%d;%H%M%S"))
             elif len(time_str) == 8:  # YYYYMMDD
-                return int(datetime.strptime(time_str, "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
+                return self._date(datetime.strptime(time_str, "%Y%m%d"))
             else:
                 return default_value
         except ValueError:
