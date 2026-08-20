@@ -1,0 +1,17 @@
+<FlexQueryResponse queryName="Full" type="AF">
+<FlexStatements count="1">
+<FlexStatement accountId="U7654321F" fromDate="20240101" toDate="20241231" period="LastBusinessDay" whenGenerated="20250115;000000">
+<AccountInformation accountId="U7654321F" acctAlias="" model="" currency="USD" name="Ivan Ivanov" accountType="Individual" customerType="Individual" accountCapabilities="Cash" tradingPermissions="Stocks,Bonds" accountRepName="" accountRepPhone="" dateOpened="20210101" dateFunded="20210101" dateClosed="" ibEntity="IBLLC-US" primaryEmail="" />
+<CashReport>
+<CashReportCurrency accountId="U7654321F" acctAlias="" model="" currency="USD" levelOfDetail="Currency" fromDate="20240101" toDate="20241231" startingCash="0" endingCash="45" endingSettledCash="45" />
+</CashReport>
+<SecuritiesInfo>
+<SecurityInfo currency="USD" assetCategory="STK" subCategory="ETF" symbol="TRSY" description="LONG TREASURY ETF" conid="30158321" securityID="US1111111111" securityIDType="ISIN" cusip="111111111" isin="US1111111111" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" maturity="" />
+</SecuritiesInfo>
+<CashTransactions>
+<CashTransaction accountId="U7654321F" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" subCategory="ETF" symbol="TRSY" description="TRSY(US1111111111) CASH DIVIDEND USD 0.500000 PER SHARE (Ordinary Dividend)" conid="30158321" securityID="US1111111111" securityIDType="ISIN" cusip="111111111" isin="US1111111111" figi="BBG000BBBBB1" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" dateTime="20240705;202000" settleDate="20240705" amount="50" type="Dividends" tradeID="" code="" transactionID="27135289522" reportDate="20240705" clientReference="" actionID="136178726" levelOfDetail="DETAIL" serialNumber="" deliveryType="" commodityType="" fineness="" weight="" />
+<CashTransaction accountId="U7654321F" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" subCategory="ETF" symbol="TRSY" description="TRSY(US1111111111) CASH DIVIDEND USD 0.500000 PER SHARE - US TAX" conid="30158321" securityID="US1111111111" securityIDType="ISIN" cusip="111111111" isin="US1111111111" figi="BBG000BBBBB1" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" dateTime="20240705;202000" settleDate="20240705" amount="-5" type="Withholding Tax" tradeID="" code="" transactionID="27135289533" reportDate="20240705" clientReference="" actionID="136178726" levelOfDetail="DETAIL" serialNumber="" deliveryType="" commodityType="" fineness="" weight="" />
+</CashTransactions>
+</FlexStatement>
+</FlexStatements>
+</FlexQueryResponse>

@@ -252,6 +252,7 @@ class StatementIBKR(StatementXML):
                                             ('amount', 'amount', float, None),
                                             ('tradeID', 'number', str, ''),
                                             ('transactionID', 'tid', str, ''),
+                                            ('actionID', 'action_id', str, ''),
                                             ('description', 'description', str, None)],
                                  'loader': self.load_cash_transactions},
             'ChangeInDividendAccruals': {'tag': 'ChangeInDividendAccrual',
@@ -339,8 +340,12 @@ class StatementIBKR(StatementXML):
         for symbol_name in symbols:
             elements = self._statement.findall(f".//*[@symbol='{symbol_name}']")
             for element in elements:
-                if 'accountId' in element.attrib:
-                    element.attrib['accountId'] = 'U7654321'  # Hide real account number
+                # The dump is written to be sent on to someone who has no business knowing whose account it is, so
+                # what names the account goes, and so does the running balance - it says nothing about the records
+                # that could not be reconciled, and it is the one figure in them that describes the whole portfolio.
+                for attribute, replacement in (('accountId', 'U7654321'), ('acctAlias', ''), ('balance', '')):
+                    if attribute in element.attrib:
+                        element.attrib[attribute] = replacement
                 debug_info += etree.tostring(element).decode("utf-8")
         debug_info += "----------------------------------------------------------------\n"
         # Dump asset_payments info from database for the given symbol's asset
@@ -947,6 +952,7 @@ class StatementIBKR(StatementXML):
         for i, dividend in enumerate(dividends):
             dividend['id'] = asset_payments_base + i
             dividend['type'] = JSF.PAYMENT_DIVIDEND
+            dividend['number'] = dividend.pop('action_id')  # Mandatory to match taxes
             self.drop_extra_fields(dividend, ["currency", "reported"])
             self._data[JSF.ASSET_PAYMENTS].append(dividend)
             cnt += 1
@@ -955,7 +961,7 @@ class StatementIBKR(StatementXML):
         for i, bond_interest in enumerate(bond_interests):
             bond_interest['id'] = asset_payments_base + i
             bond_interest['type'] = JSF.PAYMENT_INTEREST
-            self.drop_extra_fields(bond_interest, ["currency", "reported", "tid"])
+            self.drop_extra_fields(bond_interest, ["currency", "reported", "tid", "action_id"])
             self._data[JSF.ASSET_PAYMENTS].append(bond_interest)
             cnt += 1
 
@@ -978,7 +984,7 @@ class StatementIBKR(StatementXML):
                 transfer['account'] = [transfer['account'], 0, 0]
                 transfer['withdrawal'] = transfer['deposit'] = -transfer['amount']
             transfer['fee'] = 0.0
-            self.drop_extra_fields(transfer, ["type", "amount", "currency", "reported"])
+            self.drop_extra_fields(transfer, ["type", "amount", "currency", "reported", "action_id"])
             self._data[JSF.TRANSFERS].append(transfer)
             cnt += 1
 
@@ -995,7 +1001,7 @@ class StatementIBKR(StatementXML):
             else:
                 category = PredefinedCategory.Fees
             fee['lines'] = [{'amount': fee['amount'], 'category': category, 'description': fee['description']}]
-            self.drop_extra_fields(fee, ["type", "amount", "description", "symbol", "number", "currency", "reported", "tid"])
+            self.drop_extra_fields(fee, ["type", "amount", "description", "symbol", "number", "currency", "reported", "tid", "action_id"])
             self._data[JSF.INCOME_SPENDING].append(fee)
             cnt += 1
 
@@ -1178,9 +1184,17 @@ class StatementIBKR(StatementXML):
             cnt += 1
         logging.info(self.tr("CFD charges loaded: ") + f"{cnt} ({len(charges)})")
 
-    # Applies tax to matching dividend:
-    # if tax < 0: apply it to dividend without tax
-    # otherwise: it is a correction and there should be dividend with exactly the same tax that will be set to 0
+    # Applies a withholding tax to the dividend it was withheld from.
+    #
+    # A tax is not an operation of its own in JAL - it is a property of the payment it was taken out of, so every
+    # such record has to find that payment first. The link is the actionID: IBKR gives the dividend, the tax withheld
+    # from it and every later correction of that tax one and the same 'actionID', and keeps it stable across annual
+    # statements.
+    #
+    # A negative amount is tax being taken, a positive one is tax being given back. Both are applied the same way:
+    # the tax the payment carries is moved by what this statement says about it, so that several records of one
+    # action (a full reversal followed by a smaller re-charge, which is how a tax for ETF holding government paper is
+    # corrected next year) arrive at the right figure whatever order they are read in.
     def apply_tax_withheld(self, tax) -> int:
         TaxFullPattern = r"^(?P<description>.*) - (?P<country>\w\w) TAX$"
 
@@ -1189,20 +1203,14 @@ class StatementIBKR(StatementXML):
             logging.warning(self.tr("*** MANUAL ENTRY REQUIRED ***"))
             logging.warning(self.tr("Unhandled tax country pattern found: ") + f"{tax['description']}")
             return 0
-        parts = parts.groupdict()
-        self.set_asset_country(tax['symbol'], parts['country'].lower())
-        description = parts['description']
-        previous_tax = Decimal(tax['amount']) if Decimal(tax['amount']) >= Decimal('0') else Decimal('0')
-        new_tax = -tax['amount'] if tax['amount'] < 0 else 0
+        self.set_asset_country(tax['symbol'], parts.groupdict()['country'].lower())
 
-        dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['symbol'], previous_tax, new_tax, description)
-        if dividend is None:
-            self.save_debug_info(account=tax['account'], symbol=tax['symbol'])
-            raise Statement_ImportError(self.tr("Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
+        dividend = self.find_dividend4tax(tax)      # refuses the whole statement if it finds no single payment
+        new_tax = float(Decimal(str(dividend.get('tax', 0))) - Decimal(str(tax['amount'])))
         if self.mapped_id(JSF.ASSET_PAYMENTS, dividend['id']):
             # Notification is required if we adjust data for dividend that is already in Jal DB
             logging.info(self.tr("Tax adjustment for dividend: ") +
-                         f"{dividend['tax']} -> {new_tax} ({ts2dt(dividend['timestamp'])} {dividend['description']})")
+                         f"{dividend.get('tax', 0)} -> {new_tax} ({ts2dt(dividend['timestamp'])} {dividend['description']})")
         dividend["tax"] = new_tax
         # append new dividend if it came from DB and haven't been loaded in self._data yet
         if len([1 for x in self._data[JSF.ASSET_PAYMENTS] if x['id'] == dividend['id']]) == 0:
@@ -1210,101 +1218,87 @@ class StatementIBKR(StatementXML):
             self._data[JSF.ASSET_PAYMENTS].append(dividend)
         return 1
 
-    # Searches for dividend that matches tax in the best way:
-    # - it should have exactly the same account_id and asset_id
-    # - tax amount withheld from dividend should be equal to provided 'tax' value
-    # - timestamp should be the same or within previous year for weak match of Q1 taxes
-    # - note should be exactly the same or contain the same key elements
-    def find_dividend4tax(self, timestamp, account_id, symbol_id, prev_tax, new_tax, note):
-        PaymentInLiueOfDividend = 'PAYMENT IN LIEU OF DIVIDEND'
-        TaxNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\)(?P<prefix>( \w*)+) +(?P<amount>\d+\.\d+)?(?P<suffix>.*)$"
-        DividendNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\)(?P<prefix>( \w*)+) +(?P<amount>\d+\.\d+)?(?P<suffix>.*) \(.*\)$"
+    # The dividend a withholding tax belongs to. There is no answer of "none": a tax that cannot be placed stops the
+    # import, because the alternative is a statement that looks imported while a payment silently keeps a tax that
+    # was corrected months ago - and nothing afterwards would say so.
+    #
+    # Candidates come from this statement and from the database alike, because a correction reaches JAL months after
+    # the payment it corrects and usually in the statement of the following year, by which time the payment is
+    # stored. They are looked up by the actionID. Anything else is left for the user to sort out by hand and said so
+    # plainly.
+    #
+    # A payment stored before this id was recorded carries none, and so does a statement old enough to predate it.
+    # Either case falls back to the day the payment was made, which is what the statements offered instead. The
+    # fallback is deliberately narrow - the same day, the same account, the same asset, and exactly one candidate,
+    # never a best guess among several - and it dies out on its own as such payments age out of the corrections
+    # window.
+    def find_dividend4tax(self, tax) -> dict:
+        action_id = tax.get('action_id', '')
+        candidates = [x for x in self._data[JSF.ASSET_PAYMENTS]
+                      if (x['type'] == JSF.PAYMENT_DIVIDEND or x['type'] == JSF.PAYMENT_STOCK_DIVIDEND)
+                      and x['symbol'] == tax['symbol'] and x['account'] == tax['account']]
+        # A stored payment that an earlier tax of this same statement already pulled in is not a second candidate -
+        # it is the very record now sitting in the statement, and the one there carries the tax applied since.
+        known = [x['id'] for x in candidates]
+        candidates += [x for x in self._stored_dividends(tax) if x['id'] not in known]
+        if action_id:
+            matched = [x for x in candidates if x.get('number') == action_id]
+            if len(matched) == 1:
+                return matched[0]
+            if matched:
+                self._refuse_unmatched_tax(tax, matched, self.tr("several payments carry this corporate action id"))
+        same_day = [x for x in candidates if ts2d(x['timestamp']) == ts2d(tax['timestamp'])]
+        if len(same_day) == 1:
+            return same_day[0]
+        self._refuse_unmatched_tax(tax, same_day if same_day else candidates,
+                                   self.tr("no single payment of that day to fall back on") if action_id
+                                   else self.tr("the statement gives no corporate action id to match on"))
 
-        dividends = [x for x in self._data[JSF.ASSET_PAYMENTS] if
-                     (x['type'] == JSF.PAYMENT_DIVIDEND or x['type'] == JSF.PAYMENT_STOCK_DIVIDEND)
-                     and x['symbol'] == symbol_id and x['account'] == account_id]
-        db_account = self._map_db_account(account_id)
-        db_asset = self._map_db_asset_by_symbol(symbol_id)
-        if db_account and db_asset:
-            db_dividends = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
-            db_dividends += AssetPayment.get_list(db_account, db_asset, AssetPayment.StockDividend)
-            for db_dividend in db_dividends:
-                dividends.append({
-                    "id": self.statement_payment_id(db_dividend.oid()),
-                    "account": account_id,
-                    "symbol": symbol_id,
-                    "timestamp": db_dividend.timestamp(),
-                    "number": db_dividend.number(),
-                    "amount": float(db_dividend.amount()),
-                    "tax": float(db_dividend.tax()),
-                    "description": db_dividend.note()
-                })
-        if datetime.fromtimestamp(timestamp, tz=timezone.utc).timetuple().tm_yday < 75:
-            # We may have wrong date in taxes before March, 15 due to tax correction
-            range_start, _range_end = ManipulateDate.PreviousYear(day=datetime.fromtimestamp(timestamp, tz=timezone.utc))
-            # Allow matching to earlier dividends from the previous year, but never to future payments.
-            dividends = [x for x in dividends if range_start <= x['timestamp'] <= timestamp]
-        else:
-            # For any other day - use exact time match
-            dividends = [x for x in dividends if x['timestamp'] == timestamp]
-        dividends = [x for x in dividends if 'tax' not in x or (abs(Decimal(x['tax']) - prev_tax) < 0.0001)]
-        dividends = sorted(dividends, key=lambda x: x['timestamp'])
-
-        # Choose either Dividends or Payments in liue with regards to note of the matching tax
-        if PaymentInLiueOfDividend in note.upper():
-            dividends = list(filter(lambda item: PaymentInLiueOfDividend in item['description'], dividends))
-            # we don't check for full match as there are a lot of records without amount
-        else:
-            dividends = list(filter(lambda item: PaymentInLiueOfDividend not in item['description'], dividends))
-            # Check for full match
-            for dividend in dividends:
-                if (dividend['timestamp'] == timestamp) and (note.upper() == dividend['description'][:len(note)].upper()):
-                    return dividend
-        if len(dividends) == 0:
-            return None
-
-        # Chose most probable dividend - by amount, timestamp and description
-        parts = re.match(TaxNotePattern, note, re.IGNORECASE)
-        if not parts:
-            logging.warning(self.tr("*** MANUAL ENTRY REQUIRED ***"))
-            logging.warning(self.tr("Unhandled tax pattern found: ") + f"{note}")
-            return None
-        parts = parts.groupdict()
-        note_prefix = parts['prefix']
-        note_suffix = parts['suffix']
+    # Dividends of this account and asset that are already in the database, in the shape a statement record has.
+    def _stored_dividends(self, tax) -> list:
         try:
-            note_amount = float(parts['amount'])
-        except (ValueError, TypeError):
-            note_amount = 0
-        score = [0] * len(dividends)
-        for i, dividend in enumerate(dividends):
-            parts = re.match(DividendNotePattern, dividend['description'], re.IGNORECASE)
-            if not parts:
-                logging.warning(self.tr("*** MANUAL ENTRY REQUIRED ***"))
-                logging.warning(self.tr("Unhandled dividend pattern found: ") + f"{dividend['description']}")
-                return None
-            parts = parts.groupdict()
-            try:
-                amount = float(parts['amount'])
-            except (ValueError, TypeError):
-                amount = 0
-            if abs(amount - note_amount) <= 0.000005:            # Description has very similar amount +++++
-                score[i] += 5
-            if dividend['timestamp'] == timestamp:               # Timestamp exact match gives ++
-                score[i] += 2
-            if abs(0.1 * dividend['amount'] - new_tax) <= 0.01:  # New tax is 10% of dividend gives +
-                score[i] += 1
-            if parts['prefix'] == note_prefix:                   # Prefix part of description match gives +
-                score[i] += 1
-            if parts['suffix'] == note_suffix:                   # Suffix part of description match gives +
-                score[i] += 1
-        for i, vote in enumerate(score):
-            if (vote == max(score)) and (vote > 0):
-                return dividends[i]
-        # Final check - if only one found, return it
-        if len(dividends) == 1:
-            return dividends[0]
-        return None
+            db_account = self._map_db_account(tax['account'])
+            db_asset = self._map_db_asset_by_symbol(tax['symbol'])
+        except RuntimeError:
+            return []
+        if not db_account or not db_asset:
+            return []
+        stored = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
+        stored += AssetPayment.get_list(db_account, db_asset, AssetPayment.StockDividend)
+        return [{
+            "id": self.statement_payment_id(payment.oid()),
+            "account": tax['account'],
+            "symbol": tax['symbol'],
+            "timestamp": payment.timestamp(),
+            "number": payment.number(),
+            "amount": float(payment.amount()),
+            "tax": float(payment.tax()),
+            "description": payment.note()
+        } for payment in stored]
+
+    # Stops the import and leaves behind everything needed to work out why.
+    #
+    # The message names what could not be placed and what was considered instead, in terms a user can read; beside it
+    # save_debug_info() writes the records of this asset as the statement gives them and as the database holds them,
+    # with the account number masked out, so that the file can be sent on to be looked at without sending anything
+    # about the rest of the portfolio with it. Failing to write that file must not hide the reason for stopping, so
+    # it is attempted separately from the refusal itself.
+    def _refuse_unmatched_tax(self, tax, candidates: list, reason: str) -> None:
+        symbol = self._symbol(tax['symbol'])
+        description = (f"{symbol['symbol']} ({symbol.get('isin', '')})"
+                       f" {ts2d(tax['timestamp'])} reported {ts2d(tax['reported'])}"
+                       f" amount {tax['amount']} action {tax.get('action_id') or '-'}")
+        logging.error(self.tr("Withholding tax matches no payment: ") + reason)
+        logging.error(f"    {description}")
+        logging.error(self.tr("    Payments considered: ") + f"{len(candidates)}")
+        for payment in candidates:
+            logging.error(f"      {ts2d(payment['timestamp'])} amount {payment['amount']}"
+                          f" tax {payment.get('tax', 0)} action {payment.get('number') or '-'}")
+        try:
+            self.save_debug_info(account=tax['account'], symbol=tax['symbol'])
+        except Exception as e:
+            logging.error(self.tr("Failed to collect debug information: ") + f"{e}")
+        raise Statement_ImportError(self.tr("Import cancelled, withholding tax matches no payment: ") + description)
 
     # Assign ex-date from dividend accruals
     def load_dividend_accruals(self, accruals):

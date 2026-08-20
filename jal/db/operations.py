@@ -521,7 +521,8 @@ class AssetPayment(LedgerTransaction):
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "ex_date": {"mandatory": False, "validation": False},
-        "number": {"mandatory": False, "validation": True, "default": ''},
+        # Payments stored before 2026 have an empty one, so the re-import check treats an empty stored value as the same payment rather than as a different one.
+        "number": {"mandatory": False, "validation": True, "default": '', "matches_empty": True},
         "type": {"mandatory": True, "validation": True},
         "account_id": {"mandatory": True, "validation": True},
         "symbol_id": {"mandatory": True, "validation": True},

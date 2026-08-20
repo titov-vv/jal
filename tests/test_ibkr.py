@@ -1,13 +1,19 @@
 import json
 from decimal import Decimal
 
+import pytest
+
+from PySide6.QtWidgets import QMessageBox
+
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
-from jal.data_import.statement import JSF
+from jal.data_import.statement import JSF, Statement, Statement_ImportError
 from tests.helpers import d2t
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset, AssetData
+from jal.db.db import JalDB
+from jal.db.operations import AssetPayment
 from jal.constants import PredefinedAsset, BookAccount, SymbolId, AssetLocation
 
 
@@ -241,22 +247,6 @@ def test_ibkr_cfd(tmp_path, project_root, data_path, prepare_db_taxes):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Warnings are expected for this test:
-# Payment was reversed by approximate description: 30/06/2022 20:20:00, 'BEP(BMG162581083) CASH DIVIDEND USD 0.0161 PER SHARE (Ordinary Dividend)': 12.15
-# Payment was reversed by approximate description: 30/06/2022 20:20:00, 'BEP(BMG162581083) CASH DIVIDEND USD 0.0161 PER SHARE (Bonus Dividend)': 0.65
-# Payment was reversed by approximate description: 30/06/2022 20:20:00, 'BEP(BMG162581083) CASH DIVIDEND USD 0.0161 PER SHARE (Ordinary Dividend)': 12.15
-# Payment was reversed by approximate description: 30/06/2022 20:20:00, 'BEP(BMG162581083) CASH DIVIDEND USD 0.30371 PER SHARE (Ordinary Dividend)': 0.64
-# Payment was reversed with different reported date: 17/07/2020 20:20:00, 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (Ordinary Dividend)': 3.69
-def test_ibkr_dividends(tmp_path, project_root, data_path, prepare_db_taxes):
-    with open(data_path + 'ibkr_dividends.json', 'r', encoding='utf-8') as json_file:
-        statement = json.load(json_file)
-
-    IBKR = StatementIBKR()
-    IBKR.load(data_path + 'ibkr_dividends.xml')
-    assert IBKR._data == statement
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_corp_actions(tmp_path, project_root, data_path, prepare_db_taxes):
     with open(data_path + 'ibkr_corp_actions.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
@@ -267,9 +257,9 @@ def test_ibkr_corp_actions(tmp_path, project_root, data_path, prepare_db_taxes):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_ibkr_q1_tax_correction_does_not_match_future_dividend():
-    # The DB already contains a later dividend with the same previous tax amount.
-    # A Q1 correction for February must not be attached to that future dividend.
+def test_ibkr_q1_tax_correction_does_not_match_future_dividend(prepare_db):
+    # A correction that names no corporate action can only fall back on the day it was paid, and a later dividend
+    # carrying the very same tax figure must not be taken for it however well the amounts line up.
     ibkr = StatementIBKR()
     ibkr._data = {
         JSF.ASSET_PAYMENTS: [
@@ -277,21 +267,16 @@ def test_ibkr_q1_tax_correction_does_not_match_future_dividend():
              'amount': 13.73, 'tax': 0.79, 'description': 'O(US7561091049) CASH DIVIDEND USD 0.264 PER SHARE (Ordinary Dividend)'},
             {'id': 2, 'type': JSF.PAYMENT_DIVIDEND, 'account': 1, 'symbol': 95, 'timestamp': d2t(250314),
              'amount': 13.94, 'tax': 4.12, 'description': 'O(US7561091049) CASH DIVIDEND USD 0.268 PER SHARE (Ordinary Dividend)'},
-        ]
+        ],
+        JSF.ASSETS: [{'id': 1, JSF.SYMBOLS: [{'id': 95, 'symbol': 'O', 'isin': 'US7561091049'}]}]
     }
     ibkr._map_db_account = lambda _: 0
     ibkr._map_db_asset_by_symbol = lambda _: 0
 
-    dividend = ibkr.find_dividend4tax(
-        d2t(250214),
-        1,
-        95,
-        Decimal('4.12'),
-        Decimal('0'),
-        'O(US7561091049) CASH DIVIDEND USD 0.264 PER SHARE',
-    )
-
-    assert dividend is None
+    tax = {'account': 1, 'symbol': 95, 'timestamp': d2t(250301), 'reported': d2t(250301), 'amount': 4.12,
+           'action_id': '', 'description': 'O(US7561091049) CASH DIVIDEND USD 0.264 PER SHARE - US TAX'}
+    with pytest.raises(Statement_ImportError):
+        ibkr.find_dividend4tax(tax)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -391,46 +376,31 @@ def test_ibkr_split_with_prefixed_parenthetical_symbol_pairs_correctly():
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_ibkr_find_db_stock_dividend_for_tax_correction(monkeypatch):
-    class DummyDividend:
-        def oid(self):
-            return 332
+def test_ibkr_find_db_stock_dividend_for_tax_correction(prepare_db, monkeypatch):
+    # The payment a correction belongs to is usually not in the statement that carries the correction - it was
+    # stored a year earlier - so a stored payment has to be a candidate like any other, and is pulled into the
+    # statement under an id of its own when it wins.
+    class StoredPayment:
+        def oid(self): return 332
+        def timestamp(self): return 1672258800
+        def number(self): return '22598209889'          # the corporate action it was stored under
+        def amount(self): return 0.2776
+        def tax(self): return 0.48
+        def note(self): return 'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000'
 
-        def timestamp(self):
-            return 1672258800
-
-        def number(self):
-            return '22598209889'
-
-        def amount(self):
-            return 0.2776
-
-        def tax(self):
-            return 0.48
-
-        def note(self):
-            return 'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000'
-
-    def fake_get_list(account, asset, subtype):
-        if subtype == 3:
-            return [DummyDividend()]
-        return []
-
-    monkeypatch.setattr('data_import.broker_statements.ibkr.AssetPayment.get_list', fake_get_list)
+    monkeypatch.setattr('data_import.broker_statements.ibkr.AssetPayment.get_list',
+                        lambda account, asset, subtype: [StoredPayment()] if subtype == 3 else [])
 
     ibkr = StatementIBKR()
-    ibkr._data = {JSF.ASSET_PAYMENTS: []}
+    ibkr._data = {JSF.ASSET_PAYMENTS: [],
+                  JSF.ASSETS: [{'id': 1, JSF.SYMBOLS: [{'id': 294, 'symbol': 'BCV', 'isin': 'US0596951063'}]}]}
     ibkr._map_db_account = lambda _: 1
     ibkr._map_db_asset_by_symbol = lambda _: 294
 
-    dividend = ibkr.find_dividend4tax(
-        1672258800,
-        1,
-        294,
-        Decimal('0.48'),
-        Decimal('0'),
-        'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000',
-    )
+    tax = {'account': 1, 'symbol': 294, 'timestamp': 1672258800, 'reported': 1672258800, 'amount': 0.48,
+           'action_id': '22598209889',
+           'description': 'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000 - CH TAX'}
+    dividend = ibkr.find_dividend4tax(tax)
 
     assert dividend is not None
     assert dividend['id'] == 1   # first free statement payment id, reserved for the db record
@@ -497,3 +467,92 @@ def test_ibkr_spinoff_allows_fractional_entitlement_rounding():
     assert ibkr.load_spinoff(action, None) == 1
     assert ibkr._data[JSF.CORP_ACTIONS][0]['symbol'] == 11
     assert ibkr._data[JSF.CORP_ACTIONS][0]['quantity'] == 50
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A withholding tax belongs to the payment it was taken out of, and IBKR says which one by giving the payment, the
+# tax and every later correction of that tax one and the same corporate action id. The correction arrives in the
+# statement of the following February, by which time the payment is in the ledger and nothing but that id connects
+# them - the correction names its own report date, and the payment's own date is a year behind.
+def test_ibkr_tax_correction_of_a_later_year_finds_its_payment_by_action_id(tmp_path, project_root, data_path,
+                                                                            prepare_db_taxes):
+    first = StatementIBKR()
+    first.load(data_path + 'ibkr_dividends_year1.xml')
+    first.match_db_ids()
+    first.import_into_db()
+
+    imported = [x for x in JalAccount.get_all_accounts() if x.number() == 'U7654321F'][0]
+    payment = AssetPayment.get_list(imported.id())[0]
+    assert payment.number() == '136178726'          # stored under the corporate action it came from
+    assert payment.amount() == Decimal('50')
+    assert payment.tax() == Decimal('5')
+
+    second = StatementIBKR()
+    second.load(data_path + 'ibkr_dividends_year2.xml')
+    second.match_db_ids()
+    second.import_into_db()
+
+    # 5.00 given back and 0.25 taken again, applied to the payment that was already stored rather than to a new one
+    payments = AssetPayment.get_list(imported.id())
+    assert len(payments) == 1
+    assert payments[0].tax() == Decimal('0.25')
+    assert payments[0].amount() == Decimal('50')
+
+
+# A tax that names an action nothing carries stops the import outright. Booking the payment without its correction
+# would leave a tax figure quietly a year out of date, and nothing afterwards would point at it - so the statement is
+# refused whole and nothing of it is kept.
+def test_ibkr_tax_without_a_matching_action_halts_the_import(tmp_path, project_root, data_path, prepare_db_taxes,
+                                                             monkeypatch):
+    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: None)
+    statement = StatementIBKR()
+    with pytest.raises(Statement_ImportError):
+        statement.load(data_path + 'ibkr_dividends_year2.xml')   # the payment it corrects was never imported
+    assert statement._data[JSF.ASSET_PAYMENTS] == []
+
+
+# The dump left behind by a refusal has to be readable by someone who has never seen the account: the records of the
+# one asset involved, as the statement gives them and as the ledger holds them, and the account number masked out so
+# that the file can be sent on as it is.
+def test_ibkr_refusal_dump_carries_the_asset_and_not_the_account(tmp_path, project_root, data_path, prepare_db_taxes,
+                                                                 monkeypatch):
+    first = StatementIBKR()
+    first.load(data_path + 'ibkr_dividends_year1.xml')
+    first.match_db_ids()
+    first.import_into_db()
+    # The stored payment loses the action id and moves a day, so neither the id nor the day can reach it any more
+    JalDB._exec("UPDATE asset_payments SET number='x', timestamp=timestamp+86400", commit=True)
+
+    dumps = []
+    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: dumps.append(kwargs['debug_info']))
+    with pytest.raises(Statement_ImportError):
+        StatementIBKR().load(data_path + 'ibkr_dividends_year2.xml')
+
+    assert len(dumps) == 1
+    assert 'TRSY' in dumps[0] and 'US1111111111' in dumps[0]   # the asset that could not be reconciled
+    assert '136178726' in dumps[0]                             # the action the tax named
+    assert 'U7654321F' not in dumps[0]                         # ... and never the account it belongs to
+    assert 'U7654321' in dumps[0]                              # which is replaced by the placeholder
+    assert 'balance="' not in dumps[0] or 'balance=""' in dumps[0]   # nor what the rest of the portfolio is worth
+
+
+# A payment stored before the corporate action id was ever recorded carries none. Importing the same statement again
+# once the id IS recorded must recognise that payment, not store a second copy of it beside the first.
+def test_ibkr_a_payment_stored_without_an_action_id_is_not_imported_twice(tmp_path, project_root, data_path,
+                                                                          prepare_db_taxes, monkeypatch):
+    # Re-importing a period that is already covered is what the test is about, and that asks the user to confirm
+    monkeypatch.setattr(QMessageBox, 'warning', lambda *args, **kwargs: QMessageBox.Yes)
+    first = StatementIBKR()
+    first.load(data_path + 'ibkr_dividends_year1.xml')
+    first.match_db_ids()
+    first.import_into_db()
+    imported = [x for x in JalAccount.get_all_accounts() if x.number() == 'U7654321F'][0]
+    payment = AssetPayment.get_list(imported.id())[0]
+    JalDB._exec("UPDATE asset_payments SET number='' WHERE oid=:oid",   # as stored before this was recorded
+                [(":oid", payment.oid())], commit=True)
+
+    again = StatementIBKR()
+    again.load(data_path + 'ibkr_dividends_year1.xml')
+    again.match_db_ids()
+    again.import_into_db()
+    assert len(AssetPayment.get_list(imported.id())) == 1

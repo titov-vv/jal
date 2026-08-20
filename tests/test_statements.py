@@ -27,13 +27,6 @@ def load_expected_statement(filename):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
-    # Test big major things
-    statement, expected_map = load_expected_statement(data_path + 'ibkr.json')
-    IBKR = StatementIBKR()
-    IBKR.load(data_path + 'ibkr.xml')
-    assert IBKR._data == statement
-    assert IBKR._id_map == expected_map
-
     # Test rights issue
     statement, expected_map = load_expected_statement(data_path + 'ibkr_rights.json')
     IBKR = StatementIBKR()

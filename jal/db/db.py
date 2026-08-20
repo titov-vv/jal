@@ -488,6 +488,13 @@ class JalDB:
                     raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data} and have no default value")
             if data[field] is None:
                 query_text += f"{field} IS NULL AND "
+            elif fields[field].get('matches_empty') and data[field] != '':
+                # A row stored before the importer learned to record this identifier carries none, and it is the same
+                # operation all the same - every other field says so. Without this the identifier alone would make a
+                # re-import store a second copy of everything that predates it. It is one-way: a row that HAS an
+                # identifier is never answered by an operation that carries a different one.
+                query_text += f"({field} = :{field} OR {field} = '') AND "
+                params.append((f":{field}", data[field]))
             else:
                 query_text += f"{field} = :{field} AND "
                 params.append((f":{field}", data[field]))
