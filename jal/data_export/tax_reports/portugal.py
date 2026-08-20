@@ -121,7 +121,7 @@ class TaxesPortugal(TaxReport):
                 interests_report.append(line)
         # Process cash payments out of corporate actions
         payments = CorporateAction.get_payments(self.account)
-        payments = [x for x in payments if self.year_begin <= x['timestamp'] <= self.year_end]
+        payments = [x for x in payments if self.year_begin <= x['timestamp'] < self.year_end]
         for payment in payments:
             rate = self.account_currency.quote(payment['timestamp'], self._currency_id)[1]
             line = {

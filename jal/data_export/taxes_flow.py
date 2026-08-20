@@ -29,6 +29,8 @@ class TaxesFlowRus:
 
     def prepare_flow_report(self, year):
         self.flows = {}
+        # The year is a half-open window [year_begin, year_end): 'year_end' is the FIRST second of the next year,
+        # so an operation stamped at midnight on 1 January belongs to that next year and to no other.
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
 

@@ -518,6 +518,8 @@ class JalAccount(JalDB):
     # This method is used only in TaxesFlowRus.prepare_flow_report() to get money/asset flow for russian tax report
     # direction is "in" or "out"
     # flow_type: MONEY_FLOW or ASSETS_FLOW to get flow of money or assets value
+    # The window is half-open [begin, end), like JalCategory.get_operations(): a movement stamped at 'end'
+    # belongs to the next period and must not be counted in this one as well.
     def get_flow(self, begin, end, flow_type, direction):
         signs = {'in': +1, 'out': -1}
         sign = signs[direction]
@@ -528,7 +530,7 @@ class JalAccount(JalDB):
             self.ASSETS_FLOW: f"SELECT value FROM ledger WHERE value IS NOT NULL AND book_account={BookAccount.Assets} AND otype!={jal.db.operations.LedgerTransaction.CorporateAction}"
         }
         total = Decimal('0')
-        query = self._exec(sql[flow_type] + " AND account_id=:account_id AND timestamp>=:begin AND timestamp<=:end",
+        query = self._exec(sql[flow_type] + " AND account_id=:account_id AND timestamp>=:begin AND timestamp<:end",
                            [(":account_id", self._id), (":begin", begin), (":end", end)])
         while query.next():
             amount = sign * self._read_record(query, cast=[Decimal])

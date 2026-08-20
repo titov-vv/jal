@@ -79,7 +79,7 @@ class TaxesRussia(TaxReport):
         ns = not self.use_settlement
         # Prepare list of dividends withdrawn from account (due to short trades)
         dividends_withdrawn = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
-        dividends_withdrawn = [x for x in dividends_withdrawn if self.year_begin <= x.timestamp() <= self.year_end]
+        dividends_withdrawn = [x for x in dividends_withdrawn if self.year_begin <= x.timestamp() < self.year_end]
         dividends_withdrawn = [x for x in dividends_withdrawn if x.amount() < Decimal('0')]
         for trade in trades_list:
             corporate_actions = trade.modified_by()
@@ -231,7 +231,7 @@ class TaxesRussia(TaxReport):
         currency = JalAsset(self.account.currency())
         country = self.account.country()
         interests = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.BondInterest, skip_accrued=True)
-        interests = [x for x in interests if self.year_begin <= x.timestamp() <= self.year_end]  # Only in given range
+        interests = [x for x in interests if self.year_begin <= x.timestamp() < self.year_end]  # Only in given range
         for interest in interests:
             amount = interest.amount()
             rate = currency.quote(interest.timestamp(), self._currency_id)[1]
@@ -268,7 +268,7 @@ class TaxesRussia(TaxReport):
         crypto_report = []
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() == PredefinedAsset.Crypto]
-        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
+        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() < self.year_end]
         for trade in trades:
             o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
             c_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
@@ -371,7 +371,7 @@ class TaxesRussia(TaxReport):
                 interests_report.append(line)
         # Process cash payments out of corporate actions
         payments = CorporateAction.get_payments(self.account)
-        payments = [x for x in payments if self.year_begin <= x['timestamp'] <= self.year_end]
+        payments = [x for x in payments if self.year_begin <= x['timestamp'] < self.year_end]
         for payment in payments:
             rate = self.account_currency.quote(payment['timestamp'], self._currency_id)[1]
             line = {

@@ -90,6 +90,8 @@ class TaxReport:
         tax_report = {}
         self.account = JalAccount(account_id)
         self.account_currency = JalAsset(self.account.currency())
+        # The year is a half-open window [year_begin, year_end): 'year_end' is the FIRST second of the next year,
+        # so an operation stamped at midnight on 1 January belongs to that next year and to no other.
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         if 'use_settlement' in kwargs:
@@ -118,12 +120,12 @@ class TaxReport:
         dividends = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
         dividends += AssetPayment.get_list(self.account.id(), subtype=AssetPayment.StockDividend)
         dividends += AssetPayment.get_list(self.account.id(), subtype=AssetPayment.StockVesting)
-        dividends = [x for x in dividends if self.year_begin <= x.timestamp() <= self.year_end]
+        dividends = [x for x in dividends if self.year_begin <= x.timestamp() < self.year_end]
         return dividends
 
     # Returns a list of closed stock/ETF trades that should be included into the report for given year
     def trades_list(self, asset_type) -> list:
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() in asset_type]
-        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
+        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() < self.year_end]
         return trades

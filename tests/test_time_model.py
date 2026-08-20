@@ -7,17 +7,21 @@ import time
 import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 from datetime import datetime, timezone
+from decimal import Decimal
 
 import pytest
 from PySide6.QtCore import QDate, QDateTime, QTimeZone
 from PySide6.QtWidgets import QWidget
 
-from constants import PredefinedAsset
+from constants import PredefinedAsset, PredefinedCategory
+from jal.data_export.tax_reports.russia import TaxesRussia
+from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.helpers import now_ts, now_dt
+from jal.db.ledger import Ledger
 from jal.widgets.helpers import ts2axis, axis2ts, ts2d
-from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import create_assets
+from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
+from tests.helpers import create_assets, create_actions, create_dividends, d2t
 
 
 # A test here pins the machine to a fixed zone, because what is under test is precisely the difference between the
@@ -147,3 +151,30 @@ def test_days_to_expiration_counts_on_the_stored_clock(prepare_db, fixed_tz):
     assert asset.days2expiration() == 9
     asset.update_data({'expiry': now_ts() - 2 * 86400 - 60})
     assert asset.days2expiration() == -2
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A tax year is a HALF-OPEN window. 'year_end' is already the first second of the NEXT year (see
+# TaxReport.prepare_tax_report), so testing it with '<=' puts an operation stamped at midnight on 1 January into two
+# consecutive reports at once - declared, and taxed, twice. Statement importers produce exactly such timestamps
+# whenever a source gives a date without a time.
+def test_a_payment_at_new_year_midnight_belongs_to_one_year_only(prepare_db_taxes):
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    midnight = d2t(250101)
+    create_dividends([(midnight, 1, 4, 10.0, 1.0, "Dividend paid at the turn of the year")])
+    report = TaxesRussia()
+    report.account = JalAccount(1)
+    for year, expected in [(2024, []), (2025, [midnight])]:
+        report.year_begin = d2t(year % 100 * 10000 + 101)
+        report.year_end = d2t((year + 1) % 100 * 10000 + 101)
+        assert [x.timestamp() for x in report.dividends_list()] == expected
+
+
+# The money and asset flows of a year are the same window, and the report they feed states the year's opening and
+# closing balances beside them - a movement counted in two years cannot be reconciled against either.
+def test_a_movement_at_new_year_midnight_flows_in_one_year_only(prepare_db):
+    account = JalAccountCreator(currency_id=2, number='X1', name='Test', investing=0).commit()
+    create_actions([(d2t(250101), account.id(), 1, [(PredefinedCategory.Interest, Decimal('100'))])])
+    Ledger().rebuild(from_timestamp=0)
+    assert account.get_flow(d2t(240101), d2t(250101), JalAccount.MONEY_FLOW, 'in') == Decimal('0')
+    assert account.get_flow(d2t(250101), d2t(260101), JalAccount.MONEY_FLOW, 'in') == Decimal('100')
