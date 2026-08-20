@@ -78,7 +78,7 @@ def ledger(prepare_db):
                              (DAY_2, DAY_2, STOCK, Decimal('-4'), Decimal('130'), Decimal('1')),
                              (DAY_3, DAY_3, STOCK, Decimal('-3'), Decimal('80'), Decimal('1'))])
     JalAccount(WALLET_A).reconcile(DAY_2)   # ... and the reconciled ones are marked, which is the INFO colour
-    JalDB()._exec("UPDATE base_currency SET currency_id=:usd", [(":usd", USD)])
+    JalDB()._exec("UPDATE residence SET currency_id=:usd", [(":usd", USD)])
     Ledger().rebuild(from_timestamp=0)
     # Three unsettled legs, so the pending-transfers report has rows of more than one kind to tint
     _transfer(WALLET_A, None, 400, DAY_1, number='0xsent')

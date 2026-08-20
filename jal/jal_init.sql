@@ -91,12 +91,18 @@ CREATE TABLE asset_data (
     value    TEXT    NOT NULL
 );
 
--- Table to keep history of base currency changes
-DROP TABLE IF EXISTS base_currency;
-CREATE TABLE base_currency (
+-- Table to keep history of where the user lived and what currency they reported in.
+-- One row per change, in force from 'since_timestamp' until the next row. The three facts share a table
+-- because one event changes them all - a move of country changes the tax jurisdiction, the wall clock and
+-- usually the reporting currency too. 'country_id' = 0 or an empty 'timezone' means the row doesn't state
+-- that fact and the last row that did still holds.
+DROP TABLE IF EXISTS residence;
+CREATE TABLE residence (
     id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
     since_timestamp INTEGER NOT NULL UNIQUE,
-    currency_id     INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE
+    currency_id     INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    country_id      INTEGER NOT NULL DEFAULT (0) REFERENCES countries (id) ON DELETE SET DEFAULT ON UPDATE CASCADE,
+    timezone        TEXT    NOT NULL DEFAULT ('')
 );
 
 DROP INDEX IF EXISTS asset_data_uniqueness;
@@ -832,7 +838,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 64);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 65);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
@@ -1657,8 +1663,8 @@ INSERT INTO country_names (country_id, language_id, name) VALUES (246, 2, 'За�
 INSERT INTO country_names (country_id, language_id, name) VALUES (247, 2, 'Зимбабве');
 --------------------------------------------------------------------------------
 
--- Initialize base currency
-INSERT INTO base_currency(id, since_timestamp, currency_id) VALUES (1, 946684800, 1);
+-- Initialize residence (also sets the currency reports are made in)
+INSERT INTO residence(id, since_timestamp, currency_id) VALUES (1, 946684800, 1);
 
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

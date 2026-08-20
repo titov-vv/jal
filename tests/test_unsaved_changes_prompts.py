@@ -33,7 +33,7 @@ def three_trades(prepare_db):
     create_trades(1, [(_ts(4), _ts(4), 4, Decimal('10'), Decimal('100'), Decimal('1')),
                       (_ts(3), _ts(3), 4, Decimal('-4'), Decimal('130'), Decimal('1')),
                       (_ts(2), _ts(2), 4, Decimal('-3'), Decimal('80'), Decimal('1'))])
-    JalDB()._exec("UPDATE base_currency SET currency_id=:usd", [(":usd", USD)])
+    JalDB()._exec("UPDATE residence SET currency_id=:usd", [(":usd", USD)])
     Ledger().rebuild(from_timestamp=0)
     yield
 

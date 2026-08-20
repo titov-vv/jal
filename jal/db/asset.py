@@ -699,7 +699,7 @@ class JalAsset(JalDB):
     def get_base_currency(cls, timestamp: int=None) -> int:
         if timestamp is None:
             timestamp = QDate.currentDate().startOfDay(Qt.UTC).toSecsSinceEpoch()
-        base_id = cls._read("SELECT currency_id FROM base_currency WHERE since_timestamp<=:timestamp "
+        base_id = cls._read("SELECT currency_id FROM residence WHERE since_timestamp<=:timestamp "
                             "ORDER BY since_timestamp DESC LIMIT 1", [(":timestamp", timestamp)])
         try:
             base_id = int(base_id)
@@ -713,7 +713,7 @@ class JalAsset(JalDB):
     @classmethod
     def get_base_currency_history(cls, begin: int, end: int) -> list:
         history = [(year_begin(begin), cls.get_base_currency(year_begin(begin)))]
-        query = cls._exec("SELECT since_timestamp, currency_id FROM base_currency "
+        query = cls._exec("SELECT since_timestamp, currency_id FROM residence "
                           "WHERE since_timestamp>:begin AND since_timestamp<=:end ORDER BY since_timestamp",
                           [(":begin", year_begin(begin)), (":end", year_end(end))])
         while query.next():

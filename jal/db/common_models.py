@@ -242,9 +242,12 @@ class BaseCurrencyListModel(AbstractReferenceListModel):
         columns = [
             CmColumn("id", '', hide=True),
             CmColumn("since_timestamp", self.tr("Date"), sort=True, width=CmWidth.WIDTH_DATETIME, delegate_type=CmDelegate.DATE),
-            CmColumn("currency_id", self.tr("Currency"), width=CmWidth.WIDTH_STRETCH, default=True, delegate_type=CmDelegate.LOOKUP)
+            CmColumn("currency_id", self.tr("Currency"), width=CmWidth.WIDTH_STRETCH, default=True, delegate_type=CmDelegate.LOOKUP),
+            CmColumn("country_id", '', hide=True),
+            CmColumn("timezone", '', hide=True)
         ]
-        super().__init__("base_currency", columns, parent)
+        super().__init__("residence", columns, parent)
+        self.set_default_values({'country_id': 0, 'timezone': ''})
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
 
 
