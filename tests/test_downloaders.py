@@ -7,6 +7,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex,
 from tests.helpers import d2t, d2dt, dt2dt, create_stocks, create_assets, create_quotes, create_trades, symbol_id_for
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset, JalAssetCreator
+from jal.db.residence import JalResidence
 from jal.db.ledger import Ledger
 from jal.db.symbol import JalSymbol
 from jal.constants import AssetLocation, PredefinedAsset, SymbolId
@@ -111,6 +112,32 @@ def test_ECB_downloader(prepare_db):
     downloader = QuoteDownloader()
     rates_downloaded = downloader.ECB_DataReader(JalAsset(2), d2t(210413), d2t(210414))
     assert_frame_equal(rates_usd, rates_downloaded)
+
+# Rates are downloaded against every currency JAL has a source for, not against the one the residence names: a tax
+# return may still be owed to a country the user has left, and it is owed in that country's currency. Before this,
+# a base that had left the timeline stopped being downloaded, and the only way to keep it coming was a fake
+# residence row stating it for a day - which also made that day's cross-rates go through the wrong currency.
+def test_rates_are_downloaded_against_every_base_with_a_source(prepare_db, monkeypatch):
+    rub, usd, eur = 1, 2, 3
+    JalDB._exec("DELETE FROM residence")
+    JalDB._exec("INSERT INTO residence (since_timestamp, currency_id, country_id, timezone) "
+                "VALUES (946684800, :eur, 5, 'Europe/Lisbon')", [(":eur", eur)])
+    JalResidence.invalidate_cache()
+    assert JalAsset.get_base_currency(d2t(210413)) == eur   # nothing in the timeline asks for RUB any more
+
+    rates = pd.DataFrame({'Close': [Decimal('1.5')], 'Date': [d2dt(210413)]}).set_index('Date')
+    requested = []
+    def fake_download(base):
+        return lambda asset, begin, end: requested.append((asset.id(), base)) or rates
+    downloader = QuoteDownloader()
+    monkeypatch.setattr(downloader, 'CBR_DataReader', fake_download(rub))
+    monkeypatch.setattr(downloader, 'ECB_DataReader', fake_download(eur))
+    downloader.download_currency_rates(d2t(210413), d2t(210413))
+
+    # both sources were asked, and neither was asked for a base against itself - that rate is always 1
+    assert sorted(requested) == sorted([(usd, rub), (eur, rub), (rub, eur), (usd, eur)])
+    assert JalAsset(usd).quotes(d2t(210413), d2t(210413), rub) == [(d2t(210413), Decimal('1.5'))]
+    assert JalAsset(usd).quotes(d2t(210413), d2t(210413), eur) == [(d2t(210413), Decimal('1.5'))]
 
 def test_MOEX_downloader(prepare_db_moex):
     create_assets([('ЗПИФ ПНК', 'ЗПИФ ПНК Рентал', 'RU000A1013V9', 1, PredefinedAsset.ETF, 0),         # ID 9

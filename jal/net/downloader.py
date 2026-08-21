@@ -341,18 +341,18 @@ class QuoteDownloader(QObject):
             "RUB": self.CBR_DataReader,
             "EUR": self.ECB_DataReader
         }
-        currencies = [x for x in JalAsset.get_currencies() if x.location(None) == AssetLocation.BANK_ACCOUNT]
-        for base in set([x[1] for x in JalAsset.get_base_currency_history(start_timestamp, end_timestamp)]):
-            base_symbol = JalAsset(base).symbol()
+        currencies = [x for x in JalAsset.get_currencies() if x.location(x.id()) == AssetLocation.BANK_ACCOUNT]
+        for base in [x for x in currencies if x.symbol() in data_loaders]:
+            base_symbol = base.symbol()
             logging.info(self.tr("Loading currency rates for " + base_symbol))
-            for i, currency in enumerate([x for x in currencies if x.id() != base]):  # base currency rate is always 1
+            for i, currency in enumerate([x for x in currencies if x.id() != base.id()]):  # base rate is always 1
                 if self._cancelled:
                     raise KeyboardInterrupt
-                from_timestamp = self._adjust_start(currency, base, start_timestamp)
+                from_timestamp = self._adjust_start(currency, base.id(), start_timestamp)
                 try:
                     if from_timestamp <= end_timestamp:
                         data = data_loaders[base_symbol](currency, from_timestamp, end_timestamp)
-                        self._store_quotations(currency, base, data)
+                        self._store_quotations(currency, base.id(), data)
                 except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
                     logging.warning(self.tr("No rates were downloaded for ") + f"{currency.symbol()}/{base_symbol}")
                     continue

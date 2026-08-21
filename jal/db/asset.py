@@ -700,13 +700,6 @@ class JalAsset(JalDB):
     def get_base_currency(cls, timestamp: int=None) -> int:
         return JalResidence.currency(timestamp)
 
-    # Return a list of (timestamp, currency_id) tuples that represent currency valid currency IDs that were in force
-    # after between beginning_of_the_year(begin) and end_of_the_year(end) timestamps.
-    # Begin and end of year it required to cover full tax year.
-    @classmethod
-    def get_base_currency_history(cls, begin: int, end: int) -> list:
-        return JalResidence.currency_history(begin, end)
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Stages a brand-new asset (assets row + symbol(s) + identifiers) before it becomes a real JalAsset.

@@ -2,7 +2,7 @@ from bisect import bisect_right
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from jal.db.db import JalDB
-from jal.db.helpers import day_begin, now_ts, year_begin, year_end
+from jal.db.helpers import day_begin, now_ts
 from jal.universal_cache import UniversalCache
 
 
@@ -72,16 +72,6 @@ class JalResidence(JalDB):
     @classmethod
     def timezone(cls, timestamp: int = None) -> str:
         return cls._at(timestamp)[2]
-
-    # Returns a list of (timestamp, currency_id) tuples that give the reporting currency in force from the beginning
-    # of the year of 'begin' up to the end of the year of 'end' - full tax years, as that is what the caller needs.
-    @classmethod
-    def currency_history(cls, begin: int, end: int) -> list:
-        begin, end = year_begin(begin), year_end(end)
-        history = [(begin, cls.currency(begin))]
-        dates, rows = cls._timeline()
-        history += [(date, rows[i][0]) for i, date in enumerate(dates) if begin < date <= end]
-        return history
 
 
 # ----------------------------------------------------------------------------------------------------------------------
