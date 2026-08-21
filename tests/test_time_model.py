@@ -1,7 +1,9 @@
 import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
+import csv
 import importlib
+import importlib.util
 import pathlib
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -17,6 +19,7 @@ from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.db import JalDB
+from jal.db.reclock import RECLOCKED_COLUMNS, reclock
 from jal.db.residence import JalResidence, wall_clock_reading
 from lxml import etree
 
@@ -26,7 +29,8 @@ from jal.db.helpers import is_day_marker, local_timestamp, now_ts, now_dt
 from jal.db.ledger import Ledger
 from jal.widgets.helpers import ts2axis, axis2ts, ts2d
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from tests.helpers import create_assets, create_actions, create_dividends, create_trades, d2t, pinned_tz
+from tests.helpers import (create_assets, create_actions, create_dividends, create_trades, create_transfers,
+                          d2t, pinned_tz)
 
 
 # The offset is handed out so a test can state the shift it expects in terms of it instead of repeating the number.
@@ -365,3 +369,266 @@ def test_nothing_moves_while_a_zone_is_unknown(prepare_db_taxes):
 
     _resident_in('Europe/Lisbon')
     assert wall_clock_reading(evening, '') == evening
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# What to do with the readings already stored when the clock they were read on turns out to have been another one -
+# the user enters a residence history reaching back over years already booked, or the application moves to storing
+# instants. reclock() re-reads the digits, and reports what it would do before it is allowed to write anything.
+
+@pytest.fixture
+def reclock_db(prepare_db):
+    JalAccountCreator(currency_id=2, number='M1', name='Moscow broker', investing=1).commit()   # account 1
+    JalAccountCreator(currency_id=2, number='L1', name='Lisbon bank', investing=0).commit()     # account 2
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # asset 4
+    yield
+
+
+def _stored(table: str, column: str, oid: int) -> int:
+    return int(JalDB._read(f"SELECT {column} FROM {table} WHERE oid=:oid", [(":oid", oid)]))
+
+
+def _spending(timestamp: int, account_id: int) -> tuple:
+    return timestamp, account_id, 1, [(PredefinedCategory.Fees, Decimal('-10'))]
+
+
+def _column_report(report: dict, table: str, column: str = 'timestamp') -> dict:
+    return next(x for x in report['columns'] if x['table'] == table and x['column'] == column)
+
+
+# The command line lives outside the package, as the tool it is, so it is loaded by its path rather than imported
+def _shift_clock():
+    specification = importlib.util.spec_from_file_location(
+        "shift_clock", pathlib.Path(__file__).resolve().parent.parent / "tools" / "shift_clock.py")
+    tool = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(tool)
+    return tool
+
+
+def _exported(path: str) -> list:
+    with open(path, newline='', encoding='utf-8-sig') as csv_file:
+        return list(csv.reader(csv_file))
+
+
+# The offset is not a number the run is given, it is a question asked of each row's own date: Moscow has stood at
+# +3 since 2014 while Lisbon keeps summer time, so two readings of one account, one in July and one in December,
+# are re-read two and three hours back respectively.
+def test_a_summer_and_a_winter_reading_are_re_read_by_their_own_offsets(reclock_db):
+    summer, winter = _stamp(2021, 7, 1, 15), _stamp(2021, 12, 1, 15)
+    create_trades(1, [(summer, d2t(210702), 4, Decimal('10'), Decimal('100'), Decimal('1')),
+                      (winter, d2t(211202), 4, Decimal('10'), Decimal('100'), Decimal('1'))])
+
+    report = reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
+    assert _stored('trades', 'timestamp', 1) == summer - 2 * 3600
+    assert _stored('trades', 'timestamp', 2) == winter - 3 * 3600
+    assert _column_report(report, 'trades')['changed'] == 2
+
+
+# A reading that states a day is left exactly where it is - it carries no time of day to re-read, and re-reading it
+# could only move it to another day. The end-of-day stamp of a source is one of those days, but only for the source
+# it belongs to: the same digits on a cash account are an evening, and an evening is a moment like any other.
+def test_a_reading_that_states_a_day_is_left_where_it_is(reclock_db):
+    midnight, noon, end_of_day = d2t(210701), _stamp(2021, 7, 1, 12), _stamp(2021, 7, 1, 20, 20)
+    create_actions([_spending(midnight, 2), _spending(noon, 2), _spending(end_of_day, 2)])
+
+    report = reclock('Europe/Moscow', 'Europe/Lisbon', source_markers=IBKR_DAY_MARKERS, apply=True)
+    assert _column_report(report, 'actions')['markers'] == 3
+    assert _column_report(report, 'actions')['changed'] == 0
+    assert [_stored('actions', 'timestamp', x) for x in (1, 2, 3)] == [midnight, noon, end_of_day]
+
+    reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)          # ... the same rows, with no source named
+    assert [_stored('actions', 'timestamp', x) for x in (1, 2)] == [midnight, noon]
+    assert _stored('actions', 'timestamp', 3) == end_of_day - 2 * 3600
+
+
+# The dates an operation carries beside its moment are dates by definition, and they are not in the map at all -
+# a settlement day and an ex-date belong to the day they name whatever clock anything else is read on.
+def test_the_dates_of_an_operation_are_never_re_read(reclock_db):
+    assert ('trades', 'settlement') not in [(table, column) for table, column, *_ in RECLOCKED_COLUMNS]
+    assert ('asset_payments', 'ex_date') not in [(table, column) for table, column, *_ in RECLOCKED_COLUMNS]
+    moment = _stamp(2021, 7, 1, 15)
+    create_trades(1, [(moment, d2t(210705), 4, Decimal('10'), Decimal('100'), Decimal('1'))])
+    create_dividends([(moment, 1, 4, 10.0, 1.0, "Dividend of the same day")])
+    JalDB._exec("UPDATE asset_payments SET ex_date=:ex_date", [(":ex_date", d2t(210630))])
+
+    reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
+    assert _stored('trades', 'timestamp', 1) == moment - 2 * 3600      # the moment beside them did move...
+    assert _stored('trades', 'settlement', 1) == d2t(210705)           # ... and neither of these did
+    assert _stored('asset_payments', 'ex_date', 1) == d2t(210630)
+
+
+# Two local times cannot be re-read without a choice being made: the hour a clock repeats when it goes back is two
+# different moments spelled the same, and the hour it skips going forward never happened at all. Both are reported
+# with the rows they are in, so the user decides what those rows meant instead of the run deciding silently.
+def test_an_hour_the_clock_repeats_or_skips_is_reported_and_not_hidden(reclock_db):
+    repeated = _stamp(2021, 10, 31, 1, 30)        # Lisbon puts its clock back that night, so 01:30 comes twice
+    skipped = _stamp(2021, 3, 28, 1, 30)          # ... and forward in March, over an hour that never happens
+    create_actions([_spending(repeated, 2), _spending(skipped, 2)])
+
+    report = reclock('Europe/Lisbon', 'UTC')
+    assert _column_report(report, 'actions')['ambiguous'] == [1]
+    assert _column_report(report, 'actions')['nonexistent'] == [2]
+
+
+# A marker is recognised by its value alone, so a run can MAKE one: three hours off Moscow turns a spending stored
+# at three in the afternoon into noon, and everything downstream reads noon as a day rather than a moment. Those
+# rows are counted while they can still be told apart - after the run nothing distinguishes them from a date that
+# was always one.
+def test_a_moment_that_lands_on_a_marker_is_counted_before_it_becomes_one(reclock_db):
+    afternoon = _stamp(2021, 7, 1, 15)
+    create_actions([_spending(afternoon, 2), _spending(afternoon + 60, 2)])
+
+    report = reclock('Europe/Moscow', 'UTC')
+    assert _column_report(report, 'actions')['changed'] == 2
+    assert [(x['oid'], x['becomes'], x['account']) for x in _column_report(report, 'actions')['made_markers']] == \
+           [(1, afternoon - 3 * 3600, 'Lisbon bank')]
+
+
+# A dry run is the default, and it is the whole point of the tool: it says what would happen and touches nothing.
+def test_a_dry_run_reports_everything_and_writes_nothing(reclock_db):
+    moment = _stamp(2021, 7, 1, 15)
+    create_actions([_spending(moment, 2)])
+
+    report = reclock('Europe/Moscow', 'Europe/Lisbon')
+    assert report['changed'] == 1 and report['applied'] is False
+    assert _stored('actions', 'timestamp', 1) == moment
+
+
+# Re-clocking is a reading of one instant on another clock, so reading it back on the first returns the digits it
+# started from - a run made in the wrong direction, or with the wrong zone, is undone by its own inverse.
+def test_a_round_trip_returns_every_reading_it_started_from(reclock_db):
+    moments = [_stamp(2021, month, 15, 15, 17) for month in range(1, 13)]
+    create_actions([_spending(x, 2) for x in moments])
+
+    reclock('Europe/Moscow', 'America/New_York', apply=True)
+    reclock('America/New_York', 'Europe/Moscow', apply=True)
+    assert [_stored('actions', 'timestamp', x) for x in range(1, 13)] == moments
+
+
+# Each account was kept on its own clock - the RU brokers of a user who had already moved, IBKR on its own - so a
+# run names the accounts it is about, and everything else keeps the digits it has.
+def test_only_the_accounts_the_run_names_are_re_read(reclock_db):
+    moment = _stamp(2021, 7, 1, 15)
+    create_actions([_spending(moment, 1), _spending(moment, 2)])
+
+    reclock('Europe/Moscow', 'Europe/Lisbon', accounts=[1], apply=True)
+    assert _stored('actions', 'timestamp', 1) == moment - 2 * 3600
+    assert _stored('actions', 'timestamp', 2) == moment
+
+
+# The window is stated in the clock the digits are stored on, which is the one the application shows - a row outside
+# it is not selected at all, however far the run would have moved it.
+def test_the_window_is_read_in_the_clock_the_digits_are_stored_on(reclock_db):
+    inside, outside = _stamp(2021, 7, 1, 15), _stamp(2021, 7, 3, 15)
+    create_actions([_spending(inside, 2), _spending(outside, 2)])
+
+    report = reclock('Europe/Moscow', 'Europe/Lisbon', begin=d2t(210701), end=_stamp(2021, 7, 2, 23, 59, 59), apply=True)
+    assert _column_report(report, 'actions')['selected'] == 1
+    assert _stored('actions', 'timestamp', 1) == inside - 2 * 3600
+    assert _stored('actions', 'timestamp', 2) == outside
+
+
+# An operation that holds two moments may have one of them re-read and not the other - the two ends were booked on
+# different accounts, and the run is about one of them. That can put the arrival before the departure, which is
+# legitimate when the clocks are hours apart but has to be seen rather than found later by the ledger.
+def test_a_leg_that_ends_up_before_the_one_it_follows_is_reported(reclock_db):
+    departure, arrival = _stamp(2021, 7, 1, 10), _stamp(2021, 7, 1, 10, 30)
+    oid = create_transfers([(departure, 1, Decimal('100'), 2, Decimal('100'), None)])[0]
+    JalDB._exec("UPDATE transfers SET deposit_timestamp=:arrival WHERE oid=:oid",
+                [(":arrival", arrival), (":oid", oid)])
+
+    report = reclock('Europe/Lisbon', 'Europe/Moscow', accounts=[1])   # the sending end alone, two hours forward
+    assert [x['oid'] for x in report['reordered']] == [oid]
+    assert report['reordered'][0]['after'] == (departure + 2 * 3600, arrival)
+    assert report['reordered'][0]['already'] is False
+    assert report['reordered'][0]['departure_account'] == 'Moscow broker'
+    assert report['reordered'][0]['arrival_account'] == 'Lisbon bank'
+    assert _column_report(report, 'transfers', 'deposit_timestamp')['selected'] == 0
+
+
+# A pair that is already stored with its arrival before its departure is reported too, and marked as such: the run
+# is not what put it that way - somebody may well have done it by hand to make the ledger read right - but the run
+# is what moves it, and that correction is about to be overwritten.
+def test_a_pair_that_was_already_out_of_order_is_reported_as_such(reclock_db):
+    departure, arrival = _stamp(2021, 7, 1, 10), _stamp(2021, 7, 1, 9, 30)     # the arrival stands first already
+    oid = create_transfers([(departure, 1, Decimal('100'), 2, Decimal('100'), None)])[0]
+    JalDB._exec("UPDATE transfers SET deposit_timestamp=:arrival WHERE oid=:oid",
+                [(":arrival", arrival), (":oid", oid)])
+
+    report = reclock('Europe/Lisbon', 'Europe/Moscow', accounts=[1])
+    assert [(x['oid'], x['already']) for x in report['reordered']] == [(oid, True)]
+
+
+# Whole groups of accounts move together - every RU broker, everything that is not already on UTC - and a group is
+# as often stated by what it leaves out as by what it holds. An exclusion applies to whatever was selected, so
+# "everything except these" needs no account named at all.
+def test_an_excluded_account_is_left_alone_however_it_was_selected(reclock_db):
+    moment = _stamp(2021, 7, 1, 15)
+    create_actions([_spending(moment, 1), _spending(moment, 2)])
+
+    report = reclock('Europe/Moscow', 'Europe/Lisbon', excluded=[2])
+    assert _column_report(report, 'actions')['selected'] == 1
+    report = reclock('Europe/Moscow', 'Europe/Lisbon', accounts=[1, 2], excluded=[2], apply=True)
+    assert _column_report(report, 'actions')['selected'] == 1
+    assert _stored('actions', 'timestamp', 1) == moment - 2 * 3600
+    assert _stored('actions', 'timestamp', 2) == moment
+
+
+# The moment an account was last reconciled is a reading of the same clock, and it is compared straight against
+# operation timestamps - left behind, it would move the reconciled mark of every operation within the offset of it.
+# It is in the window like anything else, and 'never reconciled' is stored as a zero, which is a day marker.
+def test_the_reconciliation_of_an_account_is_re_read_with_its_operations(reclock_db):
+    reconciled = _stamp(2021, 7, 1, 15)
+    JalDB._exec("UPDATE accounts SET reconciled_on=:moment WHERE id=1", [(":moment", reconciled)])
+
+    reclock('Europe/Moscow', 'Europe/Lisbon', end=_stamp(2021, 6, 30, 23, 59, 59), apply=True)
+    assert _stored('accounts', 'reconciled_on', 1) == reconciled          # outside the window, so untouched
+
+    reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
+    assert _stored('accounts', 'reconciled_on', 1) == reconciled - 2 * 3600
+    assert _stored('accounts', 'reconciled_on', 2) == 0                   # never reconciled, and it stays that way
+
+
+# The tool that drives the engine takes accounts by name, and a database may hold hundreds of them - a term deposit
+# is one account each. ALL (or ANY) is how they are all asked for without naming a single one, and a name that
+# matches nothing stops the run instead of quietly leaving that account behind.
+def test_the_command_line_takes_all_the_accounts_without_naming_them(reclock_db):
+    tool = _shift_clock()
+
+    assert tool.account_ids(None) is None                 # naming nothing at all means every account, too
+    assert tool.account_ids(['ALL']) is None
+    assert tool.account_ids(['any']) is None
+    assert tool.account_ids(['Lisbon bank']) == [2]
+    assert tool.account_ids(['Moscow broker', 'Lisbon bank']) == [1, 2]
+    assert tool.named_ids(None) == []                      # ... but nothing excluded is nothing excluded
+    assert tool.named_ids(['Lisbon bank']) == [2]
+    for names in (['Moscow broker', 'Ministry of Finance'], ['ALL']):   # the keyword is no account of --except
+        with pytest.raises(SystemExit):
+            tool.named_ids(names)
+
+
+# Both findings are written out to be gone through row by row, which a report of counts cannot be. The markers a run
+# makes are exported by the dry run alone - it is the last moment at which the two readings can be seen side by side.
+def test_the_findings_are_exported_for_review(reclock_db, tmp_path):
+    tool, prefix = _shift_clock(), str(tmp_path / "run")
+    afternoon = _stamp(2021, 7, 1, 15)
+    create_actions([_spending(afternoon, 2)])
+    oid = create_transfers([(_stamp(2021, 7, 1, 10), 1, Decimal('100'), 2, Decimal('100'), None)])[0]
+    JalDB._exec("UPDATE transfers SET deposit_timestamp=:arrival WHERE oid=:oid",
+                [(":arrival", _stamp(2021, 7, 1, 10, 30)), (":oid", oid)])
+
+    report = reclock('Europe/Moscow', 'UTC', accounts=[1, 2])
+    markers = _exported(tool.export_made_markers(prefix, report))
+    assert markers[0] == ["operation", "column", "id", "account", "stored", "becomes", "marker", "note"]
+    assert markers[1][:4] == ["actions", "timestamp", "1", "Lisbon bank"]
+    assert markers[1][5:7] == ["2021-07-01 12:00:00", "12:00:00"]
+
+    report = reclock('Europe/Lisbon', 'Europe/Moscow', accounts=[1])
+    legs = _exported(tool.export_reordered_legs(prefix, report))
+    assert legs[0][:2] == ["operation", "id"] and legs[0][6] == "already_reordered"
+    assert legs[1][:6] == ["transfers", "1", "2021-07-01 10:00:00", "2021-07-01 12:00:00",
+                           "2021-07-01 10:30:00", "2021-07-01 10:30:00"]
+    assert legs[1][6:9] == ["", "Moscow broker", "Lisbon bank"]
+
+    assert tool.export_reordered_legs(prefix, reclock('UTC', 'UTC')) == ''    # nothing found, nothing written
+    tool.print_report(report, {'reordered': prefix})   # ... and the report the user actually reads is printable

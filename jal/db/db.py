@@ -144,12 +144,14 @@ class JalDB:
     #    if not - it will initialize DB with help of SQL-script
     # 2) checks that DB looks like a valid one:
     #    if schema version is invalid it will close DB
+    # 'db_file' opens a database other than the one this installation keeps its data in - a tool that is pointed at
+    # a file by its caller (see tools/shift_clock.py) rather than at the file the application itself uses.
     # Returns: LedgerInitError(code == NoError(0) if db was initialized successfully)
-    def init_db(self) -> JalDBError:
+    def init_db(self, db_file: str = '') -> JalDBError:
         db = QSqlDatabase.addDatabase("QSQLITE", Setup.DB_CONNECTION)
         if not db.isValid():
             return JalDBError(JalDBError.DbDriverFailure)
-        db_file = self.get_db_path()
+        db_file = db_file if db_file else self.get_db_path()
         db.setDatabaseName(db_file)
         db.setConnectOptions("QSQLITE_ENABLE_REGEXP=1")
         db.open()
@@ -169,7 +171,7 @@ class JalDB:
                 return error
         if self._read("SELECT value FROM settings WHERE name='CleanDB'") == 'yes':
             db.close()
-            os.remove(self.get_db_path())
+            os.remove(db_file)
             db.open()
             error = self.run_sql_script(self.get_app_path() + Setup.INIT_SCRIPT_PATH)
             if error.code != JalDBError.NoError:
