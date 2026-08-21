@@ -153,4 +153,19 @@ def day_begin(timestamp: int) -> int:
 def day_end(timestamp: int) -> int:
     end = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(hour=23, minute=59, second=59)
     return int(end.replace(tzinfo=timezone.utc).timestamp())
+
+# A stored timestamp that states a DAY rather than a moment in it. JAL spells such a value as a fixed time of day, and
+# the value is what says so - nothing is stored beside it. Three of them are in use:
+#   00:00:00 - the beginning of the day, which is what a date given without a time of day becomes
+#   12:00:00 - the middle of it, entered by hand for something known only by its day
+#   the end-of-day stamp a source puts on an accounting day - it belongs to that source alone and is passed in by the
+#   caller that knows the source, see IBKR_DAY_MARKERS for example
+# A marker is never re-read on another clock: it carries no time of day to convert, and converting it could only move
+# it to a different day.
+DAY_BEGIN_MARKER = 0
+DAY_MIDDLE_MARKER = 12 * 60 * 60
+COMMON_DAY_MARKERS = (DAY_BEGIN_MARKER, DAY_MIDDLE_MARKER)
+
+def is_day_marker(timestamp: int, source_markers: tuple = ()) -> bool:
+    return (timestamp - day_begin(timestamp)) in COMMON_DAY_MARKERS + tuple(source_markers)
 # -------------------------------------------------------------------------------------------------------------------

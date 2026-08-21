@@ -20,9 +20,9 @@ from jal.db.db import JalDB
 from jal.db.residence import JalResidence, wall_clock_reading
 from lxml import etree
 
-from jal.data_import.broker_statements.ibkr import StatementIBKR
+from jal.data_import.broker_statements.ibkr import IBKR_DAY_MARKERS, StatementIBKR
 from jal.data_import.broker_statements.kucoin import StatementKuCoin
-from jal.db.helpers import local_timestamp, now_ts, now_dt
+from jal.db.helpers import is_day_marker, local_timestamp, now_ts, now_dt
 from jal.db.ledger import Ledger
 from jal.widgets.helpers import ts2axis, axis2ts, ts2d
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
@@ -313,6 +313,36 @@ def test_a_day_stored_without_a_time_of_day_is_never_read_on_another_clock(prepa
     assert _report_for(report, 2024).trades_list([PredefinedAsset.Stock]) == []
     assert len(_report_for(report, 2025).trades_list([PredefinedAsset.Stock])) == 1
     assert [x.timestamp() for x in _report_for(report, 2025).dividends_list()] == [d2t(250101)]
+
+
+# Midnight is not the only spelling of a day. A payment known only by the day it happened is entered by hand at the
+# middle of that day, and noon states the day just as much as midnight does - is_day_marker() is what says so, and a
+# report of another jurisdiction has to leave both alone. A minute either side is an ordinary moment again.
+def test_a_payment_dated_by_the_middle_of_its_day_is_never_read_on_another_clock(prepare_db_taxes):
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    noon = _stamp(2025, 6, 10, 12, 0)
+    create_dividends([(noon, 1, 4, 10.0, 1.0, "Dividend known only by the day it happened")])
+    _resident_in('Europe/Lisbon')
+    report = TaxesRussia()
+
+    assert report._moment(noon) == noon                            # untouched, though Moscow is two hours ahead
+    assert report._moment(noon + 60) == noon + 60 + 2 * 3600       # a minute later is a moment, and it moves
+    assert [x.timestamp() for x in _report_for(report, 2025).dividends_list()] == [noon]
+
+
+# The end-of-day stamps a broker puts on an accounting day are that broker's alone, so they are NOT part of the
+# common set: an evening entry on a cash account legitimately reads 20:20, and read as a day it would be frozen on
+# the clock it was entered on. It is a moment, and a report filed eight hours to the east dates it on the next day.
+def test_an_evening_spending_is_not_mistaken_for_an_end_of_day_marker(prepare_db_taxes):
+    evening = _stamp(2025, 6, 10, 20, 20)
+    create_actions([(evening, 1, 1, [(PredefinedCategory.Fees, Decimal('-10'))])])
+    _resident_in('America/New_York')
+    report = _report_for(TaxesRussia(), 2025)
+
+    assert not is_day_marker(evening)
+    assert is_day_marker(evening, IBKR_DAY_MARKERS)                # ... unless the caller names the source it came from
+    assert ts2d(report._moment(evening)) == ts2d(_stamp(2025, 6, 11))
+    assert len(report.category_operations(PredefinedCategory.Fees)) == 1
 
 
 # The operations of a category are picked by the database, by timestamp, so the window has to be widened before the

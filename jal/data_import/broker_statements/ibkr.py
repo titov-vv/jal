@@ -19,6 +19,11 @@ JAL_STATEMENT_CLASS = "StatementIBKR"
 IBKR_CALCULATION_PRECISION = 10
 DIVIDENDS_TABLE_ASSET_FIELD = 7
 
+# The end-of-day stamps IBKR puts on an accounting day. They are not times of day, and they are IBKR's alone - an
+# evening entry on a cash account can legitimately read 20:20 (or 20:24, 20:25), so they are never part of the common
+# set that is_day_marker() knows by itself.
+IBKR_DAY_MARKERS = (20 * 3600 + 20 * 60, 20 * 3600 + 24 * 60, 20 * 3600 + 25 * 60)
+
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKRCashOp:
     Dividend = 0

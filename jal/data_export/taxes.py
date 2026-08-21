@@ -9,7 +9,7 @@ from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
-from jal.db.helpers import day_begin
+from jal.db.helpers import is_day_marker
 from jal.db.operations import AssetPayment
 from jal.db.residence import wall_clock_reading
 
@@ -56,14 +56,15 @@ class TaxReport:
     # amounts it explains are converted in the ledger, on the stored moment, and a rate taken from a different day
     # would stop being the one those amounts were made of.
     def _moment(self, timestamp: int) -> int:
-        if timestamp == day_begin(timestamp):
-            return self._date(timestamp)   # a reading of exactly midnight carries no time of day - it is a date
+        if is_day_marker(timestamp):
+            return self._date(timestamp)   # a reading that states a day carries no time of day to re-read
         return wall_clock_reading(timestamp, self.report_timezone)
 
     # A calendar date of an operation - a settlement day, an ex-date, or a payment whose source gave the day without
-    # saying when in it the payment happened, stored as the midnight it was given. Such a date carries no time of day
-    # to re-read on another clock, and moving it could only turn it into a different date, so it is the same date in
-    # every jurisdiction. Named for what it is, so that a date is never mistaken for a moment left unconverted.
+    # saying when in it the payment happened, stored as one of the day markers is_day_marker() knows. Such a date
+    # carries no time of day to re-read on another clock, and moving it could only turn it into a different date, so
+    # it is the same date in every jurisdiction. Named for what it is, so that a date is never mistaken for a moment
+    # left unconverted.
     @staticmethod
     def _date(day: int) -> int:
         return day
