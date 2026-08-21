@@ -16,11 +16,12 @@ from PySide6.QtWidgets import QWidget
 from constants import PredefinedAsset, PredefinedCategory
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.data_export.tax_reports.russia import TaxesRussia
+from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.db import JalDB
 from jal.db.reclock import RECLOCKED_COLUMNS, reclock
-from jal.db.residence import JalResidence, wall_clock_reading
+from jal.db.residence import JalResidence, stored_reading, wall_clock_reading
 from lxml import etree
 
 from jal.data_import.broker_statements.ibkr import IBKR_DAY_MARKERS, StatementIBKR
@@ -369,6 +370,55 @@ def test_nothing_moves_while_a_zone_is_unknown(prepare_db_taxes):
 
     _resident_in('Europe/Lisbon')
     assert wall_clock_reading(evening, '') == evening
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The money-flow report asks the DATABASE for its year - the flows are summed by a query and the balances are read out
+# of the ledger - so it cannot re-read the rows one at a time the way a tax report does. It re-reads its window
+# instead, which needs the mapping the other way round: not "what did this stored moment read in Moscow" but "which
+# stored moment did Moscow read as the first second of the year".
+
+# The money columns of the flow report row of the fixture's only account, in the thousands the report prints
+def _money_flow(year: int) -> dict:
+    report = TaxesFlowRus().prepare_flow_report(year)
+    return {key: value for key, value in report[0].items() if key.startswith('money_')} if report else {}
+
+
+def test_the_stored_reading_of_a_moment_is_the_inverse_of_reading_that_moment(prepare_db_taxes):
+    _resident_in('Europe/Lisbon')
+    new_year = _stamp(2025, 1, 1)                                       # midnight of 1 January, in Moscow
+
+    assert stored_reading(new_year, 'Europe/Moscow') == _stamp(2024, 12, 31, 21, 0)   # ... is 9 p.m. in Lisbon
+    assert wall_clock_reading(_stamp(2024, 12, 31, 21, 0), 'Europe/Moscow') == new_year
+    assert stored_reading(new_year, '') == new_year                     # nothing moves while a zone is unknown
+
+
+# The window and the balances are the same two instants seen twice. An evening deposit made in Lisbon on 31 December
+# is already the new year in Moscow, so the Russian report of that new year must count it as an inflow and must NOT
+# carry it in the opening balance - while the money that was there an hour earlier is opening balance and no flow.
+def test_the_flow_report_counts_the_year_the_jurisdiction_counts(prepare_db_taxes):
+    create_actions([(_stamp(2024, 12, 31, 20, 0), 1, 1, [(PredefinedCategory.Interest, Decimal('100'))]),
+                    (_stamp(2024, 12, 31, 23, 30), 1, 1, [(PredefinedCategory.Interest, Decimal('250'))])])
+    Ledger().rebuild(from_timestamp=0)
+    _resident_in('Europe/Lisbon')
+
+    assert _money_flow(2025) == {'money_begin': Decimal('0.1'), 'money_in': Decimal('0.25'),
+                                 'money_out': Decimal('0'), 'money_end': Decimal('0.35')}
+    assert _money_flow(2024) == {'money_begin': Decimal('0'), 'money_in': Decimal('0.1'),
+                                 'money_out': Decimal('0'), 'money_end': Decimal('0.1')}
+
+
+# ... and it keeps counting on the stored digits until the user says where they lived, which is what leaves the
+# reports of a database with no residence history exactly as they were.
+def test_the_flow_report_keeps_the_stored_year_while_a_zone_is_unknown(prepare_db_taxes):
+    create_actions([(_stamp(2024, 12, 31, 20, 0), 1, 1, [(PredefinedCategory.Interest, Decimal('100'))]),
+                    (_stamp(2024, 12, 31, 23, 30), 1, 1, [(PredefinedCategory.Interest, Decimal('250'))])])
+    Ledger().rebuild(from_timestamp=0)
+
+    assert _money_flow(2024) == {'money_begin': Decimal('0'), 'money_in': Decimal('0.35'),
+                                 'money_out': Decimal('0'), 'money_end': Decimal('0.35')}
+    assert _money_flow(2025) == {'money_begin': Decimal('0.35'), 'money_in': Decimal('0'),
+                                 'money_out': Decimal('0'), 'money_end': Decimal('0.35')}
 
 
 # ----------------------------------------------------------------------------------------------------------------------

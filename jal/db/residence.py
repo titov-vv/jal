@@ -89,3 +89,21 @@ def wall_clock_reading(timestamp: int, zone: str) -> int:
         return timestamp
     instant = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(tzinfo=ZoneInfo(home))
     return int(instant.astimezone(ZoneInfo(zone)).replace(tzinfo=timezone.utc).timestamp())
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The inverse of wall_clock_reading(): the timestamp JAL stores for the moment at which the wall clock of 'zone' showed
+# the given digits. A report whose year is a jurisdiction's needs this side of the mapping whenever the year is put to
+# the DATABASE rather than to a row already fetched - the stored readings can't be re-read one by one inside a query,
+# so it is the bounds of the window that are re-read instead. It also answers "which instant was the jurisdiction's 1
+# January", which is what a balance taken at the turn of the year is a balance at.
+#
+# The zone the user was on is looked up by the reading given rather than by the answer returned, because the residence
+# timeline is keyed on stored digits as well. That makes the inverse exact everywhere except within a few hours of a
+# move, and there it errs by those hours.
+def stored_reading(reading: int, zone: str) -> int:
+    home = JalResidence.timezone(reading)
+    if not zone or not home or zone == home:
+        return reading
+    instant = datetime.fromtimestamp(reading, tz=timezone.utc).replace(tzinfo=ZoneInfo(zone))
+    return int(instant.astimezone(ZoneInfo(home)).replace(tzinfo=timezone.utc).timestamp())

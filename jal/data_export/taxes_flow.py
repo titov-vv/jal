@@ -3,10 +3,16 @@ from decimal import Decimal
 
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.residence import stored_reading
 from jal.data_export.ru_ndfl3 import Ru_NDFL3
 
 
 class TaxesFlowRus:
+    # The zone whose wall clock this report counts its year on, named the way TaxReport.report_timezone names it for
+    # the tax report itself. Here it is the WINDOW that is re-read and not each row: the flows are summed by the
+    # database and the balances are taken from the ledger, both on stored timestamps - see prepare_flow_report().
+    report_timezone = 'Europe/Moscow'
+
     def __init__(self):
         self.year_begin = 0
         self.year_end = 0
@@ -33,6 +39,12 @@ class TaxesFlowRus:
         # so an operation stamped at midnight on 1 January belongs to that next year and to no other.
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
+        # Those two are the year as the jurisdiction counts it - the dates the report declares. The database holds
+        # readings of the user's own clock, so each bound is turned into the reading stored for the same instant
+        # before anything is asked of it. Each bound is a moment as much as a boundary here: the balances below are
+        # the balances AT it, and the same conversion answers both.
+        begin = stored_reading(self.year_begin, self.report_timezone)
+        end = stored_reading(self.year_end, self.report_timezone)
 
         accounts = JalAccount.get_all_accounts(active_only=False)
         # collect data for start and end of the period
@@ -41,8 +53,8 @@ class TaxesFlowRus:
         for account in accounts:
             if account.country().code() == 'xx' or account.country().code() == 'ru':
                 continue
-            values_begin += self.get_account_values(account, self.year_begin)
-            values_end += self.get_account_values(account, self.year_end)
+            values_begin += self.get_account_values(account, begin)
+            values_end += self.get_account_values(account, end)
         values_begin = sorted(values_begin, key=lambda x: (JalAccount(account_id=x['account']).number(), x['is_currency'], x['currency']))
         values_end = sorted(values_end, key=lambda x: (JalAccount(account_id=x['account']).number(), x['is_currency'], x['currency']))
         for item in values_begin:
@@ -61,7 +73,7 @@ class TaxesFlowRus:
             if account.country().code() == 'xx' or account.country().code() == 'ru':
                 continue
             for flow in flows:
-                value = account.get_flow(self.year_begin, self.year_end, flow['type'], flow['direction'])
+                value = account.get_flow(begin, end, flow['type'], flow['direction'])
                 if value != Decimal('0'):
                     values = {'account': account.id(), 'currency': JalAsset(account.currency()).symbol(),
                               'is_currency': (flow['type'] == JalAccount.MONEY_FLOW), 'value': value}
