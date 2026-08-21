@@ -5,9 +5,9 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import d2t, create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
     create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float, save_test_xls_report
-from constants import PredefinedAsset
+from constants import PredefinedAsset, PredefinedCategory
 from jal.db.ledger import Ledger
-from jal.db.account import JalAccount
+from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, CorporateAction, AssetPayment
 from jal.data_export.tax_reports.russia import TaxesRussia
@@ -380,3 +380,20 @@ def test_taxes_cfd_short_dividends(tmp_path, data_path, prepare_db_taxes):
     assert tax_report == report
 
     # save_test_xls_report(tmp_path, tax_report)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The flow report sorts its rows by account number, and a cash account, a wallet or a deposit carries none. An absent
+# number has to sort beside the numbers that are there rather than crash the report - which is every report of this
+# kind, as an account without a number is the common case abroad.
+def test_flow_report_lists_an_account_that_carries_no_number(prepare_db):
+    numbered = JalAccountCreator(currency_id=2, number='U7654321', name='Broker', investing=1, country='us').commit()
+    numberless = JalAccountCreator(currency_id=2, number='', name='Rental deposit', country='pt').commit()
+    create_actions([(d2t(200601), numbered.id(), 1, [(PredefinedCategory.Interest, Decimal('100'))]),
+                    (d2t(200601), numberless.id(), 1, [(PredefinedCategory.Interest, Decimal('250'))])])
+    Ledger().rebuild(from_timestamp=0)
+
+    assert numberless.number() == ''
+    report = TaxesFlowRus().prepare_flow_report(2020)
+    assert [(x['account'], x['account_name'], x['money_in']) for x in report] == \
+           [('', 'Rental deposit', Decimal('0.25')), ('U7654321', 'Broker', Decimal('0.1'))]

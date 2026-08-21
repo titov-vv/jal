@@ -49,7 +49,7 @@ class JalAccount(JalDB):
     # Resolves the fields stored in the 'account_data' table, applying a default when an attribute row is absent
     def _apply_account_data(self) -> None:
         attributes = self._data['data'] if self._data is not None else {}
-        self._number = attributes.get(AccountData.Number, None)
+        self._number = attributes.get(AccountData.Number, '')
         self._country = JalCountry(int(attributes[AccountData.Country])) if AccountData.Country in attributes else JalCountry(0)
         self._precision = int(attributes[AccountData.Precision]) if AccountData.Precision in attributes else Setup.DEFAULT_ACCOUNT_PRECISION
         credit = attributes.get(AccountData.Credit, '0')
@@ -281,7 +281,7 @@ class JalAccount(JalDB):
     def name(self) -> str:
         return self._name
 
-    # Returns number of the account
+    # Returns number of the account, empty ('') for an account that has none
     def number(self) -> str:
         return self._number
 

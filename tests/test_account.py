@@ -34,7 +34,7 @@ def test_account_data_roundtrip(prepare_db):
     # A plain cash account with all defaults writes no account_data rows at all
     cash = JalAccountCreator(currency_id=2, number='', name='Petty cash').commit()
     assert cash.account_type() == PredefinedAccountType.Cash
-    assert cash.number() is None
+    assert cash.number() == ''
     assert cash.precision() == Setup.DEFAULT_ACCOUNT_PRECISION
     assert cash.country().id() == 0
 
